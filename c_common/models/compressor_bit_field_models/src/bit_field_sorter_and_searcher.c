@@ -121,6 +121,18 @@ sdp_msg_pure_data my_msg;
 
 //============================================================================
 
+static inline void terminate(uint result_code) __attribute__((noreturn));
+
+static inline void terminate(uint result_code) {
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    uint core = spin1_get_core_id();
+
+    sark_virtual_processor_info[core].user1 = result_code;
+    while (1) {
+        spin1_exit(0);
+    }
+}
+
 //! \brief sends the sdp message. assumes all params have already been set
 void send_sdp_message(void) {
     uint32_t attempt = 0;
@@ -204,7 +216,7 @@ bool set_up_search_bitfields(void) {
 // map and from there searches for a given key. when found, returns the n atoms
 //! \param[in] key: the key to locate n atoms for
 //! \return atom for the key
-uint32_t locate_key_atom_map(uint32_t key) {
+static inline uint32_t locate_key_atom_map(uint32_t key) {
     // locate n address pairs
     uint32_t n_address_pairs = region_addresses->n_pairs;
 
@@ -235,9 +247,7 @@ uint32_t locate_key_atom_map(uint32_t key) {
     }
 
     log_error("cannot find the key %d at all?! WTF", key);
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
+    terminate(EXIT_FAIL);
     return 0;
 }
 
@@ -322,7 +332,7 @@ void extract_and_remove_entry_from_table(
 //! \param[in] bit_field_address: the location in sdram where the bitfield
 //! starts
 //! \return the processor id that this bitfield address is associated.
-uint32_t locate_processor_id_from_bit_field_address(
+static inline uint32_t locate_processor_id_from_bit_field_address(
         address_t bit_field_address) {
     uint32_t n_pairs = region_addresses->n_pairs;
     for (uint32_t bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
@@ -336,9 +346,7 @@ uint32_t locate_processor_id_from_bit_field_address(
     }
     log_error("failed to find the bitfield address %x anywhere.",
             bit_field_address);
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
+    terminate(EXIT_FAIL);
     return 0;
 }
 
@@ -658,23 +666,21 @@ bool free_sdram_from_compression_attempt(uint32_t comp_core_index){
 //! \brief locate the core index for this processor id.
 //! \param[in] processor_id: the processor id to find index for.
 //! \return the index in the compressor cores for this processor id
-uint32_t get_core_index_from_id(uint32_t processor_id) {
+static inline uint32_t get_core_index_from_id(uint32_t processor_id) {
     for (uint32_t comp_core_index = 0; comp_core_index < n_compression_cores;
             comp_core_index++) {
         if (compressor_cores[comp_core_index] == processor_id) {
             return comp_core_index;
         }
     }
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
+    terminate(EXIT_FAIL);
     return 0;
 }
 
 //! \brief selects a compression core's index that's not doing anything yet
 //! \param[in] midpoint: the midpoint this compressor is going to explore
 //! \return the compressor core index for this attempt.
-uint32_t select_compressor_core_index(uint32_t midpoint){
+static inline uint32_t select_compressor_core_index(uint32_t midpoint){
     for (uint32_t comp_core_index = 0; comp_core_index < n_compression_cores;
             comp_core_index++) {
         if (comp_core_mid_point[comp_core_index] == DOING_NOWT) {
@@ -684,11 +690,9 @@ uint32_t select_compressor_core_index(uint32_t midpoint){
         }
     }
 
-    log_error("cant find a core to allocate to you");
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
-    return 0;  // needed for compiler warning to shut up
+    log_error("can't find a core to allocate to you");
+    terminate(EXIT_FAIL);
+    return 0;
 }
 
 //! \brief stores the addresses for freeing when response code is sent
@@ -1102,7 +1106,7 @@ bool sort_sorted_to_cores(
 //! \param[in] processor_id: the processor id to find the region id in the
 //! addresses
 //! \return the address in the addresses region for the processor id
-address_t find_processor_bit_field_region(uint32_t processor_id) {
+static inline address_t find_processor_bit_field_region(uint32_t processor_id) {
     // find the right bitfield region
     for (uint32_t r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
         uint32_t region_proc_id = region_addresses->pairs[r_id].processor;
@@ -1113,9 +1117,7 @@ address_t find_processor_bit_field_region(uint32_t processor_id) {
 
     // if not found
     log_error("failed to find the right region. WTF");
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_SWERR;
-    spin1_exit(0);
+    terminate(EXIT_SWERR);
     return NULL;
 }
 
@@ -1473,10 +1475,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
                     best_search_point);
             load_routing_table_into_router();
             log_debug("finished loading table");
-            vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-            sark_virtual_processor_info[spin1_get_core_id()].user1 =
-                    EXITED_CLEANLY;
-            spin1_exit(0);
+            terminate(EXITED_CLEANLY);
             return;
         } else {
             // not found best, so try to set off compression if memory done
@@ -1507,10 +1506,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
             // check if current reach is enough to count as a success
             if ((n_bf_addresses / best_mid_point_tested) < region_addresses->threshold) {
                 log_error("failed to compress enough bitfields for threshold.");
-                vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-                sark_virtual_processor_info[spin1_get_core_id()].user1 =
-                        EXIT_FAIL;
-                spin1_exit(0);
+                terminate(EXIT_FAIL);
             }
 
             found_best = true;
@@ -1720,16 +1716,13 @@ void sdp_handler(uint mailbox, uint port) {
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] bit_field_struct: the location of the bitfield
 //! \return how many redundant packets there are
-uint32_t detect_redundant_packet_count(address_t bit_field_struct) {
+uint32_t detect_redundant_packet_count(bit_field_data_t *bit_field_struct) {
     //log_info("address's location is %d", bit_field_struct);
     //log_info(" key is %d", bit_field_struct[BIT_FIELD_BASE_KEY]);
     uint32_t n_filtered_packets = 0;
-    uint32_t n_neurons =
-            locate_key_atom_map(bit_field_struct[BIT_FIELD_BASE_KEY]);
+    uint32_t n_neurons = locate_key_atom_map(bit_field_struct->base_key);
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
-        if (!bit_field_test(
-                (bit_field_t) &bit_field_struct[START_OF_BIT_FIELD_DATA],
-                 neuron_id)) {
+        if (!bit_field_test((bit_field_t) bit_field_struct->data, neuron_id)) {
             n_filtered_packets += 1;
         }
     }
@@ -1738,54 +1731,45 @@ uint32_t detect_redundant_packet_count(address_t bit_field_struct) {
 }
 
 //! \brief do some location and addition stuff
-//! \param[in] coverage:the set of bitfields and corresponding processors
+//! \param[in] coverage: the set of bitfields and corresponding processors
 //!                      for bitfields with a given redundant packet count.
-//! \param[in] coverage_index: where in the coverage array we are
+//! \param[in] coverage_idx: where in the coverage array we are
 //! \param[in] cores_to_add_for: the cores who's bitfields we want to find
 //! \param[in] cores_to_add_length: length of array of core ids
 //! \param[in] diff: the amount of bitfields to add for these cores
 //! \param[out] covered: the new set of bitfields
 //! \return the new covered level
 uint32_t locate_and_add_bit_fields(
-        coverage_t **coverage, uint32_t coverage_index,
+        coverage_t **coverage, uint32_t coverage_idx,
         uint32_t *cores_to_add_for, uint32_t cores_to_add_length, uint32_t diff,
         uint32_t covered) {
-    for (uint32_t processor_id_index = 0;
-            processor_id_index < coverage[coverage_index]->length_of_list;
-            processor_id_index++) {
+    for (uint32_t p_idx = 0; p_idx < coverage[coverage_idx]->length_of_list; p_idx++) {
         // check for the processor id's in the cores to add from, and add the
         // bitfield with that redundant packet rate and processor to the sorted
         // bitfields
-        uint32_t processor_id_to_check = coverage[
-                coverage_index]->processor_ids[processor_id_index];
+        uint32_t processor_id_to_check =
+                coverage[coverage_idx]->processor_ids[p_idx];
 
         // look inside cores to add for
-        for (uint32_t processor_to_check_index = 0;
-                processor_to_check_index < cores_to_add_length;
-                processor_to_check_index++) {
-            uint32_t processor_id_to_work_on =
-                    cores_to_add_for[processor_to_check_index];
+        for (uint32_t check_idx = 0; check_idx < cores_to_add_length; check_idx++) {
+            uint32_t processor_id_to_work_on = cores_to_add_for[check_idx];
             if (processor_id_to_check == processor_id_to_work_on) {
                 if (covered < diff) {
                     // add to sorted bitfield
                     covered += 1;
                     sorted_bit_fields[sorted_bit_field_current_fill_loc] =
-                            coverage[coverage_index]->bit_field_addresses[
-                                    processor_to_check_index];
+                            coverage[coverage_idx]->bit_field_addresses[check_idx];
                     sorted_bit_field_current_fill_loc += 1;
 
                     // delete (aka set to null, to bypass lots of data moves)
-                    coverage[coverage_index]->bit_field_addresses[
-                            processor_to_check_index] = NULL;
-                    coverage[coverage_index]->processor_ids[
-                            processor_to_check_index] = NULL;
+                    coverage[coverage_idx]->bit_field_addresses[check_idx] = NULL;
+                    coverage[coverage_idx]->processor_ids[check_idx] = NULL;
                     log_debug("removing from indexs %d, %d",
-                            coverage_index, processor_to_check_index);
+                            coverage_idx, check_idx);
 
                     log_debug("dumping into sorted at index %d address %x and is %x",
                             sorted_bit_field_current_fill_loc,
-                            coverage[coverage_index]->bit_field_addresses[
-                                    processor_to_check_index],
+                            coverage[coverage_idx]->bit_field_addresses[check_idx],
                             sorted_bit_fields[sorted_bit_field_current_fill_loc]);
                 }
             }
@@ -1839,9 +1823,9 @@ void order_bit_fields_based_on_impact(
                 proc_cov_by_bit_field, n_pairs, worst_core_id);
 
         // print for sanity
-        for(uint32_t r_packet_index = 0;
-                r_packet_index < proc_cov_by_bit_field[
-                        worst_core_id]->length_of_list;
+#if 0
+        for (uint32_t r_packet_index = 0;
+                r_packet_index < proc_cov_by_bit_field[worst_core_id]->length_of_list;
                 r_packet_index++) {
             log_debug("order of redundant packet count at index %d is %d",
                     proc_cov_by_bit_field[worst_core_id]->redundant_packets[
@@ -1849,78 +1833,55 @@ void order_bit_fields_based_on_impact(
         }
 
         // print all coverage for sanity purposes
-        for (uint32_t coverage_index = 0;
-                coverage_index < n_unique_redundant_packet_counts;
-                coverage_index++) {
-            for(uint32_t bit_field_index = 0;
-                    bit_field_index < coverage[coverage_index]->length_of_list;
-                    bit_field_index ++) {
+        for (uint32_t i = 0; i < n_unique_redundant_packet_counts; i++) {
+            for (uint32_t j = 0; j < coverage[i]->length_of_list; j++) {
                 log_debug("bitfield address in coverage at index %d in array index"
-                        "%d is %x", coverage_index, bit_field_index,
-                        coverage[coverage_index]->bit_field_addresses[
-                                bit_field_index]);
+                        " %d is %x", i, j, coverage[i]->bit_field_addresses[j]);
             }
         }
-        for (uint32_t coverage_index = 0;
-                coverage_index < n_unique_redundant_packet_counts;
-                coverage_index++) {
-            for(uint32_t bit_field_index = 0;
-                    bit_field_index < coverage[coverage_index]->length_of_list;
-                    bit_field_index++) {
+        for (uint32_t i = 0; i < n_unique_redundant_packet_counts; i++) {
+            for (uint32_t j = 0; j < coverage[i]->length_of_list; j++) {
                 log_debug("bitfield proc in coverage at index %d in array index"
-                        "%d is %x", coverage_index, bit_field_index,
-                        coverage[coverage_index]->processor_ids[bit_field_index]);
+                        " %d is %x", i, j, coverage[i]->processor_ids[j]);
             }
         }
+#endif
 
         // cycle through the list of a cores redundant packet counts and locate
         // the bitfields which match up
         uint32_t covered = 0;
-        for (uint32_t redundant_packet_count_index = 0;
-                redundant_packet_count_index <
-                        proc_cov_by_bit_field[worst_core_id]->length_of_list;
-                redundant_packet_count_index++) {
+        for (uint32_t idx = 0;
+                idx < proc_cov_by_bit_field[worst_core_id]->length_of_list;
+                idx++) {
             // the coverage packet count to try this time
             uint32_t x_redundant_packets = proc_cov_by_bit_field[
-                    worst_core_id]->redundant_packets[redundant_packet_count_index];
+                    worst_core_id]->redundant_packets[idx];
 
             // locate the bitfield with coverage that matches the x redundant
             // packets
-            for (uint32_t coverage_index = 0;
-                    coverage_index < n_unique_redundant_packet_counts;
-                    coverage_index++) {
-                if (coverage[coverage_index]->n_redundant_packets ==
-                        x_redundant_packets) {
+            for (uint32_t i = 0; i < n_unique_redundant_packet_counts; i++) {
+                if (coverage[i]->n_redundant_packets == x_redundant_packets) {
                     covered = locate_and_add_bit_fields(
-                            coverage, coverage_index, cores_to_add_for,
+                            coverage, i, cores_to_add_for,
                             cores_to_add_length, diff, covered);
                 }
             }
 
             // print all coverage for sanity purposes
 #if 0
-            for (uint32_t coverage_index = 0;
-                    coverage_index < n_unique_redundant_packet_counts;
-                    coverage_index++) {
-                for (uint32_t bit_field_index = 0;
-                        bit_field_index < coverage[coverage_index]->length_of_list;
-                        bit_field_index++) {
+            for (uint32_t i = 0; i < n_unique_redundant_packet_counts; i++) {
+                for (uint32_t j = 0; j < coverage[i]->length_of_list; j++) {
                     log_info("bitfield address in coverage at index %d in array "
-                            "index %d is %x", coverage_index, bit_field_index,
-                            coverage[coverage_index]->bit_field_addresses[bit_field_index]);
+                            "index %d is %x", i, bit_field_index,
+                            coverage[i]->bit_field_addresses[j]);
                 }
             }
 
-            for (uint32_t coverage_index = 0;
-                    coverage_index < n_unique_redundant_packet_counts;
-                    coverage_index++) {
-                for (uint32_t bit_field_index = 0;
-                        bit_field_index < coverage[coverage_index]->length_of_list;
-                        bit_field_index++) {
+            for (uint32_t i = 0; i < n_unique_redundant_packet_counts; i++) {
+                for (uint32_t j = 0; j < coverage[coverage_index]->length_of_list; j++) {
                     log_info("bitfield proc in coverage after a move to sorted at "
-                            "index %d in array index %d is %x", coverage_index,
-                            bit_field_index,
-                            coverage[coverage_index]->processor_ids[bit_field_index]);
+                            "index %d in array index %d is %x", i,
+                            bit_field_index, coverage[i]->processor_ids[j]);
                 }
             }
             log_info("next cycle of moving to sorted");
@@ -1933,31 +1894,24 @@ void order_bit_fields_based_on_impact(
             coverage, n_unique_redundant_packet_counts);
 
     // iterate through the coverage and add any that are left over.
-    for (uint index = 0; index < n_unique_redundant_packet_counts;
-            index ++) {
-        for (uint32_t bit_field_index = 0;
-                bit_field_index < coverage[index]->length_of_list;
-                bit_field_index++) {
-            if (coverage[index]->bit_field_addresses[bit_field_index] != NULL) {
+    for (uint i = 0; i < n_unique_redundant_packet_counts; i++) {
+        for (uint32_t j = 0; j < coverage[i]->length_of_list; j++) {
+            if (coverage[i]->bit_field_addresses[j] != NULL) {
                 sorted_bit_fields[sorted_bit_field_current_fill_loc] =
-                        coverage[index]->bit_field_addresses[bit_field_index];
+                        coverage[i]->bit_field_addresses[j];
 
 #if 0
                 log_info("dumping into sorted at index %d address %x and is %x",
                         sorted_bit_field_current_fill_loc,
-                        coverage[index]->bit_field_addresses[bit_field_index],
+                        coverage[i]->bit_field_addresses[j],
                         sorted_bit_fields[sorted_bit_field_current_fill_loc]);
 #endif
 
-                sorted_bit_fields_processor_ids[
-                    sorted_bit_field_current_fill_loc] = coverage[
-                        index]->processor_ids[bit_field_index];
-
-                sorted_bit_field_current_fill_loc += 1;
+                sorted_bit_fields_processor_ids[sorted_bit_field_current_fill_loc++] =
+                        coverage[i]->processor_ids[j];
             }
         }
     }
-
 }
 
 //! \brief sets off the basic compression without any bitfields
@@ -1989,6 +1943,17 @@ bool set_off_no_bit_field_compression(void) {
     return set_off_bit_field_compression(N_UNCOMPRESSED_TABLE, 0);
 }
 
+static bool is_redundant(
+        uint length_n_redundant_packets, uint *redundant_packets,
+        uint x_packets) {
+    for (uint index = 0; index < length_n_redundant_packets; index++) {
+        if (redundant_packets[index] == x_packets) {
+            return true;
+        }
+    }
+    return false;
+}
+
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
 //! \return bool that states if it succeeded or not.
 bool read_in_bit_fields(void) {
@@ -2007,8 +1972,8 @@ bool read_in_bit_fields(void) {
     }
 
     // build processor coverage by bitfield
-    _proc_cov_by_bitfield_t** proc_cov_by_bf = MALLOC(
-            n_pairs_of_addresses * sizeof(_proc_cov_by_bitfield_t*));
+    _proc_cov_by_bitfield_t** proc_cov_by_bf =
+            MALLOC(n_pairs_of_addresses * sizeof(_proc_cov_by_bitfield_t*));
     if (proc_cov_by_bf == NULL){
         log_error("failed to allocate memory for processor coverage by "
                 "bitfield, if it fails here. might as well give up");
@@ -2034,15 +1999,14 @@ bool read_in_bit_fields(void) {
                 r_id, bit_field_by_processor[r_id].processor_id);
 
         // locate data for malloc memory calcs
-        address_t bit_field_address = region_addresses->pairs[r_id].bitfield;
-        log_debug("bit_field_region = %x", bit_field_address);
+        bit_field_data_t *bit_field = (bit_field_data_t *)
+                region_addresses->pairs[r_id].bitfield;
+        log_debug("bit_field_region = %x", bit_field);
 
         log_debug("safety check. bit_field key is %d",
-                bit_field_address[BIT_FIELD_BASE_KEY]);
-        uint32_t pos_in_bitfield_region = N_BIT_FIELDS;
-        uint32_t core_n_bit_fields = bit_field_address[pos_in_bitfield_region];
+                bit_field->base_key);
+        uint32_t core_n_bit_fields = bit_field->n_words;
         log_debug("there are %d core bit fields", core_n_bit_fields);
-        pos_in_bitfield_region = START_OF_BIT_FIELD_TOP_DATA;
         n_bf_addresses += core_n_bit_fields;
 
         // track lengths
@@ -2074,21 +2038,20 @@ bool read_in_bit_fields(void) {
         for (uint32_t bit_field_id = 0; bit_field_id < core_n_bit_fields;
                 bit_field_id++) {
             bit_field_by_processor[r_id].bit_field_addresses[bit_field_id] =
-                    (address_t) &bit_field_address[pos_in_bitfield_region];
+                    (address_t) bit_field->data;
             log_debug("bitfield at region %d at index %d is at address %x",
                     r_id, bit_field_id,
                     bit_field_by_processor[r_id].bit_field_addresses[bit_field_id]);
 
             uint32_t n_redundant_packets = detect_redundant_packet_count(
-                    (address_t) &bit_field_address[pos_in_bitfield_region]);
+                    (bit_field_data_t *) bit_field->data);
             proc_cov_by_bf[r_id]->redundant_packets[bit_field_id] =
                     n_redundant_packets;
             log_debug("prov cov by bitfield for region %d, redundant packets "
                     "at index %d, has n redundant packets of %d",
                     r_id, bit_field_id, n_redundant_packets);
 
-            pos_in_bitfield_region += START_OF_BIT_FIELD_DATA +
-                    bit_field_address[pos_in_bitfield_region + BIT_FIELD_N_WORDS];
+            bit_field = (bit_field_data_t *) &bit_field->data[bit_field->n_words];
         }
     }
 
@@ -2135,25 +2098,17 @@ bool read_in_bit_fields(void) {
     for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
         // cycle through the bitfield registers again to get n bitfields per
         // core
-        address_t bit_field_address = (address_t)
-                region_addresses->pairs[r_id].bitfield;
+        address_t bit_field_address = region_addresses->pairs[r_id].bitfield;
         uint32_t core_n_bit_fields = bit_field_address[N_BIT_FIELDS];
 
         // check that each bitfield redundant packets are unqiue and add to set
         for (uint32_t bit_field_id = 0; bit_field_id < core_n_bit_fields;
                 bit_field_id++) {
             uint x_packets = proc_cov_by_bf[r_id]->redundant_packets[bit_field_id];
-            // check if seen this before
-            bool found = false;
-            for (uint index = 0; index < length_n_redundant_packets; index++) {
-                if (redundant_packets[index] == x_packets) {
-                    found = true;
-                }
-            }
             // if not a duplicate, add to list and update size
-            if (!found) {
-                redundant_packets[length_n_redundant_packets] = x_packets;
-                length_n_redundant_packets += 1;
+            if (!is_redundant(length_n_redundant_packets, redundant_packets,
+                    x_packets)) {
+                redundant_packets[length_n_redundant_packets++] = x_packets;
             }
         }
     }
@@ -2170,45 +2125,41 @@ bool read_in_bit_fields(void) {
 
     // go through the unique x redundant packets and build the list of
     // bitfields for it
-    for (uint32_t r_packet_index = 0;
-            r_packet_index < length_n_redundant_packets; r_packet_index++) {
+    for (uint32_t i = 0; i < length_n_redundant_packets; i++) {
         // malloc a redundant packet entry
         log_debug("try to allocate memory of size %d for coverage at index %d",
-                sizeof(coverage_t), r_packet_index);
-        coverage[r_packet_index] = MALLOC(sizeof(coverage_t));
-        if (coverage[r_packet_index] == NULL) {
+                sizeof(coverage_t), i);
+        coverage[i] = MALLOC(sizeof(coverage_t));
+        if (coverage[i] == NULL) {
             log_error("failed to malloc memory for the bitfields by coverage "
-                    "for index %d. might as well fail", r_packet_index);
+                    "for index %d. might as well fail", i);
             return false;
         }
 
         // update the redundant packet pointer
-        coverage[r_packet_index]->n_redundant_packets =
-                redundant_packets[r_packet_index];
+        coverage[i]->n_redundant_packets = redundant_packets[i];
 
         // search to see how long the list is going to be.
         uint32_t n_bf_with_same_r_packets = 0;
         for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++){
             uint length = proc_cov_by_bf[r_id]->length_of_list;
-            for (uint red_packet_index = 0; red_packet_index < length;
-                    red_packet_index++) {
-                if (proc_cov_by_bf[r_id]->redundant_packets[
-                        red_packet_index] == redundant_packets[r_packet_index]) {
-                    n_bf_with_same_r_packets += 1;
+            for (uint j = 0; j < length; j++) {
+                if (proc_cov_by_bf[r_id]->redundant_packets[j] == redundant_packets[i]) {
+                    n_bf_with_same_r_packets++;
                 }
             }
         }
 
         // update length of list
-        coverage[r_packet_index]->length_of_list = n_bf_with_same_r_packets;
+        coverage[i]->length_of_list = n_bf_with_same_r_packets;
 
         // malloc list size for these addresses of bitfields with same
         // redundant packet counts.
-        coverage[r_packet_index]->bit_field_addresses =
+        coverage[i]->bit_field_addresses =
                 MALLOC(n_bf_with_same_r_packets * sizeof(address_t));
-        if (coverage[r_packet_index]->bit_field_addresses == NULL) {
+        if (coverage[i]->bit_field_addresses == NULL) {
             log_error("failed to allocate memory for the coverage on index %d"
-                    " for addresses. might as well fail.", r_packet_index);
+                    " for addresses. might as well fail.", i);
             return false;
         }
 
@@ -2217,39 +2168,35 @@ bool read_in_bit_fields(void) {
         log_debug("trying to allocate %d bytes, for x bitfields same xr packets %d",
                 n_bf_with_same_r_packets * sizeof(uint32_t),
                 n_bf_with_same_r_packets);
-        coverage[r_packet_index]->processor_ids =
+        coverage[i]->processor_ids =
                 MALLOC(n_bf_with_same_r_packets * sizeof(uint32_t));
-        if (coverage[r_packet_index]->processor_ids == NULL) {
+        if (coverage[i]->processor_ids == NULL) {
             log_error("failed to allocate memory for the coverage on index %d"
-                    " for processors. might as well fail.", r_packet_index);
+                    " for processors. might as well fail.", i);
             return false;
         }
 
         // populate list of bitfields addresses which have same redundant
         //packet count.
         log_debug("populating list of bitfield addresses with same packet count");
-        uint32_t processor_id_index = 0;
+        uint32_t processor_idx = 0;
         for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
-            for (uint red_packet_index = 0;
-                    red_packet_index < proc_cov_by_bf[r_id]->length_of_list;
-                    red_packet_index++) {
-                if (proc_cov_by_bf[r_id]->redundant_packets[red_packet_index] ==
-                        redundant_packets[r_packet_index]) {
+            for (uint j = 0; j < proc_cov_by_bf[r_id]->length_of_list; j++) {
+                if (proc_cov_by_bf[r_id]->redundant_packets[j] == redundant_packets[i]) {
                     log_debug("found! at %x",
-                            bit_field_by_processor[ r_id].bit_field_addresses[
-                            red_packet_index]);
+                            bit_field_by_processor[r_id].bit_field_addresses[j]);
 
-                    coverage[r_packet_index]->bit_field_addresses[processor_id_index] =
-                            bit_field_by_processor[r_id].bit_field_addresses[red_packet_index];
-                    coverage[r_packet_index]->processor_ids[processor_id_index] =
+                    coverage[i]->bit_field_addresses[processor_idx] =
+                            bit_field_by_processor[r_id].bit_field_addresses[j];
+                    coverage[i]->processor_ids[processor_idx] =
                             bit_field_by_processor[r_id].processor_id;
-                    processor_id_index += 1;
+                    processor_idx += 1;
                 }
             }
         }
 #if 0
         log_info("processor id index = %d and need to fill in %d elements",
-                processor_id_index, n_bf_with_same_r_packets);
+                processor_idx, n_bf_with_same_r_packets);
 #endif
     }
 
@@ -2258,9 +2205,8 @@ bool read_in_bit_fields(void) {
 
     // order the bitfields based off the impact to cores redundant packet
     // processing
-    order_bit_fields_based_on_impact(
-            coverage, proc_cov_by_bf, n_pairs_of_addresses,
-            length_n_redundant_packets);
+    order_bit_fields_based_on_impact(coverage, proc_cov_by_bf,
+            n_pairs_of_addresses, length_n_redundant_packets);
 
     // free the data holders we don't care about now that we've got our
     // sorted bitfields list
@@ -2269,8 +2215,7 @@ bool read_in_bit_fields(void) {
         FREE(cov_element->bit_field_addresses);
         FREE(cov_element->processor_ids);
         FREE(cov_element);
-        _proc_cov_by_bitfield_t* proc_cov_element =
-                proc_cov_by_bf[r_id];
+        _proc_cov_by_bitfield_t* proc_cov_element = proc_cov_by_bf[r_id];
         FREE(proc_cov_element->redundant_packets);
         FREE(proc_cov_element);
     }
@@ -2291,17 +2236,13 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    // will use this many palces. so exrtact at top
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-
     log_info("read in bitfields");
     bool success_reading_in_bit_fields = read_in_bit_fields();
     log_info("finished reading in bitfields");
 
     if (! success_reading_in_bit_fields) {
         log_error("failed to read in bitfields, failing");
-        sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_MALLOC;
-        spin1_exit(0);
+        terminate(EXIT_MALLOC);
     }
 
     log_info("starting the binary search");
@@ -2310,8 +2251,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     if (!success_start_binary_search) {
         log_error("failed to compress the routing table at all. Failing");
-        sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-        spin1_exit(0);
+        terminate(EXIT_FAIL);
     }
 }
 
@@ -2319,7 +2259,7 @@ void start_compression_process(uint unused0, uint unused1) {
 //!  during coding.
 static void initialise_user_register_tracker(void) {
     log_info("set up user register tracker (easier reading)");
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
 
     address_t app_ptr_table = (address_t) this_vcpu_info->user0;
@@ -2344,15 +2284,14 @@ static void initialise_routing_control_flags(void) {
 
 //! \brief get compressor cores
 static bool initialise_compressor_cores(void) {
-    // locate the data point for compressor cores
+    // locate the data point for compressor cores, straight after pair data
     uint32_t n_region_pairs = region_addresses->n_pairs;
-    address_t addrs = (void *) &region_addresses->pairs[n_region_pairs];
-    //uint32_t hop = START_OF_ADDRESSES_DATA + (n_region_pairs * ADDRESS_PAIR_LENGTH);
-
-    log_debug(" n region pairs = %d", n_region_pairs);
+    log_debug("n region pairs = %d", n_region_pairs);
+    compressor_cores_t *compressor_cores = (void *)
+            &region_addresses->pairs[n_region_pairs];
 
     // get n compression cores and update trackers
-    n_compression_cores = addrs[N_COMPRESSOR_CORES];
+    n_compression_cores = compressor_cores->n_cores;
 
     n_available_compression_cores = n_compression_cores;
     log_debug("%d comps cores available", n_available_compression_cores);
@@ -2367,13 +2306,13 @@ static bool initialise_compressor_cores(void) {
 
     for (uint32_t core=0; core < n_compression_cores; core++) {
         log_debug("compressor core id at index %d is %d",
-                core, addrs[START_OF_COMP_CORE_IDS + core]);
+                core, compressor_cores->core_id[core]);
     }
 
     // populate with compressor cores
     log_debug("start populate compression cores");
     for (uint32_t core=0; core < n_compression_cores; core++) {
-        compressor_cores[core] = addrs[START_OF_COMP_CORE_IDS + core];
+        compressor_cores[core] = compressor_cores->core_id[core];
     }
     log_debug("finished populate compression cores");
 
@@ -2449,9 +2388,7 @@ void c_main(void) {
     bool success_init = initialise();
     if (!success_init){
         log_error("failed to init");
-        vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-        sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-        spin1_exit(0);
+        terminate(EXIT_FAIL);
     }
 
     spin1_callback_on(SDP_PACKET_RX, sdp_handler, SDP_PRIORITY);

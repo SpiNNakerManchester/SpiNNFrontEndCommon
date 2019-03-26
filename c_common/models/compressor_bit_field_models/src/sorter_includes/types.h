@@ -10,11 +10,11 @@ typedef enum uncompressed_routing_table_region_elements {
     START_OF_UNCOMPRESSED_ENTRIES = 2
 } uncompressed_routing_table_region_elements;
 
-//! enum for the compressor cores data elements (used for programmer debug)
-typedef enum compressor_core_elements {
-    N_COMPRESSOR_CORES = 0,
-    START_OF_COMP_CORE_IDS = 1
-} compressor_core_elements;
+//! the compressor cores data elements
+typedef struct compressor_cores_t {
+    uint32_t n_cores;
+    uint32_t core_id[];
+} compressor_cores_t;
 
 //! enum mapping of elements in the key to atom mapping
 typedef enum key_to_atom_map_elements {
@@ -50,6 +50,11 @@ typedef enum bit_field_data_elements {
     BIT_FIELD_N_WORDS = 1,
     START_OF_BIT_FIELD_DATA = 2
 } bit_field_data_elements;
+typedef struct bit_field_data_t {
+    uint32_t base_key;
+    uint32_t n_words;
+    uint32_t data[];
+} bit_field_data_t;
 
 //! callback priorities
 typedef enum priorities {
