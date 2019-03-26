@@ -5,7 +5,7 @@
 
 //! \brief the elements in the sdp packet (control for setting off a minimise
 //! attempt)
-typedef struct start_stream_sdp_packet_t{
+typedef struct start_stream_sdp_packet_t {
     address_t address_for_compressed;
     address_t fake_heap_data;
     uint32_t n_sdp_packets_till_delivered;
@@ -49,6 +49,19 @@ typedef enum command_codes_for_sdp_packet {
     COMPRESSION_RESPONSE = 22,
     STOP_COMPRESSION_ATTEMPT = 23
 } command_codes_for_sdp_packet;
+
+//! \brief all the types of SDP messages that we receive, as one
+typedef union {
+    command_codes_for_sdp_packet command;
+    struct {
+        uint32_t command;
+        start_stream_sdp_packet_t msg;
+    } start;
+    struct {
+        uint32_t command;
+        extra_stream_sdp_packet_t msg;
+    } extra;
+} compressor_payload_t;
 
 #define COMMAND_CODE_SIZE_IN_BYTES 4
 
