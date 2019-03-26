@@ -16,16 +16,6 @@ typedef enum compressor_core_elements {
     START_OF_COMP_CORE_IDS = 1
 } compressor_core_elements;
 
-//! enum mapping user register to data that's in there (only used by
-//! programmer for documentation)
-typedef enum user_register_maps {
-    APPLICATION_POINTER_TABLE = 0,
-    UNCOMP_ROUTER_TABLE = 1,
-    REGION_ADDRESSES = 2,
-    USABLE_SDRAM_REGIONS = 3,
-    USER_REGISTER_LENGTH = 4
-} user_register_maps;
-
 //! enum mapping of elements in the key to atom mapping
 typedef enum key_to_atom_map_elements {
     SRC_BASE_KEY = 0,

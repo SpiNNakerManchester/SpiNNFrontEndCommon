@@ -1,6 +1,7 @@
 #ifndef __BIT_FIELD_READER_H__
 #define __BIT_FIELD_READER_H__
 
+#include "types.h"
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
 //! \return bool that states if it succeeded or not.
@@ -8,8 +9,7 @@ bool read_in_bit_fields(void) {
     // count how many bitfields there are in total
     uint position_in_region_data = 0;
     n_bf_addresses = 0;
-    uint32_t n_pairs_of_addresses =
-        user_register_content[REGION_ADDRESSES][N_PAIRS];
+    uint32_t n_pairs_of_addresses = region_addresses[N_PAIRS];
     position_in_region_data = START_OF_ADDRESSES_DATA;
     log_info("n pairs of addresses = %d", n_pairs_of_addresses);
 
@@ -46,17 +46,15 @@ bool read_in_bit_fields(void) {
 
         // track processor id
         bit_field_by_processor[r_id].processor_id =
-            user_register_content[REGION_ADDRESSES][
-                position_in_region_data + PROCESSOR_ID];
+                region_addresses[position_in_region_data + PROCESSOR_ID];
         proc_cov_by_bf[r_id]->processor_id =
-            user_register_content[REGION_ADDRESSES][
-                position_in_region_data + PROCESSOR_ID];
+                region_addresses[position_in_region_data + PROCESSOR_ID];
         log_info("bit_field_by_processor in region %d processor id = %d",
                  r_id, bit_field_by_processor[r_id].processor_id);
 
         // locate data for malloc memory calcs
-        address_t bit_field_address = (address_t) user_register_content[
-            REGION_ADDRESSES][position_in_region_data + BITFIELD_REGION];
+        address_t bit_field_address = (address_t)
+                region_addresses[position_in_region_data + BITFIELD_REGION];
         log_info("bit_field_region = %x", bit_field_address);
         position_in_region_data += ADDRESS_PAIR_LENGTH;
 
@@ -158,9 +156,8 @@ bool read_in_bit_fields(void) {
     for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++){
         // cycle through the bitfield registers again to get n bitfields per
         // core
-        address_t bit_field_address =
-            (address_t) user_register_content[REGION_ADDRESSES][
-                position_in_region_data + BITFIELD_REGION];
+        address_t bit_field_address = (address_t)
+                region_addresses[position_in_region_data + BITFIELD_REGION];
         position_in_region_data += ADDRESS_PAIR_LENGTH;
         uint32_t core_n_bit_fields = bit_field_address[N_BIT_FIELDS];
 

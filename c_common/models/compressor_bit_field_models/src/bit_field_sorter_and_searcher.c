@@ -56,7 +56,9 @@ uint32_t time_per_iteration = 0;
 uint32_t finish_compression_flag = 0;
 
 //! easier programming tracking of the user registers
-address_t user_register_content[USER_REGISTER_LENGTH];
+uncompressed_table_region_data_t *uncompressed_router_table;
+address_t region_addresses;
+void *usable_sdram_regions;
 
 //! best routing table position in the search
 uint32_t best_search_point = 0;
@@ -206,14 +208,14 @@ uint32_t locate_key_atom_map(uint32_t key) {
     // locate n address pairs
     uint32_t position_in_address_region = 0;
     uint32_t n_address_pairs =
-            user_register_content[REGION_ADDRESSES][position_in_address_region + N_PAIRS];
+            region_addresses[position_in_address_region + N_PAIRS];
 
     // cycle through key to atom regions to locate key
     position_in_address_region += START_OF_ADDRESSES_DATA;
     for (uint32_t r_id = 0; r_id < n_address_pairs; r_id++){
         // get key address region
-        address_t key_atom_sdram_address =(address_t)
-                user_register_content[REGION_ADDRESSES][position_in_address_region + KEY_TO_ATOM_REGION];
+        address_t key_atom_sdram_address = (address_t)
+                region_addresses[position_in_address_region + KEY_TO_ATOM_REGION];
 
         // read how many keys atom pairs there are
         uint32_t position_ka_pair = 0;
@@ -329,7 +331,7 @@ void extract_and_remove_entry_from_table(
 //! \return the processor id that this bitfield address is associated.
 uint32_t locate_processor_id_from_bit_field_address(
         address_t bit_field_address) {
-    uint32_t n_pairs = user_register_content[REGION_ADDRESSES][N_PAIRS];
+    uint32_t n_pairs = region_addresses[N_PAIRS];
     for (uint32_t bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
         _bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
         for (uint32_t addr_index = 0; addr_index < element.length_of_list;
@@ -553,11 +555,8 @@ bool generate_rt_from_bit_field(
 //! \brief clones the un compressed routing table, to another sdram location
 //! \return: address of new clone, or null if it failed to clone
 address_t clone_un_compressed_routing_table(void) {
-    uncompressed_table_region_data_t *region =
-            (uncompressed_table_region_data_t *)
-            user_register_content[UNCOMP_ROUTER_TABLE];
     uint32_t sdram_used = routing_table_sdram_size_of_table(
-            region->uncompressed_table.size);
+            uncompressed_router_table->uncompressed_table.size);
 
     // allocate sdram for the clone
     address_t where_was_cloned = MALLOC_SDRAM(sdram_used);
@@ -568,8 +567,8 @@ address_t clone_un_compressed_routing_table(void) {
     }
 
     // copy over data
-    sark_mem_cpy(
-            where_was_cloned, &region->uncompressed_table.size, sdram_used);
+    sark_mem_cpy(where_was_cloned,
+            &uncompressed_router_table->uncompressed_table.size, sdram_used);
     return where_was_cloned;
 }
 
@@ -825,7 +824,7 @@ void set_up_first_packet(
     // fill in
     data->n_sdp_packets_till_delivered = total_packets;
     data->address_for_compressed = compressed_address;
-    data->fake_heap_data = user_register_content[USABLE_SDRAM_REGIONS];
+    data->fake_heap_data = usable_sdram_regions;
     data->total_n_tables = n_rt_addresses;
     data->n_tables_in_packet = n_addresses_this_message;
 
@@ -1054,8 +1053,7 @@ bool start_binary_search(void) {
 bool sort_sorted_to_cores(
         proc_bit_field_keys_t* sorted_bf_by_processor) {
     sorted_bf_by_processor = MALLOC(
-            user_register_content[REGION_ADDRESSES][N_PAIRS] *
-            sizeof(proc_bit_field_keys_t));
+            region_addresses[N_PAIRS] * sizeof(proc_bit_field_keys_t));
     if (sorted_bf_by_processor == NULL) {
         log_error("failed to allocate memory for the sorting of bitfield to keys");
         return false;
@@ -1064,12 +1062,10 @@ bool sort_sorted_to_cores(
     //locate how many bitfields in the search space accepted that are of a
     // given core.
     uint position_in_region_data = START_OF_ADDRESSES_DATA;
-    for (uint32_t r_id = 0;
-            r_id < user_register_content[REGION_ADDRESSES][N_PAIRS];
-            r_id++) {
+    for (uint32_t r_id = 0; r_id < region_addresses[N_PAIRS]; r_id++) {
         // locate processor id for this region
-        uint32_t region_proc_id = user_register_content[
-                REGION_ADDRESSES][position_in_region_data + PROCESSOR_ID];
+        uint32_t region_proc_id =
+                region_addresses[position_in_region_data + PROCESSOR_ID];
         sorted_bf_by_processor[r_id].processor_id = region_proc_id;
 
         // count entries
@@ -1118,14 +1114,12 @@ bool sort_sorted_to_cores(
 address_t find_processor_bit_field_region(uint32_t processor_id) {
     // find the right bitfield region
     uint position_in_region_data = START_OF_ADDRESSES_DATA;
-    for (uint32_t r_id = 0;
-            r_id < user_register_content[REGION_ADDRESSES][N_PAIRS];
-            r_id ++) {
-        uint32_t region_proc_id = user_register_content[
-                REGION_ADDRESSES][position_in_region_data + PROCESSOR_ID];
+    for (uint32_t r_id = 0; r_id < region_addresses[N_PAIRS]; r_id++) {
+        uint32_t region_proc_id =
+                region_addresses[position_in_region_data + PROCESSOR_ID];
         if (region_proc_id == processor_id) {
-            return (address_t) user_register_content[REGION_ADDRESSES][
-                    position_in_region_data + BITFIELD_REGION];
+            return (address_t)
+                    region_addresses[position_in_region_data + BITFIELD_REGION];
         }
         position_in_region_data += ADDRESS_PAIR_LENGTH;
     }
@@ -1169,9 +1163,7 @@ bool remove_merged_bitfields_from_cores(void) {
 
     // iterate though the cores sorted, and remove said bitfields from its
     // region
-    for (uint32_t core_index = 0;
-            core_index < user_register_content[REGION_ADDRESSES][N_PAIRS];
-            core_index++) {
+    for (uint32_t core_index = 0; core_index < region_addresses[N_PAIRS]; core_index++) {
         uint32_t proc_id = sorted_bf_key_proc[core_index].processor_id;
         address_t bit_field_region = find_processor_bit_field_region(proc_id);
 
@@ -1224,9 +1216,7 @@ bool remove_merged_bitfields_from_cores(void) {
     }
 
     // free items
-    for (uint32_t core_index = 0;
-            core_index < user_register_content[REGION_ADDRESSES][N_PAIRS];
-            core_index++) {
+    for (uint32_t core_index = 0; core_index < region_addresses[N_PAIRS]; core_index++) {
         if (sorted_bf_key_proc[core_index].length_of_list != 0) {
             FREE(sorted_bf_key_proc[core_index].master_pop_keys);
         }
@@ -1528,8 +1518,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
             uint32_t best_mid_point_tested = best_mid_point_to_date();
 
             // check if current reach is enough to count as a success
-            if ((n_bf_addresses / best_mid_point_tested) <
-                    user_register_content[REGION_ADDRESSES][THRESHOLD]) {
+            if ((n_bf_addresses / best_mid_point_tested) < region_addresses[THRESHOLD]) {
                 log_error("failed to compress enough bitfields for threshold.");
                 vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
                 sark_virtual_processor_info[spin1_get_core_id()].user1 =
@@ -2019,8 +2008,7 @@ bool read_in_bit_fields(void) {
     // count how many bitfields there are in total
     uint position_in_region_data = 0;
     n_bf_addresses = 0;
-    uint32_t n_pairs_of_addresses =
-            user_register_content[REGION_ADDRESSES][N_PAIRS];
+    uint32_t n_pairs_of_addresses = region_addresses[N_PAIRS];
     position_in_region_data = START_OF_ADDRESSES_DATA;
     log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
 
@@ -2055,17 +2043,15 @@ bool read_in_bit_fields(void) {
 
         // track processor id
         bit_field_by_processor[r_id].processor_id =
-                user_register_content[REGION_ADDRESSES][
-                        position_in_region_data + PROCESSOR_ID];
+                region_addresses[position_in_region_data + PROCESSOR_ID];
         proc_cov_by_bf[r_id]->processor_id =
-                user_register_content[REGION_ADDRESSES][
-                        position_in_region_data + PROCESSOR_ID];
+                region_addresses[position_in_region_data + PROCESSOR_ID];
         log_debug("bit_field_by_processor in region %d processor id = %d",
                 r_id, bit_field_by_processor[r_id].processor_id);
 
         // locate data for malloc memory calcs
-        address_t bit_field_address = (address_t) user_register_content[
-                REGION_ADDRESSES][position_in_region_data + BITFIELD_REGION];
+        address_t bit_field_address = (address_t)
+                region_addresses[position_in_region_data + BITFIELD_REGION];
         log_debug("bit_field_region = %x", bit_field_address);
         position_in_region_data += ADDRESS_PAIR_LENGTH;
 
@@ -2169,8 +2155,7 @@ bool read_in_bit_fields(void) {
         // cycle through the bitfield registers again to get n bitfields per
         // core
         address_t bit_field_address = (address_t)
-                user_register_content[REGION_ADDRESSES][
-                        position_in_region_data + BITFIELD_REGION];
+                region_addresses[position_in_region_data + BITFIELD_REGION];
         position_in_region_data += ADDRESS_PAIR_LENGTH;
         uint32_t core_n_bit_fields = bit_field_address[N_BIT_FIELDS];
 
@@ -2352,47 +2337,41 @@ void start_compression_process(uint unused0, uint unused1) {
 
 //! \brief sets up a tracker for the user registers so that its easier to use
 //!  during coding.
-void initialise_user_register_tracker(){
+static void initialise_user_register_tracker(void) {
     log_info("set up user register tracker (easier reading)");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
 
-    user_register_content[APPLICATION_POINTER_TABLE] = (address_t) this_vcpu_info->user0;
-    user_register_content[UNCOMP_ROUTER_TABLE] = (address_t) this_vcpu_info->user1;
-    user_register_content[REGION_ADDRESSES] = (address_t) this_vcpu_info->user2;
-    user_register_content[USABLE_SDRAM_REGIONS] = (address_t) this_vcpu_info->user3;
+    address_t app_ptr_table = (address_t) this_vcpu_info->user0;
+    uncompressed_router_table = (void *) this_vcpu_info->user1;
+    region_addresses = (address_t) this_vcpu_info->user2;
+    usable_sdram_regions = (void *) this_vcpu_info->user3;
 
     log_info("finished setting up register tracker: \n\n"
             "user0 = %d\n user1 = %d\n user2 = %d\n user3 = %d\n",
-            user_register_content[APPLICATION_POINTER_TABLE],
-            user_register_content[UNCOMP_ROUTER_TABLE],
-            user_register_content[REGION_ADDRESSES],
-            user_register_content[USABLE_SDRAM_REGIONS]);
+            app_ptr_table, uncompressed_router_table,
+            region_addresses, usable_sdram_regions);
 }
 
 //! \brief reads in router table setup params
-void initialise_routing_control_flags(){
-    uncompressed_table_region_data_t *uncompressed = (uncompressed_table_region_data_t *)
-            user_register_content[UNCOMP_ROUTER_TABLE];
-
-    app_id = uncompressed->app_id;
+static void initialise_routing_control_flags(void) {
+    app_id = uncompressed_router_table->app_id;
     total_entries_in_uncompressed_router_table =
-            uncompressed->uncompressed_table.size;
+            uncompressed_router_table->uncompressed_table.size;
     log_info("app id %d, uncompress total entries %d",
             app_id, total_entries_in_uncompressed_router_table);
 }
 
 //! \brief get compressor cores
-bool initialise_compressor_cores(){
+static bool initialise_compressor_cores(void) {
     // locate the data point for compressor cores
-    uint32_t n_region_pairs = user_register_content[REGION_ADDRESSES][N_PAIRS];
+    uint32_t n_region_pairs = region_addresses[N_PAIRS];
     uint32_t hop = START_OF_ADDRESSES_DATA + (n_region_pairs * ADDRESS_PAIR_LENGTH);
 
     log_debug(" n region pairs = %d, hop = %d", n_region_pairs, hop);
 
     // get n compression cores and update trackers
-    n_compression_cores =
-            user_register_content[REGION_ADDRESSES][hop + N_COMPRESSOR_CORES];
+    n_compression_cores = region_addresses[hop + N_COMPRESSOR_CORES];
 
     n_available_compression_cores = n_compression_cores;
     log_debug("%d comps cores available", n_available_compression_cores);
@@ -2408,15 +2387,15 @@ bool initialise_compressor_cores(){
     for (uint32_t core=0; core < n_compression_cores; core++) {
         log_debug("compressor core id at index %d is %d",
                 core,
-                user_register_content[REGION_ADDRESSES][
-                        hop + N_COMPRESSOR_CORES + START_OF_COMP_CORE_IDS + core]);
+                region_addresses[
+                        hop + START_OF_COMP_CORE_IDS + core]);
     }
 
     // populate with compressor cores
     log_debug("start populate compression cores");
     for (uint32_t core=0; core < n_compression_cores; core++) {
-        compressor_cores[core] = user_register_content[REGION_ADDRESSES][
-                hop + N_COMPRESSOR_CORES + START_OF_COMP_CORE_IDS + core];
+        compressor_cores[core] =
+                region_addresses[hop + START_OF_COMP_CORE_IDS + core];
     }
     log_debug("finished populate compression cores");
 
@@ -2454,7 +2433,7 @@ bool initialise_compressor_cores(){
 }
 
 //! \brief the callback for setting off the router compressor
-bool initialise(void) {
+static bool initialise(void) {
     log_info("Setting up stuff to allow bitfield comp control class to occur.");
 
     // Get pointer to 1st virtual processor info struct in SRAM
@@ -2482,7 +2461,7 @@ bool initialise(void) {
 
     // build the fake heap for allocating memory
     log_info("setting up fake heap for sdram usage");
-    platform_new_heap_creation(user_register_content[USABLE_SDRAM_REGIONS]);
+    platform_new_heap_creation(usable_sdram_regions);
     log_info("finished setting up fake heap for sdram usage");
     return true;
 }
