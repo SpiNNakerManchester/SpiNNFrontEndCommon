@@ -323,18 +323,18 @@ void extract_and_remove_entry_from_table(
 //! starts
 //! \return the processor id that this bitfield address is associated.
 static inline uint32_t locate_processor_id_from_bit_field_address(
-        bit_field_data_t *bit_field_address) {
+        bit_field_data_t *bit_field) {
     uint32_t n_pairs = region_addresses->n_pairs;
     for (uint32_t bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
         _bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
         for (uint32_t i = 0; i < element.length_of_list; i++) {
-            if (element.bit_field_addresses[i] == bit_field_address) {
+            if (element.bit_field_addresses[i] == bit_field) {
                 return element.processor_id;
             }
         }
     }
     log_error("failed to find the bitfield address %x anywhere.",
-            bit_field_address);
+            bit_field);
     terminate(EXIT_FAIL);
     return 0;
 }
@@ -1087,7 +1087,8 @@ bool sort_sorted_to_cores(
 //! \param[in] processor_id: the processor id to find the region id in the
 //! addresses
 //! \return the address in the addresses region for the processor id
-static inline address_t find_processor_bit_field_region(uint32_t processor_id) {
+static inline bit_field_top_t *find_processor_bit_field_region(
+        uint32_t processor_id) {
     // find the right bitfield region
     for (uint32_t r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
         uint32_t region_proc_id = region_addresses->pairs[r_id].processor;
@@ -1118,6 +1119,17 @@ bool has_entry_in_sorted_keys(
     return false;
 }
 
+//! \brief  how to get from one bitfield to the next one, packed immediately
+//!         after
+//! \param[in] bit_field: pointer to the current bitfield
+//! \param[in] entry_size: size of the bitfield; the contents of the n_words
+//!            field (extracted for efficiency)
+//! \return pointer to the next bitfield
+static inline bit_field_data_t *next_bitfield(
+        bit_field_data_t *bit_field, uint32_t entry_size) {
+    return (bit_field_data_t *) &bit_field->data[entry_size];
+}
+
 //! \brief removes the merged bitfields from the application cores bitfield
 //!        regions
 //! \return bool if was successful or not
@@ -1135,7 +1147,7 @@ bool remove_merged_bitfields_from_cores(void) {
     // region
     for (uint32_t core_index = 0; core_index < region_addresses->n_pairs; core_index++) {
         uint32_t proc_id = sorted_bf_key_proc[core_index].processor_id;
-        bit_field_top_t *bit_field_region = (bit_field_top_t *)
+        bit_field_top_t *bit_field_region =
                 find_processor_bit_field_region(proc_id);
 
         // iterate though the bitfield region looking for bitfields with
@@ -1166,9 +1178,9 @@ bool remove_merged_bitfields_from_cores(void) {
                 }
 
                 // update pointers
-                write_index = (bit_field_data_t *) &write_index->data[step_size];
+                write_index = next_bitfield(write_index, step_size);
             }
-            read_index = (bit_field_data_t *) &read_index->data[step_size];
+            read_index = next_bitfield(read_index, step_size);
         }
     }
 
@@ -1903,7 +1915,7 @@ bool set_off_no_bit_field_compression(void) {
 
     // set up the bitfield routing tables so that it'll map down below
     log_info("allocating bf routing tables");
-    bit_field_routing_tables = MALLOC(sizeof(address_t*));
+    bit_field_routing_tables = MALLOC(1 * sizeof(address_t));
     log_info("malloc finished");
     if (bit_field_routing_tables == NULL) {
         log_error("failed to allocate memory for the bit_field_routing tables");
@@ -1946,9 +1958,9 @@ bool read_in_bit_fields(void) {
     }
 
     // build processor coverage by bitfield
-    _proc_cov_by_bitfield_t** proc_cov_by_bf =
+    _proc_cov_by_bitfield_t **proc_cov_by_bf =
             MALLOC(n_pairs_of_addresses * sizeof(_proc_cov_by_bitfield_t*));
-    if (proc_cov_by_bf == NULL){
+    if (proc_cov_by_bf == NULL) {
         log_error("failed to allocate memory for processor coverage by "
                 "bitfield, if it fails here. might as well give up");
         return false;
@@ -1973,8 +1985,8 @@ bool read_in_bit_fields(void) {
                 r_id, bit_field_by_processor[r_id].processor_id);
 
         // locate data for malloc memory calcs
-        bit_field_data_t *bit_field = (bit_field_data_t *)
-                region_addresses->pairs[r_id].bitfield;
+        bit_field_data_t *bit_field =
+                &region_addresses->pairs[r_id].bitfield->bitfields[0];
         log_debug("bit_field_region = %x", bit_field);
 
         log_debug("safety check. bit_field key is %d",
@@ -2009,23 +2021,21 @@ bool read_in_bit_fields(void) {
 
         // populate tables: 1 for addresses where each bitfield component starts
         //                  2 n redundant packets
-        for (uint32_t bit_field_id = 0; bit_field_id < core_n_bit_fields;
-                bit_field_id++) {
-            bit_field_by_processor[r_id].bit_field_addresses[bit_field_id] =
+        for (uint32_t i = 0; i < core_n_bit_fields; i++) {
+            bit_field_by_processor[r_id].bit_field_addresses[i] =
                     (address_t) bit_field->data;
             log_debug("bitfield at region %d at index %d is at address %x",
-                    r_id, bit_field_id,
-                    bit_field_by_processor[r_id].bit_field_addresses[bit_field_id]);
+                    r_id, i,
+                    bit_field_by_processor[r_id].bit_field_addresses[i]);
 
             uint32_t n_redundant_packets = detect_redundant_packet_count(
                     (bit_field_data_t *) bit_field->data);
-            proc_cov_by_bf[r_id]->redundant_packets[bit_field_id] =
-                    n_redundant_packets;
+            proc_cov_by_bf[r_id]->redundant_packets[i] = n_redundant_packets;
             log_debug("prov cov by bitfield for region %d, redundant packets "
                     "at index %d, has n redundant packets of %d",
-                    r_id, bit_field_id, n_redundant_packets);
+                    r_id, i, n_redundant_packets);
 
-            bit_field = (bit_field_data_t *) &bit_field->data[bit_field->n_words];
+            bit_field = next_bitfield(bit_field, bit_field->n_words);
         }
     }
 
@@ -2070,15 +2080,14 @@ bool read_in_bit_fields(void) {
 
     // filter out duplicates in the n redundant packets
     for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
-        // cycle through the bitfield registers again to get n bitfields per
+        // cycle through the bitfield registers again to get num bitfields per
         // core
-        address_t bit_field_address = region_addresses->pairs[r_id].bitfield;
-        uint32_t core_n_bit_fields = bit_field_address[N_BIT_FIELDS];
+        uint32_t core_n_bit_fields =
+                region_addresses->pairs[r_id].bitfield->n_bitfields;
 
         // check that each bitfield redundant packets are unqiue and add to set
-        for (uint32_t bit_field_id = 0; bit_field_id < core_n_bit_fields;
-                bit_field_id++) {
-            uint x_packets = proc_cov_by_bf[r_id]->redundant_packets[bit_field_id];
+        for (uint32_t i = 0; i < core_n_bit_fields; i++) {
+            uint x_packets = proc_cov_by_bf[r_id]->redundant_packets[i];
             // if not a duplicate, add to list and update size
             if (!is_redundant(length_n_redundant_packets, redundant_packets,
                     x_packets)) {

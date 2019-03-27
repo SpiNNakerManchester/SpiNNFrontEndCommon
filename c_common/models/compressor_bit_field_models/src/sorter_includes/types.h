@@ -74,12 +74,14 @@ typedef enum priorities {
     SDP_PRIORITY = -1
 } priorities;
 
+//! a single mapping in the addresses area
 typedef struct pairs_t {
-    address_t bitfield;
+    bit_field_top_t *bitfield;
     key_atom_map_t *key_atom;
     uint32_t processor;
 } pairs_t;
 
+//! top-level structure in the addresses area
 typedef struct region_addresses_t {
     uint32_t threshold;
     uint32_t n_pairs;
