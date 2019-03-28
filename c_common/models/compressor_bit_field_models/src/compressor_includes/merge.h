@@ -51,14 +51,11 @@ static inline void merge_delete(merge_t* m){
 
 
 // Add an entry to the merge
-static inline void merge_add(
-        merge_t* m, unsigned int i, table_t** routing_tables,
-        uint32_t n_tables){
+static inline void merge_add(merge_t* m, unsigned int i){
     // Add the entry to the bit set contained in the merge
     if (bit_set_add(&m->entries, i)){
 
-        entry_t* entry = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, i);
+        entry_t* entry = routing_table_sdram_stores_get_entry(i);
 
         // Get the key_mask
         if (m->key_mask.key == FULL && m->key_mask.mask == EMPTY){
@@ -84,9 +81,7 @@ static inline bool merge_contains(merge_t* m, unsigned int i){
 
 
 // Remove an entry from the merge
-static inline void merge_remove(
-        merge_t* m, unsigned int i, table_t** routing_tables,
-        uint32_t n_tables){
+static inline void merge_remove(merge_t* m, unsigned int i){
     // Remove the entry from the bit_set contained in the merge
     if (bit_set_remove(&(m->entries), i)){
         // Rebuild the key and mask from scratch
@@ -94,11 +89,8 @@ static inline void merge_remove(
         m->source = INIT_SOURCE;
         m->key_mask.key  = FULL;
         m->key_mask.mask = EMPTY;
-        for (unsigned int j = 0;
-                j < routing_table_sdram_get_n_entries(routing_tables, n_tables);
-                j++){
-            entry_t* e = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, j);
+        for (unsigned int j = 0; j < routing_table_sdram_get_n_entries(); j++){
+            entry_t* e = routing_table_sdram_stores_get_entry(j);
 
             if (bit_set_contains(&(m->entries), j)){
                 m->route |= e->route;

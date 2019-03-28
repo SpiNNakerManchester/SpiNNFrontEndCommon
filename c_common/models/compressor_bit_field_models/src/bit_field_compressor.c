@@ -48,17 +48,14 @@ bool compress_only_when_needed = false;
 //! control flag for compressing as much as possible
 bool compress_as_much_as_possible = false;
 
+//! control flag if the routing tables are able to be stored in somewhere.
+bool storable_routing_tables = false;
+
 //! \brief the sdram location to write the compressed router table into
 address_t sdram_loc_for_compressed_entries;
 
-//! \brief store for addresses for routing entries in sdram
-table_t** routing_tables;
-
 //! how many packets waiting for
 uint32_t number_of_packets_waiting_for = 0;
-
-//! the number of addresses currently stored
-uint32_t n_tables = 0;
 
 //! \brief the control core id for sending responses to
 uint32_t control_core_id = 1;
@@ -127,15 +124,14 @@ static inline void return_failed_by_space_response_message(){
 //! location
 //! \returns bool if was successful or now
 static inline bool store_into_compressed_address(){
-    if (routing_table_sdram_get_n_entries(
-            routing_tables, n_tables) > TARGET_LENGTH){
+    if (routing_table_sdram_get_n_entries() > TARGET_LENGTH){
         log_error("not enough space in routing table");
         return false;
     }
     else{
         log_info("starting store of %d tables", n_tables);
         bool success = routing_table_sdram_store(
-            routing_tables, n_tables, sdram_loc_for_compressed_entries);
+            sdram_loc_for_compressed_entries);
         log_info("finished store");
         if (!success){
             log_error("failed to store entries into sdram. ");
@@ -166,7 +162,7 @@ static inline void start_compression_process(uint unused0, uint unused1){
 
     // run compression
     bool success = oc_minimise(
-        routing_tables, n_tables, TARGET_LENGTH, &aliases, &failed_by_malloc,
+        TARGET_LENGTH, &aliases, &failed_by_malloc,
         &finished_by_compressor_force, &timer_for_compression_attempt,
         &finish_compression_flag, compress_only_when_needed,
         compress_as_much_as_possible);
@@ -183,6 +179,7 @@ static inline void start_compression_process(uint unused0, uint unused1){
         else{
             return_failed_by_space_response_message();
         }
+        routing_table_reset();
     }
     else{  // if not a success, could be one of 4 states
         if (failed_by_malloc){  // malloc failed somewhere
@@ -208,27 +205,14 @@ static inline void start_compression_process(uint unused0, uint unused1){
 
 //! \brief takes a array of tables from a packet and puts them into the dtcm
 //! store of routing tables based off a given offset
-//! \param[in] offset_index: where in the dtcm array to start from
-//! \param[in] routing_tables: the dtcm array of the routing tables
 //! \param[in] n_tables_in_packet: the number of tables in packet to pull
 //! \param[in] tables: the tables from the packet.
-void store_info_table_store(
-        int offset_index, table_t** routing_tables, int n_tables_in_packet,
-        address_t tables[]){
+void store_info_table_store(int n_tables_in_packet, address_t tables[]){
     for(int rt_index = 0; rt_index < n_tables_in_packet; rt_index++){
-
-        // store in right place
-        routing_tables[rt_index + offset_index] = (table_t*) tables[rt_index];
-
-        // if this is the case, its a bloody fuck up currently
-        if (tables[rt_index][0] > 256){
-            log_info(
-                "routing table %d address is %x",
-                rt_index, tables[rt_index]);
-            log_info(
-                "routing table %d n entries is %d",
-                rt_index, tables[rt_index][0]);
-        }
+        log_info("address of table is %x",  tables[rt_index]);
+        routing_tables_store_routing_table((table_t*) tables[rt_index]);
+        
+        log_info("stored table with %d entries", tables[rt_index][0]);
     }
 }
 
@@ -253,7 +237,7 @@ void _sdp_handler(uint mailbox, uint port) {
         if (msg->data[COMMAND_CODE] == START_DATA_STREAM){
             // update response tracker
             sent_force_ack = false;
-            n_tables = 0;
+            routing_table_reset();
 
             // process packet
             start_stream_sdp_packet_t* first_command_packet =
@@ -274,53 +258,53 @@ void _sdp_handler(uint mailbox, uint port) {
                 first_command_packet->n_sdp_packets_till_delivered;
     
             number_of_packets_waiting_for -= 1;
-    
-            // set up addresses data holder
+
             log_info(
-                "allocating %d bytes for %d total n tables",
-                first_command_packet->total_n_tables * sizeof(table_t**),
+                "there are a total tables of %d",
                 first_command_packet->total_n_tables);
-            routing_tables = MALLOC(
-                first_command_packet->total_n_tables * sizeof(table_t**));
-    
-            if (routing_tables == NULL){
+
+            storable_routing_tables = routing_tables_init(
+                first_command_packet->total_n_tables);
+            if (!storable_routing_tables){
                 log_error(
-                    "failed to allocate memory for holding the addresses "
-                    "locations");
+                    "failed to allocate memory for routing table.h state");
                 sark_msg_free((sdp_msg_t*) msg);
                 return_malloc_response_message();
             }
             else{
-    
                 // store this set into the store
                 log_info("store routing table addresses into store");
                 log_info(
                     "there are %d addresses in packet",
                     first_command_packet->n_tables_in_packet);
+                for (int index = 0; index <
+                        first_command_packet->n_tables_in_packet;
+                        index++){
+                    log_info(
+                        "address is %x for %d",
+                        first_command_packet->tables[index], index);
+                }
                 store_info_table_store(
-                    n_tables, routing_tables,
                     first_command_packet->n_tables_in_packet,
                     first_command_packet->tables);
 
                 // keep tracker updated
-                n_tables += first_command_packet->n_tables_in_packet;
                 log_info(
                     "finished storing start packet of routing table "
                     "address into store");
-    
+
                 // if no more packets to locate, then start compression process
                 if (number_of_packets_waiting_for == 0){
                     spin1_schedule_callback(
                         start_compression_process, 0, 0,
                         COMPRESSION_START_PRIORITY);
                 }
-    
-                // free message
-                sark_msg_free((sdp_msg_t*) msg);
             }
+            // free message
+            sark_msg_free((sdp_msg_t*) msg);
         }
         else if (msg->data[COMMAND_CODE] == EXTRA_DATA_STREAM){
-            if (routing_tables == NULL){
+            if (!storable_routing_tables){
                 log_error(
                     "ignoring extra routing table addresses packet, as"
                     " cant store them");
@@ -334,14 +318,12 @@ void _sdp_handler(uint mailbox, uint port) {
                 // store this set into the store
                 log_info("store extra routing table addresses into store");
                 store_info_table_store(
-                    n_tables, routing_tables,
                     extra_command_packet->n_tables_in_packet,
                     extra_command_packet->tables);
                 log_info(
                     "finished storing extra routing table address into store");
 
                 // keep tracker updated
-                n_tables += extra_command_packet->n_tables_in_packet;
                 number_of_packets_waiting_for -= 1;
     
                 // if no more packets to locate, then start compression process

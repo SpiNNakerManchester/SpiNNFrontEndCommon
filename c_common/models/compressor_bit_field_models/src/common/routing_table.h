@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <debug.h>
+#include "platform.h"
 
 #ifndef __ROUTING_TABLE_H__
 
@@ -39,6 +40,24 @@ typedef struct table_t{
     // Entries in the table
     entry_t entries[];
 } table_t;
+
+//=============================================================================
+//state for reduction in parameters being passed around
+
+//! \brief store for addresses for routing entries in sdram
+table_t** routing_tables;
+
+//! \brief store of low atom to each table index, to reduce sdram reads
+int* table_lo_entry;
+
+//! \brief low entry tracker for above list.
+int current_low_entry = 0;
+
+//! the number of addresses currently stored
+int n_tables = 0;
+
+//! current filled n tables
+int current_n_tables = 0;
 
 //! \brief Get a mask of the Xs in a key_mask
 //! \param[in] km: the key mask to get as xs
@@ -79,18 +98,115 @@ static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b){
     return c;
 }
 
+//! \brief hands back total n tables
+//! \return total n tables.
+int routing_tables_n_tables(){
+    return n_tables;
+}
+
+//! \brief resets a routing table set
+void routing_table_reset(){
+    log_info("have reset!");
+    n_tables = 0;
+    current_n_tables = 0;
+    current_low_entry = 0;
+    if(routing_tables != NULL){
+        FREE(routing_tables);
+        routing_tables = NULL;
+    }
+    if(table_lo_entry != NULL){
+        FREE(table_lo_entry);
+        table_lo_entry = NULL;
+    }
+}
+
+//! \brief stores a table and metadata into state
+//! \param[in]
+static inline void routing_tables_store_routing_table(table_t* table){
+    // store table
+    routing_tables[current_n_tables] = table;
+    // store low entry tracker (reduces sdram requirements)
+    table_lo_entry[current_n_tables] = current_low_entry;
+
+    // update current n tables.
+    current_n_tables += 1;
+    // update low entry
+    current_low_entry += table->size;
+
+    // store what is basically total entries to end of list.
+    table_lo_entry[current_n_tables] = current_low_entry;
+}
+
 //! \brief gets the length of the group of routing tables
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \return the total number of entries over all the tables.
-static inline uint32_t routing_table_sdram_get_n_entries(
-        table_t** routing_tables, uint32_t n_tables){
-    uint32_t current_point_tracking = 0;
-    for (uint32_t rt_index = 0; rt_index < n_tables; rt_index++){
-        // get how many entries are in this block
-        current_point_tracking += routing_tables[rt_index]->size;
+static inline uint32_t routing_table_sdram_get_n_entries(){
+    return table_lo_entry[n_tables];
+}
+
+int binary_search(int min, int max, int entry_id){
+    if (min >= max - 1){
+        return min;
     }
-    return current_point_tracking - 1;
+    int mid_point = (min + max) / 2;
+    if (table_lo_entry[mid_point] <= entry_id &&
+            table_lo_entry[mid_point + 1] > entry_id){
+        return mid_point;
+    }
+    else if (table_lo_entry[mid_point] < entry_id){
+        return binary_search(min, mid_point, entry_id);
+    }
+    else{
+        return binary_search(mid_point, max, entry_id);
+    }
+}
+
+//! \brief finds a router table index from dtcm stuff, to avoid sdram reads
+//! \param[in] the entry id to find the table index of
+//! \return the table index which has this entry
+int find_index_of_table_for_entry(int entry_id){
+    // could do binary search. but start with cyclic
+    if (table_lo_entry[n_tables] == entry_id){
+        return n_tables - 1;
+    }
+    if (entry_id == 0){
+        return 0;
+    }
+
+    return binary_search(0, n_tables, entry_id);
+
+    log_error(
+        "should never get here. If so WTF! was looking for entry %d when there"
+        " are only %d entries", entry_id, routing_table_sdram_get_n_entries());
+    rt_error(RTE_SWERR);
+    return 0;
+}
+
+//! \brief the init for the routing tables
+//! \param[in] total_n_tables: the total tables to be stored
+static inline bool routing_tables_init(int total_n_tables){
+    n_tables = total_n_tables;
+
+    // set up addresses data holder
+    log_info(
+        "allocating %d bytes for %d total n tables",
+        n_tables * sizeof(table_t**), n_tables);
+    routing_tables = MALLOC(n_tables * sizeof(table_t**));
+    table_lo_entry = MALLOC((n_tables + 1) * sizeof(int));
+
+    if (routing_tables == NULL){
+        log_error(
+            "failed to allocate memory for holding the addresses "
+            "locations");
+        return false;
+    }
+    if (table_lo_entry == NULL){
+        log_error(
+            "failed to allocate memory for the holding the low entry");
+        return false;
+    }
+    return true;
 }
 
 //! \brief gets a entry at a given position in the lists of tables in sdram
@@ -100,57 +216,32 @@ static inline uint32_t routing_table_sdram_get_n_entries(
 //! \param[out] entry_to_fill: the pointer to entry struct to fill in data
 //! \return the pointer in sdram to the entry
 static inline entry_t* routing_table_sdram_stores_get_entry(
-        table_t** routing_tables, uint32_t n_tables, uint32_t entry_id_to_find){
-
-    uint32_t current_point_tracking = 0;
-    for (uint32_t rt_index = 0; rt_index < n_tables; rt_index++){
-
-        // get how many entries are in this block
-        uint32_t entries_stored_here = routing_tables[rt_index]->size;
-
-        // determine if the entry is in this table
-        if (current_point_tracking + entries_stored_here > entry_id_to_find){
-            uint32_t entry_index = entry_id_to_find - current_point_tracking;
-            return &routing_tables[rt_index]->entries[entry_index];
-        }
-        else{
-            current_point_tracking += entries_stored_here;
-        }
-    }
-
-    log_error(
-        "should never get here. If so WTF! was looking for entry %d when there"
-        " are only %d entries", entry_id_to_find,
-        routing_table_sdram_get_n_entries(routing_tables, n_tables));
-    rt_error(RTE_SWERR);
-    return NULL;
+        uint32_t entry_id_to_find){
+    int router_index = find_index_of_table_for_entry(entry_id_to_find);
+    int router_offset = entry_id_to_find - table_lo_entry[router_index];
+    return &routing_tables[router_index]->entries[router_offset];
 }
 
 //! \brief stores the routing tables entries into sdram at a specific sdram
 //! address as one big router table
-//! \param[in] routing_tables: the addresses list
-//! \param[in] n_tables: how many in list
 //! \param[in] sdram_address: the location in sdram to write data to
-bool routing_table_sdram_store(
-        table_t** routing_tables, uint32_t n_tables,
-        address_t sdram_loc_for_compressed_entries){
+bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries){
 
     // cast to table struct
     table_t* table_format = (table_t*) sdram_loc_for_compressed_entries;
 
     // locate n entries overall and write to struct
-    uint32_t n_entries = routing_table_sdram_get_n_entries(
-        routing_tables, n_tables);
+    int n_entries = routing_table_sdram_get_n_entries();
     log_debug("compressed entries = %d", n_entries);
     table_format->size = n_entries;
     uint32_t main_entry_index = 0;
 
     // iterate though the entries writing to the struct as we go
     log_debug("start copy over");
-    for (uint32_t rt_index = 0; rt_index < n_tables; rt_index++){
+    for (int rt_index = 0; rt_index < n_tables; rt_index++){
 
         // get how many entries are in this block
-        uint32_t entries_stored_here = routing_tables[rt_index]->size;
+        int entries_stored_here = routing_tables[rt_index]->size;
         log_debug("copying over %d entries", entries_stored_here);
         if(entries_stored_here != 0){
             // take entry and plonk data in right sdram location
@@ -197,22 +288,25 @@ bool routing_table_sdram_store(
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
-void routing_table_remove_from_size(
-        table_t** routing_tables, uint32_t n_tables,
-        int size_to_remove){
+void routing_table_remove_from_size(int size_to_remove){
+    // update dtcm tracker
+    table_lo_entry[n_tables + 1] =
+        table_lo_entry[n_tables + 1] - size_to_remove;
 
     // iterate backwards, as you removing from the bottom, which is the last
     // table upwards
     int rt_index = n_tables;
-    while(size_to_remove != 0 || rt_index >= 0){
+    while(size_to_remove != 0 && rt_index >= 0){
         if (routing_tables[rt_index]->size >= size_to_remove){
             uint32_t diff = routing_tables[rt_index]->size - size_to_remove;
             routing_tables[rt_index]->size = diff;
+            table_lo_entry[rt_index] = diff;
             size_to_remove = 0;
         }
         else{
             size_to_remove -= routing_tables[rt_index]->size;
             routing_tables[rt_index]->size = 0;
+            table_lo_entry[rt_index] = table_lo_entry[n_tables + 1];
         }
         rt_index -= 1;
     }

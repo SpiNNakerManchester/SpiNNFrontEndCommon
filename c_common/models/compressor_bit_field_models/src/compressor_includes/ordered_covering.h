@@ -25,22 +25,17 @@ static inline int merge_goodness(merge_t *merge){
 
 //! \brief Get the index where the routing table entry resulting from a merge
 //! should be inserted.
-//! \param[in/out]  routing_tables: the routing tables in sdram
-//! \param[in] n_tables: the number of routing tables in sdram
 //! \param[in] generality: ??????????
 static inline unsigned int oc_get_insertion_point(
-        table_t** routing_tables, uint32_t n_tables,
         const unsigned int generality){
     // Perform a binary search of the table to find entries of generality - 1
     const unsigned int g_m_1 = generality - 1;
     unsigned int bottom = 0;
-    unsigned int top = routing_table_sdram_get_n_entries(
-        routing_tables, n_tables);
+    unsigned int top = routing_table_sdram_get_n_entries();
     unsigned int pos = top / 2;
 
     // get first entry
-    entry_t* entry = routing_table_sdram_stores_get_entry(
-        routing_tables, n_tables, pos);
+    entry_t* entry = routing_table_sdram_stores_get_entry(pos);
     unsigned int count_xs = key_mask_count_xs(entry->key_mask);
 
     // iterate till found something
@@ -57,19 +52,16 @@ static inline unsigned int oc_get_insertion_point(
         pos = bottom + (top - bottom) / 2;
 
         // update entry and count
-        entry = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, pos);
+        entry = routing_table_sdram_stores_get_entry(pos);
         count_xs = key_mask_count_xs(entry->key_mask);
     }
 
     // Iterate through the table until either the next generality or the end of
     // the table is found.
 
-    while (pos < routing_table_sdram_get_n_entries(
-            routing_tables, n_tables) && count_xs < generality){
+    while (pos < routing_table_sdram_get_n_entries() && count_xs < generality){
         pos++;
-        entry = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, pos);
+        entry = routing_table_sdram_stores_get_entry(pos);
         count_xs = key_mask_count_xs(entry->key_mask);
     }
 
@@ -81,12 +73,8 @@ static inline unsigned int oc_get_insertion_point(
 //! existing entries if they were included in the given merge.
 //! \param[in] merge: the merge to consider
 //! \param[in] min_goodness: ????????
-//! \param[in/out]  routing_tables: the routing tables in sdram
-//! \param[in] n_tables: the number of routing tables in sdram
 //! \return bool flag saying if the table was changed or not
-static inline bool oc_up_check(
-        merge_t *merge, int min_goodness, table_t** routing_tables,
-        uint32_t n_tables){
+static inline bool oc_up_check(merge_t *merge, int min_goodness){
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     // Track whether we remove any entries
@@ -94,15 +82,14 @@ static inline bool oc_up_check(
 
     // Get the point where the merge will be inserted into the table.
     unsigned int generality = key_mask_count_xs(merge->key_mask);
-    unsigned int insertion_index = oc_get_insertion_point(
-        routing_tables, n_tables, generality);
+    unsigned int insertion_index = oc_get_insertion_point(generality);
+    log_info("found insertation index");
 
     // For every entry in the merge check that the entry would not be covered by
     // any existing entries if it were to be merged.
-    for (unsigned int _i = routing_table_sdram_get_n_entries(
-                routing_tables, n_tables),
-            i = routing_table_sdram_get_n_entries(
-                routing_tables, n_tables) - 1;
+
+    for (unsigned int _i = routing_table_sdram_get_n_entries(),
+            i = routing_table_sdram_get_n_entries() - 1;
             _i > 0 && merge_goodness(merge) > min_goodness;
             _i--, i--){
         if (!merge_contains(merge, i)){
@@ -111,14 +98,14 @@ static inline bool oc_up_check(
         }
 
         // Get the key_mask for this entry
-        key_mask_t km = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, i)->key_mask;
+        key_mask_t km = routing_table_sdram_stores_get_entry(i)->key_mask;
 
         // Otherwise look through the table from the insertion point to the
         // current entry position to ensure that nothing covers the merge.
+        log_info("upcheck second for");
         for (unsigned int j = i + 1; j < insertion_index; j++){
-            key_mask_t other_km = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, j)->key_mask;
+            key_mask_t other_km =
+                routing_table_sdram_stores_get_entry(j)->key_mask;
 
             // If the key masks intersect then remove this entry from the merge
             // and recalculate the insertion index.
@@ -128,12 +115,12 @@ static inline bool oc_up_check(
                 changed = true;
 
                 // Remove from the merge
-                merge_remove(merge, i, routing_tables, n_tables);
+                merge_remove(merge, i);
                 generality = key_mask_count_xs(merge->key_mask);
-                insertion_index = oc_get_insertion_point(
-                    routing_tables, n_tables, generality);
+                insertion_index = oc_get_insertion_point(generality);
             }
         }
+        log_info("up check end first loop");
     }
 
     // Completely empty the merge if its goodness drops below the minimum
@@ -185,11 +172,8 @@ static inline void _get_settable(
 //! \param[in] settable: Mask of bits to set
 //! \param[in] to_one:  True if setting to one, otherwise false
 //! \param[in] sets: bitfields of some form
-//! \param[in] routing_tables: the list of routing tables in sdram
-//! \param[in] n_tables: the number of tables
 static inline __sets_t _get_removables(
-        merge_t *m, uint32_t settable, bool to_one, __sets_t sets,
-        table_t** routing_tables, uint32_t n_tables){
+        merge_t *m, uint32_t settable, bool to_one, __sets_t sets){
     // For each bit which we are trying to set while the best set doesn't
     // contain only one entry.
     for (uint32_t bit = (1 << 31); bit > 0 && sets.best->count != 1;
@@ -204,9 +188,7 @@ static inline __sets_t _get_removables(
         // either a X or a 0 or 1 (as specified by `to_one`) to the working set
         // of entries to remove.
         unsigned int entry = 0;
-        for (unsigned int i = 0; i <
-                routing_table_sdram_get_n_entries(routing_tables, n_tables);
-                i++){
+        for (unsigned int i = 0; i < routing_table_sdram_get_n_entries(); i++){
         
             // Skip if this isn't an entry
             if (!merge_contains(m, i)){
@@ -214,8 +196,7 @@ static inline __sets_t _get_removables(
             }
             
             // See if this entry should be removed
-            key_mask_t km = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, i)->key_mask;
+            key_mask_t km = routing_table_sdram_stores_get_entry(i)->key_mask;
             
             // check entry has x or 1 or 0 in this position.
             if (bit & ~km.mask || (!to_one && bit & km.key) ||
@@ -252,12 +233,9 @@ static inline __sets_t _get_removables(
 //! \param[in] min_goodness: ????????
 //! \param[in] a: ????????
 //! \param[out] failed_to_malloc: bool flag saying if it failed due to malloc
-//! \param[in] routing_tables: the list of routing tables in sdram
-//! \param[in] n_tables: the number of tables
 //! \return bool that says if it was successful or not
 static inline bool oc_down_check(
-        merge_t *merge, int min_goodness, aliases_t *a, bool* failed_to_malloc,
-        table_t** routing_tables, uint32_t n_tables){
+        merge_t *merge, int min_goodness, aliases_t *a, bool* failed_to_malloc){
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     while (merge_goodness(merge) > min_goodness){
@@ -276,16 +254,14 @@ static inline bool oc_down_check(
         // Look at every entry between the insertion index and the end of the
         // table to see if there are any entries which could be covered by the
         // entry resulting from the merge.
-        unsigned int insertion_point = oc_get_insertion_point(
-            routing_tables, n_tables, key_mask_count_xs(merge->key_mask));
+        unsigned int insertion_point =
+            oc_get_insertion_point(key_mask_count_xs(merge->key_mask));
 
         for (unsigned int i = insertion_point;
-                i < routing_table_sdram_get_n_entries(
-                    routing_tables, n_tables) && stringency > 0;
+                i < routing_table_sdram_get_n_entries() && stringency > 0;
                 i++){
 
-            key_mask_t km = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, i)->key_mask;
+            key_mask_t km = routing_table_sdram_stores_get_entry(i)->key_mask;
             if (key_mask_intersect(km, merge->key_mask)){
                 if (!aliases_contains(a, km)) {
                     // The entry doesn't contain any aliases so we need to
@@ -375,19 +351,16 @@ static inline bool oc_down_check(
             return false;
         }
 
-        sets = _get_removables(
-            merge, set_to_zero, false, sets, routing_tables, n_tables);
-        sets = _get_removables(
-            merge, set_to_one, true, sets, routing_tables, n_tables);
+        sets = _get_removables(merge, set_to_zero, false, sets);
+        sets = _get_removables(merge, set_to_one, true, sets);
 
         // Remove the specified entries
         unsigned int entry = 0;
-        for (unsigned int i = 0; i <routing_table_sdram_get_n_entries(
-                routing_tables, n_tables); i++){
+        for (unsigned int i = 0; i <routing_table_sdram_get_n_entries(); i++){
             if (merge_contains(merge, i)){
                 if (bit_set_contains(sets.best, entry)){
                     // Remove this entry from the merge
-                    merge_remove(merge, i, routing_tables, n_tables);
+                    merge_remove(merge, i);
                 }
                 entry++;
             }
@@ -411,21 +384,17 @@ static inline bool oc_down_check(
 
 
 //! \brief Get the best merge which can be applied to a routing table
-//! \param[in] routing_tables: the list of routing tables in sdram
-//! \param[in] n_tables: the number of tables
 //! \param[in] aliases: ???????????
 //! \param[in] best: the best merge to find
 //! \param[out] failed_by_malloc: bool flag saying failed by malloc
 //! \return bool saying if successful or not.
 static inline bool oc_get_best_merge(
-        table_t** routing_tables, uint32_t n_tables, aliases_t * aliases,
-        merge_t * best, bool* failed_by_malloc){
+        aliases_t * aliases, merge_t * best, bool* failed_by_malloc){
 
     // Keep track of which entries have been considered as part of merges.
     bit_set_t considered;
-    bool success = bit_set_init(
-        &considered,
-        routing_table_sdram_get_n_entries(routing_tables, n_tables));
+    bool success =
+        bit_set_init(&considered, routing_table_sdram_get_n_entries());
 
     if (!success){
         log_info("failed to initialise the bit_set. throwing response malloc");
@@ -435,8 +404,7 @@ static inline bool oc_get_best_merge(
 
     // Keep track of the current best merge and also provide a working merge
     merge_t working;
-    success = merge_init(
-        best, routing_table_sdram_get_n_entries(routing_tables, n_tables));
+    success = merge_init(best, routing_table_sdram_get_n_entries());
     if (!success){
         log_info("failed to init the merge best. throw response malloc");
         *failed_by_malloc = true;
@@ -448,9 +416,7 @@ static inline bool oc_get_best_merge(
         return false;
     }
 
-    success = merge_init(
-        &working,
-        routing_table_sdram_get_n_entries(routing_tables, n_tables));
+    success = merge_init(&working, routing_table_sdram_get_n_entries());
      if (!success){
         log_info("failed to init the merge working. throw response malloc");
         *failed_by_malloc = true;
@@ -466,9 +432,7 @@ static inline bool oc_get_best_merge(
     // For every entry in the table see with which other entries it could be
     // merged.
     log_info("starting search for merge entry");
-    for (unsigned int i = 0;
-            i < routing_table_sdram_get_n_entries(routing_tables, n_tables);
-            i++){
+    for (unsigned int i = 0; i < routing_table_sdram_get_n_entries(); i++){
 
         // If this entry has already been considered then skip to the next
         if (bit_set_contains(&considered, i)){
@@ -480,32 +444,28 @@ static inline bool oc_get_best_merge(
         merge_clear(&working);
 
         // Add to the merge
-        merge_add(&working, i, routing_tables, n_tables);
+        merge_add(&working, i);
 
         // Mark this entry as considered
         bit_set_add(&considered, i);
 
         // Get the entry
-        entry_t* entry = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, i);
+        entry_t* entry = routing_table_sdram_stores_get_entry(i);
 
         // Try to merge with other entries
         log_info("starting second search at index %d", i);
-        for (unsigned int j = i+1;
-                j < routing_table_sdram_get_n_entries(
-                    routing_tables, n_tables);
+        for (unsigned int j = i+1; j < routing_table_sdram_get_n_entries();
                 j++){
 
             // Get the other entry
-            entry_t* other = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, j);
+            entry_t* other = routing_table_sdram_stores_get_entry(j);
 
             // check if mergable
             if (entry->route == other->route){
 
                 // If the routes are the same then the entries may be merged
                 // Add to the merge
-                merge_add(&working, j, routing_tables, n_tables);
+                merge_add(&working, j);
 
                 // Mark the other entry as considered
                 bit_set_add(&considered, j);
@@ -519,8 +479,7 @@ static inline bool oc_get_best_merge(
 
         // Perform the first down check
         success = oc_down_check(
-            &working, merge_goodness(best), aliases, failed_by_malloc,
-            routing_tables, n_tables);
+            &working, merge_goodness(best), aliases, failed_by_malloc);
         if (!success){
             log_error("failed to down check.");
 
@@ -539,8 +498,7 @@ static inline bool oc_get_best_merge(
         // Perform the up check, seeing if this actually makes a change to the
         // size of the merge.
         log_info("upcheck");
-        if (oc_up_check(
-                &working, merge_goodness(best), routing_tables, n_tables)){
+        if (oc_up_check(&working, merge_goodness(best))){
             if (merge_goodness(&working) <= merge_goodness(best)){
                 continue;
             }
@@ -548,8 +506,7 @@ static inline bool oc_get_best_merge(
             // If the up check did make a change then the down check needs to
             // be run again.
             success = oc_down_check(
-                &working, merge_goodness(best), aliases, failed_by_malloc,
-                routing_tables, n_tables);
+                &working, merge_goodness(best), aliases, failed_by_malloc);
             log_info("finished rerun of down check");
             if (!success){
                 log_error("failed to down check. ");
@@ -586,11 +543,7 @@ static inline bool oc_get_best_merge(
 //! \brief Apply a merge to the table against which it is defined
 //! \param[in] merge: the merge to apply to the routing tables
 //! \param[in] aliases: ??????????????
-//! \param[in] routing_tables: the list of routing tables in sdram
-//! \param[in] n_tables: the number of tables
-static inline void oc_merge_apply(
-        merge_t *merge, aliases_t *aliases, table_t** routing_tables,
-        uint32_t n_tables){
+static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases){
     // Get the new entry
     entry_t new_entry;
     new_entry.key_mask = merge->key_mask;
@@ -598,8 +551,8 @@ static inline void oc_merge_apply(
     new_entry.source = merge->source;
 
     // Get the insertion point for the new entry
-    unsigned int insertion_point = oc_get_insertion_point(
-        routing_tables, n_tables, key_mask_count_xs(merge->key_mask));
+    unsigned int insertion_point =
+        oc_get_insertion_point(key_mask_count_xs(merge->key_mask));
 
     // Keep track of the amount of reduction of the finished table
     int reduced_size = 0;
@@ -612,19 +565,17 @@ static inline void oc_merge_apply(
     // Use two iterators to move through the table copying entries from one
     // position to the other as required.
     uint32_t insert = 0;
-    for (uint32_t remove = 0;
-            remove < routing_table_sdram_get_n_entries(
-                routing_tables, n_tables); remove++){
+    for (uint32_t remove = 0; remove < routing_table_sdram_get_n_entries();
+            remove++){
 
         // Grab the current entry before we possibly overwrite it
-        entry_t* current = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, remove);
+        entry_t* current = routing_table_sdram_stores_get_entry(remove);
 
         // Insert the new entry if this is the correct position at which to do
         // so
         if (remove == insertion_point){
-            entry_t* insert_entry = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, insert);
+            entry_t* insert_entry =
+                routing_table_sdram_stores_get_entry(insert);
 
             // move data between entries
             insert_entry->key_mask.key = new_entry.key_mask.key;
@@ -637,8 +588,8 @@ static inline void oc_merge_apply(
         if (!merge_contains(merge, remove)){
             // If this entry is not contained within the merge then copy it
             // from its current position to its new position.
-            entry_t* insert_entry = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, insert);
+            entry_t* insert_entry =
+                routing_table_sdram_stores_get_entry(insert);
             insert_entry->key_mask.key = current->key_mask.key;
             insert_entry->key_mask.mask = current->key_mask.mask;
             insert_entry->route = current->route;
@@ -648,11 +599,11 @@ static inline void oc_merge_apply(
         else{
             // Otherwise update the aliases table to account for the entry
             // which is being merged.
-            key_mask_t km = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, remove)->key_mask;
+            key_mask_t km =
+                routing_table_sdram_stores_get_entry(remove)->key_mask;
 
-            uint32_t source = routing_table_sdram_stores_get_entry(
-                routing_tables, n_tables, remove)->source;
+            uint32_t source =
+                routing_table_sdram_stores_get_entry(remove)->source;
 
             if (aliases_contains(aliases, km)){
                 // Join the old list of aliases with the new
@@ -674,10 +625,8 @@ static inline void oc_merge_apply(
 
     // If inserting beyond the old end of the table then perform the insertion
     // at the new end of the table.
-    if (insertion_point == routing_table_sdram_get_n_entries(
-            routing_tables, n_tables)){
-        entry_t* insert_entry = routing_table_sdram_stores_get_entry(
-            routing_tables, n_tables, insert);
+    if (insertion_point == routing_table_sdram_get_n_entries()){
+        entry_t* insert_entry = routing_table_sdram_stores_get_entry(insert);
         insert_entry->key_mask.key = new_entry.key_mask.key;
         insert_entry->key_mask.mask = new_entry.key_mask.mask;
         insert_entry->route = new_entry.route;
@@ -685,16 +634,13 @@ static inline void oc_merge_apply(
     }
 
     // Record the new size of the table
-    routing_table_remove_from_size(routing_tables, n_tables, reduced_size);
+    routing_table_remove_from_size(reduced_size);
 }
 
 
 // Apply the ordered covering algorithm to a routing table
 // Minimise the table until either the table is shorter than the target length
 // or no more merges are possible.
-//! \param[in/out] routing_tables: the list of routing tables in sdram
-//! \param[in] n_tables: the number of tables
-//! \param[in] target_length: the length to compress to
 //! \param[in] aliases: whatever
 //! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
 //! \param[out] finished_by_control: bool flag saying it failed to control force
@@ -707,42 +653,41 @@ static inline void oc_merge_apply(
 //!       table length
 //! \return bool saying if it was successful or not.
 static inline bool oc_minimise(
-        table_t** routing_tables, uint32_t n_tables, uint32_t target_length,
-        aliases_t* aliases, bool *failed_by_malloc, bool *finished_by_control,
-        bool *timer_for_compression_attempt, bool *finish_compression_flag,
-        bool compress_only_when_needed, bool compress_as_much_as_possible){
+        uint32_t target_length, aliases_t* aliases, bool *failed_by_malloc,
+        bool *finished_by_control, bool *timer_for_compression_attempt,
+        bool *finish_compression_flag, bool compress_only_when_needed,
+        bool compress_as_much_as_possible){
 
     // check if any compression actually needed
     log_info("check if need to compress");
     log_info("target length is %d", target_length);
-    log_info("n tables is %d", n_tables);
     log_info("compress only when needed is %d", compress_only_when_needed);
-    log_info("n entries is %d",
-             routing_table_sdram_get_n_entries(routing_tables, n_tables));
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
     if (compress_only_when_needed &&
-            (routing_table_sdram_get_n_entries(routing_tables, n_tables)
-             < target_length)){
+            (routing_table_sdram_get_n_entries() < target_length)){
         log_info("does not need compression.");
         return true;
     }
 
     // remove default routes and check lengths again
     log_info("try removing default routes");
-    bool success = remove_default_routes_minimise(routing_tables, n_tables);
+    bool success = remove_default_routes_minimise();
     if (!success){
         log_error("failed to remove default routes due to malloc. failing");
         *failed_by_malloc = true;
         return false;
     }
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
 
     log_info(
         "check if without default routes, if that makes compression needed");
     if (compress_only_when_needed &&
-            (routing_table_sdram_get_n_entries(routing_tables, n_tables)
-             < target_length)){
+            (routing_table_sdram_get_n_entries() < target_length)){
         log_info("does not need compression.");
         return true;
     }
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
 
     // by setting target length to 0, it'll not finish till no other merges
     // are available.
@@ -752,28 +697,29 @@ static inline bool oc_minimise(
 
     // start the merger process
     log_info("start compression true attempt");
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
     int attempts = 0;
-    while ((routing_table_sdram_get_n_entries(
-            routing_tables, n_tables) > target_length) &&
+    while ((routing_table_sdram_get_n_entries() > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control){
         log_info("cycle");
+        log_info("n entries is %d", routing_table_sdram_get_n_entries());
         if (*finish_compression_flag){
             log_info(
                 "failed due to timing limitations. reached %d entries over %d"
-                " attempts",
-                routing_table_sdram_get_n_entries(routing_tables, n_tables),
-                attempts);
+                " attempts", routing_table_sdram_get_n_entries(),  attempts);
             *timer_for_compression_attempt = true;
+            routing_table_reset();
             return false;
         }
 
         // Get the best possible merge, if this merge is empty then break out
         // of the loop.
         merge_t merge;
-        bool success = oc_get_best_merge(
-            routing_tables, n_tables, aliases, &merge, failed_by_malloc);
+        log_info("n entries is %d", routing_table_sdram_get_n_entries());
+        bool success = oc_get_best_merge(aliases, &merge, failed_by_malloc);
         if (!success){
             log_info("failed to do get best merge.");
+            routing_table_reset();
             return false;
         }
         log_info("found best merge");
@@ -784,7 +730,7 @@ static inline bool oc_minimise(
             // Apply the merge to the table if it would result in merging
             // actually occurring.
             log_info("going to merge %d", count);
-            oc_merge_apply(&merge, aliases, routing_tables, n_tables);
+            oc_merge_apply(&merge, aliases);
         }
 
         // Free any memory used by the merge
@@ -805,13 +751,12 @@ static inline bool oc_minimise(
 
     log_info(
         "entries = %d, timer = %d, finished by control = %d",
-        routing_table_sdram_get_n_entries(routing_tables, n_tables),
-        *timer_for_compression_attempt, *finished_by_control);
+        routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
+        *finished_by_control);
 
     log_info("compressed!!!");
     log_info(
-        "produced table with %d entries",
-        routing_table_sdram_get_n_entries(routing_tables, n_tables));
+        "produced table with %d entries", routing_table_sdram_get_n_entries());
     return true;
 }
 

@@ -329,7 +329,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
             log_info("failed to allocate memory for rt table");
             FREE(keys);
             FREE(bit_field_routing_tables);
-            return false;
+            return NULL;
         }
 
         // store the rt address for this master pop key

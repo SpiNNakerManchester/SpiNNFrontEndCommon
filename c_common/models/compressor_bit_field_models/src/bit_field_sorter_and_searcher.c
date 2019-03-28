@@ -396,20 +396,24 @@ void set_up_first_packet(
     for (int address_index = 0; address_index < n_addresses_this_message;
             address_index ++){
         data->tables[address_index] = bit_field_routing_tables[address_index];
+        log_info(
+            "putting address %x in point %d",
+            bit_field_routing_tables[address_index], address_index);
     }
 
+    log_info("size of start message is %d", sizeof(start_stream_sdp_packet_t));
     my_msg.length = (
-        LENGTH_OF_SDP_HEADER + (
-            (n_addresses_this_message + sizeof(start_stream_sdp_packet_t)) *
-            WORD_TO_BYTE_MULTIPLIER));
+        LENGTH_OF_SDP_HEADER + COMMAND_CODE_SIZE_IN_BYTES +
+        (n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER) +
+        sizeof(start_stream_sdp_packet_t));
 
     log_info(
         "message contains command code %d, n sdp packets till "
         "delivered %d, address for compressed %x, fake heap data "
-        "address %x total n tables %d, n tables in packet %d",
+        "address %x total n tables %d, n tables in packet %d, len of %d",
         my_msg.data[COMMAND_CODE], data->n_sdp_packets_till_delivered,
         data->address_for_compressed, data->fake_heap_data,
-        data->total_n_tables, data->n_tables_in_packet);
+        data->total_n_tables, data->n_tables_in_packet, my_msg.length);
     for(int rt_id = 0; rt_id < n_addresses_this_message; rt_id++){
         if (data->tables[rt_id][0] > 256){
             log_info("table address is %x", data->tables[rt_id]);
@@ -422,7 +426,7 @@ void set_up_first_packet(
 //! \brief sets up the extra packet format
 //! \param[in] n_addresses_this_message: n addresses to put into this message
 //! \param[in] addresses_sent: how many addresses have already been sent.
-void setup_extra_packet(
+void set_up_extra_packet(
         uint32_t n_addresses_this_message, uint32_t addresses_sent){
     my_msg.data[COMMAND_CODE] = EXTRA_DATA_STREAM;
     extra_stream_sdp_packet_t* data =(extra_stream_sdp_packet_t*)
@@ -432,9 +436,9 @@ void setup_extra_packet(
         &data->tables, &bit_field_routing_tables[addresses_sent],
         n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER);
     my_msg.length = (
-        LENGTH_OF_SDP_HEADER + (
-            (n_addresses_this_message + sizeof(extra_stream_sdp_packet_t)) *
-            WORD_TO_BYTE_MULTIPLIER));
+        LENGTH_OF_SDP_HEADER + COMMAND_CODE_SIZE_IN_BYTES +
+        (n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER) +
+        sizeof(extra_stream_sdp_packet_t));
     log_debug("message length = %d", my_msg.length);
 }
 
@@ -502,7 +506,7 @@ bool set_off_bit_field_compression(
         }
         else{  // extra packets
             log_debug("sending extra packet id = %d", packet_id);
-            setup_extra_packet(n_addresses_this_message, addresses_sent);
+            set_up_extra_packet(n_addresses_this_message, addresses_sent);
         }
 
         // update location in addresses
@@ -1100,7 +1104,7 @@ void carry_on_binary_search(uint unused0, uint unused1){
                     "finished search successfully best mid point was %d",
                     best_search_point);
                 load_routing_table_into_router();
-                log_debug("finished loading table");
+                log_info("finished loading table");
                 vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
                 sark_virtual_processor_info[spin1_get_core_id()].user1 =
                     EXITED_CLEANLY;
