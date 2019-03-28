@@ -1,6 +1,9 @@
 import logging
 import os
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from .sqllite_database import SqlLiteDatabase
 
