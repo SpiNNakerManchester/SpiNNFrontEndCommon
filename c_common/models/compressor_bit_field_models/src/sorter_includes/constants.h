@@ -9,6 +9,9 @@
 //! neuron level mask
 #define NEURON_LEVEL_MASK 0xFFFFFFFF
 
+//! flag for saying compression core doing nowt
+#define DOING_NOWT -1
+
 //! enum mapping top elements of the addresses space
 typedef enum top_level_addresses_space_elements{
     THRESHOLD = 0, N_PAIRS = 1, START_OF_ADDRESSES_DATA = 2

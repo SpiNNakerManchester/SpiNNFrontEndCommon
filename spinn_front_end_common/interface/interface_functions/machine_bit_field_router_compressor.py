@@ -17,7 +17,7 @@ from spinn_machine import CoreSubsets, Router
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
     SpinnmanUnexpectedResponseCodeException, SpinnmanException
-from spinnman.model import ExecutableTargets
+from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
 
 
@@ -150,12 +150,12 @@ class MachineBitFieldRouterCompressor(object):
                     sorter_binary_path=bit_field_sorter_executable_path),
                 functools.partial(
                     self._handle_failure_for_bit_field_router_compressor,
-                    host_chips=on_host_chips),
+                    host_chips=on_host_chips, txrx=transceiver),
                 [CPUState.FINISHED], True, no_sync_changes,
                 [bit_field_sorter_executable_path])
         except SpinnmanException:
             self._handle_failure_for_bit_field_router_compressor(
-                compressor_executable_targets, on_host_chips)
+                compressor_executable_targets, on_host_chips, transceiver)
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
@@ -274,7 +274,7 @@ class MachineBitFieldRouterCompressor(object):
 
     @staticmethod
     def _handle_failure_for_bit_field_router_compressor(
-            executable_targets, host_chips):
+            executable_targets, host_chips, txrx):
         """handles the state where some cores have failed.
 
         :param executable_targets: cores which are running the router \
@@ -287,6 +287,19 @@ class MachineBitFieldRouterCompressor(object):
         for core_subset in executable_targets.all_core_subsets:
             if (core_subset.x, core_subset.y) not in host_chips:
                 host_chips.append((core_subset.x, core_subset.y))
+        cores = txrx.get_cores_in_state(
+            executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
+        for subset in cores:
+            for p in subset.processor_ids:
+                logger.info(
+                    "failed on core {}:{}:{}".format(subset.x, subset.y, p))
+
+        cpu_info_list = txrx.get_cpu_information(cores)
+        #x = CPUInfos()
+        #for cpu_info in cpu_info_list:
+        #    x.add_processor(cpu_info.x, cpu_info.y, cpu_info.p, cpu_info)
+        #txrx.get_core_status_string(x)
+
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,

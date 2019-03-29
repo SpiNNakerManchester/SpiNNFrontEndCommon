@@ -83,7 +83,7 @@ uint32_t helpful_functions_locate_key_atom_map(
     log_error("cannot find the key %d at all?! WTF", key);
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
+    rt_error(RTE_SWERR);
     return 0;
 }
 
@@ -95,7 +95,7 @@ uint32_t helpful_functions_locate_key_atom_map(
 //! \return the number of unique keys founds.
 uint32_t helpful_functions_population_master_pop_bit_field_ts(
         master_pop_bit_field_t * keys, uint32_t mid_point,
-        sorted_bit_fields_t sorted_bit_fields){
+        sorted_bit_fields_t* sorted_bit_fields){
 
     uint32_t n_keys = 0;
     // check each bitfield to see if the key been recorded already
@@ -103,15 +103,15 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
             bit_field_index++){
 
         // safety feature
-        if((uint32_t) sorted_bit_fields.bit_fields[bit_field_index] <=
+        if((uint32_t) sorted_bit_fields->bit_fields[bit_field_index] <=
                 0x60000000){
             log_error(
                 "reading something off at address %x",
-                sorted_bit_fields.bit_fields[bit_field_index]);
+                sorted_bit_fields->bit_fields[bit_field_index]);
         }
 
         // get key
-        uint32_t key = sorted_bit_fields.bit_fields[bit_field_index][
+        uint32_t key = sorted_bit_fields->bit_fields[bit_field_index][
             BIT_FIELD_BASE_KEY];
 
         // start cycle looking for a clone
@@ -131,6 +131,22 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         }
     }
     return n_keys;
+}
+
+//! \brief frees sdram from the compressor core.
+//! \param[in] the compressor core to clear sdram usage from
+//! \return bool stating that it was successful in clearing sdram
+bool helpful_functions_free_sdram_from_compression_attempt(
+        uint32_t comp_core_index, comp_core_store_t* comp_cores_bf_tables){
+    uint32_t elements = comp_cores_bf_tables[comp_core_index].n_elements;
+    log_debug("removing %d elements from index %d", elements, comp_core_index);
+    for (uint32_t core_bit_field_id = 0; core_bit_field_id < elements;
+            core_bit_field_id++){
+        FREE(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id]);
+    }
+    FREE(comp_cores_bf_tables[comp_core_index].elements);
+    comp_cores_bf_tables[comp_core_index].elements = NULL;
+    return true;
 }
 
 //! \brief clones the un compressed routing table, to another sdram location

@@ -28,7 +28,9 @@ typedef enum interrupt_priority{
 } interrupt_priority;
 
 //! \brief the timer control logic.
-bool timer_for_compression_attempt = false;
+volatile bool timer_for_compression_attempt = false;
+int counter = 0;
+int max_counter = 0;
 
 //! \brief number of times a compression time slot has occurred
 bool finish_compression_flag = false;
@@ -77,7 +79,7 @@ static void send_sdp_message_response(){
 static inline void return_malloc_response_message(){
     // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = FAILED_MALLOC;
-
+    log_info("send fail malloc");
     // send message
     send_sdp_message_response();
 }
@@ -90,6 +92,7 @@ static inline void return_success_response_message(){
     // send message
     send_sdp_message_response();
     log_info("send success ack");
+    sark_io_buf_reset();
 }
 
 //! \brief send a failed response due to the control forcing it to stop
@@ -98,14 +101,16 @@ static inline void return_failed_by_force_response_message(){
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = FORCED_BY_COMPRESSOR_CONTROL;
 
     // send message
+    log_info("send failed force");
     send_sdp_message_response();
+    sark_io_buf_reset();
 }
 
 //! \brief sends a failed response due to running out of time
 static inline void return_failed_by_time_response_message(){
        // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = RAN_OUT_OF_TIME;
-
+    log_info("send failed time");
     // send message
     send_sdp_message_response();
 }
@@ -115,7 +120,7 @@ static inline void return_failed_by_time_response_message(){
 static inline void return_failed_by_space_response_message(){
        // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = FAILED_TO_COMPRESS;
-
+    log_info("send failed space");
     // send message
     send_sdp_message_response();
 }
@@ -148,6 +153,7 @@ static inline void start_compression_process(uint unused0, uint unused1){
     use(unused1);
 
     // reset fail state flags
+    spin1_pause();
     log_info("in compression phase");
     failed_by_malloc = false;
     timer_for_compression_attempt = false;
@@ -157,7 +163,6 @@ static inline void start_compression_process(uint unused0, uint unused1){
     aliases_t aliases = aliases_init();
 
     // reset timer
-    spin1_pause();
     spin1_resume(SYNC_NOWAIT);
 
     // run compression
@@ -168,7 +173,7 @@ static inline void start_compression_process(uint unused0, uint unused1){
         compress_as_much_as_possible);
 
     spin1_pause();
-    log_info("finished oc minimise");
+    log_info("finished oc minimise with success %d", success);
 
     // check state
     if (success){
@@ -367,8 +372,13 @@ void _sdp_handler(uint mailbox, uint port) {
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
-    finish_compression_flag = true;
-    log_info("passed timer point");
+    counter ++;
+
+    if (counter >= max_counter){
+        finish_compression_flag = true;
+        log_info("passed timer point");
+        spin1_pause();
+    }
 }
 
 //! \brief the callback for setting off the router compressor
@@ -395,9 +405,10 @@ static inline void initialise() {
         compress_as_much_as_possible = true;
     }
 
-    spin1_set_timer_tick(time_for_compression_attempt);
+    max_counter = time_for_compression_attempt / 1000;
+
+    spin1_set_timer_tick(1000);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
-    spin1_pause();
 
     log_info("set up sdp interrupt");
     spin1_callback_on(SDP_PACKET_RX, _sdp_handler, SDP_PRIORITY);

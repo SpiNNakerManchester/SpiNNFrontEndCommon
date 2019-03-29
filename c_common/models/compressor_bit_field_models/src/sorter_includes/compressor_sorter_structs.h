@@ -20,7 +20,7 @@ typedef struct sorted_bit_fields_t{
     //! list of bitfield associated processor ids. sorted order based off best
     //! effort linked to sorted_bit_fields, but separate to avoid sdram
     //! rewrites
-    uint32_t*  processor_ids;
+    int*  processor_ids;
 } sorted_bit_fields_t;
 
 //! \brief struct for bitfield by processor
@@ -33,37 +33,15 @@ typedef struct _bit_field_by_processor_t{
     address_t* bit_field_addresses;
 } _bit_field_by_processor_t;
 
-//! \brief struct for processor coverage by bitfield
-typedef struct _proc_cov_by_bitfield_t{
-    // processor id
-    int processor_id;
-    // length of the list
-    int length_of_list;
-    // list of the number of redundant packets from a bitfield
-    int* redundant_packets;
-} _proc_cov_by_bitfield_t;
-
 //! \brief struct for figuring keys from bitfields, used for removal tracking
 typedef struct proc_bit_field_keys_t{
     // processor id
-    uint32_t processor_id;
+    int processor_id;
     // length of the list
     int length_of_list;
     // list of the keys to remove bitfields for.
     uint32_t* master_pop_keys;
 } proc_bit_field_keys_t;
-
-//! \brief struct for n redundant packets and the bitfield addresses of it
-typedef struct coverage_t{
-    // n redundant packets
-    int n_redundant_packets;
-    // length of list
-    int length_of_list;
-    // list of corresponding processor id to the bitfield addresses list
-    int* processor_ids;
-    // list of addresses of bitfields with this x redundant packets
-    address_t* bit_field_addresses;
-} coverage_t;
 
 //! \brief struct holding keys and n bitfields with key
 typedef struct master_pop_bit_field_t{

@@ -1,5 +1,27 @@
 #ifndef __SORTERS_H__
 
+//! \brief struct for processor coverage by bitfield
+typedef struct _proc_cov_by_bitfield_t{
+    // processor id
+    int processor_id;
+    // length of the list
+    int length_of_list;
+    // list of the number of redundant packets from a bitfield
+    int* redundant_packets;
+} _proc_cov_by_bitfield_t;
+
+//! \brief struct for n redundant packets and the bitfield addresses of it
+typedef struct _coverage_t{
+    // n redundant packets
+    int n_redundant_packets;
+    // length of list
+    int length_of_list;
+    // list of corresponding processor id to the bitfield addresses list
+    int* processor_ids;
+    // list of addresses of bitfields with this x redundant packets
+    address_t* bit_field_addresses;
+} _coverage_t;
+
 //! \brief sorter for redundant packet counts
 //! \param[in/out] proc_cov_by_bit_field: the array of struct to be sorted
 //! \param[in] length_of_internal_array: length of internal array
@@ -87,7 +109,7 @@ void sorter_sort_by_n_bit_fields(
 //! \param[in/out] coverage: the array of structs to sort
 //! \param[in] length_of_array: length of array of structs
 void sorter_sort_bitfields_so_most_impact_at_front(
-        coverage_t** coverage, int length_of_array){
+        _coverage_t** coverage, int length_of_array){
     // print for sanity
     for (int index = 0; index < length_of_array; index ++){
         coverage_t* element = coverage[index];

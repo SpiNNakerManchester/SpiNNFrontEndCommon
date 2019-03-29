@@ -102,7 +102,7 @@ static inline bool oc_up_check(merge_t *merge, int min_goodness){
 
         // Otherwise look through the table from the insertion point to the
         // current entry position to ensure that nothing covers the merge.
-        log_info("upcheck second for");
+        log_debug("upcheck second for i = %d", i);
         for (unsigned int j = i + 1; j < insertion_index; j++){
             key_mask_t other_km =
                 routing_table_sdram_stores_get_entry(j)->key_mask;
@@ -120,8 +120,9 @@ static inline bool oc_up_check(merge_t *merge, int min_goodness){
                 insertion_index = oc_get_insertion_point(generality);
             }
         }
-        log_info("up check end first loop");
+        log_debug("up check end first loop");
     }
+    log_info("done for loop");
 
     // Completely empty the merge if its goodness drops below the minimum
     // specified
@@ -236,9 +237,11 @@ static inline __sets_t _get_removables(
 //! \return bool that says if it was successful or not
 static inline bool oc_down_check(
         merge_t *merge, int min_goodness, aliases_t *a, bool* failed_to_malloc){
+    log_info("in oc down check");
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     while (merge_goodness(merge) > min_goodness){
+        log_info("down check while");
         // Record if there were any covered entries
         bool covered_entries = false;
 
@@ -254,16 +257,21 @@ static inline bool oc_down_check(
         // Look at every entry between the insertion index and the end of the
         // table to see if there are any entries which could be covered by the
         // entry resulting from the merge.
+        log_info("get inseration point");
         unsigned int insertion_point =
             oc_get_insertion_point(key_mask_count_xs(merge->key_mask));
 
+        log_info("iterate though table from insertation");
         for (unsigned int i = insertion_point;
                 i < routing_table_sdram_get_n_entries() && stringency > 0;
                 i++){
 
+            log_info("in interation loop");
             key_mask_t km = routing_table_sdram_stores_get_entry(i)->key_mask;
             if (key_mask_intersect(km, merge->key_mask)){
+                log_info("intersect");
                 if (!aliases_contains(a, km)) {
+                    log_info("already contains");
                     // The entry doesn't contain any aliases so we need to
                     // avoid hitting the key that has just been identified.
                     covered_entries = true;
@@ -272,6 +280,7 @@ static inline bool oc_down_check(
                         &set_to_one);
                 }
                 else{
+                    log_info("not contains");
                     // We need to avoid any key_masks contained within the
                     // alias table.
                     alias_list_t *the_alias_list = aliases_find(a, km);
@@ -292,26 +301,34 @@ static inline bool oc_down_check(
                     }
                 }
             }
+            log_info("end of if");
         }
+        log_info("exit for");
 
         if (!covered_entries){
             // If there were no covered entries then we needn't do anything
+            log_info("returning true");
             return true;
         }
 
+        log_info("stringency");
         if (stringency == 0){
             // We can't avoid a covered entry at all so we need to empty the
             // merge entirely.
+            log_info("merge clearing");
             merge_clear(merge);
             return true;
         }
+        log_info("not stringency");
 
         // Determine which entries could be removed from the merge and then
         //pick the smallest number of entries to remove.
         __sets_t sets;
 
         // allocate and free accordingly
+        log_info("malloc of %d ", sizeof(bit_set_t));
         sets.best = MALLOC(sizeof(bit_set_t));
+        log_info("end malloc");
 
 
         if (sets.best == NULL){
@@ -320,7 +337,9 @@ static inline bool oc_down_check(
             return false;
         }
 
+        log_info("malloc of %d", sizeof(bit_set_t));
         sets.working = MALLOC(sizeof(bit_set_t));
+        log_info("finished malloc");
         if(sets.working == NULL){
             log_error("failed to alloc sets working");
             *failed_to_malloc = true;
@@ -330,6 +349,7 @@ static inline bool oc_down_check(
             return false;
         }
 
+        log_info("bit set init");
         bool success = bit_set_init(sets.best, merge->entries.count);
         if (!success){
             log_error("failed to init the bitfield best");
@@ -340,7 +360,9 @@ static inline bool oc_down_check(
             FREE(&sets.working);
             return false;
         }
+        log_info("second bit set");
         bit_set_init(sets.working, merge->entries.count);
+        log_info("end of second bit set");
         if (!success){
             log_error("failed to init the bitfield working.");
             *failed_to_malloc = true;
@@ -351,34 +373,51 @@ static inline bool oc_down_check(
             return false;
         }
 
+        log_info("get removeables1");
         sets = _get_removables(merge, set_to_zero, false, sets);
+        log_info("get removeables2");
         sets = _get_removables(merge, set_to_one, true, sets);
+        log_info("end removeables");
 
         // Remove the specified entries
         unsigned int entry = 0;
         for (unsigned int i = 0; i <routing_table_sdram_get_n_entries(); i++){
+            log_info("remove entries");
             if (merge_contains(merge, i)){
+                log_info("contains");
                 if (bit_set_contains(sets.best, entry)){
+                    log_info("remove");
                     // Remove this entry from the merge
                     merge_remove(merge, i);
                 }
                 entry++;
             }
+            log_info("end if");
         }
+        log_info("end for");
 
         // Tidy up
+        log_info("tidy");
         bit_set_delete(sets.best);
+        log_info("tidy 1");
         FREE(&sets.best);
+        log_info("tidy 2");
         sets.best=NULL;
+        log_info("tidy 3");
         bit_set_delete(sets.working);
+        log_info("tidy 4");
         FREE(&sets.working);
+        log_info("tidy 5");
         sets.working=NULL;
+        log_info("fin tidy");
 
         // If the merge only contains 1 entry empty it entirely
         if (merge->entries.count == 1){
+            log_info("final merge clear");
             merge_clear(merge);
         }
     }
+    log_info("returning from down check");
     return true;
 }
 
@@ -474,12 +513,15 @@ static inline bool oc_get_best_merge(
 
         log_info("finished first");
         if (merge_goodness(&working) <= merge_goodness(best)){
+            log_info("continue of first merge goodness");
             continue;
         }
+        log_info("finished merge goodness");
 
         // Perform the first down check
         success = oc_down_check(
             &working, merge_goodness(best), aliases, failed_by_malloc);
+        log_info("finished down check");
         if (!success){
             log_error("failed to down check.");
 
@@ -489,11 +531,13 @@ static inline bool oc_get_best_merge(
 
             return false;
         }
-        log_info("finished down check");
 
+        log_info("starting second merge goodness");
         if (merge_goodness(&working) <= merge_goodness(best)){
+            log_info("continue from second merge goodness");
             continue;
         }
+        log_info("finished second merge goodness");
 
         // Perform the up check, seeing if this actually makes a change to the
         // size of the merge.
@@ -654,7 +698,7 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases){
 //! \return bool saying if it was successful or not.
 static inline bool oc_minimise(
         uint32_t target_length, aliases_t* aliases, bool *failed_by_malloc,
-        bool *finished_by_control, bool *timer_for_compression_attempt,
+        bool *finished_by_control, volatile bool *timer_for_compression_attempt,
         bool *finish_compression_flag, bool compress_only_when_needed,
         bool compress_as_much_as_possible){
 
