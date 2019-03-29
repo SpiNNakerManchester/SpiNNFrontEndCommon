@@ -1667,7 +1667,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # add optional algorithms
         optional_algorithms = list()
-        #optional_algorithms.append("RoutingTableLoader")
+        # optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
 

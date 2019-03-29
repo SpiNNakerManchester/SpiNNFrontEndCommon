@@ -35,7 +35,8 @@ class BitFieldTestMachineVertex(
         self._routing_info = None
 
         if how_many_stealable_regions != 0:
-            each_region = size_to_allocate_to_steal / how_many_stealable_regions
+            each_region = \
+                size_to_allocate_to_steal / how_many_stealable_regions
             for _ in range(0, how_many_stealable_regions):
                 self._steal_able_region_sizes.append(each_region)
 

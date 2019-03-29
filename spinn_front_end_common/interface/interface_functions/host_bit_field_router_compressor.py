@@ -8,7 +8,8 @@ from collections import defaultdict
 
 from rig.routing_table import MinimisationFailedError
 
-from pacman.exceptions import PacmanAlgorithmFailedToGenerateOutputsException, \
+from pacman.exceptions import \
+    PacmanAlgorithmFailedToGenerateOutputsException, \
     PacmanElementAllocationException
 from pacman.model.routing_tables import MulticastRoutingTables, \
     UnCompressedMulticastRoutingTable
@@ -136,8 +137,6 @@ class HostBasedBitFieldRouterCompressor(object):
             compressor
         :return: compressed routing table entries
         """
-        threshold_packets = self.calculate_threshold(
-            machine_time_step, time_scale_factor)
 
         if target_length is None:
             target_length = self._MAX_SUPPORTED_LENGTH
@@ -212,12 +211,12 @@ class HostBasedBitFieldRouterCompressor(object):
 
     @staticmethod
     def generate_key_to_atom_map(machine_graph, routing_infos, graph_mapper):
-        """ THIS IS NEEDED due to the link from key to edge being lost. 
-        
+        """ THIS IS NEEDED due to the link from key to edge being lost.
+
         :param machine_graph: machine graph
         :param routing_infos: routing infos
         :param graph_mapper: graph mapper
-        :return: 
+        :return: key to atom map based of key to n atoms
         """
         # build key to n atoms map
         key_to_n_atoms_map = dict()
@@ -262,24 +261,24 @@ class HostBasedBitFieldRouterCompressor(object):
             placements, machine, graph_mapper, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
             compressed_pacman_router_tables, key_atom_map):
-        """ entrance method for doing on host compression. Utilisable as a 
-        public method for other compressors. 
-        
+        """ entrance method for doing on host compression. Utilisable as a \
+        public method for other compressors.
+
         :param router_table: the routing table in question to compress
         :param produce_report: bool flag if the report should be generated
         :param report_folder_path: the report folder base address
-        :param bit_field_sdram_base_addresses: the sdram addresses for \ 
+        :param bit_field_sdram_base_addresses: the sdram addresses for \
             bitfields used in the chip.
         :param transceiver: spinnMan instance
-        :param machine_graph: machine graph 
+        :param machine_graph: machine graph
         :param placements: placements
         :param machine: SpiNNMan instance
         :param graph_mapper: mapping between 2 graphs
         :param target_length: length of router compressor to get to
-        :param time_to_try_for_each_iteration: time in seconds to run each 
+        :param time_to_try_for_each_iteration: time in seconds to run each \
         compression attempt for
         :param use_timer_cut_off: bool flag that indicates if the timer cut \
-        off is to be used 
+        off is to be used
         :param key_atom_map: key to atoms map
         should be allowed to handle per time step
         :param compressed_pacman_router_tables: a data holder for compressed \
@@ -587,11 +586,11 @@ class HostBasedBitFieldRouterCompressor(object):
         return sorted_bit_fields
 
     def _detect_redundant_packet_count(self, bitfield):
-        """ locate in the bitfield how many possible packets it can filter 
-        away when integrated into the router table. 
-        
+        """ locate in the bitfield how many possible packets it can filter /
+        away when integrated into the router table.
+
         :param bitfield: the memory blocks that represent the bitfield
-        :return: the number of redundant packets being captured. 
+        :return: the number of redundant packets being captured.
         """
         n_packets_filtered = 0
         n_neurons = len(bitfield) * self._BITS_IN_A_WORD
@@ -642,7 +641,7 @@ class HostBasedBitFieldRouterCompressor(object):
         """ check function for fix max success
 
         :param mid_point: the point if the list to stop at
-        :param sorted_bit_fields: lists of bitfields 
+        :param sorted_bit_fields: lists of bitfields
         :param routing_table: the basic routing table
         :param target_length: the target length to reach
         :param time_to_try_for_each_iteration: the time in seconds to run for

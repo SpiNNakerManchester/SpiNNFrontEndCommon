@@ -1,11 +1,14 @@
 from collections import defaultdict
 
+import sys
+
 from fec_integration_tests.base_test_case import BaseTestCase
 from fec_integration_tests.interface.interface_functions.\
     bit_field_test_machine_vertex import BitFieldTestMachineVertex
 from pacman.model.graphs.machine import MachineEdge
 from pacman.model.placements import Placements, Placement
-from pacman.model.routing_info import RoutingInfo, PartitionRoutingInfo
+from pacman.model.routing_info import RoutingInfo, PartitionRoutingInfo, \
+    BaseKeyAndMask
 from spinn_front_end_common.interface.abstract_spinnaker_base import \
     AbstractSpinnakerBase, CONFIG_FILE
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
@@ -69,7 +72,7 @@ def generate_bit_fields(
                 n_words = math.ceil(math.log(n_atoms, 2))
                 bit_fields[(chip_id, vertex_id)].append(
                     (key,
-                     random_words_for_bit_field[position : position+n_words]))
+                     random_words_for_bit_field[position: position+n_words]))
                 position += n_words
 
     else:
@@ -131,6 +134,9 @@ def do_run(size_of_chip_left, compressible, time, malloc, overall,
 
     # make verts
     verts = list()
+    vert_map = dict()
+    chip_id = 0
+    vert_id = 0
     for chip_index, chip in enumerate(chips):
         for vertex_index in range(0, verts_per_chip):
             vertex = BitFieldTestMachineVertex(
@@ -142,6 +148,9 @@ def do_run(size_of_chip_left, compressible, time, malloc, overall,
                 x=chip.x, y=chip.y, p=placement_ids[vertex_index],
                 vertex=vertex))
             api.add_machine_vertex(vertex)
+            vert_map[vertex] = (chip_id, vert_id)
+            vert_id += 1
+        chip_index += 1
 
     # make edges
     coverage = [2, 4, 6, 1, 3, 5, 7, 5, 1]
@@ -157,9 +166,12 @@ def do_run(size_of_chip_left, compressible, time, malloc, overall,
     for partition in graph.outgoing_edge_partitions():
 
         pre_vertex = partition.pre_vertex
+        (n_atoms, key_atom) = key_atom_map[vert_map[pre_vertex]]
+        key_masks = BaseKeyAndMask(base_key=key_atom, mask=NEURON_MASK)
 
         routing_info.add_partition_info(
-            PartitionRoutingInfo(keys_and_masks, partition)
+            PartitionRoutingInfo(keys_and_masks=[key_masks],
+                                 partition=partition))
 
     # allocate sdram so that its matching what we want.
     for chip in chips:
@@ -168,15 +180,15 @@ def do_run(size_of_chip_left, compressible, time, malloc, overall,
         if to_alloc > 0:
             txrx.malloc_sdram(chip.x, chip.y, to_alloc, app_id)
 
+    # load dsg
 
-
-
+    # run machine bitfield generator
 
 
 class BitFieldRouterCompressorTest(BaseTestCase):
 
     def run_with_no_compression(self):
-        pass
+        do_run(sys.maxint, True, False, False, True, False, 0, [])
 
     def run_with_successful_compression(self):
         pass
@@ -204,6 +216,7 @@ class BitFieldRouterCompressorTest(BaseTestCase):
         self.runsafe(self.run_with_failed_compression_overall_fail)
         self.runsafe(self.test_with_multiple_chips)
 
+
 if __name__ == '__main__':
     x = BitFieldRouterCompressorTest()
     x.run_with_no_compression()
@@ -213,5 +226,3 @@ if __name__ == '__main__':
     x.run_with_failed_compression_overall_fail()
     x.test_with_multiple_chips()
     x.run_with_less_memory_than_all_but_compressed()
-
-

@@ -39,9 +39,6 @@ class ProvidesProvenanceDataFromMachineImpl(
     _TIMES_CALLBACK_QUEUE_OVERLOADED = \
         "Times_the_callback_queue_was_overloaded"
 
-
-
-
     @abstractproperty
     def _provenance_region_id(self):
         """

@@ -17,7 +17,7 @@ from spinn_machine import CoreSubsets, Router
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
     SpinnmanUnexpectedResponseCodeException, SpinnmanException
-from spinnman.model import ExecutableTargets, CPUInfos
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 
 
@@ -86,7 +86,8 @@ class MachineBitFieldRouterCompressor(object):
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             no_sync_changes, threshold_percentage, graph_mapper=None,
-            compress_only_when_needed=True, compress_as_much_as_possible=False):
+            compress_only_when_needed=True,
+            compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
@@ -219,7 +220,7 @@ class MachineBitFieldRouterCompressor(object):
         :param transceiver: SpiNNMan instance
         :param provenance_file_path: path to provenance folder
         :param compressor_app_id: the app id for the compressor c code
-        :param host_chips: the chips which need to be ran on host. 
+        :param host_chips: the chips which need to be ran on host.
         :param executable_finder: executable path finder
         :param sorter_binary_path: the path to the sorter binary
         :rtype: None
@@ -294,12 +295,11 @@ class MachineBitFieldRouterCompressor(object):
                 logger.info(
                     "failed on core {}:{}:{}".format(subset.x, subset.y, p))
 
-        cpu_info_list = txrx.get_cpu_information(cores)
-        #x = CPUInfos()
-        #for cpu_info in cpu_info_list:
+        # cpu_info_list = txrx.get_cpu_information(cores)
+        # x = CPUInfos()
+        # for cpu_info in cpu_info_list:
         #    x.add_processor(cpu_info.x, cpu_info.y, cpu_info.p, cpu_info)
-        #txrx.get_core_status_string(x)
-
+        # txrx.get_core_status_string(x)
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
@@ -321,12 +321,12 @@ class MachineBitFieldRouterCompressor(object):
         :param compress_as_much_as_possible: bool flag asking if should \
         compress as much as possible
         :param cores: the cores that compressor will run on
-        :param matrix_addresses_and_size: dict of chips to regeneration 
+        :param matrix_addresses_and_size: dict of chips to regeneration \
         sdram and size for exploitation
         :param bit_field_compressor_executable_path: the path to the \
         compressor binary path
         :param bit_field_sorter_executable_path: the path to the sorter binary
-        :return: the list of tuples saying which chips this will need to use \ 
+        :return: the list of tuples saying which chips this will need to use \
         host compression, as the malloc failed.
         :rtype: list of tuples saying which chips this will need to use host \
         compression, as the malloc failed.
@@ -344,7 +344,7 @@ class MachineBitFieldRouterCompressor(object):
                         matrix_addresses_and_size[(table.x, table.y)])
 
                     self._load_address_data(
-                        addresses, chip_x, chip_y, transceiver, 
+                        addresses, chip_x, chip_y, transceiver,
                         routing_table_compressor_app_id,
                         cores, matrix_addresses_and_size[(table.x, table.y)],
                         bit_field_compressor_executable_path,
@@ -358,7 +358,8 @@ class MachineBitFieldRouterCompressor(object):
                     self._load_compressor_data(
                         chip_x, chip_y, time_per_iteration, transceiver,
                         bit_field_compressor_executable_path, cores,
-                        compress_only_when_needed, compress_as_much_as_possible)
+                        compress_only_when_needed,
+                        compress_as_much_as_possible)
                 except CantFindSDRAMToUseException:
                     run_by_host.append((chip_x, chip_y))
 
@@ -372,21 +373,21 @@ class MachineBitFieldRouterCompressor(object):
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
             compress_only_when_needed, compress_as_much_as_possible):
-        """ updates the user1 address for the compressor cores so they can 
+        """ updates the user1 address for the compressor cores so they can \
         set the time per attempt
-        
+
         :param chip_x: chip x coord
         :param chip_y: chip y coord
         :param time_per_iteration: time per attempt of compression
         :param transceiver: SpiNNMan instance
         :param bit_field_compressor_executable_path: path for the compressor \
-        binary 
+        binary
         :param compress_only_when_needed: bool flag asking if compress only \
         when needed
         :param compress_as_much_as_possible: bool flag asking if should \
         compress as much as possible
         :param cores: the executable targets
-        :rtype: None 
+        :rtype: None
         """
         compressor_cores = cores.get_cores_for_binary(
             bit_field_compressor_executable_path)
@@ -415,8 +416,8 @@ class MachineBitFieldRouterCompressor(object):
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores):
-        """
-        
+        """ loads the addresses of stealable sdram
+
         :param matrix_addresses_and_size: sdram usable and sizes
         :param chip_x: the chip x to consider here
         :param chip_y: the chip y to consider here
@@ -455,7 +456,7 @@ class MachineBitFieldRouterCompressor(object):
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """ generate the data for the chip matrix data
-        
+
         :param list_of_sizes_and_address: list of sdram addresses and sizes
         :return: byte array of data
         """
@@ -566,7 +567,7 @@ class MachineBitFieldRouterCompressor(object):
 
     def _build_routing_table_data(self, app_id, routing_table):
         """ builds routing data as needed for the compressor cores
-        
+
         :param app_id: appid of the application to load entries with
         :param routing_table: the uncompressed routing table
         :return: data array
@@ -584,7 +585,7 @@ class MachineBitFieldRouterCompressor(object):
     @staticmethod
     def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
         """ steals memory from synaptic matrix as needed
-        
+
         :param matrix_addresses_and_size: matrix addresses and sizes
         :param size_to_steal: size needed to steal from matrix's.
         :return: address to start steal from
@@ -650,7 +651,7 @@ class MachineBitFieldRouterCompressor(object):
         :param: graph_mapper: mapping between graphs
         :param executable_finder: binary finder
         :return: region_addresses and the executable targets to load the \
-        router table compressor with bitfield. and the executable path\ and 
+        router table compressor with bitfield. and the executable path and \
         the synaptic matrix spaces to corrupt
         """
 
@@ -699,11 +700,11 @@ class MachineBitFieldRouterCompressor(object):
                 sdram_block_addresses_and_sizes)
 
     def _generate_chip_data(self, address_list, cores, threshold_percentage):
-        """ generate byte array data for a list of sdram addresses and 
+        """ generate byte array data for a list of sdram addresses and \
         finally the time to run per compression iteration
 
         :param address_list: the list of sdram addresses
-        :param cores: compressor cores on this chip. 
+        :param cores: compressor cores on this chip.
         :return: the byte array
         """
         data = b""

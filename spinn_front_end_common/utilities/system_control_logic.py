@@ -56,7 +56,8 @@ def run_system_application(
         check_targets = ExecutableTargets()
         for binary_name in binaries_to_track:
             check_targets.add_subsets(
-                binary_name, executable_cores.get_cores_for_binary(binary_name))
+                binary_name,
+                executable_cores.get_cores_for_binary(binary_name))
     try:
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states)
