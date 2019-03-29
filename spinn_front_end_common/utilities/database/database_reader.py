@@ -89,7 +89,7 @@ class DatabaseReader(object):
         row = self._cursor.fetchone()
         return (
             row["ip_address"], row["port"], row["strip_sdp"],
-            row["board_address"])
+            row["board_address"], row["tag"])
 
     def get_live_input_details(self, label):
         """ Get the IP address and port where live input should be sent\
@@ -135,7 +135,7 @@ class DatabaseReader(object):
         row = self._cursor.fetchone()
         return (
             row["ip_address"], row["port"], row["strip_sdp"],
-            row["board_address"])
+            row["board_address"], row["tag"])
 
     def get_machine_live_input_details(self, label):
         """ Get the IP address and port where live input should be sent\

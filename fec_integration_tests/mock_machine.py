@@ -1,5 +1,8 @@
 from threading import Thread
-from collections import deque
+try:
+    from collections.abc import deque
+except ImportError:
+    from collections import deque
 import struct
 import traceback
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag

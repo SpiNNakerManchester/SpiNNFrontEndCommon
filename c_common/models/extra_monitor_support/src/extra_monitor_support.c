@@ -68,6 +68,9 @@ extern INT_HANDLER sark_int_han(void);
 //! other missing SDP sequence numbers in SDP
 #define SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS 1001
 
+//! stop sending now!
+#define SDP_COMMAND_FOR_CLEAR 2000
+
 //! timeout for trying to end SDP packet
 #define SDP_TIMEOUT 1000
 
@@ -313,6 +316,7 @@ static uint32_t basic_data_key = 0;
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
+static uint32_t stop = 0;
 
 // ------------------------------------------------------------------------
 // reinjector main functions
@@ -665,6 +669,11 @@ void reinjection_configure_router() {
 //-----------------------------------------------------------------------------
 
 static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
+    // If stop, don't send anything
+    if (stop) {
+        return;
+    }
+
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
     // Empty body; CC array is volatile
@@ -962,6 +971,7 @@ void dma_complete_writing_missing_seq_to_sdram() {
 void handle_data_speed_up(sdp_msg_pure_data *msg) {
 
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
+        stop = 0;
 
         //io_printf(IO_BUF, "starting the send of original data\n");
         // set SDRAM position and length
@@ -1048,6 +1058,8 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 }
             }
         }
+    } else if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_CLEAR) {
+        stop = 1;
     } else {
         io_printf(IO_BUF, "received unknown SDP packet\n");
     }
@@ -1057,7 +1069,9 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 INT_HANDLER speed_up_handle_dma(){
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
-    if (dma_port_last_used == DMA_TAG_READ_FOR_TRANSMISSION) {
+    if (stop) {
+        // Do Nothing if we have been told to stop
+    } else if (dma_port_last_used == DMA_TAG_READ_FOR_TRANSMISSION) {
         dma_complete_reading_for_original_transmission();
     } else if (dma_port_last_used == DMA_TAG_READ_FOR_RETRANSMISSION) {
         the_dma_complete_read_missing_seqeuence_nums();
