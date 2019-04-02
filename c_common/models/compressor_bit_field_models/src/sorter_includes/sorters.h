@@ -112,7 +112,7 @@ void sorter_sort_bitfields_so_most_impact_at_front(
         _coverage_t** coverage, int length_of_array){
     // print for sanity
     for (int index = 0; index < length_of_array; index ++){
-        coverage_t* element = coverage[index];
+        _coverage_t* element = coverage[index];
         for (int in_index = 1; in_index < element->length_of_list;
                 in_index ++){
             log_debug(
@@ -124,15 +124,15 @@ void sorter_sort_bitfields_so_most_impact_at_front(
     bool moved = true;
     while (moved){
         moved = false;
-        coverage_t* element = coverage[0];
+        _coverage_t* element = coverage[0];
         for (int index = 1; index < length_of_array; index ++){
 
-            coverage_t* compare_element = coverage[index];
+            _coverage_t* compare_element = coverage[index];
 
             if (element->n_redundant_packets <
                     compare_element->n_redundant_packets){
 
-                coverage_t* temp_pointer;
+                _coverage_t* temp_pointer;
                 // move to temp
                 temp_pointer = element;
                 // move compare over to element
@@ -150,7 +150,7 @@ void sorter_sort_bitfields_so_most_impact_at_front(
 
     // print for sanity
     for (int index = 0; index < length_of_array; index ++){
-        coverage_t* element = coverage[index];
+        _coverage_t* element = coverage[index];
         for (int in_index = 1; in_index < element->length_of_list;
                 in_index ++){
             log_debug(

@@ -212,10 +212,10 @@ bool create_tables_and_set_off_bit_compressor(int mid_point){
         return false;
     }
 
-    log_debug("finished creating bit field router tables");
+    log_info("finished creating bit field router tables");
 
     // if successful, try setting off the bitfield compression
-    bool success = set_off_bit_field_compression(
+    bool success = message_sending_set_off_bit_field_compression(
         n_rt_addresses, mid_point, comp_cores_bf_tables,
         bit_field_routing_tables, &my_msg, compressor_cores,
         user_register_content, n_compression_cores, comp_core_mid_point,
@@ -258,7 +258,7 @@ bool start_binary_search(){
     }
 
     log_debug("n_bf_addresses is %d", n_bf_addresses);
-    log_debug("n available compression cores is %d",
+    log_info("n available compression cores is %d",
     n_available_compression_cores);
     log_debug("hops between attempts is %d", hops_between_compression_cores);
 
@@ -267,9 +267,12 @@ bool start_binary_search(){
     log_debug("n bf addresses = %d", n_bf_addresses);
 
     for (int index = 0; index < n_bf_addresses; index++){
-        log_debug(
+        log_info(
             "sorted bitfields address at index %d is %x",
             index, sorted_bit_fields->bit_fields[index]);
+        log_info(
+            "sorted bitfield processor at index %d is %d",
+            index, sorted_bit_fields->processor_ids[index]);
     }
 
     // iterate till either ran out of cores, or failed to malloc sdram during
@@ -1142,7 +1145,6 @@ void start_compression_process(uint unused0, uint unused1){
     // sort the bitfields into order of best impact on worst cores.
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, user_register_content, bit_field_by_processor);
-
     log_info("finished sorting bitfields");
 
     if (sorted_bit_fields == NULL){
@@ -1152,7 +1154,8 @@ void start_compression_process(uint unused0, uint unused1){
     }
 
     log_info("starting the binary search");
-    bool success_start_binary_search = start_binary_search();
+
+    bool success_start_binary_search = true; //start_binary_search();
     log_info("finish starting of the binary search");
 
     if (!success_start_binary_search){
@@ -1208,7 +1211,7 @@ bool initialise_compressor_cores(){
     n_compression_cores =
         user_register_content[REGION_ADDRESSES][hop + N_COMPRESSOR_CORES];
 
-    n_available_compression_cores = n_compression_cores;
+    n_available_compression_cores = 1;
     log_debug("%d comps cores available", n_available_compression_cores);
 
     // malloc dtcm for this

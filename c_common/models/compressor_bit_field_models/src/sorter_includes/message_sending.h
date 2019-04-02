@@ -9,7 +9,7 @@
 void message_sending_send_sdp_message(sdp_msg_pure_data* my_msg){
     uint32_t attempt = 0;
     log_debug("sending message");
-    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
+    while (!spin1_send_sdp_msg((sdp_msg_t *) my_msg, _SDP_TIMEOUT)) {
         attempt +=1 ;
         log_info("failed to send. trying again");
         if (attempt >= 30){
@@ -17,7 +17,7 @@ void message_sending_send_sdp_message(sdp_msg_pure_data* my_msg){
 
         }
     }
-    log_debug("sent message");
+    log_info("sent message");
 }
 
 //! \brief stores the addresses for freeing when response code is sent
@@ -72,9 +72,9 @@ static void update_mc_message(
     my_msg->srce_addr = spin1_get_chip_id();
     my_msg->dest_addr = spin1_get_chip_id();
     my_msg->flags = REPLY_NOT_EXPECTED;
-    log_debug("core id =  %d", spin1_get_id());
+    log_info("core id =  %d", spin1_get_id());
     my_msg->srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
-    log_debug("compressor core = %d", compressor_cores[comp_core_index]);
+    log_info("compressor core = %d", compressor_cores[comp_core_index]);
     my_msg->dest_port =
         (RANDOM_PORT << PORT_SHIFT) | compressor_cores[comp_core_index];
 }
@@ -85,14 +85,14 @@ static void update_mc_message(
 static int deduce_total_packets(int n_rt_addresses){
     uint32_t total_packets = 1;
     int n_rt_table_safe = n_rt_addresses;
-    int n_addresses_for_start =
-        ITEMS_PER_DATA_PACKET - sizeof(start_stream_sdp_packet_t);
+    int n_addresses_for_start = ITEMS_PER_DATA_PACKET - (
+        sizeof(start_stream_sdp_packet_t) / WORD_TO_BYTE_MULTIPLIER);
+    int n_addresses_for_extra = ITEMS_PER_DATA_PACKET - (
+        sizeof(extra_stream_sdp_packet_t) / WORD_TO_BYTE_MULTIPLIER);
     if (n_addresses_for_start < n_rt_table_safe){
         n_rt_table_safe -= n_addresses_for_start;
-        total_packets += n_rt_table_safe / (
-            ITEMS_PER_DATA_PACKET - sizeof(extra_stream_sdp_packet_t));
-        uint32_t left_over = n_rt_table_safe % (
-            ITEMS_PER_DATA_PACKET - sizeof(extra_stream_sdp_packet_t));
+        total_packets += n_rt_table_safe / n_addresses_for_extra;
+        uint32_t left_over = n_rt_table_safe % n_addresses_for_extra;
         if (left_over != 0){
             total_packets += 1;
         }
@@ -112,9 +112,11 @@ static int deduce_elements_this_packet(
         int packet_id, int n_rt_addresses, int addresses_sent){
     int n_addresses_this_message = 0;
     int size_first =
-        ITEMS_PER_DATA_PACKET - sizeof(start_stream_sdp_packet_t);
+        ITEMS_PER_DATA_PACKET - (
+            sizeof(start_stream_sdp_packet_t) / WORD_TO_BYTE_MULTIPLIER);
     int size_extra =
-        ITEMS_PER_DATA_PACKET - sizeof(extra_stream_sdp_packet_t);
+        ITEMS_PER_DATA_PACKET - (
+            sizeof(extra_stream_sdp_packet_t) / WORD_TO_BYTE_MULTIPLIER);
 
     // if first packet
     if (packet_id == 0){
@@ -134,6 +136,7 @@ static int deduce_elements_this_packet(
             n_addresses_this_message = size_extra;
         }
     }
+    log_info("n addresses this message is %d", n_addresses_this_message);
     return n_addresses_this_message;
 }
 
@@ -162,14 +165,11 @@ static void set_up_first_packet(
     for (int address_index = 0; address_index < n_addresses_this_message;
             address_index ++){
         data->tables[address_index] = bit_field_routing_tables[address_index];
-        if ((uint32_t) bit_field_routing_tables[address_index] <= 0x60000000){
-            log_info(
-                "putting address %x in point %d",
-                bit_field_routing_tables[address_index], address_index);
-        }
+        log_debug(
+            "putting address %x in point %d",
+            bit_field_routing_tables[address_index], address_index);
     }
 
-    log_info("size of start message is %d", sizeof(start_stream_sdp_packet_t));
     my_msg->length = (
         LENGTH_OF_SDP_HEADER + COMMAND_CODE_SIZE_IN_BYTES +
         (n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER) +
@@ -206,10 +206,12 @@ static void set_up_extra_packet(
             address_index ++){
         data->tables[address_index] =
             bit_field_routing_tables[address_index + addresses_sent];
-        log_info(
-            "putting address %x in point %d",
+        log_debug(
+            "putting address %x in point %d in message data in index %d is %x"
+            " or %x",
             bit_field_routing_tables[address_index + addresses_sent],
-            address_index);
+            address_index, address_index, data->tables[address_index],
+            my_msg->data[6 + address_index]);
     }
     my_msg->length = (
         LENGTH_OF_SDP_HEADER + COMMAND_CODE_SIZE_IN_BYTES +
@@ -253,7 +255,7 @@ static int select_compressor_core_index(
 //! \param[in] n_rt_addresses: how many addresses the bitfields merged
 //!  into
 //! \param[in] mid_point: the mid point in the binary search
-static bool set_off_bit_field_compression(
+static bool message_sending_set_off_bit_field_compression(
         int n_rt_addresses, uint32_t mid_point,
         comp_core_store_t* comp_cores_bf_tables,
         address_t* bit_field_routing_tables, sdp_msg_pure_data* my_msg,
@@ -268,6 +270,7 @@ static bool set_off_bit_field_compression(
     log_info(
         "using core %d for %d rts",
         compressor_cores[comp_core_index], n_rt_addresses);
+
 
     // allocate space for the compressed routing entries if required
     address_t compressed_address =
@@ -293,13 +296,17 @@ static bool set_off_bit_field_compression(
         return false;
     }
 
+
+
     // update sdp to right destination
     update_mc_message(comp_core_index, my_msg, compressor_cores);
 
+
     // deduce how many packets
     int total_packets = deduce_total_packets(n_rt_addresses);
-    log_debug(
-        "total packets = %d, n rts is still %d", total_packets);
+    log_info(
+        "total packets = %d, n rts is still %d",
+        total_packets, n_rt_addresses);
 
     // generate the packets and fire them to the compressor core
     int addresses_sent = 0;
@@ -307,8 +314,6 @@ static bool set_off_bit_field_compression(
         // if just one packet worth, set to left over addresses
         int n_addresses_this_message = deduce_elements_this_packet(
             packet_id, n_rt_addresses, addresses_sent);
-        log_debug(
-            "sending %d addresses this message", n_addresses_this_message);
 
         // set data components
         if (packet_id == 0){  // first packet
@@ -316,7 +321,7 @@ static bool set_off_bit_field_compression(
                 total_packets, compressed_address, n_rt_addresses,
                 n_addresses_this_message, bit_field_routing_tables, my_msg,
                 user_register_content);
-            log_debug("finished setting up first packet");
+            log_info("finished setting up first packet");
         }
         else{  // extra packets
             log_debug("sending extra packet id = %d", packet_id);
@@ -331,7 +336,6 @@ static bool set_off_bit_field_compression(
         // send sdp packet
         message_sending_send_sdp_message(my_msg);
     }
-
     return true;
 }
 
@@ -368,7 +372,7 @@ bool message_sending_set_off_no_bit_field_compression(
     log_debug("allocated bf routing tables");
 
     // run the allocation and set off of a compressor core
-    return set_off_bit_field_compression(
+    return message_sending_set_off_bit_field_compression(
         N_UNCOMPRESSED_TABLE, 0, comp_cores_bf_tables,
         bit_field_routing_tables, my_msg, compressor_cores,
         user_register_content, n_compressor_cores, comp_core_mid_point,

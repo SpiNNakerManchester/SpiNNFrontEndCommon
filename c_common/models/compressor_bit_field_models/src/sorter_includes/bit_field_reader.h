@@ -7,7 +7,7 @@
 //! \return how many redundant packets there are
 uint32_t detect_redundant_packet_count(
     address_t bit_field_struct, address_t* user_register_content){
-    log_debug("address's location is %d", bit_field_struct);
+    log_debug("address's location is %x", bit_field_struct);
     log_debug(" key is %d", bit_field_struct[BIT_FIELD_BASE_KEY]);
     uint32_t n_filtered_packets = 0;
     uint32_t n_neurons = helpful_functions_locate_key_atom_map(

@@ -74,16 +74,15 @@ static inline unsigned int oc_get_insertion_point(
 //! \param[in] merge: the merge to consider
 //! \param[in] min_goodness: ????????
 //! \return bool flag saying if the table was changed or not
-static inline bool oc_up_check(merge_t *merge, int min_goodness){
+static inline bool oc_up_check(
+        merge_t *merge, int min_goodness,
+        volatile bool* timer_for_compression_attempt, bool* changed){
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
-
-    // Track whether we remove any entries
-    bool changed = false;
 
     // Get the point where the merge will be inserted into the table.
     unsigned int generality = key_mask_count_xs(merge->key_mask);
     unsigned int insertion_index = oc_get_insertion_point(generality);
-    log_info("found insertation index");
+    log_debug("found insertation index");
 
     // For every entry in the merge check that the entry would not be covered by
     // any existing entries if it were to be merged.
@@ -92,6 +91,13 @@ static inline bool oc_up_check(merge_t *merge, int min_goodness){
             i = routing_table_sdram_get_n_entries() - 1;
             _i > 0 && merge_goodness(merge) > min_goodness;
             _i--, i--){
+
+        // safety check for timing limits
+        if(timer_for_compression_attempt){
+            log_info("closed due to timing");
+            return false;
+        }
+
         if (!merge_contains(merge, i)){
           // If this entry is not contained within the merge skip it
           continue;
@@ -112,7 +118,7 @@ static inline bool oc_up_check(merge_t *merge, int min_goodness){
             if (key_mask_intersect(km, other_km)){
 
                 // Indicate the the merge has changed
-                changed = true;
+                *changed = true;
 
                 // Remove from the merge
                 merge_remove(merge, i);
@@ -127,11 +133,11 @@ static inline bool oc_up_check(merge_t *merge, int min_goodness){
     // Completely empty the merge if its goodness drops below the minimum
     // specified
     if (merge_goodness(merge) <= min_goodness){
-        changed = true;
+        *changed = true;
         merge_clear(merge);
     }
 
-    return changed;
+    return true;
 }
 
 //! \brief ????????????????
@@ -236,11 +242,19 @@ static inline __sets_t _get_removables(
 //! \param[out] failed_to_malloc: bool flag saying if it failed due to malloc
 //! \return bool that says if it was successful or not
 static inline bool oc_down_check(
-        merge_t *merge, int min_goodness, aliases_t *a, bool* failed_to_malloc){
+        merge_t *merge, int min_goodness, aliases_t *a,
+        bool* failed_to_malloc, volatile bool* timer_for_compression_attempt){
     log_info("in oc down check");
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     while (merge_goodness(merge) > min_goodness){
+
+        // safety check for timing limits
+        if(timer_for_compression_attempt){
+            log_info("closed due to timing");
+            return false;
+        }
+
         log_info("down check while");
         // Record if there were any covered entries
         bool covered_entries = false;
@@ -266,12 +280,18 @@ static inline bool oc_down_check(
                 i < routing_table_sdram_get_n_entries() && stringency > 0;
                 i++){
 
-            log_info("in interation loop");
+             // safety check for timing limits
+            if(timer_for_compression_attempt){
+                log_info("closed due to timing");
+                return false;
+            }
+
+            log_debug("in interation loop");
             key_mask_t km = routing_table_sdram_stores_get_entry(i)->key_mask;
             if (key_mask_intersect(km, merge->key_mask)){
-                log_info("intersect");
+                log_debug("intersect");
                 if (!aliases_contains(a, km)) {
-                    log_info("already contains");
+                    log_debug("already contains");
                     // The entry doesn't contain any aliases so we need to
                     // avoid hitting the key that has just been identified.
                     covered_entries = true;
@@ -280,13 +300,25 @@ static inline bool oc_down_check(
                         &set_to_one);
                 }
                 else{
-                    log_info("not contains");
+                    log_debug("not contains");
                     // We need to avoid any key_masks contained within the
                     // alias table.
                     alias_list_t *the_alias_list = aliases_find(a, km);
                     while (the_alias_list != NULL){
+                        // safety check for timing limits
+                        if(timer_for_compression_attempt){
+                            log_info("closed due to timing");
+                            return false;
+                        }
                         for (unsigned int j = 0;
                                 j < the_alias_list->n_elements; j++){
+
+                            // safety check for timing limits
+                            if(timer_for_compression_attempt){
+                                log_info("closed due to timing");
+                                return false;
+                            }
+
                             km = alias_list_get(the_alias_list, j).key_mask;
 
                             if (key_mask_intersect(km, merge->key_mask)){
@@ -301,17 +333,17 @@ static inline bool oc_down_check(
                     }
                 }
             }
-            log_info("end of if");
+            log_debug("end of if");
         }
-        log_info("exit for");
+        log_debug("exit for");
 
         if (!covered_entries){
             // If there were no covered entries then we needn't do anything
-            log_info("returning true");
+            log_debug("returning true");
             return true;
         }
 
-        log_info("stringency");
+        log_debug("stringency");
         if (stringency == 0){
             // We can't avoid a covered entry at all so we need to empty the
             // merge entirely.
@@ -319,7 +351,7 @@ static inline bool oc_down_check(
             merge_clear(merge);
             return true;
         }
-        log_info("not stringency");
+        log_debug("not stringency");
 
         // Determine which entries could be removed from the merge and then
         //pick the smallest number of entries to remove.
@@ -361,7 +393,7 @@ static inline bool oc_down_check(
             return false;
         }
         log_info("second bit set");
-        bit_set_init(sets.working, merge->entries.count);
+        success = bit_set_init(sets.working, merge->entries.count);
         log_info("end of second bit set");
         if (!success){
             log_error("failed to init the bitfield working.");
@@ -382,31 +414,37 @@ static inline bool oc_down_check(
         // Remove the specified entries
         unsigned int entry = 0;
         for (unsigned int i = 0; i <routing_table_sdram_get_n_entries(); i++){
-            log_info("remove entries");
+            // safety check for timing limits
+            if(timer_for_compression_attempt){
+                log_info("closed due to timing");
+                return false;
+            }
+
+            log_debug("remove entries");
             if (merge_contains(merge, i)){
-                log_info("contains");
+                log_debug("contains");
                 if (bit_set_contains(sets.best, entry)){
-                    log_info("remove");
+                    log_debug("remove");
                     // Remove this entry from the merge
                     merge_remove(merge, i);
                 }
                 entry++;
             }
-            log_info("end if");
+            log_debug("end if");
         }
         log_info("end for");
 
         // Tidy up
         log_info("tidy");
         bit_set_delete(sets.best);
-        log_info("tidy 1");
-        FREE(&sets.best);
+        log_info("tidy 1 at address %x", sets.best);
+        FREE(sets.best);
         log_info("tidy 2");
         sets.best=NULL;
         log_info("tidy 3");
         bit_set_delete(sets.working);
-        log_info("tidy 4");
-        FREE(&sets.working);
+        log_info("tidy 4 at address %x", sets.working);
+        FREE(sets.working);
         log_info("tidy 5");
         sets.working=NULL;
         log_info("fin tidy");
@@ -428,7 +466,8 @@ static inline bool oc_down_check(
 //! \param[out] failed_by_malloc: bool flag saying failed by malloc
 //! \return bool saying if successful or not.
 static inline bool oc_get_best_merge(
-        aliases_t * aliases, merge_t * best, bool* failed_by_malloc){
+        aliases_t * aliases, merge_t * best, bool* failed_by_malloc,
+        volatile bool* timer_for_compression_attempt){
 
     // Keep track of which entries have been considered as part of merges.
     bit_set_t considered;
@@ -473,6 +512,12 @@ static inline bool oc_get_best_merge(
     log_info("starting search for merge entry");
     for (unsigned int i = 0; i < routing_table_sdram_get_n_entries(); i++){
 
+        // safety check for timing limits
+        if(timer_for_compression_attempt){
+            log_info("closed due to timing");
+            return false;
+        }
+
         // If this entry has already been considered then skip to the next
         if (bit_set_contains(&considered, i)){
             continue;
@@ -492,9 +537,15 @@ static inline bool oc_get_best_merge(
         entry_t* entry = routing_table_sdram_stores_get_entry(i);
 
         // Try to merge with other entries
-        log_info("starting second search at index %d", i);
+        log_debug("starting second search at index %d", i);
         for (unsigned int j = i+1; j < routing_table_sdram_get_n_entries();
                 j++){
+
+            // safety check for timing limits
+            if(timer_for_compression_attempt){
+                log_info("closed due to timing");
+                return false;
+            }
 
             // Get the other entry
             entry_t* other = routing_table_sdram_stores_get_entry(j);
@@ -511,16 +562,17 @@ static inline bool oc_get_best_merge(
             }
         }
 
-        log_info("finished first");
+        log_debug("finished first");
         if (merge_goodness(&working) <= merge_goodness(best)){
             log_info("continue of first merge goodness");
             continue;
         }
-        log_info("finished merge goodness");
+        log_debug("finished merge goodness");
 
         // Perform the first down check
         success = oc_down_check(
-            &working, merge_goodness(best), aliases, failed_by_malloc);
+            &working, merge_goodness(best), aliases, failed_by_malloc,
+            timer_for_compression_attempt);
         log_info("finished down check");
         if (!success){
             log_error("failed to down check.");
@@ -532,17 +584,28 @@ static inline bool oc_get_best_merge(
             return false;
         }
 
-        log_info("starting second merge goodness");
+        log_debug("starting second merge goodness");
         if (merge_goodness(&working) <= merge_goodness(best)){
             log_info("continue from second merge goodness");
             continue;
         }
-        log_info("finished second merge goodness");
+        log_debug("finished second merge goodness");
 
         // Perform the up check, seeing if this actually makes a change to the
         // size of the merge.
-        log_info("upcheck");
-        if (oc_up_check(&working, merge_goodness(best))){
+        log_debug("upcheck");
+        bool changed = false;
+        success = oc_up_check(
+            &working, merge_goodness(best), timer_for_compression_attempt,
+            &changed);
+        if (!success){
+            log_info("failed to upcheck");
+            FREE(&best);
+            FREE(&considered);
+            return false;
+        }
+
+        if (changed){
             if (merge_goodness(&working) <= merge_goodness(best)){
                 continue;
             }
@@ -550,7 +613,8 @@ static inline bool oc_get_best_merge(
             // If the up check did make a change then the down check needs to
             // be run again.
             success = oc_down_check(
-                &working, merge_goodness(best), aliases, failed_by_malloc);
+                &working, merge_goodness(best), aliases, failed_by_malloc,
+                timer_for_compression_attempt);
             log_info("finished rerun of down check");
             if (!success){
                 log_error("failed to down check. ");
@@ -760,7 +824,8 @@ static inline bool oc_minimise(
         // of the loop.
         merge_t merge;
         log_info("n entries is %d", routing_table_sdram_get_n_entries());
-        bool success = oc_get_best_merge(aliases, &merge, failed_by_malloc);
+        bool success = oc_get_best_merge(
+            aliases, &merge, failed_by_malloc, timer_for_compression_attempt);
         if (!success){
             log_info("failed to do get best merge.");
             routing_table_reset();

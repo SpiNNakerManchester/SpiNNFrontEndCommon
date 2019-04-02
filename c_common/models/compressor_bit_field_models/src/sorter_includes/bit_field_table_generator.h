@@ -128,6 +128,7 @@ bool generate_entries_from_bitfields(
     }
 
     // create sdram holder for the table we're going to generate
+    log_debug("looking for atoms");
     uint32_t n_atoms = helpful_functions_locate_key_atom_map(
         original_entry->key_mask.key, user_register_content);
     *rt_address_ptr = MALLOC_SDRAM(

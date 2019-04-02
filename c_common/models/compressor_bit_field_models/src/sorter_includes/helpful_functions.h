@@ -37,13 +37,11 @@ uint32_t helpful_functions_locate_processor_id_from_bit_field_address(
 uint32_t helpful_functions_locate_key_atom_map(
         uint32_t key, address_t* user_register_content){
     // locate n address pairs
-    uint32_t position_in_address_region = 0;
     uint32_t n_address_pairs =
-        user_register_content[REGION_ADDRESSES][
-            position_in_address_region + N_PAIRS];
+        user_register_content[REGION_ADDRESSES][N_PAIRS];
 
     // cycle through key to atom regions to locate key
-    position_in_address_region += START_OF_ADDRESSES_DATA;
+    int position_in_address_region = START_OF_ADDRESSES_DATA;
     for (uint32_t r_id = 0; r_id < n_address_pairs; r_id++){
         // get key address region
         address_t key_atom_sdram_address =
