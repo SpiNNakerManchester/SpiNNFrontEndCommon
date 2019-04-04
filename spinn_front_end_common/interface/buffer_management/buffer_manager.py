@@ -576,47 +576,53 @@ class BufferManager(object):
             self._java_caller.set_placements(placements, self._transceiver)
 
         with self._thread_lock_buffer_out:
-            self._get_data_for_placements_locked(placements, progress)
+            if self._java_caller is not None:
+                self._java_caller.get_all_data()
+                if progress:
+                    progress.end()
+            elif self._uses_advanced_monitors:
+                self.__old_get_data_for_placements_with_monitors(
+                    placements, progress)
+            else:
+                self.__old_get_data_for_placements(placements, progress)
 
-    def _get_data_for_placements_locked(self, placements, progress=None):
-        receivers = OrderedSet()
-        if self._java_caller is None:
-            if self._uses_advanced_monitors:
+    def __old_get_data_for_placements_with_monitors(
+            self, placements, progress):
+        # locate receivers
+        receivers = OrderedSet(
+            locate_extra_monitor_mc_receiver(
+                self._machine, placement.x, placement.y,
+                self._packet_gather_cores_to_ethernet_connection_map)
+            for placement in placements)
 
-                # locate receivers
-                for placement in placements:
-                    receivers.add(locate_extra_monitor_mc_receiver(
-                        self._machine, placement.x, placement.y,
-                        self._packet_gather_cores_to_ethernet_connection_map))
+        # set time out
+        for receiver in receivers:
+            receiver.set_cores_for_data_extraction(
+                transceiver=self._transceiver,
+                placements=self._placements,
+                extra_monitor_cores_for_router_timeout=(
+                    self._extra_monitor_cores))
 
-                # set time out
-                for receiver in receivers:
-                    receiver.set_cores_for_data_extraction(
-                        transceiver=self._transceiver,
-                        placements=self._placements,
-                        extra_monitor_cores_for_router_timeout=(
-                            self._extra_monitor_cores))
-
+        try:
             # get data
-            for placement in placements:
-                vertex = placement.vertex
-                for recording_region_id in vertex.get_recorded_region_ids():
-                    self._retreive_by_placement(placement, recording_region_id)
-                    if progress is not None:
-                        progress.update()
-
+            self.__old_get_data_for_placements(placements, progress)
+        finally:
             # revert time out
-            if self._uses_advanced_monitors:
-                for receiver in receivers:
-                    receiver.unset_cores_for_data_extraction(
-                        transceiver=self._transceiver,
-                        placements=self._placements,
-                        extra_monitor_cores_for_router_timeout=(
-                            self._extra_monitor_cores))
-        else:
-            self._java_caller.get_all_data()
-            if progress:
-                progress.end()
+            for receiver in receivers:
+                receiver.unset_cores_for_data_extraction(
+                    transceiver=self._transceiver,
+                    placements=self._placements,
+                    extra_monitor_cores_for_router_timeout=(
+                        self._extra_monitor_cores))
+
+    def __old_get_data_for_placements(self, placements, progress):
+        # get data
+        for placement in placements:
+            vertex = placement.vertex
+            for recording_region_id in vertex.get_recorded_region_ids():
+                self._retreive_by_placement(placement, recording_region_id)
+                if progress is not None:
+                    progress.update()
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """ It is no longer possible to get access to the data pointer.

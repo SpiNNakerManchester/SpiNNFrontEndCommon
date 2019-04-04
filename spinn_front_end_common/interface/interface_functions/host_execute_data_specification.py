@@ -61,15 +61,15 @@ class HostExecuteDataSpecification(object):
             `spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
         """
         if java_caller is None:
-            return self._python_all_(
+            return self.__python_all(
                 transceiver, machine, app_id, dsg_targets,
                 processor_to_app_data_base_address)
         else:
-            return self._java_all_(
+            return self.__java_all(
                 machine, app_id, dsg_targets, java_caller,
                 report_folder, processor_to_app_data_base_address)
 
-    def _java_all_(
+    def __java_all(
             self, machine, app_id, dsg_targets, java_caller, report_folder,
             processor_to_app_data_base_address):
         """
@@ -119,7 +119,7 @@ class HostExecuteDataSpecification(object):
         progress.end()
         return dw_write_info
 
-    def _python_all_(
+    def __python_all(
             self, transceiver, machine, app_id, dsg_targets,
             processor_to_app_data_base_address=None):
         """
