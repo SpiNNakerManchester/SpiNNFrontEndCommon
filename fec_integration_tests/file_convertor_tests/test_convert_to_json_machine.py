@@ -48,7 +48,7 @@ class TestConvertJson(unittest.TestCase):
                 if json1[key] != json2[key]:
                     raise AssertionError(
                         "Values differ for {} found {} {}".format(
-                        key, json1[key], json2[key]))
+                            key, json1[key], json2[key]))
         raise AssertionError("Some wierd difference")
 
     def testSpin4(self):
