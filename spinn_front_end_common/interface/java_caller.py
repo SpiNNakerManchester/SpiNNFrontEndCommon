@@ -83,16 +83,17 @@ class JavaCaller(object):
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)
             github_checkout_dir = os.path.dirname(spinn_front_end_common)
-            # try the jenkins way which is one higher
+            parent = os.path.dirname(github_checkout_dir)
             self._java_spinnaker_path = os.path.join(
-                github_checkout_dir, "JavaSpiNNaker")
-            if not os.path.isdir(self._java_spinnaker_path):
-                # Try the other way
-                parent = os.path.dirname(github_checkout_dir)
-                self._java_spinnaker_path = os.path.join(
-                    parent, "JavaSpiNNaker")
+                parent, "JavaSpiNNaker")
         else:
-            self._java_spinnaker_path = java_spinnaker_path
+            # As I don't know how to write pwd and /JavaSpiNNaker to one line
+            indirect_path = os.path.join(
+                java_spinnaker_path, "JavaSpiNNaker")
+            if os.path.isdir(indirect_path):
+                self._java_spinnaker_path = indirect_path
+            else:
+                self._java_spinnaker_path = java_spinnaker_path
         if not os.path.isdir(self._java_spinnaker_path):
             raise ConfigurationException(
                 "No Java code found at {}".format(self._java_spinnaker_path))
