@@ -20,7 +20,7 @@ class JavaCaller(object):
 
     __slots__ = [
         "_chipxy_by_ethernet",
-        # The folder holding sqllite databases ect.
+        # The folder holding sqlite databases etc.
         "_report_folder",
         # The call to get java to work. Including the path if required.
         "_java_call",
@@ -32,11 +32,11 @@ class JavaCaller(object):
         "_machine",
         # The location where the machine json is written
         "_machine_json_path",
-        # Dict of chip (x, y) to the p of the montitor vertex
+        # Dict of chip (x, y) to the p of the monitor vertex
         "_monitor_cores",
         # Flag to indicate if at least one placement is recording
         "_recording",
-        # Dict of ethernet (x, y) and tha packetGather IPtago
+        # Dict of ethernet (x, y) and the packetGather IPtago
         "_gatherer_iptags",
         # Dict of ethernet (x, y) to the p of the packetGather vertex
         "_gatherer_cores",
@@ -67,6 +67,8 @@ class JavaCaller(object):
         :type java_properties: str
         :raise ConfigurationException if simple parameter checking fails.
         """
+        self._recording = None
+        self._report_folder = None
         self._json_folder = json_folder
 
         self._java_call = java_call
@@ -96,6 +98,7 @@ class JavaCaller(object):
         self._gatherer_iptags = None
         self._gatherer_cores = None
         self._java_properties = java_properties
+        self._chipxy_by_ethernet = None
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
             for _property in self._java_properties:
@@ -195,8 +198,7 @@ class JavaCaller(object):
         vertex = placement.vertex
         if len(vertex.get_recorded_region_ids()) == 0:
             return None
-        else:
-            self._recording = True
+        self._recording = True
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
