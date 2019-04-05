@@ -83,8 +83,14 @@ class JavaCaller(object):
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)
             github_checkout_dir = os.path.dirname(spinn_front_end_common)
-            parent = os.path.dirname(github_checkout_dir)
-            self._java_spinnaker_path = os.path.join(parent, "JavaSpiNNaker")
+            # try the jenkins way which is one higher
+            self._java_spinnaker_path = os.path.join(
+                github_checkout_dir, "JavaSpiNNaker")
+            if not os.path.isdir(self._java_spinnaker_path):
+                # Try the other way
+                parent = os.path.dirname(github_checkout_dir)
+                self._java_spinnaker_path = os.path.join(
+                    parent, "JavaSpiNNaker")
         else:
             self._java_spinnaker_path = java_spinnaker_path
         if not os.path.isdir(self._java_spinnaker_path):
