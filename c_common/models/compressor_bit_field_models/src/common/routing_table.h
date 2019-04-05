@@ -1,17 +1,18 @@
+#ifndef __ROUTING_TABLE_H__
+#define __ROUTING_TABLE_H__
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <debug.h>
 #include "platform.h"
 
-#ifndef __ROUTING_TABLE_H__
-
 //! enum covering top level entries for routing tables in sdram
-typedef enum routing_table_top_elements{
+typedef enum routing_table_top_elements {
     N_TABLE_ENTRIES = 0, START_OF_SDRAM_ENTRIES = 1
 } routing_table_top_elements;
 
 //! \brief struct holding key and mask
-typedef struct key_mask_t{
+typedef struct key_mask_t {
     // Key for the key_mask
     uint32_t key;
 
@@ -20,7 +21,7 @@ typedef struct key_mask_t{
 } key_mask_t;
 
 //! \brief struct holding routing table entry data
-typedef struct entry_t{
+typedef struct entry_t {
     // Key and mask
     key_mask_t key_mask;
 
@@ -32,7 +33,7 @@ typedef struct entry_t{
 } entry_t;
 
 //! \brief struct for holding table entries (NOT SURE HOW USFUL THIS IS NOW)
-typedef struct table_t{
+typedef struct table_t {
 
     // Number of entries in the table
     int size;
@@ -62,7 +63,7 @@ int current_n_tables = 0;
 //! \brief Get a mask of the Xs in a key_mask
 //! \param[in] km: the key mask to get as xs
 //! \return ???????????
-static inline uint32_t key_mask_get_xs(key_mask_t km){
+static inline uint32_t key_mask_get_xs(key_mask_t km) {
     return ~km.key & ~km.mask;
 }
 
@@ -70,7 +71,7 @@ static inline uint32_t key_mask_get_xs(key_mask_t km){
 //! \brief Get a count of the Xs in a key_mask
 //! \param[in] km: the key mask struct to count
 //! \return ???????
-static inline unsigned int key_mask_count_xs(key_mask_t km){
+static inline unsigned int key_mask_count_xs(key_mask_t km) {
     return __builtin_popcount(key_mask_get_xs(km));
 }
 
@@ -79,7 +80,7 @@ static inline unsigned int key_mask_count_xs(key_mask_t km){
 //! \param[in] a: key mask struct a
 //! \param[in] b: key masp struct b
 //! \return bool that says if these key masks intersect
-static inline bool key_mask_intersect(key_mask_t a, key_mask_t b){
+static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
     return (a.key & b.mask) == (b.key & a.mask);
 }
 
@@ -89,7 +90,7 @@ static inline bool key_mask_intersect(key_mask_t a, key_mask_t b){
 //! \param[in] a: the key mask struct a
 //! \param[in] b: the key mask struct b
 //! \return a key mask struct when merged
-static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b){
+static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b) {
     key_mask_t c;
     uint32_t new_xs = ~(a.key ^ b.key);
     c.mask = a.mask & b.mask & new_xs;
@@ -105,7 +106,7 @@ int routing_tables_n_tables(){
 }
 
 //! \brief resets a routing table set
-void routing_table_reset(){
+void routing_table_reset(void) {
     log_info("have reset!");
     n_tables = 0;
     current_n_tables = 0;
@@ -122,7 +123,7 @@ void routing_table_reset(){
 
 //! \brief stores a table and metadata into state
 //! \param[in]
-static inline void routing_tables_store_routing_table(table_t* table){
+static inline void routing_tables_store_routing_table(table_t* table) {
     // store table
     routing_tables[current_n_tables] = table;
     // store low entry tracker (reduces sdram requirements)
@@ -141,23 +142,21 @@ static inline void routing_tables_store_routing_table(table_t* table){
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \return the total number of entries over all the tables.
-static inline uint32_t routing_table_sdram_get_n_entries(){
+static inline uint32_t routing_table_sdram_get_n_entries(void) {
     return table_lo_entry[n_tables];
 }
 
-int binary_search(int min, int max, int entry_id){
+int binary_search(int min, int max, int entry_id) {
     if (min >= max - 1){
         return min;
     }
     int mid_point = (min + max) / 2;
     if (table_lo_entry[mid_point] <= entry_id &&
-            table_lo_entry[mid_point + 1] > entry_id){
+            table_lo_entry[mid_point + 1] > entry_id) {
         return mid_point;
-    }
-    else if (table_lo_entry[mid_point] < entry_id){
+    } else if (table_lo_entry[mid_point] < entry_id) {
         return binary_search(min, mid_point, entry_id);
-    }
-    else{
+    } else {
         return binary_search(mid_point, max, entry_id);
     }
 }
@@ -165,12 +164,12 @@ int binary_search(int min, int max, int entry_id){
 //! \brief finds a router table index from dtcm stuff, to avoid sdram reads
 //! \param[in] the entry id to find the table index of
 //! \return the table index which has this entry
-int find_index_of_table_for_entry(int entry_id){
+int find_index_of_table_for_entry(int entry_id) {
     // could do binary search. but start with cyclic
-    if (table_lo_entry[n_tables] == entry_id){
+    if (table_lo_entry[n_tables] == entry_id) {
         return n_tables - 1;
     }
-    if (entry_id == 0){
+    if (entry_id == 0) {
         return 0;
     }
 
@@ -185,23 +184,23 @@ int find_index_of_table_for_entry(int entry_id){
 
 //! \brief the init for the routing tables
 //! \param[in] total_n_tables: the total tables to be stored
-static inline bool routing_tables_init(int total_n_tables){
+static inline bool routing_tables_init(int total_n_tables) {
     n_tables = total_n_tables;
 
     // set up addresses data holder
     log_info(
         "allocating %d bytes for %d total n tables",
-        n_tables * sizeof(table_t**), n_tables);
-    routing_tables = MALLOC(n_tables * sizeof(table_t**));
+        n_tables * sizeof(table_t*), n_tables);
+    routing_tables = MALLOC(n_tables * sizeof(table_t*));
     table_lo_entry = MALLOC((n_tables + 1) * sizeof(int));
 
-    if (routing_tables == NULL){
+    if (routing_tables == NULL) {
         log_error(
             "failed to allocate memory for holding the addresses "
             "locations");
         return false;
     }
-    if (table_lo_entry == NULL){
+    if (table_lo_entry == NULL) {
         log_error(
             "failed to allocate memory for the holding the low entry");
         return false;
@@ -216,7 +215,7 @@ static inline bool routing_tables_init(int total_n_tables){
 //! \param[out] entry_to_fill: the pointer to entry struct to fill in data
 //! \return the pointer in sdram to the entry
 static inline entry_t* routing_table_sdram_stores_get_entry(
-        uint32_t entry_id_to_find){
+        uint32_t entry_id_to_find) {
     int router_index = find_index_of_table_for_entry(entry_id_to_find);
     int router_offset = entry_id_to_find - table_lo_entry[router_index];
     return &routing_tables[router_index]->entries[router_offset];
@@ -225,7 +224,7 @@ static inline entry_t* routing_table_sdram_stores_get_entry(
 //! \brief stores the routing tables entries into sdram at a specific sdram
 //! address as one big router table
 //! \param[in] sdram_address: the location in sdram to write data to
-bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries){
+bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries) {
 
     // cast to table struct
     table_t* table_format = (table_t*) sdram_loc_for_compressed_entries;
@@ -238,12 +237,12 @@ bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries){
 
     // iterate though the entries writing to the struct as we go
     log_debug("start copy over");
-    for (int rt_index = 0; rt_index < n_tables; rt_index++){
+    for (int rt_index = 0; rt_index < n_tables; rt_index++) {
 
         // get how many entries are in this block
         int entries_stored_here = routing_tables[rt_index]->size;
         log_debug("copying over %d entries", entries_stored_here);
-        if(entries_stored_here != 0){
+        if (entries_stored_here != 0) {
             // take entry and plonk data in right sdram location
             log_debug("doing sark copy");
             sark_mem_cpy(
@@ -261,7 +260,7 @@ bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries){
     int n_entries_sdram = sdram_loc_for_compressed_entries[0];
     int position = 1;
     for (int entry_index = 0; entry_index < n_entries_sdram;
-            entry_index++){
+            entry_index++) {
         log_debug(
             "entry %d key is %x",
             entry_index,
@@ -288,7 +287,7 @@ bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries){
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
-void routing_table_remove_from_size(int size_to_remove){
+void routing_table_remove_from_size(int size_to_remove) {
     // update dtcm tracker
     table_lo_entry[n_tables + 1] =
         table_lo_entry[n_tables + 1] - size_to_remove;
@@ -296,21 +295,20 @@ void routing_table_remove_from_size(int size_to_remove){
     // iterate backwards, as you removing from the bottom, which is the last
     // table upwards
     int rt_index = n_tables;
-    while(size_to_remove != 0 && rt_index >= 0){
-        if (routing_tables[rt_index]->size >= size_to_remove){
+    while (size_to_remove != 0 && rt_index >= 0) {
+        if (routing_tables[rt_index]->size >= size_to_remove) {
             uint32_t diff = routing_tables[rt_index]->size - size_to_remove;
             routing_tables[rt_index]->size = diff;
             table_lo_entry[rt_index] = diff;
             size_to_remove = 0;
-        }
-        else{
+        } else {
             size_to_remove -= routing_tables[rt_index]->size;
             routing_tables[rt_index]->size = 0;
             table_lo_entry[rt_index] = table_lo_entry[n_tables + 1];
         }
         rt_index -= 1;
     }
-    if (size_to_remove != 0){
+    if (size_to_remove != 0) {
         log_error("deleted more than what was available. WTF");
         rt_error(RTE_SWERR);
     }
@@ -319,9 +317,8 @@ void routing_table_remove_from_size(int size_to_remove){
 //! \brief deduces sdram requirements for a given size of table
 //! \param[in] n_entries: the number of entries expected to be in the table.
 //! \return the number of bytes needed for this routing table
-static inline uint32_t routing_table_sdram_size_of_table(uint32_t n_entries){
+static inline uint routing_table_sdram_size_of_table(uint32_t n_entries) {
     return sizeof(uint32_t) + (sizeof(entry_t) * n_entries);
 }
 
-#define __ROUTING_TABLE_H__
 #endif  // __ROUTING_TABLE_H__

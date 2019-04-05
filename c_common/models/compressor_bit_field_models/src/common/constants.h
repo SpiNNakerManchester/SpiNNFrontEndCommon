@@ -1,4 +1,5 @@
 #ifndef __CONSTANTS_H__
+#define __CONSTANTS_H__
 
 //! max length of the router table entries
 #define TARGET_LENGTH 1023
@@ -15,10 +16,9 @@
 //! flag for not requiring a reply
 #define REPLY_NOT_EXPECTED 0x07
 
-//! enum for the different states to report through the user2 address.
-typedef enum exit_states_for_user_one{
+//! enum for the different states to report through the user1 address.
+typedef enum exit_states_for_user_one {
     EXITED_CLEANLY = 0, EXIT_FAIL = 1, EXIT_MALLOC = 2, EXIT_SWERR = 3
-} exit_states_for_user_two;
+} exit_states_for_user_one;
 
-#define __CONSTANTS_H__
 #endif  // __CONSTANTS_H__

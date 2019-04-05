@@ -1,37 +1,27 @@
 #ifndef __COMPRESSOR_SORTER_STRUCTS_H__
+#define __COMPRESSOR_SORTER_STRUCTS_H__
+
+#include <filter_info.h>
+#include <key_atom_map.h>
 
 //! holds data for each compressor core, used to free stuff properly when
 //! requried
 typedef struct comp_core_store_t{
     // how many rt tables used here
-    uint32_t n_elements;
+    int n_elements;
     // how many bit fields were used to make those tables
     int n_bit_fields;
     // compressed table location
     address_t compressed_table;
     // elements
-    address_t * elements;
+    address_t *elements;
 } comp_core_store_t;
 
-//! \brief holder for the bitfield addresses and the processor ids
-typedef struct sorted_bit_fields_t{
-    //! the list of bitfields in sorted order based off best effect.
-    address_t* bit_fields;
-    //! list of bitfield associated processor ids. sorted order based off best
-    //! effort linked to sorted_bit_fields, but separate to avoid sdram
-    //! rewrites
-    int*  processor_ids;
-} sorted_bit_fields_t;
-
-//! \brief struct for bitfield by processor
-typedef struct _bit_field_by_processor_t{
-    // processor id
-    int processor_id;
-    // length of list
-    int length_of_list;
-    // list of addresses where the bitfields start
-    address_t* bit_field_addresses;
-} _bit_field_by_processor_t;
+//! \brief the compressor cores data elements in sdram
+typedef struct compressor_cores_top_t {
+    uint32_t n_cores;
+    uint32_t core_id[];
+} compressor_cores_top_t;
 
 //! \brief struct for figuring keys from bitfields, used for removal tracking
 typedef struct proc_bit_field_keys_t{
@@ -40,8 +30,18 @@ typedef struct proc_bit_field_keys_t{
     // length of the list
     int length_of_list;
     // list of the keys to remove bitfields for.
-    uint32_t* master_pop_keys;
+    uint32_t *master_pop_keys;
 } proc_bit_field_keys_t;
+
+//! \brief struct for bitfield by processor
+typedef struct bit_field_by_processor_t{
+    // processor id
+    int processor_id;
+    // length of list
+    int length_of_list;
+    // list of addresses where the bitfields start
+    address_t *bit_field_addresses;
+} bit_field_by_processor_t;
 
 //! \brief struct holding keys and n bitfields with key
 typedef struct master_pop_bit_field_t{
@@ -50,16 +50,6 @@ typedef struct master_pop_bit_field_t{
     // the number of bitfields with this key
     int n_bitfields_with_key;
 } master_pop_bit_field_t;
-
-//! \brief struct address_region_data
-typedef struct address_region_data_t{
-    // the bitfield address
-    address_t bit_field_address;
-    // the address of the key atom map
-    address_t incoming_key_atom_map_address;
-    // the processor id corresponding to
-    uint32_t processor_id;
-} address_region_data_t;
 
 //! \brief uncompressed routing table region
 typedef struct uncompressed_table_region_data_t{
@@ -74,46 +64,31 @@ typedef struct compressor_cores_region_data_t{
     // how many compressor cores
     int n_compressor_cores;
     // the processor ids
-    int* processor_ids;
+    int *processor_ids;
 } compressor_cores_region_data_t;
 
-//! \brief struct for key and atoms
-typedef struct key_atom_entry_t{
-    // key
-    uint32_t key;
-    // n atoms
-    int n_atoms;
-} key_atom_entry_t;
+//! \brief holder for the bitfield addresses and the processor ids
+typedef struct sorted_bit_fields_t{
+    //! list of bitfield associated processor ids. sorted order based off best
+    //! effort linked to sorted_bit_fields, but separate to avoid sdram
+    //! rewrites
+    int* processor_ids;
+    //! the list of bitfields in sorted order based off best effect.
+    address_t* bit_fields;
+} sorted_bit_fields_t;
 
-//! \brief key atom map struct
-typedef struct key_atom_data_t{
-    // how many key atom maps
-    int n_maps;
-    // the list of maps
-    key_atom_entry_t* maps;
-} key_atom_data_t;
+//! \brief a single mapping in the addresses area
+typedef struct pairs_t {
+    filter_region_t *filter;
+    key_atom_data_t *key_atom;
+    int processor;
+} pairs_t;
 
-//! \brief bitfield data region
-typedef struct bit_field_region_data_t{
-    // bit field master pop key
-    uint32_t key;
-    // n words representing the bitfield
-    int n_words;
-    // the words of the bitfield
-    uint32_t* words;
-} bit_field_region_data_t;
+//! \brief top-level structure in the addresses area
+typedef struct region_addresses_t {
+    int threshold;
+    int n_pairs;
+    pairs_t pairs[];
+} region_addresses_t;
 
-//! \brief addresses top level struct
-typedef struct addresses_top_level_t{
-    // threshold of how many bitfields to add before a success
-    uint32_t threshold_for_success;
-    // how many sets of addresses there are.
-    int n_address_triples;
-    // list of triples
-    address_region_data_t* regions;
-} addresses_top_level_t;
-
-
-
-#define __COMPRESSOR_SORTER_STRUCTS_H__
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__

@@ -1,4 +1,5 @@
 #ifndef __SORTERS_H__
+#define __SORTERS_H__
 
 //! \brief struct for processor coverage by bitfield
 typedef struct _proc_cov_by_bitfield_t{
@@ -27,21 +28,21 @@ typedef struct _coverage_t{
 //! \param[in] length_of_internal_array: length of internal array
 //! \param[in] worst_core_id: the core id to sort
 void sorter_sort_by_redundant_packet_count(
-        _proc_cov_by_bitfield_t** proc_cov_by_bit_field, 
-        int length_of_internal_array, uint32_t worst_core_id){
+        _proc_cov_by_bitfield_t **proc_cov_by_bit_field,
+        int length_of_internal_array, uint32_t worst_core_id) {
 
     // sort by bubble sort so that the most redundant packet count
     // addresses are at the front
-    bool moved = true;
-    while (moved){
+    bool moved;
+    do {
         moved = false;
         uint32_t element =
             proc_cov_by_bit_field[worst_core_id]->redundant_packets[0];
-        for (int index = 1; index < length_of_internal_array; index ++){
+        for (int index = 1; index < length_of_internal_array; index ++) {
             uint32_t compare_element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
-                    
-            if (element < compare_element){
+
+            if (element < compare_element) {
                 uint32_t temp_value = 0;
 
                 // move to temp
@@ -57,13 +58,12 @@ void sorter_sort_by_redundant_packet_count(
 
                 // update flag
                 moved = true;
-            }
-            else{  // jump to next element
+            } else {  // jump to next element
                 element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
             }
         }
-    }
+    } while (moved);
 }
 
 //! \brief sort processor coverage by bitfield so that ones with longest length
@@ -71,16 +71,16 @@ void sorter_sort_by_redundant_packet_count(
 //! \param[in/out] proc_cov_by_bit_field: the array of structs to sort
 //! \param[in] length_of_array: length of the array of structs
 void sorter_sort_by_n_bit_fields(
-        _proc_cov_by_bitfield_t** proc_cov_by_bit_field,
-        uint32_t length_of_array){
-    bool moved = true;
-    while (moved){
+        _proc_cov_by_bitfield_t **proc_cov_by_bit_field,
+        uint32_t length_of_array) {
+    bool moved;
+    do {
         moved = false;
         _proc_cov_by_bitfield_t* element = proc_cov_by_bit_field[0];
-        for (uint index = 1; index < length_of_array; index ++){
+        for (uint index = 1; index < length_of_array; index ++) {
             _proc_cov_by_bitfield_t* compare_element =
                 proc_cov_by_bit_field[index];
-            if (element->length_of_list < compare_element->length_of_list){
+            if (element->length_of_list < compare_element->length_of_list) {
 
                 // create temp holder for moving objects
                 _proc_cov_by_bitfield_t* temp_pointer;
@@ -96,12 +96,11 @@ void sorter_sort_by_n_bit_fields(
 
                 // update flag
                 moved = true;
-            }
-            else{  // move to next element
+            } else {  // move to next element
                 element = proc_cov_by_bit_field[index];
             }
         }
-    }
+    } while (moved);
 }
 
 
@@ -109,7 +108,7 @@ void sorter_sort_by_n_bit_fields(
 //! \param[in/out] coverage: the array of structs to sort
 //! \param[in] length_of_array: length of array of structs
 void sorter_sort_bitfields_so_most_impact_at_front(
-        _coverage_t** coverage, int length_of_array){
+        _coverage_t **coverage, int length_of_array) {
     // print for sanity
     for (int index = 0; index < length_of_array; index ++){
         _coverage_t* element = coverage[index];
@@ -121,16 +120,16 @@ void sorter_sort_bitfields_so_most_impact_at_front(
         }
     }
 
-    bool moved = true;
-    while (moved){
+    bool moved;
+    do {
         moved = false;
-        _coverage_t* element = coverage[0];
-        for (int index = 1; index < length_of_array; index ++){
+        _coverage_t *element = coverage[0];
+        for (int index = 1; index < length_of_array; index++) {
 
-            _coverage_t* compare_element = coverage[index];
+            _coverage_t *compare_element = coverage[index];
 
             if (element->n_redundant_packets <
-                    compare_element->n_redundant_packets){
+                    compare_element->n_redundant_packets) {
 
                 _coverage_t* temp_pointer;
                 // move to temp
@@ -141,12 +140,11 @@ void sorter_sort_bitfields_so_most_impact_at_front(
                 coverage[index] = temp_pointer;
                 // update flag
                 moved = true;
-            }
-            else{  // move to next element
+            } else {  // move to next element
                 element = coverage[index];
             }
         }
-    }
+    } while (moved);
 
     // print for sanity
     for (int index = 0; index < length_of_array; index ++){
@@ -160,5 +158,4 @@ void sorter_sort_bitfields_so_most_impact_at_front(
     }
 }
 
-#define __SORTERS_H__
 #endif  // __SORTERS_H__
