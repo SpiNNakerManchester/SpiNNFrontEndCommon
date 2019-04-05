@@ -46,6 +46,9 @@ bool reading_bit_fields = true;
 //! bool flag for stopping multiple attempts to run carry on binary search
 bool still_trying_to_carry_on = false;
 
+//! bool flag for saying found the best stopping position
+volatile bool found_best = false;
+
 //! time to take per compression iteration
 uint32_t time_per_iteration = 0;
 
@@ -534,17 +537,16 @@ int next_tested_mid_point_from(int mid_point) {
 //! \brief return the spaces higher than me which could be tested
 //! \param[in] point: the point to look from
 //! \param[out] length: the length of the testing cores.
-//! \param[out] found_best: bool flag saying if found the best point overall
 //! \return bool stating if it was successful or not in memory alloc
 int *find_spaces_high_than_point(
-        int point, int *length, int next_tested_point, bool *found_best) {
-    log_debug("found best is %d", *found_best);
+        int point, int *length, int next_tested_point) {
+    log_debug("found best is %d", found_best);
 
     // if the diff between the best tested and next tested is 1, then the
     // best is the overall best
     if (next_tested_point - point == 1 && bit_field_test(
             tested_mid_points, next_tested_point)) {
-        *found_best = true;
+        found_best = true;
         return NULL;
     }
 
@@ -590,9 +592,9 @@ int *find_spaces_high_than_point(
 
 //! \brief locates the next valid midpoint which has not been tested or being
 //! tested and has a chance of working/ improving the space
-//! \param[out] bool flag to say found best
-//! \return midpoint to search
-bool locate_next_mid_point(bool *found_best, int *new_mid_point) {
+//! \param[out] int to next midpoint to search
+//! \return bool saying if mallocs failed
+bool locate_next_mid_point(int *new_mid_point) {
     // get base line to start searching for new locations to test
     int best_mp_to_date = best_mid_point_to_date();
     int next_tested_point = next_tested_mid_point_from(best_mp_to_date);
@@ -603,7 +605,7 @@ bool locate_next_mid_point(bool *found_best, int *new_mid_point) {
         best_mp_to_date, next_tested_point);
 
     if (best_mp_to_date == next_tested_point) {
-        *found_best = true;
+        found_best = true;
         best_search_point = best_mp_to_date;
         *new_mid_point = DOING_NOWT;
         log_debug("best search point is %d", best_mp_to_date);
@@ -613,11 +615,11 @@ bool locate_next_mid_point(bool *found_best, int *new_mid_point) {
     // fill in the locations bigger than best that are being tested
     log_debug("find spaces");
     int *higher_testers = find_spaces_high_than_point(
-        best_mp_to_date, &length, next_tested_point, found_best);
+        best_mp_to_date, &length, next_tested_point);
     log_debug("populated higher testers");
 
     // exit if best found
-    if (*found_best) {
+    if (found_best) {
         log_debug("found best");
         best_search_point = best_mp_to_date;
         return true;
@@ -701,7 +703,7 @@ bool locate_next_mid_point(bool *found_best, int *new_mid_point) {
                 // odd flow
                 if (bit_field_test(mid_points_successes, *new_mid_point)) {
                     best_search_point = *new_mid_point;
-                    *found_best = true;
+                    found_best = true;
                     return true;
                 }
                 // if we got here its odd. but put this here for completeness
@@ -728,7 +730,6 @@ void carry_on_binary_search(uint unused0, uint unused1) {
     log_info("started carry on");
 
     bool failed_to_malloc = false;
-    bool found_best = false;
     bool nothing_to_do = false;
 
     log_debug("found best is %d", found_best);
@@ -743,7 +744,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
 
         // locate next midpoint to test
         int mid_point;
-        bool success = locate_next_mid_point(&found_best, &mid_point);
+        bool success = locate_next_mid_point(&mid_point);
 
         // check for not needing to do things but wait
         if (mid_point == DOING_NOWT && !found_best) {
@@ -819,7 +820,7 @@ void timer_callback(uint unused0, uint unused1) {
     // due to interrupt priorities, sdp message mailbox limits etc. Best way
     // will be to periodically assess if we need to do anything
     if (count_many_on_going_compression_attempts_are_running() == 0 &&
-            !reading_bit_fields && !still_trying_to_carry_on){
+            !reading_bit_fields && !still_trying_to_carry_on && !found_best){
         log_info("firing off carry on from timer");
         spin1_schedule_callback(
             carry_on_binary_search, 0, 0, COMPRESSION_START_PRIORITY);
@@ -1101,7 +1102,6 @@ void start_compression_process(uint unused0, uint unused1) {
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
     log_info("finished sorting bitfields");
-    terminate(EXIT_MALLOC);
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");

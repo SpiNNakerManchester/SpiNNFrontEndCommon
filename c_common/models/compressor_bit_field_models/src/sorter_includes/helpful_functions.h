@@ -4,16 +4,15 @@
 #include "constants.h"
 #include <filter_info.h>
 
-static inline void terminate(uint result_code) __attribute__((noreturn));
+//static inline void terminate(uint result_code) __attribute__((noreturn));
 
 static inline void terminate(uint result_code) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint core = spin1_get_core_id();
 
     sark_virtual_processor_info[core].user1 = result_code;
-    while (1) {
-        spin1_exit(0);
-    }
+    spin1_pause();
+    spin1_exit(0);
 }
 
 //! \brief finds the processor id of a given bitfield address (search though
