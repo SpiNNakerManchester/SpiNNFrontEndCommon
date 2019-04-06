@@ -56,7 +56,7 @@ class MockTransceiverError(object):
             x = core_subset.x
             y = core_subset.y
             for p in core_subset.processor_ids:
-                yield IOBuffer(x, y, p, "[ERROR] Compression Failed")
+                yield IOBuffer(x, y, p, "[ERROR] (Test): Compression Failed")
 
     def stop_application(self, app_id):
         # No need to stop nothing!
