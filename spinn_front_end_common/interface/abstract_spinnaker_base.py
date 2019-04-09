@@ -782,6 +782,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._app_id = None
                 if self._machine_allocation_controller is not None:
                     self._machine_allocation_controller.close()
+                self._minimum_step_generated = None
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
@@ -1077,13 +1078,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
 
-        if (
-                self._config.getboolean("Buffers",
-                                        "use_auto_pause_and_resume")):
+        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
-            inputs["PlanNTimeSteps"] = min(
-                n_machine_time_steps, self._minimum_auto_time_steps)
+            inputs["PlanNTimeSteps"] = n_machine_time_steps
 
         # add algorithms for handling LPG placement and edge insertion
         if self._live_packet_recorder_params:
@@ -1805,6 +1803,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms = list(self._extra_pre_run_algorithms)
         else:
             algorithms = list()
+
+        if self._config.getboolean(
+                "Reports", "write_sdram_usage_report_per_chip"):
+            algorithms.append("SdramUsageReportPperChip")
 
         # clear iobuf if were in multirun mode
         if (self._has_ran and not self._has_reset_last and
