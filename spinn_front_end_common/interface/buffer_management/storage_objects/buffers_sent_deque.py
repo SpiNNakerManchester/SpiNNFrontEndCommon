@@ -1,4 +1,7 @@
-from collections import deque
+try:
+    from collections.abc import deque
+except ImportError:
+    from collections import deque
 from threading import Lock
 import logging
 from spinn_utilities.log import FormatAdapter
