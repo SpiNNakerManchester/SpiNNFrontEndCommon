@@ -2,11 +2,12 @@ import logging
 import os
 import sqlite3
 from spinn_utilities.overrides import overrides
+from spinn_utilities.log import FormatAdapter
 from .ds_abstact_database import DsAbstractDatabase
 
-
+DB_NAME = "ds.sqlite3"
 DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DsSqlliteDatabase(DsAbstractDatabase):
@@ -21,7 +22,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
 
     def __init__(self, machine, report_folder):
         self._machine = machine
-        database_file = os.path.join(report_folder, "ds.sqlite3")
+        database_file = os.path.join(report_folder, DB_NAME)
 
         self._db = sqlite3.connect(database_file)
         self._db.text_factory = memoryview
@@ -45,7 +46,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     "INSERT INTO ethernet(ethernet_x, ethernet_y, ip_address) "
                     + "VALUES(?, ?, ?) ",
                     (ethernet.x, ethernet.y, ethernet.ip_address))
-                if (ethernet.x == 0 and ethernet.y == 0):
+                if ethernet.x == 0 and ethernet.y == 0:
                     self._root_ethernet_id = cursor.lastrowid
                 elif first_id is None:
                     first_id = cursor.lastrowid
@@ -57,7 +58,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
             self._root_ethernet_id = first_id
             logger.warning(
                 "No Ethernet chip found at 0, 0 using {} : {} "
-                "for all boards with no ip address.".format(first_x, first_y))
+                "for all boards with no IP address.", first_x, first_y)
 
     def __del__(self):
         self.close()
@@ -68,12 +69,11 @@ class DsSqlliteDatabase(DsAbstractDatabase):
             self._db.close()
             self._db = None
 
-    def _get_etherent(self, ethernet_x, ethernet_y):
+    def __get_ethernet(self, ethernet_x, ethernet_y):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
-                "SELECT ethernet_id FROM ethernet "
-                + "WHERE ethernet_x = ? AND ethernet_y = ?",
+            for row in self._db.execute(
+                    "SELECT ethernet_id FROM ethernet "
+                    + "WHERE ethernet_x = ? AND ethernet_y = ?",
                     (ethernet_x, ethernet_y)):
                 return row["ethernet_id"]
         return self._root_ethernet_id
@@ -81,11 +81,10 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):
         chip = self._machine.get_chip_at(core_x, core_y)
-        ethernet_id = self._get_etherent(
+        ethernet_id = self.__get_ethernet(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         with self._db:
-            cursor = self._db.cursor()
-            cursor.execute(
+            self._db.execute(
                 "INSERT INTO core(x, y, processor, ethernet_id, content) "
                 + "VALUES(?, ?, ?, ?, ?) ",
                 (core_x, core_y, core_p, ethernet_id, sqlite3.Binary(ds)))
@@ -93,8 +92,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.get_ds)
     def get_ds(self, x, y, p):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT content FROM core "
                     + "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
                 return row["content"]
@@ -103,8 +101,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.ds_iteritems)
     def ds_iteritems(self):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT x, y, processor, content FROM core "
                     + "WHERE content IS NOT NULL"):
                 yield (row["x"], row["y"], row["processor"]), row["content"]
@@ -112,8 +109,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.ds_n_cores)
     def ds_n_cores(self):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT COUNT(*) as count FROM core "
                     + "WHERE content IS NOT NULL"):
                 return row["count"]
@@ -121,23 +117,19 @@ class DsSqlliteDatabase(DsAbstractDatabase):
 
     @overrides(DsAbstractDatabase.ds_set_app_id)
     def ds_set_app_id(self, app_id):
-        """
-        Sets the same app_id for all rows that have ds content
+        """ Sets the same app_id for all rows that have DS content
 
         :param app_id: value to set
         :rtype app_id: int
         """
         with self._db:
-            cursor = self._db.cursor()
-            cursor.execute(
-                "UPDATE core SET app_id = ? "
-                + "WHERE content IS NOT NULL",
+            self._db.execute(
+                "UPDATE core SET app_id = ? WHERE content IS NOT NULL",
                 (app_id,))
 
     @overrides(DsAbstractDatabase.ds_get_app_id)
     def ds_get_app_id(self, x, y, p):
-        """
-        Gets the app_id set for this core
+        """ Gets the app_id set for this core
 
         :param x: core x
         :param y: core y
@@ -145,8 +137,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         :rtype: int
         """
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT app_id FROM core "
                     + "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
                 return row["app_id"]
@@ -159,8 +150,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.get_write_info)
     def get_write_info(self, x, y, p):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT start_address, memory_used, memory_written "
                     + "FROM core "
                     + "WHERE x = ? AND y = ? AND processor = ?", (x, y, p)):
@@ -169,8 +159,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
 
     @overrides(DsAbstractDatabase.set_write_info)
     def set_write_info(self, x, y, p, info):
-        """
-        Gets the provenance returned by the Data Spec executor
+        """ Gets the provenance returned by the Data Spec executor
 
         :param x: core x
         :param y: core y
@@ -188,7 +177,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                  info["memory_written"], x, y, p))
             if cursor.rowcount == 0:
                 chip = self._machine.get_chip_at(x, y)
-                ethernet_id = self._get_etherent(
+                ethernet_id = self.__get_ethernet(
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 cursor.execute(
                     "INSERT INTO core(x, y, processor, ethernet_id, "
@@ -200,8 +189,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.clear_write_info)
     def clear_write_info(self):
         with self._db:
-            cursor = self._db.cursor()
-            cursor.execute(
+            self._db.execute(
                 "UPDATE core SET "
                 + "start_address = NULL, memory_used = NULL, "
                 + "memory_written = NULL")
@@ -209,8 +197,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.info_n_cores)
     def info_n_cores(self):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT count(*) as count FROM core "
                     + "WHERE start_address IS NOT NULL"):
                 return row["count"]
@@ -219,8 +206,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.info_iteritems)
     def info_iteritems(self):
         with self._db:
-            cursor = self._db.cursor()
-            for row in cursor.execute(
+            for row in self._db.execute(
                     "SELECT x, y, processor, "
                     + "start_address, memory_used, memory_written "
                     + "FROM core "

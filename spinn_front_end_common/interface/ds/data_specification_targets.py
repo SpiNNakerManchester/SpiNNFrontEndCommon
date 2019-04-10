@@ -13,7 +13,6 @@ class DataSpecificationTargets(MutableMapping):
 
     def __init__(self, machine, report_folder):
         """
-
         :param machine:
         :type machine: :py:class:`spinn_machine.Machine`
         :param report_folder:
@@ -23,7 +22,8 @@ class DataSpecificationTargets(MutableMapping):
 
     def __getitem__(self, core):
         """
-        Implements the mapping __getitem__ as long as core is the right type
+        Implements the mapping __getitem__ as long as core is the right type.
+
         :param core:triple of (x, y, p)
         :type core: (int, int, int)
         :rtype: dict() with the keys
@@ -36,7 +36,7 @@ class DataSpecificationTargets(MutableMapping):
         raise NotImplementedError(
             "Direct set not supported. See create_data_spec")
 
-    def __delitem__(self):
+    def __delitem__(self, core):
         raise NotImplementedError("Delete not supported")
 
     def keys(self):
@@ -47,7 +47,7 @@ class DataSpecificationTargets(MutableMapping):
 
         :return:
         """
-        for key, value in self._db.ds_iteritems():
+        for key, _value in self._db.ds_iteritems():
             yield key
 
     __iter__ = keys
@@ -76,8 +76,7 @@ class DataSpecificationTargets(MutableMapping):
     iteritems = items
 
     def get_database(self):
-        """
-        Expose the database so it can be shared
+        """ Expose the database so it can be shared
 
         :rtype:
             py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
@@ -85,8 +84,7 @@ class DataSpecificationTargets(MutableMapping):
         return self._db
 
     def set_app_id(self, app_id):
-        """
-        Sets the same app_id for all rows that have ds content
+        """ Sets the same app_id for all rows that have DS content
 
         :param app_id: value to set
         :rtype app_id: int
@@ -94,8 +92,7 @@ class DataSpecificationTargets(MutableMapping):
         self._db.ds_set_app_id(app_id)
 
     def get_app_id(self, x, y, p):
-        """
-        Gets the app_id set for this core
+        """ Gets the app_id set for this core
 
         :param x: core x
         :param y: core y

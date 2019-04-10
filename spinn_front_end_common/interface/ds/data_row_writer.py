@@ -11,7 +11,6 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
         "_targets",
         "_data",
         "_closed"
-
     ]
 
     def __init__(self, x, y, p, targets):
@@ -36,7 +35,6 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
     @overrides(AbstractContextManager.close, extend_doc=False)
     def close(self):
         """ Closes the writer if not already closed.
-
         """
         if not self._closed:
             self._targets.write_data_spec(

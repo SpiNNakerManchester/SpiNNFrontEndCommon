@@ -42,8 +42,7 @@ class DataRowReader(AbstractDataReader, AbstractContextManager):
         """ Does Nothing """
 
     def __eq__(self, other):
+        """ Equality mainly for testing.
         """
-        Equality mainly for testing.
-
-        """
+        # pylint: disable=protected-access
         return self._data == other._data

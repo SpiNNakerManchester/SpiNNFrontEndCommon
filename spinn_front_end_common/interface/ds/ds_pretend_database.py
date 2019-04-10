@@ -9,17 +9,17 @@ class DsPretendDatabase(DsAbstractDatabase):
     def __init__(self):
         self._ds_temp = dict()
         self._info_temp = dict()
+        self._app_id = None
 
     @overrides(DsAbstractDatabase.close)
     def close(self):
-        """
-            close the database
+        """ Close the database.
         """
 
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):
         # In the database map the core to the ethernet
-        self._ds_temp[(core_x, core_y, core_p)] = ds
+        self._ds_temp[core_x, core_y, core_p] = ds
 
     @overrides(DsAbstractDatabase.get_ds)
     def get_ds(self, x, y, p):
