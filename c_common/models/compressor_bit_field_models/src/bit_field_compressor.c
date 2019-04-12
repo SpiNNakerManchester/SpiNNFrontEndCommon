@@ -177,7 +177,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // run compression
     bool success = oc_minimise(
-        TARGET_LENGTH, &aliases, failed_by_malloc,
+        200, &aliases, failed_by_malloc,
         finished_by_compressor_force, &timer_for_compression_attempt,
         finish_compression_flag, compress_only_when_needed,
         compress_as_much_as_possible);

@@ -328,68 +328,6 @@ bool start_binary_search(void){
     return true;
 }
 
-//! sort out bitfields into processors and the keys of the bitfields to remove
-//! \param[out] sorted_bf_by_processor: the sorted stuff
-bool sort_sorted_to_cores(
-        proc_bit_field_keys_t *sorted_bf_by_processor) {
-    sorted_bf_by_processor =
-            MALLOC(region_addresses->n_pairs * sizeof(proc_bit_field_keys_t));
-    if (sorted_bf_by_processor == NULL) {
-        log_error(
-            "failed to allocate memory for the sorting of bitfield to keys");
-        return false;
-    }
-
-    //locate how many bitfields in the search space accepted that are of a
-    // given core.
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++){
-
-        // locate processor id for this region
-        int region_proc_id = region_addresses->pairs[r_id].processor;
-        sorted_bf_by_processor[r_id].processor_id = region_proc_id;
-
-        // count entries
-        int n_entries = 0;
-        for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
-            if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
-                n_entries ++;
-            }
-        }
-
-        // update length
-        sorted_bf_by_processor[r_id].length_of_list = n_entries;
-
-        // alloc for keys
-        sorted_bf_by_processor[r_id].master_pop_keys =
-            MALLOC(n_entries * sizeof(int));
-        if (sorted_bf_by_processor[r_id].master_pop_keys == NULL) {
-            log_error(
-                "failed to allocate memory for the master pop keys for "
-                "processor %d in the sorting of successful bitfields to "
-                "remove.", region_proc_id);
-            for (int free_id =0; free_id < r_id; free_id++) {
-                FREE(sorted_bf_by_processor->master_pop_keys);
-            }
-            FREE(sorted_bf_by_processor);
-            return false;
-        }
-
-        // put keys in the array
-        int array_index = 0;
-        for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
-            if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
-                filter_info_t *bf_pointer =
-                    (filter_info_t*) sorted_bit_fields->bit_fields[bf_index];
-                sorted_bf_by_processor->master_pop_keys[array_index] =
-                    bf_pointer->key;
-                array_index ++;
-            }
-        }
-    }
-
-    return true;
-}
-
 //! \brief finds the region id in the region addresses for this processor id
 //! \param[in] processor_id: the processor id to find the region id in the
 //! addresses
@@ -400,6 +338,8 @@ static inline filter_region_t* find_processor_bit_field_region(
     // find the right bitfield region
     for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
         int region_proc_id = region_addresses->pairs[r_id].processor;
+        log_info(
+            "is looking for %d and found %d", processor_id, region_proc_id);
         if (region_proc_id == processor_id){
             return region_addresses->pairs[r_id].filter;
         }
@@ -431,11 +371,11 @@ bool has_entry_in_sorted_keys(
 //!        regions
 //! \return bool if was successful or not
 bool remove_merged_bitfields_from_cores(void) {
-    proc_bit_field_keys_t *sorted_bf_key_proc = NULL;
 
-    // sort out the bitfields
-    bool success = sort_sorted_to_cores(sorted_bf_key_proc);
-    if (!success) {
+    // which bitfields are to be removed from which processors
+    proc_bit_field_keys_t *sorted_bf_key_proc = sorter_sort_sorted_to_cores(
+        region_addresses, best_search_point, sorted_bit_fields);
+    if (sorted_bf_key_proc == NULL) {
         log_error("could not sort out bitfields to keys.");
         return false;
     }
@@ -453,30 +393,34 @@ bool remove_merged_bitfields_from_cores(void) {
         filter_region->n_filters =
             n_bfs - sorted_bf_key_proc[c_i].length_of_list;
 
-        // pointers for shifting data up by excluding the ones been added to
-        // router.
-        filter_info_t *write_index = filter_region->filters;
-        filter_info_t *read_index = filter_region->filters;
+        if (filter_region->n_filters != 0){
 
-        // iterate though the bitfields only writing ones which are not removed
-        for (int bf_index = 0; bf_index < n_bfs; bf_index++) {
+            // pointers for shifting data up by excluding the ones been added to
+            // router.
+            filter_info_t *write_index = filter_region->filters;
+            filter_info_t *read_index = filter_region->filters;
 
-            // if entry is to be removed
-            if (!has_entry_in_sorted_keys(
-                    sorted_bf_key_proc[c_i], read_index->key)) {
-                // write the data in the current write positions, if it isn't
-                // where we're currently reading from
-                if (write_index != read_index) {
-                    // copy the key, n_words and bitfield pointer over to the
-                    // new location
-                    sark_mem_cpy(
-                        &write_index, &read_index, sizeof(filter_info_t));
+            // iterate though the bitfields only writing ones which are not
+            // removed
+            for (int bf_index = 0; bf_index < n_bfs; bf_index++) {
+
+                // if entry is to be removed
+                if (!has_entry_in_sorted_keys(
+                        sorted_bf_key_proc[c_i], read_index->key)) {
+                    // write the data in the current write positions, if it
+                    // isn't where we're currently reading from
+                    if (write_index != read_index) {
+                        // copy the key, n_words and bitfield pointer over to
+                        // the new location
+                        sark_mem_cpy(
+                            &write_index, &read_index, sizeof(filter_info_t));
+                    }
+
+                    // update pointers
+                    write_index += sizeof(filter_info_t);
                 }
-
-                // update pointers
-                write_index += sizeof(filter_info_t);
+                read_index += sizeof(filter_info_t);
             }
-            read_index += sizeof(filter_info_t);
         }
     }
 
@@ -761,6 +705,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
                 best_search_point);
             load_routing_table_into_router();
             log_info("finished loading table");
+            remove_merged_bitfields_from_cores();
             terminate(EXITED_CLEANLY);
             return;
         } else{
@@ -805,6 +750,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
             best_search_point = best_mid_point_tested;
             log_debug("finished search by end user QoS");
             load_routing_table_into_router();
+            remove_merged_bitfields_from_cores();
         }
     }
 
