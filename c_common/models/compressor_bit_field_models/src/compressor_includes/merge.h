@@ -4,7 +4,7 @@
 #include "bit_set.h"
 #include "../common/routing_table.h"
 
-typedef struct _merge_t {
+typedef struct merge_t {
     bit_set_t entries;  // Set of entries included in the merge
     key_mask_t key_mask; // key_mask resulting from the merge
     uint32_t route;    // Route taken by entries in the merge
@@ -82,7 +82,7 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
         m->source = INIT_SOURCE;
         m->key_mask.key  = FULL;
         m->key_mask.mask = EMPTY;
-        for (unsigned int j = 0; j < routing_table_sdram_get_n_entries(); j++) {
+        for (int j = 0; j < routing_table_sdram_get_n_entries(); j++) {
             entry_t *e = routing_table_sdram_stores_get_entry(j);
 
             if (bit_set_contains(&m->entries, j)) {

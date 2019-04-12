@@ -75,7 +75,7 @@ static inline void platform_new_heap_creation(address_t sizes_region) {
 //! \return: the address of the block of memory to utilise.
 static inline void * safe_sdram_malloc(uint bytes){
     // try SDRAM stolen from the cores synaptic matrix areas.
-    void * p = sark_xalloc(sv->sdram_heap, bytes, 0, ALLOC_LOCK);
+    void * p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
     if (p == NULL) {
         //log_error("Failed to malloc %u bytes.\n", bytes);
@@ -94,7 +94,7 @@ static inline void platform_kill_fake_heap(void) {
 static inline void * safe_malloc(uint bytes) {
 
     // try DTCM
-    void *p = sark_xalloc(sark.heap, bytes, 0, 0);
+    void *p = sark_alloc(bytes, 1);
     if (p != NULL) {
         return p;
     }

@@ -12,16 +12,23 @@
 /* Vector-like object ********************************************************/
 
 typedef struct _alias_element_t {  // Element of an alias list
-    key_mask_t key_mask;  // key_mask of the element
-    uint32_t source;      // Source of packets matching the element
+    // key_mask of the element
+    key_mask_t key_mask;
+
+    // Source of packets matching the element
+    uint32_t source;
 } alias_element_t;
 
+// Linked list of arrays
 typedef struct _alias_list_t {
-    // Linked list of arrays
-    unsigned int n_elements;     // Elements in this instance
-    unsigned int max_size;       // Max number of elements in this instance
-    struct _alias_list_t *next;  // Next element in list of lists
-    alias_element_t data;        // Data region
+    // Elements in this instance
+    unsigned int n_elements;
+    // Max number of elements in this instance
+    unsigned int max_size;
+    // Next element in list of lists
+    struct _alias_list_t *next;
+    // Data region
+    alias_element_t data;
 } alias_list_t;
 
 // Create a new list on the stack
@@ -41,16 +48,15 @@ static inline alias_list_t* alias_list_new(unsigned int max_size) {
 
 // Append an element to a list
 static inline bool alias_list_append(
-        alias_list_t *as, key_mask_t val, uint32_t source){
-    if (as->n_elements >= as->max_size) {
-        // Cannot append!
-        return false;
+        alias_list_t *as, key_mask_t val, uint32_t source) {
+    if (as->n_elements < as->max_size) {
+        (&as->data)[as->n_elements].key_mask = val;
+        (&as->data)[as->n_elements].source = source;
+        as->n_elements++;
+        return true;
     }
-
-    (&as->data)[as->n_elements].key_mask = val;
-    (&as->data)[as->n_elements].source = source;
-    as->n_elements++;
-    return true;
+    // Cannot append!
+    return false;
 }
 
 // Get an element from the list
@@ -86,12 +92,12 @@ static inline void alias_list_delete(alias_list_t *a) {
 // Implemented as an AA tree
 
 
-typedef union _key_t {
+typedef union a_key_t {
     key_mask_t km;
     int64_t as_int;
 } a_key_t;
 
-typedef struct _node_t {
+typedef struct node_t {
     // Key and value of this node
     a_key_t key;
     alias_list_t *val;
@@ -99,10 +105,11 @@ typedef struct _node_t {
     unsigned int level;
 
     // Children
-    struct _node_t *left, *right;
+    struct node_t *left;
+    struct node_t *right;
 } node_t;
 
-typedef struct _aliases_t {
+typedef struct aliases_t {
     node_t *root;
 } aliases_t;
 
@@ -123,7 +130,7 @@ static inline node_t *_aliases_find_node(node_t *node, a_key_t key) {
             return node;
         }
 
-        if (key.as_int < node->key.as_int){
+        if (key.as_int < node->key.as_int) {
             // Go left
             node = node->left;
         } else {
@@ -250,7 +257,7 @@ static inline void aliases_remove(aliases_t *a, key_mask_t key) {
     // XXX This is a hack which removes the reference to the element in the
     // tree but doesn't remove the Node from the tree.
     node_t *n = _aliases_find_node(a->root, (a_key_t) key);
-    if (n != NULL){
+    if (n != NULL) {
         n->val = NULL;
     }
 }

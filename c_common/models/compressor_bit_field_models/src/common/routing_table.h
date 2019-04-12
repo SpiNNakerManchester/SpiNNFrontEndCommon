@@ -32,7 +32,7 @@ typedef struct entry_t {
     uint32_t source;
 } entry_t;
 
-//! \brief struct for holding table entries (NOT SURE HOW USFUL THIS IS NOW)
+//! \brief struct for holding table entries
 typedef struct table_t {
 
     // Number of entries in the table
@@ -142,7 +142,7 @@ static inline void routing_tables_store_routing_table(table_t* table) {
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \return the total number of entries over all the tables.
-static inline uint32_t routing_table_sdram_get_n_entries(void) {
+static inline int routing_table_sdram_get_n_entries(void) {
     return table_lo_entry[n_tables];
 }
 
@@ -155,9 +155,9 @@ int binary_search(int min, int max, int entry_id) {
             table_lo_entry[mid_point + 1] > entry_id) {
         return mid_point;
     } else if (table_lo_entry[mid_point] < entry_id) {
-        return binary_search(min, mid_point, entry_id);
-    } else {
         return binary_search(mid_point, max, entry_id);
+    } else {
+        return binary_search(min, mid_point, entry_id);
     }
 }
 
@@ -166,14 +166,14 @@ int binary_search(int min, int max, int entry_id) {
 //! \return the table index which has this entry
 int find_index_of_table_for_entry(int entry_id) {
     // could do binary search. but start with cyclic
-    if (table_lo_entry[n_tables] == entry_id) {
+    if (table_lo_entry[n_tables - 1] <= entry_id) {
         return n_tables - 1;
     }
-    if (entry_id == 0) {
+    if (table_lo_entry[1] > entry_id) {
         return 0;
     }
 
-    return binary_search(0, n_tables, entry_id);
+    return binary_search(0, n_tables - 1, entry_id);
 
     log_error(
         "should never get here. If so WTF! was looking for entry %d when there"
@@ -214,10 +214,26 @@ static inline bool routing_tables_init(int total_n_tables) {
 //! \param[in] entry_id_to_find: the entry your looking for
 //! \param[out] entry_to_fill: the pointer to entry struct to fill in data
 //! \return the pointer in sdram to the entry
-static inline entry_t* routing_table_sdram_stores_get_entry(
+entry_t* routing_table_sdram_stores_get_entry(
         uint32_t entry_id_to_find) {
     int router_index = find_index_of_table_for_entry(entry_id_to_find);
     int router_offset = entry_id_to_find - table_lo_entry[router_index];
+    if (router_offset > 255 || router_offset < 0){
+        log_info(
+            "shit went off with offset %d for entry %d in table %d",
+            router_offset, entry_id_to_find, router_index);
+        for(int i =0; i < n_tables; i++){
+            log_info(
+                "the lo atom for index %d is %d",
+                i, table_lo_entry[i]);
+        }
+
+        rt_error(RTE_SWERR);
+    }
+    log_debug(
+        "for entry %d we say its in table %d and entry %d with address %x",
+        entry_id_to_find, router_index, router_offset,
+        &routing_tables[router_index]->entries[router_offset]);
     return &routing_tables[router_index]->entries[router_offset];
 }
 
@@ -283,35 +299,67 @@ bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries) {
     return true;
 }
 
+static void routing_tables_print_out_table_sizes(void){
+    bool print = false;
+    for (int rt_index = 0; rt_index < n_tables; rt_index++){
+        if (routing_tables[rt_index]->size > 256 ||
+                routing_tables[rt_index]->size < 0){
+            print = true;
+        }
+    }
+    if (print){
+        for (int rt_index = 0; rt_index < n_tables; rt_index++){
+            log_info(
+                "n entries in rt index %d is %d",
+                rt_index, routing_tables[rt_index]->size);
+        }
+        rt_error(RTE_SWERR);
+    }
+}
+
 //! \brief updates table stores accordingly.
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(int size_to_remove) {
     // update dtcm tracker
-    table_lo_entry[n_tables + 1] =
-        table_lo_entry[n_tables + 1] - size_to_remove;
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
+    log_info("size to remove is %d", size_to_remove);
+    table_lo_entry[n_tables] = table_lo_entry[n_tables] - size_to_remove;
+
+    routing_tables_print_out_table_sizes();
 
     // iterate backwards, as you removing from the bottom, which is the last
     // table upwards
-    int rt_index = n_tables;
+    int rt_index = n_tables - 1;
     while (size_to_remove != 0 && rt_index >= 0) {
+        log_info(
+            "size of table %d is %d", rt_index,
+            routing_tables[rt_index]->size);
+        log_info("size to remove is %d", size_to_remove);
         if (routing_tables[rt_index]->size >= size_to_remove) {
             uint32_t diff = routing_tables[rt_index]->size - size_to_remove;
             routing_tables[rt_index]->size = diff;
-            table_lo_entry[rt_index] = diff;
+            table_lo_entry[rt_index] -= diff;
             size_to_remove = 0;
         } else {
             size_to_remove -= routing_tables[rt_index]->size;
             routing_tables[rt_index]->size = 0;
-            table_lo_entry[rt_index] = table_lo_entry[n_tables + 1];
+            table_lo_entry[rt_index] = table_lo_entry[n_tables];
         }
+        log_info(
+            "size of table %d is %d", rt_index,
+            routing_tables[rt_index]->size);
         rt_index -= 1;
     }
     if (size_to_remove != 0) {
-        log_error("deleted more than what was available. WTF");
+        log_error(
+            "deleted more than what was available. WTF %d",
+            size_to_remove);
         rt_error(RTE_SWERR);
     }
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
+
 }
 
 //! \brief deduces sdram requirements for a given size of table

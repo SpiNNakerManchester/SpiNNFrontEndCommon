@@ -14,7 +14,7 @@
 #define TOP_BIT (1 << 31)
 
 // Short routing table entry resulting from an m-trie
-typedef struct _m_trie_entry_t {
+typedef struct m_trie_entry_t {
     // key_mask of the entry
     key_mask_t key_mask;
 
@@ -23,7 +23,7 @@ typedef struct _m_trie_entry_t {
 } m_trie_entry_t;
 
 // m-Trie structure
-typedef struct _m_trie_node_t {
+typedef struct m_trie_t {
 
     // Our parent
     struct _m_trie_node_t *parent;
@@ -32,14 +32,16 @@ typedef struct _m_trie_node_t {
     uint32_t bit;
 
     // Children of this Node
-    struct _m_trie_node_t *child_0, *child_1, *child_X;
+    struct m_trie_t *child_0;
+    struct m_trie_t *child_1;
+    struct m_trie_t *child_X;
 
     // Source(s) of packets which "reach" this node
     uint32_t source;
 } m_trie_t;
 
 // Sub table structure used to hold partially-minimised routing tables
-typedef struct _sub_table_t {
+typedef struct sub_table_t {
 
     // Number of entries in the sub table
     unsigned int n_entries;
@@ -51,7 +53,7 @@ typedef struct _sub_table_t {
     m_trie_entry_t *entries;
 
     // Next sub table in the chain
-    struct _sub_table *next;
+    struct sub_table *next;
 } sub_table_t;
 
 // ---------------------------------------------------------------------
@@ -129,7 +131,7 @@ static m_trie_entry_t *_get_entries(
 }
 
 static inline void m_trie_get_entries(m_trie_t *node, m_trie_entry_t *table) {
-    _get_entries(node, table, 0x0, 0x0);
+    _get_entries(node, table, INIT_SOURCE, INIT_SOURCE);
 }
 
 // Get the relevant child with which to follow a path
@@ -144,7 +146,7 @@ static inline m_trie_t **get_child(
     } else if (!(key & node->bit)) { // An X at this bit
         return &node->child_X;
     } else {
-        return NULL;            // A `!' at this bit, abort
+        return NULL;  // A `!' at this bit, abort
     }
 }
 
@@ -302,7 +304,7 @@ static inline void m_trie_insert(
             key &= ~leaf->bit;
             mask &= ~leaf->bit;
         } else if (*child_X != NULL && path_exists(*child_X, key, mask) &&
-                 *child_0 != NULL && path_exists(*child_0, key, mask)){
+                 *child_0 != NULL && path_exists(*child_0, key, mask)) {
             // Get the source for packets matching the `0'
             source = get_source_from_child(*child_0, key, mask);
 
@@ -316,7 +318,7 @@ static inline void m_trie_insert(
             key &= ~leaf->bit;
             mask &= ~leaf->bit;
         } else if (*child_X != NULL && path_exists(*child_X, key, mask) &&
-                 *child_1 != NULL && path_exists(*child_1, key, mask)){
+                 *child_1 != NULL && path_exists(*child_1, key, mask)) {
             // Get the source for packets matching the `1'
             source = get_source_from_child(*child_1, key, mask);
 

@@ -90,7 +90,7 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
             bit_field_index++) {
 
         // safety feature
-        if((uint32_t) &sorted_bit_fields->bit_fields[bit_field_index] <=
+        if((uint32_t) sorted_bit_fields->bit_fields[bit_field_index] <=
                 0x60000000){
             log_error(
                 "reading something off at address %x",

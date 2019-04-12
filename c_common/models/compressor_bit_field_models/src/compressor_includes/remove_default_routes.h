@@ -35,8 +35,7 @@ static inline bool remove_default_routes_minimise(void) {
             // The entry can be removed iff. it doesn't intersect with any entry
             // further down the table.
             bool remove_entry = true;
-            for (unsigned int j = i + 1;
-                    j < routing_table_sdram_get_n_entries();  j++) {
+            for (int j = i + 1; j < routing_table_sdram_get_n_entries();  j++) {
                 // If entry we're comparing with is already going to be
                 // removed, ignore it.
                 if (bit_set_contains(&remove, j)) {
@@ -63,7 +62,7 @@ static inline bool remove_default_routes_minimise(void) {
     }
 
     // Remove the selected entries from the table
-    for (unsigned int insert = 0, read = 0;
+    for (int insert = 0, read = 0;
             read < routing_table_sdram_get_n_entries(); read++) {
         // Grab the current entry before we potentially overwrite it
 
@@ -81,7 +80,12 @@ static inline bool remove_default_routes_minimise(void) {
     }
 
     // Update the table size
+    log_info("remove redundant");
+    routing_tables_print_out_table_sizes();
     routing_table_remove_from_size(remove.count);
+
+    log_info("finish remove redundant");
+    routing_tables_print_out_table_sizes();
 
     // Clear up
     bit_set_delete(&remove);

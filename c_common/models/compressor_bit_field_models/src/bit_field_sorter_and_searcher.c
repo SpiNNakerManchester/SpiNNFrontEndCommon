@@ -38,7 +38,7 @@ typedef enum priorities{
 }priorities;
 
 //============================================================================
-
+int attempts = 0;
 //! bool flag saying still reading in bitfields, so that state machine don't
 //! go boom when un compressed result comes in
 bool reading_bit_fields = true;
@@ -116,7 +116,7 @@ bool load_routing_table_into_router(void) {
     int start_entry = rtr_alloc_id(last_compressed_table->size, app_id);
     if (start_entry == 0) {
         log_error(
-            "Unable to allocate routing table of size %u\n",
+            "Unable to allocate routing table of size %d\n",
             last_compressed_table->size);
         return false;
     }
@@ -741,6 +741,10 @@ void carry_on_binary_search(uint unused0, uint unused1) {
     while (n_available_compression_cores != 0 && !failed_to_malloc &&
             !found_best && !nothing_to_do) {
         log_info("try a carry on core");
+        attempts +=1;
+        if (attempts >= 20){
+            rt_error(RTE_SWERR);
+        }
 
         // locate next midpoint to test
         int mid_point;
@@ -1157,6 +1161,7 @@ bool initialise_compressor_cores(void) {
     n_compression_cores = compressor_cores_top->n_cores;
 
     n_available_compression_cores = 1;
+    //n_available_compression_cores = n_compression_cores;
     log_debug("%d comps cores available", n_available_compression_cores);
 
     // malloc dtcm for this
