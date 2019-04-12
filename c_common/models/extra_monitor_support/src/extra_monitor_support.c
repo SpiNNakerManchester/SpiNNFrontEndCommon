@@ -1144,14 +1144,17 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
+#ifndef VIC_ENABLE_VECTOR
+#define VIC_ENABLE_VECTOR (0x20)
+#endif //VIC_ENABLE_VECTOR
 
 //! \brief sets up data required by the reinjection functionality
 void reinjection_initialise() {
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+    address_t address = (address_t)
+            sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_REINJECTION]);
 
     // process data
@@ -1160,15 +1163,15 @@ void reinjection_initialise() {
     // Setup the CPU interrupt for WDOG
     vic_controls[sark_vec->sark_slot] = 0;
     vic_vectors[CPU_SLOT]  = sark_int_han;
-    vic_controls[CPU_SLOT] = 0x20 | CPU_INT;
+    vic_controls[CPU_SLOT] = VIC_ENABLE_VECTOR | CPU_INT;
 
     // Setup the communications controller interrupt
     vic_vectors[CC_SLOT]  = reinjection_ready_to_send_callback;
-    vic_controls[CC_SLOT] = 0x20 | CC_TNF_INT;
+    vic_controls[CC_SLOT] = VIC_ENABLE_VECTOR | CC_TNF_INT;
 
     // Setup the timer interrupt
     vic_vectors[TIMER_SLOT]  = reinjection_timer_callback;
-    vic_controls[TIMER_SLOT] = 0x20 | TIMER1_INT;
+    vic_controls[TIMER_SLOT] = VIC_ENABLE_VECTOR | TIMER1_INT;
 
     // Setup the router interrupt as a fast interrupt
     sark_vec->fiq_vec = reinjection_dropped_packet_callback;
@@ -1178,24 +1181,22 @@ void reinjection_initialise() {
 //! \brief sets up data required by the data speed up functionality
 void data_speed_up_initialise() {
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+    address_t address = (address_t)
+            sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
     basic_data_key = address[MY_KEY];
     new_sequence_key = address[NEW_SEQ_KEY];
     first_data_key = address[FIRST_DATA_KEY];
     end_flag_key = address[END_FLAG_KEY];
 
-
-    vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
-    vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
+    vic_vectors[DMA_SLOT] = speed_up_handle_dma;
+    vic_controls[DMA_SLOT] = VIC_ENABLE_VECTOR | DMA_DONE_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
-        data_to_transmit[i] = (uint32_t*) sark_xalloc(
-            sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
-        ALLOC_LOCK);
-        if (data_to_transmit[i] == NULL){
-            io_printf(IO_BUF, "failed to allocate dtcm for DMA buffers\n");
+        data_to_transmit[i] =
+                sark_alloc(ITEMS_PER_DATA_PACKET, sizeof(uint32_t));
+        if (data_to_transmit[i] == NULL) {
+            io_printf(IO_BUF, "failed to allocate DTCM for DMA buffers\n");
             rt_error(RTE_SWERR);
         }
     }
