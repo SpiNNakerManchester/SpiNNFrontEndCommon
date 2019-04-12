@@ -1197,6 +1197,10 @@ static inline void *region_address(uint32_t region_index) {
     return (void *) address[DSG_HEADER + region_index];
 }
 
+#ifndef VIC_ENABLE_VECTOR
+#define VIC_ENABLE_VECTOR (0x20)
+#endif //VIC_ENABLE_VECTOR
+
 //! \brief sets up data required by the reinjection functionality
 static void reinjection_initialise(void) {
     // set up config region and process data
@@ -1205,15 +1209,15 @@ static void reinjection_initialise(void) {
     // Setup the CPU interrupt for WDOG
     vic_controls[sark_vec->sark_slot] = 0;
     vic_vectors[CPU_SLOT]  = sark_int_han;
-    vic_controls[CPU_SLOT] = 0x20 | CPU_INT;
+    vic_controls[CPU_SLOT] = VIC_ENABLE_VECTOR | CPU_INT;
 
     // Setup the communications controller interrupt
     vic_vectors[CC_SLOT]  = reinjection_ready_to_send_callback;
-    vic_controls[CC_SLOT] = 0x20 | CC_TNF_INT;
+    vic_controls[CC_SLOT] = VIC_ENABLE_VECTOR | CC_TNF_INT;
 
     // Setup the timer interrupt
     vic_vectors[TIMER_SLOT]  = reinjection_timer_callback;
-    vic_controls[TIMER_SLOT] = 0x20 | TIMER1_INT;
+    vic_controls[TIMER_SLOT] = VIC_ENABLE_VECTOR | TIMER1_INT;
 
     // Setup the router interrupt as a fast interrupt
     sark_vec->fiq_vec = reinjection_dropped_packet_callback;
@@ -1230,15 +1234,14 @@ static void data_speed_up_initialise(void) {
     first_data_key = config_ptr->first_data_key;
     end_flag_key = config_ptr->end_flag_key;
 
-    vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
-    vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
+    vic_vectors[DMA_SLOT] = speed_up_handle_dma;
+    vic_controls[DMA_SLOT] = VIC_ENABLE_VECTOR | DMA_DONE_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
-        data_to_transmit[i] = sark_xalloc(
-                sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
-		ALLOC_LOCK);
-        if (data_to_transmit[i] == NULL){
-            io_printf(IO_BUF, "failed to allocate dtcm for DMA buffers\n");
+        data_to_transmit[i] =
+                sark_alloc(ITEMS_PER_DATA_PACKET, sizeof(uint32_t));
+        if (data_to_transmit[i] == NULL) {
+            io_printf(IO_BUF, "failed to allocate DTCM for DMA buffers\n");
             rt_error(RTE_SWERR);
         }
     }
