@@ -4,6 +4,7 @@
 #include "helpful_functions.h"
 #include "constants.h"
 #include "../common/routing_table.h"
+#include "../common/common_helpful_functions.h"
 #include <filter_info.h>
 
 
@@ -73,8 +74,17 @@ void extract_and_remove_entry_from_table(
 void set_new_route_with_fixed_processors(
         bit_field_t processors, entry_t* original_entry,
         uint32_t *bit_field_processors, uint32_t n_bit_fields) {
+
     // cast original entry route to a bitfield for ease of use
     bit_field_t original_route = (bit_field_t) &original_entry->route;
+
+    log_info("bitfield processors are ");
+    for (uint32_t bf_i = 0; bf_i < n_bit_fields; bf_i++) {
+        log_info("%d", bit_field_processors[bf_i]);
+    }
+
+    log_info("orginal route is");
+    print_bit_field_bits_v2(original_route, 1);
 
     // only set entries in the new route from the old route if the core has not
     // got a bitfield associated with it.
@@ -104,6 +114,9 @@ void set_new_route_with_fixed_processors(
             }
         }
     }
+
+    log_info("new route is ");
+    print_bit_field_bits_v2(processors, 1);
 }
 
 //! \brief generates the router table entries for the original entry in the
