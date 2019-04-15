@@ -1699,7 +1699,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         run_timer.start_timing()
 
         run_complete = False
-        executor, total_run_timesteps = self._create_execute_workflow(
+        executor, self._current_run_timesteps = self._create_execute_workflow(
             n_machine_time_steps, loading_done, run_until_complete)
         try:
             executor.execute_mapping()
@@ -1719,7 +1719,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # move data around
             self._last_run_outputs = executor.get_items()
             self._last_run_tokens = executor.get_completed_tokens()
-            self._current_run_timesteps = total_run_timesteps
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
@@ -1769,7 +1768,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _create_execute_workflow(
             self, n_machine_time_steps, loading_done, run_until_complete):
         # calculate number of machine time steps
-        total_run_timesteps = self._calculate_number_of_machine_time_steps(
+        run_until_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
@@ -1786,7 +1785,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["TotalMachineTimeSteps"] = total_run_timesteps
+        inputs["TotalMachineTimeSteps"] = run_until_timesteps
+        inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         if run_until_complete:
