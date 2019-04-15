@@ -3,7 +3,8 @@ import os
 import sys
 import sqlite3
 from spinn_utilities.log import FormatAdapter
-from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
+from pacman.model.graphs.application.application_vertex import (
+    ApplicationVertex)
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping, AbstractRecordable,
@@ -304,7 +305,7 @@ class DatabaseWriter(object):
                     self.__insert_app_vertex(
                         vertex, vertex.get_max_atoms_per_core(),
                         vertex.is_recording_spikes())
-                elif isinstance(vertex, AbstractHasGlobalMaxAtoms):
+                elif isinstance(vertex, ApplicationVertex):
                     self.__insert_app_vertex(
                         vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
