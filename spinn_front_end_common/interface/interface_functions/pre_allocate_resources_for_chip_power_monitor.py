@@ -10,14 +10,12 @@ class PreAllocateResourcesForChipPowerMonitor(object):
     """
 
     def __call__(
-            self, machine, n_machine_time_steps, n_samples_per_recording,
+            self, machine, n_samples_per_recording,
             sampling_frequency, time_scale_factor, machine_time_step,
             pre_allocated_resources=None):
         """
         :param pre_allocated_resources: other preallocated resources
         :param machine: the SpiNNaker machine as discovered
-        :param n_machine_time_steps: the number of machine\
-            time steps used by the simulation during this phase
         :param n_samples_per_recording: how many samples between record entries
         :param sampling_frequency: the frequency of sampling
         :param time_scale_factor: the time scale factor
