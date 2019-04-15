@@ -1890,7 +1890,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path,
-            provenance_name="Execution"), total_run_timesteps
+            provenance_name="Execution"), run_until_timesteps
 
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
