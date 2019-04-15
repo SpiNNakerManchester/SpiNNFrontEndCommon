@@ -50,7 +50,7 @@ class ChipPowerMonitor(
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "TotalMachineTimeSteps"})
+                   "n_machine_time_steps": "PlanNTimeSteps"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={

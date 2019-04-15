@@ -100,9 +100,12 @@ class ChipPowerMonitorMachineVertex(
         recording_per_step = (samples_per_step / n_samples_per_recording)
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
-        fixed_sdram = SYSTEM_BYTES_REQUIREMENT + \
-            CONFIG_SIZE_IN_BYTES + DEFAULT_MALLOCS_USED * \
-            SARK_PER_MALLOC_SDRAM_USAGE
+        system = SYSTEM_BYTES_REQUIREMENT
+        config = CONFIG_SIZE_IN_BYTES
+        recording = recording_utilities.get_recording_header_size(1)
+        malloc = DEFAULT_MALLOCS_USED * SARK_PER_MALLOC_SDRAM_USAGE
+        million = 1000000
+        fixed_sdram = system + config + recording + malloc
         with_overflow = (
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
         per_temestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
@@ -113,16 +116,16 @@ class ChipPowerMonitorMachineVertex(
             dtcm=DTCMResource(100))
         return container
 
-    @staticmethod
-    def sdram_calculation():
-        """ Calculates the SDRAM requirements of the vertex
-
-        :return: int
-        """
-        return SYSTEM_BYTES_REQUIREMENT + \
-            ChipPowerMonitorMachineVertex.CONFIG_SIZE_IN_BYTES + \
-            ChipPowerMonitorMachineVertex.DEFAULT_MALLOCS_USED * \
-            SARK_PER_MALLOC_SDRAM_USAGE
+    #@staticmethod
+    #def sdram_calculation():
+    #    """ Calculates the SDRAM requirements of the vertex
+    #
+    #    :return: int
+    #    """
+    #    return SYSTEM_BYTES_REQUIREMENT + \
+    #        ChipPowerMonitorMachineVertex.CONFIG_SIZE_IN_BYTES + \
+    #        ChipPowerMonitorMachineVertex.DEFAULT_MALLOCS_USED * \
+    #        SARK_PER_MALLOC_SDRAM_USAGE
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -138,27 +141,27 @@ class ChipPowerMonitorMachineVertex(
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "TotalMachineTimeSteps"})
+                   "data_n_time_steps": "DataNTimeSteps"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "machine_time_step", "time_scale_factor",
-                   "n_machine_time_steps"})
+                   "data_n_time_steps"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, n_machine_time_steps):
+            machine_time_step, time_scale_factor, data_n_time_steps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
+            spec, machine_time_step, time_scale_factor, data_n_time_steps)
 
     def _generate_data_specification(
             self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
+            data_n_time_steps):
         """ Supports the application vertex calling this directly
 
         :param spec: data spec
         :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
-        :param n_machine_time_steps: n_machine time steps
+        :param data_n_time_steps: timesteps to reserve data for
         :rtype: None
         """
         # pylint: disable=too-many-arguments
@@ -167,7 +170,7 @@ class ChipPowerMonitorMachineVertex(
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
+            spec, machine_time_step, time_scale_factor, data_n_time_steps)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
