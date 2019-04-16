@@ -252,8 +252,10 @@ bool generate_entries_from_bitfields(
         new_entry->key_mask.mask = NEURON_LEVEL_MASK;
         new_entry->source = original_entry->source;
         sark_mem_cpy(
-            &new_entry->route, &atom_processors,
+            &new_entry->route, atom_processors,
             size * WORD_TO_BYTE_MULTIPLIER);
+        log_info("route in entry %d is %x", atom, new_entry->route);
+
     }
 
     // do not remove sdram store, as that's critical to how this stuff works
