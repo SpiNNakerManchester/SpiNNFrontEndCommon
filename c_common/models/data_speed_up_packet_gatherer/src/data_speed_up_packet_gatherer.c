@@ -4,6 +4,24 @@
 #include <data_specification.h>
 #include <simulation.h>
 #include <debug.h>
+#include <bit_field.h>
+#include <math.h>
+
+//-----------------------------------------------------------------------------
+// MAGIC NUMBERS
+//-----------------------------------------------------------------------------
+
+//! timeout used in sending SDP messages
+#define SDP_TIMEOUT 100
+
+ //! whatever SDP flags do
+#define SDP_FLAGS 0x07
+
+ //! the source port for the SDP messages. possibly used by host
+#define SDP_SOURCE_PORT 3
+
+ //! the time to wait before trying again to send a message (MC, SDP)
+#define MESSAGE_DELAY_TIME_WHEN_FAIL 1
 
 //! How many multicast packets are to be received per SDP packet
 #define ITEMS_PER_DATA_PACKET 68
@@ -16,6 +34,63 @@
 
 //! convert between words to bytes
 #define WORD_TO_BYTE_MULTIPLIER 4
+
+// max id needed to cover the chips in either direction on a spinn-5 board
+#define MAX_CHIP_ID 8
+
+ //! size of the command code in bytes
+#define COMMAND_ID_SIZE_IN_BYTES 4
+
+ //! size of the command code in elements
+#define COMMAND_ID_SIZE_IN_ELEMENTS 1
+
+ //! size of total missing seq packets as elements
+#define TOTAL_MISSING_SEQ_PACKETS_IN_ELEMENTS 1
+
+ // bit shift to find x coord from the chip int in sdp message
+#define BIT_SHIFT_CHIP_X_COORD 16
+
+ // mask for getting y coord from the chip int in sdp message
+#define BIT_MASK_FOR_CHIP_Y_COORD 0x0000FFFF
+
+ // sdp port commands received
+#define SDP_SEND_DATA_TO_LOCATION_COMMAND_ID 200
+#define SDP_SEND_SEQ_DATA_COMMAND_ID 2000
+#define SDP_SEND_MISSING_SEQ_NUMS_BACK_TO_HOST_COMMAND_ID 2001
+#define SDP_LAST_DATA_IN_COMMAND_ID 2002
+
+ // sdp port commands sent
+#define SDP_PACKET_SEND_FIRST_MISSING_SEQ_DATA_IN_COMMAND_ID 2003
+#define SDP_PACKET_SEND_MISSING_SEQ_DATA_IN_COMMAND_ID 2004
+#define SDP_PACKET_SEND_FINISHED_DATA_IN_COMMAND_ID 2005
+
+ // threshold for sdram vs dtcm missing seq store.
+#define SDRAM_VS_DTCM_THRESHOLD 40000
+
+ // location of command ids in sdp message
+#define COMMAND_ID_POSITION 0
+
+ //! offset with just command and seq in bytes
+#define OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES 8
+
+ //! offset with command, x, y, address in bytes
+#define OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES 16
+
+ //! size of data stored in packet with command and address
+//! defined from calculation:
+// DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES /
+//                         WORD_TO_BYTE_CONVERTER)
+#define DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM 64
+
+ //! size of data stored in packet with command and seq
+//! defined from calculation:
+//DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
+//                        WORD_TO_BYTE_CONVERTER)
+#define DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM 66
+
+//-----------------------------------------------------------------------------
+// TYPES AND GLOBALS
+//-----------------------------------------------------------------------------
 
 //! struct for a SDP message with pure data, no SCP header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
@@ -64,7 +139,7 @@ sdp_msg_pure_data my_msg;
 
 //! human readable definitions of each region in SDRAM
 typedef enum regions_e {
-    SYSTEM_REGION, CONFIG
+    SYSTEM_REGION, CONFIG, CHIP_TO_KEY
 } regions_e;
 
 //! human readable definitions of the data in each region
@@ -77,6 +152,351 @@ typedef enum callback_priorities{
     MC_PACKET = -1, SDP = 0, DMA = 0
 } callback_priorities;
 
+static uint data_in_mc_key_map[MAX_CHIP_ID][MAX_CHIP_ID] = {{0}};
+static uint chip_x = 0;
+static uint chip_y = 0;
+static bit_field_t missing_seq_nums_store = NULL;
+static bool received_address_packet = false;
+static uint size_of_bitfield = 0;
+static uint total_received_seq_nums = 0;
+static uint last_seen_seq_num = 0;
+static uint start_sdram_address = 0;
+
+//! human readable definitions for each element in first data SDP packet
+typedef enum data_positions_in_first_sdp_packet {
+    SDRAM_ADDRESS = 1,
+    CHIP_DATA = 2,
+    MAX_SEQ_NUM = 3,
+    START_OF_DATA_FIRST_SDP = 4
+} data_positions_in_first_sdp_packet;
+
+//! human readable definitions for each element in the send missing seq first
+//! packet
+typedef enum data_elements_for_missing_seq_first_packet {
+    N_MISSING_SEQ_PACKETS = 1,
+    DATA_STARTS = 2
+} data_elements_for_missing_seq_first_packet;
+
+//! human readable definitions for each element in data sdp packet
+typedef enum data_positions_in_data_sdp_packet {
+    SEQ_NUM = 1,
+    START_OF_DATA_IN_DATA_SDP = 2
+} data_positions_in_data_sdp_packet;
+
+//! human readable definitions of the offsets for key elements
+typedef enum key_offsets{
+    SDRAM_KEY_OFFSET = 0, DATA_KEY_OFFSET = 1, RESTART_KEY_OFFSET = 2
+} key_offsets;
+
+typedef struct data_in_data_t {
+    uint32_t n_chips;
+    struct chip_key_data_t {
+        uint32_t x_coord;
+        uint32_t y_coord;
+        uint32_t base_key;
+    } chip_to_key[];
+} data_in_data_t;
+
+//-----------------------------------------------------------------------------
+// FUNCTIONS
+//-----------------------------------------------------------------------------
+
+static void send_sdp_message(void) {
+    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
+        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+    }
+}
+
+//! \brief sends mc messages accordingly for a the first sdp message
+//! \param[in] msg: the sdp message with no scp header
+//! \param[in] chip_x: the chip_x coord where this data is headed to
+//! \param[in] chip_y: the chip y coord where this data is headed to
+//! \param[in] send_sdram_address: bool flag for if we should send the sdram
+//                                 address of this set of data
+//! \param[in] start_of_data_sdp_position: where data is in the sdp message
+//! \param[in] sdram_address: the sdram address where this block of data is
+//                            to be written on
+void process_sdp_message_into_mc_messages(
+        sdp_msg_pure_data msg, uint chip_x, uint chip_y,
+        bool send_sdram_address, uint start_of_data_sdp_position,
+        uint sdram_address) {
+    // determine size of data to send
+    //log_info("starting process sdp message for chip %d, %d", chip_x, chip_y);
+    uint n_elements = (msg.length -
+            ((start_of_data_sdp_position * WORD_TO_BYTE_MULTIPLIER)
+                    + LENGTH_OF_SDP_HEADER)) / WORD_TO_BYTE_MULTIPLIER;
+    //log_info("n elements %d", n_elements);
+
+    // send mc message with SDRAM location to correct chip
+    //log_info("send sdram address %d", send_sdram_address);
+    if (send_sdram_address) {
+        //log_info("key is %u payload %u",
+        //         data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
+        //         msg.data[SDRAM_ADDRESS]);
+        //log_info("firing with key %d",
+        //         data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET);
+        while (spin1_send_mc_packet(
+                data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
+                sdram_address, WITH_PAYLOAD) == 0) {
+            spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+        }
+    }
+
+    // send mc messages containing rest of sdp data
+    //log_info("sending data");
+    // log_info("firing with key %d",
+    //         data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET);
+    for (uint data_index = 0; data_index < n_elements; data_index++) {
+        //log_info("sending data with key %u payload %u",
+        //          data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
+        //          msg.data[start_of_data_sdp_position + data_index]);
+        while (spin1_send_mc_packet(
+                data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
+                msg.data[start_of_data_sdp_position + data_index],
+                WITH_PAYLOAD) == 0) {
+            spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+        }
+    }
+}
+
+//! \brief allocates bitfield to SDRAM for missing seq nums
+//! \param[in] max_seq_num: the expected max seq num to be seen during this
+//! block of data
+void allocate_to_sdram(uint max_seq_num) {
+    size_of_bitfield = get_bit_field_size(max_seq_num);
+    missing_seq_nums_store = (bit_field_t) sark_xalloc(
+            sv->sdram_heap, size_of_bitfield * sizeof(uint32_t), 0,
+            ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
+    if (missing_seq_nums_store == NULL) {
+        log_error("Failed to allocate memory for missing seq num store");
+        rt_error(RTE_SWERR);
+    }
+}
+
+//! try allocating bitfield to DTCM for missing seq nums
+bool allocate_to_dtcm(uint max_seq_num) {
+    size_of_bitfield = get_bit_field_size(max_seq_num);
+    missing_seq_nums_store =
+            spin1_malloc(size_of_bitfield * sizeof(uint32_t));
+    if (missing_seq_nums_store == NULL) {
+        return false;
+    }
+    return true;
+}
+
+//! \brief creates a store for seq nums in a memory store.
+//! \param[in] max_seq_num: the max seq num expected during this stage
+void process_sdram_location_for_seq_nums(uint max_seq_num) {
+    if (max_seq_num >= SDRAM_VS_DTCM_THRESHOLD){
+        log_info("ALLOCATE TO SDRAM");
+        allocate_to_sdram(max_seq_num);
+    } else {
+        log_info("allocate to dtcm");
+        if (!allocate_to_dtcm(max_seq_num)) {
+            log_info("trying sdram as dtcm alloc failed");
+            allocate_to_sdram(max_seq_num);
+        }
+    }
+    log_info("starting bit field clear");
+    clear_bit_field(missing_seq_nums_store, size_of_bitfield);
+    log_info("finished bit field clearing");
+}
+
+//! \brief determines how many missing seq packets will be needed.
+uint data_in_n_missing_seq_packets(void) {
+    uint missing_seq = max_seq_num - total_received_seq_nums;
+    missing_seq = missing_seq - (
+            ITEMS_PER_DATA_PACKET - COMMAND_ID_SIZE_IN_ELEMENTS -
+            TOTAL_MISSING_SEQ_PACKETS_IN_ELEMENTS);
+    return ceil(missing_seq / (
+            ITEMS_PER_DATA_PACKET - COMMAND_ID_SIZE_IN_ELEMENTS));
+}
+
+//! \brief calculates the new sdram location for a given seq num
+//! \param[in] seq_num: the seq num to figure offset for
+//! \return the new sdram location.
+uint calculate_sdram_address_from_seq_num(uint seq_num) {
+    //log_info("seq num is %d", seq_num);
+    if (seq_num == 0) {
+        //log_info("first packet");
+        return start_sdram_address;
+    } else if (seq_num == 1) {
+        //log_info("first data packet");
+        return start_sdram_address + (
+            DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER);
+    }
+
+    //log_info("start address is %d, first packet size is %d, seq num offset is %d",
+    //    start_sdram_address, DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER,
+    //    WORD_TO_BYTE_MULTIPLIER * DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num);
+    //log_info("part 1 =%d, part 2 =%d part 3 =%d part 4= %d, part5 = %d",
+    //         WORD_TO_BYTE_MULTIPLIER, DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM, seq_num,
+    //         WORD_TO_BYTE_MULTIPLIER * DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM,
+    //         DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num);
+    //log_info("issue %d", value);
+    return start_sdram_address
+            + (DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER)
+            + (WORD_TO_BYTE_MULTIPLIER *
+                    DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num);
+}
+
+//! \brief searches through received seq nums and transmits missing ones back
+//! to host for retransmission
+void process_missing_seq_nums_and_request_retransmission(void) {
+    // check that missing seq transmission is actually needed, or
+    // have we finished
+    //log_info(" total recieved = %d, max seq is %d\n",
+    //         total_received_seq_nums, max_seq_num);
+    if (total_received_seq_nums == max_seq_num) {
+        my_msg.data[COMMAND_ID_POSITION] =
+                SDP_PACKET_SEND_FINISHED_DATA_IN_COMMAND_ID;
+        my_msg.length = COMMAND_ID_SIZE_IN_BYTES + LENGTH_OF_SDP_HEADER;
+        //log_info("length of end data = %d\n", my_msg.length);
+        send_sdp_message();
+        log_info("sent end flag");
+        sark_free(missing_seq_nums_store);
+        total_received_seq_nums = 0;
+    } else {
+        // sending missing seq nums
+
+        //log_info("looking for missing packets");
+        my_msg.data[COMMAND_ID_POSITION] =
+                SDP_PACKET_SEND_FIRST_MISSING_SEQ_DATA_IN_COMMAND_ID;
+        my_msg.data[N_MISSING_SEQ_PACKETS] = data_in_n_missing_seq_packets();
+        uint position_in_data = DATA_STARTS;
+        for (uint bit = 0; bit < max_seq_num; bit++) {
+            if (bit_field_test(missing_seq_nums_store, bit)) {
+                continue;
+            }
+
+            //log_info("adding missing seq num %d\n", bit + 1);
+            my_msg.data[position_in_data] = bit + 1;
+            position_in_data++;
+            if (position_in_data == ITEMS_PER_DATA_PACKET) {
+                //log_info("sending missing data packet");
+                my_msg.length = LENGTH_OF_SDP_HEADER +
+                        position_in_data * WORD_TO_BYTE_MULTIPLIER;
+                send_sdp_message();
+                my_msg.data[COMMAND_ID_POSITION] =
+                        SDP_PACKET_SEND_MISSING_SEQ_DATA_IN_COMMAND_ID;
+                position_in_data = 1;
+            }
+        }
+        // send final message if required
+        //log_info("checking final packet");
+        if (position_in_data > DATA_STARTS) {
+            my_msg.length = LENGTH_OF_SDP_HEADER +
+                    position_in_data * WORD_TO_BYTE_MULTIPLIER;
+            //log_info("sending missing final packet");
+            send_sdp_message();
+        }
+    }
+}
+
+static inline void receive_data_to_location(sdp_msg_pure_data *msg) {
+    // translate elements to variables
+    //log_info("starting data in command");
+    chip_x = msg->data[CHIP_DATA] >> BIT_SHIFT_CHIP_X_COORD;
+    chip_y = msg->data[CHIP_DATA] & BIT_MASK_FOR_CHIP_Y_COORD;
+    received_address_packet = true;
+    max_seq_num = msg->data[MAX_SEQ_NUM];
+    //log_info("got chip ids of %d, %d, and max seq of %d",
+    //         chip_x, chip_y, max_seq_num);
+
+    // allocate sdram location for holding the seq numbers
+    process_sdram_location_for_seq_nums(max_seq_num);
+
+    // send start key, so that monitor is configured to start
+    while (spin1_send_mc_packet(
+            data_in_mc_key_map[chip_x][chip_y] + RESTART_KEY_OFFSET, 0,
+            WITH_PAYLOAD) == 0) {
+        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+    }
+
+    // send mc messages for first packet
+    process_sdp_message_into_mc_messages(
+            *msg, chip_x, chip_y, true, START_OF_DATA_FIRST_SDP,
+            msg->data[SDRAM_ADDRESS]);
+
+    // set start of last seq number
+    last_seen_seq_num = 0;
+
+    // store where the sdram started, for out-of-order UDP packets.
+    start_sdram_address = msg->data[SDRAM_ADDRESS];
+    //log_info("start address = %d", start_sdram_address);
+
+    //log_info("processed\n");
+}
+
+static inline void receive_seq_data(sdp_msg_pure_data *msg) {
+    // store seq number in store for later processing
+    bool send_sdram_address = false;
+    uint this_sdram_address = 0;
+
+    // if not next in line, figure sdram address, send and reset tracker
+    if (last_seen_seq_num != msg->data[SEQ_NUM] - 1) {
+        //log_info("last seq was %d, what we have is %d",
+        //    last_seen_seq_num, msg->data[SEQ_NUM]);
+        send_sdram_address = true;
+        this_sdram_address =
+                calculate_sdram_address_from_seq_num(msg->data[SEQ_NUM] - 1);
+        //log_info("the new sdram address for seq num %d is %d with first data %d",
+        //         msg->data[SEQ_NUM], this_sdram_address,
+        //         msg->data[START_OF_DATA_IN_DATA_SDP]);
+    }
+
+    //log_info("received seq number %d\n", msg->data[SEQ_NUM]);
+    if (!bit_field_test(missing_seq_nums_store, msg->data[SEQ_NUM] -1)) {
+        bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
+        total_received_seq_nums ++;
+    }
+    last_seen_seq_num = msg->data[SEQ_NUM];
+
+    // transmit data to chip
+    process_sdp_message_into_mc_messages(
+            *msg, chip_x, chip_y, send_sdram_address,
+            START_OF_DATA_IN_DATA_SDP, this_sdram_address);
+}
+
+//! \brief processes sdp messages
+//! \param[in] mailbox: the sdp message
+//! \param[in] port: the port assocated with this sdp message
+void data_in_receive_sdp_data(uint mailbox, uint port) {
+    // use as not important
+    use(port);
+
+    //log_info("received packet at port %d", port);
+
+    // convert mailbox into correct sdp format
+    sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
+
+    //log_info("command code is %d", msg->data[COMMAND_ID_POSITION]);
+
+    // check for separate commands
+    switch (msg->data[COMMAND_ID_POSITION]) {
+    case SDP_SEND_DATA_TO_LOCATION_COMMAND_ID:
+        receive_data_to_location(msg);
+        break;
+    case SDP_SEND_SEQ_DATA_COMMAND_ID:
+        receive_seq_data(msg);
+        break;
+    case SDP_SEND_MISSING_SEQ_NUMS_BACK_TO_HOST_COMMAND_ID:
+        log_info("checking for missing");
+        process_missing_seq_nums_and_request_retransmission();
+        break;
+    case SDP_LAST_DATA_IN_COMMAND_ID:
+        log_info("received final flag");
+        process_missing_seq_nums_and_request_retransmission();
+        break;
+    default:
+        log_info("Failed to recognise command id %u",
+                 msg->data[COMMAND_ID_POSITION]);
+    }
+
+    // free the message to stop overload
+    spin1_msg_free((sdp_msg_t *) msg);
+    //log_info("freed message");
+}
 
 void resume_callback() {
     time = UINT32_MAX;
@@ -157,7 +577,7 @@ void receive_data(uint key, uint payload) {
     }
 }
 
-static bool initialize(uint32_t *timer_period) {
+static bool initialize_data_out(uint32_t *timer_period) {
     log_info("Initialise: started\n");
 
     // Get the address this core's DTCM data starts at from SRAM
@@ -191,8 +611,28 @@ static bool initialize(uint32_t *timer_period) {
     my_msg.srce_port = 3;
     my_msg.srce_addr = sv->p2p_addr;
 
+    log_info("Initialising data in\n");
+    spin1_callback_on(SDP_PACKET_RX, data_in_receive_sdp_data, SDP);
+
+     // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+    data_in_data_t *chip_key_map = (data_in_data_t *)
+            data_specification_get_region(CHIP_TO_KEY, address);
+
+    uint n_chips = chip_key_map->n_chips;
+    for (uint i = 0; i < n_chips; i++) {
+        uint x_coord = chip_key_map->chip_to_key[i].x_coord;
+        uint y_coord = chip_key_map->chip_to_key[i].y_coord;
+        uint base_key = chip_key_map->chip_to_key[i].base_key;
+
+        //log_info("for chip %d, %d, base key is %d\n",
+        //         x_coord, y_coord, base_key);
+
+        data_in_mc_key_map[x_coord][y_coord] = base_key;
+    }
     return true;
 }
+
 
 /****f*
  *
@@ -211,8 +651,8 @@ void c_main() {
     // Load DTCM data
     uint32_t timer_period;
 
-    // initialise the model
-    if (!initialize(&timer_period)) {
+    // initialise the code
+    if (!initialize_data_out(&timer_period)) {
         rt_error(RTE_SWERR);
     }
 
