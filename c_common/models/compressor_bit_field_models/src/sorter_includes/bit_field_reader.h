@@ -60,7 +60,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         // populate table for addresses where each bitfield component starts
         for (int bf_id = 0; bf_id < core_n_filters; bf_id++) {
             bit_field_by_processor[r_id].bit_field_addresses[bf_id] =
-                (address_t) &filter_region->filters[bf_id];
+                filter_region->filters[bf_id];
             log_info(
                 "bitfield at region %d at index %d is at address %x",
                 r_id, bf_id,

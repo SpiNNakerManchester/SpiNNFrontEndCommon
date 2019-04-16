@@ -7,19 +7,20 @@ void print_bit_field_struct(filter_info_t *filter_info_struct){
     log_info("address's location is %x", filter_info_struct);
     log_info("key is %d", filter_info_struct->key);
     log_info("n words is %d", filter_info_struct->n_words);
+    log_info("address of bitfield words is %x", filter_info_struct->data);
 }
 
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] bit_field_struct: the location of the bitfield
 //! \return how many redundant packets there are
 uint32_t detect_redundant_packet_count(
-    filter_info_t *filter_info_struct, region_addresses_t *region_addresses){
-    print_bit_field_struct(filter_info_struct);
+    filter_info_t filter_info_struct, region_addresses_t *region_addresses){
+    print_bit_field_struct(&filter_info_struct);
     uint32_t n_filtered_packets = 0;
     uint32_t n_neurons = helpful_functions_locate_key_atom_map(
-        filter_info_struct->key, region_addresses);
+        filter_info_struct.key, region_addresses);
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
-        if (!bit_field_test(*filter_info_struct->data, neuron_id)) {
+        if (!bit_field_test(*filter_info_struct.data, neuron_id)) {
             n_filtered_packets += 1;
         }
     }
@@ -87,7 +88,7 @@ static inline int locate_and_add_bit_fields(
                     "dumping into sorted at index %d address %x and is %x"
                     " from coverage entry %d, ",
                     sorted_bf_fill_loc - 1,
-                    coverage_e->bit_field_addresses[p_index],
+                    *coverage_e->bit_field_addresses[p_index],
                     sorted_bit_fields->bit_fields[sorted_bf_fill_loc - 1]);
 
                 // delete (aka set to null, to bypass lots of data moves and
@@ -326,8 +327,7 @@ static inline _proc_cov_by_bitfield_t** create_coverage_by_bit_field(
 
         for (uint32_t bf_id = 0; bf_id < core_n_bit_fields; bf_id++){
             uint32_t n_red_packets = detect_redundant_packet_count(
-                (filter_info_t *) &filter_region->filters[bf_id],
-                region_addresses);
+                filter_region->filters[bf_id], region_addresses);
             log_debug(
                 "prov cov by bitfield for region %d, redundant packets "
                 "at index %d, has n redundant packets of %d",
@@ -469,7 +469,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
                         bf_by_processor[r_id].bit_field_addresses[red_i]);
 
                     coverage[r_i]->bit_field_addresses[processor_i] =
-                        bf_by_processor[r_id].bit_field_addresses[red_i];
+                        &bf_by_processor[r_id].bit_field_addresses[red_i];
 
                     coverage[r_i]->processor_ids[processor_i] =
                         bf_by_processor[r_id].processor_id;
@@ -509,10 +509,11 @@ void just_add_to_list(
 
         for (int bf_id = 0; bf_id < core_n_bit_fields; bf_id++){
             sorted_bit_fields->bit_fields[pos_in_sorted] =
-                (address_t) &filter_region->filters[bf_id];
+                &filter_region->filters[bf_id];
             sorted_bit_fields->processor_ids[pos_in_sorted] =
                 region_addresses->pairs[r_id].processor;
             print_bit_field_struct(&filter_region->filters[bf_id]);
+
             pos_in_sorted += 1;
         }
     }

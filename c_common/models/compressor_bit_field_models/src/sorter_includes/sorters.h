@@ -20,7 +20,7 @@ typedef struct _coverage_t{
     // list of corresponding processor id to the bitfield addresses list
     int* processor_ids;
     // list of addresses of bitfields with this x redundant packets
-    address_t* bit_field_addresses;
+    filter_info_t** bit_field_addresses;
 } _coverage_t;
 
 //! \brief sorter for redundant packet counts
@@ -214,8 +214,8 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
         int array_index = 0;
         for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
             if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
-                filter_info_t *bf_pointer =
-                    (filter_info_t*) sorted_bit_fields->bit_fields[bf_index];
+                filter_info_t* bf_pointer =
+                    sorted_bit_fields->bit_fields[bf_index];
                 sorted_bf_by_processor->master_pop_keys[array_index] =
                     bf_pointer->key;
                 array_index ++;

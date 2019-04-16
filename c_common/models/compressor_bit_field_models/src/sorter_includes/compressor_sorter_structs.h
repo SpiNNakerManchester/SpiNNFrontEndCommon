@@ -40,7 +40,7 @@ typedef struct bit_field_by_processor_t{
     // length of list
     int length_of_list;
     // list of addresses where the bitfields start
-    address_t *bit_field_addresses;
+    filter_info_t *bit_field_addresses;
 } bit_field_by_processor_t;
 
 //! \brief struct holding keys and n bitfields with key
@@ -74,7 +74,7 @@ typedef struct sorted_bit_fields_t{
     //! rewrites
     int* processor_ids;
     //! the list of bitfields in sorted order based off best effect.
-    address_t* bit_fields;
+    filter_info_t** bit_fields;
 } sorted_bit_fields_t;
 
 //! \brief a single mapping in the addresses area

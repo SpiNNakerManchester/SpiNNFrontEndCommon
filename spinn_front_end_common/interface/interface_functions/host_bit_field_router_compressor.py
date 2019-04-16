@@ -430,8 +430,11 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         word_id = int(math.floor(neuron_id // self._BITS_IN_A_WORD))
         bit_in_word = neuron_id % self._BITS_IN_A_WORD
-        flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
-        return flag
+        try:
+            flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
+            return flag
+        except Exception:
+            print "bugger"
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,
@@ -467,25 +470,26 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # read in each bitfield
             for bit_field_index in range(0, n_bit_field_entries):
-
-                # master pop key
-                master_pop_key = struct.unpack("<I", transceiver.read_memory(
-                    chip_x, chip_y, reading_address, self._BYTES_PER_WORD))[0]
-                reading_address += self._BYTES_PER_WORD
-
-                # how many words the bitfield uses
-                n_words_to_read = struct.unpack("<I", transceiver.read_memory(
-                    chip_x, chip_y, reading_address, self._BYTES_PER_WORD))[0]
-                reading_address += self._BYTES_PER_WORD
+                # master pop key, n words and read pointer
+                (master_pop_key, n_words_to_read, read_pointer) = \
+                    struct.unpack(
+                        "<III", transceiver.read_memory(
+                            chip_x, chip_y, reading_address,
+                            self._BYTES_PER_WORD * 3))
+                reading_address += self._BYTES_PER_WORD * 3
 
                 # get bitfield words
                 bit_field = struct.unpack(
                     "<{}I".format(n_words_to_read),
                     transceiver.read_memory(
-                        chip_x, chip_y, reading_address,
-                        n_words_to_read * constants.WORD_TO_BYTE_MULTIPLIER))
-                reading_address += (
-                    n_words_to_read * constants.WORD_TO_BYTE_MULTIPLIER)
+                        chip_x, chip_y, read_pointer,
+                        n_words_to_read * self._BYTES_PER_WORD))
+
+                n_neurons = n_words_to_read * self._BITS_IN_A_WORD
+                for neuron_id in range(0, n_neurons):
+                    print "for key {} neuron id {} has bit {} set \n".format(
+                        master_pop_key, neuron_id,
+                        self._bit_for_neuron_id(bit_field, neuron_id))
 
                 n_redundant_packets = self._detect_redundant_packet_count(
                     bit_field)

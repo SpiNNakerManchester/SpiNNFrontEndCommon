@@ -21,19 +21,22 @@ static inline void terminate(uint result_code) {
 //! starts
 //! \return the processor id that this bitfield address is associated.
 static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
-        filter_info_t *filter, region_addresses_t *region_addresses,
+        filter_info_t filter, region_addresses_t *region_addresses,
         bit_field_by_processor_t* bit_field_by_processor){
 
     int n_pairs = region_addresses->n_pairs;
     for (int bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
         bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
         for (int addr_i = 0; addr_i < element.length_of_list; addr_i++) {
-            if (element.bit_field_addresses[addr_i] == (address_t) filter) {
+            log_info(
+                "comparing %x with %x",
+                element.bit_field_addresses[addr_i].data, filter.data);
+            if (element.bit_field_addresses[addr_i].data == filter.data) {
                 return element.processor_id;
             }
         }
     }
-    log_error("failed to find the bitfield address %x anywhere.", filter);
+    log_error("failed to find the bitfield address %x anywhere.", filter.data);
     terminate(EXIT_FAIL);
     return 0;
 }
@@ -98,8 +101,8 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         }
 
         // get key
-        filter_info_t *bf_pointer =
-            (filter_info_t*) sorted_bit_fields->bit_fields[bit_field_index];
+        filter_info_t* bf_pointer =
+            sorted_bit_fields->bit_fields[bit_field_index];
 
         // start cycle looking for a clone
         bool found = false;
