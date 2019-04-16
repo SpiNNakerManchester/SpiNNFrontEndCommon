@@ -1120,7 +1120,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
-        #inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["TimeScaleFactor"] = self._time_scale_factor
 
@@ -1346,7 +1345,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
-        #inputs["TotalMachineTimeSteps"] = n_machine_time_steps
 
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
@@ -1573,7 +1571,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        #inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["RunUntilTimeSteps"] = n_machine_time_steps
 
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
@@ -1787,7 +1784,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        #inputs["TotalMachineTimeSteps"] = run_until_timesteps
         inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps

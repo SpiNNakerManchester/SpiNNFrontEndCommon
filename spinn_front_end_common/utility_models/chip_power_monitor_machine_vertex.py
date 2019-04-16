@@ -104,7 +104,6 @@ class ChipPowerMonitorMachineVertex(
         config = CONFIG_SIZE_IN_BYTES
         recording = recording_utilities.get_recording_header_size(1)
         malloc = DEFAULT_MALLOCS_USED * SARK_PER_MALLOC_SDRAM_USAGE
-        million = 1000000
         fixed_sdram = system + config + recording + malloc
         with_overflow = (
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
@@ -115,17 +114,6 @@ class ChipPowerMonitorMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         return container
-
-    #@staticmethod
-    #def sdram_calculation():
-    #    """ Calculates the SDRAM requirements of the vertex
-    #
-    #    :return: int
-    #    """
-    #    return SYSTEM_BYTES_REQUIREMENT + \
-    #        ChipPowerMonitorMachineVertex.CONFIG_SIZE_IN_BYTES + \
-    #        ChipPowerMonitorMachineVertex.DEFAULT_MALLOCS_USED * \
-    #        SARK_PER_MALLOC_SDRAM_USAGE
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
