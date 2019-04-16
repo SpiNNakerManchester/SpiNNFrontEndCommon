@@ -375,7 +375,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             n_machine_time_steps)
 
     def _fill_send_buffer(
-            self, first_machine_time_step, n_machine_time_steps):
+            self, first_machine_time_step, run_until_timesteps):
         """ Fill the send buffer with keys to send
         """
 
@@ -390,11 +390,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if hasattr(self._send_buffer_times[0], "__len__"):
                 # Works with a list-of-lists
                 self.__fill_send_buffer_2d(
-                    key_to_send, first_machine_time_step, n_machine_time_steps)
+                    key_to_send, first_machine_time_step, run_until_timesteps)
             else:
                 # Work with a single list
                 self.__fill_send_buffer_1d(
-                    key_to_send, first_machine_time_step, n_machine_time_steps)
+                    key_to_send, first_machine_time_step, run_until_timesteps)
 
     def __fill_send_buffer_2d(
             self, key_base, first_time_step, n_time_steps):
@@ -540,25 +540,26 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
-        "n_machine_time_steps": "TotalMachineTimeSteps"
+        "plan_n_time_steps": "PlanNTimeSteps",
+        "run_until_timesteps": "RunUntilTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_time_step", "time_scale_factor", "machine_graph",
             "routing_info", "first_machine_time_step",
-            "n_machine_time_steps"
+            "plan_n_time_steps", "run_until_timesteps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, n_machine_time_steps):
+            first_machine_time_step, plan_n_time_steps, run_until_timesteps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
-        self._fill_send_buffer(first_machine_time_step, n_machine_time_steps)
+        self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # Reserve regions
-        self._reserve_regions(spec, n_machine_time_steps)
+        self._reserve_regions(spec, plan_n_time_steps)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
@@ -573,11 +574,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self.recording_sdram_per_timestep(
                 machine_time_step, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * n_machine_time_steps
+            recording_size = per_timestep * plan_n_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
-        self._write_configuration(spec, n_machine_time_steps)
+        self._write_configuration(spec, plan_n_time_steps)
 
         # End spec
         spec.end_specification()
@@ -617,13 +618,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @inject("FirstMachineTimeStep")
     @inject_items({
-        "n_machine_time_steps": "TotalMachineTimeSteps"
+        "run_until_timesteps": "RunUntilTimeSteps"
     })
     def update_buffer(
-            self, first_machine_time_step, n_machine_time_steps):
+            self, first_machine_time_step, run_until_timesteps):
         if self._virtual_key is not None:
             self._fill_send_buffer(
-                first_machine_time_step, n_machine_time_steps)
+                first_machine_time_step, run_until_timesteps)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
