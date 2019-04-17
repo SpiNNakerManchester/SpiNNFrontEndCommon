@@ -3,18 +3,16 @@ from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
+from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
 class SetSystemMCRoutesMessage(AbstractSCPRequest):
     """ An SCP Request to write the system multicast routes into the router
     """
 
-    __slots__ = (
-        # command code
-        "_command_code"
-    )
+    __slots__ = []
 
-    def __init__(self, x, y, p, command_code):
+    def __init__(self, x, y, p):
         """
         :param x: The x-coordinate of a chip, between 0 and 255
         :type x: int
@@ -27,7 +25,6 @@ class SetSystemMCRoutesMessage(AbstractSCPRequest):
             vertex for setting system multicast routes.
         """
 
-        self._command_code = command_code
         super(SetSystemMCRoutesMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
@@ -35,8 +32,10 @@ class SetSystemMCRoutesMessage(AbstractSCPRequest):
                     SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
-            SCPRequestHeader(command=self._command_code))
+            SCPRequestHeader(
+                command=SpeedupInSCPCommands.LOAD_SYSTEM_MC_ROUTES))
 
     def get_scp_response(self):
         return CheckOKResponse(
-            "load system multicast routes", self._command_code)
+            "load system multicast routes",
+            SpeedupInSCPCommands.LOAD_SYSTEM_MC_ROUTES)
