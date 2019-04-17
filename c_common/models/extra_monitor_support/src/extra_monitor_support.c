@@ -1385,6 +1385,17 @@ INT_HANDLER speed_up_handle_dma(){
 //-----------------------------------------------------------------------------
 // common code
 //-----------------------------------------------------------------------------
+static inline void reflect_sdp_message(sdp_msg_t *msg) {
+    uint dest_port = msg->dest_port;
+    uint dest_addr = msg->dest_addr;
+
+    msg->dest_port = msg->srce_port;
+    msg->srce_port = dest_port;
+
+    msg->dest_addr = msg->srce_addr;
+    msg->srce_addr = dest_addr;
+}
+
 void __real_sark_int(void *pc);
 void __wrap_sark_int(void *pc) {
     // Check for extra messages added by this core
@@ -1407,15 +1418,7 @@ void __wrap_sark_int(void *pc) {
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
                 msg->length = 12 + handle_reinjection_command(msg);
-                uint dest_port = msg->dest_port;
-                uint dest_addr = msg->dest_addr;
-
-                msg->dest_port = msg->srce_port;
-                msg->srce_port = dest_port;
-
-                msg->dest_addr = msg->srce_addr;
-                msg->srce_addr = dest_addr;
-
+                reflect_sdp_message(msg);
                 sark_msg_send(msg, 10);
                 break;
             case DATA_SPEED_UP_OUT_FUNCTIONALITY:
@@ -1423,15 +1426,7 @@ void __wrap_sark_int(void *pc) {
                 break;
             case DATA_SPEED_UP_IN_FUNCTIONALITY:
                 msg->length = 12 + handle_data_in_speed_up(msg);
-                {
-                    uint dest_port2 = msg->dest_port;
-                    uint dest_addr2 = msg->dest_addr;
-
-                    msg->dest_port = msg->srce_port;
-                    msg->srce_port = dest_port2;
-                    msg->dest_addr = msg->srce_addr;
-                    msg->srce_addr = dest_addr2;
-                }
+                reflect_sdp_message(msg);
                 sark_msg_send(msg, 10);
                 break;
             default:
