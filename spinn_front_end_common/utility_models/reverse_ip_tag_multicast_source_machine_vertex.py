@@ -540,7 +540,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
-        "plan_n_time_steps": "PlanNTimeSteps",
+        "data_n_time_steps": "DataNTimeSteps",
         "run_until_timesteps": "RunUntilTimeSteps"
     })
     @overrides(
@@ -548,18 +548,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
         additional_arguments={
             "machine_time_step", "time_scale_factor", "machine_graph",
             "routing_info", "first_machine_time_step",
-            "plan_n_time_steps", "run_until_timesteps"
+            "data_n_time_steps", "run_until_timesteps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, plan_n_time_steps, run_until_timesteps):
+            first_machine_time_step, data_n_time_steps, run_until_timesteps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # Reserve regions
-        self._reserve_regions(spec, plan_n_time_steps)
+        self._reserve_regions(spec, data_n_time_steps)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
@@ -574,11 +574,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self.recording_sdram_per_timestep(
                 machine_time_step, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * plan_n_time_steps
+            recording_size = per_timestep * data_n_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
-        self._write_configuration(spec, plan_n_time_steps)
+        self._write_configuration(spec, data_n_time_steps)
 
         # End spec
         spec.end_specification()
