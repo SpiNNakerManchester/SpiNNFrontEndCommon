@@ -73,15 +73,6 @@ extern INT_HANDLER sark_int_han(void);
 //! stop sending now!
 #define SDP_COMMAND_FOR_CLEAR 2000
 
-//! read in application mc routes
-#define SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING 6
-
- //! load application mc routes
-#define SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES 7
-
- //! load system mc routes
-#define SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES 8
-
 //! timeout for trying to end SDP packet
 #define SDP_TIMEOUT 1000
 
@@ -319,6 +310,15 @@ typedef enum data_spec_regions{
     CONFIG_DATA_SPEED_UP_OUT = 1,
     CONFIG_DATA_SPEED_UP_IN = 2
 } data_spec_regions;
+
+typedef enum speed_up_in_command {
+    //! read in application mc routes
+    SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING = 6,
+    //! load application mc routes
+    SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES = 7,
+    //! load system mc routes
+    SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES = 8
+};
 
 //! human readable definitions of each element in the transmission region
 typedef enum data_speed_config_data_elements {
