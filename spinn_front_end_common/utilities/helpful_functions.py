@@ -1,12 +1,18 @@
 import os
 import logging
 import struct
+import numpy
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
-from data_specification import utility_calls
+from data_specification import (
+    utility_calls, DataSpecificationExecutor)
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.exceptions import DataSpecificationException
+from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.utility_objs.data_written import DataWritten
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -125,6 +131,105 @@ def sort_out_downed_chips_cores_links(
             x, y, link_id = downed_link.split(",")
             ignored_links.add((int(x), int(y), int(link_id)))
     return ignored_chips, ignored_cores, ignored_links
+
+
+def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
+    """ flood fills a binary to spinnaker on a given app_id \
+    given the executable targets and binary.
+
+    :param executable_targets: the executable targets object
+    :param binary: the binary to flood fill
+    :param txrx: spinnman instance
+    :type txrx: :py:class:`~spinnman.Tranceiver`
+    :param app_id: the app id to load it on
+    :return: the number of cores it was loaded onto
+    """
+    core_subset = executable_targets.get_cores_for_binary(binary)
+    txrx.execute_flood(
+        core_subset, binary, app_id, wait=True, is_filename=True)
+    return len(core_subset)
+
+
+def execute_dse_allocate_sdram_and_write_to_spinnaker(
+        txrx, machine, app_id, x, y, p, data_spec_path,
+        memory_write_function):
+    """ Uncompress the DSE file, allocate SDRAM from the Machine, and\
+        write data to SpiNNaker.
+
+    :param txrx: SPiNNMan instance
+    :type txrx: :py:class:`~spinnman.Tranceiver`
+    :param machine: SPINNMachine instance
+    :type machine: :py:class:`~spinn_machine.Machine`
+    :param app_id: the app id to allocate SDRAM on
+    :type app_id: int
+    :param x: chip x
+    :type x: int
+    :param y: chip y
+    :type y: int
+    :param p: processor id
+    :type p: int
+    :param data_spec_path: file path to the DSE script.
+    :type data_spec_path: str
+    :param memory_write_function: \
+        how to write memory on SpiNNaker
+    :type memory_write_function: callable((int,int,int,bytes),NoneType)
+    :return: description of what was written
+    :rtype: \
+        :py:class:`~spinn_front_end_common.utilities.utility_objs.DataWritten`
+    """
+
+    # build specification reader
+    reader = FileDataReader(data_spec_path)
+
+    # maximum available memory
+    # however system updates the memory available
+    # independently, so the check on the space available actually
+    # happens when memory is allocated
+    chip = machine.get_chip_at(x, y)
+    memory_available = chip.sdram.size
+
+    # generate data spec executor
+    executor = DataSpecificationExecutor(reader, memory_available)
+
+    # run data spec executor
+    try:
+        executor.execute()
+    except DataSpecificationException:
+        logger.error("Error executing data specification for {},{},{}",
+                     x, y, p)
+        raise
+
+    bytes_used_by_spec = executor.get_constructed_data_size()
+
+    # allocate memory where the app data is going to be written; this
+    # raises an exception in case there is not enough SDRAM to allocate
+    start_address = txrx.malloc_sdram(x, y, bytes_used_by_spec, app_id)
+
+    # Write the header and pointer table and load it
+    header = executor.get_header()
+    pointer_table = executor.get_pointer_table(start_address)
+    data_to_write = numpy.concatenate((header, pointer_table)).tostring()
+    memory_write_function(x, y, start_address, data_to_write)
+    bytes_written_by_spec = len(data_to_write)
+
+    # Write each region
+    for region_id in range(MAX_MEM_REGIONS):
+        region = executor.get_region(region_id)
+        if region is not None:
+            max_pointer = region.max_write_pointer
+            if not region.unfilled and max_pointer > 0:
+                # Get the data up to what has been written
+                data = region.region_data[:max_pointer]
+
+                # Write the data to the position
+                position = pointer_table[region_id]
+                memory_write_function(x, y, position, data)
+                bytes_written_by_spec += len(data)
+
+    # set user 0 register appropriately to the application data
+    write_address_to_user0(address=start_address, x=x, y=y, p=p, txrx=txrx)
+    return DataWritten(
+        start_address, bytes_used_by_spec, bytes_written_by_spec)
 
 
 def read_config(config, section, item):
@@ -265,3 +370,43 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def calculate_board_level_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
+    """ Converts between real and board-based fake chip IDs
+
+    :param chip_x: the real chip x in the real machine
+    :param chip_y: the chip chip y in the real machine
+    :param eth_x: the ethernet x to make board based
+    :param eth_y: the ethernet y to make board based
+    :param machine: the real machine
+    :return: chip x and y for the real chip as if it was 1 board machine
+    :rtype: int and int
+    """
+    fake_x = chip_x - eth_x
+    if fake_x < 0:
+        fake_x += machine.max_chip_x + 1
+    fake_y = chip_y - eth_y
+    if fake_y < 0:
+        fake_y += machine.max_chip_y + 1
+    return fake_x, fake_y
+
+
+def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
+    """ Converts between real and board-based fake chip IDs
+
+    :param fake_x: the fake chip x in the board based machine
+    :param fake_y: the fake chip y in the board based machine
+    :param eth_x: the ethernet x to locate real machine space
+    :param eth_y: the ethernet y to locate real machine space
+    :param machine: the real machine
+    :return: chip x and y for the real chip
+    :rtype: int and int
+    """
+    real_x = fake_x + eth_x
+    if real_x >= machine.max_chip_x + 1:
+        real_x -= machine.max_chip_x + 1
+    real_y = fake_y + eth_y
+    if real_y >= machine.max_chip_y + 1:
+        real_y -= machine.max_chip_y + 1
+    return real_x, real_y
