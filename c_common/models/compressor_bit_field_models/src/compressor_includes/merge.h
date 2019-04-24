@@ -42,7 +42,7 @@ static inline bool merge_init(merge_t *m, uint32_t n_entries_in_table) {
 // Destruct a merge
 static inline void merge_delete(merge_t *m) {
     // Free the bit set
-    bit_set_delete(&m->entries);
+    bit_set_delete(&(m->entries));
 }
 
 // Add an entry to the merge
@@ -69,7 +69,7 @@ static inline void merge_add(merge_t *m, unsigned int i) {
 
 //! See if an entry is contained within a merge
 static inline bool merge_contains(merge_t *m, unsigned int i) {
-  return bit_set_contains(&m->entries, i);
+  return bit_set_contains(&(m->entries), i);
 }
 
 
@@ -96,6 +96,31 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
                     // Merge the key_mask
                     m->key_mask = key_mask_merge(m->key_mask, e->key_mask);
                 }
+            }
+        }
+    }
+}
+
+//! \brief prints out a merge by bit level
+//! \param[in] merge: the merge to print
+void merge_print_merge_bit(merge_t *merge){
+    log_info(
+        "merge key is %x or %d, mask %x, route %x, source %x",
+         merge->key_mask.key, merge->key_mask.key, merge->key_mask.mask,
+         merge->route, merge->source);
+    //print_bit_set(merge->entries);
+    log_info("bit set n_elements is %d", merge->entries.n_elements);
+    for (int table_index = 0; table_index < current_n_tables; table_index++){
+        table_t *table = routing_tables[table_index];
+        for (int entry_index = 0; entry_index < table->size; entry_index ++){
+            entry_t entry = table->entries[entry_index];
+            if (merge_contains(
+                    merge, table_lo_entry[table_index] + entry_index)){
+                log_info(
+                    "entry %d has key %x or %d mask %x route %x source %x",
+                    table_lo_entry[table_index] + entry_index, 
+                    entry.key_mask.key, entry.key_mask.key,
+                    entry.key_mask.mask, entry.route,entry.source);
             }
         }
     }

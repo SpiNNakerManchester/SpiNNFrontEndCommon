@@ -81,11 +81,7 @@ static inline bool remove_default_routes_minimise(void) {
 
     // Update the table size
     log_info("remove redundant");
-    routing_tables_print_out_table_sizes();
     routing_table_remove_from_size(remove.count);
-
-    log_info("finish remove redundant");
-    routing_tables_print_out_table_sizes();
 
     // Clear up
     bit_set_delete(&remove);

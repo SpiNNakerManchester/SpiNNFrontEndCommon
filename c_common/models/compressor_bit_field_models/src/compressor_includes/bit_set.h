@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "../common/platform.h"
+#include "../common/common_helpful_functions.h"
 
 typedef struct _bit_set_t {
     unsigned int count;       // Keep track of members
@@ -94,6 +95,23 @@ static inline bool bit_set_remove(bit_set_t *b, unsigned int i) {
     b->count--;              // Decrement the count of set elements
     b->_data[word] &= ~bit;  // Unset the bit of the appropriate word
     return true;
+}
+
+//! \brief This function prints out an entire bit_field,
+// as a sequence of ones and zeros.
+//! \param[in] b The sequence of words representing a bit_field.
+//! \param[in] s The size of the bit_field.
+void print_bit_set_bits(bit_field_t b, int s) {
+    use(b);
+    use(s);
+    int i; //!< For indexing through the bit field
+    for (i = s; i > 0; i--) {
+	    print_bit_field_entry_v2(b[i], ((i - 1) * 32));
+    }
+}
+
+void print_bit_set(bit_set_t b){
+    print_bit_set_bits(b._data, b.n_words);
 }
 
 #endif  // __BIT_SET_H__

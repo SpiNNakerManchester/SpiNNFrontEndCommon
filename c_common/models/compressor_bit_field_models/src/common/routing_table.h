@@ -121,6 +121,22 @@ void routing_table_reset(void) {
     }
 }
 
+//! \brief prints out table fully from list
+void routing_table_print_list_tables(void){
+    for (int table_index = 0; table_index < current_n_tables; table_index++){
+        table_t *table = routing_tables[table_index];
+        for (int entry_index = 0; entry_index < table->size; entry_index ++){
+            entry_t entry = table->entries[entry_index];
+            log_info(
+                "entry %d from table %d index %d has key %x or %d mask %x route
+                 %x source %x",
+                table_lo_entry[table_index] + entry_index, table_index,
+                entry_index, entry.key_mask.key, entry.key_mask.key,
+                entry.key_mask.mask, entry.route, entry.source);
+        }
+    }
+}
+
 //! \brief stores a table and metadata into state
 //! \param[in]
 static inline void routing_tables_store_routing_table(table_t* table) {
@@ -218,18 +234,7 @@ entry_t* routing_table_sdram_stores_get_entry(
         uint32_t entry_id_to_find) {
     int router_index = find_index_of_table_for_entry(entry_id_to_find);
     int router_offset = entry_id_to_find - table_lo_entry[router_index];
-    if (router_offset > 255 || router_offset < 0){
-        log_info(
-            "shit went off with offset %d for entry %d in table %d",
-            router_offset, entry_id_to_find, router_index);
-        for(int i =0; i < n_tables; i++){
-            log_info(
-                "the lo atom for index %d is %d",
-                i, table_lo_entry[i]);
-        }
 
-        rt_error(RTE_SWERR);
-    }
     log_debug(
         "for entry %d we say its in table %d and entry %d with address %x",
         entry_id_to_find, router_index, router_offset,
@@ -317,14 +322,20 @@ static void routing_tables_print_out_table_sizes(void){
     }
 }
 
+void routing_table_print_table_lo_atom(void){
+    for (int rt_index = 0; rt_index < n_tables; rt_index++){
+        log_info(
+            "low atom for table %d is %d with length %d", rt_index,
+            table_lo_entry[rt_index], routing_tables[rt_index]->size);
+    }
+}
+
 //! \brief updates table stores accordingly.
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(int size_to_remove) {
     // update dtcm tracker
-    log_info("n entries is %d", routing_table_sdram_get_n_entries());
-    log_info("size to remove is %d", size_to_remove);
     table_lo_entry[n_tables] = table_lo_entry[n_tables] - size_to_remove;
 
     routing_tables_print_out_table_sizes();
@@ -333,23 +344,15 @@ void routing_table_remove_from_size(int size_to_remove) {
     // table upwards
     int rt_index = n_tables - 1;
     while (size_to_remove != 0 && rt_index >= 0) {
-        log_info(
-            "size of table %d is %d", rt_index,
-            routing_tables[rt_index]->size);
-        log_info("size to remove is %d", size_to_remove);
         if (routing_tables[rt_index]->size >= size_to_remove) {
             uint32_t diff = routing_tables[rt_index]->size - size_to_remove;
             routing_tables[rt_index]->size = diff;
-            table_lo_entry[rt_index] -= diff;
             size_to_remove = 0;
         } else {
             size_to_remove -= routing_tables[rt_index]->size;
             routing_tables[rt_index]->size = 0;
             table_lo_entry[rt_index] = table_lo_entry[n_tables];
         }
-        log_info(
-            "size of table %d is %d", rt_index,
-            routing_tables[rt_index]->size);
         rt_index -= 1;
     }
     if (size_to_remove != 0) {
@@ -358,7 +361,6 @@ void routing_table_remove_from_size(int size_to_remove) {
             size_to_remove);
         rt_error(RTE_SWERR);
     }
-    log_info("n entries is %d", routing_table_sdram_get_n_entries());
 
 }
 

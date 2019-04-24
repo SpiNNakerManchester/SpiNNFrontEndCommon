@@ -259,20 +259,19 @@ static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
     }
 
     // store this set into the store
-    //log_info("store routing table addresses into store");
-    //log_info(
-    //    "there are %d addresses in packet", first_cmd->n_tables_in_packet);
-    //for (int i = 0; i < first_cmd->n_tables_in_packet; i++) {
-    //    log_info("address is %x for %d", first_cmd->tables[i], i);
-    //}
+    log_debug("store routing table addresses into store");
+    log_debug(
+        "there are %d addresses in packet", first_cmd->n_tables_in_packet);
+    for (int i = 0; i < first_cmd->n_tables_in_packet; i++) {
+        log_debug("address is %x for %d", first_cmd->tables[i], i);
+    }
     store_info_table_store(first_cmd->n_tables_in_packet, first_cmd->tables);
 
     // keep tracker updated
-    //log_info("finished storing routing table address into store");
+    log_debug("finished storing routing table address into store");
 
     // if no more packets to locate, then start compression process
     if (--number_of_packets_waiting_for == 0) {
-        routing_tables_print_out_table_sizes();
         spin1_schedule_callback(
             start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
     }
