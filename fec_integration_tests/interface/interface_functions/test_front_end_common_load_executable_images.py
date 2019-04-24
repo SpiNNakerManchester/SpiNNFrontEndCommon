@@ -4,7 +4,7 @@ try:
 except ImportError:
     from collections import defaultdict
 from spinnman.transceiver import Transceiver
-from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 from spinn_front_end_common.interface.interface_functions import (
     LoadExecutableImages)
 

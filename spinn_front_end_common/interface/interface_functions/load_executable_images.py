@@ -2,6 +2,10 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.utilities.helpful_functions import (
+    flood_fill_binary_to_spinnaker)
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ExecutableTargets)
 
 logger = logging.getLogger(__name__)
 
@@ -14,23 +18,36 @@ class LoadExecutableImages(object):
     __slots__ = []
 
     def __call__(self, executable_targets, app_id, transceiver):
-        progress = ProgressBar(
-            executable_targets.total_processors + 1,
-            "Loading executables onto the machine")
+        # Compute what work is to be done here
+        binaries, cores = self.__filter(executable_targets)
 
-        for binary in executable_targets.binaries:
-            progress.update(self._launch_binary(
+        # ISSUE: Loading order may be non-constant on older Python
+        progress = ProgressBar(cores.total_processors + 1,
+                               self._progress_bar_label())
+        for binary in binaries:
+            progress.update(flood_fill_binary_to_spinnaker(
                 executable_targets, binary, transceiver, app_id))
 
-        self._start_simulation(executable_targets, transceiver, app_id)
+        self._start_simulation(cores, transceiver, app_id)
         progress.update()
         progress.end()
 
-    def _launch_binary(self, executable_targets, binary, txrx, app_id):
-        core_subset = executable_targets.get_cores_for_binary(binary)
-        txrx.execute_flood(
-            core_subset, binary, app_id, wait=True, is_filename=True)
-        return len(core_subset)
+    def _progress_bar_label(self):
+        return "Loading executables onto the machine"
+
+    def __filter(self, targets):
+        binaries = []
+        cores = ExecutableTargets()
+        for exe_type in targets.executable_types_in_binary_set():
+            if self._filter_type(exe_type):
+                for aplx in targets.get_binaries_of_executable_type(exe_type):
+                    binaries.append(aplx)
+                    cores.add_subsets(
+                        aplx, targets.get_cores_for_binary(aplx), exe_type)
+        return binaries, cores
+
+    def _filter_type(self, executable_type):
+        return executable_type is not ExecutableType.SYSTEM
 
     def _start_simulation(self, executable_targets, txrx, app_id):
         txrx.wait_for_cores_to_be_in_state(

@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 import struct
 import numpy
@@ -10,6 +11,7 @@ from data_specification.exceptions import DataSpecificationException
 from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -24,7 +26,7 @@ class HostExecuteDataSpecification(object):
 
     def __call__(
             self, transceiver, machine, app_id, dsg_targets,
-            processor_to_app_data_base_address=None):
+            executable_targets, processor_to_app_data_base_address=None):
         """
         :param machine: the python representation of the SpiNNaker machine
         :param transceiver: the spinnman instance
@@ -37,9 +39,13 @@ class HostExecuteDataSpecification(object):
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
 
+        dsg_targets = self.filter_system_executables(
+            dsg_targets, executable_targets)
+
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets, "Executing data specifications and loading data")
+            dsg_targets, "Executing data specifications and loading data for "
+            "application vertices")
 
         for (x, y, p), data_spec_file_path in \
                 progress.over(iteritems(dsg_targets)):
@@ -48,6 +54,19 @@ class HostExecuteDataSpecification(object):
                 transceiver, machine, app_id, x, y, p, data_spec_file_path)
 
         return processor_to_app_data_base_address
+
+    @staticmethod
+    def filter_system_executables(dsg_targets, executable_targets):
+        syscores = []
+        for b in executable_targets.get_binaries_of_executable_type(
+                ExecutableType.SYSTEM):
+            syscores.extend(executable_targets.get_cores_for_binary(b))
+        syscores = set(syscores)
+        filtered = OrderedDict()
+        for core, spec in iteritems(dsg_targets):
+            if core not in syscores:
+                filtered[core] = spec
+        return filtered
 
     @staticmethod
     def _execute(txrx, machine, app_id, x, y, p, data_spec_path):

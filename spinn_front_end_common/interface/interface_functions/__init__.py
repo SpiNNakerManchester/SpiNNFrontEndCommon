@@ -7,6 +7,8 @@ from .chip_iobuf_extractor import ChipIOBufExtractor
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
 from .database_interface import DatabaseInterface
+from .data_in_multicast_routing_generator import (
+    DataInMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .graph_binary_gatherer import GraphBinaryGatherer
@@ -17,6 +19,8 @@ from .graph_provenance_gatherer import GraphProvenanceGatherer
 from .hbp_allocator import HBPAllocator
 from .hbp_max_machine_generator import HBPMaxMachineGenerator
 from .host_execute_data_specification import HostExecuteDataSpecification
+from .host_execute_system_data_specification import (
+    HostExecuteSystemDataSpecification)
 from .insert_chip_power_monitors_to_graphs import (
     InsertChipPowerMonitorsToGraphs)
 from .insert_edges_to_extra_monitor_functionality import (
@@ -28,6 +32,7 @@ from .insert_extra_monitor_vertices_to_graphs import (
 from .insert_live_packet_gatherers_to_graphs import (
     InsertLivePacketGatherersToGraphs)
 from .load_executable_images import LoadExecutableImages
+from .load_system_executable_images import LoadSystemExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_execute_data_specification import (
@@ -60,17 +65,19 @@ __all__ = [
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
     "ChipRuntimeUpdater", "DatabaseInterface",
+    "DataInMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HBPMaxMachineGenerator",
-    "HostExecuteDataSpecification",
+    "HostExecuteDataSpecification", "HostExecuteSystemDataSpecification",
     "InsertChipPowerMonitorsToGraphs",
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs",
-    "LoadExecutableImages", "LocateExecutableStartType", "LoadFixedRoutes",
+    "LoadExecutableImages", "LoadSystemExecutableImages",
+    "LocateExecutableStartType", "LoadFixedRoutes",
     "MachineExecuteDataSpecification", "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForChipPowerMonitor",
@@ -81,5 +88,4 @@ __all__ = [
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder",
-    "VirtualMachineGenerator"]
+    "TDMAAgendaBuilder", "VirtualMachineGenerator"]
