@@ -239,7 +239,8 @@ static inline __sets_t _get_removables(
 //! \return bool that says if it was successful or not
 static inline bool oc_down_check(
         merge_t *merge, int min_goodness, aliases_t *a,
-        bool *failed_to_malloc, volatile bool *timer_for_compression_attempt) {
+        volatile bool *failed_to_malloc, volatile bool
+        volatile *timer_for_compression_attempt) {
 
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
@@ -428,8 +429,8 @@ static inline bool oc_down_check(
 //! \param[out] failed_by_malloc: bool flag saying failed by malloc
 //! \return bool saying if successful or not.
 static inline bool oc_get_best_merge(
-        aliases_t * aliases, merge_t * best, bool* failed_by_malloc,
-        volatile bool* timer_for_compression_attempt) {
+        aliases_t *aliases, merge_t *best, volatile bool *failed_by_malloc,
+        volatile bool *timer_for_compression_attempt) {
 
     // Keep track of which entries have been considered as part of merges.
     bit_set_t considered;
@@ -722,19 +723,19 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
 //! \param[in] aliases: whatever
 //! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
 //! \param[out] finished_by_control: bool flag saying it failed to control force
-//! \param[out] timer_for_compression_attempt: bool flag saying it ran out of
-//!                                           time
-//! \param[out] finish_compression_flag: bool flag saying once compressed, still
-//!          could not compress enough to meet target length.
+//! \param[out] timer_for_compression_attempt: bool flag that says timer ran our
+//!       for compression attempt.
 //! \param[in] compress_only_when_needed: only compress when needed
 //! \param[in] compress_as_much_as_possible: only compress to normal routing
 //!       table length
 //! \param[in] target_length: the length to reach
 //! \return bool saying if it was successful or not.
 static inline bool oc_minimise(
-        int target_length, aliases_t* aliases, bool *failed_by_malloc,
-        bool *finished_by_control, volatile bool *timer_for_compression_attempt,
-        bool *finish_compression_flag, bool compress_only_when_needed,
+        int target_length, aliases_t* aliases,
+        volatile bool *failed_by_malloc,
+        volatile bool *finished_by_control,
+        volatile bool *timer_for_compression_attempt,
+        bool compress_only_when_needed,
         bool compress_as_much_as_possible){
 
     // check if any compression actually needed
@@ -773,16 +774,8 @@ static inline bool oc_minimise(
     int attempts = 0;
     while ((routing_table_sdram_get_n_entries() > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control) {
+
         //log_info("n entries is %d", routing_table_sdram_get_n_entries());
-        if (*finish_compression_flag) {
-            log_info(
-                "failed due to timing limitations. reached %d entries over %d"
-                " attempts", routing_table_sdram_get_n_entries(),  attempts);
-            *timer_for_compression_attempt = true;
-            routing_table_reset();
-            spin1_pause();
-            return false;
-        }
 
         // Get the best possible merge, if this merge is empty then break out
         // of the loop.
@@ -820,10 +813,21 @@ static inline bool oc_minimise(
     // shut down timer. as passed the compression
     spin1_pause();
 
+    // if it failed due to timing, report and then reset and fail.
+    if (*timer_for_compression_attempt) {
+        log_info(
+            "failed due to timing limitations. reached %d entries over %d"
+            " attempts", routing_table_sdram_get_n_entries(),  attempts);
+        routing_table_reset();
+        spin1_pause();
+        return false;
+    }
+
     log_info(
-        "entries after compressed = %d, timer = %d, finished by control = %d",
+        "entries after compressed = %d, timer = %d, finished by control = %d,"
+        " the number of merge cycles were %d",
         routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
-        *finished_by_control);
+        *finished_by_control, attempts);
 
     log_info("compressed!!!");
     log_info(
