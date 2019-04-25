@@ -11,7 +11,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
     // count how many bitfields there are in total
     *n_bf_addresses = 0;
     int n_pairs_of_addresses = region_addresses->n_pairs;
-    log_info("n pairs of addresses = %d", n_pairs_of_addresses);
+    log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
 
     // malloc the bt fields by processor
 
@@ -30,7 +30,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         // track processor id
         bit_field_by_processor[r_id].processor_id =
             region_addresses->pairs[r_id].processor;
-        log_info(
+        log_debug(
             "bit_field_by_processor in region %d processor id = %d",
             r_id, bit_field_by_processor[r_id].processor_id);
 
@@ -39,12 +39,12 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         log_info("bit_field_region = %x", filter_region);
 
         int core_n_filters = filter_region->n_filters;
-        log_info("there are %d core bit fields", core_n_filters);
+        log_debug("there are %d core bit fields", core_n_filters);
         *n_bf_addresses += core_n_filters;
 
         // track lengths
         bit_field_by_processor[r_id].length_of_list = core_n_filters;
-        log_info(
+        log_debug(
             "bit field by processor with region %d, has length of %d",
             r_id, core_n_filters);
 
@@ -61,12 +61,9 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         for (int bf_id = 0; bf_id < core_n_filters; bf_id++) {
             bit_field_by_processor[r_id].bit_field_addresses[bf_id] =
                 filter_region->filters[bf_id];
-            log_info(
-                "bitfield at region %d at index %d is at address %x",
-                r_id, bf_id,
-                bit_field_by_processor[r_id].bit_field_addresses[bf_id]);
         }
     }
+
     return bit_field_by_processor;
 }
 

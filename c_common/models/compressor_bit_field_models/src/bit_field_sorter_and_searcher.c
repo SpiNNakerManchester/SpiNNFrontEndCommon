@@ -57,7 +57,9 @@ uint32_t finish_compression_flag = 0;
 
 //! easier programming tracking of the user registers
 uncompressed_table_region_data_t *uncompressed_router_table; // user1
+
 region_addresses_t *region_addresses; // user2
+
 void *usable_sdram_regions; // user3
 
 //! best routing table position in the search
@@ -208,7 +210,7 @@ static inline int get_core_index_from_id(int processor_id) {
 //! \return bool fag if it fails for memory issues
 bool create_tables_and_set_off_bit_compressor(int mid_point){
     int n_rt_addresses = 0;
-    log_debug("started create bit field router tables");
+    log_info("started create bit field router tables");
     address_t* bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
             mid_point, &n_rt_addresses, region_addresses,
@@ -221,7 +223,6 @@ bool create_tables_and_set_off_bit_compressor(int mid_point){
     }
 
     log_info("finished creating bit field router tables");
-
     // if successful, try setting off the bitfield compression
     bool success = message_sending_set_off_bit_field_compression(
         n_rt_addresses, mid_point, comp_cores_bf_tables,
@@ -266,8 +267,8 @@ bool start_binary_search(void){
     }
 
     log_debug("n_bf_addresses is %d", n_bf_addresses);
-    log_info("n available compression cores is %d",
-    n_available_compression_cores);
+    log_info(
+        "n available compression cores is %d", n_available_compression_cores);
     log_debug("hops between attempts is %d", hops_between_compression_cores);
 
     bool failed_to_malloc = false;
@@ -275,10 +276,10 @@ bool start_binary_search(void){
     log_debug("n bf addresses = %d", n_bf_addresses);
 
     for (int index = 0; index < n_bf_addresses; index++) {
-        log_info(
+        log_debug(
             "sorted bitfields address at index %d is %x",
             index, sorted_bit_fields->bit_fields[index]);
-        log_info(
+        log_debug(
             "sorted bitfield processor at index %d is %d",
             index, sorted_bit_fields->processor_ids[index]);
     }
@@ -338,7 +339,7 @@ static inline filter_region_t* find_processor_bit_field_region(
     // find the right bitfield region
     for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
         int region_proc_id = region_addresses->pairs[r_id].processor;
-        log_info(
+        log_debug(
             "is looking for %d and found %d", processor_id, region_proc_id);
         if (region_proc_id == processor_id){
             return region_addresses->pairs[r_id].filter;
@@ -517,14 +518,11 @@ int *find_spaces_high_than_point(
     }
 
     // populate list
-    log_info("populate list");
     testing_cores[0] = point;
-    log_info("testing cores index %d is %d", 0, point);
     int testing_core_index = 1;
     for (int n_bf = point; n_bf <= next_tested_point; n_bf++) {
         if (already_being_processed(n_bf)) {
             testing_cores[testing_core_index] = n_bf;
-            log_info("testing cores index %d is %d", testing_core_index, n_bf);
             testing_core_index += 1;
         }
     }
@@ -834,7 +832,8 @@ void process_compressor_response(int comp_core_index, int finished_state) {
     else if (finished_state == FAILED_TO_COMPRESS){
         log_info(
             "failed to compress from core %d doing mid point %d",
-            comp_core_index, comp_core_mid_point[comp_core_index]);
+            compressor_cores[comp_core_index],
+            comp_core_mid_point[comp_core_index]);
 
         // it failed to compress, so it was successful in malloc.
         // so mark the midpoint as tested, and free the core for another
@@ -1056,6 +1055,19 @@ void start_compression_process(uint unused0, uint unused1) {
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
         terminate(EXIT_MALLOC);
+    }
+
+    for (int s_bf_i = 0; s_bf_i < n_bf_addresses; s_bf_i++){
+        log_debug(
+            "address for index %d is %x",
+            s_bf_i, sorted_bit_fields->bit_fields[s_bf_i]->data);
+        log_info(
+            "for address in index %d, it targets processor %d with key %d and "
+            "the redundant packet count is %d",
+            s_bf_i, sorted_bit_fields->processor_ids[s_bf_i],
+            sorted_bit_fields->bit_fields[s_bf_i]->key,
+            detect_redundant_packet_count(
+                *sorted_bit_fields->bit_fields[s_bf_i], region_addresses));
     }
 
     log_info("starting the binary search");

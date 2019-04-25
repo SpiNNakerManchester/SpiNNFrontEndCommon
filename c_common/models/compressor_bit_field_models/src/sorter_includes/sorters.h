@@ -110,15 +110,18 @@ void sorter_sort_by_n_bit_fields(
 void sorter_sort_bitfields_so_most_impact_at_front(
         _coverage_t **coverage, int length_of_array) {
     // print for sanity
-    for (int index = 0; index < length_of_array; index ++){
-        _coverage_t* element = coverage[index];
-        for (int in_index = 1; in_index < element->length_of_list;
-                in_index ++){
-            log_debug(
-                "before address of element %d, in list %d is %x",
-                index, in_index, element->bit_field_addresses[in_index]);
-        }
-    }
+    //int added = 0;
+    //for (int index = 0; index < length_of_array; index ++){
+    //    _coverage_t* element = coverage[index];
+    //    for (int in_index = 1; in_index < element->length_of_list;
+    //            in_index ++){
+    //        log_info(
+    //            "before address of element %d, in list %d is %x",
+    //            index, in_index, element->bit_field_addresses[in_index]);
+    //        added += 1;
+    //    }
+    //}
+    //log_info("has %d bitfields", added);
 
     bool moved;
     do {
@@ -147,15 +150,18 @@ void sorter_sort_bitfields_so_most_impact_at_front(
     } while (moved);
 
     // print for sanity
-    for (int index = 0; index < length_of_array; index ++){
-        _coverage_t* element = coverage[index];
-        for (int in_index = 1; in_index < element->length_of_list;
-                in_index ++){
-            log_debug(
-                "after address of element %d, in list %d is %x",
-                index, in_index, element->bit_field_addresses[in_index]);
-        }
-    }
+    //added = 0;
+    //for (int index = 0; index < length_of_array; index ++){
+    //    _coverage_t* element = coverage[index];
+    //    for (int in_index = 1; in_index < element->length_of_list;
+    //            in_index ++){
+    //        log_info(
+    //            "after address of element %d, in list %d is %x",
+    //            index, in_index, element->bit_field_addresses[in_index]);
+    //        added += 1;
+    //    }
+    //}
+    //log_info("has %d bitfields", added);
 }
 
 
@@ -181,7 +187,6 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
 
         // locate processor id for this region
         int region_proc_id = region_addresses->pairs[r_id].processor;
-        log_info("region proc id is %d", region_proc_id);
         sorted_bf_by_processor[r_id].processor_id = region_proc_id;
 
         // count entries

@@ -28,9 +28,6 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
     for (int bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
         bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
         for (int addr_i = 0; addr_i < element.length_of_list; addr_i++) {
-            log_info(
-                "comparing %x with %x",
-                element.bit_field_addresses[addr_i].data, filter.data);
             if (element.bit_field_addresses[addr_i].data == filter.data) {
                 return element.processor_id;
             }
@@ -50,6 +47,7 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
         uint32_t key, region_addresses_t *region_addresses){
     // locate n address pairs
     uint32_t n_address_pairs = region_addresses->n_pairs;
+    log_debug("key is %x", key);
 
     // cycle through key to atom regions to locate key
     for (uint32_t r_id = 0; r_id < n_address_pairs; r_id++){
@@ -67,6 +65,7 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
                     log_error("this makes no sense. for key %d", key);
                     rt_error(RTE_SWERR);
                 }
+                log_debug("n atoms is %d", key_atom_map->pairs[i].n_atoms);
                 return key_atom_map->pairs[i].n_atoms;
             }
         }
@@ -84,21 +83,13 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
 //! \param[in] mid_point: the point in the sorted bit fields to look for
 //! \return the number of unique keys founds.
 uint32_t helpful_functions_population_master_pop_bit_field_ts(
-        master_pop_bit_field_t * keys, int mid_point,
+        master_pop_bit_field_t *keys, int mid_point,
         sorted_bit_fields_t* sorted_bit_fields){
 
     int n_keys = 0;
     // check each bitfield to see if the key been recorded already
     for (int bit_field_index = 0; bit_field_index < mid_point;
             bit_field_index++) {
-
-        // safety feature
-        if((uint32_t) sorted_bit_fields->bit_fields[bit_field_index] <=
-                0x60000000){
-            log_error(
-                "reading something off at address %x",
-                sorted_bit_fields->bit_fields[bit_field_index]);
-        }
 
         // get key
         filter_info_t* bf_pointer =
@@ -108,9 +99,8 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         bool found = false;
         for (int keys_index = 0; keys_index < n_keys; keys_index++) {
             if (keys[keys_index].master_pop_key ==  bf_pointer->key) {
-                keys[keys_index].n_bitfields_with_key++;
+                keys[keys_index].n_bitfields_with_key += 1;
                 found = true;
-                break;
             }
         }
         if (!found) {

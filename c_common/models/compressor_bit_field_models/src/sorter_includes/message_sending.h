@@ -221,15 +221,8 @@ static void set_up_extra_packet(
 //! \param[in] midpoint: the midpoint this compressor is going to explore
 //! \return the compressor core index for this attempt.
 static int select_compressor_core_index(
-        int midpoint, int n_compression_cores, int* compressor_cores,
-        int* comp_core_mid_point, int* n_available_compression_cores){
-    for(int comp_core_index = 0; comp_core_index < n_compression_cores;
-            comp_core_index++) {
-        log_info(
-            "core %d is doing %d",
-            compressor_cores[comp_core_index],
-            comp_core_mid_point[comp_core_index]);
-    }
+        int midpoint, int n_compression_cores, int* comp_core_mid_point,
+        int *n_available_compression_cores){
 
     for(int comp_core_index = 0; comp_core_index < n_compression_cores;
             comp_core_index++) {
@@ -261,7 +254,7 @@ static bool message_sending_set_off_bit_field_compression(
 
     // select compressor core to execute this
     int comp_core_index = select_compressor_core_index(
-        mid_point, n_compressor_cores, compressor_cores, comp_core_mid_point,
+        mid_point, n_compressor_cores, comp_core_mid_point,
         n_available_compression_cores);
     log_info(
         "using core %d for %d rts",

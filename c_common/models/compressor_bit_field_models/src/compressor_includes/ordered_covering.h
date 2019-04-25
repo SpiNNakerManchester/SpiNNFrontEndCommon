@@ -542,7 +542,6 @@ static inline bool oc_get_best_merge(
         }
 
         if (merge_goodness(&working) <= merge_goodness(best)) {
-            log_info("continue from second merge goodness");
             continue;
         }
 
@@ -739,7 +738,10 @@ static inline bool oc_minimise(
         bool compress_as_much_as_possible){
 
     // check if any compression actually needed
-    log_info("n entries is %d", routing_table_sdram_get_n_entries());
+    log_info(
+        "n entries before compression is %d",
+        routing_table_sdram_get_n_entries());
+
     if (compress_only_when_needed &&
             (routing_table_sdram_get_n_entries() < target_length)) {
         log_info("does not need compression.");
@@ -819,7 +821,7 @@ static inline bool oc_minimise(
     spin1_pause();
 
     log_info(
-        "entries = %d, timer = %d, finished by control = %d",
+        "entries after compressed = %d, timer = %d, finished by control = %d",
         routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
         *finished_by_control);
 

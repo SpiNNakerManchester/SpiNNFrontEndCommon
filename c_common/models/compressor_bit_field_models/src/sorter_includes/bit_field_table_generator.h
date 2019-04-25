@@ -4,7 +4,6 @@
 #include "helpful_functions.h"
 #include "constants.h"
 #include "../common/routing_table.h"
-#include "../common/common_helpful_functions.h"
 #include <filter_info.h>
 
 
@@ -83,10 +82,6 @@ void set_new_route_with_fixed_processors(
         log_debug("%d", bit_field_processors[bf_i]);
     }
 
-    log_debug("orginal route for key %x is", original_entry->key_mask.key);
-    log_debug("original route is %x", (uint32_t) original_route[0]);
-    //print_bit_field_bits_v2(original_route, 1);
-
     // only set entries in the new route from the old route if the core has not
     // got a bitfield associated with it.
     for (uint32_t processor_id = 0; processor_id < MAX_PROCESSORS;
@@ -122,9 +117,6 @@ void set_new_route_with_fixed_processors(
                 processor_id, MAX_LINKS_PER_ROUTER + processor_id);
         }
     }
-
-    log_debug("new route is ");
-    //print_bit_field_bits_v2(processors, 1);
 }
 
 //! \brief generates the router table entries for the original entry in the
@@ -214,18 +206,12 @@ bool generate_entries_from_bitfields(
         processors, original_entry, bit_field_processors,
         n_bit_fields_for_key);
 
-    log_info(
-        "setting entries for base key of %x", original_entry->key_mask.key);
-
     // iterate though each atom and set the route when needed
     for (uint32_t atom = 0; atom < n_atoms; atom++) {
 
         // reset with filtered routes.
         sark_mem_cpy(
             atom_processors, processors, size * WORD_TO_BYTE_MULTIPLIER);
-        log_debug(
-            "before atom for key %x is ", original_entry->key_mask.key + atom);
-        //print_bit_field_bits_v2(atom_processors, size);
 
         // iterate through the bitfield cores and see if they need this atom
         for (int bf_index = 0; bf_index < n_bit_fields_for_key; bf_index++) {
@@ -233,7 +219,7 @@ bool generate_entries_from_bitfields(
             address_t data2 = (address_t) filters[bf_index]->data;
 
             if (bit_field_test((bit_field_t) data2, atom)){
-                log_info(
+                log_debug(
                     "setting for atom %d from bitfield index %d so proc %d",
                     atom, bf_index, bit_field_processors[bf_index]);
                 bit_field_set(
@@ -241,10 +227,6 @@ bool generate_entries_from_bitfields(
                     MAX_LINKS_PER_ROUTER + bit_field_processors[bf_index]);
             }
         }
-
-        log_debug(
-            "new route for key %x is ", original_entry->key_mask.key + atom);
-        //print_bit_field_bits_v2(atom_processors, size);
 
         // get the entry and fill in details.
         entry_t *new_entry = &sdram_table->entries[atom];
@@ -254,7 +236,7 @@ bool generate_entries_from_bitfields(
         sark_mem_cpy(
             &new_entry->route, atom_processors,
             size * WORD_TO_BYTE_MULTIPLIER);
-        log_info("route in entry %d is %x", atom, new_entry->route);
+        log_debug("route in entry %d is %x", atom, new_entry->route);
 
     }
 
@@ -294,7 +276,7 @@ bool generate_rt_from_bit_field(
             sorted_bit_fields->bit_fields[bit_field_index];
         if (bf_pointer->key == master_pop_key){
             filters[index] = sorted_bit_fields->bit_fields[bit_field_index];
-            log_info(
+            log_debug(
                 "filter in index %d is at address %x", index, filters[index]);
             index += 1;
         }
@@ -310,17 +292,6 @@ bool generate_rt_from_bit_field(
 
     extract_and_remove_entry_from_table(
         uncompressed_table, master_pop_key, original_entry);
-
-    // print bitfields for sanity purposes
-    for (index = 0; index < n_bfs_for_key; index ++) {
-        log_debug("for bitfield %d the contents is ", index);
-        log_debug("the sdram loc for the words is %x", filters[index]->data);
-        //uint32_t n_atoms = helpful_functions_locate_key_atom_map(
-        //        original_entry->key_mask.key, region_addresses);
-        //int n_words_for_this_thing = get_bit_field_size(n_atoms);
-        //address_t data2 = (address_t) filters[index]->data;
-        //print_bit_field_bits_v2((bit_field_t) data2, n_words_for_this_thing);
-    }
 
     // create table entries with bitfields
     bool success = generate_entries_from_bitfields(
@@ -362,7 +333,6 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
         log_error("cannot allocate memory for keys");
         return NULL;
     }
-
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
@@ -385,7 +355,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
     address_t* bit_field_routing_tables =
         MALLOC(*n_rt_addresses * sizeof(address_t));
     if (bit_field_routing_tables == NULL) {
-        log_info("failed to allocate memory for bitfield routing tables");
+        log_error("failed to allocate memory for bitfield routing tables");
         FREE(keys);
         FREE(uncompressed_table);
         return NULL;

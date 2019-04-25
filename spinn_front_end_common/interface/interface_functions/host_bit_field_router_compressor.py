@@ -485,12 +485,6 @@ class HostBasedBitFieldRouterCompressor(object):
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * self._BYTES_PER_WORD))
 
-                n_neurons = n_words_to_read * self._BITS_IN_A_WORD
-                for neuron_id in range(0, n_neurons):
-                    print "for key {} neuron id {} has bit {} set \n".format(
-                        master_pop_key, neuron_id,
-                        self._bit_for_neuron_id(bit_field, neuron_id))
-
                 n_redundant_packets = self._detect_redundant_packet_count(
                     bit_field)
 
