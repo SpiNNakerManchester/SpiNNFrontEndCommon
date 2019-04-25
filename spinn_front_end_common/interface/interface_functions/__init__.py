@@ -30,7 +30,6 @@ from .insert_extra_monitor_vertices_to_graphs import (
 from .insert_live_packet_gatherers_to_graphs import (
     InsertLivePacketGatherersToGraphs)
 from .load_executable_images import LoadExecutableImages
-from .load_system_executable_images import LoadSystemExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_execute_data_specification import (
@@ -73,8 +72,7 @@ __all__ = [
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
-    "InsertLivePacketGatherersToGraphs",
-    "LoadExecutableImages", "LoadSystemExecutableImages",
+    "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
     "LocateExecutableStartType", "LoadFixedRoutes",
     "MachineExecuteDataSpecification", "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",

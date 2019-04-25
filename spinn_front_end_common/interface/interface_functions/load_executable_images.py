@@ -17,39 +17,44 @@ class LoadExecutableImages(object):
 
     __slots__ = []
 
-    def __call__(self, executable_targets, app_id, transceiver):
+    def load_app_images(self, executable_targets, app_id, transceiver):
+        self.__load_images(executable_targets, app_id, transceiver,
+                           lambda ty: ty is not ExecutableType.SYSTEM,
+                           "Loading executables onto the machine")
+
+    def load_sys_images(self, executable_targets, app_id, transceiver):
+        self.__load_images(executable_targets, app_id, transceiver,
+                           lambda ty: ty is ExecutableType.SYSTEM,
+                           "Loading system executables onto the machine")
+
+    def __load_images(self, executable_targets, app_id, txrx, filt, label):
         # Compute what work is to be done here
-        binaries, cores = self.__filter(executable_targets)
+        binaries, cores = self.__filter(executable_targets, filt)
 
         # ISSUE: Loading order may be non-constant on older Python
-        progress = ProgressBar(cores.total_processors + 1,
-                               self._progress_bar_label())
+        progress = ProgressBar(cores.total_processors + 1, label)
         for binary in binaries:
             progress.update(flood_fill_binary_to_spinnaker(
-                executable_targets, binary, transceiver, app_id))
+                executable_targets, binary, txrx, app_id))
 
-        self._start_simulation(cores, transceiver, app_id)
+        self.__start_simulation(cores, txrx, app_id)
         progress.update()
         progress.end()
 
-    def _progress_bar_label(self):
-        return "Loading executables onto the machine"
-
-    def __filter(self, targets):
+    @staticmethod
+    def __filter(targets, filt):
         binaries = []
         cores = ExecutableTargets()
         for exe_type in targets.executable_types_in_binary_set():
-            if self._filter_type(exe_type):
+            if filt(exe_type):
                 for aplx in targets.get_binaries_of_executable_type(exe_type):
                     binaries.append(aplx)
                     cores.add_subsets(
                         aplx, targets.get_cores_for_binary(aplx), exe_type)
         return binaries, cores
 
-    def _filter_type(self, executable_type):
-        return executable_type is not ExecutableType.SYSTEM
-
-    def _start_simulation(self, executable_targets, txrx, app_id):
+    @staticmethod
+    def __start_simulation(executable_targets, txrx, app_id):
         txrx.wait_for_cores_to_be_in_state(
             executable_targets.all_core_subsets, app_id, [CPUState.READY])
         txrx.send_signal(app_id, Signal.START)
