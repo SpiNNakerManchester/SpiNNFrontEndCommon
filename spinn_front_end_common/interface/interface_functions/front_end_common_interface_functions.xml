@@ -2,6 +2,38 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="DataInMulticastRoutingGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
+        <python_class>DataInMulticastRoutingGenerator</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores</param_name>
+                <param_type>MemoryExtraMonitorToChipMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>board_version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine</param_name>
+            <param_name>extra_monitor_cores</param_name>
+            <param_name>placements</param_name>
+            <param_name>board_version</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>DataInMulticastRoutingTables</param_type>
+            <param_type>DataInMulticastKeyToChipMap</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="ProcessPartitionConstraints">
         <python_module>spinn_front_end_common.interface.interface_functions.process_partition_constraints</python_module>
         <python_class>ProcessPartitionConstraints</python_class>
@@ -130,12 +162,17 @@
                 <param_name>n_cores_to_allocate</param_name>
                 <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
+            <parameter>
+                <param_name>write_data_in_speed_up_report</param_name>
+                <param_type>WriteDataInSpeedUpReportFlag</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
             <param_name>default_report_directory</param_name>
             <param_name>write_data_speed_up_report</param_name>
+            <param_name>write_data_in_speed_up_report</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
@@ -484,9 +521,10 @@
             <token part="DSGDataReLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
-    <algorithm name="HostExecuteDataSpecification">
+    <algorithm name="HostExecuteApplicationDataSpecification">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>HostExecuteDataSpecification</python_class>
+        <python_method>execute_application_data_specs</python_method>
         <input_definitions>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -508,19 +546,97 @@
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
+            <parameter>
+                <param_name>uses_advanced_monitors</param_name>
+                <param_type>UsingAdvancedMonitorSupport</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores</param_name>
+                <param_type>MemoryExtraMonitorVertices</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_to_chip_mapping</param_name>
+                <param_type>MemoryExtraMonitorToChipMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
+            <param_name>uses_advanced_monitors</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>processor_to_app_data_base_address</param_name>
+            <param_name>executable_targets</param_name>
+            <param_name>placements</param_name>
+            <param_name>extra_monitor_cores</param_name>
+            <param_name>extra_monitor_to_chip_mapping</param_name>
+            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <token part="DSGSystemDataLoaded">DataLoaded</token>
+            <token part="SystemBinariesLoaded">DataLoaded</token>
+        </optional_inputs>
+        <outputs>
+            <param_type>ProcessorToAppDataBaseAddress</param_type>
+            <token part="DSGDataLoaded">DataLoaded</token>
+            <token part="DSGAppDataLoaded">DataLoaded</token>
+        </outputs>
+    </algorithm>
+    <algorithm name="HostExecuteSystemDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
+        <python_class>HostExecuteDataSpecification</python_class>
+        <python_method>execute_system_data_specs</python_method>
+        <input_definitions>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>machine</param_name>
+            <param_name>app_id</param_name>
+            <param_name>dsg_targets</param_name>
+            <param_name>executable_targets</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>processor_to_app_data_base_address</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <token part="DSGDataLoaded">DataLoaded</token>
+            <token part="DSGSystemDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="MachineExecuteDataSpecification">
@@ -554,9 +670,10 @@
             <token part="DSGDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
-    <algorithm name="LoadExecutableImages">
+    <algorithm name="LoadApplicationExecutableImages">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>LoadExecutableImages</python_class>
+        <python_method>load_app_images</python_method>
         <input_definitions>
             <parameter>
                 <param_name>executable_targets</param_name>
@@ -575,10 +692,39 @@
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
-            <token>DataLoaded</token>
+            <token part="DSGAppDataLoaded">DataLoaded</token>
         </required_inputs>
         <outputs>
             <token part="ApplicationBinariesLoaded">BinariesLoaded</token>
+        </outputs>
+    </algorithm>
+    <algorithm name="LoadSystemExecutableImages">
+        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
+        <python_class>LoadExecutableImages</python_class>
+        <python_method>load_sys_images</python_method>
+        <input_definitions>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>executable_targets</param_name>
+            <param_name>app_id</param_name>
+            <param_name>transceiver</param_name>
+            <token part="DSGSystemDataLoaded">DataLoaded</token>
+            <token part="MulticastRoutesLoaded">DataLoaded</token>
+        </required_inputs>
+        <outputs>
+            <token part="SystemBinariesLoaded">BinariesLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="MachineGenerator">
@@ -1778,6 +1924,18 @@
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
+            <parameter>
+                <param_name>uses_advanced_monitors</param_name>
+                <param_type>UsingAdvancedMonitorSupport</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>graph</param_name>
@@ -1790,6 +1948,9 @@
             <param_name>transceiver</param_name>
             <param_name>graph_mapper</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
+            <param_name>uses_advanced_monitors</param_name>
+            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>machine</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>

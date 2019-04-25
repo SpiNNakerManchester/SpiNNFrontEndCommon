@@ -85,13 +85,18 @@ class HostExecuteDataSpecification(object):
                 progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
             processor_to_app_data_base_address[x, y, p] = self._execute(
-                transceiver, machine, app_id, x, y, p, data_spec_file_path)
+                transceiver, machine, app_id, x, y, p, data_spec_file_path,
+                _write_to_spinnaker)
 
         return processor_to_app_data_base_address
 
     def execute_application_data_specs(
             self, transceiver, machine, app_id, dsg_targets,
-            executable_targets, processor_to_app_data_base_address=None):
+            uses_advanced_monitors, executable_targets, placements=None,
+            extra_monitor_cores=None,
+            extra_monitor_to_chip_mapping=None,
+            extra_monitor_cores_to_ethernet_connection_map=None,
+            processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
 
         :param machine: the python representation of the SpiNNaker machine
@@ -110,14 +115,16 @@ class HostExecuteDataSpecification(object):
 
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets, "Executing data specifications and loading data for "
+            dsg_targets,
+            "Executing data specifications and loading data for "
             "application vertices")
 
         for (x, y, p), data_spec_file_path in \
                 progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
             processor_to_app_data_base_address[x, y, p] = self._execute(
-                transceiver, machine, app_id, x, y, p, data_spec_file_path)
+                transceiver, machine, app_id, x, y, p, data_spec_file_path,
+                _write_to_spinnaker)
 
         return processor_to_app_data_base_address
 
@@ -156,11 +163,12 @@ class HostExecuteDataSpecification(object):
                 progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
             processor_to_app_data_base_address[x, y, p] = self._execute(
-                transceiver, machine, app_id, x, y, p, data_spec_file_path)
+                transceiver, machine, app_id, x, y, p, data_spec_file_path,
+                _write_to_spinnaker)
         return processor_to_app_data_base_address
 
     @staticmethod
-    def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
+    def _execute(txrx, machine, app_id, x, y, p, data_spec_path, writer_func):
         # build specification reader
         reader = FileDataReader(data_spec_path)
 
@@ -187,7 +195,7 @@ class HostExecuteDataSpecification(object):
         start_address = txrx.malloc_sdram(x, y, bytes_allocated, app_id)
 
         # Do the actual writing
-        bytes_written = _write_to_spinnaker(
+        bytes_written = writer_func(
             txrx, x, y, p, start_address, executor)
 
         return DataWritten(start_address, bytes_allocated, bytes_written)
