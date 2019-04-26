@@ -563,10 +563,6 @@
                 <param_type>MemoryExtraMonitorVertices</param_type>
             </parameter>
             <parameter>
-                <param_name>extra_monitor_to_chip_mapping</param_name>
-                <param_type>MemoryExtraMonitorToChipMapping</param_type>
-            </parameter>
-            <parameter>
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
@@ -583,7 +579,6 @@
             <param_name>executable_targets</param_name>
             <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
-            <param_name>extra_monitor_to_chip_mapping</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
             <token part="SystemBinariesLoaded">DataLoaded</token>
