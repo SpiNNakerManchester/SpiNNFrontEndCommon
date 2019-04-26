@@ -74,6 +74,8 @@ DEFAULT_N_VIRTUAL_CORES = 16
 # The minimum time a board is kept in the off state in seconds
 MINIMUM_OFF_STATE_TIME = 20
 
+ALANS_DEFAULT_RANDOM_APP_ID = 16
+
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow
@@ -1295,8 +1297,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._graph_mapper = executor.get_item(
                     "MemoryGraphMapper")
 
-        if self._txrx is not None and self._app_id is None:
-            self._app_id = self._txrx.app_id_tracker.get_new_id()
+        if self._app_id is None:
+            if self._txrx is None:
+                self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
+            else:
+                self._app_id = self._txrx.app_id_tracker.get_new_id()
 
         self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
 
@@ -1448,6 +1453,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("DataInMulticastRoutingGenerator")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
@@ -1476,6 +1482,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_routing_tables_from_machine_report"):
                 optional_algorithms.append(
                     "RoutingTableFromMachineReport")
+            # write data in speed up report if required
+            inputs["WriteDataInSpeedUpReportFlag"] = self._config.getboolean(
+                "Reports", "write_data_in_speed_up_report")
 
             # only add board chip report if requested
             if self._config.getboolean("Reports", "write_board_chip_report"):
@@ -1671,7 +1680,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("WriteMemoryIOData")
 
         if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteDataSpecification")
+            optional_algorithms.append("HostExecuteApplicationDataSpecification")
         else:
             optional_algorithms.append("MachineExecuteDataSpecification")
 
@@ -1684,7 +1693,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("GraphBinaryGatherer")
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
-        optional_algorithms.append("LoadExecutableImages")
+        optional_algorithms.append("LoadApplicationExecutableImages")
+        algorithms.append("HostExecuteSystemDataSpecification")
+        algorithms.append("LoadSystemExecutableImages")
 
         # Something probably a report needs the routing tables
         # This report is one way to get them if done on machine
