@@ -4,12 +4,15 @@
 #include "helpful_functions.h"
 
 //! \brief reads in bitfields
+//! \param[in/out] n_bf_pointer: the pointer to store how many bf addresses
+//!  there are.
+// \param[in] region_addresses: the addresses of the regions to read
 //! \return bool that states if it succeeded or not.
 bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
-        int* n_bf_addresses, region_addresses_t *region_addresses){
+        int* n_bf_pointer, region_addresses_t *region_addresses){
 
     // count how many bitfields there are in total
-    *n_bf_addresses = 0;
+    *n_bf_pointer = 0;
     int n_pairs_of_addresses = region_addresses->n_pairs;
     log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
 
@@ -36,11 +39,11 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
 
         // locate data for malloc memory calcs
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
-        log_info("bit_field_region = %x", filter_region);
+        log_debug("bit_field_region = %x", filter_region);
 
         int core_n_filters = filter_region->n_filters;
         log_debug("there are %d core bit fields", core_n_filters);
-        *n_bf_addresses += core_n_filters;
+        *n_bf_pointer += core_n_filters;
 
         // track lengths
         bit_field_by_processor[r_id].length_of_list = core_n_filters;

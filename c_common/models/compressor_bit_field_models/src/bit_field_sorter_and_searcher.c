@@ -468,6 +468,7 @@ int best_mid_point_to_date(void) {
 }
 
 //! \brief returns the next midpoint which has been tested
+//! \param[in] mid_point: the midpoint to start from.
 //! \return the next tested bf midpoint from midpoint
 int next_tested_mid_point_from(int mid_point) {
      for (int n_bf = mid_point + 1; n_bf < n_bf_addresses; n_bf++) {
@@ -482,6 +483,7 @@ int next_tested_mid_point_from(int mid_point) {
 //! \brief return the spaces higher than me which could be tested
 //! \param[in] point: the point to look from
 //! \param[out] length: the length of the testing cores.
+//! \param[in] next_tested_point: top level to search to.
 //! \return bool stating if it was successful or not in memory alloc
 int *find_spaces_high_than_point(
         int point, int *length, int next_tested_point) {
@@ -665,6 +667,8 @@ bool locate_next_mid_point(int *new_mid_point) {
 }
 
 //! \brief compress the bitfields from the best location
+//! \param[in] unused0: not used, tied to api
+//! \param[in] unused1: not used, tied to api
 void carry_on_binary_search(uint unused0, uint unused1) {
     // api requirement
     use(unused0);
@@ -1061,7 +1065,7 @@ void start_compression_process(uint unused0, uint unused1) {
         log_debug(
             "address for index %d is %x",
             s_bf_i, sorted_bit_fields->bit_fields[s_bf_i]->data);
-        log_info(
+        log_debug(
             "for address in index %d, it targets processor %d with key %d and "
             "the redundant packet count is %d",
             s_bf_i, sorted_bit_fields->processor_ids[s_bf_i],

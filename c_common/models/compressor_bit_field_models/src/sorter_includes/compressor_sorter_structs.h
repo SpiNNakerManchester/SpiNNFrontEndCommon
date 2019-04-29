@@ -5,7 +5,7 @@
 #include <key_atom_map.h>
 
 //! holds data for each compressor core, used to free stuff properly when
-//! requried
+//! required
 typedef struct comp_core_store_t{
     // how many rt tables used here
     int n_elements;

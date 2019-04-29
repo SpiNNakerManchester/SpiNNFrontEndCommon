@@ -115,6 +115,7 @@ static inline uint platform_max_available_block_size(void) {
 }
 
 //! \brief frees the sdram allocated from whatever heap it came from
+//! \param[in] ptr: the address to free. could be DTCM or SDRAM
 static inline void safe_x_free(void *ptr) {
     if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
         sark_xfree(sark.heap, ptr, 0);

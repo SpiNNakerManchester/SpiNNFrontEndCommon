@@ -9,11 +9,13 @@
 
 // ---------------------------------------------------------------------
 
+//! \brief constant initial source value
 #define INIT_SOURCE 0x0
 
+//! \brief the top bit of a word
 #define TOP_BIT (1 << 31)
 
-// Short routing table entry resulting from an m-trie
+//! \brief Short routing table entry resulting from an m-trie
 typedef struct m_trie_entry_t {
     // key_mask of the entry
     key_mask_t key_mask;
@@ -22,7 +24,7 @@ typedef struct m_trie_entry_t {
     uint32_t source;
 } m_trie_entry_t;
 
-// m-Trie structure
+// \brief m-Trie structure
 typedef struct m_trie_t {
 
     // Our parent
@@ -40,7 +42,7 @@ typedef struct m_trie_t {
     uint32_t source;
 } m_trie_t;
 
-// Sub table structure used to hold partially-minimised routing tables
+//\brief Sub table structure used to hold partially-minimised routing tables
 typedef struct sub_table_t {
 
     // Number of entries in the sub table
@@ -58,7 +60,10 @@ typedef struct sub_table_t {
 
 // ---------------------------------------------------------------------
 
-// Create a new (empty) node
+//! \brief Create a new (empty) node
+//! \param[in] parent: the tree to add new node in
+//! \param[in] bit: the bit to put in the new node
+//! \return new tree
 static inline m_trie_t *m_trie_new_node(m_trie_t *parent, uint32_t bit) {
     // Malloc room for the new m-Trie, then set the bit to be the MSB and
     // ensure the children are NULL.
@@ -72,12 +77,14 @@ static inline m_trie_t *m_trie_new_node(m_trie_t *parent, uint32_t bit) {
     return node;
 }
 
-// Create a new (empty) tree
+//! \brief Create a new (empty) tree
+//! return new tree.
 static inline m_trie_t *m_trie_new(void) {
     return m_trie_new_node(NULL, TOP_BIT);
 }
 
-// Delete an existing tree
+//! \brief Delete an existing tree
+//! \param[in] node to delete from tree
 static void m_trie_delete(m_trie_t *node) {
     if (node != NULL) {
         // Free any children
@@ -90,7 +97,9 @@ static void m_trie_delete(m_trie_t *node) {
     }
 }
 
-// Count the number of paths travelling through a node
+//! \brief Count the number of paths travelling through a node
+//! \param[in] the free to count
+//! \return the number of nodes in the tree
 static unsigned int m_trie_count(m_trie_t *node) {
     if (node == NULL) {
         return 0;  // Not a node, so return 0
@@ -104,7 +113,12 @@ static unsigned int m_trie_count(m_trie_t *node) {
             m_trie_count(node->child_X);
 }
 
-// Extract routing table entries from a trie
+//! \brief Extract routing table entries from a trie
+//! \param[in] node: point in tree to search
+//! \param[in] table: the table pointer to fill
+//! \param[in] p_key: the key to find
+//! \param[in] p_mask: the mask to find
+//! \return a tree entry
 static m_trie_entry_t *_get_entries(
         m_trie_t *node, m_trie_entry_t *table, uint32_t p_key,
         uint32_t p_mask) {
@@ -130,11 +144,18 @@ static m_trie_entry_t *_get_entries(
     return table;
 }
 
+//! \brief get root entries
+//! \param[in] node: top node
+//! \param[in] table: the table pointer to store
 static inline void m_trie_get_entries(m_trie_t *node, m_trie_entry_t *table) {
     _get_entries(node, table, INIT_SOURCE, INIT_SOURCE);
 }
 
-// Get the relevant child with which to follow a path
+//! \brief Get the relevant child with which to follow a path
+//! \param[in] node: tree to get child from
+//! \param[in] key: key to find
+//! \param[in] mask: mask to find
+//return tree.
 static inline m_trie_t **get_child(
         m_trie_t *node, uint32_t key, uint32_t mask) {
     if (mask & node->bit) {     // Either a 0 or a 1
@@ -150,7 +171,12 @@ static inline m_trie_t **get_child(
     }
 }
 
-// Traverse a path through the tree, adding elements as necessary
+//! \brief Traverse a path through the tree, adding elements as necessary
+//! \param[in] node: the tree point to traverse
+//! \param[in] key: the key to find
+//! \param[in] mask: the mask to find
+//! \param[in] source: the source to find
+//! \return node with .....
 static m_trie_t* m_trie_traverse(
         m_trie_t *node, uint32_t key, uint32_t mask, uint32_t source) {
     while (node->bit) {
@@ -176,7 +202,11 @@ static m_trie_t* m_trie_traverse(
     return node->parent;
 }
 
-// Check if a path exists in a sub-trie
+//! \brief Check if a path exists in a sub-trie
+//! \param[in] node: the node to search
+//! \param[in] key: the key to find
+//! \param[in] mask: the mask to find
+//! \return bool saying true if there is a path, false otherwise
 static inline bool path_exists(m_trie_t *node, uint32_t key, uint32_t mask) {
     while (node->bit) {
         // See where to turn at this node
@@ -196,6 +226,11 @@ static inline bool path_exists(m_trie_t *node, uint32_t key, uint32_t mask) {
     return true;
 }
 
+//! \brief ????
+//! \param[in] node: ?
+//! \param[in] key: ?
+//! \param[in] mask: ?
+//! \return ????
 static bool m_trie_un_traverse(
         m_trie_t *node, uint32_t key, uint32_t mask) {
     if (!node->bit) {
@@ -224,6 +259,11 @@ static bool m_trie_un_traverse(
     }
 }
 
+//! \brief get the source of a child
+//! \param[in] node: the node to search
+//! \param[in] key: the key to find
+//! \param[in] mask: the mask to find
+//! \return the source of the child.
 static inline uint32_t get_source_from_child(
         m_trie_t *node, uint32_t key, uint32_t mask) {
     while (node->bit) {
@@ -244,6 +284,11 @@ static inline uint32_t get_source_from_child(
     return node->source;
 }
 
+//! \brief adds a source to a child node
+//! \param[in] node: node to search
+//! \param[in] key: the key to search for
+//! \param[in] mask: the mask to search for
+//! \param[in] source: the source to add
 static inline void add_source_to_child(
         m_trie_t *node, uint32_t key, uint32_t mask, uint32_t source) {
     while (node->bit) {
@@ -264,6 +309,10 @@ static inline void add_source_to_child(
     node->source |= source;
 }
 
+//! \brief ????????
+//! \param[in] child: ?
+//! \param[in] key: ?
+//! \param[in] mask: ?
 static inline void un_traverse_in_child(
         m_trie_t **child, uint32_t key, uint32_t mask) {
     if (m_trie_un_traverse(*child, key, mask)) {
@@ -271,7 +320,11 @@ static inline void un_traverse_in_child(
     }
 }
 
-// Insert a new entry into the trie
+//! \brief Insert a new entry into the trie
+//! \param[in] root the root to add the entry
+//! \param[in] key the key to add to the entry
+//! \param[in] mask the mask to add to the entry
+//! \param[in] source the source to add to the entry
 static inline void m_trie_insert(
         m_trie_t *root, uint32_t key, uint32_t mask, uint32_t source) {
     // Traverse a path through the trie and keep a reference to the leaf we
@@ -335,7 +388,12 @@ static inline void m_trie_insert(
     }
 }
 
-// Create a new sub table, possibly appending to an existing list of sub tables
+//! \brief Create a new sub table, possibly appending to an existing list of
+//! sub tables
+//! \param[in] sb: create new sub table
+//! \param[in] size: size of sub table
+//! \param[in] route: the route
+//! \return the new table
 static inline sub_table_t* sub_table_new(
         sub_table_t **sb, unsigned int size, uint32_t route) {
     while (*sb != NULL) {
@@ -352,7 +410,9 @@ static inline sub_table_t* sub_table_new(
     return *sb;
 }
 
-// Expand a sub table into an existing routing table
+//! \brief Expand a sub table into an existing routing table
+//! \param[in] sb: table to expand
+//! \param[in] table: table to expand into
 static inline void sub_table_expand(sub_table_t *sb, table_t *table) {
     // Keep a count of the new number of entries
     table->size = 0;
@@ -375,7 +435,8 @@ static inline void sub_table_expand(sub_table_t *sb, table_t *table) {
     }
 }
 
-// Delete a set of sub tables
+//! \brief Delete a set of sub tables
+//! \param[in] sb: set of tables to delete
 static void sub_table_delete(sub_table_t *sb) {
     // Delete local entries
     FREE(sb->entries);
@@ -392,7 +453,8 @@ static void sub_table_delete(sub_table_t *sb) {
     FREE(sb);
 }
 
-// Use m-Tries to minimise a routing table
+//! \brief Use m-Tries to minimise a routing table
+//! \param[in] table: the table to minimise
 static inline void m_trie_minimise(table_t *table) {
     // For each set of unique routes in the table we construct an m-Trie to
     // minimise the entries; we then write the minimised table back in on-top

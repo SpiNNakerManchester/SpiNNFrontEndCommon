@@ -170,6 +170,7 @@ void sorter_sort_bitfields_so_most_impact_at_front(
 //! \param[in] region_addresses: addresses of the regions
 //! \param[in] best_search_point: best search point
 //! \param[in] sorted_bit_fields: the bitfields in sort order
+//! \return list of master pop keys for a given processor
 proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
         region_addresses_t *region_addresses, int best_search_point,
         sorted_bit_fields_t* sorted_bit_fields) {

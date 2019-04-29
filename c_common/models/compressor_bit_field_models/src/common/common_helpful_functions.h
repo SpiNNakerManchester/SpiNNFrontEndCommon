@@ -6,6 +6,7 @@
 //! \brief This function prints out an individual word of a bit_field,
 // as a sequence of ones and zeros.
 //! \param[in] e The word of a bit_field to be printed.
+//! \param[in] offset: the offset in id
 static inline void print_bit_field_entry_v2(uint32_t e, int offset) {
     counter_t i = 32;
 

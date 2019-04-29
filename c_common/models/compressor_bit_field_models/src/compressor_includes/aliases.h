@@ -7,6 +7,7 @@
 
 #include "../common/platform.h"
 #include "../common/routing_table.h"
+#include <debug.h>
 
 /*****************************************************************************/
 /* Vector-like object ********************************************************/
@@ -31,23 +32,32 @@ typedef struct _alias_list_t {
     alias_element_t data;
 } alias_list_t;
 
-// Create a new list on the stack
-static inline alias_list_t* alias_list_new(unsigned int max_size) {
+//! \brief Create a new list on the stack
+//! \param[in] max_size: max size of memory to allocate to new list
+//! \return new alias list. or NULL if not allocated
+static alias_list_t* alias_list_new(unsigned int max_size) {
     // Compute how much memory to allocate
     unsigned int size =
             sizeof(alias_list_t) + (max_size - 1) * sizeof(alias_element_t);
 
     // Allocate and then fill in values
     alias_list_t *as = MALLOC(size);
+    if (as == NULL){
+        return NULL;
+    }
+
     as->n_elements = 0;
     as->max_size = max_size;
     as->next = NULL;
-
     return as;
 }
 
-// Append an element to a list
-static inline bool alias_list_append(
+//! \brief Append an element to a list
+//! \param[in] as: the alias list to append to
+//! \param[in] val: the key mask to append to the alias
+//! \param[in] source: the source to append to the alias
+//! \return bool saying if it successfully appended or not
+static bool alias_list_append(
         alias_list_t *as, key_mask_t val, uint32_t source) {
     if (as->n_elements < as->max_size) {
         (&as->data)[as->n_elements].key_mask = val;
@@ -59,13 +69,18 @@ static inline bool alias_list_append(
     return false;
 }
 
-// Get an element from the list
-static inline alias_element_t alias_list_get(alias_list_t *as, unsigned int i) {
+//! \brief Get an element from the list
+//! \param[in] as: the alias to locate a element from
+//! \param[in] i: the index to get
+//! \return the alias element for the i
+static alias_element_t alias_list_get(alias_list_t *as, unsigned int i) {
     return (&as->data)[i];
 }
 
-// Append a list to an existing list
-static inline void alias_list_join(alias_list_t *a, alias_list_t *b) {
+//! \brief Append a list to an existing list
+//! \param[in] a: alias list to append to
+//! \param[in] b:al;ias list to append
+static void alias_list_join(alias_list_t *a, alias_list_t *b) {
     // Traverse the list elements until we reach the end.
     while (a->next != NULL) {
         a = a->next;
@@ -75,8 +90,9 @@ static inline void alias_list_join(alias_list_t *a, alias_list_t *b) {
     a->next = b;
 }
 
-// Delete all elements in an alias list
-static inline void alias_list_delete(alias_list_t *a) {
+//! \brief Delete all elements in an alias list
+//! \param[in] a: alias list to delete.
+void alias_list_delete(alias_list_t *a) {
     if (a->next != NULL) {
         alias_list_delete(a->next);
         a->next = NULL;
@@ -91,30 +107,41 @@ static inline void alias_list_delete(alias_list_t *a) {
 /* Map-like object ***********************************************************/
 // Implemented as an AA tree
 
-
+//! \brief the key union from a key and mask to a 64 bit number
 typedef union a_key_t {
+    // key mast combo
     key_mask_t km;
+
+    // the 64 bit int version
     int64_t as_int;
 } a_key_t;
 
+// node struct
 typedef struct node_t {
     // Key and value of this node
     a_key_t key;
+
+    // alias ......
     alias_list_t *val;
 
+    // tree level maybe?
     unsigned int level;
 
-    // Children
+    // left child
     struct node_t *left;
+
+    // right child
     struct node_t *right;
 } node_t;
 
+//! \brief top of tree
 typedef struct aliases_t {
     node_t *root;
 } aliases_t;
 
-// Create a new, empty, aliases container
-static inline aliases_t aliases_init(void) {
+//! \brief Create a new, empty, aliases container
+//! return new alias list
+static aliases_t aliases_init(void) {
     aliases_t aliases = {NULL};
     return aliases;
 }
@@ -123,7 +150,7 @@ static inline aliases_t aliases_init(void) {
 //! \param[in] node: ????????
 //! \param[in] key: ????????
 //! \return ???????????
-static inline node_t *_aliases_find_node(node_t *node, a_key_t key) {
+static node_t *_aliases_find_node(node_t *node, a_key_t key) {
     while (node != NULL) {
         if (key.as_int == node->key.as_int) {
             // This is the requested item, return it
@@ -146,7 +173,7 @@ static inline node_t *_aliases_find_node(node_t *node, a_key_t key) {
 //! \param[in] a: ??????????
 //! \param[in] key: ????????????
 //! \return ?????????????
-static inline alias_list_t *aliases_find(aliases_t *a, key_mask_t key) {
+static alias_list_t *aliases_find(aliases_t *a, key_mask_t key) {
     // Search the tree
     node_t *node = _aliases_find_node(a->root, (a_key_t) key);
     if (node == NULL) {
@@ -160,14 +187,14 @@ static inline alias_list_t *aliases_find(aliases_t *a, key_mask_t key) {
 //! \param[in] a: alias
 //! \param[in] key: the key mask struct
 //! \return bool saying if the alias has the key mask.
-static inline bool aliases_contains(aliases_t *a, key_mask_t key) {
+static bool aliases_contains(aliases_t *a, key_mask_t key) {
     return aliases_find(a, key) != NULL;
 }
 
 //! \brief ???????
 //! \param[in] n: ??????????
 //! \return ??????????
-static inline node_t *_aliases_skew(node_t *n) {
+static node_t *_aliases_skew(node_t *n) {
     if (n == NULL) {
         return NULL;
     }
@@ -184,7 +211,7 @@ static inline node_t *_aliases_skew(node_t *n) {
 //! \brief ??????????
 //! \param[in] n: ??????????
 //! \return ??????????
-static inline node_t *_aliases_split(node_t *n) {
+static node_t *_aliases_split(node_t *n) {
     if (n == NULL) {
         return NULL;
     }
@@ -204,12 +231,18 @@ static inline node_t *_aliases_split(node_t *n) {
 //! \param[in] n: ??????????
 //! \param[in] key: ????????
 //! \param[in] val: ?????????
-//! \return ??????????
-static node_t *_aliases_insert(node_t *n, a_key_t key, alias_list_t *val) {
+//! \return bool stating if the insert was successful or not
+static bool _aliases_insert(
+        node_t *n, a_key_t key, alias_list_t *val) {
+
     if (n == NULL) {
         // If the node is NULL then create a new Node
         // Malloc room for the node
-        node_t *n = MALLOC(sizeof(node_t));
+        n = MALLOC(sizeof(node_t));
+        if (n == NULL){
+            log_error("failed to allocate memory for node");
+            return false;
+        }
 
         // Assign the values
         n->key = key;
@@ -217,15 +250,21 @@ static node_t *_aliases_insert(node_t *n, a_key_t key, alias_list_t *val) {
         n->left = n->right = NULL;
         n->level = 1;
 
-        return n;
+        return true;
     }
 
     if (key.as_int < n->key.as_int) {
         // Go left
-        n->left = _aliases_insert(n->left, key, val);
+        bool success = _aliases_insert(n->left, key, val);
+        if (!success){
+            return false;
+        }
     } else if (key.as_int > n->key.as_int) {
         // Go right
-        n->right = _aliases_insert(n->right, key, val);
+        bool success = _aliases_insert(n->right, key, val);
+        if (!success){
+            return false;
+        }
     } else {
         // Replace the value
         n->val = val;
@@ -235,7 +274,7 @@ static node_t *_aliases_insert(node_t *n, a_key_t key, alias_list_t *val) {
     n = _aliases_skew(n);
     n = _aliases_split(n);
 
-    return n;
+    return true;
 }
 
 
@@ -243,10 +282,12 @@ static node_t *_aliases_insert(node_t *n, a_key_t key, alias_list_t *val) {
 //! \param[in] a: ??????????
 //! \param[in] key: key mask struct
 //! \param[in] value: ????????
-static inline void aliases_insert(
+//! \return bool stating if the insert was successful or not
+static bool aliases_insert(
         aliases_t *a, key_mask_t key, alias_list_t *value) {
     // Insert into, and balance, the tree
-    a->root = _aliases_insert(a->root, (a_key_t) key, value);
+
+   return _aliases_insert(a->root, (a_key_t) key, value);
 }
 
 
@@ -290,7 +331,7 @@ static void _aliases_clear(node_t *n) {
 //! \brief Remove all elements from an aliases container and free all
 //! sub-containers
 //! \param[in] a: the aliases tree.
-static inline void aliases_clear(aliases_t *a) {
+static void aliases_clear(aliases_t *a) {
     _aliases_clear(a->root);
 }
 

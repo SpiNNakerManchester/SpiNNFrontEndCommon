@@ -19,7 +19,7 @@ typedef struct _sets_t {
 //! \brief Get the goodness for a merge
 //! /param[in] merge: the merge
 //! \return the goodness of the merge.
-static inline int merge_goodness(merge_t *merge) {
+static int merge_goodness(merge_t *merge) {
     return merge->entries.count - 1;
 }
 
@@ -27,7 +27,8 @@ static inline int merge_goodness(merge_t *merge) {
 //! \brief Get the index where the routing table entry resulting from a merge
 //! should be inserted.
 //! \param[in] generality: ??????????
-static inline unsigned int oc_get_insertion_point(
+//! \return the insertion point for this generality
+static unsigned int oc_get_insertion_point(
         const unsigned int generality) {
     // Perform a binary search of the table to find entries of generality - 1
     const unsigned int g_m_1 = generality - 1;
@@ -79,7 +80,7 @@ static inline unsigned int oc_get_insertion_point(
 //! \return bool flag saying if the method was successful in completing or not
 static inline bool oc_up_check(
         merge_t *merge, int min_goodness,
-        volatile bool* timer_for_compression_attempt, bool* changed) {
+        volatile bool *timer_for_compression_attempt, bool *changed) {
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     // Get the point where the merge will be inserted into the table.
@@ -143,7 +144,7 @@ static inline bool oc_up_check(
 //! \param[in] stringency: ????????
 //! \param[in] set_to_zero: ???????
 //! \param[in] set_to_one: ????????
-static inline void _get_settable(
+static void _get_settable(
         key_mask_t merge_km, key_mask_t covered_km, unsigned int *stringency,
         uint32_t *set_to_zero, uint32_t *set_to_one) {
     // We can "set" any bit where the merge contains an X and the covered
@@ -173,7 +174,8 @@ static inline void _get_settable(
 //! \param[in] settable: Mask of bits to set
 //! \param[in] to_one:  True if setting to one, otherwise false
 //! \param[in] sets: bitfields of some form
-static inline __sets_t _get_removables(
+//! \return ????????????
+static __sets_t _get_removables(
         merge_t *m, uint32_t settable, bool to_one, __sets_t sets) {
     // For each bit which we are trying to set while the best set doesn't
     // contain only one entry.
@@ -233,14 +235,13 @@ static inline __sets_t _get_removables(
 //! \param[in] merge: the merge to eventually apply
 //! \param[in] min_goodness: ????????
 //! \param[in] a: ????????
-//! \param[out] failed_to_malloc: bool flag saying if it failed due to malloc
+//! \param[out] failed_by_malloc: bool flag saying if it failed due to malloc
 //! \param[in] timer_for_compression_attempt: bool pointer for if the timer has
-//!
 //! \return bool that says if it was successful or not
-static inline bool oc_down_check(
-        merge_t *merge, int min_goodness, aliases_t *a,
-        volatile bool *failed_to_malloc, volatile bool
-        volatile *timer_for_compression_attempt) {
+static bool oc_down_check(
+        merge_t *merge, int min_goodness, aliases_t *aliases,
+        bool *failed_by_malloc,
+        volatile bool *timer_for_compression_attempt) {
 
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
@@ -248,6 +249,7 @@ static inline bool oc_down_check(
 
         // safety check for timing limits
         if(*timer_for_compression_attempt) {
+            log_error("failed due to timing");
             return false;
         }
 
@@ -275,12 +277,13 @@ static inline bool oc_down_check(
 
              // safety check for timing limits
             if(*timer_for_compression_attempt){
+                log_error("failed due to timing");
                 return false;
             }
 
             key_mask_t km = routing_table_sdram_stores_get_entry(i)->key_mask;
             if (key_mask_intersect(km, merge->key_mask)) {
-                if (!aliases_contains(a, km)) {
+                if (!aliases_contains(aliases, km)) {
                     // The entry doesn't contain any aliases so we need to
                     // avoid hitting the key that has just been identified.
                     covered_entries = true;
@@ -290,10 +293,11 @@ static inline bool oc_down_check(
                 } else {
                     // We need to avoid any key_masks contained within the
                     // alias table.
-                    alias_list_t *the_alias_list = aliases_find(a, km);
+                    alias_list_t *the_alias_list = aliases_find(aliases, km);
                     while (the_alias_list != NULL) {
                         // safety check for timing limits
                         if(*timer_for_compression_attempt){
+                            log_error("failed due to timing");
                             return false;
                         }
                         for (unsigned int j = 0; j < the_alias_list->n_elements;
@@ -301,6 +305,7 @@ static inline bool oc_down_check(
 
                             // safety check for timing limits
                             if(*timer_for_compression_attempt){
+                                log_error("failed due to timing");
                                 return false;
                             }
 
@@ -344,7 +349,7 @@ static inline bool oc_down_check(
 
         if (sets.best == NULL) {
             log_error("failed to alloc sets best");
-            *failed_to_malloc = true;
+            *failed_by_malloc = true;
             return false;
         }
 
@@ -352,7 +357,7 @@ static inline bool oc_down_check(
 
         if(sets.working == NULL) {
             log_error("failed to alloc sets working");
-            *failed_to_malloc = true;
+            *failed_by_malloc = true;
 
             // free stuff already malloc
             FREE(&sets.best);
@@ -362,7 +367,7 @@ static inline bool oc_down_check(
         bool success = bit_set_init(sets.best, merge->entries.count);
         if (!success) {
             log_error("failed to init the bitfield best");
-            *failed_to_malloc = true;
+            *failed_by_malloc = true;
 
             // free stuff already malloc
             FREE(&sets.best);
@@ -373,7 +378,7 @@ static inline bool oc_down_check(
         success = bit_set_init(sets.working, merge->entries.count);
         if (!success) {
             log_error("failed to init the bitfield working.");
-            *failed_to_malloc = true;
+            *failed_by_malloc = true;
 
             // free stuff already malloc
             FREE(&sets.best);
@@ -389,6 +394,9 @@ static inline bool oc_down_check(
         for (int i = 0; i <routing_table_sdram_get_n_entries(); i++) {
             // safety check for timing limits
             if(*timer_for_compression_attempt) {
+                log_error("failed due to timing");
+                FREE(&sets.best);
+                FREE(&sets.working);
                 return false;
             }
 
@@ -427,9 +435,11 @@ static inline bool oc_down_check(
 //! \param[in] aliases: ???????????
 //! \param[in] best: the best merge to find
 //! \param[out] failed_by_malloc: bool flag saying failed by malloc
+//! \param[in] timer_for_compression_attempt: bool flag saying if timer has
+//! fired
 //! \return bool saying if successful or not.
 static inline bool oc_get_best_merge(
-        aliases_t *aliases, merge_t *best, volatile bool *failed_by_malloc,
+        aliases_t *aliases, merge_t *best, bool *failed_by_malloc,
         volatile bool *timer_for_compression_attempt) {
 
     // Keep track of which entries have been considered as part of merges.
@@ -500,7 +510,7 @@ static inline bool oc_get_best_merge(
         entry_t *entry = routing_table_sdram_stores_get_entry(i);
 
         // Try to merge with other entries
-        log_debug("starting second search at index %d", i);
+        //log_info("starting second search at index %d", i);
         for (int j = i+1; j < routing_table_sdram_get_n_entries(); j++) {
 
             // safety check for timing limits
@@ -512,7 +522,7 @@ static inline bool oc_get_best_merge(
             // Get the other entry
             entry_t *other = routing_table_sdram_stores_get_entry(j);
 
-            // check if mergable
+            // check if merge-able
             if (entry->route == other->route) {
 
                 // If the routes are the same then the entries may be merged
@@ -603,7 +613,8 @@ static inline bool oc_get_best_merge(
 //! \brief Apply a merge to the table against which it is defined
 //! \param[in] merge: the merge to apply to the routing tables
 //! \param[in] aliases: ??????????????
-static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
+static inline bool oc_merge_apply(
+        merge_t *merge, aliases_t *aliases, bool *failed_by_malloc) {
     // Get the new entry
     entry_t new_entry;
     new_entry.key_mask = merge->key_mask;
@@ -611,9 +622,9 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
     new_entry.source = merge->source;
 
     log_debug(
-        "new entry k %x mask %x route %x source %x",
+        "new entry k %x mask %x route %x source %x x mergable is %d",
         new_entry.key_mask.key, new_entry.key_mask.mask, new_entry.route,
-        new_entry.source);
+        new_entry.source, merge->entries.count);
 
     // Get the insertion point for the new entry
     int insertion_point =
@@ -624,13 +635,23 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
     int reduced_size = 0;
 
     // Create a new aliases list with sufficient space for the key_masks of all
-    // of the entries in the merge.
+    // of the entries in the merge. NOTE: IS THIS REALLY REQUIRED!?
     alias_list_t *new_aliases = alias_list_new(merge->entries.count);
-    aliases_insert(aliases, new_entry.key_mask, new_aliases);
+    if (new_aliases == NULL) {
+        log_error("failed to malloc new alias list");
+        *failed_by_malloc = true;
+        return false;
+    }
+    bool malloc_success =
+        aliases_insert(aliases, new_entry.key_mask, new_aliases);
+    if (!malloc_success) {
+        log_error("failed to malloc new alias list during insert");
+        *failed_by_malloc = true;
+        return false;
+    }
 
     // Use two iterators to move through the table copying entries from one
     // position to the other as required.
-
     int insert = 0;
     for (int remove = 0; remove < routing_table_sdram_get_n_entries();
             remove++) {
@@ -700,6 +721,8 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
         }
     }
 
+    alias_list_delete(new_aliases);
+
     // If inserting beyond the old end of the table then perform the insertion
     // at the new end of the table.
     if (insertion_point == routing_table_sdram_get_n_entries()) {
@@ -714,12 +737,14 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
 
     // Record the new size of the table
     routing_table_remove_from_size(reduced_size - 1);
+    return true;
 }
 
 
 // Apply the ordered covering algorithm to a routing table
 // Minimise the table until either the table is shorter than the target length
 // or no more merges are possible.
+//! \param[in] target_length: the length to reach
 //! \param[in] aliases: whatever
 //! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
 //! \param[out] finished_by_control: bool flag saying it failed to control force
@@ -728,11 +753,10 @@ static inline void oc_merge_apply(merge_t *merge, aliases_t *aliases) {
 //! \param[in] compress_only_when_needed: only compress when needed
 //! \param[in] compress_as_much_as_possible: only compress to normal routing
 //!       table length
-//! \param[in] target_length: the length to reach
 //! \return bool saying if it was successful or not.
 static inline bool oc_minimise(
         int target_length, aliases_t* aliases,
-        volatile bool *failed_by_malloc,
+        bool *failed_by_malloc,
         volatile bool *finished_by_control,
         volatile bool *timer_for_compression_attempt,
         bool compress_only_when_needed,
@@ -775,7 +799,7 @@ static inline bool oc_minimise(
     while ((routing_table_sdram_get_n_entries() > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control) {
 
-        //log_info("n entries is %d", routing_table_sdram_get_n_entries());
+        log_debug("n entries is %d", routing_table_sdram_get_n_entries());
 
         // Get the best possible merge, if this merge is empty then break out
         // of the loop.
@@ -783,19 +807,24 @@ static inline bool oc_minimise(
         bool success = oc_get_best_merge(
             aliases, &merge, failed_by_malloc, timer_for_compression_attempt);
         if (!success) {
-            log_info("failed to do get best merge.");
-            routing_table_reset();
-            spin1_pause();
+            log_info(
+                "failed to do get best merge. the number of merge cycles "
+                "were %d", attempts);
+
             return false;
         }
-
         unsigned int count = merge.entries.count;
 
         if (count > 1) {
             // Apply the merge to the table if it would result in merging
             // actually occurring.
             routing_tables_print_out_table_sizes();
-            oc_merge_apply(&merge, aliases);
+            bool malloc_success = oc_merge_apply(
+                &merge, aliases, failed_by_malloc);
+            if (!malloc_success){
+                log_error("failed to malloc");
+                return false;
+            }
             routing_tables_print_out_table_sizes();
         }
 
@@ -809,7 +838,6 @@ static inline bool oc_minimise(
         }
         attempts += 1;
     }
-
     // shut down timer. as passed the compression
     spin1_pause();
 
@@ -818,7 +846,6 @@ static inline bool oc_minimise(
         log_info(
             "failed due to timing limitations. reached %d entries over %d"
             " attempts", routing_table_sdram_get_n_entries(),  attempts);
-        routing_table_reset();
         spin1_pause();
         return false;
     }

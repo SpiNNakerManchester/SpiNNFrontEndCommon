@@ -33,18 +33,19 @@ typedef enum interrupt_priority{
 int counter = 0;
 int max_counter = 0;
 
-//! \brief number of times a compression time slot has occurred
+//! \brief bool saying if the timer has fired, resulting in attempt to compress
+//! shutting down
 volatile bool timer_for_compression_attempt = false;
-
-//! \brief flag saying if we've sent a force ack, incase we get many of them.
-bool sent_force_ack = false;
 
 //! \brief bool flag to say if i was forced to stop by the compressor control
 volatile bool finished_by_compressor_force = false;
 
 //! bool flag pointer to allow minimise to report if it failed due to malloc
 //! issues
-volatile bool failed_by_malloc = false;
+bool failed_by_malloc = false;
+
+//! \brief flag saying if we've sent a force ack, incase we get many of them.
+bool sent_force_ack = false;
 
 //! control flag for running compression only when needed
 bool compress_only_when_needed = false;
@@ -69,6 +70,9 @@ sdp_msg_pure_data my_msg;
 
 //! \brief sdp message data as a response packet (reducing casts)
 response_sdp_packet_t* response = (response_sdp_packet_t*) &my_msg.data;
+
+//! \brief aliases thingy for compression
+aliases_t aliases;
 
 // ---------------------------------------------------------------------
 
@@ -163,23 +167,12 @@ void start_compression_process(uint unused0, uint unused1) {
 
     log_debug("in compression phase");
 
-    // reset fail state flags by first turning off timer (puts us in pause
-    // state as well)
-    spin1_pause();
-    failed_by_malloc = false;
-    finished_by_compressor_force = false;
-    timer_for_compression_attempt = false;
-    counter = 0;
-
-    // create aliases
-    aliases_t aliases = aliases_init();
-
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
     // run compression
     bool success = oc_minimise(
-        TARGET_LENGTH, &aliases, &failed_by_malloc,
+        200, &aliases, &failed_by_malloc,
         &finished_by_compressor_force,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
@@ -224,6 +217,9 @@ void start_compression_process(uint unused0, uint unused1) {
             return_failed_by_space_response_message();
         }
     }
+
+    // forces the process to only handle first packets
+    can_store_routing_tables = false;
 }
 
 //! \brief takes a array of tables from a packet and puts them into the dtcm
@@ -241,9 +237,18 @@ void store_info_table_store(int n_tables_in_packet, address_t tables[]) {
 //! and then set off user event if no more  are expected.
 //! \param[in] first_cmd: the first packet.
 static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
-    // update response tracker
+    // reset states by first turning off timer (puts us in pause state as well)
+    spin1_pause();
+    failed_by_malloc = false;
+    finished_by_compressor_force = false;
+    timer_for_compression_attempt = false;
     sent_force_ack = false;
+    counter = 0;
+    aliases_clear(&aliases);
     routing_table_reset();
+
+    // create aliases
+    aliases = aliases_init();
 
     // location where to store the compressed table
     sdram_loc_for_compressed_entries = first_cmd->address_for_compressed;

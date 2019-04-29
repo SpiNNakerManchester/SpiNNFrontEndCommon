@@ -62,7 +62,7 @@ int current_n_tables = 0;
 
 //! \brief Get a mask of the Xs in a key_mask
 //! \param[in] km: the key mask to get as xs
-//! \return ???????????
+//! \return a merged mask
 static inline uint32_t key_mask_get_xs(key_mask_t km) {
     return ~km.key & ~km.mask;
 }
@@ -70,7 +70,7 @@ static inline uint32_t key_mask_get_xs(key_mask_t km) {
 
 //! \brief Get a count of the Xs in a key_mask
 //! \param[in] km: the key mask struct to count
-//! \return ???????
+//! \return the number of bits set in the mask
 static inline unsigned int key_mask_count_xs(key_mask_t km) {
     return __builtin_popcount(key_mask_get_xs(km));
 }
@@ -78,7 +78,7 @@ static inline unsigned int key_mask_count_xs(key_mask_t km) {
 
 //! \brief Determine if two key_masks would match any of the same keys
 //! \param[in] a: key mask struct a
-//! \param[in] b: key masp struct b
+//! \param[in] b: key mask struct b
 //! \return bool that says if these key masks intersect
 static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
     return (a.key & b.mask) == (b.key & a.mask);
@@ -200,6 +200,7 @@ int find_index_of_table_for_entry(int entry_id) {
 
 //! \brief the init for the routing tables
 //! \param[in] total_n_tables: the total tables to be stored
+//! \return bool saying the routing tables have been initialised.
 static inline bool routing_tables_init(int total_n_tables) {
     n_tables = total_n_tables;
 
@@ -225,10 +226,7 @@ static inline bool routing_tables_init(int total_n_tables) {
 }
 
 //! \brief gets a entry at a given position in the lists of tables in sdram
-//! \param[in] routing_tables: the addresses list
-//! \param[in] n_tables: how many in list
 //! \param[in] entry_id_to_find: the entry your looking for
-//! \param[out] entry_to_fill: the pointer to entry struct to fill in data
 //! \return the pointer in sdram to the entry
 entry_t* routing_table_sdram_stores_get_entry(
         uint32_t entry_id_to_find) {
@@ -244,7 +242,9 @@ entry_t* routing_table_sdram_stores_get_entry(
 
 //! \brief stores the routing tables entries into sdram at a specific sdram
 //! address as one big router table
-//! \param[in] sdram_address: the location in sdram to write data to
+//! \param[in] sdram_loc_for_compressed_entries:
+//!    the location in sdram to write data to
+//! \return bool saying if the entries were stored in sdram successfully or not
 bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries) {
 
     // cast to table struct

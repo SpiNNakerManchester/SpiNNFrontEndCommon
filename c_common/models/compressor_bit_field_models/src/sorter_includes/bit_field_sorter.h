@@ -5,7 +5,8 @@
 
 
 //! \brief reads a bitfield and deduces how many bits are not set
-//! \param[in] bit_field_struct: the location of the bitfield
+//! \param[in] filter_info_struct: the struct holding a bitfield
+//! \param[in] the addresses of the regions to read
 //! \return how many redundant packets there are
 uint32_t detect_redundant_packet_count(
     filter_info_t filter_info_struct, region_addresses_t *region_addresses){
@@ -30,6 +31,9 @@ uint32_t detect_redundant_packet_count(
 //! \param[in] cores_to_add_length: length of array of core ids
 //! \param[in] diff: the amount of bitfields to add for these cores
 //! \param[out] covered: the new set of bitfields
+//! \param[out] sorted_bit_fields: the pointer to where sorted bitfields are
+//! \param[in] sorted_bf_fill_loc: the location in the sorted bit fields 
+//! currently filling in
 //! \return the new covered level
 static inline int locate_and_add_bit_fields(
         _coverage_t** coverage, int coverage_index,
@@ -98,7 +102,10 @@ static inline int locate_and_add_bit_fields(
     return covered;
 }
 
-
+//! \brief printer for the coverage struct bitfields component
+//! \param[in] n_unique_redundant_packet_counts: how many coverage bits there
+//!  are
+//! \param[in] coverage: the coverage struct (pointer to a list of them).
 static void print_coverage_for_sanity_purposes(
         int n_unique_redundant_packet_counts, _coverage_t **coverage){
     int added = 0;
@@ -117,6 +124,10 @@ static void print_coverage_for_sanity_purposes(
     log_debug("added %d bitfields", added);
 }
 
+//! \brief printer for the coverage struct processor component
+//! \param[in] n_unique_redundant_packet_counts: how many coverage bits there
+//!  are
+//! \param[in] coverage: the coverage struct (pointer to a list of them).
 void print_coverage_procs_for_sanity_purposes(
         int n_unique_redundant_packet_counts, _coverage_t **coverage){
      for (int c_index = 0; c_index < n_unique_redundant_packet_counts;
@@ -131,6 +142,14 @@ void print_coverage_procs_for_sanity_purposes(
     }
 }
 
+//! \brief takes whats left in the coverage and adds them to the sorted bit 
+//! fields
+//! \param[in] sorted_bit_fields: the pointer to the sorted bitfield struct
+//! \param[in] n_unique_redundant_packet_counts: how many coverage bits there
+//!  are
+//! \param[in] coverage: the coverage struct (pointer to a list of them).
+//! \param[in] sorted_bf_fill_loc: the current position in the sorted 
+//! bitfields for filling in.
 void add_left_overs(
         sorted_bit_fields_t* sorted_bit_fields,
         int n_unique_redundant_packet_counts, _coverage_t** coverage,
@@ -169,6 +188,7 @@ void add_left_overs(
 //! \param[in] n_pairs: the number of processors/elements to search
 //! \param[in] n_unique_redundant_packet_counts: the count of how many unique
 //!      redundant packet counts there are.
+//! \param[in] sorted_bit_fields:  the pointer to the sorted bitfield struct
 //! \return None
 static inline void add_bit_fields_based_on_impact(
         _coverage_t **coverage, _proc_cov_by_bitfield_t **proc_cov_by_bit_field,
@@ -284,6 +304,10 @@ static inline void add_bit_fields_based_on_impact(
     //log_info("filled sorted to %d", sorted_bf_fill_loc);
 }
 
+//! \brief creates a struct that defines which bitfields are based on which 
+//! redundant packet count of those bitfields. 
+//! \param[in] region_addresses: the location of all the regions
+//! \return the proc by coverage struct. 
 static inline _proc_cov_by_bitfield_t** create_coverage_by_bit_field(
         region_addresses_t *region_addresses){
 
@@ -339,7 +363,16 @@ static inline _proc_cov_by_bitfield_t** create_coverage_by_bit_field(
     return proc_cov_by_bf;
 }
 
-static bool is_redundant(
+//! \brief checks if a redundant packet count is already in the list of
+//! redundant packet counts.
+//! \param[in] length_n_redundant_packets: how many unique redundant packet
+//! counts have been found already.
+//! \param[in] redundant_packets: list of unique redundant packet counts.
+//! \param[in] x_packets: the new unique redundant packet count to try to
+//! find in the current set.
+//! \return bool that states true if the new redundant packet count has been
+//! found already, false otherwise.
+static bool is_already_found(
         int length_n_redundant_packets, int *redundant_packets,
         int x_packets) {
     for (int index = 0; index < length_n_redundant_packets; index++) {
@@ -350,6 +383,12 @@ static bool is_redundant(
     return false;
 }
 
+//! \brief locate all the counts of redundant packets from every bitfield and
+//! find the total unique counts and return how of them there are.
+//! \param[in] region_addresses: the location of all the regions
+//! \param[in] proc_cov_by_bf: the struct holding coverage per processor
+//! \param[in] redundant_packets: the list of redundant packet count.
+//! \return the number of unique redundant packets.
 static inline int determine_unique_redundant_packets(
         region_addresses_t *region_addresses,
         _proc_cov_by_bitfield_t **proc_cov_by_bf, int *redundant_packets) {
@@ -369,7 +408,7 @@ static inline int determine_unique_redundant_packets(
             int x_packets = proc_cov_by_bf[r_id]->redundant_packets[bf_id];
 
             // if not a duplicate, add to list and update size
-            if (!is_redundant(n_unique_redundant_packets, redundant_packets,
+            if (!is_already_found(n_unique_redundant_packets, redundant_packets,
                     x_packets)) {
                 redundant_packets[n_unique_redundant_packets++] = x_packets;
             }
@@ -379,6 +418,14 @@ static inline int determine_unique_redundant_packets(
     return n_unique_redundant_packets;
 }
 
+//! \brief creates a map of bitfields which have the same redundant packet count
+//! \param[in] n_unique_redundant_packets: the number of unique redundant
+//! packet counts.
+//! \param[in] redundant_packets: the list of redundant packets counts
+//! \param[in] n_pairs_of_addresses: the number of addresses to search through
+//! \param[in] proc_cov_by_bf: the map of processor to redundant packet count
+//! \param[in] bf_by_processor: the map from processor to bitfields.
+//! \return list of coverage structs.
 static _coverage_t** create_coverage_by_redundant_packet(
         int n_unique_redundant_packets, int* redundant_packets,
         int n_pairs_of_addresses, _proc_cov_by_bitfield_t** proc_cov_by_bf,
@@ -494,6 +541,10 @@ static _coverage_t** create_coverage_by_redundant_packet(
 }
 
 /*
+//! \brief no sorting, just plonking into list sorted bitfield list.
+//! \param[in] region_addresses: the sdram that stores data addresses
+//! \param[in] sorted_bit_fields: the sorted bitfields struct pointer
+//! \param[in] bit_field_by_processor: the map of processor to bitfields.
 void just_add_to_list(
         region_addresses_t *region_addresses,
         sorted_bit_fields_t* sorted_bit_fields,
@@ -522,6 +573,9 @@ void just_add_to_list(
 */
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
+//! \param[in] n_bf_addresses: the number of bitfields to sort
+//! \param[in] region_addresses: the addresses where the data is
+//! \param[in] bit_field_by_processor: the map from processor to bitfields
 //! \return bool that states if it succeeded or not.
 sorted_bit_fields_t* bit_field_sorter_sort(
         int n_bf_addresses, region_addresses_t *region_addresses,

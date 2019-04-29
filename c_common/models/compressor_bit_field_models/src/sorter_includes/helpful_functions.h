@@ -5,7 +5,8 @@
 #include <filter_info.h>
 
 //static inline void terminate(uint result_code) __attribute__((noreturn));
-
+//! \brief stops a binary dead
+//! \param[in] code to put in user 1
 static inline void terminate(uint result_code) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint core = spin1_get_core_id();
@@ -17,8 +18,9 @@ static inline void terminate(uint result_code) {
 
 //! \brief finds the processor id of a given bitfield address (search though
 //! the bit field by processor
-//! \param[in] bit_field_address: the location in sdram where the bitfield
-//! starts
+//! \param[in] filter: the location in sdram where the bitfield starts
+//! \param[in] region_addresses: the sdram where the data on regions is
+//! \param[in] bit_field_by_processor:  map between processor and bitfields
 //! \return the processor id that this bitfield address is associated.
 static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
         filter_info_t filter, region_addresses_t *region_addresses,
@@ -42,6 +44,7 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
 //! \brief reads in the addresses region and from there reads in the key atom
 // map and from there searches for a given key. when found, returns the n atoms
 //! \param[in] key: the key to locate n atoms for
+//! \param[in] region_addresses: sdram data for where data regions are
 //! \return atom for the key
 static inline uint32_t helpful_functions_locate_key_atom_map(
         uint32_t key, region_addresses_t *region_addresses){
@@ -81,6 +84,7 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
 //! \brief gets data about the bitfields being considered
 //! \param[in/out] keys: the data holder to populate
 //! \param[in] mid_point: the point in the sorted bit fields to look for
+//! \param[in] sorted_bit_fields: the pointer to the sorted bitfields struct.
 //! \return the number of unique keys founds.
 uint32_t helpful_functions_population_master_pop_bit_field_ts(
         master_pop_bit_field_t *keys, int mid_point,
@@ -113,7 +117,9 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
 }
 
 //! \brief frees sdram from the compressor core.
-//! \param[in] the compressor core to clear sdram usage from
+//! \param[in] comp_core_index: the compressor core index to clear sdram usage
+//! from
+//! \param[in] comp_cores_bf_tables: the map of what tables that core used
 //! \return bool stating that it was successful in clearing sdram
 bool helpful_functions_free_sdram_from_compression_attempt(
         int comp_core_index, comp_core_store_t* comp_cores_bf_tables){
@@ -131,6 +137,7 @@ bool helpful_functions_free_sdram_from_compression_attempt(
 }
 
 //! \brief clones the un compressed routing table, to another sdram location
+//! \param[in] uncompressed_router_table: sdram location for uncompressed table
 //! \return: address of new clone, or null if it failed to clone
 address_t helpful_functions_clone_un_compressed_routing_table(
         uncompressed_table_region_data_t *uncompressed_router_table){
@@ -153,7 +160,7 @@ address_t helpful_functions_clone_un_compressed_routing_table(
     return where_was_cloned;
 }
 
-//secret stealth function. use sparingly.
+//! \brief secret stealth function for saving ITCM. use sparingly.
 #define NO_INLINE	__attribute__((noinline))
 //NO_INLINE uint32_t do_the_thing(uint32_t foo, uint32_t bar) { .... }
 

@@ -122,13 +122,17 @@ void set_new_route_with_fixed_processors(
 //! \brief generates the router table entries for the original entry in the
 //! original routing table, where the new entries are atom level entries based
 //! off the bitfields.
-//! \param[in] addresses: the addresses in sdram where the bitfields exist
+//! \param[in] filters: pointer to the list of bitfields
+//! \param[in] bit_field_by_processor: the map between processor to bitfields.
+//! \param[in] region_addresses: the addresses in sdram where the bitfields
+//! exist
 //! \param[in] n_bit_fields_for_key: the number of bitfields we are considering
 //! here
 //! \param[in] original_entry: the original routing table entry that is being
 //! expanded by the bitfields
 //! \param[in] rt_address_ptr: the sdram address where the new atom level table
 //! will be put once completed.
+
 //! \return bool that states that if the atom routing table was generated or not
 bool generate_entries_from_bitfields(
         filter_info_t **filters, int n_bit_fields_for_key,
@@ -258,6 +262,9 @@ bool generate_entries_from_bitfields(
 //! ends.
 //! \param[in] rt_address_ptr: the location in sdram to store the routing table
 //! generated from the bitfields and original entry.
+//! \param[in] region_addresses: the sdram store for data regions
+//! \param[in] bit_field_by_processor: the map between processor and bitfields
+//! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return bool saying if it was successful or not
 bool generate_rt_from_bit_field(
         uint32_t master_pop_key, address_t uncompressed_table,
@@ -318,6 +325,10 @@ bool generate_rt_from_bit_field(
 //! \param[in] mid_point: where in the sorted bitfields to go to
 //! \param[out] n_rt_addresses: how many addresses are needed for the
 //! tables
+//! \param[in] region_addresses: the sdram loc for addresses
+//! \param[in] uncompressed_router_table: the uncompressed router table
+//! \param[in] bit_field_by_processor: the map between processor and bitfields
+//! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return bool saying if it successfully built them into sdram
 address_t* bit_field_table_generator_create_bit_field_router_tables(
         int mid_point, int *n_rt_addresses,

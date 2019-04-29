@@ -4,19 +4,35 @@
 #include "bit_set.h"
 #include "../common/routing_table.h"
 
+//! \merge struct. entries which can be merged
 typedef struct merge_t {
-    bit_set_t entries;  // Set of entries included in the merge
-    key_mask_t key_mask; // key_mask resulting from the merge
-    uint32_t route;    // Route taken by entries in the merge
-    uint32_t source;   // Collective source of entries in the route
+    // Set of entries included in the merge
+    bit_set_t entries;
+
+    // key_mask resulting from the merge
+    key_mask_t key_mask;
+
+    // Route taken by entries in the merge
+    uint32_t route;
+
+    // Collective source of entries in the route
+    uint32_t source;
 } merge_t;
 
+//! \brief the ful key
 #define FULL 0xffffffff
+
+//! \brief the empty mask
 #define EMPTY 0x00000000
+
+//! \brief the init for sources of entries
 #define INIT_SOURCE 0x0
+
+//! \brief the init for routes of entries
 #define INIT_ROUTE 0x0
 
-// Clear a merge
+//! \brief Clear a merge
+//! \param[in] m: the merge to clear
 static inline void merge_clear(merge_t *m) {
     // Clear the bit set
     bit_set_clear(&m->entries);
@@ -28,7 +44,10 @@ static inline void merge_clear(merge_t *m) {
     m->source = INIT_SOURCE;
 }
 
-// Initialise a merge
+//! \brief Initialise a merge
+//! \param[in] m: the merge pointer to init
+//! \param[in] n_entries_in_table: the possible number of entries in the merge
+//! \return bool saying true if the merge was initialised
 static inline bool merge_init(merge_t *m, uint32_t n_entries_in_table) {
     // Initialise the bit_set
     if (!bit_set_init(&m->entries, n_entries_in_table)) {
@@ -39,13 +58,16 @@ static inline bool merge_init(merge_t *m, uint32_t n_entries_in_table) {
     return true;
 }
 
-// Destruct a merge
+// \brief Destruct a merge
+//! \param[in] m: the merge to delete
 static inline void merge_delete(merge_t *m) {
     // Free the bit set
     bit_set_delete(&(m->entries));
 }
 
-// Add an entry to the merge
+//! \brief Add an entry to the merge
+//! \param[in] m: the merge to add to
+//! \param[in] i: the entry bit to flag as potential merge-able entry
 static inline void merge_add(merge_t *m, unsigned int i) {
     // Add the entry to the bit set contained in the merge
     if (bit_set_add(&m->entries, i)) {
@@ -67,13 +89,18 @@ static inline void merge_add(merge_t *m, unsigned int i) {
     }
 }
 
-//! See if an entry is contained within a merge
+//! \brief See if an entry is contained within a merge
+//! \param[in] m: the merge to check if a bit is set
+//! \param[in] i: the bit to check
+//! \return true if the bit is set false otherwise.
 static inline bool merge_contains(merge_t *m, unsigned int i) {
   return bit_set_contains(&(m->entries), i);
 }
 
 
-// Remove an entry from the merge
+//! \brief Remove an entry from the merge
+//! \param[in] m: the merge to unset a bit from
+//! \param[in] i: the entry id to unset
 static inline void merge_remove(merge_t *m, unsigned int i) {
     // Remove the entry from the bit_set contained in the merge
     if (bit_set_remove(&m->entries, i)) {
