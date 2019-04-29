@@ -2,6 +2,7 @@ import os
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.machine import MachineGraph
+from spinnman.processes.fill_process import FillDataType
 from spinnman.utilities.io import MemoryIO, FileIO
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition as SV
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
@@ -9,6 +10,32 @@ from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
+
+
+class _TranscieverDelegate(object):
+    __slots__ = ["_txrx", "_writer"]
+
+    def __init__(self, transceiver, write_memory_function):
+        self._txrx = transceiver
+        self._writer = write_memory_function
+
+    def write_memory(self, x, y, base_address, data, n_bytes=None, offset=0,
+                     cpu=0, is_filename=False):
+        if self._writer is not None:
+            self._writer(
+                x, y, base_address, data, n_bytes, offset, cpu, is_filename)
+        else:
+            self._txrx.write_memory(
+                x, y, base_address, data, n_bytes, offset, cpu, is_filename)
+
+    def read_memory(self, x, y, base_address, length, cpu=0):
+        return self._txrx.read_memory(x, y, base_address, length, cpu)
+
+    def fill_memory(
+            self, x, y, base_address, repeat_value, bytes_to_fill,
+            data_type=FillDataType.WORD):
+        self._txrx.fill_memory(
+            x, y, base_address, repeat_value, bytes_to_fill, data_type)
 
 
 class WriteMemoryIOData(object):
@@ -161,9 +188,11 @@ class WriteMemoryIOData(object):
                 start_address = self._txrx.malloc_sdram(
                     placement.x, placement.y, size, app_id, tag)
                 end_address = start_address + size
-                with MemoryIO(self._txrx, placement.x, placement.y,
-                              start_address, end_address,
-                              write_memory_function) as io:
+                delegate = _TranscieverDelegate(
+                    self._txrx, write_memory_function)
+                with MemoryIO(
+                        delegate, placement.x, placement.y,
+                        start_address, end_address) as io:
                     vertex.write_data_to_memory_io(io, tag)
             else:
                 tag = self.__local_get_next_tag(placement)
