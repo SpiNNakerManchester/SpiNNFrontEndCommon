@@ -15,6 +15,7 @@ from spinn_front_end_common.abstract_models.abstract_uses_memory_io import (
 
 
 class _MockTransceiver(object):
+    # pylint: disable=unused-argument
 
     _HEAP_SIZE = 120 * 1024 * 1024
 
@@ -33,7 +34,8 @@ class _MockTransceiver(object):
                 HeapElement(0, self._HEAP_SIZE, 0x00000000)]
         return self._heap[x, y, heap]
 
-    def write_memory(self, x, y, address, data, n_bytes=None):
+    def write_memory(self, x, y, address, data, n_bytes=None,
+                     offset=0, cpu=0, is_filename=False):  # @UnusedVariable
         memory = self._get_memory(x, y)
         if isinstance(data, int):
             memory[address:address + 4] = numpy.array(
