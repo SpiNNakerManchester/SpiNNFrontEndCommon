@@ -553,7 +553,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # if file, read in and then process as normal
         if is_filename:
-            if offset is not 0:
+            if offset != 0:
                 raise Exception(
                     "when using a file, you can only have a offset of 0")
 
@@ -1394,7 +1394,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: int of the biggest sequence num expected
         """
 
-        return ceildiv(len(self._output),
+        return ceildiv(
+            len(self._output),
             DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)
 
     @staticmethod

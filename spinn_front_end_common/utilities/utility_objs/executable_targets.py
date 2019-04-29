@@ -3,6 +3,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.ordered_set import OrderedSet
 from spinnman.model import ExecutableTargets as SuperExecTargets
 
+
 class ExecutableTargets(SuperExecTargets):
     __slots__ = ["_binary_type_map"]
     # pylint: disable=arguments-differ

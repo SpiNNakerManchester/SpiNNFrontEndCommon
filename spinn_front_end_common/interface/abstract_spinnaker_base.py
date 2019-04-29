@@ -1683,10 +1683,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
 
-        if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteApplicationDataSpecification")
-        else:
-            optional_algorithms.append("MachineExecuteDataSpecification")
+        optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
@@ -2388,7 +2385,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.stop,
                extend_defaults=True, additional_arguments=(
                    "turn_off_machine", "clear_routing_tables", "clear_tags"))
-    def stop(self, turn_off_machine=None,  #pylint: disable=arguments-differ
+    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
              clear_routing_tables=None, clear_tags=None):
         """
         :param turn_off_machine: decides if the machine should be powered down\
