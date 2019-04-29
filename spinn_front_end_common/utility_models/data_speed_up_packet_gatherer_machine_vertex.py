@@ -501,7 +501,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     x, y, address_written_to, data_size, time_took_ms,
                     mbs, missing_seq_nums))
 
-    def sent_via_sdp(self, n_bytes, x, y, base_address, data, offset):
+    def sent_via_sdp(self, n_bytes, x, y, base_address, data, offset, cpu):
         """ Send by SDP; if better via speed up, it returns false.
 
         :param n_bytes: data size
@@ -525,7 +525,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write the data
         transceiver.write_memory(
             x=x, y=y, base_address=base_address, n_bytes=n_bytes,
-            data=data, offset=offset, is_filename=False)
+            data=data, offset=offset, is_filename=False, cpu=cpu)
         # record when finished
         end = datetime.datetime.now()
 
@@ -538,7 +538,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            is_filename=False):
+            cpu=0, is_filename=False):
         """ sends a block of data into SpiNNaker to a given chip
 
         :param x: chip x for data
@@ -569,7 +569,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # if not worth using extra monitors, send via sdp
         if not self.sent_via_sdp(
                 base_address=base_address, x=x, y=y, offset=offset,
-                data=data, n_bytes=n_bytes):
+                data=data, n_bytes=n_bytes, cpu=cpu):
             transceiver = get_simulator().transceiver
 
             # start time recording
