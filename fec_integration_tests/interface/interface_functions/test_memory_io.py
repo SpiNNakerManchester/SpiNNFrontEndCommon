@@ -46,7 +46,7 @@ class _MockTransceiver(object):
             numpy_data = numpy.frombuffer(data[:n_bytes], dtype="uint8")
             memory[address:address + n_bytes] = numpy_data
 
-    def read_memory(self, x, y, address, n_bytes):
+    def read_memory(self, x, y, address, n_bytes, cpu=0):
         memory = self._get_memory(x, y)
         return bytearray(memory[address:address + n_bytes])
 
