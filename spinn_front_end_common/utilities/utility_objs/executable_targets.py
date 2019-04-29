@@ -12,14 +12,14 @@ class ExecutableTargets(SuperExecTargets):
         self._binary_type_map = defaultdict(OrderedSet)
 
     @overrides(SuperExecTargets.add_subsets,
-               additional_arguments=["executable_type"])
+               additional_arguments={"executable_type"})
     def add_subsets(self, binary, subsets, executable_type=None):
         SuperExecTargets.add_subsets(self, binary, subsets)
         if executable_type is not None:
             self._binary_type_map[executable_type].add(binary)
 
     @overrides(SuperExecTargets.add_processor,
-               additional_arguments=["executable_type"])
+               additional_arguments={"executable_type"})
     def add_processor(self, binary, chip_x, chip_y, chip_p,
                       executable_type=None):
         SuperExecTargets.add_processor(self, binary, chip_x, chip_y, chip_p)
