@@ -75,6 +75,7 @@ DEFAULT_N_VIRTUAL_CORES = 16
 # The minimum time a board is kept in the off state in seconds
 MINIMUM_OFF_STATE_TIME = 20
 
+# 0-15 are reserved for system use (per lplana)
 ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 
