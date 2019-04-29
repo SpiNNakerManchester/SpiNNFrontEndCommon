@@ -2385,8 +2385,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    @overrides(SimulatorInterface.stop, additional_arguments=(
-        "turn_off_machine", "clear_routing_tables", "clear_tags"))
+    @overrides(SimulatorInterface.stop,
+               extend_defaults=True, additional_arguments=(
+                   "turn_off_machine", "clear_routing_tables", "clear_tags"))
     def stop(self, turn_off_machine=None,  #pylint: disable=arguments-differ
              clear_routing_tables=None, clear_tags=None):
         """
