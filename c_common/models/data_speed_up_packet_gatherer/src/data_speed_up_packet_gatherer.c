@@ -615,7 +615,6 @@ static bool initialize_data_out(uint32_t *timer_period) {
     spin1_callback_on(SDP_PACKET_RX, data_in_receive_sdp_data, SDP);
 
      // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
     data_in_data_t *chip_key_map = (data_in_data_t *)
             data_specification_get_region(CHIP_TO_KEY, address);
 
