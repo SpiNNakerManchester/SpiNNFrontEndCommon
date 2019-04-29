@@ -7,6 +7,8 @@ from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification)
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
 
 
 class _MockCPUInfo(object):
@@ -24,6 +26,7 @@ class _MockCPUInfo(object):
 class _MockTransceiver(object):
     """ Pretend transceiver
     """
+    # pylint: disable=unused-argument
 
     def __init__(self, user_0_addresses):
         """
@@ -80,8 +83,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.end_specification()
 
         # Execute the spec
+        targets = ExecutableTargets()
+        targets.add_processor("text.aplx", 0, 0, 0,
+                              ExecutableType.USES_SIMULATION_INTERFACE)
         dsg_targets = {(0, 0, 0): temp_spec}
-        executor.__call__(transceiver, machine, 30, dsg_targets)
+        executor.execute_application_data_specs(
+            transceiver, machine, 30, dsg_targets, False, targets)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded

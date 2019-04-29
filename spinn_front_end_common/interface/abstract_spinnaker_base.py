@@ -15,6 +15,7 @@ from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
@@ -80,6 +81,7 @@ ALANS_DEFAULT_RANDOM_APP_ID = 16
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow
     """
+    # pylint: disable=broad-except
 
     __slots__ = [
         # the object that contains a set of file paths, which should encompass
@@ -644,6 +646,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
+    @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
         if self._state in [Simulator_State.IN_RUN,
                            Simulator_State.RUN_FOREVER]:
@@ -2381,8 +2384,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None):
+    @overrides(SimulatorInterface.stop, additional_arguments=(
+        "turn_off_machine", "clear_routing_tables", "clear_tags"))
+    def stop(self, turn_off_machine=None,  #pylint: disable=arguments-differ
+             clear_routing_tables=None, clear_tags=None):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -2536,6 +2541,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             executable_finder=self._executable_finder,
             provenance_file_path=self._provenance_file_path)
 
+    @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
         """
         :param socket_address:
