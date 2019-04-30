@@ -911,7 +911,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             if position_in_data == total_data_length:
                 self._send_end_flag()
 
-    def set_cores_for_data_extraction(
+    def set_cores_for_data_streaming(
             self, transceiver, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming
@@ -955,7 +955,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores[0].set_up_application_mc_routes(
             placements, extra_monitor_cores, transceiver)
 
-    def unset_cores_for_data_extraction(
+    def unset_cores_for_data_streaming(
             self, transceiver, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming

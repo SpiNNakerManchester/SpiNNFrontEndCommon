@@ -580,7 +580,7 @@ class BufferManager(object):
 
             # set time out
             for receiver in receivers:
-                receiver.set_cores_for_data_extraction(
+                receiver.set_cores_for_data_streaming(
                     transceiver=self._transceiver, placements=self._placements,
                     extra_monitor_cores_for_router_timeout=(
                         self._extra_monitor_cores))
@@ -596,7 +596,7 @@ class BufferManager(object):
         # revert time out
         if self._uses_advanced_monitors:
             for receiver in receivers:
-                receiver.unset_cores_for_data_extraction(
+                receiver.unset_cores_for_data_streaming(
                     transceiver=self._transceiver, placements=self._placements,
                     extra_monitor_cores_for_router_timeout=(
                         self._extra_monitor_cores))
