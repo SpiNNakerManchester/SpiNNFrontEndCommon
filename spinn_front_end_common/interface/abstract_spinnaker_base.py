@@ -1413,8 +1413,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Database", "send_start_notification")
         inputs["SendStopNotifications"] = self._config.getboolean(
             "Database", "send_stop_notification")
-        inputs["WriteDataSpeedUpReportFlag"] = self._config.getboolean(
-            "Reports", "write_data_speed_up_report")
+        inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
+            "Reports", "write_data_speed_up_reports")
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(
@@ -1486,9 +1486,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_routing_tables_from_machine_report"):
                 optional_algorithms.append(
                     "RoutingTableFromMachineReport")
-            # write data in speed up report if required
-            inputs["WriteDataInSpeedUpReportFlag"] = self._config.getboolean(
-                "Reports", "write_data_in_speed_up_report")
 
             # only add board chip report if requested
             if self._config.getboolean("Reports", "write_board_chip_report"):
