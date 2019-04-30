@@ -85,7 +85,7 @@ class DataInMulticastRoutingGenerator(object):
                         routing_entry_key=partition.identifier,
                         mask=DataInMulticastRoutingGenerator.ROUTING_MASK,
                         processor_ids=entry.processor_ids,
-                        link_ids=entry.out_going_links,
+                        link_ids=entry.link_ids,
                         defaultable=entry.defaultable))
 
             # add routing table to pile
