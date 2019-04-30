@@ -84,7 +84,7 @@ class DataInMulticastRoutingGenerator(object):
                     MulticastRoutingEntry(
                         routing_entry_key=partition.identifier,
                         mask=DataInMulticastRoutingGenerator.ROUTING_MASK,
-                        processor_ids=entry.out_going_processors,
+                        processor_ids=entry.processor_ids,
                         link_ids=entry.out_going_links,
                         defaultable=entry.defaultable))
 
