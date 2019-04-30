@@ -44,6 +44,9 @@ class MachineBitFieldRouterCompressor(object):
     # bitfield addresses for the chip.
     BIT_FIELD_ADDRESSES_SDRAM_TAG = 2
 
+    #
+    TIMES_CYCLED_ROUTING_TABLES = 3
+
     # the successful identifier
     SUCCESS = 0
 
@@ -116,17 +119,18 @@ class MachineBitFieldRouterCompressor(object):
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
                 len(machine_graph.vertices) +
-                (len(routing_tables.routing_tables) * 2)),
+                (len(routing_tables.routing_tables) *
+                 self.TIMES_CYCLED_ROUTING_TABLES)),
             string_describing_what_being_progressed=self._PROGRESS_BAR_TEXT)
 
         # locate data and on_chip_cores to load binary on
-        (addresses, compressor_executable_targets,
-         bit_field_sorter_executable_path,
-         bit_field_compressor_executable_path,
-         matrix_addresses_and_size) = \
-            self._generate_addresses(
-                machine_graph, placements, transceiver, machine,
-                executable_finder, progress_bar, graph_mapper)
+        (addresses, matrix_addresses_and_size) = self._generate_addresses(
+            machine_graph, placements, transceiver, progress_bar, graph_mapper)
+
+        # create executable targets
+        (compressor_executable_targets, bit_field_sorter_executable_path,
+         bit_field_compressor_executable_path) = self._generate_core_subsets(
+            routing_tables, executable_finder, machine, progress_bar)
 
         # load data into sdram
         on_host_chips = self._load_data(
@@ -154,7 +158,7 @@ class MachineBitFieldRouterCompressor(object):
                     host_chips=on_host_chips, txrx=transceiver),
                 [CPUState.FINISHED], True, no_sync_changes,
                 [bit_field_sorter_executable_path])
-        except SpinnmanException:
+        except (SpinnmanException, SpinnFrontEndException):
             self._handle_failure_for_bit_field_router_compressor(
                 compressor_executable_targets, on_host_chips, transceiver)
 
@@ -207,6 +211,57 @@ class MachineBitFieldRouterCompressor(object):
         progress_bar.end()
 
         return compressor_executable_targets
+
+    def _generate_core_subsets(
+            self, routing_tables, executable_finder, machine, progress_bar):
+        """ generates the core subsets for the binaries
+        
+        :param routing_tables: the routing tables
+        :param executable_finder: the executable path finder
+        :param machine: the spinn machine instance
+        :param progress_bar: progress bar
+        :return: 
+        """
+        bit_field_sorter_cores = CoreSubsets()
+        bit_field_compressor_cores = CoreSubsets()
+
+        for routing_table in progress_bar.over(routing_tables, False):
+            # add 1 core to the sorter, and the rest to compressors
+            sorter = None
+            for processor in machine.get_chip_at(
+                    routing_table.x, routing_table.y).processors:
+                if not processor.is_monitor:
+                    if sorter is None:
+                        sorter = processor
+                        bit_field_sorter_cores.add_processor(
+                            routing_table.x, routing_table.y,
+                            processor.processor_id)
+                    else:
+                        bit_field_compressor_cores.add_processor(
+                            routing_table.x, routing_table.y,
+                            processor.processor_id)
+
+        # convert core subsets into executable targets
+        executable_targets = ExecutableTargets()
+
+        # bit field executable paths
+        bit_field_sorter_executable_path = \
+            executable_finder.get_executable_path(
+                self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
+
+        bit_field_compressor_executable_path = \
+            executable_finder.get_executable_path(self._COMPRESSOR_APLX)
+
+        # add the sets
+        executable_targets.add_subsets(
+            binary=bit_field_sorter_executable_path,
+            subsets=bit_field_sorter_cores)
+        executable_targets.add_subsets(
+            binary=bit_field_compressor_executable_path,
+            subsets=bit_field_compressor_cores)
+
+        return (executable_targets, bit_field_sorter_executable_path,
+                bit_field_compressor_executable_path)
 
     def _check_bit_field_router_compressor_for_success(
             self, executable_targets, transceiver, provenance_file_path,
@@ -333,10 +388,8 @@ class MachineBitFieldRouterCompressor(object):
         """
 
         run_by_host = list()
-        for (chip_x, chip_y) in addresses:
-            table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
-            if (table is not None and not machine.get_chip_at(
-                    table.x, table.y).virtual):
+        for table in routing_tables.routing_tables:
+            if not machine.get_chip_at(table.x, table.y).virtual:
                 try:
                     self._load_routing_table_data(
                         table, app_id, transceiver,
@@ -344,24 +397,24 @@ class MachineBitFieldRouterCompressor(object):
                         matrix_addresses_and_size[(table.x, table.y)])
 
                     self._load_address_data(
-                        addresses, chip_x, chip_y, transceiver,
+                        addresses, table.x, table.y, transceiver,
                         routing_table_compressor_app_id,
                         cores, matrix_addresses_and_size[(table.x, table.y)],
                         bit_field_compressor_executable_path,
                         bit_field_sorter_executable_path, threshold_percentage)
 
                     self._load_usable_sdram(
-                        matrix_addresses_and_size[(table.x, table.y)], chip_x,
-                        chip_y, transceiver, routing_table_compressor_app_id,
+                        matrix_addresses_and_size[(table.x, table.y)], table.x,
+                        table.y, transceiver, routing_table_compressor_app_id,
                         cores)
 
                     self._load_compressor_data(
-                        chip_x, chip_y, time_per_iteration, transceiver,
+                        table.x, table.y, time_per_iteration, transceiver,
                         bit_field_compressor_executable_path, cores,
                         compress_only_when_needed,
                         compress_as_much_as_possible)
                 except CantFindSDRAMToUseException:
-                    run_by_host.append((chip_x, chip_y))
+                    run_by_host.append((table.x, table.y))
 
         return run_by_host
 
@@ -602,8 +655,17 @@ class MachineBitFieldRouterCompressor(object):
     @staticmethod
     def _add_to_addresses(
             vertex, placement, transceiver, region_addresses,
-            sdram_block_addresses_and_sizes, bit_field_sorter_cores, machine,
-            bit_field_compressor_cores):
+            sdram_block_addresses_and_sizes):
+        """ adds data about the api based vertex.
+        
+        :param vertex: vertex which utilises the api
+        :param placement: placement of vertex
+        :param transceiver:  spinnman instance
+        :param region_addresses: store for data regions
+        :param sdram_block_addresses_and_sizes: store for surplus sdram.
+        :rtype: None
+        """
+
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(
             transceiver, placement)
@@ -621,35 +683,16 @@ class MachineBitFieldRouterCompressor(object):
                 sdram_block_addresses_and_sizes[
                     placement.x, placement.y].append((address, size))
 
-        # only add to the cores if the chip has not been considered yet
-        if not bit_field_sorter_cores.is_chip(placement.x, placement.y):
-            # add 1 core to the sorter, and the rest to compressors
-            sorter = None
-            for processor in machine.get_chip_at(
-                    placement.x, placement.y).processors:
-                if not processor.is_monitor:
-                    if sorter is None:
-                        sorter = processor
-                        bit_field_sorter_cores.add_processor(
-                            placement.x, placement.y,
-                            processor.processor_id)
-                    else:
-                        bit_field_compressor_cores.add_processor(
-                            placement.x, placement.y,
-                            processor.processor_id)
-
     def _generate_addresses(
-            self, machine_graph, placements, transceiver, machine,
-            executable_finder, progress_bar, graph_mapper):
+            self, machine_graph, placements, transceiver, progress_bar,
+            graph_mapper):
         """ generates the bitfield sdram addresses
 
         :param machine_graph: machine graph
         :param placements: placements
         :param transceiver: spinnman instance
-        :param machine: spinnmachine instance
         :param progress_bar: the progress bar
         :param: graph_mapper: mapping between graphs
-        :param executable_finder: binary finder
         :return: region_addresses and the executable targets to load the \
         router table compressor with bitfield. and the executable path and \
         the synaptic matrix spaces to corrupt
@@ -658,8 +701,6 @@ class MachineBitFieldRouterCompressor(object):
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
-        bit_field_sorter_cores = CoreSubsets()
-        bit_field_compressor_cores = CoreSubsets()
 
         for machine_vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
@@ -671,33 +712,10 @@ class MachineBitFieldRouterCompressor(object):
                     machine_vertex, graph_mapper)
             if vertex is not None:
                 self._add_to_addresses(
-                    vertex, placement, transceiver, region_addresses,
-                    sdram_block_addresses_and_sizes, bit_field_sorter_cores,
-                    machine, bit_field_compressor_cores)
+                        vertex, placement, transceiver, region_addresses,
+                        sdram_block_addresses_and_sizes)
 
-        # convert core subsets into executable targets
-        executable_targets = ExecutableTargets()
-
-        # bit field executable paths
-        bit_field_sorter_executable_path = \
-            executable_finder.get_executable_path(
-                self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
-
-        bit_field_compressor_executable_path = \
-            executable_finder.get_executable_path(self._COMPRESSOR_APLX)
-
-        # add the sets
-        executable_targets.add_subsets(
-            binary=bit_field_sorter_executable_path,
-            subsets=bit_field_sorter_cores)
-        executable_targets.add_subsets(
-            binary=bit_field_compressor_executable_path,
-            subsets=bit_field_compressor_cores)
-
-        return (region_addresses, executable_targets,
-                bit_field_sorter_executable_path,
-                bit_field_compressor_executable_path,
-                sdram_block_addresses_and_sizes)
+        return region_addresses, sdram_block_addresses_and_sizes
 
     def _generate_chip_data(self, address_list, cores, threshold_percentage):
         """ generate byte array data for a list of sdram addresses and \

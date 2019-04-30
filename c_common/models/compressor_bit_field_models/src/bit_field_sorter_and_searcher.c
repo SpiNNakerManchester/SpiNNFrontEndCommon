@@ -158,6 +158,14 @@ void send_sdp_force_stop_message(int processor_id){
 //! \brief sets up the search bitfields.
 //! \return bool saying success or failure of the setup
 bool set_up_search_bitfields(void) {
+    // if there's no bitfields to read, then just set stuff to NULL. let that
+    // be the check in future usages for this path.
+    if (n_bf_addresses == 0){
+        tested_mid_points = NULL;
+        mid_points_successes = NULL;
+        return true;
+    }
+
     tested_mid_points = bit_field_alloc(n_bf_addresses);
     mid_points_successes = bit_field_alloc(n_bf_addresses);
 
@@ -372,6 +380,11 @@ bool has_entry_in_sorted_keys(
 //!        regions
 //! \return bool if was successful or not
 bool remove_merged_bitfields_from_cores(void) {
+    // only try if there are bitfields to remove
+    if (n_bf_addresses == 0){
+        log_info("no bitfields to remove");
+        return true;
+    }
 
     // which bitfields are to be removed from which processors
     proc_bit_field_keys_t *sorted_bf_key_proc = sorter_sort_sorted_to_cores(
@@ -729,7 +742,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
         }
     }
 
-    log_info("checking state");
+    log_debug("checking state");
 
     // if failed to malloc, limit exploration to the number of cores running.
     if (failed_to_malloc) {
@@ -1040,9 +1053,16 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused1);
 
     log_info("read in bitfields");
+    bool read_success = false;
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
-            &n_bf_addresses, region_addresses);
+            &n_bf_addresses, region_addresses, &read_success);
     log_info("finished reading in bitfields");
+
+    // check state
+    if (bit_field_by_processor == NULL && !read_success){
+        log_error("failed to read in bitfields, quitting");
+        terminate(EXIT_MALLOC);;
+    }
 
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_the_uncompressed_attempt();
@@ -1051,6 +1071,16 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
 
+    // check there are bitfields to merge, if not don't start search
+    if (n_bf_addresses == 0){
+        log_info(
+            "no bitfields to compress, just try the uncompressed and "
+            "quit based on that's result.");
+        reading_bit_fields = false;
+        return;
+    }
+
+    // if there are bitfields to merge
     // sort the bitfields into order of best impact on worst cores.
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
@@ -1066,8 +1096,8 @@ void start_compression_process(uint unused0, uint unused1) {
             "address for index %d is %x",
             s_bf_i, sorted_bit_fields->bit_fields[s_bf_i]->data);
         log_debug(
-            "for address in index %d, it targets processor %d with key %d and "
-            "the redundant packet count is %d",
+            "for address in index %d, it targets processor %d with key %d "
+            "and the redundant packet count is %d",
             s_bf_i, sorted_bit_fields->processor_ids[s_bf_i],
             sorted_bit_fields->bit_fields[s_bf_i]->key,
             detect_redundant_packet_count(

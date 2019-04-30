@@ -7,17 +7,25 @@
 //! \param[in/out] n_bf_pointer: the pointer to store how many bf addresses
 //!  there are.
 // \param[in] region_addresses: the addresses of the regions to read
+//! \param[in/out] success: bool that helps decide if method finished
+//! successfully or not
 //! \return bool that states if it succeeded or not.
 bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
-        int* n_bf_pointer, region_addresses_t *region_addresses){
+        int* n_bf_pointer, region_addresses_t *region_addresses,
+        bool* success){
 
     // count how many bitfields there are in total
     *n_bf_pointer = 0;
     int n_pairs_of_addresses = region_addresses->n_pairs;
     log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
 
-    // malloc the bt fields by processor
+    if (n_pairs_of_addresses == 0){
+        log_info("no bitfields to read in, so just return");
+        *success = true;
+        return NULL;
+    }
 
+    // malloc the bt fields by processor
     bit_field_by_processor_t* bit_field_by_processor = MALLOC(
         n_pairs_of_addresses * sizeof(bit_field_by_processor_t));
     if (bit_field_by_processor == NULL) {
@@ -67,6 +75,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         }
     }
 
+    *success = true;
     return bit_field_by_processor;
 }
 
