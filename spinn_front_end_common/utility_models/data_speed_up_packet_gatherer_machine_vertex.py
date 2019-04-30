@@ -309,12 +309,14 @@ class DataSpeedUpPacketGatherMachineVertex(
             machine):
         # pylint: disable=too-many-arguments, arguments-differ
 
+        # update my placement for future knowledge
+        self._placement = placement
+
         # Setup words + 1 for flags + 1 for recording size
         setup_size = SYSTEM_BYTES_REQUIREMENT
 
         # Create the data regions for hello world
-        DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(
-            spec, setup_size)
+        self._reserve_memory_regions(spec, setup_size)
 
         # write data for the simulation data item
         spec.switch_write_focus(_DATA_REGIONS.SYSTEM.value)
