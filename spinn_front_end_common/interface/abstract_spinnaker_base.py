@@ -1171,6 +1171,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "height")
             inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
                 "Machine", "requires_wrap_arounds")
+            inputs["MachineJsonPath"] = self._read_config(
+                "Machine", "json_path")
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
