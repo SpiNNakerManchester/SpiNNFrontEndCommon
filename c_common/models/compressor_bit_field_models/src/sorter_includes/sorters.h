@@ -202,31 +202,34 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
         sorted_bf_by_processor[r_id].length_of_list = n_entries;
 
         // alloc for keys
-        sorted_bf_by_processor[r_id].master_pop_keys =
-            MALLOC(n_entries * sizeof(int));
-        if (sorted_bf_by_processor[r_id].master_pop_keys == NULL) {
-            log_error(
-                "failed to allocate memory for the master pop keys for "
-                "processor %d in the sorting of successful bitfields to "
-                "remove.", region_proc_id);
-            for (int free_id =0; free_id < r_id; free_id++) {
-                FREE(sorted_bf_by_processor->master_pop_keys);
+        if (n_entries != 0){
+            sorted_bf_by_processor[r_id].master_pop_keys =
+                MALLOC(n_entries * sizeof(int));
+            if (sorted_bf_by_processor[r_id].master_pop_keys == NULL) {
+                log_error(
+                    "failed to allocate memory for the master pop keys for "
+                    "processor %d in the sorting of successful bitfields to "
+                    "remove.", region_proc_id);
+                for (int free_id =0; free_id < r_id; free_id++) {
+                    FREE(sorted_bf_by_processor->master_pop_keys);
+                }
+                FREE(sorted_bf_by_processor);
+                return NULL;
             }
-            FREE(sorted_bf_by_processor);
-            return NULL;
-        }
 
-        // put keys in the array
-        int array_index = 0;
-        for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
-            if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
-                filter_info_t* bf_pointer =
-                    sorted_bit_fields->bit_fields[bf_index];
-                sorted_bf_by_processor->master_pop_keys[array_index] =
-                    bf_pointer->key;
-                array_index ++;
+            // put keys in the array
+            int array_index = 0;
+            for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
+                if (sorted_bit_fields->processor_ids[bf_index] ==
+                        region_proc_id) {
+                    filter_info_t* bf_pointer =
+                        sorted_bit_fields->bit_fields[bf_index];
+                    sorted_bf_by_processor->master_pop_keys[array_index] =
+                        bf_pointer->key;
+                    array_index ++;
+                }
             }
-        }
+         }
     }
 
     return sorted_bf_by_processor;

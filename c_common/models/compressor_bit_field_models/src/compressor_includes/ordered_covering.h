@@ -850,6 +850,15 @@ static inline bool oc_minimise(
         return false;
     }
 
+    // if it failed due to control telling it to stop, then reset and fail.
+    if (*finished_by_control) {
+         log_info(
+            "failed due to control. reached %d entries over %d"
+            " attempts", routing_table_sdram_get_n_entries(),  attempts);
+        spin1_pause();
+        return false;
+    }
+
     log_info(
         "entries after compressed = %d, timer = %d, finished by control = %d,"
         " the number of merge cycles were %d",

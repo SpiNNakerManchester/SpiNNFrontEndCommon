@@ -124,15 +124,21 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
 bool helpful_functions_free_sdram_from_compression_attempt(
         int comp_core_index, comp_core_store_t* comp_cores_bf_tables){
     int elements = comp_cores_bf_tables[comp_core_index].n_elements;
-    log_debug("removing %d elements from index %d", elements, comp_core_index);
 
     for (int core_bit_field_id = 0; core_bit_field_id < elements;
             core_bit_field_id++) {
         FREE(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id]);
     }
-    FREE(comp_cores_bf_tables[comp_core_index].elements);
+
+    // only try freeing if its not been freed already. (safety feature)
+    if (comp_cores_bf_tables[comp_core_index].elements != NULL){
+        FREE(comp_cores_bf_tables[comp_core_index].elements);
+    }
 
     comp_cores_bf_tables[comp_core_index].elements = NULL;
+    comp_cores_bf_tables[comp_core_index].n_elements = 0;
+    comp_cores_bf_tables[comp_core_index].n_bit_fields = 0;
+
     return true;
 }
 

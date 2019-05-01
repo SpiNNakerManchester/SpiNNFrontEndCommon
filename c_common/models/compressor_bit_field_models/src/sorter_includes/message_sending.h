@@ -17,9 +17,10 @@ void message_sending_send_sdp_message(sdp_msg_pure_data* my_msg){
         log_info("failed to send. trying again");
         if (attempt >= 30) {
             rt_error(RTE_SWERR);
+            terminate(EXIT_FAIL);
         }
     }
-    log_info("sent message");
+    log_debug("sent message");
 }
 
 //! \brief stores the addresses for freeing when response code is sent
@@ -80,7 +81,7 @@ static void update_mc_message(
     my_msg->srce_addr = spin1_get_chip_id();
     my_msg->dest_addr = spin1_get_chip_id();
     my_msg->flags = REPLY_NOT_EXPECTED;
-    log_info("core id =  %d", spin1_get_id());
+    log_info("core id =  %d", spin1_get_id() & 0x1F);
     my_msg->srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
     log_info("compressor core = %d", compressor_cores[comp_core_index]);
     my_msg->dest_port =
@@ -94,11 +95,9 @@ static int deduce_total_packets(int n_rt_addresses) {
     uint32_t total_packets = 1;
     int n_rt_table_safe = n_rt_addresses;
     int n_addresses_for_start =
-        ((ITEMS_PER_DATA_PACKET - sizeof(start_msg_t)) /
-        WORD_TO_BYTE_MULTIPLIER);
+        ITEMS_PER_DATA_PACKET - (sizeof(start_msg_t) / WORD_TO_BYTE_MULTIPLIER);
     int n_addresses_for_extra =
-        ((ITEMS_PER_DATA_PACKET - sizeof(extra_msg_t)) /
-        WORD_TO_BYTE_MULTIPLIER);
+        ITEMS_PER_DATA_PACKET - (sizeof(extra_msg_t) / WORD_TO_BYTE_MULTIPLIER);
     if (n_addresses_for_start < n_rt_table_safe){
         n_rt_table_safe -= n_addresses_for_start;
         total_packets += n_rt_table_safe / n_addresses_for_extra;
@@ -316,9 +315,15 @@ static bool message_sending_set_off_bit_field_compression(
 
     // deduce how many packets
     int total_packets = deduce_total_packets(n_rt_addresses);
-    log_info(
+    log_debug(
         "total packets = %d, n rts is still %d",
         total_packets, n_rt_addresses);
+    for (int rt_index = 0; rt_index < n_rt_addresses; rt_index++){
+        table_t *table = (table_t*) bit_field_routing_tables[rt_index];
+        log_debug(
+            "n entries for table %d at address %x is %d",
+            rt_index, bit_field_routing_tables[rt_index], table->size);
+    }
 
     // generate the packets and fire them to the compressor core
     int addresses_sent = 0;

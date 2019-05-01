@@ -315,8 +315,9 @@ static void routing_tables_print_out_table_sizes(void){
     if (print){
         for (int rt_index = 0; rt_index < n_tables; rt_index++){
             log_info(
-                "n entries in rt index %d is %d",
-                rt_index, routing_tables[rt_index]->size);
+                "n entries in rt index %d at address %x is %d",
+                rt_index, routing_tables[rt_index],
+                routing_tables[rt_index]->size);
         }
         rt_error(RTE_SWERR);
     }
