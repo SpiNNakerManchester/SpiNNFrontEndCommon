@@ -5,6 +5,7 @@ import numpy
 from six import iteritems, itervalues
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
@@ -20,13 +21,11 @@ _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
 def system_cores(exec_targets):
-    # See https://stackoverflow.com/a/1077205/301832 for why this is
-    # backwards and confusing
-    return set(
-        core
-        for binary in exec_targets.get_binaries_of_executable_type(
-            ExecutableType.SYSTEM)
-        for core in exec_targets.get_cores_for_binary(binary))
+    cores = CoreSubsets()
+    for binary in exec_targets.get_binaries_of_executable_type(
+            ExecutableType.SYSTEM):
+        cores.add_core_subsets(exec_targets.get_cores_for_binary(binary))
+    return cores
 
 
 def filter_out_system_executables(dsg_targets, executable_targets):
@@ -38,7 +37,7 @@ def filter_out_system_executables(dsg_targets, executable_targets):
 
 
 def filter_out_app_executables(dsg_targets, executable_targets):
-    """ Select just the application DSG loading tasks """
+    """ Select just the system DSG loading tasks """
     syscores = system_cores(executable_targets)
     return OrderedDict(
         (core, spec) for (core, spec) in iteritems(dsg_targets)

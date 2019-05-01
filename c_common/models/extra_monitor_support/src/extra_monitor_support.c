@@ -229,13 +229,6 @@ typedef enum sending_data_sdp_data_positions {
 } sending_data_sdp_data_positions;
 
 //! \brief router entry positions in sdram
-typedef enum router_entry_positions {
-    ROUTER_ENTRY_KEY = 0,
-    ROUTER_ENTRY_MASK = 1,
-    ROUTER_ENTRY_ROUTE = 2
-} router_entry_positions;
-
-//! \brief router entry positions in sdram
 typedef struct router_entry_t {
     uint32_t key;
     uint32_t mask;
@@ -290,13 +283,13 @@ typedef enum reinjector_status_response_packet_format {
     LENGTH_OF_DATA_FOR_STATUS_RESPONSE = 9
 } reinjector_status_response_packet_format;
 
-//! values for the position of data in memory.
-typedef enum positions_in_memory_for_the_reinject_flags {
-    REINJECT_MULTICAST = 0,
-    REINJECT_POINT_To_POINT = 1,
-    REINJECT_FIXED_ROUTE = 2,
-    REINJECT_NEAREST_NEIGHBOUR = 3
-} positions_in_memory_for_the_reinject_flags;
+//! how the reinjection configuration is laid out in memory.
+typedef struct reinject_config_t {
+    uint multicast_flag;
+    uint point_to_point_flag;
+    uint fixed_route_flag;
+    uint nearest_neighbour_flag;
+} reinject_config_t;
 
 //! values for port numbers this core will respond to
 typedef enum functionality_to_port_num_map {
@@ -305,13 +298,13 @@ typedef enum functionality_to_port_num_map {
     DATA_SPEED_UP_IN_FUNCTIONALITY = 6
 } functionality_to_port_num_map;
 
-typedef enum data_spec_regions{
+typedef enum data_spec_regions {
     CONFIG_REINJECTION = 0,
     CONFIG_DATA_SPEED_UP_OUT = 1,
     CONFIG_DATA_SPEED_UP_IN = 2
 } data_spec_regions;
 
-typedef enum speed_up_in_command {
+enum speed_up_in_command {
     //! read in application mc routes
     SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING = 6,
     //! load application mc routes
@@ -321,9 +314,12 @@ typedef enum speed_up_in_command {
 };
 
 //! human readable definitions of each element in the transmission region
-typedef enum data_speed_config_data_elements {
-    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, MB
-} data_speed_config_data_elements;
+typedef struct data_speed_out_config_t {
+    uint my_key;
+    uint new_seq_key;
+    uint first_data_key;
+    uint end_flag_key;
+} data_speed_out_config_t;
 
 //! values for the priority for each callback
 typedef enum callback_priorities {
@@ -412,6 +408,23 @@ static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
 static uint32_t stop = 0;
+
+// ------------------------------------------------------------------------
+// support function
+// ------------------------------------------------------------------------
+
+static vcpu_t *const sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+
+typedef struct dsg_header_t {
+    uint header[DSG_HEADER];    // Two words (magic and version)
+    void *regions[];            // Pointers to DSG regions
+} dsg_header_t;
+
+static inline void *dsg_block(uint index) {
+    dsg_header_t *dsg_header = (dsg_header_t *)
+            sark_virtual_processor_info[sark.virt_cpu].user0;
+    return dsg_header->regions[index];
+}
 
 // ------------------------------------------------------------------------
 // reinjector main functions
@@ -571,30 +584,30 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-void reinjection_read_packet_types(address_t address){
+void reinjection_read_packet_types(reinject_config_t *config) {
     // process multicast reinject flag
-    if (address[REINJECT_MULTICAST] == 1) {
+    if (config->multicast_flag == 1) {
         reinject_mc = false;
     } else {
         reinject_mc = true;
     }
 
     // process point to point flag
-    if (address[REINJECT_POINT_To_POINT] == 1) {
+    if (config->point_to_point_flag == 1) {
         reinject_pp = false;
     } else {
         reinject_pp = true;
     }
 
     // process fixed route flag
-    if (address[REINJECT_FIXED_ROUTE] == 1) {
+    if (config->fixed_route_flag == 1) {
         reinject_fr = false;
     } else {
         reinject_fr = true;
     }
 
     // process fixed route flag
-    if (address[REINJECT_NEAREST_NEIGHBOUR] == 1) {
+    if (config->nearest_neighbour_flag == 1) {
         reinject_nn = false;
     } else {
         reinject_nn = true;
@@ -834,6 +847,9 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
 void data_in_read_and_load_router_entries(
         router_entry_t *sdram_address, uint n_entries) {
     io_printf(IO_BUF, "n entries %u \n", n_entries);
+    if (n_entries == 0) {
+        return;
+    }
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
     if (start_entry_id == 0) {
         io_printf(IO_BUF, "received error with requesting %d router entries."
@@ -934,14 +950,8 @@ uint handle_data_in_speed_up(sdp_msg_t *msg) {
         break;
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
         io_printf(IO_BUF, "loading system router entries into router\n");
-        {
-            vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-            address_t address = (address_t)
-                    sark_virtual_processor_info[sark.virt_cpu].user0;
-
-            data_in_speed_up_load_in_system_tables((data_in_data_items_t *)
-                    address[DSG_HEADER + CONFIG_DATA_SPEED_UP_IN]);
-        }
+        data_in_speed_up_load_in_system_tables(
+                dsg_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
         break;
     default:
@@ -1448,13 +1458,7 @@ void __wrap_sark_int(void *pc) {
 void reinjection_initialise() {
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address = (address_t)
-            sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_REINJECTION]);
-
-    // process data
-    reinjection_read_packet_types(address);
+    reinjection_read_packet_types(dsg_block(CONFIG_REINJECTION));
 
     // Setup the CPU interrupt for WDOG
     vic_controls[sark_vec->sark_slot] = 0;
@@ -1475,15 +1479,12 @@ void reinjection_initialise() {
 }
 
 //! \brief sets up data required by the data speed up functionality
-void data_speed_up_out_initialise() {
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address = (address_t)
-            sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP_OUT]);
-    basic_data_key = address[MY_KEY];
-    new_sequence_key = address[NEW_SEQ_KEY];
-    first_data_key = address[FIRST_DATA_KEY];
-    end_flag_key = address[END_FLAG_KEY];
+void data_speed_up_out_initialise(void) {
+    data_speed_out_config_t *config = dsg_block(CONFIG_DATA_SPEED_UP_OUT);
+    basic_data_key = config->my_key;
+    new_sequence_key = config->new_seq_key;
+    first_data_key = config->first_data_key;
+    end_flag_key = config->end_flag_key;
 
     vic_vectors[DMA_SLOT] = speed_up_handle_dma;
     vic_controls[DMA_SLOT] = VIC_ENABLE_VECTOR | DMA_DONE_INT;
@@ -1514,16 +1515,11 @@ static void data_speed_up_in_initialise(void) {
         rt_error(RTE_SWERR);
     }
 
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address = (address_t)
-            sark_virtual_processor_info[sark.virt_cpu].user0;
-    data_in_data_items_t *items = (data_in_data_items_t *)
-            address[DSG_HEADER + CONFIG_DATA_SPEED_UP_IN];
+    data_in_data_items_t *items = dsg_block(CONFIG_DATA_SPEED_UP_IN);
 
     data_in_address_key = items->address_mc_key;
     data_in_data_key = items->data_mc_key;
     data_in_start_key = items->restart_mc_key;
-
     data_in_speed_up_load_in_system_tables(items);
 
     // set up mc interrupts to deal with data writing

@@ -3,6 +3,7 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import CPUState
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
@@ -10,7 +11,8 @@ from pacman.model.resources import ResourceContainer, SDRAMResource
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ExecutableTargets)
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
@@ -52,6 +54,31 @@ _KEY_OFFSETS = Enum(
            ("RESTART_KEY_OFFSET", 2)])
 
 
+def emergency_recover_state_from_failure(txrx, app_id, placement, vertex):
+    # pylint: disable=protected-access
+    processors_rte = txrx.get_core_state_count(
+        app_id, CPUState.RUN_TIME_EXCEPTION)
+    processors_watchdogged = txrx.get_core_state_count(
+        app_id, CPUState.WATCHDOG)
+    log.warning(
+        "unexpected core states (rte={}, wdog={}); attempting to fetch iobuf",
+        processors_rte, processors_watchdogged)
+    if processors_rte or processors_watchdogged:
+        sim = globals_variables.get_simulator()
+        from spinn_front_end_common.interface.interface_functions import (
+            ChipIOBufExtractor)
+        extractor = ChipIOBufExtractor()
+        executable_targets = ExecutableTargets()
+        executable_finder = sim._executable_finder
+        executable_targets.add_processor(
+            executable_finder.get_executable_path(
+                vertex.get_binary_file_name()),
+            placement.x, placement.y, placement.p,
+            vertex.get_binary_start_type())
+        extractor(txrx, executable_targets, executable_finder,
+                  sim._provenance_file_path)
+
+
 class ExtraMonitorSupportMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
@@ -65,7 +92,9 @@ class ExtraMonitorSupportMachineVertex(
         # if we reinject fixed route packets
         "_reinject_fixed_route",
         # placement holder for ease of access
-        "_placement"
+        "_placement",
+        # app id, used for reporting failures on system core RTE
+        "_app_id"
     )
 
     def __init__(
@@ -95,6 +124,7 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_fixed_route = reinject_fixed_route
         # placement holder for ease of access
         self._placement = None
+        self._app_id = None
 
     @property
     def reinject_multicast(self):
@@ -162,6 +192,7 @@ class ExtraMonitorSupportMachineVertex(
         # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
+        self._app_id = app_id
         # write reinjection config
         self._generate_reinjection_config(spec)
         # write data speed up out config
@@ -265,9 +296,9 @@ class ExtraMonitorSupportMachineVertex(
             route |= Router.convert_routing_table_entry_to_spinnaker_route(
                 entry)
             spec.write_value(route)
-            # log.info("key {}".format(entry.routing_entry_key))
-            # log.info("mask {}".format(entry.mask))
-            # log.info("route {}".format(route))
+            # log.info("key {}", entry.routing_entry_key)
+            # log.info("mask {}", entry.mask)
+            # log.info("route {}", route)
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -357,8 +388,13 @@ class ExtraMonitorSupportMachineVertex(
         """
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        return process.get_reinjection_status(
-            placement.x, placement.y, placement.p)
+        try:
+            return process.get_reinjection_status(
+                placement.x, placement.y, placement.p)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, placement, self)
+            raise e
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
