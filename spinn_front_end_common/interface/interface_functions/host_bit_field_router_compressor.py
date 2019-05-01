@@ -27,7 +27,6 @@ from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import ordered_covering as \
     rigs_compressor
-from spinn_front_end_common.utilities import constants
 
 
 class _BitFieldData(object):
@@ -532,7 +531,7 @@ class HostBasedBitFieldRouterCompressor(object):
                     chip_x, chip_y, processor_id)
 
                 valid = self.locate_vertex_with_the_api(
-                    machine_graph, graph_mapper)
+                    vertex, graph_mapper)
                 if valid is not None:
                     most_costly_cores[processor_id] = \
                         len(machine_graph.get_edges_ending_at_vertex(vertex))
