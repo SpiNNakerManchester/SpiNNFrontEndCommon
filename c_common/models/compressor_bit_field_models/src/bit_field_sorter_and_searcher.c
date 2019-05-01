@@ -384,18 +384,22 @@ bool has_entry_in_sorted_keys(
 //! \return bool if was successful or not
 bool remove_merged_bitfields_from_cores(void) {
     // only try if there are bitfields to remove
+    log_info("a");
     if (n_bf_addresses == 0){
         log_info("no bitfields to remove");
         return true;
     }
+    log_info("b");
 
     // which bitfields are to be removed from which processors
     proc_bit_field_keys_t *sorted_bf_key_proc = sorter_sort_sorted_to_cores(
         region_addresses, best_search_point, sorted_bit_fields);
+    log_info("c");
     if (sorted_bf_key_proc == NULL) {
         log_error("could not sort out bitfields to keys.");
         return false;
     }
+    log_info("d");
 
     // iterate though the cores sorted, and remove said bitfields from its
     // region
@@ -403,12 +407,14 @@ bool remove_merged_bitfields_from_cores(void) {
         int proc_id = sorted_bf_key_proc[c_i].processor_id;
         filter_region_t *filter_region = find_processor_bit_field_region(
             proc_id);
+        log_info("e");
 
         // iterate though the bitfield region looking for bitfields with
         // correct keys to remove
         int n_bfs = filter_region->n_filters;
         filter_region->n_filters =
             n_bfs - sorted_bf_key_proc[c_i].length_of_list;
+        log_info("f");
 
         if (filter_region->n_filters != 0){
 
@@ -416,39 +422,49 @@ bool remove_merged_bitfields_from_cores(void) {
             // router.
             filter_info_t *write_index = filter_region->filters;
             filter_info_t *read_index = filter_region->filters;
+            log_info("g");
 
             // iterate though the bitfields only writing ones which are not
             // removed
             for (int bf_index = 0; bf_index < n_bfs; bf_index++) {
-
+                log_info("h");
                 // if entry is to be removed
                 if (!has_entry_in_sorted_keys(
                         sorted_bf_key_proc[c_i], read_index->key)) {
+                    log_info("i");
                     // write the data in the current write positions, if it
                     // isn't where we're currently reading from
                     if (write_index != read_index) {
                         // copy the key, n_words and bitfield pointer over to
                         // the new location
+                        log_info("j");
                         sark_mem_cpy(
                             &write_index, &read_index, sizeof(filter_info_t));
                     }
-
+                    log_info("k");
                     // update pointers
                     write_index += sizeof(filter_info_t);
                 }
+                log_info("l");
                 read_index += sizeof(filter_info_t);
             }
         }
     }
 
+    log_info("m");
     // free items
     for (int core_index = 0; core_index < region_addresses->n_pairs;
             core_index++) {
+        log_info("n");
         if (sorted_bf_key_proc[core_index].length_of_list != 0) {
+            log_info("o");
             FREE(sorted_bf_key_proc[core_index].master_pop_keys);
         }
     }
+
+    log_info("p");
     FREE(sorted_bf_key_proc);
+    log_info("Q");
 
     // return we successfully removed merged bitfields
     return true;
@@ -680,6 +696,9 @@ bool locate_next_mid_point(int *new_mid_point) {
     return true;
 }
 
+//! \brief handles the freeing of memory from compressor cores, waiting for
+//! compressor cores to finish and removing merged bitfields from the bitfield
+//! regions.
 void handle_best_cleanup(void){
     // tell all compression cores trying midpoints to stop, as pointless.
     for (int check_core_id = 0;
@@ -697,20 +716,23 @@ void handle_best_cleanup(void){
     //(thereby freeing as much sdram/ dtcm as possible before trying to
     //allocate memory for remove merged bitfields. (will be interrupted by sdp
     // packet reception, so safe to do
-    int n_cores_doing_things = n_compression_cores;
+
+    // IT SEEMS YOU CAN LOSE SDP MESSAGES HERE. SO COMMENTING OUT
+    /*int n_cores_doing_things = n_compression_cores;
     while (n_cores_doing_things != 0){
         n_cores_doing_things = 0;
         for(int c_index = 0; c_index < n_compression_cores; c_index++){
             if (comp_core_mid_point[c_index] != DOING_NOWT) {
                 n_cores_doing_things += 1;
+                log_debug("waiting on %d", compressor_cores[c_index]);
             }
         }
-    }
+    }*/
 
     // clear away bitfields that were merged into the router from
     //their lists.
     log_info("remove merged bitfields");
-    remove_merged_bitfields_from_cores();
+    //remove_merged_bitfields_from_cores();
     terminate(EXITED_CLEANLY);
 }
 

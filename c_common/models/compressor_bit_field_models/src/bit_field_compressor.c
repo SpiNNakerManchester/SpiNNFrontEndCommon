@@ -64,7 +64,7 @@ address_t sdram_loc_for_compressed_entries;
 uint32_t number_of_packets_waiting_for = 0;
 
 //! \brief the control core id for sending responses to
-uint32_t control_core_id = 1;
+int control_core_id = -1;
 
 //! \brief sdp message to send acks to the control core with
 sdp_msg_pure_data my_msg;
@@ -266,7 +266,7 @@ static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
     log_debug("store routing table addresses into store");
     log_debug("%d addresses in packet", first_cmd->n_tables_in_packet);
     for (int i = 0; i < first_cmd->n_tables_in_packet; i++) {
-        log_info("address is %x for %d", first_cmd->tables[i], i);
+        log_debug("address is %x for %d", first_cmd->tables[i], i);
     }
     store_info_table_store(first_cmd->n_tables_in_packet, first_cmd->tables);
 
@@ -321,7 +321,9 @@ void _sdp_handler(uint mailbox, uint port) {
     compressor_payload_t *payload = (compressor_payload_t *) msg->data;
 
     // record control core.
-    control_core_id = (msg->srce_port & CPU_MASK);
+    if (control_core_id == -1){
+        control_core_id = (msg->srce_port & CPU_MASK);
+    }
 
     log_info("control core is %d", control_core_id);
     log_info("command code is %d", payload->command);
@@ -341,7 +343,7 @@ void _sdp_handler(uint mailbox, uint port) {
                 log_error("I really should not be receiving this!!! WTF");
                 log_error(
                     "came from core %d with code %d",
-                    control_core_id, payload->response.response_code);
+                    msg->srce_port & CPU_MASK, payload->response.response_code);
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
             case STOP_COMPRESSION_ATTEMPT:

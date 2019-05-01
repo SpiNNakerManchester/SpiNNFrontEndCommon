@@ -225,6 +225,10 @@ static void set_up_extra_packet(
         LENGTH_OF_SDP_HEADER + sizeof(extra_msg_t) +
         (n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER));
     log_debug("message length = %d", my_msg->length);
+
+    log_info(
+        "message contains command code %d, n tables in packet %d, len of %d",
+        data->command, data->msg.n_tables_in_packet, my_msg->length);
 }
 
 //! \brief selects a compression core's index that's not doing anything yet

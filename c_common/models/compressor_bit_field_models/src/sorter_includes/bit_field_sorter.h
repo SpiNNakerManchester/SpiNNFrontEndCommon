@@ -84,9 +84,10 @@ static inline int locate_and_add_bit_fields(
                 *sorted_bf_fill_loc += 1;
 
                 log_info(
-                    "dumping into sorted at index %d proc %d, and has "
-                    "redundant packet count of %d",
+                    "dumping into sorted at index %d proc %d, for key %d and "
+                    "has redundant packet count of %d",
                     *sorted_bf_fill_loc - 1, proc,
+                    coverage_e->bit_field_addresses[p_index]->key,
                     detect_redundant_packet_count(
                         *coverage_e->bit_field_addresses[p_index],
                         region_addresses));
