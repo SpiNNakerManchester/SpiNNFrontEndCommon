@@ -1,7 +1,6 @@
 // SARK-based program
 #include <sark.h>
 #include <stdbool.h>
-#include <math.h>
 #include <common-typedefs.h>
 
 extern void spin1_wfi();
@@ -1277,8 +1276,10 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
         sark_msg_free((sdp_msg_t *) msg);
 
-        max_seq_num = (float)bytes_to_read_write / (float)(67 * 4);
-        max_seq_num = ceil(max_seq_num);
+        uint32_t seq = bytes_to_read_write / (67 * 4),
+                mod = bytes_to_read_write % (67 * 4);
+        seq += mod > 0;
+        max_seq_num = seq;
         //io_printf(IO_BUF, "address %d, bytes to write %d\n", store_address,
         //          bytes_to_read_write);
 
