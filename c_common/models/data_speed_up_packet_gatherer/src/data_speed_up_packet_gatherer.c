@@ -265,7 +265,7 @@ void process_sdp_message_into_mc_messages(
 //! block of data
 static inline void allocate_to_sdram(uint max_seq_num) {
     size_of_bitfield = get_bit_field_size(max_seq_num);
-    missing_seq_nums_store = (bit_field_t) sark_xalloc(
+    missing_seq_nums_store = sark_xalloc(
             sv->sdram_heap, size_of_bitfield * sizeof(uint32_t), 0,
             ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
     if (missing_seq_nums_store == NULL) {
@@ -289,10 +289,10 @@ static inline bool allocate_to_dtcm(uint max_seq_num) {
 //! \param[in] max_seq_num: the max seq num expected during this stage
 void process_sdram_location_for_seq_nums(uint max_seq_num) {
     if (max_seq_num >= SDRAM_VS_DTCM_THRESHOLD){
-        log_info("allocate bitfield in SDRAM");
+        log_info("allocate bitfield in SDRAM for %u bits", max_seq_num);
         allocate_to_sdram(max_seq_num);
     } else {
-        log_info("allocate bitfield in DTCM");
+        log_info("allocate bitfield in DTCM for %u bits", max_seq_num);
         if (!allocate_to_dtcm(max_seq_num)) {
             log_info("trying SDRAM as DTCM allocate failed");
             allocate_to_sdram(max_seq_num);
@@ -357,6 +357,7 @@ void process_missing_seq_nums_and_request_retransmission(void) {
         send_sdp_message();
         log_info("sent end flag");
         sark_free(missing_seq_nums_store);
+        missing_seq_nums_store = NULL;
         total_received_seq_nums = 0;
     } else {
         // sending missing seq nums

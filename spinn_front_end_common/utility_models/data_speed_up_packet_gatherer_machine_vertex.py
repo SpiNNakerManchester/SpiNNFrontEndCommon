@@ -677,6 +677,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # send first message
         self._connection = SCAMPConnection(
             chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
+        self.__reprogram_tag(self._connection)
         self._connection.send_sdp_message(message)
 
         # send initial attempt at sending all the data
@@ -1014,6 +1015,23 @@ class DataSpeedUpPacketGatherMachineVertex(
             except Exception:  # pylint: disable=broad-except
                 log.exception("Couldn't get core state")
 
+    def __reprogram_tag(self, connection):
+        request = IPTagSet(
+            self._x, self._y, [0, 0, 0, 0], 0,
+            self._remote_tag, strip=True, use_sender=True)
+        data = connection.get_scp_data(request)
+        einfo = None
+        for _ in range(3):
+            try:
+                connection.send(data)
+                _, _, response, offset = \
+                    connection.receive_scp_response()
+                request.get_scp_response().read_bytestring(response, offset)
+                return
+            except SpinnmanTimeoutException:
+                einfo = sys.exc_info()
+        reraise(*einfo)
+
     def get_data(
             self, placement, memory_address, length_in_bytes, fixed_routes):
         """ Gets data from a given core and memory address.
@@ -1050,23 +1068,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Update the IP Tag to work through a NAT firewall
         connection = SCAMPConnection(
             chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
-        request = IPTagSet(
-            self._x, self._y, [0, 0, 0, 0], 0,
-            self._remote_tag, strip=True, use_sender=True)
-        data = connection.get_scp_data(request)
-        sent = False
-        tries_to_go = 3
-        while not sent:
-            try:
-                connection.send(data)
-                _, _, response, offset = \
-                    connection.receive_scp_response()
-                request.get_scp_response().read_bytestring(response, offset)
-                sent = True
-            except SpinnmanTimeoutException:
-                if not tries_to_go:
-                    reraise(*sys.exc_info())
-                tries_to_go -= 1
+        self.__reprogram_tag(connection)
 
         data = _THREE_WORDS.pack(
             self.SDP_PACKET_START_SENDING_COMMAND_ID,

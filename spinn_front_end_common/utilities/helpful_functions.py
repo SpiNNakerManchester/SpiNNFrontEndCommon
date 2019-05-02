@@ -342,9 +342,10 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
 
     rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
     watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-    logger.warning(
-        "unexpected core states (rte={}, wdog={}); attempting to fetch IOBUF",
-        rte_count, watchdog_count)
+    if rte_count or watchdog_count:
+        logger.warning(
+            "unexpected core states (rte={}, wdog={})",
+            rte_count, watchdog_count)
 
     sim = get_simulator()
     extractor = ChipIOBufExtractor()
