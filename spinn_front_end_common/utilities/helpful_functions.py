@@ -6,7 +6,9 @@ from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
 from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
+from .globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -322,3 +324,36 @@ def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
     if real_y >= machine.max_chip_y + 1:
         real_y -= machine.max_chip_y + 1
     return real_x, real_y
+
+
+def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
+    """ Used to get at least *some* information out of a core when something\
+    goes wrong.
+
+    :param txrx: The transceiver.
+    :param app_id: The ID of the application.
+    :param vertex: The vertex to retrieve the IOBUF from if it is suspected\
+        as being dead
+    :param placement: Where the vertex is located.
+    """
+    # pylint: disable=protected-access
+    from spinn_front_end_common.interface.interface_functions import (
+        ChipIOBufExtractor)
+
+    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+    logger.warning(
+        "unexpected core states (rte={}, wdog={}); attempting to fetch IOBUF",
+        rte_count, watchdog_count)
+
+    sim = get_simulator()
+    extractor = ChipIOBufExtractor()
+    executable_targets = ExecutableTargets()
+    executable_finder = sim._executable_finder
+    executable_targets.add_processor(
+        executable_finder.get_executable_path(vertex.get_binary_file_name()),
+        placement.x, placement.y, placement.p, vertex.get_binary_start_type())
+    extractor(txrx, executable_targets, executable_finder,
+              sim._provenance_file_path)
+
+

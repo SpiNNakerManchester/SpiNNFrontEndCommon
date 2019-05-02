@@ -3,7 +3,6 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
-from spinnman.model.enums import CPUState
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
@@ -11,8 +10,7 @@ from pacman.model.resources import ResourceContainer, SDRAMResource
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ExecutableTargets)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
@@ -23,7 +21,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -52,31 +50,6 @@ _KEY_OFFSETS = Enum(
     names=[("ADDRESS_KEY_OFFSET", 0),
            ("DATA_KEY_OFFSET", 1),
            ("RESTART_KEY_OFFSET", 2)])
-
-
-def emergency_recover_state_from_failure(txrx, app_id, placement, vertex):
-    # pylint: disable=protected-access
-    processors_rte = txrx.get_core_state_count(
-        app_id, CPUState.RUN_TIME_EXCEPTION)
-    processors_watchdogged = txrx.get_core_state_count(
-        app_id, CPUState.WATCHDOG)
-    log.warning(
-        "unexpected core states (rte={}, wdog={}); attempting to fetch iobuf",
-        processors_rte, processors_watchdogged)
-    if processors_rte or processors_watchdogged:
-        sim = globals_variables.get_simulator()
-        from spinn_front_end_common.interface.interface_functions import (
-            ChipIOBufExtractor)
-        extractor = ChipIOBufExtractor()
-        executable_targets = ExecutableTargets()
-        executable_finder = sim._executable_finder
-        executable_targets.add_processor(
-            executable_finder.get_executable_path(
-                vertex.get_binary_file_name()),
-            placement.x, placement.y, placement.p,
-            vertex.get_binary_start_type())
-        extractor(txrx, executable_targets, executable_finder,
-                  sim._provenance_file_path)
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -322,8 +295,14 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
-        process.set_timeout(
-            timeout_mantissa, timeout_exponent, core_subsets)
+        try:
+            process.set_timeout(
+                timeout_mantissa, timeout_exponent, core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def set_router_emergency_timeout(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -348,8 +327,14 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
             transceiver.scamp_connection_selector)
-        process.set_timeout(
-            timeout_mantissa, timeout_exponent, core_subsets)
+        try:
+            process.set_timeout(
+                timeout_mantissa, timeout_exponent, core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def reset_reinjection_counters(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -363,7 +348,13 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
-        process.reset_counters(core_subsets)
+        try:
+            process.reset_counters(core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def clear_reinjection_queue(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -377,7 +368,13 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ClearQueueProcess(transceiver.scamp_connection_selector)
-        process.reset_counters(core_subsets)
+        try:
+            process.reset_counters(core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def get_reinjection_status(self, placements, transceiver):
         """ Get the reinjection status from this extra monitor vertex
@@ -393,7 +390,7 @@ class ExtraMonitorSupportMachineVertex(
                 placement.x, placement.y, placement.p)
         except Exception as e:
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, placement, self)
+                transceiver, self._app_id, self, placement)
             raise e
 
     def get_reinjection_status_for_vertices(
@@ -409,7 +406,13 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        return process.get_reinjection_status_for_core_subsets(core_subsets)
+        try:
+            return process.get_reinjection_status_for_core_subsets(core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def set_reinjection_packets(
             self, placements, extra_monitor_cores_for_data, transceiver,
@@ -447,10 +450,16 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetPacketTypesProcess(transceiver.scamp_connection_selector)
-        process.set_packet_types(
-            core_subsets, self._reinject_point_to_point,
-            self._reinject_multicast, self._reinject_nearest_neighbour,
-            self._reinject_fixed_route)
+        try:
+            process.set_packet_types(
+                core_subsets, self._reinject_point_to_point,
+                self._reinject_multicast, self._reinject_nearest_neighbour,
+                self._reinject_fixed_route)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def set_up_system_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -471,7 +480,13 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = SetSystemMCRoutesProcess(
             transceiver.scamp_connection_selector)
-        return process.set_system_mc_routes(core_subsets)
+        try:
+            return process.set_system_mc_routes(core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     def set_up_application_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -492,7 +507,13 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = SetApplicationMCRoutesProcess(
             transceiver.scamp_connection_selector)
-        return process.set_application_mc_routes(core_subsets)
+        try:
+            return process.set_application_mc_routes(core_subsets)
+        except Exception as e:
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise e
 
     @staticmethod
     def _convert_vertices_to_core_subset(

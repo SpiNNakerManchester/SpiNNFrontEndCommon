@@ -27,7 +27,7 @@ from pacman.model.resources import (
 from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
@@ -131,6 +131,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
         "_x", "_y",
+        "_app_id",
         "_connection",
         # store of the extra monitors to location. helpful in data in
         "_extra_monitors_by_chip",
@@ -245,6 +246,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
         self._placement = None
+        self._app_id = None
 
         # create report if it doesn't already exist
         self._out_report_path = \
@@ -294,23 +296,25 @@ class DataSpeedUpPacketGatherMachineVertex(
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-        "machine": "MemoryExtendedMachine"
+        "machine": "MemoryExtendedMachine",
+        "app_id": "APPID"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
             "machine_time_step", "time_scale_factor",
-            "mc_data_chips_to_keys", "machine"
+            "mc_data_chips_to_keys", "machine", "app_id"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
             machine_time_step, time_scale_factor, mc_data_chips_to_keys,
-            machine):
+            machine, app_id):
         # pylint: disable=too-many-arguments, arguments-differ
 
         # update my placement for future knowledge
         self._placement = placement
+        self._app_id = app_id
 
         # Setup words + 1 for flags + 1 for recording size
         setup_size = SYSTEM_BYTES_REQUIREMENT
@@ -696,6 +700,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             except SpinnmanTimeoutException:  # if time out, keep trying
                 # if the timeout has not occurred x times, keep trying
                 if time_out_count > TIMEOUT_RETRY_LIMIT:
+                    emergency_recover_state_from_failure(
+                        transceiver, self._app_id, self, self._placement)
                     raise SpinnFrontEndException(
                         TIMEOUT_MESSAGE.format(time_out_count))
 
