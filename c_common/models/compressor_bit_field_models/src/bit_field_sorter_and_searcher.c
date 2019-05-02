@@ -1121,6 +1121,8 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
+    //rt_error(RTE_SWERR);
+
     log_info("read in bitfields");
     bool read_success = false;
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
