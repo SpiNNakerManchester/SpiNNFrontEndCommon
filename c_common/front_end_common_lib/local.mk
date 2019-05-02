@@ -53,7 +53,7 @@ $(2)log_dict.dict: $(1)
 # Build the o files from the modified sources
 $$(BUILD_DIR)%.o: $(2)%.c
 	# local
-	-mkdir -p $$(dir $$@)
+	-@mkdir -p $$(dir $$@)
 	$$(CC) $$(CFLAGS) -o $$@ $$<
 endef
 
