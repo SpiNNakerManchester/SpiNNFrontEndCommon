@@ -51,6 +51,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
@@ -149,6 +150,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The manager of streaming buffered data in and out of the SpiNNaker
         # machine
         "_buffer_manager",
+
+        # Handler for keep all the calls to Java in a single space.
+        # May be null is configs request not to use Java
+        "_java_caller",
 
         #
         "_ip_address",
@@ -372,6 +377,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine = None
         self._txrx = None
         self._buffer_manager = None
+        self._java_caller = None
         self._ip_address = None
         self._executable_types = None
 
@@ -768,6 +774,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 # to be rebuilt.
                 self._machine = None
                 self._buffer_manager = None
+                self._java_caller = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
@@ -1535,12 +1542,21 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
-                inputs["StoreBufferDataInFile"] = self._config.getboolean(
-                    "Buffers", "store_buffer_data_in_file")
                 algorithms.append("BufferManagerCreator")
                 outputs.append("BufferManager")
             else:
                 inputs["BufferManager"] = self._buffer_manager
+            if self._java_caller is None:
+                if self._config.getboolean("Java", "use_java"):
+                    java_call = self._config.get("Java", "java_call")
+                    java_spinnaker_path = self._config.get_str(
+                        "Java", "java_spinnaker_path")
+                    java_properties = self._config.get_str(
+                        "Java", "java_properties")
+                    self._java_caller = JavaCaller(
+                        self._json_folder, java_call, java_spinnaker_path,
+                        java_properties)
+            inputs["JavaCaller"] = self._java_caller
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1747,8 +1763,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         " please read previous error message to locate its"
                         " error")
             except Exception:
-                logger.error("Error when attempting to recover from error",
-                             exc_info=True)
+                logger.exception("Error when attempting to recover from error")
 
             # if in debug mode, do not shut down machine
             if self._config.get("Mode", "mode") != "Debug":
@@ -1757,8 +1772,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         turn_off_machine=False, clear_routing_tables=False,
                         clear_tags=False)
                 except Exception:
-                    logger.error("Error when attempting to stop",
-                                 exc_info=True)
+                    logger.exception("Error when attempting to stop")
 
             # reraise exception
             reraise(*e_inf)
