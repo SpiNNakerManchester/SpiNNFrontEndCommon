@@ -328,7 +328,7 @@ def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
 
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     """ Used to get at least *some* information out of a core when something\
-    goes wrong.
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param txrx: The transceiver.
     :param app_id: The ID of the application.
@@ -356,5 +356,3 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
         placement.x, placement.y, placement.p, vertex.get_binary_start_type())
     extractor(txrx, executable_targets, executable_finder,
               sim._provenance_file_path)
-
-

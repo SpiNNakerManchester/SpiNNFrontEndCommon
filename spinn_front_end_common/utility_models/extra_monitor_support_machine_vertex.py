@@ -407,7 +407,8 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         try:
-            return process.get_reinjection_status_for_core_subsets(core_subsets)
+            return process.get_reinjection_status_for_core_subsets(
+                core_subsets)
         except Exception as e:
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
