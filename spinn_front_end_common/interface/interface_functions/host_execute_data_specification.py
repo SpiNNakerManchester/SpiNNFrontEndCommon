@@ -73,7 +73,7 @@ class HostExecuteDataSpecification(object):
         :rtype: dict or \
             :py:class:`spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
         """
-        #pylint: disable=attribute-defined-outside-init
+        # pylint: disable=attribute-defined-outside-init
         self._app_id = app_id
         self._db_folder = report_folder
         self._java = java_caller
