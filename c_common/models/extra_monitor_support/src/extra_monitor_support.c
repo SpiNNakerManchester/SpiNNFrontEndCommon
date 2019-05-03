@@ -792,7 +792,7 @@ static void clear_router(void) {
 static inline void data_in_process_address(uint data) {
     //io_printf(IO_BUF, "address key\n");
 
-    //io_printf(IO_BUF, "setting up address to %u\n", data);
+    io_printf(IO_BUF, "setting address to %u\n", data);
     data_in_write_address = (address_t) data;
 }
 
@@ -805,7 +805,7 @@ static inline void data_in_process_data(uint data) {
     }
 
     //io_printf(IO_BUF, "data key, and pos %d\n", data_in_write_pointer);
-    *data_in_write_address = data;
+    *data_in_write_address++ = data;
 }
 
 static inline void data_in_process_start(void) {
@@ -845,13 +845,13 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
 //! \param[in] n_entries: how many router entries to read in
 void data_in_read_and_load_router_entries(
         router_entry_t *sdram_address, uint n_entries) {
-    io_printf(IO_BUF, "n entries %u \n", n_entries);
+    io_printf(IO_BUF, "writing %u router entries\n", n_entries);
     if (n_entries == 0) {
         return;
     }
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
     if (start_entry_id == 0) {
-        io_printf(IO_BUF, "received error with requesting %d router entries."
+        io_printf(IO_BUF, "received error with requesting %u router entries."
                 " Shutting down\n", n_entries);
         rt_error(RTE_SWERR);
     }
@@ -860,19 +860,20 @@ void data_in_read_and_load_router_entries(
     for (uint idx = 0; idx < n_entries; idx++) {
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
-        io_printf(IO_BUF, "setting key %u, mask %u, route %u for entry %u\n",
-                sdram_address[idx].key, sdram_address[idx].mask,
-                sdram_address[idx].route, idx + start_entry_id);
         if (sdram_address[idx].key != INVALID_ROUTER_ENTRY_KEY &&
                 sdram_address[idx].mask != INVALID_ROUTER_ENTRY_MASK &&
                 sdram_address[idx].route != INVALID_ROUTER_ENTRY_ROUTE) {
+            io_printf(IO_BUF,
+                    "setting key %08x, mask %08x, route %u08x for entry %u\n",
+                    sdram_address[idx].key, sdram_address[idx].mask,
+                    sdram_address[idx].route, idx + start_entry_id);
             // try setting the valid router entry
             //io_printf(IO_BUF, "writing entry \n ");
 
             if (rtr_mc_set(idx + start_entry_id, sdram_address[idx].key,
                     sdram_address[idx].mask, sdram_address[idx].route) != 1) {
                 io_printf(IO_BUF, "failed to write router entry %d, "
-                        "with key %u, mask %u, route %u\n",
+                        "with key %08x, mask %08x, route %08x\n",
                         idx + start_entry_id, sdram_address[idx].key,
                         sdram_address[idx].mask, sdram_address[idx].route);
             }
