@@ -262,9 +262,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_provenance_format",
 
         #
-        "_exec_dse_on_host",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -442,8 +439,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._provenance_format not in ["xml", "json"]:
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
-        self._exec_dse_on_host = self._config.getboolean(
-            "SpecExecution", "spec_exec_on_host")
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
@@ -1387,7 +1382,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["APPID"] = self._app_id
-        inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
@@ -1636,11 +1630,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         write_memory_report = self._config.getboolean(
             "Reports", "write_memory_map_report")
         if write_memory_report and application_graph_changed:
-            if self._exec_dse_on_host:
-                algorithms.append("MemoryMapOnHostReport")
-                algorithms.append("MemoryMapOnHostChipReport")
-            else:
-                algorithms.append("MemoryMapOnChipReport")
+            algorithms.append("MemoryMapOnHostReport")
+            algorithms.append("MemoryMapOnHostChipReport")
 
         # Add reports that depend on compression
         routing_tables_needed = False
@@ -1669,11 +1660,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
-
-        if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteDataSpecification")
-        else:
-            optional_algorithms.append("MachineExecuteDataSpecification")
+        optional_algorithms.append("HostExecuteDataSpecification")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board

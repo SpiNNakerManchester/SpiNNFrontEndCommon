@@ -30,8 +30,6 @@ from .insert_live_packet_gatherers_to_graphs import (
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
-from .machine_execute_data_specification import (
-    MachineExecuteDataSpecification)
 from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
@@ -70,8 +68,8 @@ __all__ = [
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs",
-    "LoadExecutableImages", "LocateExecutableStartType", "LoadFixedRoutes",
-    "MachineExecuteDataSpecification", "MachineGenerator",
+    "LoadExecutableImages", "LocateExecutableStartType",
+    "LoadFixedRoutes", "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
