@@ -54,8 +54,15 @@ class BufferedReceivingData(object):
         :type report_folder: str
         """
         self._db_file = os.path.join(report_folder, DB_FILE_NAME)
-        self._db = None
-        self.reset()
+        if os.path.exists(self._db_file):
+            os.remove(self._db_file)
+        self._db = SqlLiteDatabase(self._db_file)
+        self._is_flushed = defaultdict(lambda: False)
+        self._sequence_no = defaultdict(lambda: 0xFF)
+        self._last_packet_received = defaultdict(lambda: None)
+        self._last_packet_sent = defaultdict(lambda: None)
+        self._end_buffering_sequence_no = dict()
+        self._end_buffering_state = dict()
 
     def reset(self):
         if os.path.exists(self._db_file):
