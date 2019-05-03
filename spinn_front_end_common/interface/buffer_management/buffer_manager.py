@@ -184,7 +184,7 @@ class BufferManager(object):
             self._machine, placement_x, placement_y,
             self._extra_monitor_cores_to_ethernet_connection_map)
         return receiver.get_data(
-            transceiver, self._placements.get_placement_of_vertex(sender),
+            self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
 
     def _receive_buffer_command_message(self, packet):
@@ -582,8 +582,7 @@ class BufferManager(object):
             for receiver in receivers:
                 receiver.set_cores_for_data_streaming(
                     transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=(
-                        self._extra_monitor_cores))
+                    extra_monitor_cores=self._extra_monitor_cores)
 
         # get data
         for vertex in vertices:
@@ -598,8 +597,7 @@ class BufferManager(object):
             for receiver in receivers:
                 receiver.unset_cores_for_data_streaming(
                     transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=(
-                        self._extra_monitor_cores))
+                    extra_monitor_cores=self._extra_monitor_cores)
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a handle to the data container for all the data retrieved\

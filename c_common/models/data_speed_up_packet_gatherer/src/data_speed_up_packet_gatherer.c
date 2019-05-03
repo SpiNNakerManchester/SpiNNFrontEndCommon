@@ -226,7 +226,7 @@ void process_sdp_message_into_mc_messages(
     uint n_elements = (msg->length -
             ((start_of_data_sdp_position * WORD_TO_BYTE_MULTIPLIER)
                     + LENGTH_OF_SDP_HEADER)) / WORD_TO_BYTE_MULTIPLIER;
-    //log_info("n elements %d", n_elements);
+    log_info("writing %u elements to 0x%08x", n_elements, sdram_address);
 
     // send mc message with SDRAM location to correct chip
     //log_info("send sdram address %d", send_sdram_address);
@@ -622,7 +622,7 @@ static bool initialise(uint32_t *timer_period) {
 
     spin1_callback_on(SDP_PACKET_RX, data_in_receive_sdp_data, SDP);
 
-     // Get the address this core's DTCM data starts at from SRAM
+    // Get the address this core's DTCM data starts at from SRAM
     data_in_data_t *chip_key_map = (data_in_data_t *)
             data_specification_get_region(CHIP_TO_KEY, address);
 
