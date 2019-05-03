@@ -427,7 +427,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :param neuron_id: the neuron id to find the bit in the bitfield
         :return: the bit
         """
-        word_id = int(math.floor(neuron_id // self._BITS_IN_A_WORD))
+        word_id = int(neuron_id // self._BITS_IN_A_WORD)
         bit_in_word = neuron_id % self._BITS_IN_A_WORD
         try:
             flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK

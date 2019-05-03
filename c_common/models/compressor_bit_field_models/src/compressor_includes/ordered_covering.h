@@ -818,14 +818,14 @@ static inline bool oc_minimise(
         if (count > 1) {
             // Apply the merge to the table if it would result in merging
             // actually occurring.
-            routing_tables_print_out_table_sizes();
+            //routing_tables_print_out_table_sizes();
             bool malloc_success = oc_merge_apply(
                 &merge, aliases, failed_by_malloc);
             if (!malloc_success){
                 log_error("failed to malloc");
                 return false;
             }
-            routing_tables_print_out_table_sizes();
+            //routing_tables_print_out_table_sizes();
         }
 
         // Free any memory used by the merge

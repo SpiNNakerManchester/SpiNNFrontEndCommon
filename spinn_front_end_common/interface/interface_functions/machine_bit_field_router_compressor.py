@@ -4,6 +4,8 @@ import struct
 from collections import defaultdict
 
 from pacman.model.routing_tables import MulticastRoutingTables
+from spinn_front_end_common.utilities.ordered_covering import get_generality \
+    as ordered_covering_generality
 from spinn_front_end_common.interface.interface_functions import \
     ChipIOBufExtractor
 from spinn_front_end_common.interface.interface_functions.\
@@ -628,7 +630,14 @@ class MachineBitFieldRouterCompressor(object):
         data = b''
         data += self._TWO_WORDS.pack(app_id, routing_table.number_of_entries)
 
-        for entry in routing_table.multicast_routing_entries:
+        # sort entries based on generality
+        sorted_routing_table = sorted(
+            routing_table.multicast_routing_entries,
+            key=lambda rt_entry: ordered_covering_generality(
+                rt_entry.routing_entry_key, rt_entry.mask))
+
+        # write byte array for the sorted table
+        for entry in sorted_routing_table:
             data += self._FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),

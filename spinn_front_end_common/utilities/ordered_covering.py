@@ -264,7 +264,7 @@ def ordered_covering(
     # generality.
     routing_table = sorted(
         routing_table,
-        key=lambda entry: _get_generality(entry.key, entry.mask)
+        key=lambda entry: get_generality(entry.key, entry.mask)
     )
 
     while target_length is None or len(routing_table) > target_length:
@@ -295,17 +295,17 @@ def ordered_covering(
     return routing_table, aliases
 
 
-def _get_generality(key, mask):
+def get_generality(key, mask):
     """Count the number of Xs in the key-mask pair.
 
     For example, there are 32 Xs in ``0x00000000/0x00000000``::
 
-        >>> _get_generality(0x0, 0x0)
+        >>> get_generality(0x0, 0x0)
         32
 
     And no Xs in ``0xffffffff/0xffffffff``::
 
-        >>> _get_generality(0xffffffff, 0xffffffff)
+        >>> get_generality(0xffffffff, 0xffffffff)
         0
     """
     xs = (~key) & (~mask)
@@ -383,7 +383,7 @@ def _get_insertion_index(routing_table, generality):
 
     # Wrapper for _get_generality which accepts a routing entry
     def gg(entry):
-        return _get_generality(entry.key, entry.mask)
+        return get_generality(entry.key, entry.mask)
 
     # Perform a binary search through the routing table
     bottom = 0
@@ -456,7 +456,7 @@ class _Merge(namedtuple("_Merge", ["routing_table", "entries", "key", "mask",
         mask = all_selected & new_xs  # Combine existing and new Xs
         key = all_ones & mask
 
-        generality = _get_generality(key, mask)
+        generality = get_generality(key, mask)
         insertion_index = _get_insertion_index(routing_table, generality)
 
         # Compute the goodness of the merge

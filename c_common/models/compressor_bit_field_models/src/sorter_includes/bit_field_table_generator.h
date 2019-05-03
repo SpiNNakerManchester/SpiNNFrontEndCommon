@@ -144,7 +144,9 @@ bool generate_entries_from_bitfields(
     uint32_t *bit_field_processors =
         MALLOC(n_bit_fields_for_key * sizeof(uint32_t));
     if (bit_field_processors == NULL) {
-        log_error("failed to allocate memory for bitfield processors");
+        log_error(
+            "failed to allocate memory for bitfield processors on %d "
+            "bitfields", n_bit_fields_for_key);
         return false;
     }
 
@@ -306,7 +308,7 @@ bool generate_rt_from_bit_field(
         region_addresses, bit_field_by_processor);
     if (!success){
         log_error(
-            "can not create entries for key %d with %x bitfields.",
+            "can not create entries for key %d with %d bitfields.",
             master_pop_key, n_bfs_for_key);
         FREE(original_entry);
         FREE(filters);
@@ -372,21 +374,20 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
         return NULL;
     }
 
-    // add clone to front of list, to ensure its easily accessible (plus its
+    // add clone to back of list, to ensure its easily accessible (plus its
     // part of the expected logic)
-
-    bit_field_routing_tables[0] = uncompressed_table;
+    bit_field_routing_tables[*n_rt_addresses - 1] = uncompressed_table;
 
     // iterate through the keys, accumulating bitfields and turn into routing
     // table entries.
-    for(int key_index = 1; key_index < *n_rt_addresses; key_index++) {
+    for(int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
         // holder for the rt address
         address_t rt_address;
 
         // create the routing table from the bitfield
         bool success = generate_rt_from_bit_field(
-            keys[key_index - 1].master_pop_key, uncompressed_table,
-            keys[key_index - 1].n_bitfields_with_key, mid_point, &rt_address,
+            keys[key_index].master_pop_key, uncompressed_table,
+            keys[key_index].n_bitfields_with_key, mid_point, &rt_address,
             region_addresses, bit_field_by_processor, sorted_bit_fields);
 
         // if failed, free stuff and tell above it failed
