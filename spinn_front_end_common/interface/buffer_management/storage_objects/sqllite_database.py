@@ -6,10 +6,11 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
 from spinn_utilities.overrides import overrides
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 
 
 class SqlLiteDatabase(AbstractDatabase):
-    """ Specific implemematation of the Database for SqlLite
+    """ Specific implementation of the Database for SqlLite
     """
 
     __slots__ = [
@@ -19,10 +20,6 @@ class SqlLiteDatabase(AbstractDatabase):
 
     def __init__(self, database_file=None):
         """
-        :param store_to_file: A boolean to identify if the data will be stored\
-            in memory using a byte array or in a temporary file on the disk
-            Ignored if database_file is not null.
-        :type store_to_file: bool
         :param database_file: The name of a file that contains (or will\
             contain) an SQLite database holding the data.
         :type database_file: str
@@ -56,7 +53,8 @@ class SqlLiteDatabase(AbstractDatabase):
             sql = f.read()
         self._db.executescript(sql)
 
-    def _read_contents(self, cursor, x, y, p, region):
+    @staticmethod
+    def _read_contents(cursor, x, y, p, region):
         for row in cursor.execute(
                 "SELECT content FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
@@ -66,7 +64,8 @@ class SqlLiteDatabase(AbstractDatabase):
             return memoryview(data)
         return b""
 
-    def _get_core_id(self, cursor, x, y, p):
+    @staticmethod
+    def _get_core_id(cursor, x, y, p):
         for row in cursor.execute(
                 "SELECT core_id FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? ",
@@ -116,7 +115,9 @@ class SqlLiteDatabase(AbstractDatabase):
                 "UPDATE region SET content = content || ?, "
                 + "fetches = fetches + 1, append_time = ?"
                 + "WHERE region_id = ? ",
-                (sqlite3.Binary(data), int(time.time() * 1000), region_id))
+                (sqlite3.Binary(data),
+                 int(time.time() * SECONDS_TO_MICRO_SECONDS_CONVERSION),
+                 region_id))
             assert cursor.rowcount == 1
 
     @overrides(AbstractDatabase.get_region_data)

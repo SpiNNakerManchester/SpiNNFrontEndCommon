@@ -6,7 +6,7 @@ from spinn_utilities.abstract_base import (
 @add_metaclass(AbstractBase)
 class AbstractDatabase(object):
     """
-    This API seperates the required database calls from the implementation.
+    This API separates the required database calls from the implementation.
 
     Methods here are designed for the convenience of the caller not the
         database.

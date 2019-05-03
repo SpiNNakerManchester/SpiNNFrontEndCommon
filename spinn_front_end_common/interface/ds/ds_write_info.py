@@ -26,9 +26,9 @@ class DsWriteInfo(MutableMapping):
             'start_address', 'memory_used' and 'memory_written'
         """
         (x, y, p) = core
-        return self.getInfo(x, y, p)
+        return self.get_info(x, y, p)
 
-    def getInfo(self, x, y, p):
+    def get_info(self, x, y, p):
         """
         gets the info for the core x, y, p
 
@@ -42,9 +42,9 @@ class DsWriteInfo(MutableMapping):
 
     def __setitem__(self, core, info):
         (x, y, p) = core
-        self.setInfo(x, y, p, info)
+        self.set_info(x, y, p, info)
 
-    def setInfo(self, x, y, p, info):
+    def set_info(self, x, y, p, info):
         """
         Sets the info for the core x, y, p
 

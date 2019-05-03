@@ -49,10 +49,6 @@ class BufferedReceivingData(object):
 
     def __init__(self, report_folder):
         """
-        :param store_to_file: A boolean to identify if the data will be stored\
-            in memory using a byte array or in a temporary file on the disk
-            Ignored if database_file is not null.
-        :type store_to_file: bool
         :param report_folder: The directory to write the database used to
             store some of the data.
         :type report_folder: str

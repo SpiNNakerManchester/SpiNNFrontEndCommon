@@ -23,9 +23,13 @@ class GraphDataSpecificationWriter(object):
         "_region_sizes",
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip",
+        # spinnmachine instance
         "_machine",
+        # hostname
         "_hostname",
+        # directory where reports go
         "_report_dir",
+        # bool for writing texts
         "_write_text",
     )
 

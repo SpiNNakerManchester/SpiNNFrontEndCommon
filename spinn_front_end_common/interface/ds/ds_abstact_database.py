@@ -36,7 +36,7 @@ class DsAbstractDatabase(object):
     @abstractmethod
     def get_ds(self, x, y, p):
         """
-        Retreives the data spec as byte code for this core
+        Retrieves the data spec as byte code for this core
         :param x: core x
         :param y: core y
         :param p: core p

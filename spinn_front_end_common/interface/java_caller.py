@@ -174,8 +174,7 @@ class JavaCaller(object):
         """
         self._report_folder = report_folder
 
-    def set_placements(self, placements, transceiver, monitor_cores=None,
-                       packet_gathers=None):
+    def set_placements(self, placements, transceiver):
         """ Passes in the placements leaving this class to decide pass it to\
             Java.
 
