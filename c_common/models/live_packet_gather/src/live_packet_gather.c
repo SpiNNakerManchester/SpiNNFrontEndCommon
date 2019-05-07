@@ -297,17 +297,17 @@ void incoming_event_process_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    uint32_t key;
     do {
-       if (circular_buffer_get_next(without_payload_buffer, &key)) {
-           process_incoming_event(key);
-       } else if (circular_buffer_get_next(with_payload_buffer, &key)) {
-           uint32_t payload = 0;
-           circular_buffer_get_next(with_payload_buffer, &payload);
-           process_incoming_event_payload(key, payload);
-       } else {
-           processing_events = false;
-       }
+        uint32_t key, payload;
+
+        if (circular_buffer_get_next(without_payload_buffer, &key)) {
+            process_incoming_event(key);
+        } else if (circular_buffer_get_next(with_payload_buffer, &key)
+        	&& circular_buffer_get_next(with_payload_buffer, &payload)) {
+            process_incoming_event_payload(key, payload);
+        } else {
+            processing_events = false;
+        }
     } while (processing_events);
 }
 
@@ -332,8 +332,7 @@ void incoming_event_payload_callback(uint key, uint payload) {
             processing_events = true;
             spin1_trigger_user_event(0, 0);
         }
-    }
-    else {
+    } else {
         provenance_data.number_of_over_flows_payload += 1;
     }
 }

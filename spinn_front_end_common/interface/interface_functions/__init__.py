@@ -33,8 +33,6 @@ from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_bit_field_router_compressor import (
     MachineBitFieldRouterCompressor)
-from .machine_execute_data_specification import (
-    MachineExecuteDataSpecification)
 from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
@@ -78,7 +76,7 @@ __all__ = [
     "InsertLivePacketGatherersToGraphs",
     "LoadExecutableImages", "LocateExecutableStartType",
     "MachineBitFieldRouterCompressor", "LoadFixedRoutes",
-    "MachineExecuteDataSpecification", "MachineGenerator",
+    "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",

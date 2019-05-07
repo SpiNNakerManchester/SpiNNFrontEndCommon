@@ -109,6 +109,11 @@ extern INT_HANDLER sark_int_han(void);
 // DMA slot
 #define DMA_SLOT           SLOT_3
 
+// DMA Error VIC slot
+#define DMA_ERROR_SLOT     SLOT_4
+
+#define DMA_TIMEOUT_SLOT   SLOT_5
+
 #define RTR_BLOCKED_BIT    25
 #define RTR_DOVRFLW_BIT    30
 #define RTR_DENABLE_BIT    2
@@ -323,7 +328,7 @@ static uint32_t stop = 0;
 // ------------------------------------------------------------------------
 
 //! \brief the plugin callback for the timer
-INT_HANDLER reinjection_timer_callback() {
+INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
     tc[T1_INT_CLR] = 1;
 
@@ -350,7 +355,7 @@ INT_HANDLER reinjection_timer_callback() {
 }
 
 //! \brief the plugin callback for sending packets????
-INT_HANDLER reinjection_ready_to_send_callback() {
+INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
@@ -402,7 +407,7 @@ INT_HANDLER reinjection_ready_to_send_callback() {
 }
 
 //! \brief the callback plugin for handling dropped packets
-INT_HANDLER reinjection_dropped_packet_callback() {
+INT_HANDLER reinjection_dropped_packet_callback(void) {
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
     uint pld = rtr[RTR_DDAT];
@@ -476,7 +481,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-void reinjection_read_packet_types(address_t address){
+static void reinjection_read_packet_types(address_t address) {
     // process multicast reinject flag
     if (address[REINJECT_MULTICAST] == 1) {
         reinject_mc = false;
@@ -631,7 +636,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
 }
 
 // \brief SARK level timer interrupt setup
-void reinjection_configure_timer() {
+void reinjection_configure_timer(void) {
     // Clear the interrupt
     tc[T1_CONTROL] = 0;
     tc[T1_INT_CLR] = 1;
@@ -642,13 +647,13 @@ void reinjection_configure_timer() {
 }
 
 // \brief pass, not a clue.
-void reinjection_configure_comms_controller() {
+void reinjection_configure_comms_controller(void) {
     // remember SAR register contents (p2p source ID)
     cc_sar = cc[CC_SAR] & 0x0000ffff;
 }
 
 // \brief sets up SARK and router to have a interrupt when a packet is dropped
-void reinjection_configure_router() {
+void reinjection_configure_router(void) {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) |
         ROUTER_INITIAL_TIMEOUT;
@@ -732,16 +737,15 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
     dma[DMA_DESC] = desc;
-
 }
 
 //! \brief sends a end flag via multicast
-void data_speed_up_send_end_flag() {
+void data_speed_up_send_end_flag(void) {
     send_fixed_route_packet(end_flag_key, END_FLAG);
 }
 
 //! \brief DMA complete callback for reading for original transmission
-void dma_complete_reading_for_original_transmission(){
+void dma_complete_reading_for_original_transmission(void) {
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = basic_data_key;
@@ -815,7 +819,7 @@ void write_missing_sdp_seq_nums_into_sdram(
         missing_sdp_seq_num_sdram_address[
         number_of_missing_seq_nums_in_sdram +
         (offset - start_offset)] = data[offset];
-        if (data[offset] > max_seq_num){
+        if (data[offset] > max_seq_num) {
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
             data[offset], max_seq_num);
         } else {
@@ -833,7 +837,7 @@ void write_missing_sdp_seq_nums_into_sdram(
 //! there is different behaviour
 void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     uint32_t start_reading_offset = 1;
-    if (first){
+    if (first) {
         number_of_missing_seq_sdp_packets =
             data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
 
@@ -855,19 +859,49 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         }
         missing_sdp_seq_num_sdram_address = sark_xalloc(
             sv->sdram_heap, size_of_data, 0,
-        ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+            ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+
+        // if not got enough sdram to alllocate all missing seq nums
+        if (missing_sdp_seq_num_sdram_address == NULL) {
+
+            // biggest sdram block
+            uint32_t max_bytes = sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
+
+            // if can hold more than this packets worth of data
+            if (max_bytes >= (
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)*
+                    WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE) {
+                io_printf(IO_BUF, "Activate bacon protocol!");
+                // allocate biggest block
+                missing_sdp_seq_num_sdram_address = sark_xalloc(
+                    sv->sdram_heap, max_bytes, 0,
+                    ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                // determine max full seq num packets to store
+                max_bytes = (max_bytes - (
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) *
+                    WORD_TO_BYTE_MULTIPLIER) - END_FLAG_SIZE;
+                number_of_missing_seq_sdp_packets = 1+ (max_bytes / (
+                        (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER)));
+            } else {
+                io_printf(IO_BUF, "cant allocate sdram for missing seq nums");
+                rt_error(RTE_SWERR);
+            }
+        }
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
     }
-
-    // write data to SDRAM and update packet counter
-    write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
-    number_of_missing_seq_sdp_packets -= 1;
+    if (number_of_missing_seq_sdp_packets > 0) {
+        // write data to SDRAM and update packet counter
+        write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
+        number_of_missing_seq_sdp_packets -= 1;
+    } else {
+        io_printf(IO_BUF, "Unable to save missing sequence number \n");
+    }
 }
 
 //! \brief sets off a DMA for retransmission stuff
-void retransmission_dma_read() {
+void retransmission_dma_read(void) {
     // locate where we are in SDRAM
     address_t data_sdram_position =
         &missing_sdp_seq_num_sdram_address[position_for_retransmission];
@@ -889,7 +923,7 @@ void retransmission_dma_read() {
 
 //! \brief reads in missing sequence numbers and sets off the reading of
 //! SDRAM for the equivalent data
-void the_dma_complete_read_missing_seqeuence_nums() {
+void the_dma_complete_read_missing_seqeuence_nums(void) {
     //! check if at end of read missing sequence numbers
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
@@ -938,7 +972,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data
-void dma_complete_reading_retransmission_data() {
+void dma_complete_reading_retransmission_data(void) {
     //log_info("just read data for a given missing sequence number");
 
     // set sequence number as first element
@@ -961,14 +995,14 @@ void dma_complete_reading_retransmission_data() {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data
-void dma_complete_writing_missing_seq_to_sdram() {
+void dma_complete_writing_missing_seq_to_sdram(void) {
     io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
 //! \brief the handler for all messages coming in for data speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_speed_up(sdp_msg_pure_data *msg) {
+static void handle_data_speed_up(sdp_msg_pure_data *msg) {
 
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
         stop = 0;
@@ -1012,17 +1046,17 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         // if aready in a retrnamission phase, dont process as normal
         if (msg->data[COMMAND_ID_POSITION] ==
                     SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS &&
-                    number_of_missing_seq_sdp_packets != 0){
-                //io_printf(IO_BUF, "forcing start of retranmission packet\n");
-                sark_msg_free((sdp_msg_t *) msg);
-                number_of_missing_seq_sdp_packets = 0;
-                missing_sdp_seq_num_sdram_address[
+                    number_of_missing_seq_sdp_packets != 0) {
+            //io_printf(IO_BUF, "forcing start of retranmission packet\n");
+            sark_msg_free((sdp_msg_t *) msg);
+            number_of_missing_seq_sdp_packets = 0;
+            missing_sdp_seq_num_sdram_address[
                     number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                number_of_missing_seq_nums_in_sdram += 1;
-                position_in_read_data = 0;
-                position_for_retransmission = 0;
-                in_re_transmission_mode = true;
-                retransmission_dma_read();
+            number_of_missing_seq_nums_in_sdram += 1;
+            position_in_read_data = 0;
+            position_for_retransmission = 0;
+            in_re_transmission_mode = true;
+            retransmission_dma_read();
         } else {
             // reset state, as could be here from multiple attempts
             if (!in_re_transmission_mode) {
@@ -1044,17 +1078,19 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 if (number_of_missing_seq_sdp_packets == 0) {
                     // packets all received, add finish flag for DMA stoppage
 
-                    //io_printf(IO_BUF, "starting resend process\n");
-                    missing_sdp_seq_num_sdram_address[
-                    number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                    number_of_missing_seq_nums_in_sdram += 1;
-                    position_in_read_data = 0;
-                    position_for_retransmission = 0;
+                    if (number_of_missing_seq_nums_in_sdram != 0) {
+                        //io_printf(IO_BUF, "starting resend process\n");
+                        missing_sdp_seq_num_sdram_address[
+                            number_of_missing_seq_nums_in_sdram] = END_FLAG;
+                        number_of_missing_seq_nums_in_sdram += 1;
+                        position_in_read_data = 0;
+                        position_for_retransmission = 0;
 
-                    //log_info("start retransmission");
-                    // start DMA off
-                    in_re_transmission_mode = true;
-                    retransmission_dma_read();
+                        //log_info("start retransmission");
+                        // start DMA off
+                        in_re_transmission_mode = true;
+                        retransmission_dma_read();
+                    }
                 }
             }
         }
@@ -1066,7 +1102,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 }
 
 //! \brief the handler for all DMA'S complete!
-INT_HANDLER speed_up_handle_dma(){
+INT_HANDLER speed_up_handle_dma(void) {
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (stop) {
@@ -1083,6 +1119,19 @@ INT_HANDLER speed_up_handle_dma(){
         io_printf(IO_BUF, "NOT VALID DMA CALLBACK PORT!!!!\n");
     }
     // and tell VIC we're done
+    vic[VIC_VADDR] = (uint) vic;
+}
+
+INT_HANDLER speed_up_handle_dma_error(void) {
+    io_printf(IO_BUF, "DMA Failed: 0x%08x!\n", dma[DMA_STAT]);
+    dma[DMA_CTRL] = 0x4;
+    vic[VIC_VADDR] = (uint) vic;
+    rt_error(RTE_DABT);
+}
+
+INT_HANDLER speed_up_handle_dma_timeout(void) {
+    io_printf(IO_BUF, "DMA Timeout: 0x%08x!\n", dma[DMA_STAT]);
+    dma[DMA_CTRL] = 0x10;
     vic[VIC_VADDR] = (uint) vic;
 }
 
@@ -1144,18 +1193,23 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
+//! \brief gets the address of a particular DSG region
+static inline address_t get_dsg_address(uint8_t region_id) {
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    address_t address = (address_t)
+            sark_virtual_processor_info[sark.virt_cpu].user0;
+    return (address_t) address[DSG_HEADER + region_id];
+}
+
 #ifndef VIC_ENABLE_VECTOR
 #define VIC_ENABLE_VECTOR (0x20)
 #endif //VIC_ENABLE_VECTOR
 
 //! \brief sets up data required by the reinjection functionality
-void reinjection_initialise() {
+static void reinjection_initialise(void) {
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address = (address_t)
-            sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_REINJECTION]);
+    address_t address = get_dsg_address(CONFIG_REINJECTION);
 
     // process data
     reinjection_read_packet_types(address);
@@ -1179,18 +1233,19 @@ void reinjection_initialise() {
 }
 
 //! \brief sets up data required by the data speed up functionality
-void data_speed_up_initialise() {
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address = (address_t)
-            sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
+static void data_speed_up_initialise(void) {
+    address_t address = get_dsg_address(CONFIG_DATA_SPEED_UP);
     basic_data_key = address[MY_KEY];
     new_sequence_key = address[NEW_SEQ_KEY];
     first_data_key = address[FIRST_DATA_KEY];
     end_flag_key = address[END_FLAG_KEY];
 
-    vic_vectors[DMA_SLOT] = speed_up_handle_dma;
+    vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
     vic_controls[DMA_SLOT] = VIC_ENABLE_VECTOR | DMA_DONE_INT;
+    vic_vectors[DMA_ERROR_SLOT] = speed_up_handle_dma_error;
+    vic_controls[DMA_ERROR_SLOT] = VIC_ENABLE_VECTOR | DMA_ERR_INT;
+    vic_vectors[DMA_TIMEOUT_SLOT] = speed_up_handle_dma_timeout;
+    vic_controls[DMA_TIMEOUT_SLOT] = VIC_ENABLE_VECTOR | DMA_TO_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
         data_to_transmit[i] =
@@ -1204,13 +1259,13 @@ void data_speed_up_initialise() {
     // configuration for the DMA's by the speed data loader
     dma[DMA_CTRL] = 0x3f; // Abort pending and active transfers
     dma[DMA_CTRL] = 0x0d; // clear possible transfer done and restart
-    dma[DMA_GCTL] = 0x000c00; // enable DMA done interrupt
+    dma[DMA_GCTL] = 0x1ffc00; // enable DMA done and error interrupt
 }
 
 //-----------------------------------------------------------------------------
 // main method
 //-----------------------------------------------------------------------------
-void c_main() {
+void c_main(void) {
     sark_cpu_state(CPU_STATE_RUN);
 
     // Configure
@@ -1227,7 +1282,7 @@ void c_main() {
     // set up VIC callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for WDOG)
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT) |
-        (1 << DMA_DONE_INT);
+        (1 << DMA_DONE_INT) | (1 << DMA_ERR_INT) | (1 << DMA_TO_INT);
     vic[VIC_DISABLE] = int_select;
     vic[VIC_DISABLE] = (1 << CC_TNF_INT);
 
