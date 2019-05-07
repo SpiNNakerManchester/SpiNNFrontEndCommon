@@ -329,7 +329,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def host_execute_data_specification(self):
+    def execute_data_specification(self):
         """ Writes all the data specs, uploading the result to the machine.
         """
         result = self._run_java(
@@ -340,11 +340,30 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def host_execute_system_data_specification(self):
+    def execute_system_data_specification(self):
         """ Writes all the data specs, uploading the result to the machine.
         """
         result = self._run_java(
             'dse_sys', self._machine_json(), self._report_folder)
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def execute_app_data_specification_monitors(self, monitors):
+        # TODO how to tell the code how the fast comms works?
+        result = self._run_java(
+            'dse_app_mon', self._machine_json(), self._report_folder)
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def execute_app_data_specification(self):
+        result = self._run_java(
+            'dse_app', self._machine_json(), self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(

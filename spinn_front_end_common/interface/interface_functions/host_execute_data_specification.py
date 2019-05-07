@@ -160,7 +160,7 @@ class HostExecuteDataSpecification(object):
 
         progress.update()
 
-        self._java.host_execute_data_specification()
+        self._java.execute_data_specification()
 
         progress.end()
         return dw_write_info
@@ -226,29 +226,13 @@ class HostExecuteDataSpecification(object):
         self._monitors = extra_monitor_cores
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
-        dsg_targets = filter_out_system_executables(
-            dsg_targets, executable_targets)
 
-        if uses_advanced_monitors:
-            receiver = self.__set_router_timeouts()
-
-        # create a progress bar for end users
-        progress = ProgressBar(
-            dsg_targets,
-            "Executing data specifications and loading data for "
-            "application vertices")
-
-        for core, data_spec_file in progress.over(iteritems(dsg_targets)):
-            x, y, _ = core
-            # write information for the memory map report
-            self._write_info_map[core] = self.__execute(
-                core, data_spec_file,
-                self.__select_writer(x, y)
-                if uses_advanced_monitors else self._txrx.write_memory)
-
-        if uses_advanced_monitors:
-            self.__reset_router_timeouts(receiver)
-        return self._write_info_map
+        if java_caller is None:
+            return self.__python_app(
+                dsg_targets, executable_targets, uses_advanced_monitors)
+        else:
+            return self.__java_app(
+                dsg_targets, executable_targets, uses_advanced_monitors)
 
     def __set_router_timeouts(self):
         receiver = next(itervalues(self._core_to_conn_map))
@@ -270,6 +254,65 @@ class HostExecuteDataSpecification(object):
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         gatherer = self._core_to_conn_map[ethernet_chip.x, ethernet_chip.y]
         return gatherer.send_data_into_spinnaker
+
+    def __python_app(self, dsg_targets, executable_targets, use_monitors):
+        dsg_targets = filter_out_system_executables(
+            dsg_targets, executable_targets)
+
+        if use_monitors:
+            receiver = self.__set_router_timeouts()
+
+        # create a progress bar for end users
+        progress = ProgressBar(
+            dsg_targets,
+            "Executing data specifications and loading data for "
+            "application vertices")
+
+        for core, data_spec_file in progress.over(iteritems(dsg_targets)):
+            x, y, _ = core
+            # write information for the memory map report
+            self._write_info_map[core] = self.__execute(
+                core, data_spec_file,
+                self.__select_writer(x, y)
+                if use_monitors else self._txrx.write_memory)
+
+        if use_monitors:
+            self.__reset_router_timeouts(receiver)
+        return self._write_info_map
+
+    def __java_app(self, dsg_targets, executable_targets, use_monitors):
+        # create a progress bar for end users
+        progress = ProgressBar(
+            4, "Executing data specifications and loading data for "
+            "application vertices using Java")
+
+        dsg_targets.mark_system_cores(system_cores(executable_targets))
+        progress.update()
+
+        # Copy data from WriteMemoryIOData to database
+        dw_write_info = DsWriteInfo(dsg_targets.get_database())
+        dw_write_info.clear_write_info()
+        if self._write_info_map is not None:
+            for core, info in iteritems(self._write_info_map):
+                dw_write_info[core] = info
+
+        progress.update()
+
+        dsg_targets.set_app_id(self._app_id)
+        self._java.set_machine(self._machine)
+        self._java.set_report_folder(self._db_folder)
+
+        progress.update()
+
+        if use_monitors:
+            self._java.set_placements(self._placements, self._txrx)
+        #     self._java.execute_app_data_specification_monitors(
+        #         self._monitors)
+        # else:
+        self._java.execute_app_data_specification()
+
+        progress.end()
+        return dw_write_info
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets,
@@ -307,17 +350,6 @@ class HostExecuteDataSpecification(object):
             return self.__python_sys(dsg_targets, executable_targets)
         else:
             return self.__java_sys(dsg_targets, executable_targets)
-        # create a progress bar for end users
-        progress = ProgressBar(
-            dsg_targets,
-            "Executing data specifications and loading data for system "
-            "vertices")
-
-        for core, data_spec_file in progress.over(iteritems(dsg_targets)):
-            # write information for the memory map report
-            self._write_info_map[core] = self.__execute(
-                core, data_spec_file, self._txrx.write_memory)
-        return self._write_info_map
 
     def __java_sys(self, dsg_targets, executable_targets):
         """ Does the Data Specification Execution and loading using Java
@@ -353,7 +385,7 @@ class HostExecuteDataSpecification(object):
 
         progress.update()
 
-        self._java.host_execute_system_data_specification()
+        self._java.execute_system_data_specification()
 
         progress.end()
         return dw_write_info
@@ -369,9 +401,6 @@ class HostExecuteDataSpecification(object):
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
-        results = self._write_info_map
-        if results is None:
-            results = dict()
         sys_targets = filter_out_app_executables(
             dsg_targets, executable_targets)
 
@@ -381,10 +410,10 @@ class HostExecuteDataSpecification(object):
             "for system vertices")
 
         for core, data_spec_file in progress.over(iteritems(sys_targets)):
-            results[core] = self.__execute(
+            self._write_info_map[core] = self.__execute(
                 core, data_spec_file, self._txrx.write_memory)
 
-        return results
+        return self._write_info_map
 
     def __execute(self, core, data_spec_path, writer_func):
         x, y, p = core
