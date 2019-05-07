@@ -6,10 +6,11 @@ from six import iteritems, itervalues
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
+from spinn_storage_handlers import FileDataReader
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
-from spinn_storage_handlers import FileDataReader
+from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -48,52 +49,154 @@ class HostExecuteDataSpecification(object):
     """ Executes the host based data specification.
     """
 
-    __slots__ = ["_app_id", "_core_to_conn_map", "_machine", "_monitors",
-                 "_placements", "_txrx"]
+    __slots__ = [
+        # the application ID of the simulation
+        "_app_id",
+        "_core_to_conn_map",
+        # The path where the SQLite database holding the data will be placed,
+        # and where any java provenance can be written.
+        "_db_folder",
+        # The support class to run via Java. If None pure python is used.
+        "_java",
+        # The python representation of the SpiNNaker machine.
+        "_machine",
+        "_monitors",
+        "_placements",
+        # The spinnman instance.
+        "_txrx",
+        # The write info; a dict of cores to a dict of
+        # 'start_address', 'memory_used', 'memory_written'
+        "_write_info_map"]
+
+    first = True
 
     def __init__(self):
         self._app_id = None
         self._core_to_conn_map = None
+        self._db_folder = None
+        self._java = None
         self._machine = None
         self._monitors = None
         self._placements = None
         self._txrx = None
+        self._write_info_map = None
 
     def __call__(
             self, transceiver, machine, app_id, dsg_targets,
+            report_folder=None, java_caller=None,
             processor_to_app_data_base_address=None):
-        """ Execute the data specs for all targets.
+        """ Does the Data Specification Execution and loading
 
-        :param machine: the python representation of the SpiNNaker machine
         :param transceiver: the spinnman instance
+        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param machine: the python representation of the SpiNNaker machine
+        :type machine: :py:class:`spinn_machine.machine.Machine`
         :param app_id: the application ID of the simulation
+        :type app_id: int
         :param dsg_targets: map of placement to file path
-
-        :return: map of placement and DSG data, and loaded data flag.
+        :type dsg_targets: \
+            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+        :param report_folder: The path where \
+            the SQLite database holding the data will be placed, \
+            and where any java provenance can be written. \
+            report_folder can not be None if java_caller is not None.
+        :type report_folder: str
+        :param java_caller: The support class to run via Java. \
+            If None pure python is used.
+        :type java_caller: \
+            :py:class:`spinn_front_end_common.interface.java_caller.JavaCaller`
+        :param processor_to_app_data_base_address: The write info which is a
+            dict of cores to a dict of
+                'start_address', 'memory_used', 'memory_written'
+        :return: map of of cores to a dict of \
+                'start_address', 'memory_used', 'memory_written'
+            Note: If using python the return type is an actual dict object.
+            If using Java the return is a DsWriteInfo \
+                but this implements the same mapping interface as dict
+        :rtype: dict or \
+            :py:class:`spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
+        self._app_id = app_id
+        self._db_folder = report_folder
+        self._java = java_caller
         self._machine = machine
         self._txrx = transceiver
-        self._app_id = app_id
+        self._write_info_map = processor_to_app_data_base_address
+        if java_caller is None:
+            return self.__python_all(dsg_targets)
+        else:
+            return self.__java_all(dsg_targets)
+
+    def __java_all(self, dsg_targets):
+        """ Does the Data Specification Execution and loading using Java
+
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: \
+            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+        :return: map of of cores to a dict of \
+            'start_address', 'memory_used', 'memory_written'
+        :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
+        """
 
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets, "Executing data specifications and loading data")
+            3, "Executing data specifications and loading data using Java")
+
+        # Copy data from WriteMemoryIOData to database
+        dw_write_info = DsWriteInfo(dsg_targets.get_database())
+        dw_write_info.clear_write_info()
+        if self._write_info_map is not None:
+            for core, info in iteritems(self._write_info_map):
+                dw_write_info[core] = info
+
+        progress.update()
+
+        dsg_targets.set_app_id(self._app_id)
+        self._java.set_machine(self._machine)
+        self._java.set_report_folder(self._db_folder)
+
+        progress.update()
+
+        self._java.host_execute_data_specification()
+
+        progress.end()
+        return dw_write_info
+
+    def __python_all(self, dsg_targets):
+        """ Does the Data Specification Execution and loading using Python
+
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: \
+            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+        :return: dict of cores to a dict of\
+            'start_address', 'memory_used', 'memory_written
+        """
+        # While the database supports having the info in it a python bugs does
+        # not like iterating over and writing intermingled so using a dict
+        results = self._write_info_map
+        if results is None:
+            results = dict()
+
+        # create a progress bar for end users
+        progress = ProgressBar(
+            dsg_targets.n_targets(),
+            "Executing data specifications and loading data")
 
         for core, data_spec_file in progress.over(iteritems(dsg_targets)):
-            # write information for the memory map report
-            processor_to_app_data_base_address[core] = self.__execute(
+            results[core] = self.__execute(
                 core, data_spec_file, self._txrx.write_memory)
 
-        return processor_to_app_data_base_address
+        return results
 
     def execute_application_data_specs(
             self, transceiver, machine, app_id, dsg_targets,
-            uses_advanced_monitors, executable_targets, placements=None,
-            extra_monitor_cores=None,
+            uses_advanced_monitors, executable_targets,
+            placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
+            report_folder=None, java_caller=None,
             processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
 
@@ -114,6 +217,9 @@ class HostExecuteDataSpecification(object):
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
+        self._write_info_map = processor_to_app_data_base_address
+        self._db_folder = report_folder
+        self._java = java_caller
         self._machine = machine
         self._txrx = transceiver
         self._app_id = app_id
@@ -135,14 +241,14 @@ class HostExecuteDataSpecification(object):
         for core, data_spec_file in progress.over(iteritems(dsg_targets)):
             x, y, _ = core
             # write information for the memory map report
-            processor_to_app_data_base_address[core] = self.__execute(
+            self._write_info_map[core] = self.__execute(
                 core, data_spec_file,
                 self.__select_writer(x, y)
                 if uses_advanced_monitors else self._txrx.write_memory)
 
         if uses_advanced_monitors:
             self.__reset_router_timeouts(receiver)
-        return processor_to_app_data_base_address
+        return self._write_info_map
 
     def __set_router_timeouts(self):
         receiver = next(itervalues(self._core_to_conn_map))
@@ -167,7 +273,9 @@ class HostExecuteDataSpecification(object):
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets,
-            executable_targets, processor_to_app_data_base_address=None):
+            executable_targets,
+            report_folder=None, java_caller=None,
+            processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
 
         :param machine: the python representation of the spinnaker machine
@@ -188,12 +296,17 @@ class HostExecuteDataSpecification(object):
 
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
+        self._write_info_map = processor_to_app_data_base_address
         self._machine = machine
         self._txrx = transceiver
         self._app_id = app_id
-        dsg_targets = filter_out_app_executables(
-            dsg_targets, executable_targets)
+        self._db_folder = report_folder
+        self._java = java_caller
 
+        if java_caller is None:
+            return self.__python_sys(dsg_targets, executable_targets)
+        else:
+            return self.__java_sys(dsg_targets, executable_targets)
         # create a progress bar for end users
         progress = ProgressBar(
             dsg_targets,
@@ -202,9 +315,76 @@ class HostExecuteDataSpecification(object):
 
         for core, data_spec_file in progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
-            processor_to_app_data_base_address[core] = self.__execute(
+            self._write_info_map[core] = self.__execute(
                 core, data_spec_file, self._txrx.write_memory)
-        return processor_to_app_data_base_address
+        return self._write_info_map
+
+    def __java_sys(self, dsg_targets, executable_targets):
+        """ Does the Data Specification Execution and loading using Java
+
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: \
+            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+        :return: map of of cores to a dict of \
+            'start_address', 'memory_used', 'memory_written'
+        :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
+        """
+
+        # create a progress bar for end users
+        progress = ProgressBar(
+            4, "Executing data specifications and loading data for system "
+            "vertices using Java")
+
+        dsg_targets.mark_system_cores(system_cores(executable_targets))
+        progress.update()
+
+        # Copy data from WriteMemoryIOData to database
+        dw_write_info = DsWriteInfo(dsg_targets.get_database())
+        dw_write_info.clear_write_info()
+        if self._write_info_map is not None:
+            for core, info in iteritems(self._write_info_map):
+                dw_write_info[core] = info
+
+        progress.update()
+
+        dsg_targets.set_app_id(self._app_id)
+        self._java.set_machine(self._machine)
+        self._java.set_report_folder(self._db_folder)
+
+        progress.update()
+
+        self._java.host_execute_system_data_specification()
+
+        progress.end()
+        return dw_write_info
+
+    def __python_sys(self, dsg_targets, executable_targets):
+        """ Does the Data Specification Execution and loading using Python
+
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: \
+            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+        :return: dict of cores to a dict of\
+            'start_address', 'memory_used', 'memory_written
+        """
+        # While the database supports having the info in it a python bugs does
+        # not like iterating over and writing intermingled so using a dict
+        results = self._write_info_map
+        if results is None:
+            results = dict()
+        sys_targets = filter_out_app_executables(
+            dsg_targets, executable_targets)
+
+        # create a progress bar for end users
+        progress = ProgressBar(
+            len(sys_targets), "Executing data specifications and loading data "
+            "for system vertices")
+
+        for core, data_spec_file in progress.over(iteritems(sys_targets)):
+            results[core] = self.__execute(
+                core, data_spec_file, self._txrx.write_memory)
+
+        return results
 
     def __execute(self, core, data_spec_path, writer_func):
         x, y, p = core

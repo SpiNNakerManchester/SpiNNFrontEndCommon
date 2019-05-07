@@ -13,37 +13,47 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+-- This file should be a clone of
+-- JavaSpiNNaker/SpiNNaker-storage/src/main/resources/dse.sql
+
 -- https://www.sqlite.org/pragma.html#pragma_synchronous
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the cores.
+-- A table describing the ethernets.
+CREATE TABLE IF NOT EXISTS ethernet(
+	ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	ethernet_x INTEGER NOT NULL,
+	ethernet_y INTEGER NOT NULL,
+	ip_address TEXT UNIQUE NOT NULL);
+-- Every ethernet has a unique chip location in virtual space.
+CREATE UNIQUE INDEX IF NOT EXISTS ethernetSanity ON ethernet(
+	ethernet_x ASC, ethernet_y ASC);
+
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the cores and the DSE info to write to them.
 CREATE TABLE IF NOT EXISTS core(
     core_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	x INTEGER NOT NULL,
 	y INTEGER NOT NULL,
-	processor INTEGER NOT NULL);
+	processor INTEGER NOT NULL,
+	ethernet_id INTEGER NOT NULL
+		REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT,
+	is_system INTEGER DEFAULT 0,
+	app_id INTEGER,
+	content BLOB,
+	start_address INTEGER,
+	memory_used INTEGER,
+	memory_written INTEGER);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
 
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing recording regions.
-CREATE TABLE IF NOT EXISTS region(
-	region_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	core_id INTEGER NOT NULL
-		REFERENCES core(core_id) ON DELETE RESTRICT,
-	local_region_index INTEGER NOT NULL,
-	address INTEGER,
-	content BLOB NOT NULL DEFAULT X'',
-	fetches INTEGER NOT NULL DEFAULT 0,
-	append_time INTEGER);
--- Every recording region has a unique vertex and index
-CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
-	core_id ASC, local_region_index ASC);
-
-CREATE VIEW IF NOT EXISTS region_view AS
-	SELECT core_id, region_id, x, y, processor, local_region_index, address,
-		content, fetches, append_time
-FROM core NATURAL JOIN region;
+CREATE VIEW IF NOT EXISTS core_view AS
+	SELECT ethernet_id, core_id,
+		ethernet_x, ethernet_y, ip_address,
+		x, y, processor, app_id, content,
+		start_address, memory_used, memory_written
+	FROM ethernet NATURAL JOIN core;

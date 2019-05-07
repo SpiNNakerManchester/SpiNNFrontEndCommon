@@ -538,6 +538,14 @@
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+             <parameter>
+                <param_name>java_caller</param_name>
+                <param_type>JavaCaller</param_type>
+            </parameter>
+            <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
@@ -570,6 +578,8 @@
             <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
+            <param_name>report_folder</param_name>
+            <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>executable_targets</param_name>
             <param_name>placements</param_name>
@@ -610,6 +620,14 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+             <parameter>
+                <param_name>java_caller</param_name>
+                <param_type>JavaCaller</param_type>
+            </parameter>
+            <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
@@ -622,6 +640,8 @@
             <param_name>executable_targets</param_name>
         </required_inputs>
         <optional_inputs>
+            <param_name>report_folder</param_name>
+            <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
         </optional_inputs>
         <outputs>
@@ -957,10 +977,6 @@
                 <param_type>WriteTextSpecsFlag</param_type>
             </parameter>
             <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
@@ -974,7 +990,6 @@
             <param_name>hostname</param_name>
             <param_name>report_default_directory</param_name>
             <param_name>write_text_specs</param_name>
-            <param_name>app_data_runtime_folder</param_name>
             <param_name>machine</param_name>
         </required_inputs>
         <optional_inputs>
@@ -1068,15 +1083,11 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>store_data_in_file</param_name>
-                <param_type>StoreBufferDataInFile</param_type>
-            </parameter>
-            <parameter>
                 <param_name>extra_monitor_cores</param_name>
                 <param_type>MemoryExtraMonitorVertices</param_type>
             </parameter>
             <parameter>
-                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+                <param_name>packet_gather_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
             <parameter>
@@ -1091,20 +1102,29 @@
                 <param_name>fixed_routes</param_name>
                 <param_type>MemoryFixedRoutes</param_type>
             </parameter>
+             <parameter>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>java_caller</param_name>
+                <param_type>JavaCaller</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
+            <param_name>report_folder</param_name>
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>
-            <param_name>store_data_in_file</param_name>
             <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>extra_monitor_cores</param_name>
-            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>packet_gather_cores_to_ethernet_connection_map</param_name>
             <param_name>extra_monitor_to_chip_mapping</param_name>
             <param_name>fixed_routes</param_name>
             <param_name>machine</param_name>
+            <param_name>java_caller</param_name>
         </optional_inputs>
         <outputs>
             <param_type>BufferManager</param_type>
