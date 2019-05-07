@@ -51,6 +51,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
@@ -149,6 +150,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The manager of streaming buffered data in and out of the SpiNNaker
         # machine
         "_buffer_manager",
+
+        # Handler for keep all the calls to Java in a single space.
+        # May be null is configs request not to use Java
+        "_java_caller",
 
         #
         "_ip_address",
@@ -262,9 +267,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_provenance_format",
 
         #
-        "_exec_dse_on_host",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -375,6 +377,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine = None
         self._txrx = None
         self._buffer_manager = None
+        self._java_caller = None
         self._ip_address = None
         self._executable_types = None
 
@@ -442,8 +445,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._provenance_format not in ["xml", "json"]:
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
-        self._exec_dse_on_host = self._config.getboolean(
-            "SpecExecution", "spec_exec_on_host")
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
@@ -773,6 +774,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 # to be rebuilt.
                 self._machine = None
                 self._buffer_manager = None
+                self._java_caller = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
@@ -1389,7 +1391,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["APPID"] = self._app_id
-        inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
@@ -1543,12 +1544,21 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
-                inputs["StoreBufferDataInFile"] = self._config.getboolean(
-                    "Buffers", "store_buffer_data_in_file")
                 algorithms.append("BufferManagerCreator")
                 outputs.append("BufferManager")
             else:
                 inputs["BufferManager"] = self._buffer_manager
+            if self._java_caller is None:
+                if self._config.getboolean("Java", "use_java"):
+                    java_call = self._config.get("Java", "java_call")
+                    java_spinnaker_path = self._config.get_str(
+                        "Java", "java_spinnaker_path")
+                    java_properties = self._config.get_str(
+                        "Java", "java_properties")
+                    self._java_caller = JavaCaller(
+                        self._json_folder, java_call, java_spinnaker_path,
+                        java_properties)
+            inputs["JavaCaller"] = self._java_caller
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1638,11 +1648,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         write_memory_report = self._config.getboolean(
             "Reports", "write_memory_map_report")
         if write_memory_report and application_graph_changed:
-            if self._exec_dse_on_host:
-                algorithms.append("MemoryMapOnHostReport")
-                algorithms.append("MemoryMapOnHostChipReport")
-            else:
-                algorithms.append("MemoryMapOnChipReport")
+            algorithms.append("MemoryMapOnHostReport")
+            algorithms.append("MemoryMapOnHostChipReport")
 
         # Add reports that depend on compression
         routing_tables_needed = False
@@ -1671,11 +1678,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
-
-        if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteDataSpecification")
-        else:
-            optional_algorithms.append("MachineExecuteDataSpecification")
+        optional_algorithms.append("HostExecuteDataSpecification")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
@@ -1762,8 +1765,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         " please read previous error message to locate its"
                         " error")
             except Exception:
-                logger.error("Error when attempting to recover from error",
-                             exc_info=True)
+                logger.exception("Error when attempting to recover from error")
 
             # if in debug mode, do not shut down machine
             if self._config.get("Mode", "mode") != "Debug":
@@ -1772,8 +1774,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         turn_off_machine=False, clear_routing_tables=False,
                         clear_tags=False)
                 except Exception:
-                    logger.error("Error when attempting to stop",
-                                 exc_info=True)
+                    logger.exception("Error when attempting to stop")
 
             # reraise exception
             reraise(*e_inf)
