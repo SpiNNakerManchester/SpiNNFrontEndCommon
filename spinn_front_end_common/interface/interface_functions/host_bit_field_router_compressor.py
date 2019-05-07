@@ -433,7 +433,8 @@ class HostBasedBitFieldRouterCompressor(object):
             flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
             return flag
         except Exception:
-            print "bugger"
+            print "failed to read word {} and shifting {} bits as words " \
+                  "length is {}".format(word_id, bit_in_word, len(bit_field))
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,

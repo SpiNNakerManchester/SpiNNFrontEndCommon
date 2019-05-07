@@ -217,12 +217,12 @@ class MachineBitFieldRouterCompressor(object):
     def _generate_core_subsets(
             self, routing_tables, executable_finder, machine, progress_bar):
         """ generates the core subsets for the binaries
-        
+
         :param routing_tables: the routing tables
         :param executable_finder: the executable path finder
         :param machine: the spinn machine instance
         :param progress_bar: progress bar
-        :return: 
+        :return: tuple of (targets, sorter path and compressor path)
         """
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
@@ -666,7 +666,7 @@ class MachineBitFieldRouterCompressor(object):
             vertex, placement, transceiver, region_addresses,
             sdram_block_addresses_and_sizes):
         """ adds data about the api based vertex.
-        
+
         :param vertex: vertex which utilises the api
         :param placement: placement of vertex
         :param transceiver:  spinnman instance

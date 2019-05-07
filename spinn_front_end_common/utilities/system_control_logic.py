@@ -3,7 +3,6 @@ from spinn_front_end_common.interface.interface_functions import \
 from spinnman.exceptions import SpinnmanException, SpinnmanTimeoutException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState
 
 
 def run_system_application(
@@ -61,12 +60,6 @@ def run_system_application(
     try:
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states)
-        #transceiver.wait_for_cores_to_be_in_state(
-        #    executable_cores.all_core_subsets, app_id,
-        #    [CPUState.RUNNING, CPUState.FINISHED],
-        #    error_states=frozenset({
-        #        CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
-        #        CPUState.PAUSED}))
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException):
         handle_failure_function(executable_cores)

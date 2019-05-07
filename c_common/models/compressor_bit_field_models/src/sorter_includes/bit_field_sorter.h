@@ -169,7 +169,7 @@ void add_left_overs(
                 sorted_bit_fields->bit_fields[*sorted_bf_fill_loc] =
                     coverage[i]->bit_field_addresses[bf_index];
 
-                log_info(
+                log_debug(
                     "dumping into sorted at index %d proc %d, for key %d and "
                     "has redundant packet count of %d",
                     *sorted_bf_fill_loc, coverage[i]->processor_ids[bf_index],
