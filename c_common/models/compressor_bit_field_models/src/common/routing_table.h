@@ -111,11 +111,11 @@ void routing_table_reset(void) {
     n_tables = 0;
     current_n_tables = 0;
     current_low_entry = 0;
-    if(routing_tables != NULL){
+    if (routing_tables != NULL){
         FREE(routing_tables);
         routing_tables = NULL;
     }
-    if(table_lo_entry != NULL){
+    if (table_lo_entry != NULL){
         FREE(table_lo_entry);
         table_lo_entry = NULL;
     }

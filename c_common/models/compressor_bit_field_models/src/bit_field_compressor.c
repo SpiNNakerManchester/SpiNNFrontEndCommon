@@ -221,7 +221,7 @@ void start_compression_process(uint unused0, uint unused1) {
 //! \param[in] n_tables_in_packet: the number of tables in packet to pull
 //! \param[in] tables: the tables from the packet.
 void store_info_table_store(int n_tables_in_packet, address_t tables[]) {
-    for(int rt_index = 0; rt_index < n_tables_in_packet; rt_index++) {
+    for (int rt_index = 0; rt_index < n_tables_in_packet; rt_index++) {
         log_debug("address of table is %x",  tables[rt_index]);
         routing_tables_store_routing_table((table_t*) tables[rt_index]);
     }

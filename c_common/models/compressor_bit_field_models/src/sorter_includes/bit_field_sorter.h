@@ -45,7 +45,7 @@ static inline int locate_and_add_bit_fields(
     log_debug(
         "going to look for %d cores with a diff of %d",
         cores_to_add_length, diff);
-    for(int index = 0; index < cores_to_add_length; index++) {
+    for (int index = 0; index < cores_to_add_length; index++) {
         log_debug("am allowed to add from core %d", cores_to_add_for[index]);
     }
 
@@ -72,7 +72,7 @@ static inline int locate_and_add_bit_fields(
 
             // if processor is one to take bf's from. remove and update.
             // Ensure we're not adding one which we've already added
-            if(proc == allowed_p &&
+            if (proc == allowed_p &&
                     coverage_e->bit_field_addresses[proc] != NULL) {
                 // update coverage so that it can reflect merger
                 covered += 1;
@@ -114,7 +114,7 @@ static void print_coverage_for_sanity_purposes(
     int added = 0;
     for (int c_index = 0; c_index < n_unique_redundant_packet_counts;
             c_index++){
-        for(int bf_index = 0; bf_index < coverage[c_index]->length_of_list;
+        for (int bf_index = 0; bf_index < coverage[c_index]->length_of_list;
                 bf_index++){
             log_debug(
                 "before sort by n bitfields bitfield address in coverage at "
@@ -135,11 +135,11 @@ void print_coverage_procs_for_sanity_purposes(
         int n_unique_redundant_packet_counts, _coverage_t **coverage){
      for (int c_index = 0; c_index < n_unique_redundant_packet_counts;
             c_index++){
-        for(int bf_index = 0; bf_index < coverage[c_index]->length_of_list;
+        for (int bf_index = 0; bf_index < coverage[c_index]->length_of_list;
                 bf_index ++){
             log_debug(
                 "bitfield in coverage at index %d in bf index x %d is proc %d "
-                " with redudnant packet count %d",
+                " with redundant packet count %d",
                 c_index, bf_index, coverage[c_index]->processor_ids[bf_index],
                 coverage[c_index]->n_redundant_packets);
         }

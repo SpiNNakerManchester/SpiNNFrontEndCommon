@@ -16,58 +16,6 @@ static inline void platform_new_heap_creation(address_t sizes_region) {
     // TODO hook removal here if we decide on this insanity
     stolen_sdram_heap = sv->sdram_heap;
     use(sizes_region);
-    /*
-    // set up states
-    heap_t *stolen_sdram_heap = (heap_t *) base;
-    uint read_position = 0;
-    uint x_blocks = sizes_region[read_position];
-    uint size_free = 0;
-    read_position += 1;
-
-    // set the first and last to match sdram heap
-    stolen_sdram_heap->first = sark_xalloc(sark.heap, sizeof(block_t), 0, 0);
-    stolen_sdram_heap->first->next = sv->sdram_heap->first->next;
-    stolen_sdram_heap->last = sark_xalloc(sark.heap, sizeof(block_t), 0, 0);
-    stolen_sdram_heap->last->next = sv->sdram_heap->last->next;
-
-
-    // read first points
-    address_t address = sizes_region[read_position];
-    uint size = sizes_region[read_position + 1];
-    read_position += 2;
-
-    //TODO HAVE NO IDEA HOW YOUR MEANT TO MAKE THIS HEAP!!!!!!!!
-    // iterate through the data creating blocks
-    for (uint current_block = 0; current_block < x_blocks - 1;
-            current_block++){
-
-        // read next block, to figure frees
-        address_t next_address = sizes_region[read_position];
-        uint next_size = sizes_region[read_position + 1];
-        read_position += 2;
-
-        // create the next block
-        block_t *block = sark_xalloc(sark.heap, sizeof(block_t), 0, 0)
-        block->free = next_address;
-        block->next = address + size;
-        size_free += size;
-
-
-
-
-    }
-
-    block_t *first = (block_t *) stolen_sdram_heap->buffer;
-    block_t *last = (block_t *) ((uchar *) top - sizeof(block_t));
-
-    stolen_sdram_heap->free = stolen_sdram_heap->first = first;
-    stolen_sdram_heap->last = first->next = last;
-    stolen_sdram_heap->free_bytes = (uchar *) last - (uchar *) first - sizeof(block_t);
-
-    last->next = NULL;
-    first->free = NULL;
-
-    last->free = NULL;	// Not really necessary*/
 }
 
 //! \brief allows a search of the SDRAM heap.

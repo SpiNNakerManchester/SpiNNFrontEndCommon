@@ -145,9 +145,9 @@ void merge_print_merge_bit(merge_t *merge){
                     merge, table_lo_entry[table_index] + entry_index)){
                 log_info(
                     "entry %d has key %x or %d mask %x route %x source %x",
-                    table_lo_entry[table_index] + entry_index, 
+                    table_lo_entry[table_index] + entry_index,
                     entry.key_mask.key, entry.key_mask.key,
-                    entry.key_mask.mask, entry.route,entry.source);
+                    entry.key_mask.mask, entry.route, entry.source);
             }
         }
     }

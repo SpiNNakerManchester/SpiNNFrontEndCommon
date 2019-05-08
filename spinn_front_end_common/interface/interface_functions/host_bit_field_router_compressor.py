@@ -83,6 +83,9 @@ class HostBasedBitFieldRouterCompressor(object):
     # bits in a word
     _BITS_IN_A_WORD = 32
 
+    # size of a filter info in bytes (key, n words, pointer)
+    _SIZE_OF_FILTER_INFO_IN_BYTES = 12
+
     # bit to mask a bit
     _BIT_MASK = 1
 
@@ -318,10 +321,10 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # remove bitfields from cores that have been merged into the
         # router table
-        self._remove_merged_bitfields_from_cores(
-            self._best_bit_fields_by_processor, router_table.x,
-            router_table.y, transceiver,
-            bit_field_chip_base_addresses, bit_fields_by_processor)
+        #self._remove_merged_bitfields_from_cores(
+        #    self._best_bit_fields_by_processor, router_table.x,
+        #    router_table.y, transceiver,
+        #    bit_field_chip_base_addresses, bit_fields_by_processor)
 
         # report
         if produce_report:
@@ -745,6 +748,9 @@ class HostBasedBitFieldRouterCompressor(object):
             # base address for the region
             bit_field_base_address = bit_field_base_addresses[processor_id]
             writing_address = bit_field_base_address
+            words_writing_address = (
+                writing_address + (
+                    new_total * self._SIZE_OF_FILTER_INFO_IN_BYTES))
 
             # write correct number of elements.
             transceiver.write_memory(
@@ -762,18 +768,18 @@ class HostBasedBitFieldRouterCompressor(object):
                         chip_x, chip_y, writing_address,
                         self._TWO_WORDS.pack(
                             bf_by_key.master_pop_key,
-                            len(bf_by_key.bit_field)),
-                        self._BYTES_PER_WORD * 2)
-                    writing_address += self._BYTES_PER_WORD * 2
+                            len(bf_by_key.bit_field), words_writing_address),
+                        self._SIZE_OF_FILTER_INFO_IN_BYTES)
+                    writing_address += self._SIZE_OF_FILTER_INFO_IN_BYTES
 
                     # write bitfield words
                     data = struct.pack(
                         "<{}I".format(len(bf_by_key.bit_field)),
                         *bf_by_key.bit_field)
                     transceiver.write_memory(
-                        chip_x, chip_y, writing_address, data,
+                        chip_x, chip_y, words_writing_address, data,
                         len(bf_by_key.bit_field) * self._BYTES_PER_WORD)
-                    writing_address += len(
+                    words_writing_address += len(
                         bf_by_key.bit_field) * self._BYTES_PER_WORD
 
     def _create_table_report(

@@ -96,7 +96,7 @@ static inline bool oc_up_check(
             _i--, i--) {
 
         // safety check for timing limits
-        if(*timer_for_compression_attempt){
+        if (*timer_for_compression_attempt){
             return false;
         }
 
@@ -248,7 +248,7 @@ static bool oc_down_check(
     while (merge_goodness(merge) > min_goodness) {
 
         // safety check for timing limits
-        if(*timer_for_compression_attempt) {
+        if (*timer_for_compression_attempt) {
             log_error("failed due to timing");
             return false;
         }
@@ -276,7 +276,7 @@ static bool oc_down_check(
                 i++) {
 
              // safety check for timing limits
-            if(*timer_for_compression_attempt){
+            if (*timer_for_compression_attempt){
                 log_error("failed due to timing");
                 return false;
             }
@@ -296,7 +296,7 @@ static bool oc_down_check(
                     alias_list_t *the_alias_list = aliases_find(aliases, km);
                     while (the_alias_list != NULL) {
                         // safety check for timing limits
-                        if(*timer_for_compression_attempt){
+                        if (*timer_for_compression_attempt){
                             log_error("failed due to timing");
                             return false;
                         }
@@ -304,7 +304,7 @@ static bool oc_down_check(
                                 j++) {
 
                             // safety check for timing limits
-                            if(*timer_for_compression_attempt){
+                            if (*timer_for_compression_attempt){
                                 log_error("failed due to timing");
                                 return false;
                             }
@@ -355,7 +355,7 @@ static bool oc_down_check(
 
         sets.working = MALLOC(sizeof(bit_set_t));
 
-        if(sets.working == NULL) {
+        if (sets.working == NULL) {
             log_error("failed to alloc sets working");
             *failed_by_malloc = true;
 
@@ -393,7 +393,7 @@ static bool oc_down_check(
         int entry = 0;
         for (int i = 0; i <routing_table_sdram_get_n_entries(); i++) {
             // safety check for timing limits
-            if(*timer_for_compression_attempt) {
+            if (*timer_for_compression_attempt) {
                 log_error("failed due to timing");
                 FREE(&sets.best);
                 FREE(&sets.working);
@@ -486,7 +486,7 @@ static inline bool oc_get_best_merge(
     for (int i = 0; i < routing_table_sdram_get_n_entries(); i++) {
 
         // safety check for timing limits
-        if(*timer_for_compression_attempt) {
+        if (*timer_for_compression_attempt) {
             log_info("closed due to timing");
             return false;
         }
@@ -514,7 +514,7 @@ static inline bool oc_get_best_merge(
         for (int j = i+1; j < routing_table_sdram_get_n_entries(); j++) {
 
             // safety check for timing limits
-            if(*timer_for_compression_attempt) {
+            if (*timer_for_compression_attempt) {
                 log_info("closed due to timing");
                 return false;
             }

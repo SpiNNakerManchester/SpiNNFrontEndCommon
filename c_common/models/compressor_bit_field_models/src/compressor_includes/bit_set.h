@@ -21,7 +21,7 @@ typedef struct _bit_set_t {
     unsigned int n_elements;
 
     // Pointer to data
-    uint32_t *_data;         
+    uint32_t *_data;
 } bit_set_t;
 
 //! \brief Empty a bitset entirely
