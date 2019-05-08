@@ -222,9 +222,7 @@ bool generate_entries_from_bitfields(
         // iterate through the bitfield cores and see if they need this atom
         for (int bf_index = 0; bf_index < n_bit_fields_for_key; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
-            address_t data2 = (address_t) filters[bf_index]->data;
-
-            if (bit_field_test((bit_field_t) data2, atom)){
+            if (bit_field_test(filters[bf_index]->data, atom)){
                 log_debug(
                     "setting for atom %d from bitfield index %d so proc %d",
                     atom, bf_index, bit_field_processors[bf_index]);

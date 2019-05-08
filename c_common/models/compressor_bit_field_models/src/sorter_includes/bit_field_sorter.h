@@ -14,8 +14,7 @@ uint32_t detect_redundant_packet_count(
     uint32_t n_neurons = helpful_functions_locate_key_atom_map(
         filter_info_struct.key, region_addresses);
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
-        address_t data = (address_t) filter_info_struct.data;
-        if (!bit_field_test((bit_field_t) data, neuron_id)) {
+        if (!bit_field_test(filter_info_struct.data, neuron_id)) {
             n_filtered_packets += 1;
         }
     }

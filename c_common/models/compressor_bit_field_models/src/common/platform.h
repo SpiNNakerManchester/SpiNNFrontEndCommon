@@ -16,6 +16,9 @@ static inline void platform_new_heap_creation(address_t sizes_region) {
     // TODO hook removal here if we decide on this insanity
     stolen_sdram_heap = sv->sdram_heap;
     use(sizes_region);
+
+
+
 }
 
 //! \brief allows a search of the SDRAM heap.

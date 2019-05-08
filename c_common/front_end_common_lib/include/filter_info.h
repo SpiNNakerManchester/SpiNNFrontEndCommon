@@ -7,7 +7,7 @@ typedef struct filter_info_t{
     // n words representing the bitfield
     int n_words;
     // the words of the bitfield
-    bit_field_t* data;
+    bit_field_t data;
 } filter_info_t;
 
 //! \brief the elements in the bitfield region
