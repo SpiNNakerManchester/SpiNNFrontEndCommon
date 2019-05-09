@@ -31,7 +31,7 @@ uint32_t detect_redundant_packet_count(
 //! \param[in] diff: the amount of bitfields to add for these cores
 //! \param[out] covered: the new set of bitfields
 //! \param[out] sorted_bit_fields: the pointer to where sorted bitfields are
-//! \param[in] sorted_bf_fill_loc: the location in the sorted bit fields 
+//! \param[in] sorted_bf_fill_loc: the location in the sorted bit fields
 //! currently filling in
 //! \param[in] region_addresses: the sdram where all regions are
 //! \return the new covered level
@@ -145,7 +145,7 @@ void print_coverage_procs_for_sanity_purposes(
     }
 }
 
-//! \brief takes whats left in the coverage and adds them to the sorted bit 
+//! \brief takes whats left in the coverage and adds them to the sorted bit
 //! fields
 //! \param[in] sorted_bit_fields: the pointer to the sorted bitfield struct
 //! \param[in] n_unique_redundant_packet_counts: how many coverage bits there
@@ -329,10 +329,10 @@ static inline void add_bit_fields_based_on_impact(
     //log_info("filled sorted to %d", sorted_bf_fill_loc);
 }
 
-//! \brief creates a struct that defines which bitfields are based on which 
-//! redundant packet count of those bitfields. 
+//! \brief creates a struct that defines which bitfields are based on which
+//! redundant packet count of those bitfields.
 //! \param[in] region_addresses: the location of all the regions
-//! \return the proc by coverage struct. 
+//! \return the proc by coverage struct.
 static inline _proc_cov_by_bitfield_t** create_coverage_by_bit_field(
         region_addresses_t *region_addresses){
 

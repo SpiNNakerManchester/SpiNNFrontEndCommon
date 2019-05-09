@@ -356,12 +356,6 @@ class MachineBitFieldRouterCompressor(object):
                 logger.info(
                     "failed on core {}:{}:{}".format(subset.x, subset.y, p))
 
-        # cpu_info_list = txrx.get_cpu_information(cores)
-        # x = CPUInfos()
-        # for cpu_info in cpu_info_list:
-        #    x.add_processor(cpu_info.x, cpu_info.y, cpu_info.p, cpu_info)
-        # txrx.get_core_status_string(x)
-
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
             routing_tables, app_id, compress_only_when_needed, machine,
