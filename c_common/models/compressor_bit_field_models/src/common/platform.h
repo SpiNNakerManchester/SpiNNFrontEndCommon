@@ -3,6 +3,7 @@
 
 #include <sark.h>
 #include <common-typedefs.h>
+#include <debug.h>
 
 
 //! a sdram block outside the heap
@@ -54,9 +55,9 @@ static inline int available_mallocs(heap_t *sdram_heap){
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
 static inline bool platform_new_heap_update(address_t heap_location){
-    stolen_sdram_heap = sv->sdram_heap;
-    use(heap_location);
-    //stolen_sdram_heap = (heap_t*) heap_location;
+    //stolen_sdram_heap = sv->sdram_heap;
+    //use(heap_location);
+    stolen_sdram_heap = (heap_t*) heap_location;
     return true;
 }
 
@@ -77,14 +78,17 @@ static inline uint free_space_available(available_sdram_blocks *sizes_region){
 static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
     // TODO hook removal here if we decide on this insanity
-    stolen_sdram_heap = sv->sdram_heap;
-    use(sizes_region);
-    return true;
-/*
+    //stolen_sdram_heap = sv->sdram_heap;
+    //use(sizes_region);
+    //return true;
+
     // allocate blocks store for figuring out block order
+    log_info("a");
     int n_mallocs = available_mallocs(sv->sdram_heap);
+    log_info("a");
     sdram_block *list_of_available_blocks = sark_alloc(
         n_mallocs * sizeof(sdram_block), 1);
+    log_info("a");
 
     // if fail to alloc dtcm blow up
     if(list_of_available_blocks == NULL){
@@ -92,7 +96,9 @@ static inline bool platform_new_heap_creation(
     }
 
     // determine how much spare space there is.
+    log_info("a");
     uint available_free_bytes = free_space_available(sizes_region);
+    log_info("a");
     // adjust for fact we're allocating a heap in here somewhere
     available_free_bytes -= sizeof(heap_t);
 
@@ -101,7 +107,9 @@ static inline bool platform_new_heap_creation(
 
     // loop over the true heap and add accordingly.
     while(sv->sdram_heap->free != NULL){
+        log_info("a");
         block_t *next_blk = sv->sdram_heap->free->next;
+        log_info("a");
 
         // get next size minus the size it'll need to put in when alloc'ing
         int size = (next_blk - sv->sdram_heap->free) - sizeof(block_t);
@@ -194,7 +202,7 @@ static inline bool platform_new_heap_creation(
     // free the allocated dtcm for the true alloc stuff.
     sark_free(list_of_available_blocks);
 
-    return true;*/
+    return true;
 }
 
 
