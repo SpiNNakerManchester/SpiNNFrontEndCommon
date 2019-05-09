@@ -83,12 +83,9 @@ static inline bool platform_new_heap_creation(
     //return true;
 
     // allocate blocks store for figuring out block order
-    log_info("a");
     int n_mallocs = available_mallocs(sv->sdram_heap);
-    log_info("a");
     sdram_block *list_of_available_blocks = sark_alloc(
         n_mallocs * sizeof(sdram_block), 1);
-    log_info("a");
 
     // if fail to alloc dtcm blow up
     if(list_of_available_blocks == NULL){
@@ -96,28 +93,37 @@ static inline bool platform_new_heap_creation(
     }
 
     // determine how much spare space there is.
-    log_info("a");
     uint available_free_bytes = free_space_available(sizes_region);
-    log_info("a");
     // adjust for fact we're allocating a heap in here somewhere
     available_free_bytes -= sizeof(heap_t);
+
+
 
     // go through true heap and allocate and add to end of list.
     int position = 0;
 
     // loop over the true heap and add accordingly.
     while(sv->sdram_heap->free != NULL){
-        log_info("a");
         block_t *next_blk = sv->sdram_heap->free->next;
-        log_info("a");
 
-        // get next size minus the size it'll need to put in when alloc'ing
-        int size = (next_blk - sv->sdram_heap->free) - sizeof(block_t);
+        // get next size
+        int size =((uchar*) next_blk - (uchar*) sv->sdram_heap->free);
+        // minus the size it'll need to put in when alloc'ing
+        size -= sizeof(block_t);
+
+        log_info(
+            "size if %d and max heap is %d",
+            size, sark_heap_max(sv->sdram_heap, ALLOC_LOCK));
 
         // make life easier by saying blocks have to be bigger than the heap.
         // so all spaces can be used for heaps
         if (size >= MIN_SIZE_HEAP){
-            address_t block_address = sark_alloc(size, 1);
+            address_t block_address =
+                sark_xalloc(sv->sdram_heap, size, 0, ALLOC_LOCK);
+            if (block_address == NULL){
+                log_error("failed to allocate %d", size);
+                return false;
+            }
             list_of_available_blocks[position].sdram_base_address =
                 block_address;
             list_of_available_blocks[position].size = size;
