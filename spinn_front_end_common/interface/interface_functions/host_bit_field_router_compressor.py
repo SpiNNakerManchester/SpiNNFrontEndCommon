@@ -321,7 +321,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # remove bitfields from cores that have been merged into the
         # router table
-        #self._remove_merged_bitfields_from_cores(
+        # self._remove_merged_bitfields_from_cores(
         #    self._best_bit_fields_by_processor, router_table.x,
         #    router_table.y, transceiver,
         #    bit_field_chip_base_addresses, bit_fields_by_processor)

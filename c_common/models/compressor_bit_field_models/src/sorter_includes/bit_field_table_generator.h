@@ -97,7 +97,7 @@ void set_new_route_with_fixed_processors(
             // search through the bitfield processors to see if it exists
             bool found = false;
             for (uint32_t bf_i = 0; bf_i < n_bit_fields; bf_i++) {
-                if(bit_field_processors[bf_i] == processor_id) {
+                if (bit_field_processors[bf_i] == processor_id) {
                     log_debug("found proc %d", processor_id);
                     found = true;
                     break;
@@ -151,7 +151,7 @@ bool generate_entries_from_bitfields(
     }
 
     // get the processor ids
-    for(int bf_proc = 0; bf_proc < n_bit_fields_for_key; bf_proc++) {
+    for (int bf_proc = 0; bf_proc < n_bit_fields_for_key; bf_proc++) {
         bit_field_processors[bf_proc] =
             helpful_functions_locate_proc_id_from_bf_address(
                 *filters[bf_proc], region_addresses,
@@ -378,7 +378,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
 
     // iterate through the keys, accumulating bitfields and turn into routing
     // table entries.
-    for(int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
+    for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
         // holder for the rt address
         address_t rt_address;
 

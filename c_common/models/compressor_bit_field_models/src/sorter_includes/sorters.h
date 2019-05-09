@@ -192,7 +192,7 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
 
         // count entries
         int n_entries = 0;
-        for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
+        for (int bf_index = 0; bf_index < best_search_point; bf_index++) {
             if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
                 n_entries ++;
             }
@@ -219,7 +219,7 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
 
             // put keys in the array
             int array_index = 0;
-            for(int bf_index = 0; bf_index < best_search_point; bf_index++) {
+            for (int bf_index = 0; bf_index < best_search_point; bf_index++) {
                 if (sorted_bit_fields->processor_ids[bf_index] ==
                         region_proc_id) {
                     filter_info_t* bf_pointer =

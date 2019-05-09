@@ -13,7 +13,7 @@ void message_sending_send_sdp_message(sdp_msg_pure_data* my_msg){
     uint32_t attempt = 0;
     log_debug("sending message");
     while (!spin1_send_sdp_msg((sdp_msg_t *) my_msg, _SDP_TIMEOUT)) {
-        attempt +=1 ;
+        attempt += 1;
         log_info("failed to send. trying again");
         if (attempt >= 30) {
             rt_error(RTE_SWERR);
@@ -188,7 +188,7 @@ static void set_up_first_packet(
         data->command, data->msg.n_sdp_packets_till_delivered,
         data->msg.address_for_compressed, data->msg.fake_heap_data,
         data->msg.total_n_tables, data->msg.n_tables_in_packet, my_msg->length);
-    for(int rt_id = 0; rt_id < n_addresses_this_message; rt_id++) {
+    for (int rt_id = 0; rt_id < n_addresses_this_message; rt_id++) {
         if (data->msg.tables[rt_id][0] > 256){
             log_info("table address is %x", data->msg.tables[rt_id]);
             log_info(
@@ -242,7 +242,7 @@ static int select_compressor_core_index(
         int midpoint, int n_compression_cores, int* comp_core_mid_point,
         int *n_available_compression_cores){
 
-    for(int comp_core_index = 0; comp_core_index < n_compression_cores;
+    for (int comp_core_index = 0; comp_core_index < n_compression_cores;
             comp_core_index++) {
         if (comp_core_mid_point[comp_core_index] == DOING_NOWT) {
             comp_core_mid_point[comp_core_index] = midpoint;

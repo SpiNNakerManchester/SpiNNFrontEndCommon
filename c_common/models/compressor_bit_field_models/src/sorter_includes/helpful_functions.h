@@ -79,8 +79,6 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
     return 0;
 }
 
-
-
 //! \brief gets data about the bitfields being considered
 //! \param[in/out] keys: the data holder to populate
 //! \param[in] mid_point: the point in the sorted bit fields to look for

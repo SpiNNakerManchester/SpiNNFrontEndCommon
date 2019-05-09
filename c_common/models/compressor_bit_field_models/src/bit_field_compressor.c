@@ -249,7 +249,7 @@ static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
 
     // set up fake heap
     log_debug("setting up fake heap for sdram usage");
-    platform_new_heap_creation(first_cmd->fake_heap_data);
+    platform_new_heap_update(first_cmd->fake_heap_data);
     log_debug("finished setting up fake heap for sdram usage");
 
     // set up packet tracker

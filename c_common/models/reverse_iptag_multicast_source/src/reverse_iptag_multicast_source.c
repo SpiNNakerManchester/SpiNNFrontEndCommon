@@ -55,8 +55,7 @@ typedef enum provenance_items {
     LATE_PACKETS
 } provenance_items;
 
-typedef union
-{
+typedef union {
 	uint32_t u;
 	accum a;
 } uint_accum_union;
@@ -1005,9 +1004,9 @@ static void provenance_callback(address_t address) {
 static void set_tx_offset(uint32_t t_period){
 
     tx_offset = (uint32_t)(rand_fract.a * (accum)t_period);
-    io_printf(IO_BUF,"time_period=%dus\n",t_period);
-    io_printf(IO_BUF,"rand_fract=%k\n",rand_fract.a);
-    io_printf(IO_BUF,"tx_offset=%dus\n",tx_offset);
+    io_printf(IO_BUF, "time_period=%dus\n", t_period);
+    io_printf(IO_BUF, "rand_fract=%k\n", rand_fract.a);
+    io_printf(IO_BUF, "tx_offset=%dus\n", tx_offset);
 }
 
 bool initialise(uint32_t *timer_period) {

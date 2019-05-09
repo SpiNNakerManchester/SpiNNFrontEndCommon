@@ -60,7 +60,7 @@ uncompressed_table_region_data_t *uncompressed_router_table; // user1
 
 region_addresses_t *region_addresses; // user2
 
-void *usable_sdram_regions; // user3
+available_sdram_blocks *usable_sdram_regions; // user3
 
 //! best routing table position in the search
 int best_search_point = 0;
@@ -1177,7 +1177,7 @@ static void initialise_user_register_tracker(void) {
     address_t app_ptr_table = (address_t) this_vcpu_info->user0;
     uncompressed_router_table = (void *) this_vcpu_info->user1;
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
-    usable_sdram_regions = (void *) this_vcpu_info->user3;
+    usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
 
     log_info(
         "finished setting up register tracker: \n\n"
@@ -1293,7 +1293,11 @@ static bool initialise(void) {
 
     // build the fake heap for allocating memory
     log_info("setting up fake heap for sdram usage");
-    platform_new_heap_creation(usable_sdram_regions);
+    bool heap_creation = platform_new_heap_creation(usable_sdram_regions);
+    if (!heap_creation){
+        log_error("failed to setup stolen heap");
+        return false;
+    }
     log_info("finished setting up fake heap for sdram usage");
     return true;
 }

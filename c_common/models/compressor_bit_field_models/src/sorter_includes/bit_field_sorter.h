@@ -238,8 +238,6 @@ static inline void add_bit_fields_based_on_impact(
     int cores_to_add_length = 0;
     int sorted_bf_fill_loc = 0;
 
-
-
     // go through all cores but last 1
     for (int worst_core_id = 0; worst_core_id < n_pairs - 1;
             worst_core_id++){
@@ -272,7 +270,7 @@ static inline void add_bit_fields_based_on_impact(
         //    region_addresses->n_pairs, proc_cov_by_bit_field);
 
         // print for sanity
-        for(int r_packet_index = 0;
+        for (int r_packet_index = 0;
                 r_packet_index < proc_cov_by_bit_field[
                     worst_core_id]->length_of_list;
                 r_packet_index ++){
@@ -493,7 +491,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
         for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
             int length = proc_cov_by_bf[r_id]->length_of_list;
             for (int red_i = 0; red_i < length; red_i ++) {
-                if(proc_cov_by_bf[r_id]->redundant_packets[
+                if (proc_cov_by_bf[r_id]->redundant_packets[
                         red_i] == redundant_packets[r_i]){
                     n_bf_with_same_r_packets += 1;
                 }
@@ -537,9 +535,9 @@ static _coverage_t** create_coverage_by_redundant_packet(
             "populating list of bitfield addresses with same packet count");
         int processor_i = 0;
         for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++){
-            for(int red_i = 0; red_i < proc_cov_by_bf[r_id]->length_of_list;
+            for (int red_i = 0; red_i < proc_cov_by_bf[r_id]->length_of_list;
                     red_i ++){
-                if(proc_cov_by_bf[r_id]->redundant_packets[red_i] ==
+                if (proc_cov_by_bf[r_id]->redundant_packets[red_i] ==
                         redundant_packets[r_i]){
                     log_debug(
                         "found! at %x",
@@ -622,7 +620,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
     // malloc the separate bits of the sorted bitfield struct
     log_info("n bitfield addresses = %d", n_bf_addresses);
     sorted_bit_fields->bit_fields = MALLOC(n_bf_addresses * sizeof(address_t));
-    if(sorted_bit_fields->bit_fields == NULL){
+    if (sorted_bit_fields->bit_fields == NULL){
         log_error("cannot allocate memory for the sorted bitfield addresses");
         return NULL;
     }

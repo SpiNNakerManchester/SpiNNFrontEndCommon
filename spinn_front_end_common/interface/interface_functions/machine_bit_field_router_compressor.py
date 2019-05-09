@@ -58,6 +58,10 @@ class MachineBitFieldRouterCompressor(object):
     # the number of bytes needed to read the user 2 register
     _USER_BYTES = 4
 
+    # min size a heap object needs in sdram. (limit on the size of useful
+    # sdram regions to steal
+    _MIN_SIZE_FOR_HEAP = 32
+
     # structs for performance requirements.
     _FOUR_WORDS = struct.Struct("<IIII")
 
@@ -661,9 +665,8 @@ class MachineBitFieldRouterCompressor(object):
                 return base_address
         raise CantFindSDRAMToUseException()
 
-    @staticmethod
     def _add_to_addresses(
-            vertex, placement, transceiver, region_addresses,
+            self, vertex, placement, transceiver, region_addresses,
             sdram_block_addresses_and_sizes):
         """ adds data about the api based vertex.
 
@@ -688,9 +691,12 @@ class MachineBitFieldRouterCompressor(object):
             transceiver, placement)
 
         for (address, size) in blocks:
-            if size != 0:
+            if size != 0 and size > self._MIN_SIZE_FOR_HEAP:
                 sdram_block_addresses_and_sizes[
                     placement.x, placement.y].append((address, size))
+        sorted(
+            sdram_block_addresses_and_sizes[placement.x, placement.y],
+            key=lambda data: data[0])
 
     def _generate_addresses(
             self, machine_graph, placements, transceiver, progress_bar,
