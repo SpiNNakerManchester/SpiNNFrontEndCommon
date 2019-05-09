@@ -54,9 +54,9 @@ static inline int available_mallocs(heap_t *sdram_heap){
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
 static inline bool platform_new_heap_update(address_t heap_location){
-    //stolen_sdram_heap = sv->sdram_heap;
-    //use(heap_location);
-    stolen_sdram_heap = (heap_t*) heap_location;
+    stolen_sdram_heap = sv->sdram_heap;
+    use(heap_location);
+    //stolen_sdram_heap = (heap_t*) heap_location;
     return true;
 }
 
@@ -77,10 +77,10 @@ static inline uint free_space_available(available_sdram_blocks *sizes_region){
 static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
     // TODO hook removal here if we decide on this insanity
-    //stolen_sdram_heap = sv->sdram_heap;
-    //use(sizes_region);
-    //return true;
-
+    stolen_sdram_heap = sv->sdram_heap;
+    use(sizes_region);
+    return true;
+/*
     // allocate blocks store for figuring out block order
     int n_mallocs = available_mallocs(sv->sdram_heap);
     sdram_block *list_of_available_blocks = sark_alloc(
@@ -194,7 +194,7 @@ static inline bool platform_new_heap_creation(
     // free the allocated dtcm for the true alloc stuff.
     sark_free(list_of_available_blocks);
 
-    return true;
+    return true;*/
 }
 
 
