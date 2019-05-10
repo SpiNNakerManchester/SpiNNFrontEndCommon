@@ -45,4 +45,11 @@ class DataRowReader(AbstractDataReader, AbstractContextManager):
         """ Equality mainly for testing.
         """
         # pylint: disable=protected-access
+        if not isinstance(other, DataRowReader):
+            return False
         return self._data == other._data
+
+    def __ne__(self, other):
+        if not isinstance(other, DataRowReader):
+            return True
+        return not other.__eq__()
