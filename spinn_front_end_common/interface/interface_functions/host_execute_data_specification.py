@@ -301,23 +301,19 @@ class HostExecuteDataSpecification(object):
         dsg_targets.set_app_id(self._app_id)
         self._java.set_machine(self._machine)
         self._java.set_report_folder(self._db_folder)
+        if use_monitors:
+            self._java.set_placements(self._placements, self._txrx)
 
         progress.update()
 
-        if use_monitors:
-            self._java.set_placements(self._placements, self._txrx)
-        #     self._java.execute_app_data_specification_monitors(
-        #         self._monitors)
-        # else:
-        self._java.execute_app_data_specification()
+        self._java.execute_app_data_specification(True)
 
         progress.end()
         return dw_write_info
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets,
-            executable_targets,
-            report_folder=None, java_caller=None,
+            executable_targets, report_folder=None, java_caller=None,
             processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
 

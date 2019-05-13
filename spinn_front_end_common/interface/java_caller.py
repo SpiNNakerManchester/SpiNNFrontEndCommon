@@ -351,19 +351,18 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def execute_app_data_specification_monitors(self, monitors):
-        # TODO how to tell the code how the fast comms works?
-        result = self._run_java(
-            'dse_app_mon', self._machine_json(), self._report_folder)
-        if result != 0:
-            log_file = os.path.join(self._report_folder, "jspin.log")
-            raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result) + " see "
-                + str(log_file) + " for logged info")
-
-    def execute_app_data_specification(self):
-        result = self._run_java(
-            'dse_app', self._machine_json(), self._report_folder)
+    def execute_app_data_specification(self, write_log=True):
+        if self._gatherer_iptags is None:
+            result = self._run_java(
+                'dse_app', self._machine_json(), self._report_folder)
+        elif write_log:
+            result = self._run_java(
+                'dse_app_mon', self._placement_json, self._machine_json(),
+                self._report_folder, self._report_folder)
+        else:
+            result = self._run_java(
+                'dse_app_mon', self._placement_json, self._machine_json(),
+                self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
