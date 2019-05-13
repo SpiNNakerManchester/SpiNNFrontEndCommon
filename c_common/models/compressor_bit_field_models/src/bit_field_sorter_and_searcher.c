@@ -127,7 +127,7 @@ bool load_routing_table_into_router(void) {
     // Note that although the allocation included the specified
     // application ID we also need to include it as the most significant
     // byte in the route (see `sark_hw.c`).
-    log_info("loading %d entries into router", last_compressed_table->size);
+    log_debug("loading %d entries into router", last_compressed_table->size);
     for (int entry_id = 0; entry_id < last_compressed_table->size; entry_id++) {
         entry_t entry = last_compressed_table->entries[entry_id];
         uint32_t route = entry.route | (app_id << ROUTE_APP_ID_BIT_SHIFT);
@@ -146,7 +146,7 @@ bool load_routing_table_into_router(void) {
 //! \return bool saying successfully sent the message
 void send_sdp_force_stop_message(int compressor_core_index){
     // set message params
-    log_info(
+    log_debug(
         "sending stop to core %d", compressor_cores[compressor_core_index]);
     my_msg.dest_port =
         (RANDOM_PORT << PORT_SHIFT) | compressor_cores[compressor_core_index];
@@ -221,7 +221,7 @@ static inline int get_core_index_from_id(int processor_id) {
 //! \return bool fag if it fails for memory issues
 bool create_tables_and_set_off_bit_compressor(int mid_point){
     int n_rt_addresses = 0;
-    log_info("started create bit field router tables");
+    log_debug("started create bit field router tables");
     address_t* bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
             mid_point, &n_rt_addresses, region_addresses,
@@ -233,7 +233,7 @@ bool create_tables_and_set_off_bit_compressor(int mid_point){
         return false;
     }
 
-    log_info("finished creating bit field router tables");
+    log_debug("finished creating bit field router tables");
     // if successful, try setting off the bitfield compression
     bool success = message_sending_set_off_bit_field_compression(
         n_rt_addresses, mid_point, comp_cores_bf_tables,
@@ -278,7 +278,7 @@ bool start_binary_search(void){
     }
 
     log_debug("n_bf_addresses is %d", n_bf_addresses);
-    log_info(
+    log_debug(
         "n available compression cores is %d", n_available_compression_cores);
     log_debug("hops between attempts is %d", hops_between_compression_cores);
 
@@ -610,7 +610,7 @@ bool locate_next_mid_point(int *new_mid_point) {
     // handle case of no split between best and last tested
     // NOTE this only happens with n compression cores of 1.
     if (length == 1) {
-        log_info(
+        log_debug(
             "next tested point = %d, best_mp_to_date = %d",
             next_tested_point, best_mp_to_date);
         int hop = (next_tested_point - best_mp_to_date) / 2;
@@ -618,7 +618,7 @@ bool locate_next_mid_point(int *new_mid_point) {
             hop = 1;
         }
         *new_mid_point = best_mp_to_date + hop;
-        log_info("new midpoint is %d", *new_mid_point);
+        log_debug("new midpoint is %d", *new_mid_point);
         return true;
     }
 
@@ -647,7 +647,7 @@ bool locate_next_mid_point(int *new_mid_point) {
 
             // check if we're testing this already, coz if we are. do nowt
             if (already_being_processed(*new_mid_point)) {
-                log_info(
+                log_debug(
                     "already testing mid point %d, so do nothing",
                     *new_mid_point);
                 *new_mid_point = DOING_NOWT;
@@ -674,7 +674,7 @@ bool locate_next_mid_point(int *new_mid_point) {
             }
         }
     }
-    log_info("left cycle with new mid point of %d", *new_mid_point);
+    log_debug("left cycle with new mid point of %d", *new_mid_point);
     FREE(higher_testers);
     return true;
 }
@@ -693,7 +693,7 @@ void handle_best_cleanup(void){
 
     // load routing table into router
     load_routing_table_into_router();
-    log_info("finished loading table");
+    log_debug("finished loading table");
 
     //hang till the compressor cores have all responded saying stopped
     //(thereby freeing as much sdram/ dtcm as possible before trying to
@@ -701,20 +701,20 @@ void handle_best_cleanup(void){
     // packet reception, so safe to do
 
     // IT SEEMS YOU CAN LOSE SDP MESSAGES HERE. SO COMMENTING OUT
-    /*int n_cores_doing_things = n_compression_cores;
-    while (n_cores_doing_things != 0){
-        n_cores_doing_things = 0;
-        for(int c_index = 0; c_index < n_compression_cores; c_index++){
-            if (comp_core_mid_point[c_index] != DOING_NOWT) {
-                n_cores_doing_things += 1;
-                log_debug("waiting on %d", compressor_cores[c_index]);
-            }
-        }
-    }*/
+    //int n_cores_doing_things = n_compression_cores;
+    //while (n_cores_doing_things != 0){
+    //    n_cores_doing_things = 0;
+    //    for(int c_index = 0; c_index < n_compression_cores; c_index++){
+    //        if (comp_core_mid_point[c_index] != DOING_NOWT) {
+    //            n_cores_doing_things += 1;
+    //            log_debug("waiting on %d", compressor_cores[c_index]);
+    //        }
+    //    }
+    //}
 
     // clear away bitfields that were merged into the router from
     //their lists.
-    log_info("remove merged bitfields");
+    log_debug("remove merged bitfields");
     //remove_merged_bitfields_from_cores();
     terminate(EXITED_CLEANLY);
 }
@@ -739,7 +739,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
     log_debug("start while");
     while (n_available_compression_cores != 0 && !failed_to_malloc &&
             !found_best && !nothing_to_do) {
-        log_info("try a carry on core");
+        log_debug("try a carry on core");
 
         // locate next midpoint to test
         int mid_point;
@@ -778,7 +778,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
                 // failed to set off the run for a memory reason
                 if (!success){
                     failed_to_malloc = true;
-                    log_info("failed to send due to malloc");
+                    log_debug("failed to send due to malloc");
                 }
                 else{
                     log_debug("success sending");
@@ -791,7 +791,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
 
     // if failed to malloc, limit exploration to the number of cores running.
     if (failed_to_malloc) {
-        log_info("in failed to malloc");
+        log_debug("in failed to malloc");
         n_available_compression_cores = 0;
 
         // if the current running number of cores is 0, then we cant generate
@@ -834,7 +834,7 @@ void timer_callback(uint unused0, uint unused1) {
     // will be to periodically assess if we need to do anything
     if (count_many_on_going_compression_attempts_are_running() == 0 &&
             !reading_bit_fields && !still_trying_to_carry_on && !found_best){
-        log_info("firing off carry on from timer");
+        log_debug("firing off carry on from timer");
         spin1_schedule_callback(
             carry_on_binary_search, 0, 0, COMPRESSION_START_PRIORITY);
     }
@@ -879,7 +879,7 @@ void process_compressor_response(int comp_core_index, int finished_state) {
         }
         log_debug("finished process of successful compression");
     } else if (finished_state == FAILED_MALLOC) {
-        log_info(
+        log_debug(
             "failed by malloc from core %d doing mid point %d",
             compressor_cores[comp_core_index],
             comp_core_mid_point[comp_core_index]);
@@ -895,7 +895,7 @@ void process_compressor_response(int comp_core_index, int finished_state) {
         }
     }
     else if (finished_state == FAILED_TO_COMPRESS){
-        log_info(
+        log_debug(
             "failed to compress from core %d doing mid point %d",
             compressor_cores[comp_core_index],
             comp_core_mid_point[comp_core_index]);
@@ -931,7 +931,7 @@ void process_compressor_response(int comp_core_index, int finished_state) {
                       compressor_cores[comp_core_index]);
         }
     } else if (finished_state == RAN_OUT_OF_TIME) {
-        log_info(
+        log_debug(
             "failed by time from core %d doing mid point %d",
             compressor_cores[comp_core_index],
             comp_core_mid_point[comp_core_index]);
@@ -994,15 +994,15 @@ void process_compressor_response(int comp_core_index, int finished_state) {
         n_available_compression_cores, reading_bit_fields);
     if (n_available_compression_cores > 0 && !reading_bit_fields) {
         if (!still_trying_to_carry_on) {
-            log_info("setting off carry on");
+            log_debug("setting off carry on");
             still_trying_to_carry_on = true;
             spin1_schedule_callback(
                 carry_on_binary_search, 0, 0, COMPRESSION_START_PRIORITY);
         } else {
-            log_info("all ready in carry on mode. ignoring");
+            log_debug("all ready in carry on mode. ignoring");
         }
     } else {
-        log_info("not ready to carry on yet");
+        log_debug("not ready to carry on yet");
     }
 }
 
@@ -1089,12 +1089,11 @@ bool setup_the_uncompressed_attempt(){
     log_debug("finish setting up search bitfields");
 
     // set off a none bitfield compression attempt, to pipe line work
-    log_info("sets off the uncompressed version of the search");
-    message_sending_set_off_no_bit_field_compression(
+    log_debug("sets off the uncompressed version of the search");
+    return message_sending_set_off_no_bit_field_compression(
         comp_cores_bf_tables, compressor_cores, &my_msg, usable_sdram_regions,
         uncompressed_router_table, n_compression_cores, comp_core_mid_point,
         &n_available_compression_cores);
-    return true;
 }
 
 //! \brief starts the work for the compression search
@@ -1105,11 +1104,11 @@ void start_compression_process(uint unused0, uint unused1) {
 
     //rt_error(RTE_SWERR);
 
-    log_info("read in bitfields");
+    log_debug("read in bitfields");
     bool read_success = false;
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             &n_bf_addresses, region_addresses, &read_success);
-    log_info("finished reading in bitfields");
+    log_debug("finished reading in bitfields");
 
     // check state
     if (bit_field_by_processor == NULL && !read_success){
@@ -1126,7 +1125,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // check there are bitfields to merge, if not don't start search
     if (n_bf_addresses == 0){
-        log_info(
+        log_debug(
             "no bitfields to compress, just try the uncompressed and "
             "quit based on that's result.");
         reading_bit_fields = false;
@@ -1170,7 +1169,7 @@ void start_compression_process(uint unused0, uint unused1) {
 //! \brief sets up a tracker for the user registers so that its easier to use
 //!  during coding.
 static void initialise_user_register_tracker(void) {
-    log_info("set up user register tracker (easier reading)");
+    log_debug("set up user register tracker (easier reading)");
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
 
@@ -1189,7 +1188,7 @@ static void initialise_user_register_tracker(void) {
 //! \brief reads in router table setup params
 static void initialise_routing_control_flags(void) {
     app_id = uncompressed_router_table->app_id;
-    log_info(
+    log_debug(
         "app id %d, uncompress total entries %d",
         app_id, uncompressed_router_table->uncompressed_table.size);
 }
@@ -1266,7 +1265,8 @@ bool initialise_compressor_cores(void) {
 
 //! \brief the callback for setting off the router compressor
 static bool initialise(void) {
-    log_info("Setting up stuff to allow bitfield comp control class to occur.");
+    log_debug(
+        "Setting up stuff to allow bitfield comp control class to occur.");
 
     // Get pointer to 1st virtual processor info struct in SRAM
     initialise_user_register_tracker();

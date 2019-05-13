@@ -153,7 +153,7 @@ address_t helpful_functions_clone_un_compressed_routing_table(
     address_t where_was_cloned = MALLOC_SDRAM(sdram_used);
     if (where_was_cloned == NULL) {
         log_error("failed to allocate sdram for the cloned routing table for "
-                  "uncompressed compression attempt");
+                  "uncompressed compression attempt of bytes %d", sdram_used);
         return NULL;
     }
 

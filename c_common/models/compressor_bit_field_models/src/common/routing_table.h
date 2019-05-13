@@ -127,7 +127,7 @@ void routing_table_print_list_tables(void){
         table_t *table = routing_tables[table_index];
         for (int entry_index = 0; entry_index < table->size; entry_index ++){
             entry_t entry = table->entries[entry_index];
-            log_info(
+            log_debug(
                 "entry %d from table %d index %d has key %x or %d mask %x route
                  %x source %x",
                 table_lo_entry[table_index] + entry_index, table_index,
@@ -205,7 +205,7 @@ static inline bool routing_tables_init(int total_n_tables) {
     n_tables = total_n_tables;
 
     // set up addresses data holder
-    log_info(
+    log_debug(
         "allocating %d bytes for %d total n tables",
         n_tables * sizeof(table_t*), n_tables);
     routing_tables = MALLOC(n_tables * sizeof(table_t*));
@@ -314,7 +314,7 @@ static void routing_tables_print_out_table_sizes(void){
     }
     if (print){
         for (int rt_index = 0; rt_index < n_tables; rt_index++){
-            log_info(
+            log_debug(
                 "n entries in rt index %d at address %x is %d",
                 rt_index, routing_tables[rt_index],
                 routing_tables[rt_index]->size);
@@ -325,7 +325,7 @@ static void routing_tables_print_out_table_sizes(void){
 
 void routing_table_print_table_lo_atom(void){
     for (int rt_index = 0; rt_index < n_tables; rt_index++){
-        log_info(
+        log_debug(
             "low atom for table %d is %d with length %d", rt_index,
             table_lo_entry[rt_index], routing_tables[rt_index]->size);
     }

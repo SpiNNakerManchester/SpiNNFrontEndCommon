@@ -100,13 +100,6 @@ static inline bool add_heap_to_collection(
         list_of_available_blocks[position].size = size;
         stolen_sdram_heap->free_bytes += size;
         position += 1;
-
-        log_info(
-            "heap element %d in address %x of size %u",
-            position, block_address, size);
-        log_info(
-            "next block would be at address %x",
-            block_address + size - sizeof(block_t));
     }
     return true;
 }
@@ -128,8 +121,8 @@ static inline void make_heap_structure(
     while(stolen_current_index < sizes_region->n_blocks ||
             heap_current_index < n_mallocs){
         if (previous != NULL){
-            log_info("previous is now %x", previous);
-            log_info("root free next is %x", stolen_sdram_heap->free->next);
+            log_debug("previous is now %x", previous);
+            log_debug("root free next is %x", stolen_sdram_heap->free->next);
         }
 
         // build pointers to try to reduce code space
@@ -145,17 +138,17 @@ static inline void make_heap_structure(
         // determine which one to utilise now
         if (((stolen_current_index < sizes_region->n_blocks) &&
                 top_stolen < top_true)){
-            log_info("stolen");
+            log_debug("stolen");
             to_process = &stolen_current_index;
             to_process_blocks = sizes_region->blocks;
         }
         else{
-            log_info("true");
+            log_debug("true");
             to_process = &heap_current_index;
             to_process_blocks = list_of_available_blocks;
         }
 
-        log_info(
+        log_debug(
             "address %x with size %u",
             to_process_blocks[*to_process].sdram_base_address,
             to_process_blocks[*to_process].size);
@@ -168,7 +161,7 @@ static inline void make_heap_structure(
             // set up stuff we can
             stolen_sdram_heap->free =
                 (block_t*) to_process_blocks[*to_process].sdram_base_address;
-            log_info("set root to %x", stolen_sdram_heap->free);
+            log_debug("set root to %x", stolen_sdram_heap->free);
 
             stolen_sdram_heap->free->next =
                 (block_t*) (
@@ -176,7 +169,7 @@ static inline void make_heap_structure(
                     + to_process_blocks[*to_process].size
                     - sizeof(block_t));
 
-            log_info(
+            log_debug(
                 "free -> next is %x with size %u",
                 stolen_sdram_heap->free->next,
                 (uchar*) stolen_sdram_heap->free->next -
@@ -213,7 +206,7 @@ static inline void make_heap_structure(
             previous = free->next;
             previous_free = free;
 
-            log_info(
+            log_debug(
                 "next free is %x and -> next is %x and its next is %x "
                 "and its free is %x with size %u",
                 free, free->next, free->next->next, free->next->free,
@@ -229,24 +222,25 @@ static inline void make_heap_structure(
     stolen_sdram_heap->last->next = NULL;
 }
 
+//! \brief prints out the fake heap as if the spin1 alloc was operating over it
 void print_free_sizes_in_heap(void){
     block_t *free_blk = stolen_sdram_heap->free;
-    int total_size = 0;
-    int index = 0;
+    uint total_size = 0;
+    uint index = 0;
 
     // traverse blocks till none more available
     while (free_blk) {
-        log_info(
+        uint size = (uchar*) free_blk->next - (uchar*) free_blk;
+        log_debug(
             "free block %d has address %x and size of %d",
-            index, free_blk,
-            (uchar*) free_blk->next - (uchar*) free_blk);
+            index, free_blk, size);
 
+        total_size += size;
         free_blk = free_blk->free;
-        total_size += (uchar*) free_blk->next - (uchar*) free_blk;
         index += 1;
     }
 
-    log_info("total free size is %d", total_size);
+    log_debug("total free size is %d", total_size);
 }
 
 //! \brief builds a new heap based off stolen sdram blocks from cores
@@ -256,25 +250,9 @@ void print_free_sizes_in_heap(void){
 //! \return None
 static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
-    // TODO hook removal here if we decide on this insanity
-    //stolen_sdram_heap = sv->sdram_heap;
-    //use(sizes_region);
-    //return true;
-
-    for (int i = 0; i < sizes_region->n_blocks; i ++){
-        log_info(
-            "element %d in address %x of size %u",
-            i,
-            sizes_region->blocks[i].sdram_base_address,
-            sizes_region->blocks[i].size);
-        log_info(
-            "next block would be at address %x",
-            sizes_region->blocks[i].sdram_base_address +
-            sizes_region->blocks[i].size - sizeof(block_t));
-    }
 
     // allocate blocks store for figuring out block order
-    int n_mallocs = available_mallocs(sv->sdram_heap);
+    uint n_mallocs = available_mallocs(sv->sdram_heap);
     sdram_block *list_of_available_blocks = sark_alloc(
         n_mallocs * sizeof(sdram_block), 1);
 
@@ -321,21 +299,19 @@ static inline bool platform_new_heap_creation(
     // printer for sanity purposes
     print_free_sizes_in_heap();
 
-    rt_error(RTE_SWERR);
-
     return true;
 }
 
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-static void * safe_sdram_malloc(uint bytes){
+void * safe_sdram_malloc(uint bytes){
     // try SDRAM stolen from the cores synaptic matrix areas.
     void * p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
-    //if (p == NULL) {
-        //log_error("Failed to malloc %u bytes.\n", bytes);
-    //}
+    if (p == NULL) {
+        log_error("Failed to malloc %u bytes.\n", bytes);
+    }
     return p;
 }
 
@@ -357,7 +333,6 @@ static void * safe_malloc(uint bytes) {
 static inline uint platform_max_available_block_size(void) {
     uint max_dtcm_block = sark_heap_max(sark.heap, ALLOC_LOCK);
     uint max_sdram_block = sark_heap_max(stolen_sdram_heap, ALLOC_LOCK);
-    //return MAX(max_dtcm_block, max_sdram_block);
     if (max_dtcm_block > max_sdram_block){
         return max_dtcm_block;
     } else {
@@ -367,7 +342,7 @@ static inline uint platform_max_available_block_size(void) {
 
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
-static inline void safe_x_free(void *ptr) {
+static void safe_x_free(void *ptr) {
     if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
         sark_xfree(sark.heap, ptr, 0);
     } else {
@@ -375,17 +350,10 @@ static inline void safe_x_free(void *ptr) {
     }
 }
 
-#ifdef PROFILED
-    void profile_init();
-    void *profiled_malloc(uint bytes);
-    void profiled_free(void * ptr);
 
-    #define MALLOC profiled_malloc
-    #define FREE   profiled_free
-#else
-    #define MALLOC safe_malloc
-    #define FREE   safe_x_free
-    #define MALLOC_SDRAM safe_sdram_malloc
-#endif
+#define MALLOC safe_malloc
+#define FREE   safe_x_free
+#define MALLOC_SDRAM safe_sdram_malloc
+
 
 #endif  // __PLATFORM_H__

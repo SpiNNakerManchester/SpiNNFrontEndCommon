@@ -491,6 +491,8 @@ class MachineBitFieldRouterCompressor(object):
                 SpinnmanUnexpectedResponseCodeException):
             sdram_address = self._steal_from_matrix_addresses(
                 matrix_addresses_and_size, len(address_data))
+            address_data = \
+                self._generate_chip_matrix_data(matrix_addresses_and_size)
 
         # write sdram
         transceiver.write_memory(

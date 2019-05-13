@@ -11,7 +11,7 @@ static inline void print_bit_field_entry_v2(uint32_t e, int offset) {
     counter_t i = 32;
 
     for ( ; i > 0; i--) {
-        log_info("%d,%c", offset + i, ((e & 0x1) == 0) ? ' ' : '1');
+        log_debug("%d,%c", offset + i, ((e & 0x1) == 0) ? ' ' : '1');
         e >>= 1;
     }
 }

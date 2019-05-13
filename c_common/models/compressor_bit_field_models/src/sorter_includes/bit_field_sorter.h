@@ -3,7 +3,6 @@
 
 #include "sorters.h"
 
-
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
 //! \param[in] the addresses of the regions to read
@@ -193,7 +192,7 @@ void print_proc_by_coverage(
         int n_pairs_of_addresses, _proc_cov_by_bitfield_t** proc_cov_by_bf){
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
         for (int l_id =0; l_id < proc_cov_by_bf[r_id]->length_of_list; l_id++){
-            log_info(
+            log_debug(
                 "proc %d at index %d has redund %d",
                 proc_cov_by_bf[r_id]->processor_id, l_id,
                 proc_cov_by_bf[r_id]->redundant_packets[l_id]);
@@ -568,11 +567,12 @@ static _coverage_t** create_coverage_by_redundant_packet(
     return coverage;
 }
 
-/*
+
 //! \brief no sorting, just plonking into list sorted bitfield list.
 //! \param[in] region_addresses: the sdram that stores data addresses
 //! \param[in] sorted_bit_fields: the sorted bitfields struct pointer
 //! \param[in] bit_field_by_processor: the map of processor to bitfields.
+/*
 void just_add_to_list(
         region_addresses_t *region_addresses,
         sorted_bit_fields_t* sorted_bit_fields,
@@ -592,13 +592,13 @@ void just_add_to_list(
                 &filter_region->filters[bf_id];
             sorted_bit_fields->processor_ids[pos_in_sorted] =
                 region_addresses->pairs[r_id].processor;
-            print_bit_field_struct(&filter_region->filters[bf_id]);
+            //print_bit_field_struct(&filter_region->filters[bf_id]);
 
             pos_in_sorted += 1;
         }
     }
-}
-*/
+}*/
+
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
 //! \param[in] n_bf_addresses: the number of bitfields to sort
@@ -633,8 +633,9 @@ sorted_bit_fields_t* bit_field_sorter_sort(
         return NULL;
     }
 
+    // NOTE: THis is if you want to debug / need surplus itcm. as this will
+    //put the fields in the list, but without any sorting at all.
     //log_info("just adding");
-    //use(create_coverage_by_redundant_packet);
     //just_add_to_list(
     //    region_addresses, sorted_bit_fields, bit_field_by_processor);
     //log_info("fin just adding");

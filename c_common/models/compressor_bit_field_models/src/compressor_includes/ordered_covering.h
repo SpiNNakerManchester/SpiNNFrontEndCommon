@@ -774,15 +774,16 @@ static inline bool oc_minimise(
     }
 
     // remove default routes and check lengths again
-    bool success = remove_default_routes_minimise();
+    int length_after_removal = routing_table_sdram_get_n_entries();
+    bool success = remove_default_routes_minimise(&length_after_removal, false);
     if (!success) {
         log_error("failed to remove default routes due to malloc. failing");
         *failed_by_malloc = true;
         return false;
     }
 
-    if (compress_only_when_needed &&
-            (routing_table_sdram_get_n_entries() < target_length)) {
+    if (compress_only_when_needed && (length_after_removal < target_length)) {
+        remove_default_routes_minimise(&length_after_removal, true);
         return true;
     }
 

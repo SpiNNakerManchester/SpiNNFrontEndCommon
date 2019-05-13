@@ -27,7 +27,7 @@ typedef struct _bit_set_t {
 //! \brief Empty a bitset entirely
 //! \param[in] b: the bit set to clear bits
 //! \return bool saying successfully cleared bit field
-static inline bool bit_set_clear(bit_set_t *b) {
+bool bit_set_clear(bit_set_t *b) {
     // Clear the data
     for (unsigned int i = 0; i < b->n_words; i++) {
         b->_data[i] = 0x0;

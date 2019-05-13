@@ -94,7 +94,7 @@ void return_malloc_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_info("sent failed to malloc response");
+    log_debug("sent failed to malloc response");
 }
 
 //! \brief send a success response message
@@ -104,7 +104,7 @@ void return_success_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_info("send success ack");
+    log_debug("send success ack");
 }
 
 //! \brief send a failed response due to the control forcing it to stop
@@ -114,7 +114,7 @@ void return_failed_by_force_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_info("send forced ack");
+    log_debug("send forced ack");
 }
 
 //! \brief sends a failed response due to running out of time
@@ -124,7 +124,7 @@ void return_failed_by_time_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_info("send failed by time");
+    log_debug("send failed by time");
 }
 
 //! \brief send a failed response where finished compression but failed to
@@ -135,7 +135,7 @@ void return_failed_by_space_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_info("send failed by space");
+    log_debug("send failed by space");
 }
 
 //! \brief stores the compressed routing tables into the compressed sdram
@@ -147,10 +147,10 @@ bool store_into_compressed_address(void) {
         return false;
     }
 
-    log_info("starting store of %d tables", n_tables);
+    log_debug("starting store of %d tables", n_tables);
     bool success = routing_table_sdram_store(
         sdram_loc_for_compressed_entries);
-    log_info("finished store");
+    log_debug("finished store");
     if (!success) {
         log_error("failed to store entries into sdram.");
         return false;
@@ -199,9 +199,9 @@ void start_compression_process(uint unused0, uint unused1) {
             log_debug("failed malloc response");
             return_malloc_response_message();
         } else if (finished_by_compressor_force) {  // control killed it
-            log_info("force fail response");
+            log_debug("force fail response");
             return_failed_by_force_response_message();
-            log_info("send ack");
+            log_debug("send ack");
         } else if (timer_for_compression_attempt) {  // ran out of time
             log_debug("time fail response");
             return_failed_by_time_response_message();
@@ -325,8 +325,8 @@ void _sdp_handler(uint mailbox, uint port) {
         control_core_id = (msg->srce_port & CPU_MASK);
     }
 
-    log_info("control core is %d", control_core_id);
-    log_info("command code is %d", payload->command);
+    log_debug("control core is %d", control_core_id);
+    log_debug("command code is %d", payload->command);
 
     // get command code
     if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
@@ -347,7 +347,7 @@ void _sdp_handler(uint mailbox, uint port) {
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
             case STOP_COMPRESSION_ATTEMPT:
-                log_info("been forced to stop by control");
+                log_debug("been forced to stop by control");
                 finished_by_compressor_force = true;
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
@@ -375,7 +375,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if (counter >= max_counter){
         timer_for_compression_attempt = true;
-        log_info("passed timer point");
+        log_debug("passed timer point");
         spin1_pause();
     }
 }
