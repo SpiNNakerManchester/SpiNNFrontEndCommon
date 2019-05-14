@@ -41,8 +41,8 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder, machine, data_n_timesteps,
-            graph_mapper=None, placement_order=None):
+            machine, data_n_timesteps, graph_mapper=None,
+            placement_order=None):
         """
         :param placements: placements of machine graph to cores
         :param hostname: SpiNNaker machine name
