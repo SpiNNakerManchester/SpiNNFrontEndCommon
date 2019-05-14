@@ -14,8 +14,6 @@ class EdgeToNKeysMapper(object):
 
     def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
-        # Generate an n_keys map for the graph and add constraints
-        n_keys_map = DictBasedMachinePartitionNKeysMap()
 
         if machine_graph is None:
             raise ConfigurationException(
@@ -27,36 +25,51 @@ class EdgeToNKeysMapper(object):
                 "specified or both must be None")
 
         if application_graph is not None:
-            # generate progress bar
-            progress = ProgressBar(
-                machine_graph.n_vertices,
-                "Getting number of keys required by each edge using "
-                "application graph")
-
-            # iterate over each partition in the graph
-            for vertex in progress.over(machine_graph.vertices):
-                partitions = machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(
-                        vertex)
-                for partition in partitions:
-                    if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_application_partition(
-                            partition, n_keys_map, graph_mapper)
-
+            return self._allocate_by_app_graph_simple(
+                machine_graph, application_graph, graph_mapper)
         else:
-            # generate progress bar
-            progress = ProgressBar(
-                machine_graph.n_vertices,
-                "Getting number of keys required by each edge using "
-                "machine graph")
+            return self._allocate_by_machine_graph_only(machine_graph)
 
-            for vertex in progress.over(machine_graph.vertices):
-                partitions = machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(
-                        vertex)
-                for partition in partitions:
-                    if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_machine_partition(partition, n_keys_map)
+    def _allocate_by_app_graph_simple(self, machine_graph, application_graph,
+                 graph_mapper):
+        # Generate an n_keys map for the graph and add constraints
+        n_keys_map = DictBasedMachinePartitionNKeysMap()
+
+        # generate progress bar
+        progress = ProgressBar(
+            machine_graph.n_vertices,
+            "Getting number of keys required by each edge using "
+            "application graph")
+
+        # iterate over each partition in the graph
+        for vertex in progress.over(machine_graph.vertices):
+            partitions = machine_graph.\
+                get_outgoing_edge_partitions_starting_at_vertex(
+                    vertex)
+            for partition in partitions:
+                if partition.traffic_type == EdgeTrafficType.MULTICAST:
+                    self._process_application_partition(
+                        partition, n_keys_map, graph_mapper)
+
+        return n_keys_map
+
+    def _allocate_by_machine_graph_only(self, machine_graph):
+        # Generate an n_keys map for the graph and add constraints
+        n_keys_map = DictBasedMachinePartitionNKeysMap()
+
+        # generate progress bar
+        progress = ProgressBar(
+            machine_graph.n_vertices,
+            "Getting number of keys required by each edge using "
+            "machine graph")
+
+        for vertex in progress.over(machine_graph.vertices):
+            partitions = machine_graph.\
+                get_outgoing_edge_partitions_starting_at_vertex(
+                    vertex)
+            for partition in partitions:
+                if partition.traffic_type == EdgeTrafficType.MULTICAST:
+                    self._process_machine_partition(partition, n_keys_map)
 
         return n_keys_map
 
