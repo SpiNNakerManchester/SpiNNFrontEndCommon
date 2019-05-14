@@ -146,38 +146,43 @@ class ConfigHandler(object):
         return child
 
     def _remove_excess_folders(self, max_kept, starting_directory):
-        files_in_report_folder = os.listdir(starting_directory)
+        try:
+            files_in_report_folder = os.listdir(starting_directory)
 
-        # while there's more than the valid max, remove the oldest one
-        if len(files_in_report_folder) > max_kept:
+            # while there's more than the valid max, remove the oldest one
+            if len(files_in_report_folder) > max_kept:
 
-            # sort files into time frame
-            files_in_report_folder.sort(
-                key=lambda temp_file:
-                os.path.getmtime(os.path.join(starting_directory, temp_file)))
+                # sort files into time frame
+                files_in_report_folder.sort(
+                    key=lambda temp_file: os.path.getmtime(
+                        os.path.join(starting_directory, temp_file)))
 
-            # remove only the number of files required, and only if they have
-            # the finished flag file created
-            num_files_to_remove = len(files_in_report_folder) - max_kept
-            files_removed = 0
-            files_not_closed = 0
-            for current_oldest_file in files_in_report_folder:
-                finished_flag = os.path.join(os.path.join(
-                    starting_directory, current_oldest_file),
-                    FINISHED_FILENAME)
-                if os.path.exists(finished_flag):
-                    shutil.rmtree(
-                        os.path.join(starting_directory, current_oldest_file),
-                        ignore_errors=True)
-                    files_removed += 1
-                else:
-                    files_not_closed += 1
-                if files_removed + files_not_closed >= num_files_to_remove:
-                    break
-            if files_not_closed > max_kept // 4:
-                logger.warning(
-                    "{} has {} old reports that have not been closed",
-                    starting_directory, files_not_closed)
+                # remove only the number of files required, and only if they
+                # have the finished flag file created
+                num_files_to_remove = len(files_in_report_folder) - max_kept
+                files_removed = 0
+                files_not_closed = 0
+                for current_oldest_file in files_in_report_folder:
+                    finished_flag = os.path.join(os.path.join(
+                        starting_directory, current_oldest_file),
+                        FINISHED_FILENAME)
+                    if os.path.exists(finished_flag):
+                        shutil.rmtree(os.path.join(
+                            starting_directory, current_oldest_file),
+                            ignore_errors=True)
+                        files_removed += 1
+                    else:
+                        files_not_closed += 1
+                    if files_removed + files_not_closed >= num_files_to_remove:
+                        break
+                if files_not_closed > max_kept // 4:
+                    logger.warning(
+                        "{} has {} old reports that have not been closed",
+                        starting_directory, files_not_closed)
+        except IOError:
+            # This might happen if there is an open file, or more than one
+            # process in the same folder, but we shouldn't die because of it
+            pass
 
     def _set_up_report_specifics(self, n_calls_to_run):
         """
