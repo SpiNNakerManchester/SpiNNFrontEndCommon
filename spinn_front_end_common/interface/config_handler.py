@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import errno
 import shutil
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
@@ -141,7 +142,7 @@ class ConfigHandler(object):
     def child_folder(self, parent, child_name):
         child = os.path.join(parent, child_name)
         if not os.path.exists(child):
-            os.makedirs(child)
+            self._make_dirs(child)
         return child
 
     def _remove_excess_folders(self, max_kept, starting_directory):
@@ -198,7 +199,7 @@ class ConfigHandler(object):
         elif default_report_file_path == "REPORTS":
             report_default_directory = REPORTS_DIRNAME
             if not os.path.exists(report_default_directory):
-                os.makedirs(report_default_directory)
+                self._make_dirs(report_default_directory)
         else:
             report_default_directory = self.child_folder(
                 default_report_file_path,  REPORTS_DIRNAME)
@@ -290,13 +291,13 @@ class ConfigHandler(object):
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")
         if not os.path.exists(self._json_folder):
-            os.makedirs(self._json_folder)
+            self._make_dirs(self._json_folder)
 
         # make a folder for the provenance data storage
         self._provenance_file_path = os.path.join(
             self._report_default_directory, "provenance_data")
         if not os.path.exists(self._provenance_file_path):
-            os.makedirs(self._provenance_file_path)
+            self._make_dirs(self._provenance_file_path)
 
     def write_finished_file(self):
         # write a finished file that allows file removal to only remove folders
@@ -320,3 +321,12 @@ class ConfigHandler(object):
 
     def _read_config_boolean(self, section, item):
         return read_config_boolean(self._config, section, item)
+
+    @staticmethod
+    def _make_dirs(path):
+        # Workaround for Python 2/3 Compatibility (Python 3 raises on exists)
+        try:
+            os.makedirs(path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
