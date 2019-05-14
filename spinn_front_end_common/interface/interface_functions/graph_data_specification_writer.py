@@ -77,7 +77,7 @@ class GraphDataSpecificationWriter(object):
         vertices_to_reset = list()
         for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
-            generated = self._generate_data_spec_for_vertices(
+            generated = self.__generate_data_spec_for_vertices(
                 placement, placement.vertex, targets, data_n_timesteps)
 
             if generated and isinstance(
@@ -89,7 +89,7 @@ class GraphDataSpecificationWriter(object):
             if not generated and graph_mapper is not None:
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
-                generated = self._generate_data_spec_for_vertices(
+                generated = self.__generate_data_spec_for_vertices(
                     placement, associated_vertex, targets, data_n_timesteps)
                 if generated and isinstance(
                         associated_vertex, AbstractRewritesDataSpecification):
@@ -101,7 +101,7 @@ class GraphDataSpecificationWriter(object):
 
         return targets
 
-    def _generate_data_spec_for_vertices(
+    def __generate_data_spec_for_vertices(
             self, pl, vertex, targets, data_n_timesteps):
         """
         :param pl: placement of machine graph to cores
