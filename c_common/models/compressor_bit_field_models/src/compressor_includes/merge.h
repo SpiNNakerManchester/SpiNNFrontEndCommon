@@ -31,6 +31,13 @@ typedef struct merge_t {
 //! \brief the init for routes of entries
 #define INIT_ROUTE 0x0
 
+//! \brief Get the goodness for a merge
+//! /param[in] merge: the merge
+//! \return the goodness of the merge.
+static int merge_goodness(merge_t *merge) {
+    return merge->entries.count - 1;
+}
+
 //! \brief Clear a merge
 //! \param[in] m: the merge to clear
 static inline void merge_clear(merge_t *m) {

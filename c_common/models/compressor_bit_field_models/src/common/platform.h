@@ -54,10 +54,8 @@ static inline int available_mallocs(heap_t *sdram_heap){
 
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
-static inline bool platform_new_heap_update(address_t heap_location){
-    //stolen_sdram_heap = sv->sdram_heap;
-    //use(heap_location);
-    stolen_sdram_heap = (heap_t*) heap_location;
+static inline bool platform_new_heap_update(heap_t *heap_location){
+    stolen_sdram_heap = heap_location;
     return true;
 }
 
@@ -307,6 +305,7 @@ static inline bool platform_new_heap_creation(
 //! \return: the address of the block of memory to utilise.
 void * safe_sdram_malloc(uint bytes){
     // try SDRAM stolen from the cores synaptic matrix areas.
+    //print_free_sizes_in_heap();
     void * p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
     if (p == NULL) {

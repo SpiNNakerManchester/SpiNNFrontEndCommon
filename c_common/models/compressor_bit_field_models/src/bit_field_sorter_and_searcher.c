@@ -238,7 +238,7 @@ bool create_tables_and_set_off_bit_compressor(int mid_point){
     bool success = message_sending_set_off_bit_field_compression(
         n_rt_addresses, mid_point, comp_cores_bf_tables,
         bit_field_routing_tables, &my_msg, compressor_cores,
-        usable_sdram_regions, n_compression_cores, comp_core_mid_point,
+        n_compression_cores, comp_core_mid_point,
         &n_available_compression_cores);
 
     // if successful, move to next search point.
@@ -1091,7 +1091,7 @@ bool setup_the_uncompressed_attempt(){
     // set off a none bitfield compression attempt, to pipe line work
     log_debug("sets off the uncompressed version of the search");
     return message_sending_set_off_no_bit_field_compression(
-        comp_cores_bf_tables, compressor_cores, &my_msg, usable_sdram_regions,
+        comp_cores_bf_tables, compressor_cores, &my_msg,
         uncompressed_router_table, n_compression_cores, comp_core_mid_point,
         &n_available_compression_cores);
 }
@@ -1275,6 +1275,15 @@ static bool initialise(void) {
     //compress as much as possible, x_entries
     initialise_routing_control_flags();
 
+    // build the fake heap for allocating memory
+    log_info("setting up fake heap for sdram usage");
+    bool heap_creation = platform_new_heap_creation(usable_sdram_regions);
+    if (!heap_creation){
+        log_error("failed to setup stolen heap");
+        return false;
+    }
+    log_info("finished setting up fake heap for sdram usage");
+
     // get the compressor cores stored in a array
     log_debug("start init of compressor cores");
     bool success_compressor_cores = initialise_compressor_cores();
@@ -1291,14 +1300,6 @@ static bool initialise(void) {
         return false;
     }
 
-    // build the fake heap for allocating memory
-    log_info("setting up fake heap for sdram usage");
-    bool heap_creation = platform_new_heap_creation(usable_sdram_regions);
-    if (!heap_creation){
-        log_error("failed to setup stolen heap");
-        return false;
-    }
-    log_info("finished setting up fake heap for sdram usage");
     return true;
 }
 

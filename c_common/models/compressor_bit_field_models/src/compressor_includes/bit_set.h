@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "../common/platform.h"
 #include "../common/common_helpful_functions.h"
+#include <debug.h>
 
 //! \brief wrapper over bitfield
 typedef struct _bit_set_t {
@@ -50,7 +51,9 @@ static inline bool bit_set_init(bit_set_t *b, unsigned int length) {
         n_words++;
     }
 
+    log_debug("before bit set malloc");
     uint32_t *data = (uint32_t *) MALLOC(n_words * sizeof(uint32_t));
+    log_debug("after bit set malloc");
 
     if (data == NULL) {
         b->_data = NULL;
@@ -64,6 +67,7 @@ static inline bool bit_set_init(bit_set_t *b, unsigned int length) {
         bit_set_clear(b);
         return true;
     }
+    log_debug("end bit set malloc");
 }
 
 //! \brief Destruct a bitset

@@ -233,6 +233,12 @@ void store_info_table_store(int n_tables_in_packet, address_t tables[]) {
 static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
     // reset states by first turning off timer (puts us in pause state as well)
     spin1_pause();
+
+    // set up fake heap
+    log_debug("setting up fake heap for sdram usage");
+    platform_new_heap_update(first_cmd->fake_heap_data);
+    log_debug("finished setting up fake heap for sdram usage");
+
     failed_by_malloc = false;
     finished_by_compressor_force = false;
     timer_for_compression_attempt = false;
@@ -246,11 +252,6 @@ static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
 
     // location where to store the compressed table
     sdram_loc_for_compressed_entries = first_cmd->address_for_compressed;
-
-    // set up fake heap
-    log_debug("setting up fake heap for sdram usage");
-    platform_new_heap_update(first_cmd->fake_heap_data);
-    log_debug("finished setting up fake heap for sdram usage");
 
     // set up packet tracker
     number_of_packets_waiting_for = first_cmd->n_sdp_packets_till_delivered;
@@ -269,8 +270,6 @@ static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
         log_debug("address is %x for %d", first_cmd->tables[i], i);
     }
     store_info_table_store(first_cmd->n_tables_in_packet, first_cmd->tables);
-
-    // keep tracker updated
     log_debug("finished storing routing table address into store");
 
     // if no more packets to locate, then start compression process

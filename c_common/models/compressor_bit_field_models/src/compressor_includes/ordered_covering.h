@@ -16,14 +16,6 @@ typedef struct _sets_t {
 } __sets_t;
 
 
-//! \brief Get the goodness for a merge
-//! /param[in] merge: the merge
-//! \return the goodness of the merge.
-static int merge_goodness(merge_t *merge) {
-    return merge->entries.count - 1;
-}
-
-
 //! \brief Get the index where the routing table entry resulting from a merge
 //! should be inserted.
 //! \param[in] generality: ??????????
@@ -444,9 +436,10 @@ static inline bool oc_get_best_merge(
 
     // Keep track of which entries have been considered as part of merges.
     bit_set_t considered;
+    log_debug("bitset");
     bool success = bit_set_init(
         &considered, routing_table_sdram_get_n_entries());
-
+    log_debug("bitset");
     if (!success) {
         log_info("failed to initialise the bit_set. throwing response malloc");
         *failed_by_malloc = true;
@@ -455,7 +448,9 @@ static inline bool oc_get_best_merge(
 
     // Keep track of the current best merge and also provide a working merge
     merge_t working;
+    log_debug("bitset");
     success = merge_init(best, routing_table_sdram_get_n_entries());
+    log_debug("bitset");
     if (!success) {
         log_info("failed to init the merge best. throw response malloc");
         *failed_by_malloc = true;
@@ -466,8 +461,9 @@ static inline bool oc_get_best_merge(
         // return false
         return false;
     }
-
+    log_debug("merge init");
     success = merge_init(&working, routing_table_sdram_get_n_entries());
+    log_debug("merge init");
     if (!success) {
         log_info("failed to init the merge working. throw response malloc");
         *failed_by_malloc = true;
@@ -577,6 +573,7 @@ static inline bool oc_get_best_merge(
 
             // If the up check did make a change then the down check needs to
             // be run again.
+            log_debug("down check");
             success = oc_down_check(
                 &working, merge_goodness(best), aliases, failed_by_malloc,
                 timer_for_compression_attempt);
@@ -636,12 +633,15 @@ static inline bool oc_merge_apply(
 
     // Create a new aliases list with sufficient space for the key_masks of all
     // of the entries in the merge. NOTE: IS THIS REALLY REQUIRED!?
+    log_debug("new alias");
     alias_list_t *new_aliases = alias_list_new(merge->entries.count);
     if (new_aliases == NULL) {
         log_error("failed to malloc new alias list");
         *failed_by_malloc = true;
         return false;
     }
+
+    log_debug("alias insert");
     bool malloc_success =
         aliases_insert(aliases, new_entry.key_mask, new_aliases);
     if (!malloc_success) {
@@ -721,7 +721,9 @@ static inline bool oc_merge_apply(
         }
     }
 
+    log_debug("alias delete");
     alias_list_delete(new_aliases);
+    log_debug("alias delete end");
 
     // If inserting beyond the old end of the table then perform the insertion
     // at the new end of the table.
@@ -808,7 +810,7 @@ static inline bool oc_minimise(
         bool success = oc_get_best_merge(
             aliases, &merge, failed_by_malloc, timer_for_compression_attempt);
         if (!success) {
-            log_info(
+            log_debug(
                 "failed to do get best merge. the number of merge cycles "
                 "were %d", attempts);
 
@@ -820,17 +822,21 @@ static inline bool oc_minimise(
             // Apply the merge to the table if it would result in merging
             // actually occurring.
             //routing_tables_print_out_table_sizes();
+            log_debug("merge apply");
             bool malloc_success = oc_merge_apply(
                 &merge, aliases, failed_by_malloc);
             if (!malloc_success){
                 log_error("failed to malloc");
                 return false;
             }
+            log_debug("merge apply end");
             //routing_tables_print_out_table_sizes();
         }
 
         // Free any memory used by the merge
+        log_debug("merge delete");
         merge_delete(&merge);
+        log_debug("merge delete end");
 
         // Break out of the loop if no merge could be performed (indicating
         // that no more minimisation is possible).
@@ -866,8 +872,8 @@ static inline bool oc_minimise(
         routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
         *finished_by_control, attempts);
 
-    log_info("compressed!!!");
-    log_info(
+    log_debug("compressed!!!");
+    log_debug(
         "produced table with %d entries", routing_table_sdram_get_n_entries());
     return true;
 }

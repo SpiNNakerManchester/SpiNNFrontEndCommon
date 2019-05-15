@@ -107,7 +107,7 @@ int routing_tables_n_tables(){
 
 //! \brief resets a routing table set
 void routing_table_reset(void) {
-    log_info("have reset!");
+    log_debug("have reset!");
     n_tables = 0;
     current_n_tables = 0;
     current_low_entry = 0;
@@ -119,6 +119,7 @@ void routing_table_reset(void) {
         FREE(table_lo_entry);
         table_lo_entry = NULL;
     }
+    log_debug("finished reset");
 }
 
 //! \brief prints out table fully from list
@@ -209,6 +210,9 @@ static inline bool routing_tables_init(int total_n_tables) {
         "allocating %d bytes for %d total n tables",
         n_tables * sizeof(table_t*), n_tables);
     routing_tables = MALLOC(n_tables * sizeof(table_t*));
+    log_debug(
+        "allocating %d bytes for table lo entry",
+        (n_tables + 1) * sizeof(int));
     table_lo_entry = MALLOC((n_tables + 1) * sizeof(int));
 
     if (routing_tables == NULL) {
@@ -319,7 +323,6 @@ static void routing_tables_print_out_table_sizes(void){
                 rt_index, routing_tables[rt_index],
                 routing_tables[rt_index]->size);
         }
-        rt_error(RTE_SWERR);
     }
 }
 

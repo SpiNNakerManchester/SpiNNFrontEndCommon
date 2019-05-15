@@ -21,7 +21,7 @@ typedef enum command_codes_for_sdp_packet {
 //! attempt)
 typedef struct start_stream_sdp_packet_t {
     address_t address_for_compressed;
-    address_t fake_heap_data;
+    heap_t *fake_heap_data;
     int n_sdp_packets_till_delivered;
     int total_n_tables;
     int n_tables_in_packet;

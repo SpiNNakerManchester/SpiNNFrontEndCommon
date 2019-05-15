@@ -480,6 +480,8 @@ class HostBasedBitFieldRouterCompressor(object):
                             chip_x, chip_y, reading_address,
                             self._BYTES_PER_WORD * 3))
                 reading_address += self._BYTES_PER_WORD * 3
+                print "key {} n words is {} pointer is {}".format(
+                    master_pop_key, n_words_to_read, read_pointer)
 
                 # get bitfield words
                 bit_field = struct.unpack(
@@ -595,6 +597,7 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         n_packets_filtered = 0
         n_neurons = len(bitfield) * self._BITS_IN_A_WORD
+
         for neuron_id in range(0, n_neurons):
             if self._bit_for_neuron_id(bitfield, neuron_id) == 0:
                 n_packets_filtered += 1
