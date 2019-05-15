@@ -35,7 +35,7 @@ from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import (PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
-    AbstractSendMeMulticastCommandsVertex, AbstractRecordable,
+    AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun)
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
