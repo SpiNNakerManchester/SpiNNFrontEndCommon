@@ -11,6 +11,7 @@ import os
 import signal
 import sys
 import time
+import threading
 from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
@@ -51,8 +52,6 @@ from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.config_handler import ConfigHandler
-from spinn_front_end_common.interface.buffer_management.buffer_models import (
-    AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_state import Simulator_State
@@ -238,7 +237,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_no_sync_changes",
 
         #
-        "_minimum_step_generated",
+        "_max_run_time_steps",
 
         #
         "_no_machine_time_steps",
@@ -424,7 +423,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
-        self._minimum_step_generated = None
+        self._max_run_time_steps = None
         self._no_machine_time_steps = None
         self._minimum_auto_time_steps = self._config.getint(
                 "Buffers", "minimum_auto_time_steps")
@@ -715,9 +714,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._adjust_config(run_time)
 
         # Install the Control-C handler
-        signal.signal(signal.SIGINT, self.signal_handler)
-        self._raise_keyboard_interrupt = True
-        sys.excepthook = self._last_except_hook
+        if isinstance(threading.current_thread(), threading._MainThread):
+            signal.signal(signal.SIGINT, self.signal_handler)
+            self._raise_keyboard_interrupt = True
+            sys.excepthook = self._last_except_hook
 
         logger.info("Starting execution process")
 
@@ -784,14 +784,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._app_id = None
                 if self._machine_allocation_controller is not None:
                     self._machine_allocation_controller.close()
-                self._minimum_step_generated = None
+                self._max_run_time_steps = None
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
-        # Check if anything is recording and buffered
-        is_buffered_recording = self._is_buffered_recording()
+        # Check if anything has per-timestep SDRAM usage
+        is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
         for executable_type in self._executable_types:
@@ -799,37 +799,33 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._config.set("Buffers",
                                  "use_auto_pause_and_resume", "False")
 
-        # Work out an array of timesteps to perform
-        if (not self._config.getboolean("Buffers", "use_auto_pause_and_resume")
-                or not is_buffered_recording):
+        # Work out the maximum run duration given all recordings
+        if self._max_run_time_steps is None:
+            self._max_run_time_steps = self._deduce_data_n_timesteps()
 
-            # Not currently possible to run the second time for more than the
-            # first time without auto pause and resume
-            if (is_buffered_recording and
-                    self._minimum_step_generated is not None and
-                    (self._minimum_step_generated < n_machine_time_steps or
+        # Work out an array of timesteps to perform
+        steps = None
+        if (not self._config.getboolean("Buffers", "use_auto_pause_and_resume")
+                or not is_per_timestep_sdram):
+
+            # Runs should only be in units of max_run_time_steps at most
+            if (is_per_timestep_sdram and
+                    (self._max_run_time_steps < n_machine_time_steps or
                         n_machine_time_steps is None)):
                 self._state = Simulator_State.FINISHED
                 raise ConfigurationException(
-                    "Second and subsequent run time must be less than or equal"
-                    " to the first run time")
+                    "The SDRAM required by one or more vertices is based on"
+                    " the run time, so the run time is limited to"
+                    " {} time steps".format(self._max_run_time_steps))
 
             steps = [n_machine_time_steps]
-            self._minimum_step_generated = self._deduce_data_n_timesteps()
-        else:
-            if run_time is None:
-                self._state = Simulator_State.FINISHED
-                raise Exception(
-                    "Cannot use automatic pause and resume with an infinite "
-                    "run time")
+        elif run_time is not None:
 
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            if self._minimum_step_generated is None:
-                self._minimum_step_generated = self._deduce_data_n_timesteps()
             steps = self._generate_steps(
-                n_machine_time_steps, self._minimum_step_generated)
+                n_machine_time_steps, self._max_run_time_steps)
 
         # Keep track of if loading was done; if loading is done before run,
         # run doesn't need to rewrite data again
@@ -842,7 +838,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # Data generation needs to be done if not already done
             if not self._has_ran or application_graph_changed:
-                self._do_data_generation(steps[0])
+                self._do_data_generation(self._max_run_time_steps)
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
@@ -853,16 +849,29 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if run_time is not None:
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
-        else:
+        elif not self._config.getboolean(
+                "Buffers", "use_auto_pause_and_resume"):
             logger.info("Running forever")
-        for i, step in enumerate(steps):
-            logger.info("Run {} of {}", i + 1, len(steps))
-            self._do_run(step, loading_done, run_until_complete)
+        else:
+            logger.info("Running forever in units of {}ms".format(
+                self._max_run_time_steps))
+        if steps is not None:
+            for i, step in enumerate(steps):
+                logger.info("Run {} of {}", i + 1, len(steps))
+                self._do_run(step, loading_done, run_until_complete)
+        else:
+            i = 0
+            while self._state != Simulator_State.STOP_REQUESTED:
+                logger.info("Run {}".format(i + 1))
+                self._do_run(
+                    self._max_run_time_steps, loading_done, run_until_complete)
+                i += 1
 
         # Indicate that the signal handler needs to act
-        self._raise_keyboard_interrupt = False
-        self._last_except_hook = sys.excepthook
-        sys.excepthook = self.exception_handler
+        if isinstance(threading.current_thread(), threading._MainThread):
+            self._raise_keyboard_interrupt = False
+            self._last_except_hook = sys.excepthook
+            sys.excepthook = self.exception_handler
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
@@ -871,12 +880,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         else:
             self._state = Simulator_State.RUN_FOREVER
 
-    def _is_buffered_recording(self):
+    def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
-            vertex = placement.vertex
-            if (isinstance(vertex, AbstractReceiveBuffersToHost) and
-                    isinstance(vertex, AbstractRecordable) and
-                    vertex.is_recording()):
+            if placement.vertex.resources_required.sdram.per_timestep:
                 return True
         return False
 
@@ -980,16 +986,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return total_timesteps
 
         self._no_machine_time_steps = None
-        for vtx in self._application_graph.vertices:
-            if isinstance(vtx, AbstractRecordable) and vtx.is_recording():
-                raise ConfigurationException(
-                    "recording a vertex when set to infinite runtime "
-                    "is not currently supported")
-        for vtx in self._machine_graph.vertices:
-            if isinstance(vtx, AbstractRecordable) and vtx.is_recording():
-                raise ConfigurationException(
-                    "recording a vertex when set to infinite runtime "
-                    "is not currently supported")
         return None
 
     def _run_algorithms(
@@ -1584,7 +1580,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["DataNTimeSteps"] = self._minimum_step_generated
+        inputs["DataNTimeSteps"] = self._max_run_time_steps
 
         # Run the data generation algorithms
         outputs = []
@@ -2647,3 +2643,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             cores -= self._machine.n_chips
             cores -= len(self._machine.ethernet_connected_chips)
         return cores
+
+    def stop_run(self):
+        self._state = Simulator_State.STOP_REQUESTED
