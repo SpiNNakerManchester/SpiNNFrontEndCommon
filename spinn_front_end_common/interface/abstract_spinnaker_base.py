@@ -12,6 +12,7 @@ import signal
 import sys
 import time
 import threading
+from threading import Condition
 from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
@@ -228,6 +229,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_state",
 
         #
+        "_state_condition",
+
+        #
         "_has_reset_last",
 
         #
@@ -274,9 +278,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         #
         "_command_sender",
-
-        # Run for infinite time
-        "_infinite_run",
 
         # iobuf cores
         "_cores_to_read_iobuf",
@@ -419,6 +420,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # holder for timing related values
         self._has_ran = False
         self._state = Simulator_State.INIT
+        self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
@@ -430,7 +432,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._machine_time_step = None
         self._time_scale_factor = None
-        self._infinite_run = False
 
         self._app_id = self._read_config_int("Machine", "app_id")
 
@@ -723,7 +724,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         n_machine_time_steps = None
         total_run_time = None
-        self._infinite_run = True
         if run_time is not None:
             n_machine_time_steps = int(
                 (run_time * 1000.0) / self._machine_time_step)
@@ -733,7 +733,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 total_run_timesteps *
                 (float(self._machine_time_step) / 1000.0) *
                 self._time_scale_factor)
-            self._infinite_run = False
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
@@ -849,17 +848,24 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if run_time is not None:
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
-        elif not self._config.getboolean(
-                "Buffers", "use_auto_pause_and_resume"):
-            logger.info("Running forever")
-        else:
-            logger.info("Running forever in units of {}ms".format(
-                self._max_run_time_steps))
-        if steps is not None:
             for i, step in enumerate(steps):
                 logger.info("Run {} of {}", i + 1, len(steps))
                 self._do_run(step, loading_done, run_until_complete)
+        elif run_time is None and run_until_complete:
+            logger.info("Running until complete")
+            self._do_run(None, loading_done, True)
+        elif (not self._config.getboolean(
+                "Buffers", "use_auto_pause_and_resume") or
+                not is_per_timestep_sdram):
+            logger.info("Running forever")
+            self._do_run(None, loading_done, run_until_complete)
+            logger.info("Waiting for stop request")
+            with self._state_condition:
+                while self._state != Simulator_State.STOP_REQUESTED:
+                    self._state_condition.wait()
         else:
+            logger.info("Running forever in steps of {}ms".format(
+                self._max_run_time_steps))
             i = 0
             while self._state != Simulator_State.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
@@ -1846,7 +1852,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board:
+        if (not self._use_virtual_board and
+                (run_until_complete or n_machine_time_steps is not None)):
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
@@ -2449,6 +2456,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types:
             algorithms.append("ApplicationFinisher")
 
+        # Add the buffer extractor just in case
+        algorithms.append("BufferExtractor")
+
         # add extractor of iobuf if needed
         if self._config.getboolean("Reports", "extract_iobuf") and \
                 self._config.getboolean("Reports", "extract_iobuf_during_run"):
@@ -2645,4 +2655,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return cores
 
     def stop_run(self):
-        self._state = Simulator_State.STOP_REQUESTED
+        if self._state is not Simulator_State.IN_RUN:
+            return
+        with self._state_condition:
+            self._state = Simulator_State.STOP_REQUESTED
+            self._state_condition.notify_all()
