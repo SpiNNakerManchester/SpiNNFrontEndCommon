@@ -1864,7 +1864,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board and run_time is not None:
+        if not self._use_virtual_board:
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
