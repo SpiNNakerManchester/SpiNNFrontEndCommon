@@ -47,7 +47,8 @@ class DatabaseConnection(UDPConnection):
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
-            self.local_ip_address, self.local_port), target=self.run)
+            self.local_ip_address, self.local_port), target=self.run,
+            verbose=True)
         self._database_callback_functions = list()
         self._start_resume_callback_function = start_resume_callback_function
         self._pause_and_stop_callback_function = stop_pause_callback_function
@@ -91,13 +92,16 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = data[2:].decode()
+        if len(data) > 2:
+            database_path = data[2:].decode()
 
-        # Call the callback
-        database_reader = DatabaseReader(database_path)
-        for database_callback in self._database_callback_functions:
-            database_callback(database_reader)
-        database_reader.close()
+            # Call the callback
+            database_reader = DatabaseReader(database_path)
+            for database_callback in self._database_callback_functions:
+                database_callback(database_reader)
+            database_reader.close()
+        else:
+            logger.warning("Database path was empty - assuming no database")
 
         # Send the response
         logger.info("Notifying the toolchain that the database has been read")
