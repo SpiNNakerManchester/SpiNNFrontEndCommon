@@ -947,13 +947,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
             size = self._machine.get_chip_at(x, y).sdram.size
-            per_timestep = sdram.per_timestep
-            if per_timestep:
+            if sdram.per_timestep:
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
-
-        # clear injectable
-        # clear_injectables()
 
         return max_time_steps
 
