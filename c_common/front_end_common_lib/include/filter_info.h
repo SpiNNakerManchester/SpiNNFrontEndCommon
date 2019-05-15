@@ -13,7 +13,7 @@ typedef struct filter_info_t{
 //! \brief the elements in the bitfield region
 typedef struct filter_region_t{
     // how many filters there are
-    uint32_t n_filters;
+    int n_filters;
     // the filters
     filter_info_t filters[];
 } filter_region_t;

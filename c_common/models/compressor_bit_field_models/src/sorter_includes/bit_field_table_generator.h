@@ -347,7 +347,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
-    log_info("n rts is %d", *n_rt_addresses);
+    log_debug("n rts is %d", *n_rt_addresses);
 
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
@@ -362,7 +362,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
         return NULL;
     }
 
-    log_info("looking for %d bytes", *n_rt_addresses * sizeof(address_t));
+    log_debug("looking for %d bytes", *n_rt_addresses * sizeof(address_t));
     address_t* bit_field_routing_tables =
         MALLOC(*n_rt_addresses * sizeof(address_t));
     if (bit_field_routing_tables == NULL) {

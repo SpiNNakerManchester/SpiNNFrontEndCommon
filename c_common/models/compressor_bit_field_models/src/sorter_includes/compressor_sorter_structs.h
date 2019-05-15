@@ -23,14 +23,20 @@ typedef struct compressor_cores_top_t {
     uint32_t core_id[];
 } compressor_cores_top_t;
 
+//! \brief struct to hide the VLA'ness of the proc bit field keys.
+typedef struct master_pop_key_list_t {
+    // length of the list
+    int length_of_list;
+    // list of the keys to remove bitfields for.
+    uint32_t *master_pop_keys;
+} master_pop_key_list_t;
+
 //! \brief struct for figuring keys from bitfields, used for removal tracking
 typedef struct proc_bit_field_keys_t{
     // processor id
     int processor_id;
     // length of the list
-    int length_of_list;
-    // list of the keys to remove bitfields for.
-    uint32_t *master_pop_keys;
+    master_pop_key_list_t *key_list;
 } proc_bit_field_keys_t;
 
 //! \brief struct for bitfield by processor

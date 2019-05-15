@@ -370,9 +370,13 @@ static inline filter_region_t* find_processor_bit_field_region(
 bool has_entry_in_sorted_keys(
         proc_bit_field_keys_t sorted_bf_key_proc, uint32_t key) {
     for (int element_index = 0;
-            element_index < sorted_bf_key_proc.length_of_list;
+            element_index < sorted_bf_key_proc.key_list->length_of_list;
             element_index++) {
-        if (sorted_bf_key_proc.master_pop_keys[element_index] == key) {
+        log_debug(
+            "length %d index %d key %d",
+            sorted_bf_key_proc.key_list->length_of_list, element_index, key);
+        if (sorted_bf_key_proc.key_list->master_pop_keys[element_index] ==
+                key) {
             return true;
         }
     }
@@ -385,7 +389,7 @@ bool has_entry_in_sorted_keys(
 bool remove_merged_bitfields_from_cores(void) {
     // only try if there are bitfields to remove
     if (n_bf_addresses == 0){
-        log_info("no bitfields to remove");
+        log_debug("no bitfields to remove");
         return true;
     }
 
@@ -401,6 +405,8 @@ bool remove_merged_bitfields_from_cores(void) {
     // region
     for (int c_i = 0; c_i < region_addresses->n_pairs; c_i++){
         int proc_id = sorted_bf_key_proc[c_i].processor_id;
+        log_debug("proc %d", proc_id);
+
         filter_region_t *filter_region = find_processor_bit_field_region(
             proc_id);
 
@@ -408,9 +414,10 @@ bool remove_merged_bitfields_from_cores(void) {
         // correct keys to remove
         int n_bfs = filter_region->n_filters;
         filter_region->n_filters =
-            n_bfs - sorted_bf_key_proc[c_i].length_of_list;
+            n_bfs - sorted_bf_key_proc[c_i].key_list->length_of_list;
 
-        if (filter_region->n_filters != 0){
+        // only operate if there is a reduction to do
+        if (filter_region->n_filters != n_bfs){
 
             // pointers for shifting data up by excluding the ones been added to
             // router.
@@ -429,12 +436,12 @@ bool remove_merged_bitfields_from_cores(void) {
                         // copy the key, n_words and bitfield pointer over to
                         // the new location
                         sark_mem_cpy(
-                            &write_index, &read_index, sizeof(filter_info_t));
+                            write_index, read_index, sizeof(filter_info_t));
                     }
                     // update pointers
-                    write_index += sizeof(filter_info_t);
+                    write_index += 1;
                 }
-                read_index += sizeof(filter_info_t);
+                read_index += 1;
             }
         }
     }
@@ -442,13 +449,12 @@ bool remove_merged_bitfields_from_cores(void) {
     // free items
     for (int core_index = 0; core_index < region_addresses->n_pairs;
             core_index++) {
-        if (sorted_bf_key_proc[core_index].length_of_list != 0) {
-            FREE(sorted_bf_key_proc[core_index].master_pop_keys);
+        if (sorted_bf_key_proc[core_index].key_list->length_of_list != 0) {
+            FREE(sorted_bf_key_proc[core_index].key_list->master_pop_keys);
+            FREE(sorted_bf_key_proc[core_index].key_list);
         }
     }
-
     FREE(sorted_bf_key_proc);
-
     // return we successfully removed merged bitfields
     return true;
 }
@@ -715,7 +721,7 @@ void handle_best_cleanup(void){
     // clear away bitfields that were merged into the router from
     //their lists.
     log_debug("remove merged bitfields");
-    //remove_merged_bitfields_from_cores();
+    remove_merged_bitfields_from_cores();
     terminate(EXITED_CLEANLY);
 }
 
@@ -1276,13 +1282,13 @@ static bool initialise(void) {
     initialise_routing_control_flags();
 
     // build the fake heap for allocating memory
-    log_info("setting up fake heap for sdram usage");
+    log_debug("setting up fake heap for sdram usage");
     bool heap_creation = platform_new_heap_creation(usable_sdram_regions);
     if (!heap_creation){
         log_error("failed to setup stolen heap");
         return false;
     }
-    log_info("finished setting up fake heap for sdram usage");
+    log_debug("finished setting up fake heap for sdram usage");
 
     // get the compressor cores stored in a array
     log_debug("start init of compressor cores");
