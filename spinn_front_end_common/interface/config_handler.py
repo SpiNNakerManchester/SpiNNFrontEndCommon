@@ -140,8 +140,7 @@ class ConfigHandler(object):
 
     def child_folder(self, parent, child_name):
         child = os.path.join(parent, child_name)
-        if not os.path.exists(child):
-            os.makedirs(child)
+        os.makedirs(child, exist_ok=True)
         return child
 
     def _remove_excess_folders(self, max_kept, starting_directory):
