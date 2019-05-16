@@ -1,9 +1,13 @@
 import os
 import sqlite3
 import time
+import sys
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import AbstractDatabase
 from spinn_utilities.overrides import overrides
+
+if sys.version_info < (3,):
+    memoryview = buffer  # noqa
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
