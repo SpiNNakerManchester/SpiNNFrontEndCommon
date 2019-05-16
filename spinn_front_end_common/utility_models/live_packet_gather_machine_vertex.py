@@ -1,12 +1,15 @@
-import struct
 from enum import Enum
+import struct
+
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType
+
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, IPtagResource, ResourceContainer,
-    SDRAMResource)
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
+    ResourceContainer)
+
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -57,7 +60,7 @@ class LivePacketGatherMachineVertex(
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=SDRAMResource(self.get_sdram_usage()),
+            sdram=ConstantSDRAM(self.get_sdram_usage()),
             iptags=[IPtagResource(
                 ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,

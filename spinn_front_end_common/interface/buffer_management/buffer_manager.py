@@ -9,7 +9,7 @@ from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
     EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData,
-    HostDataReadAck, HostDataRead, SpinnakerRequestBuffers, PaddingRequest,
+    HostDataReadAck, HostDataRead, SpinnakerRequestBuffers,
     HostSendSequencedData, EventStopRequest)
 from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
@@ -318,8 +318,7 @@ class BufferManager(object):
             for region in vertex.get_regions():
                 total_data += vertex.get_region_buffer_size(region)
 
-        progress = ProgressBar(
-            total_data, "Loading buffers ({} bytes)".format(total_data))
+        progress = ProgressBar(total_data, "Loading buffers")
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 self._send_initial_messages(vertex, region, progress)
@@ -476,14 +475,6 @@ class BufferManager(object):
             progress.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
-
-        # If there is any space left, add padding
-        if bytes_to_go > 0:
-            padding_packet = PaddingRequest()
-            n_packets = bytes_to_go // padding_packet.get_min_packet_length()
-            data = padding_packet.bytestring
-            data *= n_packets
-            all_data += data
 
         # Do the writing all at once for efficiency
         self._transceiver.write_memory(
