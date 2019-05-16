@@ -1478,6 +1478,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 algorithms.append("routingInfoReports")
             if self._config.getboolean("Reports", "write_router_reports"):
                 algorithms.append("RouterReports")
+            if self._config.getboolean(
+                    "Reports", "write_router_summary_report"):
+                algorithms.append("RouterSummaryReport")
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
                 optional_algorithms.append("unCompressedRoutingTableReports")
@@ -1871,7 +1874,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board and run_time is not None:
+        if not self._use_virtual_board:
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
