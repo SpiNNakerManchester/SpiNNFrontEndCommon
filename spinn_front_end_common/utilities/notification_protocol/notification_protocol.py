@@ -90,9 +90,8 @@ class NotificationProtocol(object):
         :param database_path: the path to the database file
         :rtype: None
         """
-        if database_path is not None:
-            self._wait_futures.append(self._wait_pool.submit(
-                self._send_read_notification, database_path))
+        self._wait_futures.append(self._wait_pool.submit(
+            self._send_read_notification, database_path))
 
     def _send_read_notification(self, database_path):
         """ Sends notifications to a list of socket addresses that the\
@@ -105,8 +104,7 @@ class NotificationProtocol(object):
         """
         # noinspection PyBroadException
         try:
-            if database_path is not None:
-                self._do_read_notify(database_path)
+            self._do_read_notify(database_path)
         except Exception:
             logger.warning("problem when sending DB notification",
                            exc_info=True)
@@ -115,8 +113,8 @@ class NotificationProtocol(object):
         self._sent_visualisation_confirmation = True
 
         # add file path to database into command message.
-        number_of_chars = len(database_path)
-        if number_of_chars > MAX_DATABASE_PATH_LENGTH:
+        if (database_path is not None and
+                len(database_path) > MAX_DATABASE_PATH_LENGTH):
             raise ConfigurationException(
                 "The file path to the database is too large to be transmitted "
                 "via the command packet, please set the file path manually "

@@ -13,11 +13,18 @@ class GraphMeasurer(object):
 
     __slots__ = []
 
-    def __call__(self, machine_graph, machine):
+    def __call__(self, machine_graph, machine, plan_n_timesteps):
         """
         :param machine_graph: The machine_graph to measure
         :type machine_graph:\
             :py:class:`pacman.model.graph.machine.MachineGraph`
+                    :py:class:`pacman.model.graph.machine.MachineGraph`
+        :param machine:\
+            The machine with respect to which to partition the application\
+            graph
+        :type machine: :py:class:`spinn_machine.Machine`
+        :param plan_n_timesteps: number of timesteps to plan for
+        :type  plan_n_timesteps: int
         :return: The size of the graph in number of chips
         :rtype: int
         """
@@ -30,7 +37,8 @@ class GraphMeasurer(object):
 
         # Iterate over vertices and allocate
         progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
-        resource_tracker = ResourceTracker(machine)
+
+        resource_tracker = ResourceTracker(machine, plan_n_timesteps)
         for vertex in progress.over(ordered_vertices):
             resource_tracker.allocate_constrained_resources(
                 vertex.resources_required, vertex.constraints)

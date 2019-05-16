@@ -1,32 +1,32 @@
 import math
-import sys
 import struct
+import numpy
 from enum import Enum
 from six.moves import xrange
 from spinn_utilities.overrides import overrides
-from spinnman.messages.eieio import EIEIOPrefix
+from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
+from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from pacman.executor.injection_decorator import (
     inject_items, supports_injection, inject)
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import (
-    IPtagResource, ReverseIPtagResource, ResourceContainer, DTCMResource,
-    SDRAMResource, CPUCyclesPerTickResource)
+    CPUCyclesPerTickResource, DTCMResource,
+    ReverseIPtagResource, ResourceContainer, VariableSDRAM)
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
-from spinn_front_end_common.interface.buffer_management.recording_utilities \
-    import (
-        TRAFFIC_IDENTIFIER)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.buffer_management.storage_objects\
+    .buffered_sending_region import get_n_bytes
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
-    DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE, MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
     SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
@@ -38,10 +38,7 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
-    import (
-        get_n_timesteps_in_buffer_space, get_recorded_region_ids,
-        get_recording_header_array, get_recording_header_size,
-        get_recording_resources)
+    import (get_recording_header_array, get_recording_header_size)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 
@@ -103,13 +100,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Send buffer parameters
             send_buffer_times=None,
             send_buffer_partition_id=None,
-            send_buffer_max_space=MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
-            send_buffer_space_before_notify=640,
-
-            # Buffer notification details
-            buffer_notification_ip_address=None,
-            buffer_notification_port=None,
-            buffer_notification_tag=None,
 
             # Extra flag for receiving packets without a port
             reserve_reverse_ip_tag=False):
@@ -136,8 +126,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             lower half of the multicast keys (default is upper half)
         :param check_keys: True if the keys of received events should be\
             verified before sending (default False)
-        :param send_buffer_times: An array of arrays of times at which keys\
-            should be sent (one array for each key, default disabled)
+        :param send_buffer_times: An array of arrays of time steps at which\
+            keys should be sent (one array for each key, default disabled)
         :param send_buffer_max_space: The maximum amount of space to use of\
             the SDRAM on the machine (default is 1MB)
         :param send_buffer_space_before_notify: The amount of space free in\
@@ -160,8 +150,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
             label, constraints)
 
-        self._iptags = None
         self._reverse_iptags = None
+        self._n_keys = n_keys
 
         # Set up for receiving live packets
         if receive_port is not None or reserve_reverse_ip_tag:
@@ -176,36 +166,21 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Work out if buffers are being sent
         self._send_buffer = None
         self._send_buffer_partition_id = send_buffer_partition_id
-        self._send_buffer_max_space = send_buffer_max_space
+        self._send_buffer_size = 0
         if send_buffer_times is None:
             self._send_buffer_times = None
             self._send_buffers = None
         else:
-            self._install_send_buffer(n_keys, send_buffer_times, (
-                buffer_notification_ip_address, buffer_notification_port,
-                buffer_notification_tag, board_address))
-
-        # buffered out parameters
-        self._send_buffer_space_before_notify = max((
-            send_buffer_space_before_notify, send_buffer_max_space))
+            self._install_send_buffer(send_buffer_times)
 
         # Set up for recording (if requested)
-        self._record_buffer_size = 0
-        self._buffer_size_before_receive = 0
-        self._time_between_triggers = 0
-        self._maximum_recording_buffer = 0
-
-        # Set up for buffering
-        self._buffer_notification_ip_address = buffer_notification_ip_address
-        self._buffer_notification_port = buffer_notification_port
-        self._buffer_notification_tag = buffer_notification_tag
+        self._is_recording = False
 
         # set flag for checking if in injection mode
         self._in_injection_mode = \
             receive_port is not None or reserve_reverse_ip_tag
 
         # Sort out the keys to be used
-        self._n_keys = n_keys
         self._virtual_key = virtual_key
         self._mask = None
         self._prefix = prefix
@@ -223,27 +198,67 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._virtual_key is not None:
             self._install_virtual_key(n_keys)
 
-    def _install_send_buffer(self, n_keys, send_buffer_times, target_address):
-        if (len(send_buffer_times) and
-                hasattr(send_buffer_times[0], "__len__")):
+    @staticmethod
+    def max_send_buffer_keys_per_timestep(send_buffer_times, n_keys):
+        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+            counts = numpy.bincount(numpy.concatenate(send_buffer_times))
+            if len(counts):
+                return max(counts)
+            return 0
+        if len(send_buffer_times):
+            counts = numpy.bincount(send_buffer_times)
+            if len(counts):
+                return n_keys * max(counts)
+            return 0
+        return 0
+
+    @staticmethod
+    def send_buffer_sdram_per_timestep(send_buffer_times, n_keys):
+        # If there is a send buffer, calculate the keys per timestep
+        if send_buffer_times is not None:
+            sdram = get_n_bytes(ReverseIPTagMulticastSourceMachineVertex
+                                .max_send_buffer_keys_per_timestep(
+                                    send_buffer_times, n_keys))
+            return sdram
+        return 0
+
+    @staticmethod
+    def recording_sdram_per_timestep(
+            machine_time_step, is_recording, receive_rate, send_buffer_times,
+            n_keys):
+
+        # If recording live data, use the user provided receive rate
+        if is_recording and send_buffer_times is None:
+            keys_per_timestep = math.ceil(
+                (receive_rate / (machine_time_step * 1000.0)) * 1.1
+            )
+            header_size = EIEIODataHeader.get_header_size(
+                EIEIOType.KEY_32_BIT, is_payload_base=True)
+            # Maximum size is one packet per key
+            return ((header_size + EIEIOType.KEY_32_BIT.key_bytes) *
+                    keys_per_timestep)
+
+        # If recording send data, the recorded size is the send size
+        if is_recording and send_buffer_times is not None:
+            return (ReverseIPTagMulticastSourceMachineVertex
+                    .send_buffer_sdram_per_timestep(send_buffer_times, n_keys))
+
+        # Not recording no SDRAM needed per timestep
+        return 0
+
+    def _install_send_buffer(self, send_buffer_times):
+        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             # Working with a list of lists so check length
-            if len(send_buffer_times) != n_keys:
+            if len(send_buffer_times) != self._n_keys:
                 raise ConfigurationException(
                     "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(send_buffer_times, n_keys))
+                    "expected length of {}".format(
+                        send_buffer_times, self._n_keys))
 
-        self._send_buffer = BufferedSendingRegion(self._send_buffer_max_space)
+        self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times
-
-        (ip_address, port, tag, board_address) = target_address
-        self._iptags = [IPtagResource(
-            ip_address=ip_address, port=port, strip_sdp=True, tag=tag,
-            traffic_identifier=TRAFFIC_IDENTIFIER)]
-        if board_address is not None:
-            self.add_constraint(BoardConstraint(board_address))
         self._send_buffers = {
-            self._REGIONS.SEND_BUFFER.value:
-            self._send_buffer
+            self._REGIONS.SEND_BUFFER.value: self._send_buffer
         }
 
     def _install_virtual_key(self, n_keys):
@@ -287,43 +302,44 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
+        sim = globals_variables.get_simulator()
+        sdram = self.get_sdram_usage(
+                self._send_buffer_times, self._is_recording,
+                sim.machine_time_step, self._receive_rate, self._n_keys)
+
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=SDRAMResource(self.get_sdram_usage(
-                self._send_buffer_times, self._send_buffer_max_space,
-                self._record_buffer_size > 0)),
+            sdram=sdram,
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
-            iptags=self._iptags,
             reverse_iptags=self._reverse_iptags)
-        if self._iptags is None:
-            resources.extend(get_recording_resources(
-                [self._record_buffer_size],
-                self._buffer_notification_ip_address,
-                self._buffer_notification_port, self._buffer_notification_tag))
-        else:
-            resources.extend(get_recording_resources(
-                [self._record_buffer_size]))
         return resources
 
     @staticmethod
     def get_sdram_usage(
-            send_buffer_times, send_buffer_max_space, recording_enabled):
-        send_buffer_size = 0
-        if send_buffer_times is not None:
-            send_buffer_size = send_buffer_max_space
+            send_buffer_times, recording_enabled, machine_time_step,
+            receive_rate, n_keys):
 
         mallocs = \
             ReverseIPTagMulticastSourceMachineVertex.n_regions_to_allocate(
                 send_buffer_times is not None, recording_enabled)
         allocation_size = mallocs * SARK_PER_MALLOC_SDRAM_USAGE
 
-        return (
+        static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
             (ReverseIPTagMulticastSourceMachineVertex.
                 _CONFIGURATION_REGION_SIZE) +
-            send_buffer_size + allocation_size +
+            allocation_size + get_recording_header_size(1) +
             (ReverseIPTagMulticastSourceMachineVertex.
                 get_provenance_data_size(0)))
+        per_timestep = (
+            ReverseIPTagMulticastSourceMachineVertex
+            .send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
+            ReverseIPTagMulticastSourceMachineVertex.
+            recording_sdram_per_timestep(
+                machine_time_step, recording_enabled, receive_rate,
+                send_buffer_times, n_keys))
+        static_usage += per_timestep
+        return VariableSDRAM(static_usage, per_timestep)
 
     @staticmethod
     def get_dtcm_usage():
@@ -349,7 +365,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
-        self._send_buffer_times = send_buffer_times
+        self._install_send_buffer(send_buffer_times)
 
     def _is_in_range(
             self, time_stamp_in_ticks,
@@ -359,8 +375,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             n_machine_time_steps)
 
     def _fill_send_buffer(
-            self, machine_time_step, first_machine_time_step,
-            n_machine_time_steps):
+            self, first_machine_time_step, run_until_timesteps):
         """ Fill the send buffer with keys to send
         """
 
@@ -375,29 +390,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if hasattr(self._send_buffer_times[0], "__len__"):
                 # Works with a list-of-lists
                 self.__fill_send_buffer_2d(
-                    key_to_send, machine_time_step, first_machine_time_step,
-                    n_machine_time_steps)
+                    key_to_send, first_machine_time_step, run_until_timesteps)
             else:
                 # Work with a single list
                 self.__fill_send_buffer_1d(
-                    key_to_send, machine_time_step, first_machine_time_step,
-                    n_machine_time_steps)
+                    key_to_send, first_machine_time_step, run_until_timesteps)
 
     def __fill_send_buffer_2d(
-            self, key_base, time_step, first_time_step, n_time_steps):
+            self, key_base, first_time_step, n_time_steps):
         for key in range(self._n_keys):
-            for time_stamp in sorted(self._send_buffer_times[key]):
-                tick = int(math.ceil(
-                    float(int(time_stamp * 1000.0)) / time_step))
+            for tick in sorted(self._send_buffer_times[key]):
                 if self._is_in_range(tick, first_time_step, n_time_steps):
                     self._send_buffer.add_key(tick, key_base + key)
 
     def __fill_send_buffer_1d(
-            self, key_base, time_step, first_time_step, n_time_steps):
+            self, key_base, first_time_step, n_time_steps):
         key_list = [key + key_base for key in xrange(self._n_keys)]
-        for time_stamp in sorted(self._send_buffer_times):
-            tick = int(math.ceil(
-                float(int(time_stamp * 1000.0)) / time_step))
+        for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, n_time_steps):
                 self._send_buffer.add_keys(tick, key_list)
 
@@ -416,31 +425,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         mask = 0xFFFFFFFF - max_key
         return mask, max_key
 
-    def enable_recording(
-            self,
-            record_buffer_size=MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
-            buffer_size_before_receive=DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE,
-            time_between_triggers=0):
+    def enable_recording(self, new_state=True):
         """ Enable recording of the keys sent
-
-        :param record_buffer_size:\
-            The size of the recording buffer in bytes.  Note that when using\
-            automatic pause and resume, this will be used as the minimum size\
-            of the buffer
-        :type record_buffer_size: int
-        :param buffer_size_before_receive:\
-            The size that the buffer can grow to before a read request is\
-            issued to the host (in bytes)
-        :type buffer_size_before_receive: int
-        :param time_between_triggers:\
-            The minimum time between the sending of read requests
-        :type time_between_triggers: int
         """
-        self._record_buffer_size = record_buffer_size
-        self._buffer_size_before_receive = buffer_size_before_receive
-        self._time_between_triggers = time_between_triggers
+        self._is_recording = new_state
 
-    def _reserve_regions(self, spec):
+    def _reserve_regions(self, spec, n_machine_time_steps):
 
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
@@ -458,11 +448,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Reserve send buffer region if required
         if self._send_buffer_times is not None:
-            max_buffer_size = self.get_max_buffer_size_possible(
-                self._REGIONS.SEND_BUFFER.value)
-            spec.reserve_memory_region(
-                region=self._REGIONS.SEND_BUFFER.value,
-                size=max_buffer_size, label="SEND_BUFFER", empty=True)
+            self._send_buffer_size = (
+                self.send_buffer_sdram_per_timestep(
+                    self._send_buffer_times, self._n_keys) *
+                n_machine_time_steps)
+            if self._send_buffer_size:
+                spec.reserve_memory_region(
+                    region=self._REGIONS.SEND_BUFFER.value,
+                    size=self._send_buffer_size, label="SEND_BUFFER",
+                    empty=True)
 
         self.reserve_provenance_data_region(spec)
 
@@ -493,7 +487,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec, ip_tags):
+    def _write_configuration(self, spec, n_machine_time_steps):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
@@ -526,23 +520,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Write send buffer data
         if self._send_buffer_times is not None:
 
-            this_tag = None
-
-            for tag in ip_tags:
-                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
-                    this_tag = tag
-                    break
-            if this_tag is None:
-                raise Exception("Could not find tag for send buffering")
-
-            buffer_space = self.get_max_buffer_size_possible(
-                self._REGIONS.SEND_BUFFER.value)
-
-            spec.write_value(data=buffer_space)
-            spec.write_value(data=self._send_buffer_space_before_notify)
-            spec.write_value(data=this_tag.tag)
-            spec.write_value(_ONE_WORD.unpack(_TWO_SHORTS.pack(
-                this_tag.destination_y, this_tag.destination_x))[0])
+            spec.write_value(data=self._send_buffer_size)
+            # The following disable the buffer notifications
+            spec.write_value(data=self._send_buffer_size + 256)
+            spec.write_value(data=0)
+            spec.write_value(_ONE_WORD.unpack(_TWO_SHORTS.pack(0, 0))[0])
         else:
             spec.write_value(data=0)
             spec.write_value(data=0)
@@ -557,28 +539,27 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
-        "tags": "MemoryTags",
         "first_machine_time_step": "FirstMachineTimeStep",
-        "n_machine_time_steps": "TotalMachineTimeSteps"
+        "data_n_time_steps": "DataNTimeSteps",
+        "run_until_timesteps": "RunUntilTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_time_step", "time_scale_factor", "machine_graph",
-            "routing_info", "tags", "first_machine_time_step",
-            "n_machine_time_steps"
+            "routing_info", "first_machine_time_step",
+            "data_n_time_steps", "run_until_timesteps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
-            tags, first_machine_time_step, n_machine_time_steps):
+            first_machine_time_step, data_n_time_steps, run_until_timesteps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
-        self._fill_send_buffer(
-            machine_time_step, first_machine_time_step, n_machine_time_steps)
+        self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # Reserve regions
-        self._reserve_regions(spec)
+        self._reserve_regions(spec, data_n_time_steps)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
@@ -587,15 +568,17 @@ class ReverseIPTagMulticastSourceMachineVertex(
             time_scale_factor))
 
         # Write the additional recording information
-        iptags = tags.get_ip_tags_for_vertex(self)
         spec.switch_write_focus(self._REGIONS.RECORDING.value)
-        spec.write_array(get_recording_header_array(
-            [self._record_buffer_size],
-            self._time_between_triggers, self._buffer_size_before_receive,
-            iptags, self._buffer_notification_tag))
+        recording_size = 0
+        if self._is_recording:
+            per_timestep = self.recording_sdram_per_timestep(
+                machine_time_step, self._is_recording, self._receive_rate,
+                self._send_buffer_times, self._n_keys)
+            recording_size = per_timestep * data_n_time_steps
+        spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
-        self._write_configuration(spec, iptags)
+        self._write_configuration(spec, data_n_time_steps)
 
         # End spec
         spec.end_specification()
@@ -631,49 +614,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractRecordable.is_recording)
     def is_recording(self):
-        return self._record_buffer_size > 0
+        return self._is_recording > 0
 
     @inject("FirstMachineTimeStep")
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "n_machine_time_steps": "TotalMachineTimeSteps"
+        "run_until_timesteps": "RunUntilTimeSteps"
     })
     def update_buffer(
-            self, first_machine_time_step, machine_time_step,
-            n_machine_time_steps):
-        self._fill_send_buffer(
-            machine_time_step, first_machine_time_step, n_machine_time_steps)
-
-    @overrides(AbstractReceiveBuffersToHost.get_minimum_buffer_sdram_usage)
-    def get_minimum_buffer_sdram_usage(self):
-        return self._record_buffer_size
-
-    @overrides(AbstractReceiveBuffersToHost.get_n_timesteps_in_buffer_space)
-    def get_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
-
-        # If not recording, not an issue
-        if self._record_buffer_size == 0:
-            return sys.maxsize
-
-        # If recording and using pre-defined keys, use the maximum
-        if self._send_buffer is not None:
-            return get_n_timesteps_in_buffer_space(
-                buffer_space, [self._send_buffer.max_packets_in_timestamp])
-
-        # If recording and not using pre-defined keys, use the specified
-        # rate to work it out - add 10% for safety
-        keys_per_timestep = math.ceil(
-            (self._receive_rate / (machine_time_step * 1000.0)) * 1.1
-        )
-
-        # 4 bytes per key + 2 byte header + 4 byte timestamp
-        bytes_per_timestep = (keys_per_timestep * 4) + 6
-        return get_n_timesteps_in_buffer_space(
-            buffer_space, [bytes_per_timestep])
+            self, first_machine_time_step, run_until_timesteps):
+        if self._virtual_key is not None:
+            self._fill_send_buffer(
+                first_machine_time_step, run_until_timesteps)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
-        return get_recorded_region_ids([self._record_buffer_size])
+        if not self._is_recording:
+            return []
+        return [0]
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
@@ -687,6 +644,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @send_buffers.setter
     def send_buffers(self, value):
         self._send_buffers = value
+
+    def get_region_buffer_size(self, region):
+        if region == self._REGIONS.SEND_BUFFER.value:
+            return self._send_buffer_size
+        return 0
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                get_provenance_data_from_machine)
