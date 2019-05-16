@@ -30,7 +30,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             data, missing = brd.get_region_data(0, 0, 0, 0)
 
             self.assertIsNone(missing, "data shouldn't be 'missing'")
-            self.assertEqual(data, b"abcdef")
+            self.assertEqual(bytes(data), b"abcdef")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
         finally:
