@@ -81,7 +81,7 @@ static inline void update_mc_message(
     my_msg->srce_addr = spin1_get_chip_id();
     my_msg->dest_addr = spin1_get_chip_id();
     my_msg->flags = REPLY_NOT_EXPECTED;
-    log_info("core id =  %d", spin1_get_id() & 0x1F);
+    log_debug("core id =  %d", spin1_get_id() & 0x1F);
     my_msg->srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
     log_info("compressor core = %d", compressor_cores[comp_core_index]);
     my_msg->dest_port =
@@ -139,7 +139,7 @@ static int deduce_elements_this_packet(
             n_addresses_this_message = n_addresses_for_extra;
         }
     }
-    log_info("n addresses this message is %d", n_addresses_this_message);
+    log_debug("n addresses this message is %d", n_addresses_this_message);
     return n_addresses_this_message;
 }
 
@@ -180,7 +180,7 @@ static void set_up_first_packet(
         LENGTH_OF_SDP_HEADER + sizeof(start_msg_t) +
         (n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER));
 
-    log_info(
+    log_debug(
         "message contains command code %d, n sdp packets till "
         "delivered %d, address for compressed %x, fake heap data "
         "address %x total n tables %d, n tables in packet %d, len of %d",
@@ -189,8 +189,8 @@ static void set_up_first_packet(
         data->msg.total_n_tables, data->msg.n_tables_in_packet, my_msg->length);
     for (int rt_id = 0; rt_id < n_addresses_this_message; rt_id++) {
         if (data->msg.tables[rt_id][0] > 256){
-            log_info("table address is %x", data->msg.tables[rt_id]);
-            log_info(
+            log_debug("table address is %x", data->msg.tables[rt_id]);
+            log_debug(
                 "table size for %d is %d", rt_id,
                 data->msg.tables[rt_id][0]);
         }
@@ -225,7 +225,7 @@ static void set_up_extra_packet(
         (n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER));
     log_debug("message length = %d", my_msg->length);
 
-    log_info(
+    log_debug(
         "message contains command code %d, n tables in packet %d, len of %d",
         data->command, data->msg.n_tables_in_packet, my_msg->length);
 }
@@ -338,7 +338,7 @@ static bool message_sending_set_off_bit_field_compression(
             set_up_first_packet(
                 total_packets, compressed_address, n_rt_addresses,
                 n_addresses_this_message, bit_field_routing_tables, my_msg);
-            log_info("finished setting up first packet");
+            log_debug("finished setting up first packet");
         }
         else{  // extra packets
             log_debug("sending extra packet id = %d", packet_id);

@@ -248,6 +248,9 @@ void print_free_sizes_in_heap(void){
 //! \return None
 static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
+    // NOTE use if not trusting the heap
+    //stolen_sdram_heap = sv->sdram_heap;
+    // return true;
 
     // allocate blocks store for figuring out block order
     uint n_mallocs = available_mallocs(sv->sdram_heap);

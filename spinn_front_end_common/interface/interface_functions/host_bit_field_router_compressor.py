@@ -437,7 +437,11 @@ class HostBasedBitFieldRouterCompressor(object):
             return flag
         except Exception:
             print "failed to read word {} and shifting {} bits as words " \
-                  "length is {}".format(word_id, bit_in_word, len(bit_field))
+                  "length is {} neuron id {} for n neurons of {}".format(
+                    word_id, bit_in_word, len(bit_field), neuron_id,
+                    len(bit_field) * self._BITS_IN_A_WORD)
+            import sys
+            sys.exit()
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,

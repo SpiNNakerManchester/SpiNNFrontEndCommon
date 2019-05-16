@@ -77,9 +77,11 @@ void set_new_route_with_fixed_processors(
     // cast original entry route to a bitfield for ease of use
     bit_field_t original_route = (bit_field_t) &original_entry->route;
 
-    log_debug("bitfield processors are ");
-    for (uint32_t bf_i = 0; bf_i < n_bit_fields; bf_i++) {
-        log_debug("%d", bit_field_processors[bf_i]);
+    // copy over link ids as they not debatable
+    for (int link_id = 0; link_id < MAX_LINKS_PER_ROUTER; link_id++){
+        if (bit_field_test(original_route, link_id)){
+            bit_field_set(processors, link_id);
+        }
     }
 
     // only set entries in the new route from the old route if the core has not

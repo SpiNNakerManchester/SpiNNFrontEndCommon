@@ -129,8 +129,8 @@ void routing_table_print_list_tables(void){
         for (int entry_index = 0; entry_index < table->size; entry_index ++){
             entry_t entry = table->entries[entry_index];
             log_debug(
-                "entry %d from table %d index %d has key %x or %d mask %x route
-                 %x source %x",
+                "entry %d from table %d index %d has key %x or %d mask %x "
+                "route %x source %x",
                 table_lo_entry[table_index] + entry_index, table_index,
                 entry_index, entry.key_mask.key, entry.key_mask.key,
                 entry.key_mask.mask, entry.route, entry.source);
@@ -280,31 +280,6 @@ bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries) {
         }
     }
     log_debug("finished copy");
-
-    // print out content of sdram, for sanity purposes
-    int n_entries_sdram = sdram_loc_for_compressed_entries[0];
-    int position = 1;
-    for (int entry_index = 0; entry_index < n_entries_sdram;
-            entry_index++) {
-        log_debug(
-            "entry %d key is %x",
-            entry_index,
-            sdram_loc_for_compressed_entries[position]);
-        log_debug(
-            "entry %d mask is %x",
-            entry_index,
-            sdram_loc_for_compressed_entries[position + 1]);
-        log_debug(
-            "entry %d route is %x",
-            entry_index,
-            sdram_loc_for_compressed_entries[position + 2]);
-        log_debug(
-            "entry %d source is %x",
-            entry_index,
-            sdram_loc_for_compressed_entries[position + 3]);
-        position += 4;
-    }
-
     return true;
 }
 
