@@ -44,7 +44,7 @@ class DataInMulticastRoutingGenerator(object):
             key_to_destination_map.update(key_to_dest_map)
 
             # do routing
-            routing_tables_by_partition = self.do_routing(
+            routing_tables_by_partition = self._do_routing(
                 fake_graph=fake_graph, fake_placements=fake_placements,
                 fake_machine=fake_machine)
             self._generate_routing_tables(
@@ -105,7 +105,7 @@ class DataInMulticastRoutingGenerator(object):
 
         fake_graph = MachineGraph(label="routing fake_graph")
         fake_placements = Placements()
-        destination_to_partition_identifier_map = dict()
+        destination_to_partition_id_map = dict()
 
         # build fake setup for the routing
         eth_x = ethernet_connected_chip.x
@@ -138,28 +138,28 @@ class DataInMulticastRoutingGenerator(object):
                 for link in range(Router.MAX_LINKS_PER_ROUTER)
                 if not machine.is_link_at(chip_x, chip_y, link)})
 
-            # Create a fake machine consisting of only the one board that
-            # the routes should go over
-            valid_48_boards = list()
-            valid_48_boards.extend(machine.BOARD_VERSION_FOR_48_CHIPS)
-            valid_48_boards.append(None)
+        # Create a fake machine consisting of only the one board that
+        # the routes should go over
+        valid_48_boards = list()
+        valid_48_boards.extend(machine.BOARD_VERSION_FOR_48_CHIPS)
+        valid_48_boards.append(None)
 
-            if (board_version in valid_48_boards and
-                    (machine.max_chip_x > machine.MAX_CHIP_X_ID_ON_ONE_BOARD or
-                     machine.max_chip_y > machine.MAX_CHIP_Y_ID_ON_ONE_BOARD)):
-                down_chips = {
-                    (x, y) for x, y in zip(
-                        range(machine.SIZE_X_OF_ONE_BOARD),
-                        range(machine.SIZE_Y_OF_ONE_BOARD))
-                    if not machine.is_chip_at(
-                        (x + eth_x) % (machine.max_chip_x + 1),
-                        (y + eth_y) % (machine.max_chip_y + 1))}
+        if (board_version in valid_48_boards and
+                (machine.max_chip_x > machine.MAX_CHIP_X_ID_ON_ONE_BOARD or
+                 machine.max_chip_y > machine.MAX_CHIP_Y_ID_ON_ONE_BOARD)):
+            down_chips = {
+                (x, y) for x, y in zip(
+                    range(machine.SIZE_X_OF_ONE_BOARD),
+                    range(machine.SIZE_Y_OF_ONE_BOARD))
+                if not machine.is_chip_at(
+                    (x + eth_x) % (machine.max_chip_x + 1),
+                    (y + eth_y) % (machine.max_chip_y + 1))}
 
-                # build a fake machine which is just one board but with the
-                # missing bits of the real board
-                fake_machine = VirtualMachine(
-                    machine.SIZE_X_OF_ONE_BOARD, machine.SIZE_Y_OF_ONE_BOARD,
-                    False, down_chips=down_chips, down_links=down_links)
+            # build a fake machine which is just one board but with the
+            # missing bits of the real board
+            fake_machine = VirtualMachine(
+                machine.SIZE_X_OF_ONE_BOARD, machine.SIZE_Y_OF_ONE_BOARD,
+                False, down_chips=down_chips, down_links=down_links)
 
         # build source
         destination_vertices = fake_graph.vertices
@@ -169,8 +169,8 @@ class DataInMulticastRoutingGenerator(object):
         free_processor = 0
         while ((free_processor < machine.MAX_CORES_PER_CHIP) and
                 fake_placements.is_processor_occupied(
-                self.FAKE_ETHERNET_CHIP_X, y=self.FAKE_ETHERNET_CHIP_Y,
-                p=free_processor)):
+                    x=self.FAKE_ETHERNET_CHIP_X, y=self.FAKE_ETHERNET_CHIP_Y,
+                    p=free_processor)):
             free_processor += 1
 
         fake_placements.add_placement(Placement(
@@ -189,19 +189,19 @@ class DataInMulticastRoutingGenerator(object):
                     vertex)
 
                 # adjust to real chip ids
-                real_x, real_y = calculate_machine_level_chip_id(
+                real_chip_xy = calculate_machine_level_chip_id(
                     fake_placement.x, fake_placement.y,
                     ethernet_connected_chip.x, ethernet_connected_chip.y,
                     machine)
-                destination_to_partition_identifier_map[real_x, real_y] = \
+                destination_to_partition_id_map[real_chip_xy] = \
                     counter
                 counter += self.N_KEYS_PER_PARTITION_ID
 
         return (fake_graph, fake_placements, fake_machine,
-                destination_to_partition_identifier_map)
+                destination_to_partition_id_map)
 
     @staticmethod
-    def do_routing(fake_placements, fake_graph, fake_machine):
+    def _do_routing(fake_placements, fake_graph, fake_machine):
         """ executes the routing
 
         :param fake_placements: the fake placements
