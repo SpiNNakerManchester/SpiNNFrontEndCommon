@@ -6,7 +6,7 @@ from spinn_machine import CoreSubsets, Router
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities import globals_variables
@@ -126,7 +126,7 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_resources_required():
-        return ResourceContainer(sdram=SDRAMResource(
+        return ResourceContainer(sdram=ConstantSDRAM(
             _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES +
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
             _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +

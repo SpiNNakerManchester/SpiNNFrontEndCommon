@@ -12,18 +12,21 @@ import sys
 from enum import Enum
 from six.moves import xrange
 from six import reraise
+
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
+
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
+
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    ResourceContainer, SDRAMResource, IPtagResource)
+    ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -277,7 +280,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_resources_required():
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 SYSTEM_BYTES_REQUIREMENT + CONFIG_SIZE +
                 SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
                 SIZE_DATA_IN_CHIP_TO_KEY_SPACE),

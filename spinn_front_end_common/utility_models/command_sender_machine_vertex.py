@@ -4,7 +4,7 @@ from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
-from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
@@ -133,7 +133,7 @@ class CommandSenderMachineVertex(
              SARK_PER_MALLOC_SDRAM_USAGE))
 
         # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=SDRAMResource(sdram))
+        return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
