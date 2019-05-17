@@ -2268,10 +2268,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
-        if self._original_application_graph.n_vertices > 0:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
+        # if self._original_application_graph.n_vertices > 0:
+        #     raise ConfigurationException(
+        #         "Cannot add vertices to both the machine and application"
+        #         " graphs")
         self._original_machine_graph.add_vertex(vertex)
 
     def add_application_edge(self, edge_to_add, partition_identifier):

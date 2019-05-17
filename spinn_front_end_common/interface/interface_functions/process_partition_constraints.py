@@ -57,12 +57,13 @@ class ProcessPartitionConstraints(object):
             partition.add_constraints(
                 vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
-            app_edge = graph_mapper.get_application_edge(edge)
-            if isinstance(app_edge.post_vertex,
-                          AbstractProvidesIncomingPartitionConstraints):
-                partition.add_constraints(
-                    app_edge.post_vertex.get_incoming_partition_constraints(
-                        partition))
+            if edge.label is not "spinnakear":
+                app_edge = graph_mapper.get_application_edge(edge)
+                if isinstance(app_edge.post_vertex,
+                              AbstractProvidesIncomingPartitionConstraints):
+                    partition.add_constraints(
+                        app_edge.post_vertex.get_incoming_partition_constraints(
+                            partition))
 
     @staticmethod
     def _process_machine_partition(partition):

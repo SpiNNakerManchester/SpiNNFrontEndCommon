@@ -74,8 +74,12 @@ class ProfileData(object):
 
         # Loop through unique tags
         for tag in numpy.unique(sample_tags):
-            self._add_tag_data(
-                entry_tags, entry_times_ms, exit_tags, exit_times_ms, tag)
+            if tag == 3:
+                self._add_tag_data(
+                    entry_tags, sample_times[sample_entry_indices], exit_tags, sample_times[sample_exit_indices], tag)
+            else:
+                self._add_tag_data(
+                    entry_tags, entry_times_ms, exit_tags, exit_times_ms, tag)
 
     def _add_tag_data(
             self, entry_tags, entry_times, exit_tags, exit_times, tag):
@@ -104,15 +108,20 @@ class ProfileData(object):
             tag_entry_times = tag_entry_times[
                 :len(tag_exit_times) - len(tag_entry_times)]
 
-        # Subtract entry times from exit times to get durations of each
-        # call in ms
-        tag_durations = numpy.subtract(tag_exit_times, tag_entry_times)
+        if tag ==3:
+             self._tags[tag_label] = (tag_entry_times,tag_exit_times)
+        else:
+            # Subtract entry times from exit times to get durations of each
+            # call in ms
+            try:
+                tag_durations = numpy.subtract(tag_exit_times, tag_entry_times)
+                # Add entry times and durations to dictionary
+                self._tags[tag_label] = (tag_entry_times, tag_durations)
+            except:
+                print ""
 
-        # Add entry times and durations to dictionary
-        self._tags[tag_label] = (tag_entry_times, tag_durations)
-
-        # Keep track of the maximum time
-        self._max_time = numpy.max(tag_entry_times + tag_durations)
+            # Keep track of the maximum time
+            self._max_time = numpy.max(tag_entry_times + tag_durations)
 
     @property
     def tags(self):
@@ -180,3 +189,35 @@ class ProfileData(object):
         mean_per_ts[numpy.isnan(mean_per_ts)] = 0
         return numpy.average(
             mean_per_ts[numpy.logical_not(numpy.isnan(mean_per_ts))])
+
+    def get_sd(self,tag):
+        """ Get the standard deviation in milliseconds of measurements with the\
+            given tag
+
+        :param tag: The tag to get the sd of measurements for
+        :type tag: str
+        :rtype: float
+        """
+        return numpy.std(self._tags[tag][_DURATION])
+
+    def get_se(self,tag):
+        """ Get the standard error in milliseconds of measurements with the\
+            given tag
+
+        :param tag: The tag to get the sd of measurements for
+        :type tag: str
+        :rtype: float
+        """
+        return numpy.std(self._tags[tag][_DURATION]) / \
+               numpy.sqrt(self._tags[tag][_DURATION].size)
+
+    def get_complete_profile(self,tag):
+        try:
+            if tag == 'PROCESS_FIXED_SYNAPSES':
+                profiles = self._tags[tag]
+            else:
+                profiles = self._tags[tag][_DURATION]
+        except:
+            print "No profile tags match" + tag
+            profiles = []
+        return profiles
