@@ -77,7 +77,7 @@ static inline bool add_heap_to_collection(
     int position = 0;
 
     // loop over the true heap and add accordingly.
-    while(sv->sdram_heap->free != NULL){
+    while (sv->sdram_heap->free != NULL){
         block_t *next_blk = sv->sdram_heap->free->next;
 
         // get next size minus the size it'll need to put in when alloc'ing
@@ -116,7 +116,7 @@ static inline void make_heap_structure(
     block_t *previous_free = NULL;
 
     // generate heap pointers
-    while(stolen_current_index < sizes_region->n_blocks ||
+    while (stolen_current_index < sizes_region->n_blocks ||
             heap_current_index < n_mallocs){
         if (previous != NULL){
             log_debug("previous is now %x", previous);
@@ -258,7 +258,7 @@ static inline bool platform_new_heap_creation(
         n_mallocs * sizeof(sdram_block), 1);
 
     // if fail to alloc dtcm blow up
-    if(list_of_available_blocks == NULL){
+    if (list_of_available_blocks == NULL){
         return false;
     }
 
@@ -266,7 +266,7 @@ static inline bool platform_new_heap_creation(
     // normal means.
     stolen_sdram_heap =
         (heap_t*) sark_xalloc(sv->sdram_heap, MIN_SIZE_HEAP, 0, ALLOC_LOCK);
-    if(stolen_sdram_heap == NULL){
+    if (stolen_sdram_heap == NULL){
 
         //check we can steal
         if (sizes_region->n_blocks == 0){
@@ -275,7 +275,7 @@ static inline bool platform_new_heap_creation(
         }
 
         // deallocate 32 bytes from first handed down to be the heap object
-        stolen_sdram_heap = 
+        stolen_sdram_heap =
             (heap_t*) sizes_region->blocks[0].sdram_base_address;
         sizes_region->blocks[0].sdram_base_address += MIN_SIZE_HEAP;
         sizes_region->blocks[0].size -= MIN_SIZE_HEAP;
