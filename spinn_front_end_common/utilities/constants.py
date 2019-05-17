@@ -31,12 +31,13 @@ SIMULATION_N_BYTES = 12
 # 4 for the first key used by multicast protocol
 MULTICAST_SPEEDUP_N_BYTES = 4
 
-# The number of bytes used by the DSG and simulation interfaces
-SYSTEM_BYTES_REQUIREMENT = \
-    (DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES)
-
 # The number of bytes used by SARK per memory allocation
 SARK_PER_MALLOC_SDRAM_USAGE = 8
+
+# The number of bytes used by the DSG and simulation interfaces
+SYSTEM_BYTES_REQUIREMENT = \
+    (DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES +
+     SARK_PER_MALLOC_SDRAM_USAGE)
 
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
