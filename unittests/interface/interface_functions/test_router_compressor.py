@@ -6,7 +6,7 @@ from spinnman.model.enums import CPUState
 from spinnman.model import IOBuffer
 from spinnman.utilities.appid_tracker import AppIdTracker
 from pacman.model.routing_tables import (
-    MulticastRoutingTables, MulticastRoutingTable)
+    MulticastRoutingTables, UnCompressedMulticastRoutingTable)
 from spinn_front_end_common.mapping_algorithms\
     .on_chip_router_table_compression.mundy_on_chip_router_compression import \
     MundyOnChipRouterCompression
@@ -66,7 +66,7 @@ class MockTransceiverError(object):
 def test_router_compressor_on_error():
     compressor = MundyOnChipRouterCompression()
     routing_tables = MulticastRoutingTables(
-        [MulticastRoutingTable(0, 0)])
+        [UnCompressedMulticastRoutingTable(0, 0)])
     transceiver = MockTransceiverError()
     machine = VirtualMachine(version=5)
     with pytest.raises(SpinnFrontEndException):
