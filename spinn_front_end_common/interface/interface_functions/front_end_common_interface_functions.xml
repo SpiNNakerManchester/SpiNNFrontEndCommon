@@ -433,10 +433,6 @@
                 <param_type>MemoryPreAllocatedResources</param_type>
             </parameter>
             <parameter>
-                <param_name>n_machine_time_steps</param_name>
-                <param_type>TotalMachineTimeSteps</param_type>
-            </parameter>
-            <parameter>
                 <param_name>n_samples_per_recording</param_name>
                 <param_type>MemoryNumberSamplesPerRecordingEntry</param_type>
             </parameter>
@@ -455,7 +451,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
-            <param_name>n_machine_time_steps</param_name>
             <param_name>n_samples_per_recording</param_name>
             <param_name>sampling_frequency</param_name>
             <param_name>time_scale_factor</param_name>
@@ -1074,6 +1069,10 @@
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
+                <param_name>data_n_timesteps</param_name>
+                <param_type>DataNTimeSteps</param_type>
+            </parameter>
+            <parameter>
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
@@ -1084,6 +1083,7 @@
             <param_name>report_default_directory</param_name>
             <param_name>write_text_specs</param_name>
             <param_name>machine</param_name>
+            <param_name>data_n_timesteps</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
@@ -1477,6 +1477,10 @@
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
+                <param_name>data_n_timesteps</param_name>
+                <param_type>DataNTimeSteps</param_type>
+            </parameter>
+            <parameter>
                 <param_name>time_scale_factor</param_name>
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
@@ -1517,6 +1521,7 @@
             <param_name>database_directory</param_name>
             <param_name>runtime</param_name>
             <param_name>machine</param_name>
+            <param_name>data_n_timesteps</param_name>
             <param_name>time_scale_factor</param_name>
             <param_name>machine_time_step</param_name>
             <param_name>placements</param_name>
@@ -1602,15 +1607,15 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>no_machine_timesteps</param_name>
-                <param_type>TotalMachineTimeSteps</param_type>
+                <param_name>run_until_timesteps</param_name>
+                <param_type>RunUntilTimeSteps</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
             <param_name>app_id</param_name>
             <param_name>executable_types</param_name>
-            <param_name>no_machine_timesteps</param_name>
+            <param_name>run_until_timesteps</param_name>
             <token>BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
@@ -1892,10 +1897,15 @@
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
+             <parameter>
+                <param_name>plan_n_timesteps</param_name>
+                <param_type>PlanNTimeSteps</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
             <param_name>machine</param_name>
+            <param_name>plan_n_timesteps</param_name>
         </required_inputs>
         <outputs>
             <param_type>NChipsRequired</param_type>

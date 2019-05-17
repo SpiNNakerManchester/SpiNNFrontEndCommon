@@ -1,11 +1,8 @@
 import struct
-import sys
-import math
 from pacman.model.resources import (
-    ResourceContainer, IPtagResource, SDRAMResource)
+    ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    import (
-        ChannelBufferState)
+    import ChannelBufferState
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS)
 
@@ -146,7 +143,7 @@ def get_recording_resources(
     # return the resources including the SDRAM requirements
     return ResourceContainer(
         iptags=ip_tags,
-        sdram=SDRAMResource(
+        sdram=ConstantSDRAM(
             get_recording_header_size(len(region_sizes)) +
             get_recording_data_size(region_sizes)))
 
@@ -273,23 +270,6 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
         recording_data_address + _FIRST_REGION_ADDRESS_OFFSET + (region * 4),
         4)
     return _ONE_WORD.unpack_from(data)[0]
-
-
-def get_n_timesteps_in_buffer_space(buffer_space, buffered_sdram_per_timestep):
-    """ Get the number of time steps of data that can be stored in a given\
-        buffers space
-
-    :param buffer_space: The space that will hold the data
-    :type buffer_space: int
-    :param buffered_sdram_per_timestep:\
-        The maximum SDRAM used by each region per timestep
-    :type buffered_sdram_per_timestep: list(int)
-    :rtype: int
-    """
-    total_per_timestep = sum(buffered_sdram_per_timestep)
-    if total_per_timestep == 0:
-        return sys.maxsize
-    return int(math.floor(buffer_space / total_per_timestep))
 
 
 def get_recorded_region_ids(buffered_sdram_per_timestep):

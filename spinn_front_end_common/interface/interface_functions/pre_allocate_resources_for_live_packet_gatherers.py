@@ -1,6 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
-    CoreResource, PreAllocatedResourceContainer, SpecificChipSDRAMResource)
+    ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
+    SpecificChipSDRAMResource)
 from pacman.model.resources.specific_board_iptag_resource import (
     SpecificBoardTagResource)
 from spinn_front_end_common.utility_models import (
@@ -71,6 +72,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     traffic_identifier=LPG.TRAFFIC_IDENTIFIER))
 
         if sdram_reqs:
-            sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))
+            sdrams.append(SpecificChipSDRAMResource(
+                chip, ConstantSDRAM(sdram_reqs)))
         if core_reqs:
             cores.append(CoreResource(chip, core_reqs))

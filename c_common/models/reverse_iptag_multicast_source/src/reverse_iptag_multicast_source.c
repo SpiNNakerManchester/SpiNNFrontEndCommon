@@ -822,7 +822,8 @@ void fetch_and_process_packet() {
 
             last_len = len;
             if (len > MAX_PACKET_SIZE) {
-                log_error("Packet from SDRAM of %u bytes is too big!", len);
+                log_error("Packet from SDRAM at 0x%08x of %u bytes is too big!",
+                    src_ptr, len);
                 rt_error(RTE_SWERR);
             }
             uint32_t final_space = (end_of_buffer_region - read_pointer);
