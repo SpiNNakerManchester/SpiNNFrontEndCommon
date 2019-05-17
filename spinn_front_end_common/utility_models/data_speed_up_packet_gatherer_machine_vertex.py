@@ -36,7 +36,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -203,12 +203,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             machine_time_step, time_scale_factor):
         # pylint: disable=too-many-arguments, arguments-differ
 
-        # Setup words + 1 for flags + 1 for recording size
-        setup_size = SYSTEM_BYTES_REQUIREMENT
-
         # Create the data regions for hello world
-        DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(
-            spec, setup_size)
+        DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(spec)
 
         # write data for the simulation data item
         spec.switch_write_focus(_DATA_REGIONS.SYSTEM.value)
@@ -243,7 +239,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.end_specification()
 
     @staticmethod
-    def _reserve_memory_regions(spec, system_size):
+    def _reserve_memory_regions(spec):
         """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
@@ -253,7 +249,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         spec.reserve_memory_region(
             region=_DATA_REGIONS.SYSTEM.value,
-            size=system_size,
+            size=SIMULATION_N_BYTES,
             label='systemInfo')
         spec.reserve_memory_region(
             region=_DATA_REGIONS.CONFIG.value,
