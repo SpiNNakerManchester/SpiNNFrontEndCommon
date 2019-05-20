@@ -17,6 +17,7 @@ void profiler_finalise();
 
 #include <stdint.h>
 #include <spin1_api.h>
+#include "profile_tags.h"
 
 //---------------------------------------
 // Macros
@@ -32,14 +33,36 @@ extern uint32_t *profiler_count;
 extern uint32_t profiler_samples_remaining;
 extern uint32_t *profiler_output;
 
+extern uint32_t spike_pro_count;
+extern uint32_t timer_pro_count_start;
+//extern uint32_t spike_enter;
 //---------------------------------------
 // Inline functions
 //---------------------------------------
 static inline void profiler_write_entry(uint32_t tag) {
     if (profiler_samples_remaining > 0) {
+
+        if (tag == (PROFILER_EXIT | PROFILER_TIMER)){
+            //todo: need to store indices of the spike processing profile entries that prempt each timer profile.
+            *profiler_output++ = timer_pro_count_start;
+            *profiler_output++ = (PROFILER_ENTER|PROFILER_PROCESS_FIXED_SYNAPSES);
+            *profiler_output++ = spike_pro_count;
+            *profiler_output++ = (PROFILER_EXIT|PROFILER_PROCESS_FIXED_SYNAPSES);
+        }
+
+        if( tag == (PROFILER_ENTER | PROFILER_TIMER)){
+            timer_pro_count_start = spike_pro_count;
+        }
+        else if(tag == (PROFILER_EXIT | PROFILER_INCOMING_SPIKE)){
+            spike_pro_count++;
+        }
+
         *profiler_output++ = tc[T2_COUNT];
         *profiler_output++ = tag;
         profiler_samples_remaining--;
+    }
+    else{
+        io_printf(IO_BUF,"run out of profile samples!");
     }
 }
 

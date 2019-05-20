@@ -10,6 +10,10 @@ uint32_t *profiler_count = NULL;
 uint32_t profiler_samples_remaining = 0;
 uint32_t *profiler_output = NULL;
 
+uint32_t spike_pro_count=0;
+uint32_t timer_pro_count_start = 0;
+//uint32_t spike_enter = 0;
+
 //---------------------------------------
 // Functions
 //---------------------------------------
