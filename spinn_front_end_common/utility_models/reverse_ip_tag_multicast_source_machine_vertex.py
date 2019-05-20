@@ -27,7 +27,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
@@ -38,7 +38,8 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
-    import (get_recording_header_array, get_recording_header_size)
+    import (get_recording_header_array, get_recording_header_size,
+            get_recording_data_constant_size)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 
@@ -319,16 +320,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             send_buffer_times, recording_enabled, machine_time_step,
             receive_rate, n_keys):
 
-        mallocs = \
-            ReverseIPTagMulticastSourceMachineVertex.n_regions_to_allocate(
-                send_buffer_times is not None, recording_enabled)
-        allocation_size = mallocs * SARK_PER_MALLOC_SDRAM_USAGE
-
         static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
             (ReverseIPTagMulticastSourceMachineVertex.
                 _CONFIGURATION_REGION_SIZE) +
-            allocation_size + get_recording_header_size(1) +
+            get_recording_header_size(1) +
+            get_recording_data_constant_size(1) +
             (ReverseIPTagMulticastSourceMachineVertex.
                 get_provenance_data_size(0)))
         per_timestep = (
@@ -435,7 +432,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
-            size=SYSTEM_BYTES_REQUIREMENT, label='SYSTEM')
+            size=SIMULATION_N_BYTES, label='SYSTEM')
         spec.reserve_memory_region(
             region=self._REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')

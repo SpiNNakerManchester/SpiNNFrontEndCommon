@@ -26,7 +26,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import (
-    AbstractReceiveBuffersToHost)
+        AbstractReceiveBuffersToHost)
 from .recording_utilities import (
     TRAFFIC_IDENTIFIER, get_last_sequence_number, get_region_pointer)
 

@@ -14,7 +14,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SARK_PER_MALLOC_SDRAM_USAGE)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -46,9 +46,6 @@ class CommandSenderMachineVertex(
 
     # bool for if the command does not have a payload (false = 0)
     _HAS_NO_PAYLOAD = 0
-
-    # the number of malloc requests used by the DSG
-    TOTAL_REQUIRED_MALLOCS = 5
 
     # The name of the binary file
     BINARY_FILE_NAME = 'command_sender_multicast_source.aplx'
@@ -128,9 +125,7 @@ class CommandSenderMachineVertex(
             self.get_n_command_bytes(self._commands_at_start_resume) +
             self.get_n_command_bytes(self._commands_at_pause_stop) +
             SYSTEM_BYTES_REQUIREMENT +
-            self.get_provenance_data_size(0) +
-            (self.get_number_of_mallocs_used_by_dsg() *
-             SARK_PER_MALLOC_SDRAM_USAGE))
+            self.get_provenance_data_size(0))
 
         # Return the SDRAM and 1 core
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
@@ -236,7 +231,7 @@ class CommandSenderMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
-            size=SYSTEM_BYTES_REQUIREMENT, label='system')
+            size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.
@@ -284,10 +279,6 @@ class CommandSenderMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
-
-    @staticmethod
-    def get_number_of_mallocs_used_by_dsg():
-        return CommandSenderMachineVertex.TOTAL_REQUIRED_MALLOCS
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
