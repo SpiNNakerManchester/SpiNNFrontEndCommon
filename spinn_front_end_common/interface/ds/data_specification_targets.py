@@ -103,7 +103,9 @@ class DataSpecificationTargets(MutableMapping):
 
     def mark_system_cores(self, core_subsets):
         cores_to_mark = []
-        for x, y in core_subsets:
-            for p in core_subsets[x, y]:
+        for subset in core_subsets:
+            x = subset.x
+            y = subset.y
+            for p in subset.processor_ids:
                 cores_to_mark.append((x, y, p))
         self._db.ds_mark_as_system(cores_to_mark)
