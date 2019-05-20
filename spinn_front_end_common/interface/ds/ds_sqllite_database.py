@@ -20,17 +20,18 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, report_folder):
+    def __init__(self, machine, report_folder, init=True):
         self._machine = machine
         database_file = os.path.join(report_folder, DB_NAME)
 
         self._db = sqlite3.connect(database_file)
         self._db.text_factory = memoryview
-        self.__init_db()
+        self._db.row_factory = sqlite3.Row
+        if init:
+            self.__init_db()
 
     def __init_db(self):
         """ Set up the database if required. """
-        self._db.row_factory = sqlite3.Row
         with open(DDL_FILE) as f:
             sql = f.read()
         self._db.executescript(sql)
