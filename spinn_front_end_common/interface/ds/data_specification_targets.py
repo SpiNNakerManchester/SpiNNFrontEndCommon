@@ -11,14 +11,14 @@ class DataSpecificationTargets(MutableMapping):
 
     __slots__ = ["_db"]
 
-    def __init__(self, machine, report_folder):
+    def __init__(self, machine, report_folder, init=True):
         """
         :param machine:
         :type machine: :py:class:`spinn_machine.Machine`
         :param report_folder:
         """
         # real DB would write to report_folder
-        self._db = DsSqlliteDatabase(machine, report_folder)
+        self._db = DsSqlliteDatabase(machine, report_folder, init)
 
     def __getitem__(self, core):
         """
