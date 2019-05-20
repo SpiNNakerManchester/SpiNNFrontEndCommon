@@ -16,7 +16,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, SYSTEM_BYTES_REQUIREMENT)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -103,14 +103,14 @@ class ChipPowerMonitorMachineVertex(
         system = SYSTEM_BYTES_REQUIREMENT
         config = CONFIG_SIZE_IN_BYTES
         recording = recording_utilities.get_recording_header_size(1)
-        malloc = DEFAULT_MALLOCS_USED * SARK_PER_MALLOC_SDRAM_USAGE
-        fixed_sdram = system + config + recording + malloc
+        recording += recording_utilities.get_recording_data_constant_size(1)
+        fixed_sdram = system + config + recording
         with_overflow = (
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
-        per_temestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
+        per_timestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
         container = ResourceContainer(
-            sdram=VariableSDRAM(with_overflow, per_temestep),
+            sdram=VariableSDRAM(with_overflow, per_timestep),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         return container
@@ -211,7 +211,7 @@ class ChipPowerMonitorMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value,
-            size=SYSTEM_BYTES_REQUIREMENT,
+            size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,
