@@ -108,7 +108,7 @@ class DSGRegionReloader(object):
         # execute the spec
         spec_reader = FileDataReader(spec_file)
         data_spec_executor = DataSpecificationExecutor(
-            spec_reader, SDRAM.DEFAULT_SDRAM_BYTES)
+            spec_reader, SDRAM.max_sdram_found)
         data_spec_executor.execute()
 
         # Read the region table for the placement

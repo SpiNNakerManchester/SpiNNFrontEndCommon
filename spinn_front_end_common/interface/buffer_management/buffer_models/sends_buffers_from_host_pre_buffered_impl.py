@@ -32,22 +32,6 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """
         return self.send_buffers.keys()
 
-    def get_max_buffer_size_possible(self, region):
-        """ Return the max possible size of a buffered region
-
-        :param region: the region to find the max possible size of
-        :return: the max possible size of the buffered region
-        """
-        return self.send_buffers[region].max_buffer_size_possible
-
-    def get_region_buffer_size(self, region):
-        """ Return the size of a given regions buffer
-
-        :param region: the region to find the size of
-        :return: the size of the buffer
-        """
-        return self.send_buffers[region].buffer_size
-
     def is_next_timestamp(self, region):
         """ Check if there are more time stamps which need transmitting
 
