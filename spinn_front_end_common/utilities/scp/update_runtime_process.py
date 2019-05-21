@@ -1,7 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
+from spinnman.processes import AbstractMultiConnectionProcess
 from .scp_update_runtime_request import SCPUpdateRuntimeRequest
 from spinn_front_end_common.utilities.constants import SDP_PORTS
-from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class UpdateRuntimeProcess(AbstractMultiConnectionProcess):

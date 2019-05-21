@@ -1,6 +1,6 @@
 import unittest
-from spinn_front_end_common.interface.profiling.profile_data import ProfileData
 import struct
+from spinn_front_end_common.interface.profiling.profile_data import ProfileData
 
 _ENTER_TAG = 0x80000000
 _EXIT_TAG = 0x00000000

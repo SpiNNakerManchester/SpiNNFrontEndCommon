@@ -1,20 +1,15 @@
-# spinnman imports
+import logging
+from threading import Thread
+from six import raise_from
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinnman.exceptions \
-    import SpinnmanIOException, SpinnmanInvalidPacketException, \
-    SpinnmanTimeoutException
+from spinnman.exceptions import (
+    SpinnmanIOException, SpinnmanInvalidPacketException,
+    SpinnmanTimeoutException)
 from spinnman.messages.eieio.command_messages import EIEIOCommandHeader
 from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.constants import EIEIO_COMMAND_IDS as CMDS
-
-# FrontEndCommon imports
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from .database_reader import DatabaseReader
-
-# general imports
-from threading import Thread
-from six import raise_from
-import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -96,13 +91,16 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = data[2:].decode()
+        if len(data) > 2:
+            database_path = data[2:].decode()
 
-        # Call the callback
-        database_reader = DatabaseReader(database_path)
-        for database_callback in self._database_callback_functions:
-            database_callback(database_reader)
-        database_reader.close()
+            # Call the callback
+            database_reader = DatabaseReader(database_path)
+            for database_callback in self._database_callback_functions:
+                database_callback(database_reader)
+            database_reader.close()
+        else:
+            logger.warning("Database path was empty - assuming no database")
 
         # Send the response
         logger.info("Notifying the toolchain that the database has been read")

@@ -1,6 +1,7 @@
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.interface.buffer_management.buffer_models \
+    import (
+        AbstractReceiveBuffersToHost)
 
 
 class BufferExtractor(object):
@@ -12,23 +13,26 @@ class BufferExtractor(object):
     def __call__(self, machine_graph, placements, buffer_manager):
 
         # Count the regions to be read
-        n_regions_to_read, vertices = self._count_regions(machine_graph)
+        n_regions_to_read, recording_placements = self._count_regions(
+            machine_graph, placements)
 
         # Read back the regions
         progress = ProgressBar(
             n_regions_to_read, "Extracting buffers from the last run")
         try:
-            buffer_manager.get_data_for_vertices(vertices, progress)
+            buffer_manager.get_data_for_placements(
+                recording_placements, progress)
         finally:
             progress.end()
 
     @staticmethod
-    def _count_regions(machine_graph):
+    def _count_regions(machine_graph, placements):
         # Count the regions to be read
         n_regions_to_read = 0
-        vertices = list()
+        recording_placements = list()
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 n_regions_to_read += len(vertex.get_recorded_region_ids())
-                vertices.append(vertex)
-        return n_regions_to_read, vertices
+                placement = placements.get_placement_of_vertex(vertex)
+                recording_placements.append(placement)
+        return n_regions_to_read, recording_placements

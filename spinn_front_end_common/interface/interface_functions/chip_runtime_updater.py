@@ -1,6 +1,5 @@
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
@@ -11,7 +10,7 @@ class ChipRuntimeUpdater(object):
     __slots__ = []
 
     def __call__(
-            self, txrx, app_id, executable_types, no_machine_timesteps):
+            self, txrx, app_id, executable_types, run_until_timesteps):
 
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
@@ -20,12 +19,12 @@ class ChipRuntimeUpdater(object):
             core_subsets, app_id, [CPUState.PAUSED, CPUState.READY])
 
         infinite_run = 0
-        if no_machine_timesteps is None:
+        if run_until_timesteps is None:
             infinite_run = 1
-            no_machine_timesteps = 0
+            run_until_timesteps = 0
 
         # TODO: Expose the connection selector in SpiNNMan
         process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
         process.update_runtime(
-            no_machine_timesteps, infinite_run, core_subsets,
+            run_until_timesteps, infinite_run, core_subsets,
             len(core_subsets))

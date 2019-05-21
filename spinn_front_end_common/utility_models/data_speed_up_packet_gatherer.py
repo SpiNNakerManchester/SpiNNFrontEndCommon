@@ -1,10 +1,9 @@
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-
-from spinn_front_end_common.abstract_models \
-    import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
-from .data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+from .data_speed_up_packet_gatherer_machine_vertex import (
+    DataSpeedUpPacketGatherMachineVertex)
 
 
 class DataSpeedUpPacketGather(

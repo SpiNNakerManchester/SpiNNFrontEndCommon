@@ -1,12 +1,8 @@
-# general imports
 import logging
 from six import add_metaclass
-
-# spinn front end common imports
+from spinn_utilities.abstract_base import (
+    AbstractBase, abstractmethod, abstractproperty)
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
-
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod, \
-    abstractproperty
 
 logger = logging.getLogger(__name__)
 
@@ -35,22 +31,6 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """ Return the regions which has buffers to send
         """
         return self.send_buffers.keys()
-
-    def get_max_buffer_size_possible(self, region):
-        """ Return the max possible size of a buffered region
-
-        :param region: the region to find the max possible size of
-        :return: the max possible size of the buffered region
-        """
-        return self.send_buffers[region].max_buffer_size_possible
-
-    def get_region_buffer_size(self, region):
-        """ Return the size of a given regions buffer
-
-        :param region: the region to find the size of
-        :return: the size of the buffer
-        """
-        return self.send_buffers[region].buffer_size
 
     def is_next_timestamp(self, region):
         """ Check if there are more time stamps which need transmitting

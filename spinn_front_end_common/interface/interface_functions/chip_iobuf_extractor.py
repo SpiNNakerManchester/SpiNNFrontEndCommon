@@ -1,9 +1,9 @@
-from spinn_utilities.make_tools.replacer import Replacer
-from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities import helpful_functions
 import re
 import os
-
+from spinn_utilities.make_tools.replacer import Replacer
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_string_into_chip_and_core_subset)
 
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
 WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
@@ -41,9 +41,7 @@ class ChipIOBufExtractor(object):
                 progress = ProgressBar(len(executable_targets.binaries),
                                        "Extracting IOBUF from the machine")
                 binaries = executable_finder.get_executable_paths(binary_types)
-                iocores = (helpful_functions.
-                           convert_string_into_chip_and_core_subset(
-                                from_cores))
+                iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     if binary in binaries:
                         core_subsets = executable_targets.get_cores_for_binary(
@@ -61,9 +59,7 @@ class ChipIOBufExtractor(object):
                 # some hard coded cores
                 progress = ProgressBar(len(executable_targets.binaries),
                                        "Extracting IOBUF from the machine")
-                iocores = (helpful_functions.
-                           convert_string_into_chip_and_core_subset(
-                                from_cores))
+                iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
@@ -92,7 +88,6 @@ class ChipIOBufExtractor(object):
     def _run_for_core_subsets(
             self, core_subsets, binary, transceiver, provenance_file_path,
             error_entries, warn_entries):
-
         replacer = Replacer(binary)
 
         # extract iobuf
@@ -110,26 +105,21 @@ class ChipIOBufExtractor(object):
             if os.path.exists(file_name):
                 mode = "a"
 
-            # write iobuf to file.
+            # write iobuf to file and call out errors and warnings.
             with open(file_name, mode) as f:
                 for line in iobuf.iobuf.split("\n"):
-                    f.write(replacer.replace(line))
+                    replaced = replacer.replace(line)
+                    f.write(replaced)
                     f.write("\n")
-            self._check_iobuf_for_error(iobuf, error_entries, warn_entries)
-
-    def _check_iobuf_for_error(self, iobuf, error_entries, warn_entries):
-        lines = iobuf.iobuf.split("\n")
-        for line in lines:
-            line = line.encode('ascii', 'ignore')
-            self._add_value_if_match(
-                ERROR_ENTRY, line, error_entries, iobuf.x, iobuf.y, iobuf.p)
-            self._add_value_if_match(
-                WARNING_ENTRY, line, warn_entries, iobuf.x, iobuf.y, iobuf.p)
+                    self._add_value_if_match(
+                        ERROR_ENTRY, replaced, error_entries, iobuf)
+                    self._add_value_if_match(
+                        WARNING_ENTRY, replaced, warn_entries, iobuf)
 
     @staticmethod
-    def _add_value_if_match(regex, line, entries, x, y, p):
-        # pylint: disable=too-many-arguments
-        match = regex.match(line.decode('ascii'))
+    def _add_value_if_match(regex, line, entries, place):
+        match = regex.match(line)
         if match:
             entries.append("{}, {}, {}: {} ({})".format(
-                x, y, p, match.group(ENTRY_TEXT), match.group(ENTRY_FILE)))
+                place.x, place.y, place.p, match.group(ENTRY_TEXT),
+                match.group(ENTRY_FILE)))

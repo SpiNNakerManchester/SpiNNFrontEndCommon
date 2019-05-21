@@ -1,15 +1,11 @@
-
-"""
-test vertex used in many unit tests
+""" test vertex used in many unit tests
 """
 
-# pacman imports
-
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import DTCMResource, ResourceContainer, \
-    SDRAMResource, CPUCyclesPerTickResource
-from pacman.model.graphs.machine import SimpleMachineVertex
 from spinn_utilities.overrides import overrides
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import (
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
+from pacman.model.graphs.machine import SimpleMachineVertex
 
 
 class SimpleTestVertex(ApplicationVertex):
@@ -38,7 +34,7 @@ class SimpleTestVertex(ApplicationVertex):
         :return:
         """
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 self.get_sdram_usage_for_atoms(vertex_slice, None)),
             cpu_cycles=CPUCyclesPerTickResource(
                 self.get_cpu_usage_for_atoms(vertex_slice, None)),

@@ -1,5 +1,4 @@
 from six import add_metaclass
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -9,22 +8,6 @@ class AbstractReceiveBuffersToHost(object):
     """
 
     __slots__ = ()
-
-    @abstractmethod
-    def get_minimum_buffer_sdram_usage(self):
-        """ Get the minimum amount of SDRAM to reserve for buffers
-        """
-
-    @abstractmethod
-    def get_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
-        """ Get the number of timesteps that can be stored fully in the given\
-            buffer space in bytes
-
-        :param buffer_space: The buffer space in bytes
-        :param machine_time_step: The size of each time step
-        :return: The number of time steps that can be stored in the buffer
-        :rtype: int
-        """
 
     @abstractmethod
     def get_recorded_region_ids(self):

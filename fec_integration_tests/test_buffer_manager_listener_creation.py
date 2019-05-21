@@ -1,13 +1,14 @@
+import tempfile
 import unittest
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.interface.buffer_management import BufferManager
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
-from spinnman.transceiver import Transceiver
-from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinn_machine.tags import IPTag
+from spinnman.transceiver import Transceiver
+from spinnman.connections.udp_packet_connections import (
+    SCAMPConnection, EIEIOConnection)
+from spinn_front_end_common.interface.buffer_management import BufferManager
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
@@ -52,8 +53,15 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
+        testdir = tempfile.mkdtemp()
+        print(testdir)
         # Create buffer manager
-        bm = BufferManager(pl, t, trnx, None, None, None, None, None, False)
+        bm = BufferManager(
+            placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
+            packet_gather_cores_to_ethernet_connection_map=None,
+            extra_monitor_to_chip_mapping=None, machine=None,
+            fixed_routes=None, uses_advanced_monitors=True,
+            report_folder=testdir)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
