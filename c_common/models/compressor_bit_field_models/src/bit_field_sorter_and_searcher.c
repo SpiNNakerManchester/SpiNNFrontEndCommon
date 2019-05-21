@@ -722,6 +722,11 @@ void handle_best_cleanup(void){
     //their lists.
     log_debug("remove merged bitfields");
     remove_merged_bitfields_from_cores();
+
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    uint core = spin1_get_core_id();
+    sark_virtual_processor_info[core].user2 = best_search_point;
+
     terminate(EXITED_CLEANLY);
 }
 

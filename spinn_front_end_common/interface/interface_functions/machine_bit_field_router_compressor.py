@@ -15,6 +15,7 @@ from spinn_front_end_common.mapping_algorithms. \
     on_chip_router_table_compression.mundy_on_chip_router_compression import \
     MundyOnChipRouterCompression
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_machine import CoreSubsets, Router
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
@@ -34,6 +35,10 @@ SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
 
 SECOND_TO_MICRO_SECOND = 1000000
 
+# provenance data item names
+PROV_TOP_NAME = "bit_field_router_provenance"
+PROV_CHIP_NAME = "router_at_chip_{}_{}"
+MERGED_NAME = "bit_fields_merged"
 
 class MachineBitFieldRouterCompressor(object):
 
@@ -96,7 +101,7 @@ class MachineBitFieldRouterCompressor(object):
             use_timer_cut_off, machine_time_step, time_scale_factor,
             no_sync_changes, threshold_percentage, graph_mapper=None,
             compress_only_when_needed=True,
-            compress_as_much_as_possible=False):
+            compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
@@ -117,6 +122,12 @@ class MachineBitFieldRouterCompressor(object):
         compress as much as possible
         :rtype: executable targets
         """
+
+        # build provenance data objects
+        if provenance_data_objects is not None:
+            prov_items = provenance_data_objects
+        else:
+            prov_items = list()
 
         # new app id for this simulation
         routing_table_compressor_app_id = \
@@ -158,7 +169,8 @@ class MachineBitFieldRouterCompressor(object):
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,
-                    sorter_binary_path=bit_field_sorter_executable_path),
+                    sorter_binary_path=bit_field_sorter_executable_path,
+                    prov_data_items=prov_items),
                 functools.partial(
                     self._handle_failure_for_bit_field_router_compressor,
                     host_chips=on_host_chips, txrx=transceiver),
@@ -216,7 +228,7 @@ class MachineBitFieldRouterCompressor(object):
         # complete progress bar
         progress_bar.end()
 
-        return compressor_executable_targets
+        return compressor_executable_targets, prov_items
 
     def _generate_core_subsets(
             self, routing_tables, executable_finder, machine, progress_bar):
@@ -272,7 +284,7 @@ class MachineBitFieldRouterCompressor(object):
     def _check_bit_field_router_compressor_for_success(
             self, executable_targets, transceiver, provenance_file_path,
             compressor_app_id, executable_finder, host_chips,
-            sorter_binary_path):
+            sorter_binary_path, prov_data_items):
         """ Goes through the cores checking for cores that have failed to\
             generate the compressed routing tables with bitfield
 
@@ -284,6 +296,7 @@ class MachineBitFieldRouterCompressor(object):
         :param host_chips: the chips which need to be ran on host.
         :param executable_finder: executable path finder
         :param sorter_binary_path: the path to the sorter binary
+        :param prov_data_items: the store of data items
         :rtype: None
         """
 
@@ -292,14 +305,26 @@ class MachineBitFieldRouterCompressor(object):
         for core_subset in sorter_cores:
             x = core_subset.x
             y = core_subset.y
+
+            # prov names
+            names = list()
+            names.append(PROV_TOP_NAME)
+            names.append(PROV_CHIP_NAME.format(x, y))
+            names.append(MERGED_NAME)
+
             for p in core_subset.processor_ids:
 
-                # Read the result from USER1 register
+                # Read the result from USER1/USER2 registers
                 user_1_base_address = \
                     transceiver.get_user_1_register_address_from_core(p)
+                user_2_base_address = \
+                    transceiver.get_user_2_register_address_from_core(p)
                 result = struct.unpack(
                     "<I", transceiver.read_memory(
                         x, y, user_1_base_address, self._USER_BYTES))[0]
+                total_bit_fields_merged = struct.unpack(
+                    "<I", transceiver.read_memory(
+                        x, y, user_2_base_address, self._USER_BYTES))[0]
 
                 if result != self.SUCCESS:
                     self._call_iobuf_and_clean_up(
@@ -309,6 +334,9 @@ class MachineBitFieldRouterCompressor(object):
                         host_chips.append((x, y))
                     raise SpinnFrontEndException(
                         self._ON_CHIP_ERROR_MESSAGE.format(x, y))
+                else:
+                    prov_data_items.append(ProvenanceDataItem(
+                        names, str(total_bit_fields_merged)))
 
     @staticmethod
     def _call_iobuf_and_clean_up(

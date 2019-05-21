@@ -208,6 +208,10 @@
                 <param_name>time_scale_factor</param_name>
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>no_sync_changes</param_name>
@@ -235,10 +239,12 @@
             <param_name>compress_only_when_needed</param_name>
             <param_name>compress_as_much_as_possible</param_name>
             <param_name>graph_mapper</param_name>
+            <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
             <param_type>CompressorExecutableTargetsUsed</param_type>
+            <param_type>ProvenanceItems</param_type>
         </outputs>
     </algorithm>
     <algorithm name="ProcessPartitionConstraints">
