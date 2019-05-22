@@ -1047,6 +1047,73 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
+            
+    def _generate_machine_provenance(self):
+        # Add the version information to the provenance data at the start
+        version_provenance = list()
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_utilities_version"], spinn_utils_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_machine_version"], spinn_machine_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_storage_handlers_version"],
+            spinn_storage_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spalloc_version"], spalloc_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinnman_version"], spinnman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "pacman_version"], pacman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "data_specification_version"], data_spec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "front_end_common_version"], fec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "numpy_version"], numpy_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "scipy_version"], scipy_version))
+        if self._front_end_versions is not None:
+            for name, value in self._front_end_versions:
+                version_provenance.append(ProvenanceDataItem(
+                    names=["version_data", name], value=value))
+        return version_provenance
+
+    def _get_system_functionality_algorithms_and_inputs(self):
+        """ determines which algorithms and inputs are needed for the \
+        system functionality
+
+        :return: inputs dict and algorithm list.
+        """
+        inputs = dict()
+        algorithms = list()
+        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+
+        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
+            inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
+        else:
+            inputs["PlanNTimeSteps"] = n_machine_time_steps
+
+        # add algorithms for handling LPG placement and edge insertion
+        if self._live_packet_recorder_params:
+            algorithms.append("PreAllocateResourcesForLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorder_params
+
+        if self._config.getboolean("Reports", "write_energy_report"):
+            algorithms.append("PreAllocateResourcesForChipPowerMonitor")
+            inputs['MemorySamplingFrequency'] = self._config.getint(
+                "EnergyMonitor", "sampling_frequency")
+            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
+                self._config.getint(
+                    "EnergyMonitor", "n_samples_per_recording_entry")
+
+        # add algorithms for handling extra monitor code
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
+            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
+        return inputs, algorithms
 
     def _get_max_available_machine(self):
         """ supports locating the max machine available based off what machine \
@@ -1059,6 +1126,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs = dict(self._extra_inputs)
         algorithms = list()
         outputs = list()
+
+        # add max SDRAM size and n_cores which we're going to allow
+        # (debug purposes)
+        inputs["MaxSDRAMSize"] = self._read_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
+        inputs["MaxCoreID"] = self._read_config_int(
+            "Machine", "core_limit")
 
         # Set up common machine details
         self._handle_machine_common_config(inputs)
@@ -1105,10 +1179,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if inputs["MaxCoreID"] is None:
                 inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
-            # add max SDRAM size which we're going to allow (debug purposes)
-            inputs["MaxSDRAMSize"] = self._read_config_int(
-                "Machine", "max_sdram_allowed_per_chip")
-
             algorithms.append("VirtualMachineGenerator")
 
             outputs.append("MemoryMachine")
@@ -1150,68 +1220,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._max_machine_available = \
                 executor.get_item("MemoryVirtualMachine")
 
-    def _generate_machine_provenance(self):
-        # Add the version information to the provenance data at the start
-        version_provenance = list()
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_utilities_version"], spinn_utils_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_machine_version"], spinn_machine_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_storage_handlers_version"],
-            spinn_storage_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spalloc_version"], spalloc_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinnman_version"], spinnman_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "pacman_version"], pacman_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "data_specification_version"], data_spec_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "front_end_common_version"], fec_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "numpy_version"], numpy_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "scipy_version"], scipy_version))
-        if self._front_end_versions is not None:
-            for name, value in self._front_end_versions:
-                version_provenance.append(ProvenanceDataItem(
-                    names=["version_data", name], value=value))
-        return version_provenance
-
-    def _get_system_functionality_algorithms_and_inputs(self):
-        """ determines which algorithms and inputs are needed for the \
-        system functionality
-
-        :return: inputs dict and algorithm list.
-        """
-        inputs = dict()
-        algorithms = list()
-        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
-            "Machine", "enable_advanced_monitor_support")
-
-        # add algorithms for handling LPG placement and edge insertion
-        if self._live_packet_recorder_params:
-            algorithms.append("PreAllocateResourcesForLivePacketGatherers")
-            inputs['LivePacketRecorderParameters'] = \
-                self._live_packet_recorder_params
-
-        if self._config.getboolean("Reports", "write_energy_report"):
-            algorithms.append("PreAllocateResourcesForChipPowerMonitor")
-            inputs['MemorySamplingFrequency'] = self._config.getint(
-                "EnergyMonitor", "sampling_frequency")
-            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                self._config.getint(
-                    "EnergyMonitor", "n_samples_per_recording_entry")
-
-        # add algorithms for handling extra monitor code
-        if (self._config.getboolean("Machine",
-                                    "enable_advanced_monitor_support") or
-                self._config.getboolean("Machine", "enable_reinjection")):
-            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
-        return inputs, algorithms
-
     def _get_real_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
@@ -1246,6 +1254,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add max SDRAM size which we're going to allow (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
+        inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
