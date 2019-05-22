@@ -20,6 +20,9 @@
             <param_name>provenance_items</param_name>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </required_inputs>
+        <outputs>
+            <param_type>BitFieldSummary</param_type>
+        </outputs>
     </algorithm>
     <algorithm name="BoardChipReport">
         <python_module>spinn_front_end_common.utilities.report_functions.board_chip_report</python_module>
