@@ -1,4 +1,7 @@
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 import os
 import logging
 import math
@@ -8,18 +11,22 @@ import sys
 from enum import Enum
 from six.moves import xrange
 from six import reraise
+
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
+
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
+
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    ResourceContainer, SDRAMResource, IPtagResource)
+    ConstantSDRAM, IPtagResource, ResourceContainer)
+
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset)
 from spinn_front_end_common.abstract_models import (
@@ -29,7 +36,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -166,7 +173,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_resources_required():
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 SYSTEM_BYTES_REQUIREMENT +
                 DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
             iptags=[IPtagResource(
@@ -196,12 +203,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             machine_time_step, time_scale_factor):
         # pylint: disable=too-many-arguments, arguments-differ
 
-        # Setup words + 1 for flags + 1 for recording size
-        setup_size = SYSTEM_BYTES_REQUIREMENT
-
         # Create the data regions for hello world
-        DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(
-            spec, setup_size)
+        DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(spec)
 
         # write data for the simulation data item
         spec.switch_write_focus(_DATA_REGIONS.SYSTEM.value)
@@ -236,7 +239,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.end_specification()
 
     @staticmethod
-    def _reserve_memory_regions(spec, system_size):
+    def _reserve_memory_regions(spec):
         """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
@@ -246,7 +249,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         spec.reserve_memory_region(
             region=_DATA_REGIONS.SYSTEM.value,
-            size=system_size,
+            size=SIMULATION_N_BYTES,
             label='systemInfo')
         spec.reserve_memory_region(
             region=_DATA_REGIONS.CONFIG.value,
