@@ -17,4 +17,4 @@ class BitFieldSummary(object):
 
     @property
     def lowest_per_chip(self):
-        return
+        return self._lowest_per_chip

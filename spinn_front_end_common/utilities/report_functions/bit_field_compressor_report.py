@@ -32,8 +32,10 @@ class BitFieldCompressorReport(object):
         min_bit_field = sys.maxint
         total_bit_fields_merged = 0
 
+        found = False
         for prov_item in provenance_items:
             if prov_item.names[0] == PROV_TOP_NAME:
+                found = True
                 bits = prov_item.names[1].split("_")
                 writer.write(
                     "Chip {}:{} has {} bitfields merged into it\n".format(
@@ -49,8 +51,13 @@ class BitFieldCompressorReport(object):
             " per chip was {}".format(
                 total_bit_fields_merged, top_bit_field, min_bit_field))
 
-        return BitFieldSummary(
-            lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,
-            total_merged=total_bit_fields_merged)
+        if found:
+            return BitFieldSummary(
+                lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,
+                total_merged=total_bit_fields_merged)
+        else:
+            return BitFieldSummary(
+                lowest_per_chip="ERROR", max_per_chip="ERROR",
+                total_merged="ERROR")
 
 

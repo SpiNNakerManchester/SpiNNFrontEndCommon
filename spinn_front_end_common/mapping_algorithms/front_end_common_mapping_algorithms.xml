@@ -38,4 +38,20 @@
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
+    <algorithm name="FindApplicationChipsUsed">
+        <python_module>spinn_front_end_common.mapping_algorithms.find_application_chips_used</python_module>
+        <python_class>FindApplicationChipsUsed</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>placements</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>NChipsUsed</param_type>
+        </outputs>
+    </algorithm>
 </algorithms>
