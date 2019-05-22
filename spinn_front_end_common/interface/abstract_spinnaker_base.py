@@ -1047,7 +1047,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
-            
+
     def _generate_machine_provenance(self):
         # Add the version information to the provenance data at the start
         version_provenance = list()
@@ -1078,7 +1078,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     names=["version_data", name], value=value))
         return version_provenance
 
-    def _get_system_functionality_algorithms_and_inputs(self):
+    def _get_system_functionality_algorithms_and_inputs(
+            self, n_machine_time_steps):
         """ determines which algorithms and inputs are needed for the \
         system functionality
 
@@ -1239,7 +1240,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # add system algorithms/inputs as required
         system_inputs, system_algorithms = \
-            self._get_system_functionality_algorithms_and_inputs()
+            self._get_system_functionality_algorithms_and_inputs(
+                n_machine_time_steps)
         inputs.update(system_inputs)
         algorithms.extend(system_algorithms)
 
@@ -1280,7 +1282,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         do_partitioning = False
         # if the end user has requested violating the no vertex check,
         # add the app graph and let the rest work out.
-        if (self._application_graph.n_vertices != 0 or (
+        if ((self._application_graph is not None and
+                self._application_graph.n_vertices != 0) or (
                 self._config.getboolean(
                     "Mode",
                     "violate_no_vertex_in_graphs_restriction") and
