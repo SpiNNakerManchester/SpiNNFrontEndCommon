@@ -43,7 +43,6 @@ from spinn_front_end_common.interface.buffer_management.recording_utilities \
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 
-
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
 _TWO_SHORTS = struct.Struct("<HH")
