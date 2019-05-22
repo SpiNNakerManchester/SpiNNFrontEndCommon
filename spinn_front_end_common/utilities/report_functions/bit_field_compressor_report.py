@@ -5,6 +5,8 @@ import sys
 
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import PROV_TOP_NAME
+from spinn_front_end_common.utilities.report_functions.bit_field_summary import \
+    BitFieldSummary
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -19,7 +21,7 @@ class BitFieldCompressorReport(object):
 
         try:
             with open(file_name, "w") as f:
-                self._write_report(f, provenance_items)
+                return self._write_report(f, provenance_items)
         except IOError:
             logger.exception("Generate_placement_reports: Can't open file"
                              " {} for writing.", _FILE_NAME)
@@ -46,5 +48,9 @@ class BitFieldCompressorReport(object):
             "\n\nSummary: merged total {} bitfields, best per chip was {} worst"
             " per chip was {}".format(
                 total_bit_fields_merged, top_bit_field, min_bit_field))
+
+        return BitFieldSummary(
+            lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,
+            total_merged=total_bit_fields_merged)
 
 
