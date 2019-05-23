@@ -1021,7 +1021,7 @@ static void data_out_send_data_block(
     }
 }
 
-static inline data_out_dma_read(
+static inline void data_out_dma_read(
         uint32_t dma_tag, void *source, void *destination, uint n_words) {
     uint desc = DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
             (n_words * sizeof(uint));
@@ -1036,7 +1036,8 @@ static inline data_out_dma_read(
 //! \param[in] dma_tag the DMA tag associated with this read.
 //!            transmission or retransmission
 //! \param[in] offset where in the data array to start writing to
-void data_out_read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+static void data_out_read(
+        uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
     // set off DMA
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
@@ -1323,7 +1324,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
             data_out_retransmission_dma_read();
             return;
         }
-        /* no break */
+        // fall through
     case SDP_CMD_MORE_MISSING_SDP_PACKETS:
         // reset state, as could be here from multiple attempts
         if (!in_retransmission_mode) {
@@ -1471,7 +1472,7 @@ void __wrap_sark_int(void *pc) {
 #define VIC_ENABLE_VECTOR (0x20)
 #endif //VIC_ENABLE_VECTOR
 
-static inline void set_vic_callback(uint8_t slot, uint type, isr_t *callback) {
+static inline void set_vic_callback(uint8_t slot, uint type, isr_t callback) {
     vic_vectors[slot] = callback;
     vic_controls[slot] = VIC_ENABLE_VECTOR | type;
 }
