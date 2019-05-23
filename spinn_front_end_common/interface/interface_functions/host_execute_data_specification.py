@@ -15,6 +15,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, DataWritten)
+from spinn_front_end_common.utilities.helpful_functions import (
+    emergency_recover_states_from_failure)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -227,12 +229,17 @@ class HostExecuteDataSpecification(object):
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
-        if java_caller is None:
-            return self.__python_app(
-                dsg_targets, executable_targets, uses_advanced_monitors)
-        else:
-            return self.__java_app(
-                dsg_targets, executable_targets, uses_advanced_monitors)
+        try:
+            if java_caller is None:
+                return self.__python_app(
+                    dsg_targets, executable_targets, uses_advanced_monitors)
+            else:
+                return self.__java_app(
+                    dsg_targets, executable_targets, uses_advanced_monitors)
+        except:
+            emergency_recover_states_from_failure(
+                self._txrx, self._app_id, executable_targets)
+            raise
 
     def __set_router_timeouts(self):
         receiver = next(itervalues(self._core_to_conn_map))

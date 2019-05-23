@@ -1,5 +1,8 @@
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.executor.injection_decorator import inject_items
+from spinn_front_end_common.utilities.helpful_functions import (
+    emergency_recover_states_from_failure)
 
 
 class FixedRouteFromMachineReport(object):
@@ -38,13 +41,23 @@ class FixedRouteFromMachineReport(object):
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
             if not chip.virtual:
-                fixed_route = txrx.read_fixed_route(chip.x, chip.y, app_id)
+                fixed_route = self.__get_route(txrx, chip, app_id)
                 f.write("{: <3s}:{: <3s} contains route {: <10s} {}\n".format(
                     str(chip.x), str(chip.y),
                     self._reduce_route_value(
                         fixed_route.processor_ids, fixed_route.link_ids),
                     self._expand_route_value(
                         fixed_route.processor_ids, fixed_route.link_ids)))
+
+    @inject_items({
+        "executable_targets": "ExecutableTargets"})
+    def __get_route(self, txrx, chip, app_id, executable_targets=None):
+        try:
+            return txrx.read_fixed_route(chip.x, chip.y, app_id)
+        except:
+            emergency_recover_states_from_failure(
+                txrx, app_id, executable_targets)
+            raise
 
     @staticmethod
     def _reduce_route_value(processors_ids, link_ids):

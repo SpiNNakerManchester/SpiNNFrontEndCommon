@@ -356,3 +356,28 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
         placement.x, placement.y, placement.p, vertex.get_binary_start_type())
     extractor(txrx, executable_targets, executable_finder,
               sim._provenance_file_path)
+
+
+def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
+    """ Used to get at least *some* information out of a core when something\
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+
+    :param txrx: The transceiver.
+    :param app_id: The ID of the application.
+    :param executable_targets: The what/where mapping
+    """
+    # pylint: disable=protected-access
+    from spinn_front_end_common.interface.interface_functions import (
+        ChipIOBufExtractor)
+
+    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+    if rte_count or watchdog_count:
+        logger.warning(
+            "unexpected core states (rte={}, wdog={})",
+            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    sim = get_simulator()
+    extractor = ChipIOBufExtractor()
+    extractor(txrx, executable_targets, sim._executable_finder,
+              sim._provenance_file_path)
