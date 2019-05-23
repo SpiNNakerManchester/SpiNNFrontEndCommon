@@ -14,9 +14,9 @@ _ONE_WORD = struct.Struct("<I")
 
 def locate_extra_monitor_mc_receiver(
         machine, placement_x, placement_y,
-        extra_monitor_cores_to_ethernet_connection_map):
+        packet_gather_cores_to_ethernet_connection_map):
     chip = machine.get_chip_at(placement_x, placement_y)
-    return extra_monitor_cores_to_ethernet_connection_map[
+    return packet_gather_cores_to_ethernet_connection_map[
         chip.nearest_ethernet_x, chip.nearest_ethernet_y]
 
 

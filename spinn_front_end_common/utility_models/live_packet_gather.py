@@ -2,8 +2,8 @@ from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, IPtagResource, ResourceContainer,
-    SDRAMResource)
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
+    ResourceContainer)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models import (
@@ -106,7 +106,7 @@ class LivePacketGather(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 LivePacketGatherMachineVertex.get_sdram_usage()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
