@@ -47,6 +47,9 @@ _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
 _TWO_SHORTS = struct.Struct("<HH")
 
+# The microseconds per timestep will be divided by this for the max offset
+_MAX_OFFSET_DENOMINATOR = 10
+
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
@@ -79,8 +82,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
     # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
     #          9. send buffer flag before notify, 10. tag,
-    #          11. tag destination (y, x), 12. receive SDP port)
-    _CONFIGURATION_REGION_SIZE = 12 * 4
+    #          11. tag destination (y, x), 12. receive SDP port,
+    #          13. timer offset)
+    _CONFIGURATION_REGION_SIZE = 13 * 4
+
+    # Counts to do timer offsets
+    _n_vertices = 0
+    _n_data_specs = 0
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -198,6 +206,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # If the user has specified a virtual key
         if self._virtual_key is not None:
             self._install_virtual_key(n_keys)
+
+        self._n_vertices += 1
 
     @staticmethod
     def max_send_buffer_keys_per_timestep(send_buffer_times, n_keys):
@@ -484,7 +494,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec, n_machine_time_steps):
+    def _write_configuration(self, spec, machine_time_step,
+                             time_scale_factor):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
@@ -531,6 +542,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # write SDP port to which SDP packets will be received
         spec.write_value(data=self._receive_sdp_port)
 
+        # write timer offset in microseconds
+        max_offset = (
+            machine_time_step * time_scale_factor) // _MAX_OFFSET_DENOMINATOR
+        spec.write_value(
+            int(math.ceil(max_offset / self._n_vertices)) * self._n_data_specs)
+        self._n_data_specs += 1
+
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
@@ -575,7 +593,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
-        self._write_configuration(spec, data_n_time_steps)
+        self._write_configuration(
+            spec, machine_time_step, time_scale_factor)
 
         # End spec
         spec.end_specification()
