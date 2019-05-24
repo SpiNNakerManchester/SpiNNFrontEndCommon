@@ -40,6 +40,7 @@ PROV_TOP_NAME = "bit_field_router_provenance"
 PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
 
+
 class MachineBitFieldRouterCompressor(object):
 
     __slots__ = []
