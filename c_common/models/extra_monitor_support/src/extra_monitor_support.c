@@ -44,6 +44,9 @@ extern INT_HANDLER sark_int_han(void);
 
 #define SEQUENCE_NUMBER_SIZE 1
 
+#define SDP_PAYLOAD_WORDS (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)
+#define SDP_PAYLOAD_BYTES (SDP_PAYLOAD_WORDS * sizeof(uint))
+
 #define TX_NOT_FULL_MASK 0x10000000
 //-----------------------------------------------------------------------------
 //! SDP flags
@@ -64,7 +67,7 @@ typedef enum data_out_sdp_commands {
 //! timeout for trying to end SDP packet
 #define SDP_TIMEOUT 1000
 
-//! extra length adjustment for the SDP header
+//! extra length adjustment for the SDP header, in bytes
 #define LENGTH_OF_SDP_HEADER 8
 
 //-----------------------------------------------------------------------------
@@ -423,6 +426,10 @@ static inline void *sdram_alloc(uint size) {
 static inline void sdram_free(void *data) {
     sark_xfree(sv->sdram_heap, data,
             ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
+}
+
+static inline uint sdram_max_block_size(void) {
+    return sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
 }
 
 // ------------------------------------------------------------------------
@@ -885,7 +892,7 @@ void data_in_read_and_load_router_entries(
                 sdram_address[idx].mask != INVALID_ROUTER_ENTRY_MASK &&
                 sdram_address[idx].route != INVALID_ROUTER_ENTRY_ROUTE) {
             io_printf(IO_BUF,
-                    "setting key %08x, mask %08x, route %u08x for entry %u\n",
+                    "setting key %08x, mask %08x, route %08x for entry %u\n",
                     sdram_address[idx].key, sdram_address[idx].mask,
                     sdram_address[idx].route, idx + start_entry_id);
             // try setting the valid router entry
@@ -1079,10 +1086,9 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
     //          number_of_elements_to_read_from_sdram);
     if (position_in_store < n_elements_to_read_from_sdram - 1) {
         //io_printf(IO_BUF, "setting off another DMA\n");
-        uint32_t num_items_to_read =
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
-        uint32_t next_position_in_store = position_in_store +
-                (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+        uint32_t num_items_to_read = SDP_PAYLOAD_WORDS;
+        uint32_t next_position_in_store =
+                position_in_store + SDP_PAYLOAD_WORDS;
 
         // if less data needed request less data
         if (next_position_in_store >= n_elements_to_read_from_sdram) {
@@ -1117,16 +1123,15 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
 //! \param[in] length: length of data
 //! \param[in] start_offset: where in the data to start writing in from.
 static void data_out_write_missing_sdp_seq_nums_into_sdram(
-        uint32_t data[], ushort length, uint32_t start_offset) {
-    for (ushort offset=start_offset; offset < length; offset ++) {
-        missing_sdp_seq_num_sdram_address[
-                n_missing_seq_nums_in_sdram + (offset - start_offset)] =
-                        data[offset];
-        if (data[offset] > max_seq_num) {
+        uint32_t data[], uint length, uint32_t start_offset) {
+    for (uint i = start_offset, j = n_missing_seq_nums_in_sdram; i < length;
+            i++, j++) {
+        missing_sdp_seq_num_sdram_address[j] = data[i];
+        if (data[i] > max_seq_num) {
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
-            data[offset], max_seq_num);
+                    data[i], max_seq_num);
         } else {
-            //io_printf(IO_BUF, "storing seq num. %d \n", data[offset]);
+            //io_printf(IO_BUF, "storing seq num. %d\n", data[i]);
         }
     }
     n_missing_seq_nums_in_sdram += length - start_offset;
@@ -1138,7 +1143,7 @@ static void data_out_write_missing_sdp_seq_nums_into_sdram(
 //! \param[in] first: if first packet about missing sequence numbers. If so
 //! there is different behaviour
 static void data_out_store_missing_seq_nums(
-        uint32_t data[], ushort length, bool first) {
+        uint32_t data[], uint length, bool first) {
     uint32_t start_reading_offset = 1;
     if (first) {
         n_missing_seq_sdp_packets =
@@ -1157,18 +1162,15 @@ static void data_out_store_missing_seq_nums(
         // if not got enough sdram to alllocate all missing seq nums
         if (missing_sdp_seq_num_sdram_address == NULL) {
             // biggest sdram block
-            uint32_t max_bytes = sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
+            uint32_t max_bytes = sdram_max_block_size();
 
             // if can hold more than this packets worth of data
-            if (max_bytes >= (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)
-                    * sizeof(uint) + END_FLAG_SIZE) {
+            if (max_bytes >= SDP_PAYLOAD_BYTES + END_FLAG_SIZE) {
                 io_printf(IO_BUF, "Activate bacon protocol!");
                 // allocate biggest block
                 missing_sdp_seq_num_sdram_address = sdram_alloc(max_bytes);
                 // determine max full seq num packets to store
-                max_bytes -= END_FLAG_SIZE
-                        + (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)
-                        * sizeof(uint);
+                max_bytes -= END_FLAG_SIZE + SDP_PAYLOAD_BYTES;
                 n_missing_seq_sdp_packets = 1
                         + max_bytes / (ITEMS_PER_DATA_PACKET * sizeof(uint));
             } else {
@@ -1219,8 +1221,7 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     //         missing_seq_num_being_processed);
     if (missing_seq_num_being_processed != END_FLAG) {
         // regenerate data
-        position_in_store = missing_seq_num_being_processed *
-                (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+        position_in_store = missing_seq_num_being_processed * SDP_PAYLOAD_WORDS;
         uint32_t left_over_portion =
                 bytes_to_read_write / sizeof(uint) - position_in_store;
 
@@ -1228,13 +1229,12 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
         //missing_seq_num_being_processed, position_in_store,
         //left_over_portion);
 
-        if (left_over_portion < ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
+        if (left_over_portion < SDP_PAYLOAD_WORDS) {
             retransmitted_seq_num_items_read = left_over_portion + 1;
             data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
         } else {
             retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
-            data_out_read(DMA_TAG_RETRANSMISSION_READING, 1,
-                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+            data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, SDP_PAYLOAD_WORDS);
         }
     } else {        // finished data send, tell host its done
         data_out_send_end_flag();
@@ -1294,18 +1294,15 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         first_transmission = true;
         transmit_dma_pointer = 0;
         position_in_store = 0;
-        n_elements_to_read_from_sdram = (uint)
-                (bytes_to_read_write / sizeof(uint));
+        n_elements_to_read_from_sdram = bytes_to_read_write / sizeof(uint);
         //io_printf(IO_BUF, "elements to read %d \n",
         //          number_of_elements_to_read_from_sdram);
 
-        if (n_elements_to_read_from_sdram <
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
+        if (n_elements_to_read_from_sdram < SDP_PAYLOAD_WORDS) {
             data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
                     n_elements_to_read_from_sdram);
         } else {
-            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 1, SDP_PAYLOAD_WORDS);
         }
         return;
     }

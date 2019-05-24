@@ -230,7 +230,7 @@ static inline void send_mc_message(uint command, uint payload) {
 //! \param[in] sdram_address: the sdram address where this block of data is
 //                            to be written on
 static void process_sdp_message_into_mc_messages(
-        uint *data, uint n_elements, bool send_sdram_address,
+        const uint *data, uint n_elements, bool send_sdram_address,
         uint sdram_address) {
     // determine size of data to send
     //log_info("starting process sdp message for chip %d, %d", chip_x, chip_y);
