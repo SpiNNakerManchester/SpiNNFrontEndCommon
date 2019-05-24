@@ -286,14 +286,15 @@ class DatabaseWriter(object):
                 machine.max_chip_x + 1, machine.max_chip_y + 1)
             self._machine_id += 1
             for chip in machine.chips:
-                self.__insert_machine_chip(
-                    len(list(chip.processors)), chip, self._machine_id)
-                for processor in chip.processors:
-                    self.__insert_processor(
-                        chip, self._machine_id,
-                        processor.dtcm_available,
-                        processor.cpu_cycles_available,
-                        processor.processor_id)
+                if not chip.virtual:
+                    self.__insert_machine_chip(
+                        len(list(chip.processors)), chip, self._machine_id)
+                    for processor in chip.processors:
+                        self.__insert_processor(
+                            chip, self._machine_id,
+                            processor.dtcm_available,
+                            processor.cpu_cycles_available,
+                            processor.processor_id)
 
     def add_application_vertices(self, application_graph):
         """
