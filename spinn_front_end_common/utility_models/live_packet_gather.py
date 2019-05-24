@@ -1,7 +1,5 @@
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
-from pacman.model.constraints.placer_constraints import (
-    RadialPlacementFromChipConstraint)
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
@@ -54,9 +52,6 @@ class LivePacketGather(
             label = "Live Packet Gatherer"
 
         super(LivePacketGather, self).__init__(label, constraints, 1)
-
-        # Try to place this near the Ethernet
-        self.add_constraint(RadialPlacementFromChipConstraint(0, 0))
 
         # storage objects
         self._iptags = None
