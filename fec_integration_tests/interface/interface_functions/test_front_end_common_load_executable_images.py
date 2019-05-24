@@ -1,5 +1,8 @@
 import unittest
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from spinn_front_end_common.interface.interface_functions import (

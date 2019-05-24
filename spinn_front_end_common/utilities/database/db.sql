@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS Machine_chip(
     chip_y INTEGER,
     machine_id INTEGER,
     avilableSDRAM INTEGER,
+    ip_address INTEGER,
+    nearest_ethernet_x INTEGER,
+    nearest_ethernet_y INTEGER,
     PRIMARY KEY (chip_x, chip_y, machine_id),
     FOREIGN KEY (machine_id)
         REFERENCES Machine_layout(machine_id));
