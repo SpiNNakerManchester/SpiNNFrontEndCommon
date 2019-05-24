@@ -1,8 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
-    SpecificChipSDRAMResource, CoreResource, PreAllocatedResourceContainer)
-from pacman.model.resources.specific_board_iptag_resource import (
-    SpecificBoardTagResource)
+    SpecificChipSDRAMResource, CoreResource,
+    PreAllocatedResourceContainer, SpecificBoardIPtagResource)
 from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
 from spinn_front_end_common.utility_models import (
@@ -58,12 +57,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param progress: the progress bar to operate one
         :rtype: None
         """
-        sdram_usage = \
+        extra_usage = \
             ExtraMonitorSupportMachineVertex.static_resources_required()
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
             sdrams.append(SpecificChipSDRAMResource(
-                chip=chip, sdram_usage=sdram_usage.sdram.get_value()))
+                chip=chip, sdram_usage=extra_usage.sdram))
 
     @staticmethod
     def _handle_packet_gathering_support(
@@ -93,10 +92,10 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             # do resources. SDRAM, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
-                sdram_usage=resources.sdram.get_value()))
+                sdram_usage=resources.sdram))
             cores.append(CoreResource(
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
-            tags.append(SpecificBoardTagResource(
+            tags.append(SpecificBoardIPtagResource(
                 board=ethernet_connected_chip.ip_address,
                 ip_address=resources.iptags[0].ip_address,
                 port=resources.iptags[0].port,

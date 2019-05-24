@@ -1,4 +1,7 @@
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
@@ -51,7 +54,8 @@ class InsertLivePacketGatherersToGraphs(object):
             app_vtx = self._create_vertex(LivePacketGather, params)
             app_graph.add_vertex(app_vtx)
             resources = app_vtx.get_resources_used_by_atoms(_slice)
-            m_vtx = app_vtx.create_machine_vertex(_slice, resources)
+            m_vtx = app_vtx.create_machine_vertex(
+                _slice, resources, label="LivePacketGatherer")
             mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
             m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)

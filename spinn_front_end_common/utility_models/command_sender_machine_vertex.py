@@ -1,11 +1,10 @@
-from collections import Counter
 from enum import Enum
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
-from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
@@ -15,7 +14,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SARK_PER_MALLOC_SDRAM_USAGE)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -28,11 +27,10 @@ class CommandSenderMachineVertex(
     DATA_REGIONS = Enum(
         value="DATA_REGIONS",
         names=[('SYSTEM_REGION', 0),
-               ('SETUP', 1),
-               ('COMMANDS_WITH_ARBITRARY_TIMES', 2),
-               ('COMMANDS_AT_START_RESUME', 3),
-               ('COMMANDS_AT_STOP_PAUSE', 4),
-               ('PROVENANCE_REGION', 5)])
+               ('COMMANDS_WITH_ARBITRARY_TIMES', 1),
+               ('COMMANDS_AT_START_RESUME', 2),
+               ('COMMANDS_AT_STOP_PAUSE', 3),
+               ('PROVENANCE_REGION', 4)])
 
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
     _COMMAND_WITH_PAYLOAD_SIZE = 20
@@ -48,12 +46,6 @@ class CommandSenderMachineVertex(
 
     # bool for if the command does not have a payload (false = 0)
     _HAS_NO_PAYLOAD = 0
-
-    # Setup data size (one word)
-    _SETUP_DATA_SIZE = 4
-
-    # the number of malloc requests used by the DSG
-    TOTAL_REQUIRED_MALLOCS = 5
 
     # The name of the binary file
     BINARY_FILE_NAME = 'command_sender_multicast_source.aplx'
@@ -133,12 +125,10 @@ class CommandSenderMachineVertex(
             self.get_n_command_bytes(self._commands_at_start_resume) +
             self.get_n_command_bytes(self._commands_at_pause_stop) +
             SYSTEM_BYTES_REQUIREMENT +
-            self.get_provenance_data_size(0) +
-            (self.get_number_of_mallocs_used_by_dsg() *
-             SARK_PER_MALLOC_SDRAM_USAGE))
+            self.get_provenance_data_size(0))
 
         # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=SDRAMResource(sdram))
+        return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
@@ -172,23 +162,6 @@ class CommandSenderMachineVertex(
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
-
-        # Write setup region
-        # Find the maximum number of commands per timestep
-        max_n_commands = 0
-        if self._timed_commands:
-            counter = Counter(self._timed_commands)
-            max_n_commands = counter.most_common(1)[0][1]
-        max_n_commands = max([
-            max_n_commands, len(self._commands_at_start_resume),
-            len(self._commands_at_pause_stop)])
-        time_between_commands = 0
-        if max_n_commands > 0:
-            time_between_commands = (
-                (machine_time_step * time_scale_factor // 2) // max_n_commands)
-        spec.switch_write_focus(
-            CommandSenderMachineVertex.DATA_REGIONS.SETUP.value)
-        spec.write_value(int(time_between_commands))
 
         # write commands
         spec.switch_write_focus(
@@ -258,11 +231,7 @@ class CommandSenderMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
-            size=SYSTEM_BYTES_REQUIREMENT, label='system')
-
-        spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.DATA_REGIONS.SETUP.value,
-            size=CommandSenderMachineVertex._SETUP_DATA_SIZE, label='setup')
+            size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.
@@ -310,10 +279,6 @@ class CommandSenderMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
-
-    @staticmethod
-    def get_number_of_mallocs_used_by_dsg():
-        return CommandSenderMachineVertex.TOTAL_REQUIRED_MALLOCS
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
