@@ -236,10 +236,10 @@ class HostExecuteDataSpecification(object):
             else:
                 return self.__java_app(
                     dsg_targets, executable_targets, uses_advanced_monitors)
-        except:
-            emergency_recover_states_from_failure(
-                self._txrx, self._app_id, executable_targets)
-            raise
+        finally:
+            if uses_advanced_monitors:
+                emergency_recover_states_from_failure(
+                    self._txrx, self._app_id, executable_targets)
 
     def __set_router_timeouts(self):
         receiver = next(itervalues(self._core_to_conn_map))
