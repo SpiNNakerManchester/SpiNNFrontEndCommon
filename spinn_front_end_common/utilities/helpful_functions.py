@@ -345,10 +345,11 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     if rte_count or watchdog_count:
         logger.warning(
             "unexpected core states (rte={}, wdog={})",
-            rte_count, watchdog_count)
+            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
 
     sim = get_simulator()
-    extractor = ChipIOBufExtractor()
+    extractor = ChipIOBufExtractor(recovery_mode=True)
     executable_targets = ExecutableTargets()
     executable_finder = sim._executable_finder
     executable_targets.add_processor(
@@ -378,6 +379,6 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
             txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
             txrx.get_cores_in_state(None, CPUState.WATCHDOG))
     sim = get_simulator()
-    extractor = ChipIOBufExtractor()
+    extractor = ChipIOBufExtractor(recovery_mode=True)
     extractor(txrx, executable_targets, sim._executable_finder,
               sim._provenance_file_path)

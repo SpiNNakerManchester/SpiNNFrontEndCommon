@@ -357,7 +357,7 @@ router_entry_t *saved_application_router_table = NULL;
 uint data_in_address_key = 0;
 uint data_in_data_key = 0;
 uint data_in_start_key = 0;
-address_t data_in_write_address = NULL;
+address_t data_in_write_address = NULL, first_write_address = NULL;
 
 // ------------------------------------------------------------------------
 // global variables for data speed up out functionality
@@ -820,8 +820,9 @@ static void clear_router(void) {
 static inline void data_in_process_address(uint data) {
     //io_printf(IO_BUF, "address key\n");
 
-    io_printf(IO_BUF, "setting address to %u\n", data);
+    io_printf(IO_BUF, "setting address to %08x\n", data);
     data_in_write_address = (address_t) data;
+    first_write_address = data_in_write_address;
 }
 
 static inline void data_in_process_data(uint data) {
@@ -837,8 +838,10 @@ static inline void data_in_process_data(uint data) {
 }
 
 static inline void data_in_process_start(void) {
-    io_printf(IO_BUF, "starting key\n");
+    uint written_words = data_in_write_address - first_write_address;
+    io_printf(IO_BUF, "wrote %u words\n", written_words);
     data_in_write_address = NULL;
+    first_write_address = NULL;
 }
 
 //! \brief process a mc packet with payload
@@ -1084,7 +1087,7 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
     // if a full packet, read another and try again
     //io_printf(IO_BUF, "next position %d, elements %d\n", position_in_store,
     //          number_of_elements_to_read_from_sdram);
-    if (position_in_store < n_elements_to_read_from_sdram - 1) {
+    if (position_in_store < n_elements_to_read_from_sdram) {
         //io_printf(IO_BUF, "setting off another DMA\n");
         uint32_t num_items_to_read = SDP_PAYLOAD_WORDS;
         uint32_t next_position_in_store =

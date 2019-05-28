@@ -180,6 +180,8 @@ static uint data_in_mc_key_map[MAX_CHIP_ID][MAX_CHIP_ID] = {{0}};
 static uint chip_x = 0;
 static uint chip_y = 0;
 static bit_field_t missing_seq_nums_store = NULL;
+uint size_of_bitfield = 0;
+static bool alloc_in_sdram = false;
 static uint total_received_seq_nums = 0;
 static uint last_seen_seq_num = 0;
 static uint start_sdram_address = 0;
@@ -254,39 +256,52 @@ static void process_sdp_message_into_mc_messages(
     }
 }
 
-//! try allocating bitfield to DTCM for missing seq nums
-static inline bool allocate_dtcm_bitfield(uint size) {
-    missing_seq_nums_store = spin1_malloc(size * sizeof(uint32_t));
-    return (missing_seq_nums_store != NULL);
-}
-
 //! \brief creates a store for seq nums in a memory store.
 //! \param[in] max_seq_num: the max seq num expected during this stage
 static void create_sequence_number_bitfield(uint size) {
-    max_seq_num = size;
-    uint size_of_bitfield = get_bit_field_size(size);
-    if (size >= SDRAM_VS_DTCM_THRESHOLD ||
-            !allocate_dtcm_bitfield(size_of_bitfield)) {
-        missing_seq_nums_store = sark_xalloc(
-                sv->sdram_heap, size_of_bitfield * sizeof(uint32_t), 0,
-                ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
-        if (missing_seq_nums_store == NULL) {
-            log_error("Failed to allocate %u bytes for missing seq num store",
-                    size_of_bitfield * sizeof(uint32_t));
-            rt_error(RTE_SWERR);
+    size_of_bitfield = get_bit_field_size(size + 1);
+    if (max_seq_num != size) {
+        max_seq_num = size;
+        alloc_in_sdram = false;
+        if (size >= SDRAM_VS_DTCM_THRESHOLD || (NULL ==
+                (missing_seq_nums_store = spin1_malloc(
+                        size_of_bitfield * sizeof(uint32_t))))) {
+            missing_seq_nums_store = sark_xalloc(
+                    sv->sdram_heap, size_of_bitfield * sizeof(uint32_t), 0,
+                    ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
+            if (missing_seq_nums_store == NULL) {
+                log_error("Failed to allocate %u bytes for missing seq num store",
+                        size_of_bitfield * sizeof(uint32_t));
+                rt_error(RTE_SWERR);
+            }
+            alloc_in_sdram = true;
         }
     }
     log_info("clearing bit field");
     clear_bit_field(missing_seq_nums_store, size_of_bitfield);
 }
 
+static inline void free_sequence_number_bitfield(void) {
+    if (alloc_in_sdram) {
+        sark_xfree(sv->sdram_heap, missing_seq_nums_store,
+                ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
+    } else {
+        sark_free(missing_seq_nums_store);
+    }
+    missing_seq_nums_store = NULL;
+    max_seq_num = 0;
+}
+
 //! \brief determines how many missing seq packets will be needed.
 static inline uint data_in_n_missing_seq_packets(void) {
-    uint missing_seq = max_seq_num - total_received_seq_nums;
+    uint received = count_bit_field(missing_seq_nums_store, size_of_bitfield);
+    uint missing_seq = max_seq_num - received;
     missing_seq -= ITEMS_PER_DATA_PACKET - 2;
     const uint denom = ITEMS_PER_DATA_PACKET - 1;
     uint num = missing_seq / denom, rem = missing_seq % denom;
-    return num + (rem > 0);
+    uint packets_to_send = num + (rem > 0 ? 1 : 0);
+    log_info("requesting resend with %u missing seq packets", packets_to_send);
+    return packets_to_send;
 }
 
 //! \brief calculates the new sdram location for a given seq num
@@ -330,40 +345,39 @@ void process_missing_seq_nums_and_request_retransmission(void) {
         //log_info("length of end data = %d", my_msg.length);
         send_sdp_message();
         log_info("sent end flag");
-        sark_free(missing_seq_nums_store);
-        missing_seq_nums_store = NULL;
+        free_sequence_number_bitfield();
         total_received_seq_nums = 0;
         return;
     }
 
     // sending missing seq nums
 
-    log_info("looking for %u missing packets",
-            max_seq_num - total_received_seq_nums);
+    log_info("looking for %d missing packets",
+            ((int) max_seq_num) - ((int) total_received_seq_nums));
+    const uint *end_of_buffer = (uint *) (payload + 1);
+    uint *data_start, *data_ptr;
     payload->first.command = SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD;
     payload->first.n_packets = data_in_n_missing_seq_packets();
-    uint *buffer = payload->first.data;
-    const uint *end_of_buffer = (uint *) (payload + 1);
-    uint *data_ptr = buffer;
-    for (uint bit = 0; bit < max_seq_num; bit++) {
+    data_ptr = data_start = payload->first.data;
+    for (uint bit = 1; bit <= max_seq_num; bit++) {
         if (bit_field_test(missing_seq_nums_store, bit)) {
             continue;
         }
 
-        //log_info("adding missing seq num %d", bit + 1);
-        *(data_ptr++) = bit + 1;
+        //log_info("adding missing seq num %d", bit);
+        *(data_ptr++) = bit;
         if (data_ptr >= end_of_buffer) {
             //log_info("sending missing data packet");
-            my_msg.length = sizeof(sdp_hdr_t) + (data_ptr - buffer) * sizeof(uint);
+            my_msg.length = &my_msg.flags - (uint8_t *) data_ptr;
             send_sdp_message();
             payload->more.command = SDP_SEND_MISSING_SEQ_DATA_IN_CMD;
-            data_ptr = buffer = payload->more.data;
+            data_ptr = data_start = payload->more.data;
         }
     }
     // send final message if required
     //log_info("checking final packet");
-    if (data_ptr > buffer) {
-        my_msg.length = sizeof(sdp_hdr_t) + (data_ptr - buffer) * sizeof(uint);
+    if (data_ptr > data_start) {
+        my_msg.length = &my_msg.flags - (uint8_t *) data_ptr;
         //log_info("sending missing final packet");
         send_sdp_message();
     }
@@ -375,7 +389,7 @@ void process_missing_seq_nums_and_request_retransmission(void) {
 static inline uint n_elements_in_msg(
         const sdp_msg_pure_data *msg, const uint *data_start) {
     // Offset in bytes from the start of the SDP message to where the data is
-    uint offset = &msg->flags - (uint8_t *) data_start;
+    uint offset = ((uint8_t *) data_start) - &msg->flags;
     return (msg->length - offset) / sizeof(uint);
 }
 
@@ -418,21 +432,21 @@ static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
 static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     const receive_seq_data_msg_t *receive_data_cmd =
             (receive_seq_data_msg_t *) msg->data;
-    uint seq = receive_data_cmd->seq_num - 1;
+    uint seq = receive_data_cmd->seq_num;
     log_info("sequence data (seq:%u)", seq);
-    if (seq >= max_seq_num) {
+    if (seq > max_seq_num) {
         log_error("bad sequence number %u when max is %u", seq, max_seq_num);
         return;
     }
 
     uint this_sdram_address = calculate_sdram_address_from_seq_num(seq);
-    bool send_sdram_address = (last_seen_seq_num != seq);
+    bool send_sdram_address = (last_seen_seq_num != seq - 1);
 
     if (!bit_field_test(missing_seq_nums_store, seq)) {
         bit_field_set(missing_seq_nums_store, seq);
         total_received_seq_nums++;
     }
-    last_seen_seq_num = receive_data_cmd->seq_num;
+    last_seen_seq_num = seq;
 
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
     if (chip_x == 0 && chip_y == 0) {
@@ -442,7 +456,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     } else {
         // transmit data to chip; the data lasts to the end of the message
         process_sdp_message_into_mc_messages(
-                receive_data_cmd->data,  n_elements,
+                receive_data_cmd->data, n_elements,
                 send_sdram_address, this_sdram_address);
     }
 }
