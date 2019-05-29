@@ -33,11 +33,12 @@ class ChipIOBufExtractor(object):
 
         error_entries = list()
         warn_entries = list()
+        label = (("Recovering" if self._recovery_mode else "Extracting")
+                 + " IOBUF from the machine")
 
         # all the cores
         if from_cores == "ALL":
-            progress = ProgressBar(len(executable_targets.binaries),
-                                   "Extracting IOBUF from the machine")
+            progress = ProgressBar(len(executable_targets.binaries), label)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
                 self._run_for_core_subsets(
@@ -47,8 +48,7 @@ class ChipIOBufExtractor(object):
         elif from_cores:
             if binary_types:
                 # bit of both
-                progress = ProgressBar(len(executable_targets.binaries),
-                                       "Extracting IOBUF from the machine")
+                progress = ProgressBar(len(executable_targets.binaries), label)
                 binaries = executable_finder.get_executable_paths(binary_types)
                 iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
@@ -66,8 +66,7 @@ class ChipIOBufExtractor(object):
 
             else:
                 # some hard coded cores
-                progress = ProgressBar(len(executable_targets.binaries),
-                                       "Extracting IOBUF from the machine")
+                progress = ProgressBar(len(executable_targets.binaries), label)
                 iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     core_subsets = iocores.intersect(
@@ -80,8 +79,7 @@ class ChipIOBufExtractor(object):
             if binary_types:
                 # some binaries
                 binaries = executable_finder.get_executable_paths(binary_types)
-                progress = ProgressBar(len(binaries),
-                                       "Extracting IOBUF from the machine")
+                progress = ProgressBar(len(binaries), label)
                 for binary in progress.over(binaries):
                     core_subsets = executable_targets.get_cores_for_binary(
                         binary)

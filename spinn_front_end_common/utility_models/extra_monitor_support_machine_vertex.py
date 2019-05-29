@@ -275,9 +275,6 @@ class ExtraMonitorSupportMachineVertex(
             route |= Router.convert_routing_table_entry_to_spinnaker_route(
                 entry)
             spec.write_value(route)
-            # log.info("key {}", entry.routing_entry_key)
-            # log.info("mask {}", entry.mask)
-            # log.info("route {}", route)
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -296,7 +293,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: which vertices to use
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
@@ -328,7 +325,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: \
             the set of vertices to change the local chip for.
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
@@ -351,6 +348,7 @@ class ExtraMonitorSupportMachineVertex(
         :type extra_monitor_cores_to_set: \
             iterable(:py:class:`ExtraMonitorSupportMachineVertex`)
         """
+        # pylint: disable=bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
@@ -371,6 +369,7 @@ class ExtraMonitorSupportMachineVertex(
         :type extra_monitor_cores_to_set: \
             iterable(:py:class:`ExtraMonitorSupportMachineVertex`)
         """
+        # pylint: disable=bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ClearQueueProcess(transceiver.scamp_connection_selector)
@@ -389,6 +388,7 @@ class ExtraMonitorSupportMachineVertex(
         :param placements: the placements object
         :return: the reinjection status for this vertex
         """
+        # pylint: disable=bare-except
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         try:
@@ -409,6 +409,7 @@ class ExtraMonitorSupportMachineVertex(
         :param transceiver: the spinnMan interface
         :rtype: None
         """
+        # pylint: disable=bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
@@ -444,7 +445,7 @@ class ExtraMonitorSupportMachineVertex(
         :type fixed_route: bool or None
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, bare-except
         if multicast is not None:
             self._reinject_multicast = multicast
         if point_to_point is not None:
@@ -483,6 +484,7 @@ class ExtraMonitorSupportMachineVertex(
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :rtype: None
         """
+        # pylint: disable=bare-except
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetSystemMCRoutesProcess(
@@ -510,6 +512,7 @@ class ExtraMonitorSupportMachineVertex(
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :rtype: None
         """
+        # pylint: disable=bare-except
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetApplicationMCRoutesProcess(

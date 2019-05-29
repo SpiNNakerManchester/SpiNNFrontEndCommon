@@ -25,7 +25,6 @@ class DataInMulticastRoutingGenerator(object):
     extra monitor cores.
     """
 
-
     def __call__(self, machine, extra_monitor_cores, placements,
                  board_version):
         # pylint: disable=attribute-defined-outside-init

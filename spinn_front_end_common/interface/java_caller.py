@@ -8,7 +8,8 @@ from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.utilities.file_format_converters.convert_to_java_machine import (
     ConvertToJavaMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.interface.buffer_management.buffer_models.abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

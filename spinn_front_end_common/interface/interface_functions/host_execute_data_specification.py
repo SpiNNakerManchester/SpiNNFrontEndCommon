@@ -83,6 +83,7 @@ class HostExecuteDataSpecification(object):
         self._txrx = None
         self._write_info_map = None
 
+    # Is this method unused now?
     def __call__(
             self, transceiver, machine, app_id, dsg_targets,
             report_folder=None, java_caller=None,
@@ -127,10 +128,8 @@ class HostExecuteDataSpecification(object):
         self._machine = machine
         self._txrx = transceiver
         self._write_info_map = processor_to_app_data_base_address
-        if java_caller is None:
-            return self.__python_all(dsg_targets)
-        else:
-            return self.__java_all(dsg_targets)
+        impl_method = self.__java_all if java_caller else self.__python_all
+        return impl_method(dsg_targets)
 
     def __java_all(self, dsg_targets):
         """ Does the Data Specification Execution and loading using Java
@@ -216,7 +215,7 @@ class HostExecuteDataSpecification(object):
             map of placement and DSG data
         :return: map of placement and DSG data
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, bare-except
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
         self._write_info_map = processor_to_app_data_base_address
@@ -229,13 +228,10 @@ class HostExecuteDataSpecification(object):
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
+        impl_method = self.__java_app if java_caller else self.__python_app
         try:
-            if java_caller is None:
-                return self.__python_app(
-                    dsg_targets, executable_targets, uses_advanced_monitors)
-            else:
-                return self.__java_app(
-                    dsg_targets, executable_targets, uses_advanced_monitors)
+            return impl_method(
+                dsg_targets, executable_targets, uses_advanced_monitors)
         except:
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(
@@ -349,11 +345,8 @@ class HostExecuteDataSpecification(object):
         self._app_id = app_id
         self._db_folder = report_folder
         self._java = java_caller
-
-        if java_caller is None:
-            return self.__python_sys(dsg_targets, executable_targets)
-        else:
-            return self.__java_sys(dsg_targets, executable_targets)
+        impl_method = self.__java_sys if java_caller else self.__python_sys
+        return impl_method(dsg_targets, executable_targets)
 
     def __java_sys(self, dsg_targets, executable_targets):
         """ Does the Data Specification Execution and loading using Java

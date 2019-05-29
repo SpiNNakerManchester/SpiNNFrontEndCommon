@@ -147,7 +147,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.ds_mark_as_system)
     def ds_mark_as_system(self, core_list):
         with self._db:
-            for xyp  in core_list:
+            for xyp in core_list:
                 self._db.execute(
                     "UPDATE core SET is_system = 1 "
                     "WHERE x = ? AND y = ? AND processor = ?", xyp)

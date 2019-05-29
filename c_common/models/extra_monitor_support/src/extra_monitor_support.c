@@ -818,9 +818,7 @@ static void clear_router(void) {
 }
 
 static inline void data_in_process_address(uint data) {
-    //io_printf(IO_BUF, "address key\n");
-
-    io_printf(IO_BUF, "setting address to %08x\n", data);
+    io_printf(IO_BUF, "Setting write address to %08x\n", data);
     data_in_write_address = (address_t) data;
     first_write_address = data_in_write_address;
 }
@@ -829,17 +827,15 @@ static inline void data_in_process_data(uint data) {
     // data keys require writing to next point in sdram
 
     if (data_in_write_address == NULL) {
-        io_printf(IO_BUF, "address not set when write data received!\n");
+        io_printf(IO_BUF, "Write address not set when write data received!\n");
         rt_error(RTE_SWERR);
     }
-
-    //io_printf(IO_BUF, "data key, and pos %d\n", data_in_write_pointer);
     *data_in_write_address++ = data;
 }
 
 static inline void data_in_process_start(void) {
     uint written_words = data_in_write_address - first_write_address;
-    io_printf(IO_BUF, "wrote %u words\n", written_words);
+    io_printf(IO_BUF, "Wrote %u words\n", written_words);
     data_in_write_address = NULL;
     first_write_address = NULL;
 }
@@ -850,8 +846,6 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
 
-    //io_printf(IO_BUF, "received mc with key %u, data %u\n", key, data);
-
     // check if key is address or data key
     // address key means the payload is where to start writing from
     if (key == data_in_address_key) {
@@ -861,14 +855,12 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
     } else if (key == data_in_start_key) {
         data_in_process_start();
     } else {
-        io_printf(IO_BUF, "failed to recognise mc key %u; "
+        io_printf(IO_BUF, "Failed to recognise mc key %u; "
                 "only understand keys (%u, %u, %u)\n",
                 key, data_in_address_key, data_in_data_key, data_in_start_key);
     }
-    //io_printf(IO_BUF, "telling vic to restart\n");
     // and tell VIC we're done
     vic[VIC_VADDR] = (uint) vic;
-    //io_printf(IO_BUF, "told vic to restart\n");
 }
 
 //! \brief private method for writing router entries to the router.
@@ -876,18 +868,18 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
 //! \param[in] n_entries: how many router entries to read in
 void data_in_read_and_load_router_entries(
         router_entry_t *sdram_address, uint n_entries) {
-    io_printf(IO_BUF, "writing %u router entries\n", n_entries);
+    io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
     if (n_entries == 0) {
         return;
     }
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
     if (start_entry_id == 0) {
-        io_printf(IO_BUF, "received error with requesting %u router entries."
+        io_printf(IO_BUF, "Received error with requesting %u router entries."
                 " Shutting down\n", n_entries);
         rt_error(RTE_SWERR);
     }
 
-    io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
+    io_printf(IO_BUF, "Got start entry id of %d\n", start_entry_id);
     for (uint idx = 0; idx < n_entries; idx++) {
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
@@ -895,15 +887,13 @@ void data_in_read_and_load_router_entries(
                 sdram_address[idx].mask != INVALID_ROUTER_ENTRY_MASK &&
                 sdram_address[idx].route != INVALID_ROUTER_ENTRY_ROUTE) {
             io_printf(IO_BUF,
-                    "setting key %08x, mask %08x, route %08x for entry %u\n",
+                    "Setting key %08x, mask %08x, route %08x for entry %u\n",
                     sdram_address[idx].key, sdram_address[idx].mask,
                     sdram_address[idx].route, idx + start_entry_id);
             // try setting the valid router entry
-            //io_printf(IO_BUF, "writing entry \n ");
-
             if (rtr_mc_set(idx + start_entry_id, sdram_address[idx].key,
                     sdram_address[idx].mask, sdram_address[idx].route) != 1) {
-                io_printf(IO_BUF, "failed to write router entry %d, "
+                io_printf(IO_BUF, "Failed to write router entry %d, "
                         "with key %08x, mask %08x, route %08x\n",
                         idx + start_entry_id, sdram_address[idx].key,
                         sdram_address[idx].mask, sdram_address[idx].route);
@@ -919,13 +909,11 @@ void data_in_read_router(void) {
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
             entry_id < N_ROUTER_ENTRIES; entry_id++, i++) {
         (void) rtr_mc_get(entry_id, &router_entry);
-        //io_printf(IO_BUF, "route and app id, %u \n", entry->route);
         // move to sdram
         saved_application_router_table[i].key = router_entry.key;
         saved_application_router_table[i].mask = router_entry.mask;
         saved_application_router_table[i].route = router_entry.route;
     }
-    //io_printf(IO_BUF, "finished read of app table\n");
 }
 
 //! \brief sets up system routes on router. required by the data in speed
@@ -933,23 +921,15 @@ void data_in_read_router(void) {
 void data_in_speed_up_load_in_system_tables(data_in_data_items_t *items) {
     // read in router table into app store in sdram (in case its changed
     // since last time)
-    //io_printf(IO_BUF, "read router\n");
+    io_printf(IO_BUF, "Saving existing router table\n");
     data_in_read_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
-    //io_printf(IO_BUF, "clear router\n");
     clear_router();
-    //io_printf(IO_BUF, "cleared router\n");
 
     // read in and load routing table entries
-    //io_printf(IO_BUF, "load system routes\n");
-
-    //io_printf(IO_BUF, "system router entry address %u\n",
-    //          &address[SYSTEM_ROUTER_ENTRIES_START]);
-
     data_in_read_and_load_router_entries(
             items->system_router_entries, items->n_system_router_entries);
-    //io_printf(IO_BUF, "finished data in setup\n");
 }
 
 //! \brief sets up application routes on router. required by data in speed up
@@ -970,24 +950,24 @@ void data_in_speed_up_load_in_application_routes(void) {
 static uint data_in_speed_up_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
     case SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING:
-        io_printf(IO_BUF, "reading application router entries from router\n");
+        io_printf(IO_BUF, "Reading application router entries from router\n");
         data_in_read_router();
         msg->cmd_rc = RC_OK;
         break;
     case SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES:
-        io_printf(IO_BUF, "loading application router entries into router\n");
+        io_printf(IO_BUF, "Loading application router entries into router\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
         break;
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
-        io_printf(IO_BUF, "loading system router entries into router\n");
+        io_printf(IO_BUF, "Loading system router entries into router\n");
         data_in_speed_up_load_in_system_tables(
                 dsg_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
         break;
     default:
         io_printf(IO_BUF,
-                "received unknown SDP packet in data in speed up port with"
+                "Received unknown SDP packet in data in speed up port with"
                 "command id %d\n", msg->cmd_rc);
     }
     return 0;
@@ -1085,10 +1065,7 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
 
     // stopping procedure
     // if a full packet, read another and try again
-    //io_printf(IO_BUF, "next position %d, elements %d\n", position_in_store,
-    //          number_of_elements_to_read_from_sdram);
     if (position_in_store < n_elements_to_read_from_sdram) {
-        //io_printf(IO_BUF, "setting off another DMA\n");
         uint32_t num_items_to_read = SDP_PAYLOAD_WORDS;
         uint32_t next_position_in_store =
                 position_in_store + SDP_PAYLOAD_WORDS;
@@ -1104,10 +1081,8 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
         data_out_send_data_block(current_dma_pointer, items_read_this_time,
                 key_to_transmit);
     } else {
-        //io_printf(IO_BUF, "sending last data \n");
         data_out_send_data_block(current_dma_pointer, items_read_this_time,
                 key_to_transmit);
-        //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
         data_out_send_end_flag();
@@ -1131,10 +1106,8 @@ static void data_out_write_missing_sdp_seq_nums_into_sdram(
             i++, j++) {
         missing_sdp_seq_num_sdram_address[j] = data[i];
         if (data[i] > max_seq_num) {
-            io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
+            io_printf(IO_BUF, "Storing some bad seq num. WTF! %d %d\n",
                     data[i], max_seq_num);
-        } else {
-            //io_printf(IO_BUF, "storing seq num. %d\n", data[i]);
         }
     }
     n_missing_seq_nums_in_sdram += length - start_offset;
@@ -1177,7 +1150,8 @@ static void data_out_store_missing_seq_nums(
                 n_missing_seq_sdp_packets = 1
                         + max_bytes / (ITEMS_PER_DATA_PACKET * sizeof(uint));
             } else {
-                io_printf(IO_BUF, "can't allocate SDRAM for missing seq nums");
+                io_printf(IO_BUF,
+                        "Can't allocate SDRAM for missing seq nums!!\n");
                 rt_error(RTE_SWERR);
             }
         }
@@ -1189,7 +1163,8 @@ static void data_out_store_missing_seq_nums(
                 data, length, start_reading_offset);
         n_missing_seq_sdp_packets -= 1;
     } else {
-        io_printf(IO_BUF, "Unable to save missing sequence number \n");
+        io_printf(IO_BUF,
+                "Unable to save missing sequence number\n");
     }
 }
 
@@ -1220,17 +1195,11 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     // get next sequence number to regenerate
     missing_seq_num_being_processed = (uint32_t)
             retransmit_seq_nums[position_in_read_data];
-    //io_printf(IO_BUF, "dealing with seq num %d \n",
-    //         missing_seq_num_being_processed);
     if (missing_seq_num_being_processed != END_FLAG) {
         // regenerate data
         position_in_store = missing_seq_num_being_processed * SDP_PAYLOAD_WORDS;
         uint32_t left_over_portion =
                 bytes_to_read_write / sizeof(uint) - position_in_store;
-
-        //io_printf(IO_BUF, "for seq %d, pos = %d, left %d\n",
-        //missing_seq_num_being_processed, position_in_store,
-        //left_over_portion);
 
         if (left_over_portion < SDP_PAYLOAD_WORDS) {
             retransmitted_seq_num_items_read = left_over_portion + 1;
@@ -1255,7 +1224,8 @@ static void data_out_dma_complete_reading_retransmission_data(void) {
     data_to_transmit[transmit_dma_pointer][0] = missing_seq_num_being_processed;
 
     if (missing_seq_num_being_processed > max_seq_num) {
-        io_printf(IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
+        io_printf(IO_BUF,
+                "Got some bad seq num here. max is %d and got %d \n",
                 max_seq_num, missing_seq_num_being_processed);
     }
 
@@ -1281,7 +1251,6 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     case SDP_CMD_START_SENDING_DATA: {
         stop = 0;
 
-        //io_printf(IO_BUF, "starting the send of original data\n");
         // set SDRAM position and length
         store_address = message->sdram_location;
         bytes_to_read_write = message->length;
@@ -1290,16 +1259,12 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
                 mod = bytes_to_read_write % (67 * 4);
         seq += mod > 0;
         max_seq_num = seq;
-        //io_printf(IO_BUF, "address %d, bytes to write %d\n", store_address,
-        //          bytes_to_read_write);
 
         // reset states
         first_transmission = true;
         transmit_dma_pointer = 0;
         position_in_store = 0;
         n_elements_to_read_from_sdram = bytes_to_read_write / sizeof(uint);
-        //io_printf(IO_BUF, "elements to read %d \n",
-        //          number_of_elements_to_read_from_sdram);
 
         if (n_elements_to_read_from_sdram < SDP_PAYLOAD_WORDS) {
             data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
@@ -1329,7 +1294,6 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         // reset state, as could be here from multiple attempts
         if (!in_retransmission_mode) {
             // put missing sequence numbers into SDRAM
-            //io_printf(IO_BUF, "storing thing\n");
             data_out_store_missing_seq_nums(
                     msg->data,
                     (msg->length - LENGTH_OF_SDP_HEADER) / sizeof(uint),
@@ -1357,7 +1321,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         stop = 1;
         break;
     default:
-        io_printf(IO_BUF, "received unknown SDP packet: %d\n",
+        io_printf(IO_BUF, "Received unknown SDP packet: %d\n",
                 message->command);
     }
 }
@@ -1382,8 +1346,9 @@ static INT_HANDLER data_out_dma_complete(void) {
             data_out_dma_complete_writing_missing_seq_to_sdram();
             break;
         default:
-            io_printf(IO_BUF, "invalid DMA callback port: %d\n",
+            io_printf(IO_BUF, "Invalid DMA callback port: %d!\n",
                     dma_port_last_used);
+            rt_error(RTE_SWERR);
         }
     }
     // and tell VIC we're done
