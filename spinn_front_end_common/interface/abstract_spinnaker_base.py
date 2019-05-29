@@ -389,8 +389,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_tokens = None
         self._load_outputs = None
         self._load_tokens = None
-        self._last_run_outputs = None
-        self._last_run_tokens = None
+        self._last_run_outputs = list()
+        self._last_run_tokens = list()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
@@ -2504,7 +2504,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         energy_report = EnergyReport()
 
         # acquire provenance items
-        if self._last_run_outputs is not None:
+        if len(self._last_run_outputs) != 0:
             prov_items = self._last_run_outputs["ProvenanceItems"]
             pacman_provenance = list()
             router_provenance = list()
