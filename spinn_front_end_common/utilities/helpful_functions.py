@@ -326,6 +326,18 @@ def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
     return real_x, real_y
 
 
+# TRICKY POINT: Have to delay the import to here because of import circularity
+def _emergency_iobuf_extract(txrx, executable_targets):
+    # pylint: disable=protected-access
+    from spinn_front_end_common.interface.interface_functions import (
+        ChipIOBufExtractor)
+    sim = get_simulator()
+    extractor = ChipIOBufExtractor(
+        recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
+    extractor(txrx, executable_targets, sim._executable_finder,
+              sim._provenance_file_path)
+
+
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     """ Used to get at least *some* information out of a core when something\
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
@@ -334,12 +346,11 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     :param app_id: The ID of the application.
     :param vertex: The vertex to retrieve the IOBUF from if it is suspected\
         as being dead
+    :type vertex: \
+        :py:class:`spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary`
     :param placement: Where the vertex is located.
     """
     # pylint: disable=protected-access
-    from spinn_front_end_common.interface.interface_functions import (
-        ChipIOBufExtractor)
-
     rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
     watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
     if rte_count or watchdog_count:
@@ -348,15 +359,13 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
             txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
             txrx.get_cores_in_state(None, CPUState.WATCHDOG))
 
-    sim = get_simulator()
-    extractor = ChipIOBufExtractor(recovery_mode=True)
-    executable_targets = ExecutableTargets()
-    executable_finder = sim._executable_finder
-    executable_targets.add_processor(
-        executable_finder.get_executable_path(vertex.get_binary_file_name()),
-        placement.x, placement.y, placement.p, vertex.get_binary_start_type())
-    extractor(txrx, executable_targets, executable_finder,
-              sim._provenance_file_path)
+    target = ExecutableTargets()
+    path = get_simulator()._executable_finder.get_executable_path(
+        vertex.get_binary_file_name())
+    target.add_processor(
+        path, placement.x, placement.y, placement.p,
+        vertex.get_binary_start_type())
+    _emergency_iobuf_extract(txrx, target)
 
 
 def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
@@ -367,10 +376,6 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     :param app_id: The ID of the application.
     :param executable_targets: The what/where mapping
     """
-    # pylint: disable=protected-access
-    from spinn_front_end_common.interface.interface_functions import (
-        ChipIOBufExtractor)
-
     rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
     watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
     if rte_count or watchdog_count:
@@ -378,7 +383,4 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
             "unexpected core states (rte={}, wdog={})",
             txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
             txrx.get_cores_in_state(None, CPUState.WATCHDOG))
-    sim = get_simulator()
-    extractor = ChipIOBufExtractor(recovery_mode=True)
-    extractor(txrx, executable_targets, sim._executable_finder,
-              sim._provenance_file_path)
+    _emergency_iobuf_extract(txrx, executable_targets)

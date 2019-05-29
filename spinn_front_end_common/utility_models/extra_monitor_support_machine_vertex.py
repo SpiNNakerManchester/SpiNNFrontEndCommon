@@ -293,7 +293,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: which vertices to use
         :rtype: None
         """
-        # pylint: disable=too-many-arguments, bare-except
+        # pylint: disable=too-many-arguments
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
@@ -301,7 +301,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             process.set_timeout(
                 timeout_mantissa, timeout_exponent, core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -325,7 +325,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: \
             the set of vertices to change the local chip for.
         """
-        # pylint: disable=too-many-arguments, bare-except
+        # pylint: disable=too-many-arguments
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
@@ -333,7 +333,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             process.set_timeout(
                 timeout_mantissa, timeout_exponent, core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -348,13 +348,12 @@ class ExtraMonitorSupportMachineVertex(
         :type extra_monitor_cores_to_set: \
             iterable(:py:class:`ExtraMonitorSupportMachineVertex`)
         """
-        # pylint: disable=bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
         try:
             process.reset_counters(core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -369,13 +368,12 @@ class ExtraMonitorSupportMachineVertex(
         :type extra_monitor_cores_to_set: \
             iterable(:py:class:`ExtraMonitorSupportMachineVertex`)
         """
-        # pylint: disable=bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ClearQueueProcess(transceiver.scamp_connection_selector)
         try:
             process.reset_counters(core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -388,13 +386,12 @@ class ExtraMonitorSupportMachineVertex(
         :param placements: the placements object
         :return: the reinjection status for this vertex
         """
-        # pylint: disable=bare-except
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         try:
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self, placement)
             raise
@@ -409,14 +406,13 @@ class ExtraMonitorSupportMachineVertex(
         :param transceiver: the spinnMan interface
         :rtype: None
         """
-        # pylint: disable=bare-except
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         try:
             return process.get_reinjection_status_for_core_subsets(
                 core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -445,7 +441,7 @@ class ExtraMonitorSupportMachineVertex(
         :type fixed_route: bool or None
         :rtype: None
         """
-        # pylint: disable=too-many-arguments, bare-except
+        # pylint: disable=too-many-arguments
         if multicast is not None:
             self._reinject_multicast = multicast
         if point_to_point is not None:
@@ -463,7 +459,7 @@ class ExtraMonitorSupportMachineVertex(
                 core_subsets, self._reinject_point_to_point,
                 self._reinject_multicast, self._reinject_nearest_neighbour,
                 self._reinject_fixed_route)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -484,14 +480,13 @@ class ExtraMonitorSupportMachineVertex(
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :rtype: None
         """
-        # pylint: disable=bare-except
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetSystemMCRoutesProcess(
             transceiver.scamp_connection_selector)
         try:
             return process.set_system_mc_routes(core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
@@ -512,14 +507,13 @@ class ExtraMonitorSupportMachineVertex(
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :rtype: None
         """
-        # pylint: disable=bare-except
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetApplicationMCRoutesProcess(
             transceiver.scamp_connection_selector)
         try:
             return process.set_application_mc_routes(core_subsets)
-        except:
+        except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))

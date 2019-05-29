@@ -136,7 +136,7 @@ class RouterProvenanceGatherer(object):
                     x, y, router_diagnostic, reinjection_status, True,
                     router_table))
                 self._add_totals(router_diagnostic, reinjection_status)
-            except:
+            except:  # noqa: E722
                 logger.warning(
                     "Could not read routing diagnostics from {}, {}",
                     x, y, exc_info=True)
@@ -158,7 +158,7 @@ class RouterProvenanceGatherer(object):
                             chip.x, chip.y, diagnostic, reinjection_status,
                             False, None))
                     self._add_totals(diagnostic, reinjection_status)
-            except:
+            except:  # noqa: E722
                 # There could be issues with unused chips - don't worry!
                 pass
 

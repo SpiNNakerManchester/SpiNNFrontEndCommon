@@ -124,8 +124,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions[3][1]), 4)
 
         info = infos[(0, 0, 0)]
-        self.assertEqual(info["memory_used"], 372)
-        self.assertEqual(info["memory_written"], 88)
+        self.assertEqual(info.memory_used, 372)
+        self.assertEqual(info.memory_written, 88)
 
 
 if __name__ == "__main__":

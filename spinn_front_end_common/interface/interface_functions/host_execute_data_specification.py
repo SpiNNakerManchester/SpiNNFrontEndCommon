@@ -6,7 +6,6 @@ from six import iteritems, itervalues
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
-from spinn_storage_handlers import FileDataReader
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
@@ -98,7 +97,7 @@ class HostExecuteDataSpecification(object):
         :type app_id: int
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :param report_folder: The path where \
             the SQLite database holding the data will be placed, \
             and where any java provenance can be written. \
@@ -136,7 +135,7 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :return: map of of cores to a dict of \
             'start_address', 'memory_used', 'memory_written'
         :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
@@ -171,7 +170,7 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :return: dict of cores to a dict of\
             'start_address', 'memory_used', 'memory_written
         """
@@ -186,9 +185,9 @@ class HostExecuteDataSpecification(object):
             dsg_targets.n_targets(),
             "Executing data specifications and loading data")
 
-        for core, data_spec_file in progress.over(iteritems(dsg_targets)):
+        for core, reader in progress.over(iteritems(dsg_targets)):
             results[core] = self.__execute(
-                core, data_spec_file, self._txrx.write_memory)
+                core, reader, self._txrx.write_memory)
 
         return results
 
@@ -215,7 +214,7 @@ class HostExecuteDataSpecification(object):
             map of placement and DSG data
         :return: map of placement and DSG data
         """
-        # pylint: disable=too-many-arguments, bare-except
+        # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
         self._write_info_map = processor_to_app_data_base_address
@@ -232,7 +231,7 @@ class HostExecuteDataSpecification(object):
         try:
             return impl_method(
                 dsg_targets, executable_targets, uses_advanced_monitors)
-        except:
+        except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(
                     self._txrx, self._app_id, executable_targets)
@@ -272,11 +271,11 @@ class HostExecuteDataSpecification(object):
             "Executing data specifications and loading data for "
             "application vertices")
 
-        for core, data_spec_file in progress.over(iteritems(dsg_targets)):
+        for core, reader in progress.over(iteritems(dsg_targets)):
             x, y, _ = core
             # write information for the memory map report
             self._write_info_map[core] = self.__execute(
-                core, data_spec_file,
+                core, reader,
                 self.__select_writer(x, y)
                 if use_monitors else self._txrx.write_memory)
 
@@ -353,7 +352,7 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :return: map of of cores to a dict of \
             'start_address', 'memory_used', 'memory_written'
         :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
@@ -392,7 +391,7 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.data_specification_targets.DataSpecificationTargets`
+            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :return: dict of cores to a dict of\
             'start_address', 'memory_used', 'memory_written
         """
@@ -406,16 +405,14 @@ class HostExecuteDataSpecification(object):
             len(sys_targets), "Executing data specifications and loading data "
             "for system vertices")
 
-        for core, data_spec_file in progress.over(iteritems(sys_targets)):
+        for core, reader in progress.over(iteritems(sys_targets)):
             self._write_info_map[core] = self.__execute(
-                core, data_spec_file, self._txrx.write_memory)
+                core, reader, self._txrx.write_memory)
 
         return self._write_info_map
 
-    def __execute(self, core, data_spec_path, writer_func):
+    def __execute(self, core, reader, writer_func):
         x, y, p = core
-        # build specification reader
-        reader = FileDataReader(data_spec_path)
 
         # Maximum available memory.
         # However, system updates the memory available independently, so the
