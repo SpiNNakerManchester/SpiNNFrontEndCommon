@@ -546,10 +546,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     # options names are all lower without _ inside config
     DEBUG_ENABLE_OPTS = frozenset([
-        "reportsenabled", "displayalgorithmtimings",
+        "reportsenabled",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
     REPORT_DISABLE_OPTS = frozenset([
-        "displayalgorithmtimings",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
@@ -1830,10 +1829,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         algorithms.append("DatabaseInterface")
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
-
-        # Sort out reload if needed
-        if self._config.getboolean("Reports", "write_reload_steps"):
-            logger.warning("Reload script is not supported in this version")
 
         outputs = [
             "NoSyncChanges"
