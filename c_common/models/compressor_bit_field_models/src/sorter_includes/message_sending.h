@@ -187,14 +187,6 @@ static void set_up_first_packet(
         data->command, data->msg.n_sdp_packets_till_delivered,
         data->msg.address_for_compressed, data->msg.fake_heap_data,
         data->msg.total_n_tables, data->msg.n_tables_in_packet, my_msg->length);
-    for (int rt_id = 0; rt_id < n_addresses_this_message; rt_id++) {
-        if (data->msg.tables[rt_id][0] > 256){
-            log_debug("table address is %x", data->msg.tables[rt_id]);
-            log_debug(
-                "table size for %d is %d", rt_id,
-                data->msg.tables[rt_id][0]);
-        }
-    }
     log_debug("message length = %d", my_msg->length);
 }
 

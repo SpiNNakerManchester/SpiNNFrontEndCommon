@@ -284,20 +284,11 @@ bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries) {
 }
 
 static void routing_tables_print_out_table_sizes(void){
-    bool print = false;
     for (int rt_index = 0; rt_index < n_tables; rt_index++){
-        if (routing_tables[rt_index]->size > 256 ||
-                routing_tables[rt_index]->size < 0){
-            print = true;
-        }
-    }
-    if (print){
-        for (int rt_index = 0; rt_index < n_tables; rt_index++){
-            log_debug(
-                "n entries in rt index %d at address %x is %d",
-                rt_index, routing_tables[rt_index],
-                routing_tables[rt_index]->size);
-        }
+        log_debug(
+            "n entries in rt index %d at address %x is %d",
+            rt_index, routing_tables[rt_index],
+            routing_tables[rt_index]->size);
     }
 }
 

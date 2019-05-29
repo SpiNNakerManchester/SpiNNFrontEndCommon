@@ -64,10 +64,6 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
         for (uint32_t i = 0; i < n_key_atom_pairs; i++) {
             // if key is correct, return atoms
             if (key_atom_map->pairs[i].key == key) {
-                if (key_atom_map->pairs[i].n_atoms > 256) {
-                    log_error("this makes no sense. for key %d", key);
-                    rt_error(RTE_SWERR);
-                }
                 log_debug("n atoms is %d", key_atom_map->pairs[i].n_atoms);
                 return key_atom_map->pairs[i].n_atoms;
             }
