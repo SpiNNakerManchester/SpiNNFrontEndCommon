@@ -787,7 +787,7 @@ void dma_complete_reading_for_original_transmission(void) {
     // if a full packet, read another and try again
     //io_printf(IO_BUF, "next position %d, elements %d\n", position_in_store,
     //          number_of_elements_to_read_from_sdram);
-    if (position_in_store < number_of_elements_to_read_from_sdram - 1) {
+    if (position_in_store < number_of_elements_to_read_from_sdram) {
         //io_printf(IO_BUF, "setting off another DMA\n");
         //log_info("setting off another DMA");
         uint32_t num_items_to_read =
