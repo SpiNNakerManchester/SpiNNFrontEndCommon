@@ -618,7 +618,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
     }
 
     // malloc the separate bits of the sorted bitfield struct
-    log_info("n bitfield addresses = %d", n_bf_addresses);
+    log_debug("n bitfield addresses = %d", n_bf_addresses);
     sorted_bit_fields->bit_fields = MALLOC(n_bf_addresses * sizeof(address_t));
     if (sorted_bit_fields->bit_fields == NULL){
         log_error("cannot allocate memory for the sorted bitfield addresses");

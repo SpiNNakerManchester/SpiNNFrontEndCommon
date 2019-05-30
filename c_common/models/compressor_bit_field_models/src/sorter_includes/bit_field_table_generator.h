@@ -24,43 +24,40 @@
 //! \param[in/out] entry_to_store: entry to store the found entry in
 //! \return: None
 void extract_and_remove_entry_from_table(
-        address_t uncompressed_table_address, uint32_t master_pop_key,
+        table_t* table, uint32_t master_pop_key,
         entry_t *entry_to_store) {
-
-    // cas the address to the struct for easier work
-    table_t *table_cast = (table_t *) uncompressed_table_address;
 
     // flag for when found. no point starting move till after
     bool found = false;
 
     // iterate through all entries
-    for (int entry_id=0; entry_id < table_cast->size; entry_id++) {
+    for (int entry_id=0; entry_id < table->size; entry_id++) {
 
         // if key matches, sort entry (assumes only 1 entry, otherwise boomed)
-        if (table_cast->entries[entry_id].key_mask.key == master_pop_key) {
-            entry_to_store->route = table_cast->entries[entry_id].route;
-            entry_to_store->source = table_cast->entries[entry_id].source;
+        if (table->entries[entry_id].key_mask.key == master_pop_key) {
+            entry_to_store->route = table->entries[entry_id].route;
+            entry_to_store->source = table->entries[entry_id].source;
             entry_to_store->key_mask.key =
-                table_cast->entries[entry_id].key_mask.key;
+                table->entries[entry_id].key_mask.key;
             entry_to_store->key_mask.mask =
-                table_cast->entries[entry_id].key_mask.mask;
+                table->entries[entry_id].key_mask.mask;
             found = true;
         } else {  // not found entry here. check if already found
             if (found) {  // if found, move entry up one. to sort out memory
-                table_cast->entries[entry_id - 1].route =
-                    table_cast->entries[entry_id].route;
-                table_cast->entries[entry_id - 1].source =
-                    table_cast->entries[entry_id].source;
-                table_cast->entries[entry_id - 1].key_mask.key =
-                    table_cast->entries[entry_id].key_mask.key;
-                table_cast->entries[entry_id - 1].key_mask.mask =
-                    table_cast->entries[entry_id].key_mask.mask;
+                table->entries[entry_id - 1].route =
+                    table->entries[entry_id].route;
+                table->entries[entry_id - 1].source =
+                    table->entries[entry_id].source;
+                table->entries[entry_id - 1].key_mask.key =
+                    table->entries[entry_id].key_mask.key;
+                table->entries[entry_id - 1].key_mask.mask =
+                    table->entries[entry_id].key_mask.mask;
             }
         }
     }
 
     // update size by the removal of 1 entry
-    table_cast->size -= 1;
+    table->size -= 1;
 }
 
 
@@ -71,11 +68,11 @@ void extract_and_remove_entry_from_table(
 //! \param[in] bit_field_processors: the processors which are filterable.
 //! \param[in] n_bit_fields: the number of bitfields being assessed
 void set_new_route_with_fixed_processors(
-        bit_field_t processors, entry_t* original_entry,
+        bit_field_t processors, entry_t original_entry,
         uint32_t *bit_field_processors, uint32_t n_bit_fields) {
 
     // cast original entry route to a bitfield for ease of use
-    bit_field_t original_route = (bit_field_t) &original_entry->route;
+    bit_field_t original_route = (bit_field_t) &original_entry.route;
 
     // copy over link ids as they not debatable
     for (int link_id = 0; link_id < MAX_LINKS_PER_ROUTER; link_id++){
@@ -132,13 +129,13 @@ void set_new_route_with_fixed_processors(
 //! here
 //! \param[in] original_entry: the original routing table entry that is being
 //! expanded by the bitfields
-//! \param[in] rt_address_ptr: the sdram address where the new atom level table
+//! \param[in] sdram_table: the sdram address where the new atom level table
 //! will be put once completed.
 
 //! \return bool that states that if the atom routing table was generated or not
 bool generate_entries_from_bitfields(
         filter_info_t **filters, int n_bit_fields_for_key,
-        entry_t *original_entry, address_t *rt_address_ptr,
+        entry_t original_entry, table_t **sdram_table,
         region_addresses_t *region_addresses,
         bit_field_by_processor_t* bit_field_by_processor){
 
@@ -163,23 +160,23 @@ bool generate_entries_from_bitfields(
     // create sdram holder for the table we're going to generate
     log_debug("looking for atoms");
     uint32_t n_atoms = helpful_functions_locate_key_atom_map(
-        original_entry->key_mask.key, region_addresses);
+        original_entry.key_mask.key, region_addresses);
 
-    *rt_address_ptr =
-        MALLOC_SDRAM(routing_table_sdram_size_of_table(n_atoms));
 
-    if (*rt_address_ptr == NULL) {
+    *sdram_table = MALLOC_SDRAM(routing_table_sdram_size_of_table
+    (n_atoms));
+
+    if (sdram_table == NULL) {
         FREE(bit_field_processors);
         log_error("can not allocate sdram for the sdram routing table");
         return false;
     }
 
-    // update the tracker for the rt address
-    table_t* sdram_table = (table_t*) *rt_address_ptr;
-
     // update the size of the router table, as we know there will be one entry
     // per atom
-    sdram_table->size = n_atoms;
+    table_t* table = *sdram_table;
+    table->size = n_atoms;
+    log_info(" n atoms is %d, size %d", n_atoms, table->size);
 
     // set up the new route process
     uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
@@ -189,7 +186,7 @@ bool generate_entries_from_bitfields(
             "could not allocate memory for the processor tracker when "
             "making entries from bitfields");
         FREE(bit_field_processors);
-        FREE(sdram_table);
+        FREE(&sdram_table);
         return false;
     }
 
@@ -203,7 +200,7 @@ bool generate_entries_from_bitfields(
             "could not allocate memory for the atom processor tracker when "
             "making entries from bitfields");
         FREE(bit_field_processors);
-        FREE(sdram_table);
+        FREE(&sdram_table);
         FREE(processors);
         return false;
     }
@@ -235,14 +232,14 @@ bool generate_entries_from_bitfields(
         }
 
         // get the entry and fill in details.
-        entry_t *new_entry = &sdram_table->entries[atom];
-        new_entry->key_mask.key = original_entry->key_mask.key + atom;
-        new_entry->key_mask.mask = NEURON_LEVEL_MASK;
-        new_entry->source = original_entry->source;
+        entry_t new_entry = table->entries[atom];
+        new_entry.key_mask.key = original_entry.key_mask.key + atom;
+        new_entry.key_mask.mask = NEURON_LEVEL_MASK;
+        new_entry.source = original_entry.source;
         sark_mem_cpy(
-            &new_entry->route, atom_processors,
+            &new_entry.route, atom_processors,
             size * WORD_TO_BYTE_MULTIPLIER);
-        log_debug("route in entry %d is %x", atom, new_entry->route);
+        log_debug("route in entry %d is %x", atom, new_entry.route);
 
     }
 
@@ -262,15 +259,15 @@ bool generate_entries_from_bitfields(
 //! \param[in] n_bfs_for_key: how many bitfields are needed for this key
 //! \param[in] mid_point: the point where the search though sorted bit fields
 //! ends.
-//! \param[in] rt_address_ptr: the location in sdram to store the routing table
+//! \param[in] sdram_table: the location in sdram to store the routing table
 //! generated from the bitfields and original entry.
 //! \param[in] region_addresses: the sdram store for data regions
 //! \param[in] bit_field_by_processor: the map between processor and bitfields
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return bool saying if it was successful or not
 bool generate_rt_from_bit_field(
-        uint32_t master_pop_key, address_t uncompressed_table,
-        int n_bfs_for_key, int mid_point, address_t *rt_address_ptr,
+        uint32_t master_pop_key, table_t* uncompressed_table,
+        int n_bfs_for_key, int mid_point, table_t **sdram_table,
         region_addresses_t *region_addresses,
         bit_field_by_processor_t* bit_field_by_processor,
         sorted_bit_fields_t* sorted_bit_fields){
@@ -292,30 +289,25 @@ bool generate_rt_from_bit_field(
     }
 
     // extract original routing entry from uncompressed table
-    entry_t *original_entry = MALLOC(sizeof(entry_t));
-    if (original_entry == NULL) {
-        log_error("can not allocate memory for the original entry.");
-        FREE(filters);
-        return false;
-    }
+    entry_t original_entry;
 
     extract_and_remove_entry_from_table(
-        uncompressed_table, master_pop_key, original_entry);
+        uncompressed_table, master_pop_key, &original_entry);
 
     // create table entries with bitfields
     bool success = generate_entries_from_bitfields(
-        filters, n_bfs_for_key, original_entry, rt_address_ptr,
+        filters, n_bfs_for_key, original_entry, sdram_table,
         region_addresses, bit_field_by_processor);
+    table_t *table = *sdram_table;
+    log_info("sdram table n atoms = %d", table->size);
     if (!success){
         log_error(
             "can not create entries for key %d with %d bitfields.",
             master_pop_key, n_bfs_for_key);
-        FREE(original_entry);
         FREE(filters);
         return false;
     }
 
-    FREE(original_entry);
     FREE(filters);
     return true;
 }
@@ -332,7 +324,7 @@ bool generate_rt_from_bit_field(
 //! \param[in] bit_field_by_processor: the map between processor and bitfields
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return bool saying if it successfully built them into sdram
-address_t* bit_field_table_generator_create_bit_field_router_tables(
+table_t** bit_field_table_generator_create_bit_field_router_tables(
         int mid_point, int *n_rt_addresses,
         region_addresses_t *region_addresses,
         uncompressed_table_region_data_t *uncompressed_router_table,
@@ -354,7 +346,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
     *n_rt_addresses += 1;
-    address_t uncompressed_table =
+    table_t* uncompressed_table =
         helpful_functions_clone_un_compressed_routing_table(
             uncompressed_router_table);
     if (uncompressed_table == NULL) {
@@ -364,9 +356,9 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
         return NULL;
     }
 
-    log_debug("looking for %d bytes", *n_rt_addresses * sizeof(address_t));
-    address_t* bit_field_routing_tables =
-        MALLOC(*n_rt_addresses * sizeof(address_t));
+    log_debug("looking for %d bytes", *n_rt_addresses * sizeof(table_t*));
+    table_t** bit_field_routing_tables =
+        MALLOC(*n_rt_addresses * sizeof(table_t*));
     if (bit_field_routing_tables == NULL) {
         log_error("failed to allocate memory for bitfield routing tables");
         FREE(keys);
@@ -382,13 +374,15 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
     // table entries.
     for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
         // holder for the rt address
-        address_t rt_address;
+        table_t **table = NULL;
 
         // create the routing table from the bitfield
         bool success = generate_rt_from_bit_field(
             keys[key_index].master_pop_key, uncompressed_table,
-            keys[key_index].n_bitfields_with_key, mid_point, &rt_address,
+            keys[key_index].n_bitfields_with_key, mid_point, table,
             region_addresses, bit_field_by_processor, sorted_bit_fields);
+            table_t *table_2 = *table;
+        log_info(" n atoms is %d", table_2->size);
 
         // if failed, free stuff and tell above it failed
         if (!success){
@@ -400,7 +394,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
         }
 
         // store the rt address for this master pop key
-        bit_field_routing_tables[key_index] = rt_address;
+        bit_field_routing_tables[key_index] = *table;
     }
 
     // free stuff

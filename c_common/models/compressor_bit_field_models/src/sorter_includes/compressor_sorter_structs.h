@@ -12,9 +12,9 @@ typedef struct comp_core_store_t{
     // how many bit fields were used to make those tables
     int n_bit_fields;
     // compressed table location
-    address_t compressed_table;
+    table_t *compressed_table;
     // elements
-    address_t *elements;
+    table_t **elements;
 } comp_core_store_t;
 
 //! \brief the compressor cores data elements in sdram

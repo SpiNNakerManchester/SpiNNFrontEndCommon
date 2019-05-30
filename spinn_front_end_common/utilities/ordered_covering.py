@@ -124,6 +124,7 @@ As a heuristic:
       generality. If ``XX00`` were already present in the table the new entry
       ``0XX0`` must be inserted below it.
 """
+import os
 from collections import namedtuple
 from rig.routing_table import MinimisationFailedError, RoutingTableEntry
 from rig.routing_table import remove_default_routes
@@ -133,7 +134,8 @@ from spinn_utilities.timer import Timer
 
 
 def minimise(routing_table, target_length,
-             time_to_run_for_before_raising_exception, use_timer_cut_off):
+             time_to_run_for_before_raising_exception, use_timer_cut_off,
+             default_report_folder, x, y):
     """Reduce the size of a routing table by merging together entries where
     possible and by removing any remaining default routes.
 
@@ -181,16 +183,21 @@ def minimise(routing_table, target_length,
     :return: the compressed routing entries
     :rtype: [:py:class:`~rig.routing_table.RoutingTableEntry`, ...]
     """
-    table, _ = ordered_covering(
-        routing_table=routing_table, target_length=target_length,
-        no_raise=True,  use_timer_cut_off=use_timer_cut_off,
-        time_to_run_for=time_to_run_for_before_raising_exception)
+    report_file = os.path.join(
+        default_report_folder, "compression_for_{}{}".format(x, y))
+
+    with open(report_file, "w+") as writer:
+        table, _ = ordered_covering(
+            routing_table=routing_table, target_length=target_length,
+            no_raise=True,  use_timer_cut_off=use_timer_cut_off,
+            time_to_run_for=time_to_run_for_before_raising_exception,
+            report_writer=writer)
     return remove_default_routes.minimise(table, target_length)
 
 
 def ordered_covering(
-        routing_table, target_length, time_to_run_for, aliases=None,
-        no_raise=False, use_timer_cut_off=False):
+        routing_table, target_length, time_to_run_for, report_writer,
+        aliases=None, no_raise=False, use_timer_cut_off=False):
     """Reduce the size of a routing table by merging together entries where
     possible.
 
@@ -267,9 +274,20 @@ def ordered_covering(
         key=lambda entry: get_generality(entry.key, entry.mask)
     )
 
+    for i, entry in enumerate(routing_table):
+        report_writer.write("entry {} has key {} mask {} route {}\n".format(
+            i, entry.key, entry.mask, entry.route))
+
     while target_length is None or len(routing_table) > target_length:
         # Get the best merge
         merge = _get_best_merge(routing_table, aliases)
+
+        report_writer.write(
+            "the best merge is considering key {} and mask {} and"
+            "entries: ".format(merge.key, merge.mask))
+        for entry in merge.entries:
+            report_writer.write("{},".format(entry))
+        report_writer.write("\n\n")
 
         # If there is no merge then stop
         if merge.goodness <= 0:
@@ -278,6 +296,11 @@ def ordered_covering(
         # Otherwise apply the merge, this returns a new routing table and a new
         # aliases dictionary.
         routing_table, aliases = merge.apply(aliases)
+
+        report_writer.write("after merge applied table looks like: \n")
+        for i, entry in enumerate(routing_table):
+            report_writer.write("entry {} has key {} mask {} route {}\n".format(
+                i, entry.key, entry.mask, entry.route))
 
         # control for limiting the search
         if use_timer_cut_off:

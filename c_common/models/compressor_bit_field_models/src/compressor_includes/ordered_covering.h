@@ -9,6 +9,8 @@
 #include "../common/routing_table.h"
 #include <debug.h>
 
+int counter_to_crash = 0;
+
 //! \brief ?????????
 typedef struct _sets_t {
     bit_set_t *best;
@@ -764,6 +766,8 @@ static inline bool oc_minimise(
         bool compress_only_when_needed,
         bool compress_as_much_as_possible){
 
+    counter_to_crash += 1;
+
     // check if any compression actually needed
     log_info(
         "n entries before compression is %d",
@@ -776,19 +780,24 @@ static inline bool oc_minimise(
     }
 
     // remove default routes and check lengths again
+    log_info("before rerun count");
     int length_after_removal = routing_table_sdram_get_n_entries();
+    log_info("after rerun count");
     bool success = remove_default_routes_minimise(&length_after_removal, false);
     if (!success) {
         log_error("failed to remove default routes due to malloc. failing");
         *failed_by_malloc = true;
         return false;
     }
+    log_info("after default route removal");
 
+    log_info("before check for remove ");
     if (compress_only_when_needed && (length_after_removal < target_length)) {
         remove_default_routes_minimise(&length_after_removal, true);
         return true;
     }
 
+    log_info("changing target length to compress as much as poss");
     // by setting target length to 0, it'll not finish till no other merges
     // are available.
     if (compress_as_much_as_possible) {
@@ -802,7 +811,7 @@ static inline bool oc_minimise(
     while ((routing_table_sdram_get_n_entries() > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control) {
 
-        log_debug("n entries is %d", routing_table_sdram_get_n_entries());
+        log_info("n entries is %d", routing_table_sdram_get_n_entries());
 
         // Get the best possible merge, if this merge is empty then break out
         // of the loop.
@@ -813,30 +822,32 @@ static inline bool oc_minimise(
             log_debug(
                 "failed to do get best merge. the number of merge cycles "
                 "were %d", attempts);
-
             return false;
         }
+
+
+        log_info("best merge end");
         unsigned int count = merge.entries.count;
 
         if (count > 1) {
             // Apply the merge to the table if it would result in merging
             // actually occurring.
             //routing_tables_print_out_table_sizes();
-            log_debug("merge apply");
+            log_info("merge apply");
             bool malloc_success = oc_merge_apply(
                 &merge, aliases, failed_by_malloc);
             if (!malloc_success){
                 log_error("failed to malloc");
                 return false;
             }
-            log_debug("merge apply end");
+            log_info("merge apply end");
             //routing_tables_print_out_table_sizes();
         }
 
         // Free any memory used by the merge
-        log_debug("merge delete");
+        log_info("merge delete");
         merge_delete(&merge);
-        log_debug("merge delete end");
+        log_info("merge delete end");
 
         // Break out of the loop if no merge could be performed (indicating
         // that no more minimisation is possible).
@@ -845,6 +856,7 @@ static inline bool oc_minimise(
         }
         attempts += 1;
     }
+
     // shut down timer. as passed the compression
     spin1_pause();
 

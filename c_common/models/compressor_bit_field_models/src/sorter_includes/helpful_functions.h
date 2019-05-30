@@ -139,14 +139,14 @@ bool helpful_functions_free_sdram_from_compression_attempt(
 //! \brief clones the un compressed routing table, to another sdram location
 //! \param[in] uncompressed_router_table: sdram location for uncompressed table
 //! \return: address of new clone, or null if it failed to clone
-address_t helpful_functions_clone_un_compressed_routing_table(
+table_t* helpful_functions_clone_un_compressed_routing_table(
         uncompressed_table_region_data_t *uncompressed_router_table){
 
     uint32_t sdram_used = routing_table_sdram_size_of_table(
         uncompressed_router_table->uncompressed_table.size);
 
     // allocate sdram for the clone
-    address_t where_was_cloned = MALLOC_SDRAM(sdram_used);
+    table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
     if (where_was_cloned == NULL) {
         log_error("failed to allocate sdram for the cloned routing table for "
                   "uncompressed compression attempt of bytes %d", sdram_used);

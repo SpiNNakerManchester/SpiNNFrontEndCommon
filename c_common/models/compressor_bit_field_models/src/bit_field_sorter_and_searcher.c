@@ -222,7 +222,7 @@ static inline int get_core_index_from_id(int processor_id) {
 bool create_tables_and_set_off_bit_compressor(int mid_point){
     int n_rt_addresses = 0;
     log_debug("started create bit field router tables");
-    address_t* bit_field_routing_tables =
+    table_t **bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
             mid_point, &n_rt_addresses, region_addresses,
             uncompressed_router_table, bit_field_by_processor,
@@ -233,7 +233,7 @@ bool create_tables_and_set_off_bit_compressor(int mid_point){
         return false;
     }
 
-    log_debug("finished creating bit field router tables");
+    log_info("finished creating bit field router tables");
     // if successful, try setting off the bitfield compression
     bool success = message_sending_set_off_bit_field_compression(
         n_rt_addresses, mid_point, comp_cores_bf_tables,
@@ -302,7 +302,7 @@ bool start_binary_search(void){
 
         log_info("next mid point to consider = %d", new_mid_point);
         bool success = create_tables_and_set_off_bit_compressor(new_mid_point);
-        log_debug("success is %d", success);
+        log_info("success is %d", success);
 
         if (success) {
             multiplier++;
@@ -758,11 +758,11 @@ void carry_on_binary_search(uint unused0, uint unused1) {
 
         // check for not needing to do things but wait
         if (mid_point == DOING_NOWT && !found_best) {
-            log_info("no need to cycle, as nowt to do but wait");
+            log_debug("no need to cycle, as nowt to do but wait");
             for (int c_core_index = 0;
                     c_core_index < n_compression_cores; c_core_index++) {
                  if (comp_core_mid_point[c_core_index] != DOING_NOWT) {
-                    log_info(
+                    log_debug(
                         "core %d is doing mid point %d",
                         compressor_cores[c_core_index],
                         comp_core_mid_point[c_core_index]);
@@ -819,7 +819,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
             // passed QoS threshold
             found_best = true;
             best_search_point = best_mid_point_tested;
-            log_info(
+            log_debug(
                 "finished search by end user QoS, best search point is %d",
                 best_search_point);
 
@@ -972,7 +972,7 @@ void process_compressor_response(int comp_core_index, int finished_state) {
                       compressor_cores[comp_core_index]);
         }
     } else if (finished_state == FORCED_BY_COMPRESSOR_CONTROL){
-        log_info(
+        log_debug(
             "ack from forced from core %d doing mid point %d",
             compressor_cores[comp_core_index],
             comp_core_mid_point[comp_core_index]);
@@ -1147,7 +1147,7 @@ void start_compression_process(uint unused0, uint unused1) {
     // sort the bitfields into order of best impact on worst cores.
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
-    log_info("finished sorting bitfields");
+    log_debug("finished sorting bitfields");
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
@@ -1189,7 +1189,7 @@ static void initialise_user_register_tracker(void) {
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
     usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
 
-    log_info(
+    log_debug(
         "finished setting up register tracker: \n\n"
         "user0 = %d\n user1 = %d\n user2 = %d\n user3 = %d\n",
         app_ptr_table, uncompressed_router_table,
@@ -1214,6 +1214,7 @@ bool initialise_compressor_cores(void) {
     compressor_cores_top_t *compressor_cores_top =
         (void *) &region_addresses->pairs[n_region_pairs];
     n_compression_cores = compressor_cores_top->n_cores;
+    n_compression_cores = 1;
 
     n_available_compression_cores = n_compression_cores;
     log_debug("%d comps cores available", n_available_compression_cores);

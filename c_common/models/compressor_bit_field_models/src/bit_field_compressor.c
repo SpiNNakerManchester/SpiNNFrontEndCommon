@@ -58,7 +58,7 @@ bool can_store_routing_tables = false;
 bool have_received_first_packet = false;
 
 //! \brief the sdram location to write the compressed router table into
-address_t sdram_loc_for_compressed_entries;
+table_t *sdram_loc_for_compressed_entries;
 
 //! how many packets waiting for
 uint32_t number_of_packets_waiting_for = 0;
@@ -220,10 +220,10 @@ void start_compression_process(uint unused0, uint unused1) {
 //! store of routing tables based off a given offset
 //! \param[in] n_tables_in_packet: the number of tables in packet to pull
 //! \param[in] tables: the tables from the packet.
-void store_info_table_store(int n_tables_in_packet, address_t tables[]) {
+void store_info_table_store(int n_tables_in_packet, table_t **tables) {
     for (int rt_index = 0; rt_index < n_tables_in_packet; rt_index++) {
         log_debug("address of table is %x",  tables[rt_index]);
-        routing_tables_store_routing_table((table_t*) tables[rt_index]);
+        routing_tables_store_routing_table(tables[rt_index]);
     }
 }
 
@@ -374,7 +374,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if (counter >= max_counter){
         timer_for_compression_attempt = true;
-        log_debug("passed timer point");
+        log_info("passed timer point");
         spin1_pause();
     }
 }

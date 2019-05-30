@@ -249,10 +249,7 @@ entry_t* routing_table_sdram_stores_get_entry(
 //! \param[in] sdram_loc_for_compressed_entries:
 //!    the location in sdram to write data to
 //! \return bool saying if the entries were stored in sdram successfully or not
-bool routing_table_sdram_store(address_t sdram_loc_for_compressed_entries) {
-
-    // cast to table struct
-    table_t* table_format = (table_t*) sdram_loc_for_compressed_entries;
+bool routing_table_sdram_store(table_t *table_format) {
 
     // locate n entries overall and write to struct
     int n_entries = routing_table_sdram_get_n_entries();

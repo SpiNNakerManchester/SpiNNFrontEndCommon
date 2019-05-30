@@ -216,7 +216,8 @@ class MachineBitFieldRouterCompressor(object):
                     use_timer_cut_off=use_timer_cut_off,
                     compressed_pacman_router_tables=(
                         compressed_pacman_router_tables),
-                    key_atom_map=key_atom_map)
+                    key_atom_map=key_atom_map,
+                    default_report_folder=default_report_folder)
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
