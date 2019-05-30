@@ -40,6 +40,12 @@ class ConfigHandler(object):
         "_provenance_file_path",
 
         #
+        "_app_provenance_file_path",
+
+        #
+        "_system_provenance_file_path",
+
+        #
         "_report_default_directory",
 
         #
@@ -303,6 +309,18 @@ class ConfigHandler(object):
             self._report_default_directory, "provenance_data")
         if not os.path.exists(self._provenance_file_path):
             self._make_dirs(self._provenance_file_path)
+
+        # make application folder for provenance data storage
+        self._app_provenance_file_path = os.path.join(
+            self._provenance_file_path, "app_provenance_data")
+        if not os.path.exists(self._app_provenance_file_path):
+            self._make_dirs(self._app_provenance_file_path)
+
+        # make system folder for provenance data storage
+        self._system_provenance_file_path = os.path.join(
+            self._provenance_file_path, "system_provenance_data")
+        if not os.path.exists(self._system_provenance_file_path):
+            self._make_dirs(self._system_provenance_file_path)
 
     def write_finished_file(self):
         # write a finished file that allows file removal to only remove folders

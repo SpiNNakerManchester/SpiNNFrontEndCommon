@@ -1373,6 +1373,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
+        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
+        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step

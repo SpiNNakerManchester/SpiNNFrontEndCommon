@@ -141,7 +141,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>no_sync_changes</param_name>
@@ -1426,7 +1426,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_data_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1444,7 +1444,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_data_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1691,7 +1691,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>from_cores</param_name>
@@ -1953,7 +1953,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>run_time_ms</param_name>

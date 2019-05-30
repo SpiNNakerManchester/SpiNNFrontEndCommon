@@ -166,7 +166,7 @@ bool generate_entries_from_bitfields(
     *sdram_table = MALLOC_SDRAM(routing_table_sdram_size_of_table
     (n_atoms));
 
-    if (sdram_table == NULL) {
+    if (*sdram_table == NULL) {
         FREE(bit_field_processors);
         log_error("can not allocate sdram for the sdram routing table");
         return false;
@@ -186,7 +186,7 @@ bool generate_entries_from_bitfields(
             "could not allocate memory for the processor tracker when "
             "making entries from bitfields");
         FREE(bit_field_processors);
-        FREE(&sdram_table);
+        FREE(*sdram_table);
         return false;
     }
 
@@ -200,7 +200,7 @@ bool generate_entries_from_bitfields(
             "could not allocate memory for the atom processor tracker when "
             "making entries from bitfields");
         FREE(bit_field_processors);
-        FREE(&sdram_table);
+        FREE(*sdram_table);
         FREE(processors);
         return false;
     }
@@ -374,15 +374,14 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
     // table entries.
     for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
         // holder for the rt address
-        table_t **table = NULL;
+        table_t *table;
 
         // create the routing table from the bitfield
         bool success = generate_rt_from_bit_field(
             keys[key_index].master_pop_key, uncompressed_table,
-            keys[key_index].n_bitfields_with_key, mid_point, table,
+            keys[key_index].n_bitfields_with_key, mid_point, &table,
             region_addresses, bit_field_by_processor, sorted_bit_fields);
-            table_t *table_2 = *table;
-        log_info(" n atoms is %d", table_2->size);
+        log_info(" n atoms is %d", table->size);
 
         // if failed, free stuff and tell above it failed
         if (!success){
@@ -394,7 +393,7 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
         }
 
         // store the rt address for this master pop key
-        bit_field_routing_tables[key_index] = *table;
+        bit_field_routing_tables[key_index] = table;
     }
 
     // free stuff
