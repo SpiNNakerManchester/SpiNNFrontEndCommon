@@ -44,7 +44,7 @@ class SpallocMaxMachineGenerator(object):
         return virtual_machine(
             width=max_width, height=max_height, with_wrap_arounds=None,
             version=None, sdram_per_chip=max_sdram_size,
-            n_cpus_per_chip=max_core_id)
+            n_cpus_per_chip=max_core_id, validate=False)
 
     @staticmethod
     def _filter(machines, target_name):
