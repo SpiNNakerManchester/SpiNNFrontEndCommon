@@ -1,6 +1,6 @@
 import tempfile
 import unittest
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.virtual_machine import virtual_machine
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
@@ -66,7 +66,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
     def test_call(self):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
-        machine = VirtualMachine(2, 2)
+        machine = virtual_machine(2, 2)
         tempdir = tempfile.mkdtemp()
 
         dsg_targets = DataSpecificationTargets(machine, tempdir)

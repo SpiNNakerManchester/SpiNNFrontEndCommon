@@ -1,5 +1,5 @@
 import unittest
-from spinn_machine import VirtualMachine
+from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import (
     ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
@@ -17,7 +17,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
     """
 
     def test_one_lpg_params(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
 
         default_params = {
             'use_prefix': False,
@@ -78,7 +78,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_one_lpg_params_and_3_specific(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
 
         default_params = {
             'use_prefix': False,
@@ -146,7 +146,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_added_pre_res(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
 
         default_params = {
             'use_prefix': False,
@@ -237,7 +237,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_none(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
         # run  pre allocator
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
@@ -249,7 +249,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_sdram_usage), 0)
 
     def test_fail(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         self.assertRaises(

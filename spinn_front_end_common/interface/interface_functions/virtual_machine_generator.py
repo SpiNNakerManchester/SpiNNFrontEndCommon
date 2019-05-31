@@ -1,4 +1,4 @@
-from spinn_machine import VirtualMachine, Machine, Router
+from spinn_machine import virtual_machine, Machine, Router
 
 
 class VirtualMachineGenerator(object):
@@ -27,7 +27,7 @@ class VirtualMachineGenerator(object):
         :param max_sdram_size: The SDRAM that should be given to each chip
         """
         # pylint: disable=too-many-arguments
-        machine = VirtualMachine(
+        machine = virtual_machine(
             width=width, height=height,
             with_wrap_arounds=virtual_has_wrap_arounds,
             version=version, n_cpus_per_chip=n_cpus_per_chip,
