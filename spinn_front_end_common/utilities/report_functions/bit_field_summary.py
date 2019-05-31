@@ -46,4 +46,3 @@ class BitFieldSummary(object):
     @property
     def average_per_chip_to_merge(self):
         return self._average_per_chip_to_merge
-

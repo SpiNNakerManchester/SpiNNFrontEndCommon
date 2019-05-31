@@ -1,4 +1,3 @@
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.helpful_functions import \
     find_executable_start_type
 from spinn_front_end_common.utilities.utility_objs import ExecutableType

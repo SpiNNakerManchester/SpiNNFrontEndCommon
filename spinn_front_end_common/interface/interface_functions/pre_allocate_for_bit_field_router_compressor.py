@@ -13,8 +13,8 @@ class PreAllocateForBitFieldRouterCompressor(object):
         """
         :param pre_allocated_resources: other pre allocated resources
         :param sdram_to_pre_alloc_for_bit_fields: sdram end user managed to \
-        help with bitfield compressions. Bascially ensuring some sdram is 
-        available in the use case where there is no sdram available to
+        help with bitfield compressions. Bascially ensuring some sdram is \
+        available in the use case where there is no sdram available to \
         steal/use.
         :param machine: the SpiNNaker machine as discovered
         :return: pre allocated resources

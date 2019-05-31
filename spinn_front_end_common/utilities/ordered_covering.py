@@ -299,8 +299,9 @@ def ordered_covering(
 
         report_writer.write("after merge applied table looks like: \n")
         for i, entry in enumerate(routing_table):
-            report_writer.write("entry {} has key {} mask {} route {}\n".format(
-                i, entry.key, entry.mask, entry.route))
+            report_writer.write(
+                "entry {} has key {} mask {} route {}\n".format(
+                    i, entry.key, entry.mask, entry.route))
 
         # control for limiting the search
         if use_timer_cut_off:

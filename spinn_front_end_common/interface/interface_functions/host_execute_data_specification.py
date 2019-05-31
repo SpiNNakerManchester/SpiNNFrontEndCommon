@@ -172,11 +172,8 @@ class HostExecuteDataSpecification(object):
 
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate
-        try:
-            start_address = self._txrx.malloc_sdram(
-                x, y, bytes_used_by_spec, self._app_id)
-        except Exception as e:
-            print "ahhh"
+        start_address = self._txrx.malloc_sdram(
+            x, y, bytes_used_by_spec, self._app_id)
 
         # Write the header and pointer table and load it
         header = executor.get_header()
