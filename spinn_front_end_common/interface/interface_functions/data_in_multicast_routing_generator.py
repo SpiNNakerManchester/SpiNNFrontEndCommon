@@ -187,8 +187,7 @@ class DataInMulticastRoutingGenerator(object):
                     fake_placement.x, fake_placement.y,
                     ethernet_connected_chip.x, ethernet_connected_chip.y,
                     self._real_machine)
-                destination_to_partition_id_map[real_chip_xy] = \
-                    counter
+                destination_to_partition_id_map[real_chip_xy] = counter
                 counter += N_KEYS_PER_PARTITION_ID
 
         return (fake_graph, fake_placements, fake_machine,

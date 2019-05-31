@@ -297,6 +297,7 @@ def calculate_board_level_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
     :return: chip x and y for the real chip as if it was 1 board machine
     :rtype: int and int
     """
+    # FIXME broken on machine with wraparounds and virtual chips
     fake_x = chip_x - eth_x
     if fake_x < 0:
         fake_x += machine.max_chip_x + 1
@@ -317,6 +318,7 @@ def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
     :return: chip x and y for the real chip
     :rtype: int and int
     """
+    # FIXME broken on machine with wraparounds and virtual chips
     real_x = fake_x + eth_x
     if real_x >= machine.max_chip_x + 1:
         real_x -= machine.max_chip_x + 1

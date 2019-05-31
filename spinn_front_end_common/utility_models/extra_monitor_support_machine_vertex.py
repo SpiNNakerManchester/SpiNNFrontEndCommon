@@ -23,7 +23,8 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure,
+    calculate_board_level_chip_id)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -69,7 +70,8 @@ class ExtraMonitorSupportMachineVertex(
         # placement holder for ease of access
         "_placement",
         # app id, used for reporting failures on system core RTE
-        "_app_id"
+        "_app_id",
+        "_machine"
     )
 
     def __init__(
@@ -78,7 +80,9 @@ class ExtraMonitorSupportMachineVertex(
             reinject_fixed_route=False):
         """
         :param constraints: constraints on this vertex
-        :param reinject_multicast: if we reinject multicast packets
+        :param reinject_multicast: \
+            if we reinject multicast packets; defaults to value of \
+            `enable_reinjection` setting in configuration file
         :param reinject_point_to_point: if we reinject point-to-point packets
         :param reinject_nearest_neighbour: \
             if we reinject nearest-neighbour packets
@@ -100,6 +104,7 @@ class ExtraMonitorSupportMachineVertex(
         # placement holder for ease of access
         self._placement = None
         self._app_id = None
+        self._machine = None
 
     @property
     def reinject_multicast(self):
@@ -160,18 +165,22 @@ class ExtraMonitorSupportMachineVertex(
                    "machine_graph": "MemoryMachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-                   "app_id": "APPID"})
+                   "app_id": "APPID",
+                   "machine": "MemoryExtendedMachine"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={"routing_info", "machine_graph",
                                      "data_in_routing_tables",
-                                     "mc_data_chips_to_keys", "app_id"})
+                                     "mc_data_chips_to_keys", "app_id",
+                                     "machine"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
-            data_in_routing_tables, mc_data_chips_to_keys, app_id):
+            data_in_routing_tables, mc_data_chips_to_keys, app_id,
+            machine):
         # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
         self._app_id = app_id
+        self._machine = machine
         # write reinjection config
         self._generate_reinjection_config(spec)
         # write data speed up out config
@@ -179,8 +188,9 @@ class ExtraMonitorSupportMachineVertex(
             spec, routing_info, machine_graph)
         # write data speed up in config
         self._generate_data_speed_up_in_config(
-            spec, data_in_routing_tables, placement, mc_data_chips_to_keys,
-            app_id)
+            spec, data_in_routing_tables,
+            machine.get_chip_at(placement.x, placement.y),
+            mc_data_chips_to_keys)
         spec.end_specification()
 
     def _generate_data_speed_up_out_config(
@@ -230,20 +240,18 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(int(not value))
 
     def _generate_data_speed_up_in_config(
-            self, spec, data_in_routing_tables, placement,
-            mc_data_chips_to_keys, app_id):
+            self, spec, data_in_routing_tables, chip,
+            mc_data_chips_to_keys):
         """
         :param spec: spec file
         :type spec: :py:class:`~data_specification.DataSpecificationGenerator`
         :param data_in_routing_tables: routing tables for all chips
         :type data_in_routing_tables: \
             :py:class:`~pacman.model.routing_tables.MulticastRoutingTables`
-        :param placement: this placement
-        :type placement: :py:class:`~pacman.model.placements.Placement`
+        :param chip: the chip where this monitor will run
+        :type chip: :py:class:`~spinn_machine.Chip`
         :param mc_data_chips_to_keys: data in keys to chips map.
         :type mc_data_chips_to_keys: dict(tuple(int,int),int)
-        :param app_id: The app id expected to write entries with
-        :type app_id: int
         :rtype: None
         """
         spec.reserve_memory_region(
@@ -254,27 +262,27 @@ class ExtraMonitorSupportMachineVertex(
         spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG.value)
 
         # write address key and data key
-        spec.write_value(
-            mc_data_chips_to_keys[placement.x, placement.y] +
-            _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
-        spec.write_value(
-            mc_data_chips_to_keys[placement.x, placement.y] +
-            _KEY_OFFSETS.DATA_KEY_OFFSET.value)
-        spec.write_value(
-            mc_data_chips_to_keys[placement.x, placement.y] +
-            _KEY_OFFSETS.RESTART_KEY_OFFSET.value)
+        base_key = mc_data_chips_to_keys[calculate_board_level_chip_id(
+            chip.x, chip.y,
+            chip.nearest_ethernet_x, chip.nearest_ethernet_y,
+            self._machine)]
+        spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
+        spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET.value)
+        spec.write_value(base_key + _KEY_OFFSETS.RESTART_KEY_OFFSET.value)
 
         # write table entries
         table = data_in_routing_tables.get_routing_table_for_chip(
-            placement.x, placement.y)
+            chip.x, chip.y)
         spec.write_value(table.number_of_entries)
         for entry in table.multicast_routing_entries:
             spec.write_value(entry.routing_entry_key)
             spec.write_value(entry.mask)
-            route = app_id << _BIT_SHIFT_TO_MOVE_APP_ID
-            route |= Router.convert_routing_table_entry_to_spinnaker_route(
-                entry)
-            spec.write_value(route)
+            spec.write_value(self.__encode_route(entry))
+
+    def __encode_route(self, entry):
+        route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
+        route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
+        return route
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
