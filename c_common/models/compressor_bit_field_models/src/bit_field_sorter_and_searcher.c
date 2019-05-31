@@ -26,9 +26,6 @@
 //! time step for safety timer tick interrupt
 #define TIME_STEP 10000
 
-//! bits in a word
-#define BITS_IN_A_WORD 32
-
 //! bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
@@ -1214,7 +1211,7 @@ bool initialise_compressor_cores(void) {
     compressor_cores_top_t *compressor_cores_top =
         (void *) &region_addresses->pairs[n_region_pairs];
     n_compression_cores = compressor_cores_top->n_cores;
-    n_compression_cores = 1;
+    //n_compression_cores = 1;
 
     n_available_compression_cores = n_compression_cores;
     log_debug("%d comps cores available", n_available_compression_cores);

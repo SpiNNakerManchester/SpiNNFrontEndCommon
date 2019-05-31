@@ -82,7 +82,7 @@ void send_sdp_message_response(void) {
     my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | control_core_id;
     // send sdp packet
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
-        log_info("failed to send. trying again");
+        log_debug("failed to send. trying again");
         // Empty body
     }
 }
@@ -143,7 +143,7 @@ void return_failed_by_space_response_message(void) {
 //! \returns bool if was successful or now
 bool store_into_compressed_address(void) {
     if (routing_table_sdram_get_n_entries() > TARGET_LENGTH) {
-        log_info("not enough space in routing table");
+        log_debug("not enough space in routing table");
         return false;
     }
 
@@ -288,7 +288,7 @@ static void handle_extra_data_stream(extra_stream_sdp_packet_t *extra_cmd) {
         log_error(
             "ignore extra routing table addresses packet, as cant store them");
         if (!have_received_first_packet){
-            log_info("never received the first sdp message");
+            log_debug("never received the first sdp message");
             return_malloc_response_message();
         }
         return;

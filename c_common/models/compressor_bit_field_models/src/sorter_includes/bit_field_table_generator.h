@@ -176,7 +176,7 @@ bool generate_entries_from_bitfields(
     // per atom
     table_t* table = *sdram_table;
     table->size = n_atoms;
-    log_info(" n atoms is %d, size %d", n_atoms, table->size);
+    log_debug(" n atoms is %d, size %d", n_atoms, table->size);
 
     // set up the new route process
     uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
@@ -232,14 +232,17 @@ bool generate_entries_from_bitfields(
         }
 
         // get the entry and fill in details.
-        entry_t new_entry = table->entries[atom];
-        new_entry.key_mask.key = original_entry.key_mask.key + atom;
-        new_entry.key_mask.mask = NEURON_LEVEL_MASK;
-        new_entry.source = original_entry.source;
+        entry_t *new_entry = &table->entries[atom];
+        new_entry->key_mask.key = original_entry.key_mask.key + atom;
+        new_entry->key_mask.mask = NEURON_LEVEL_MASK;
+        new_entry->source = original_entry.source;
         sark_mem_cpy(
-            &new_entry.route, atom_processors,
+            &new_entry->route, atom_processors,
             size * WORD_TO_BYTE_MULTIPLIER);
-        log_debug("route in entry %d is %x", atom, new_entry.route);
+        log_debug(
+            "key is %x route in entry %d is %x",
+             table->entries[atom].key_mask.key, atom,
+             table->entries[atom].route);
 
     }
 
@@ -299,7 +302,7 @@ bool generate_rt_from_bit_field(
         filters, n_bfs_for_key, original_entry, sdram_table,
         region_addresses, bit_field_by_processor);
     table_t *table = *sdram_table;
-    log_info("sdram table n atoms = %d", table->size);
+    log_debug("sdram table n atoms = %d", table->size);
     if (!success){
         log_error(
             "can not create entries for key %d with %d bitfields.",
@@ -381,7 +384,7 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
             keys[key_index].master_pop_key, uncompressed_table,
             keys[key_index].n_bitfields_with_key, mid_point, &table,
             region_addresses, bit_field_by_processor, sorted_bit_fields);
-        log_info(" n atoms is %d", table->size);
+        log_debug(" n atoms is %d", table->size);
 
         // if failed, free stuff and tell above it failed
         if (!success){

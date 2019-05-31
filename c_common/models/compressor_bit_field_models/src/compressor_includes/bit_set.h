@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "../common/platform.h"
 #include "../common/common_helpful_functions.h"
+#include "../common/constants.h"
 #include <debug.h>
 
 //! \brief wrapper over bitfield
@@ -46,8 +47,8 @@ bool bit_set_clear(bit_set_t *b) {
 //! \return bool saying if the bitset was created or not
 static inline bool bit_set_init(bit_set_t *b, unsigned int length) {
     // Malloc space for the data
-    unsigned int n_words = length / 32;
-    if (length % 32) {
+    unsigned int n_words = length / BITS_IN_A_WORD;
+    if (length % BITS_IN_A_WORD) {
         n_words++;
     }
 
@@ -89,7 +90,7 @@ static inline bool bit_set_add(bit_set_t* b, unsigned int i) {
     }
 
     // Determine the word and bit
-    unsigned int word = i / 32;
+    unsigned int word = i / BITS_IN_A_WORD;
     unsigned int bit  = 1 << (i & 31);
 
     // Set the word and bit
@@ -110,7 +111,7 @@ static inline bool bit_set_contains(bit_set_t *b, unsigned int i) {
     }
 
     // Determine the word and bit
-    unsigned int word = i / 32;
+    unsigned int word = i / BITS_IN_A_WORD;
     uint32_t bit  = 1 << (i & 31);
     return (bool) (b->_data[word] & bit);
 }
@@ -146,7 +147,7 @@ void print_bit_set_bits(bit_field_t b, int s) {
     //!< For indexing through the bit field
     int i;
     for (i = s; i > 0; i--) {
-	    print_bit_field_entry_v2(b[i], ((i - 1) * 32));
+	    print_bit_field_entry_v2(b[i], ((i - 1) * BITS_IN_A_WORD));
     }
 }
 
