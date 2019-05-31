@@ -328,6 +328,16 @@ def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
     return real_x, real_y
 
 
+def _emergency_state_check(txrx, app_id):
+    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+    if rte_count or watchdog_count:
+        logger.warning(
+            "unexpected core states (rte={}, wdog={})",
+            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+
+
 # TRICKY POINT: Have to delay the import to here because of import circularity
 def _emergency_iobuf_extract(txrx, executable_targets):
     # pylint: disable=protected-access
@@ -353,14 +363,7 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     :param placement: Where the vertex is located.
     """
     # pylint: disable=protected-access
-    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-    if rte_count or watchdog_count:
-        logger.warning(
-            "unexpected core states (rte={}, wdog={})",
-            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
-
+    _emergency_state_check(txrx, app_id)
     target = ExecutableTargets()
     path = get_simulator()._executable_finder.get_executable_path(
         vertex.get_binary_file_name())
@@ -378,11 +381,5 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     :param app_id: The ID of the application.
     :param executable_targets: The what/where mapping
     """
-    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-    if rte_count or watchdog_count:
-        logger.warning(
-            "unexpected core states (rte={}, wdog={})",
-            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    _emergency_state_check(txrx, app_id)
     _emergency_iobuf_extract(txrx, executable_targets)
