@@ -114,11 +114,21 @@ class DatabaseWriter(object):
             int(x_dimension), int(y_dimension))
 
     def __insert_machine_chip(self, no_processors, chip, machine_id):
-        return self.__insert(
-            "INSERT INTO Machine_chip("
-            "  no_processors, chip_x, chip_y, machine_id) "
-            "VALUES (?, ?, ?, ?)",
-            int(no_processors), int(chip.x), int(chip.y), int(machine_id))
+        if not chip.virtual:
+            return self.__insert(
+                "INSERT INTO Machine_chip("
+                "  no_processors, chip_x, chip_y, machine_id,"
+                "  ip_address, nearest_ethernet_x, nearest_ethernet_y) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                int(no_processors), int(chip.x), int(chip.y), int(machine_id),
+                chip.ip_address,
+                int(chip.nearest_ethernet_x), int(chip.nearest_ethernet_y))
+        else:
+            return self.__insert(
+                "INSERT INTO Machine_chip("
+                "  no_processors, chip_x, chip_y, machine_id) "
+                "VALUES (?, ?, ?, ?)",
+                int(no_processors), int(chip.x), int(chip.y), int(machine_id))
 
     def __insert_processor(self, chip, machine_id, available_DTCM,
                            available_CPU, physical_id):

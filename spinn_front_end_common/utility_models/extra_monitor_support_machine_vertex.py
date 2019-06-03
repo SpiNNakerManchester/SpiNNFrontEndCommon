@@ -13,6 +13,8 @@ from spinn_front_end_common.utilities.utility_objs.\
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
         SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
         ClearQueueProcess)
+from spinn_front_end_common.utilities.constants import (
+    SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -98,7 +100,11 @@ class ExtraMonitorSupportMachineVertex(
             ExtraMonitorSupportMachineVertex.
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
-            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES))
+            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
+            # Data spec size
+            DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES +
+            # One malloc for extra sequence numbers
+            SARK_PER_MALLOC_SDRAM_USAGE))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
