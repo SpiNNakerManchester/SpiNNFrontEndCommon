@@ -7,9 +7,8 @@ from pacman.operations.fixed_route_router.fixed_route_router import (
     RoutingMachineVertex)
 from pacman.operations.router_algorithms import BasicDijkstraRouting
 from spinn_machine import Machine, MulticastRoutingEntry
+from spinn_machine.machine_factory import create_one_board_submachine
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.helpful_functions import (
-    create_one_board_machine)
 
 N_KEYS_PER_PARTITION_ID = 4
 KEY_START_VALUE = 4
@@ -24,6 +23,7 @@ class DataInMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
     extra monitor cores.
     """
+    __slots__ = ["_monitors", "_real_machine", "_real_placements"]
 
     def __call__(self, machine, extra_monitor_cores, placements,
                  board_version):
@@ -31,7 +31,6 @@ class DataInMulticastRoutingGenerator(object):
         self._real_machine = machine
         self._real_placements = placements
         self._monitors = extra_monitor_cores
-        self._board_version = board_version
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,
@@ -102,18 +101,17 @@ class DataInMulticastRoutingGenerator(object):
         # build fake setup for the routing
         eth_x = ethernet_connected_chip.x
         eth_y = ethernet_connected_chip.y
-        fake_machine = create_one_board_machine(
-            self._board_version, self._real_machine, ethernet_connected_chip)
+        fake_machine = create_one_board_submachine(
+            self._real_machine, ethernet_connected_chip)
 
         # Build a fake graph with vertices for all the monitors
-        for chip_xy in self._real_machine.get_chips_by_ethernet(eth_x, eth_y):
+        for chip in self._real_machine.get_chips_by_ethernet(eth_x, eth_y):
             # locate correct chips extra monitor placement
             placement = self._real_placements.get_placement_of_vertex(
-                self._monitors[chip_xy])
+                self._monitors[chip.x, chip.y])
 
             # adjust for wrap around's
-            fake_x, fake_y = self._real_machine.get_local_xy(
-                self._real_machine.get_chip_at(*chip_xy))
+            fake_x, fake_y = self._real_machine.get_local_xy(chip)
 
             # add destination vertex
             vertex = RoutingMachineVertex()

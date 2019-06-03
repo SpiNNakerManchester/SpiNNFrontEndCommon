@@ -352,21 +352,21 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write mc chip key map
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE.value)
-        chips_on_board = list(chip for chip in machine.get_chips_on_board(
-            machine.get_chip_at(placement.x, placement.y)))  # FIXME
+        chips_on_board = list(machine.get_existing_xys_on_board(
+            machine.get_chip_at(placement.x, placement.y)))
 
         # write how many chips to read
         spec.write_value(len(chips_on_board))
 
         # write each chip x and y and base key
-        for (chip_x, chip_y) in chips_on_board:
+        for chip_xy in chips_on_board:
             board_chip_x, board_chip_y = machine.get_local_xy(
-                machine.get_chip_at(chip_x, chip_y))
+                machine.get_chip_at(*chip_xy))
             spec.write_value(board_chip_x)
             spec.write_value(board_chip_y)
-            spec.write_value(mc_data_chips_to_keys[chip_x, chip_y])
+            spec.write_value(mc_data_chips_to_keys[chip_xy])
             # log.info("for chip {}:{} base key is {}".format(
-            #    chip_x, chip_y, mc_data_chips_to_keys[chip_x, chip_y]))
+            #    *chip_xy, mc_data_chips_to_keys[chip_xy]))
 
         # End-of-Spec:
         spec.end_specification()

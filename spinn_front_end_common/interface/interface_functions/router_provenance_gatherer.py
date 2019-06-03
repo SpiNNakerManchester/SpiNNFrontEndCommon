@@ -283,7 +283,7 @@ class RouterProvenanceGatherer(object):
             message=(
                 "The router on chip {}:{} dropped {} Fixed route packets. "
                 "This is indicative of a error within the data extraction "
-                "process. As this is the only expected user of fixed route "
+                "process as this is the only expected user of fixed route "
                 "packets.".format(
                     x, y, router_diagnostic.n_dropped_fixed_route_packets))))
         if reinjection_status is not None:
