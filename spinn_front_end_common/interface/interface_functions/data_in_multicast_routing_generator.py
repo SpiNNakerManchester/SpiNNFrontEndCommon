@@ -1,3 +1,4 @@
+from six import iteritems
 from pacman.model.graphs.machine import MachineGraph, MachineEdge
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_tables import (
@@ -5,11 +6,10 @@ from pacman.model.routing_tables import (
 from pacman.operations.fixed_route_router.fixed_route_router import (
     RoutingMachineVertex)
 from pacman.operations.router_algorithms import BasicDijkstraRouting
-from spinn_machine import (
-    Machine, Router, VirtualMachine, MulticastRoutingEntry)
+from spinn_machine import Machine, MulticastRoutingEntry
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.helpful_functions import (
-    calculate_board_level_chip_id, calculate_machine_level_chip_id)
+    create_one_board_machine)
 
 N_KEYS_PER_PARTITION_ID = 4
 KEY_START_VALUE = 4
@@ -69,19 +69,15 @@ class DataInMulticastRoutingGenerator(object):
         """
         for fake_chip_x, fake_chip_y in \
                 routing_tables_by_partition.get_routers():
-            partitions_in_table = routing_tables_by_partition.\
-                get_entries_for_router(fake_chip_x, fake_chip_y)
-
-            real_chip_x, real_chip_y = calculate_machine_level_chip_id(
-                fake_chip_x, fake_chip_y, ethernet_chip.x, ethernet_chip.y,
-                self._real_machine)
-
             multicast_routing_table = MulticastRoutingTable(
-                real_chip_x, real_chip_y)
+                *self._real_machine.get_global_xy(
+                    fake_chip_x, fake_chip_y,
+                    ethernet_chip.x, ethernet_chip.y))
 
             # build routing table entries
-            for partition in partitions_in_table:
-                entry = partitions_in_table[partition]
+            for partition, entry in iteritems(
+                    routing_tables_by_partition.get_entries_for_router(
+                        fake_chip_x, fake_chip_y)):
                 multicast_routing_table.add_multicast_routing_entry(
                     MulticastRoutingEntry(
                         routing_entry_key=partition.identifier,
@@ -106,59 +102,28 @@ class DataInMulticastRoutingGenerator(object):
         # build fake setup for the routing
         eth_x = ethernet_connected_chip.x
         eth_y = ethernet_connected_chip.y
-        down_links = set()
-        fake_machine = self._real_machine
+        fake_machine = create_one_board_machine(
+            self._board_version, self._real_machine, ethernet_connected_chip)
 
-        for (chip_x, chip_y) in self._real_machine.get_chips_on_board(
-                ethernet_connected_chip):
+        # Build a fake graph with vertices for all the monitors
+        for chip_xy in self._real_machine.get_chips_by_ethernet(eth_x, eth_y):
+            # locate correct chips extra monitor placement
+            placement = self._real_placements.get_placement_of_vertex(
+                self._monitors[chip_xy])
+
+            # adjust for wrap around's
+            fake_x, fake_y = self._real_machine.get_local_xy(
+                self._real_machine.get_chip_at(*chip_xy))
 
             # add destination vertex
             vertex = RoutingMachineVertex()
             fake_graph.add_vertex(vertex)
 
-            # adjust for wrap around's
-            fake_x, fake_y = calculate_board_level_chip_id(
-                chip_x, chip_y, eth_x, eth_y, self._real_machine)
-
-            # locate correct chips extra monitor placement
-            placement = self._real_placements.get_placement_of_vertex(
-                self._monitors[chip_x, chip_y])
-
             # build fake placement
             fake_placements.add_placement(Placement(
                 x=fake_x, y=fake_y, p=placement.p, vertex=vertex))
 
-            # remove links to ensure it maps on just chips of this board.
-            down_links.update({
-                (fake_x, fake_y, link)
-                for link in range(Router.MAX_LINKS_PER_ROUTER)
-                if not self._real_machine.is_link_at(chip_x, chip_y, link)})
-
-        # Create a fake machine consisting of only the one board that
-        # the routes should go over
-        valid_48_boards = list()
-        valid_48_boards.extend(Machine.BOARD_VERSION_FOR_48_CHIPS)
-        valid_48_boards.append(None)
-
-        if (self._board_version in valid_48_boards and (
-                self._real_machine.max_chip_x > MAX_CHIP_X or
-                self._real_machine.max_chip_y > MAX_CHIP_Y)):
-            down_chips = {
-                (x, y) for x, y in zip(
-                    range(Machine.SIZE_X_OF_ONE_BOARD),
-                    range(Machine.SIZE_Y_OF_ONE_BOARD))
-                if not self._real_machine.is_chip_at(
-                    (x + eth_x) % (self._real_machine.max_chip_x + 1),
-                    (y + eth_y) % (self._real_machine.max_chip_y + 1))}
-
-            # build a fake machine which is just one board but with the
-            # missing bits of the real board
-            fake_machine = VirtualMachine(
-                Machine.SIZE_X_OF_ONE_BOARD, Machine.SIZE_Y_OF_ONE_BOARD,
-                False, down_chips=down_chips, down_links=down_links)
-
-        # build source
-        destination_vertices = fake_graph.vertices
+        # build source vertex, which is for the Gatherer
         vertex_source = RoutingMachineVertex()
         fake_graph.add_vertex(vertex_source)
 
@@ -174,21 +139,20 @@ class DataInMulticastRoutingGenerator(object):
         # deal with edges, each one being in a unique partition id, to
         # allow unique routing to each chip.
         counter = KEY_START_VALUE
-        for vertex in destination_vertices:
-            if vertex != vertex_source:
-                fake_graph.add_edge(
-                    MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
-                    counter)
-                fake_placement = fake_placements.get_placement_of_vertex(
-                    vertex)
+        for vertex in fake_graph.vertices:
+            if vertex == vertex_source:
+                continue
+            fake_graph.add_edge(
+                MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
+                counter)
+            fake_placement = fake_placements.get_placement_of_vertex(vertex)
 
-                # adjust to real chip ids
-                real_chip_xy = calculate_machine_level_chip_id(
-                    fake_placement.x, fake_placement.y,
-                    ethernet_connected_chip.x, ethernet_connected_chip.y,
-                    self._real_machine)
-                destination_to_partition_id_map[real_chip_xy] = counter
-                counter += N_KEYS_PER_PARTITION_ID
+            # adjust to real chip ids
+            real_chip_xy = self._real_machine.get_global_xy(
+                fake_placement.x, fake_placement.y,
+                ethernet_connected_chip.x, ethernet_connected_chip.y)
+            destination_to_partition_id_map[real_chip_xy] = counter
+            counter += N_KEYS_PER_PARTITION_ID
 
         return (fake_graph, fake_placements, fake_machine,
                 destination_to_partition_id_map)

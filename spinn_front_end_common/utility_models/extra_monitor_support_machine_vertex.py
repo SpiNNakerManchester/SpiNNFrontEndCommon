@@ -23,8 +23,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure,
-    calculate_board_level_chip_id)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -240,8 +239,7 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(int(not value))
 
     def _generate_data_speed_up_in_config(
-            self, spec, data_in_routing_tables, chip,
-            mc_data_chips_to_keys):
+            self, spec, data_in_routing_tables, chip, mc_data_chips_to_keys):
         """
         :param spec: spec file
         :type spec: :py:class:`~data_specification.DataSpecificationGenerator`
@@ -262,10 +260,8 @@ class ExtraMonitorSupportMachineVertex(
         spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG.value)
 
         # write address key and data key
-        base_key = mc_data_chips_to_keys[calculate_board_level_chip_id(
-            chip.x, chip.y,
-            chip.nearest_ethernet_x, chip.nearest_ethernet_y,
-            self._machine)]
+        base_key = mc_data_chips_to_keys[self._machine.get_local_xy(
+            chip.x, chip.y, chip.nearest_ethernet_x, chip.nearest_ethernet_y)]
         spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.RESTART_KEY_OFFSET.value)

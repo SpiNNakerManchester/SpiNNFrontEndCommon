@@ -5,7 +5,6 @@ except ImportError:
 import os
 import datetime
 import logging
-import math
 import time
 import struct
 import sys
@@ -59,24 +58,24 @@ DATA_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
 # size of items the sequence number uses
 SEQUENCE_NUMBER_SIZE_IN_ITEMS = 1
 
+# Size of a SpiNNaker word
+WORD_SIZE = 4
+
 # the size of the sequence number in bytes
-SEQUENCE_NUMBER_SIZE = 4
-END_FLAG_SIZE_IN_BYTES = 4
-COMMAND_ID_SIZE = 4
-MISSING_SEQ_PACKET_COUNT_SIZE = 4
+SEQUENCE_NUMBER_SIZE = WORD_SIZE
+END_FLAG_SIZE_IN_BYTES = WORD_SIZE
+COMMAND_ID_SIZE = WORD_SIZE
+MISSING_SEQ_PACKET_COUNT_SIZE = WORD_SIZE
 
 # items of data from SDP packet with a sequence number
 DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = \
     DATA_PER_FULL_PACKET - SEQUENCE_NUMBER_SIZE_IN_ITEMS
 
-# converter between words and bytes
-WORD_TO_BYTE_CONVERTER = 4
-
 # the amount of bytes the n bytes takes up
-N_PACKETS_SIZE = 4
+N_PACKETS_SIZE = WORD_SIZE
 
 # the amount of bytes the data length will take up
-LENGTH_OF_DATA_SIZE = 4
+LENGTH_OF_DATA_SIZE = WORD_SIZE
 
 # points where SDP beats data speed up due to overheads
 THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
@@ -90,18 +89,18 @@ OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES = 16
 OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES = 8
 
 # size for data to store when first packet with command and address
-DATA_IN_FULL_PACKET_WITH_ADDRESS = \
-    DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES //
-                            WORD_TO_BYTE_CONVERTER)
+DATA_IN_FULL_PACKET_WITH_ADDRESS = (
+    DATA_PER_FULL_PACKET - (
+        OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES // WORD_SIZE))
 
 # size for data in to store when not first packet
-DATA_IN_FULL_PACKET_WITHOUT_ADDRESS = \
-    DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES //
-                            WORD_TO_BYTE_CONVERTER)
+DATA_IN_FULL_PACKET_WITHOUT_ADDRESS = (
+    DATA_PER_FULL_PACKET - (
+        OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES // WORD_SIZE))
 
 # size of data in key space
 # x, y, key (all ints) for possible 48 chips,
-SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 4 * 48) + 4
+SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * WORD_SIZE
 
 # DSG data regions
 _DATA_REGIONS = Enum(
@@ -120,13 +119,14 @@ _FOUR_WORDS = struct.Struct("<IIII")
 def ceildiv(dividend, divisor):
     """ How to divide two possibly-integer numbers and round up.
     """
-    return int(math.ceil(float(dividend) / float(divisor)))
+    q, r = divmod(dividend, divisor)
+    return q + (r != 0)
 
 
 # SDRAM requirement for storing missing SDP packets seq nums
 SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
     120.0 * 1024 * 1024,
-    DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)
+    DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_SIZE)
 
 
 class DataSpeedUpPacketGatherMachineVertex(
@@ -216,8 +216,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
     _ADDRESS_PACKET_BYTE_FORMAT = struct.Struct(
-        "<{}B".format(DATA_IN_FULL_PACKET_WITH_ADDRESS *
-                      WORD_TO_BYTE_CONVERTER))
+        "<{}B".format(DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_SIZE))
 
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
@@ -353,16 +352,16 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write mc chip key map
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE.value)
-        chips_on_board = list(machine.get_chips_on_board(
-            machine.get_chip_at(placement.x, placement.y)))
+        chips_on_board = list(chip for chip in machine.get_chips_on_board(
+            machine.get_chip_at(placement.x, placement.y)))  # FIXME
 
         # write how many chips to read
         spec.write_value(len(chips_on_board))
 
         # write each chip x and y and base key
         for (chip_x, chip_y) in chips_on_board:
-            board_chip_x, board_chip_y = self._calculate_fake_chip_id(
-                chip_x, chip_y, placement.x, placement.y, machine)
+            board_chip_x, board_chip_y = machine.get_local_xy(
+                machine.get_chip_at(chip_x, chip_y))
             spec.write_value(board_chip_x)
             spec.write_value(board_chip_y)
             spec.write_value(mc_data_chips_to_keys[chip_x, chip_y])
@@ -593,26 +592,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                     data_size=n_bytes, address_written_to=base_address,
                     missing_seq_nums=self._missing_seq_nums_data_in)
 
-    @staticmethod
-    def _calculate_fake_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
-        """ converts between real and board based fake chip IDs
-
-        :param chip_x: the real chip x in the real machine
-        :param chip_y: the chip chip y in the real machine
-        :param eth_x: the ethernet x to make board based
-        :param eth_y: the ethernet y to make board based
-        :param machine: the real machine
-        :return: chip x and y for the real chip as if it was 1 board machine
-        :rtype: tuple(int,int)
-        """
-        fake_x = chip_x - eth_x
-        if fake_x < 0:
-            fake_x += machine.max_chip_x + 1
-        fake_y = chip_y - eth_y
-        if fake_y < 0:
-            fake_y += machine.max_chip_y + 1
-        return fake_x, fake_y
-
     def _send_data_via_extra_monitors(
             self, transceiver, destination_chip_x, destination_chip_y,
             start_address, data_to_write):
@@ -631,38 +610,31 @@ class DataSpeedUpPacketGatherMachineVertex(
         # how many packets after first one we need to send
         number_of_packets = ceildiv(
             len(data_to_write) - (
-                DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_TO_BYTE_CONVERTER),
-            DATA_IN_FULL_PACKET_WITHOUT_ADDRESS *
-            WORD_TO_BYTE_CONVERTER) + 1
+                DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_SIZE),
+            DATA_IN_FULL_PACKET_WITHOUT_ADDRESS * WORD_SIZE) + 1
 
         # determine board chip IDs, as the LPG does not know machine scope IDs
-        board_destination_chip_x, board_destination_chip_y = \
-            self._calculate_fake_chip_id(
-                destination_chip_x, destination_chip_y,
-                self._placement.x, self._placement.y,
-                transceiver.get_machine_details())
-
-        # compressed destination chip data
-        chip_data = (
-            (board_destination_chip_x << 16) | board_destination_chip_y)
+        machine = transceiver.get_machine_details()
+        chip = machine.get_chip_at(destination_chip_x, destination_chip_y)
+        dest_x, dest_y = machine.get_local_xy(chip)
 
         # send first packet to lpg, stating where to send it to
-        data = bytearray(DATA_PER_FULL_PACKET * WORD_TO_BYTE_CONVERTER)
+        data = bytearray(DATA_PER_FULL_PACKET * WORD_SIZE)
 
         _FOUR_WORDS.pack_into(
             data, 0, self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
-            start_address, chip_data, number_of_packets)
+            start_address, (dest_x << 16) | dest_y, number_of_packets)
         self._ADDRESS_PACKET_BYTE_FORMAT.pack_into(
             data, OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES,
             *data_to_write[position_in_data:(
-                DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_TO_BYTE_CONVERTER)])
+                DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_SIZE)])
 
         # debug
         # self._print_out_packet_data(data)
 
         # update where in data we've sent up to
         position_in_data = (
-            DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_TO_BYTE_CONVERTER)
+            DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_SIZE)
 
         message = SDPMessage(
             sdp_header=SDPHeader(
@@ -813,8 +785,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         if seq_num == 0:
             return 0
         if seq_num == 1:
-            return DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_TO_BYTE_CONVERTER
-        return WORD_TO_BYTE_CONVERTER * (
+            return DATA_IN_FULL_PACKET_WITH_ADDRESS * WORD_SIZE
+        return WORD_SIZE * (
             DATA_IN_FULL_PACKET_WITH_ADDRESS +
             DATA_IN_FULL_PACKET_WITHOUT_ADDRESS * (seq_num - 1))
 
@@ -832,8 +804,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
 
         # check for last packet
-        packet_data_length = (
-            DATA_IN_FULL_PACKET_WITHOUT_ADDRESS * WORD_TO_BYTE_CONVERTER)
+        packet_data_length = DATA_IN_FULL_PACKET_WITHOUT_ADDRESS * WORD_SIZE
 
         # determine position in data if not given
         if position is None:
@@ -1244,17 +1215,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # build data holder accordingly
                 data = bytearray(
-                    (size_of_data_left_to_transmit + 2) *
-                    WORD_TO_BYTE_CONVERTER)
+                    (size_of_data_left_to_transmit + 2) * WORD_SIZE)
 
                 # pack flag and n packets
                 _ONE_WORD.pack_into(
                     data, offset, self.SDP_PACKET_START_MISSING_SEQ_COMMAND_ID)
-                _ONE_WORD.pack_into(
-                    data, WORD_TO_BYTE_CONVERTER, n_packets)
+                _ONE_WORD.pack_into(data, WORD_SIZE, n_packets)
 
                 # update state
-                offset += 2 * WORD_TO_BYTE_CONVERTER
+                offset += 2 * WORD_SIZE
                 length_left_in_packet -= 2
                 first = False
 
@@ -1266,13 +1235,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # build data holder accordingly
                 data = bytearray(
-                    (size_of_data_left_to_transmit + 1) *
-                    WORD_TO_BYTE_CONVERTER)
+                    (size_of_data_left_to_transmit + 1) * WORD_SIZE)
 
                 # pack flag
                 _ONE_WORD.pack_into(
                     data, offset, self.SDP_PACKET_MISSING_SEQ_COMMAND_ID)
-                offset += 1 * WORD_TO_BYTE_CONVERTER
+                offset += 1 * WORD_SIZE
                 length_left_in_packet -= 1
 
             # fill data field
@@ -1354,8 +1322,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seq_nums, finished
 
     def _calculate_offset(self, seq_num):
-        return (seq_num * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
-                WORD_TO_BYTE_CONVERTER)
+        return seq_num * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_SIZE
 
     def _write_into_view(
             self, view_start_position, view_end_position,
@@ -1405,7 +1372,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         return ceildiv(
             len(self._output),
-            DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)
+            DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_SIZE)
 
     @staticmethod
     def _print_missing(seq_nums):
@@ -1424,7 +1391,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         reread_data = struct.unpack("<{}I".format(
-            ceildiv(len(data), WORD_TO_BYTE_CONVERTER)), data)
+            ceildiv(len(data), WORD_SIZE)), data)
         log.info("converted data back into readable form is {}", reread_data)
 
     @staticmethod
