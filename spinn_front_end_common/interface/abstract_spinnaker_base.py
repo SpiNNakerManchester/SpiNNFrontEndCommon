@@ -1314,6 +1314,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "reset_machine_on_startup")
         inputs["BootPortNum"] = self._read_config_int(
             "Machine", "boot_connection_port_num")
+        inputs["RepairMachine"] = self._config.getboolean(
+            "Machine", "repair_machine")
 
     def generate_file_machine(self):
         inputs = {
