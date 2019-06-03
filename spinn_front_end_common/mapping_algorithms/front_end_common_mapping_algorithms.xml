@@ -59,6 +59,9 @@
         </optional_inputs>
         <outputs>
             <param_type>NChipsUsed</param_type>
+            <param_type>MaxCoresUsedOnChip</param_type>
+            <param_type>MinCoresUsedOnChip</param_type>
+            <param_type>AverageCoresOnChip</param_type>
         </outputs>
     </algorithm>
 </algorithms>
