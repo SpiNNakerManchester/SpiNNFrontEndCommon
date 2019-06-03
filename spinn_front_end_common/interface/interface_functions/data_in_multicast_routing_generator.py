@@ -25,8 +25,7 @@ class DataInMulticastRoutingGenerator(object):
     """
     __slots__ = ["_monitors", "_real_machine", "_real_placements"]
 
-    def __call__(self, machine, extra_monitor_cores, placements,
-                 board_version):
+    def __call__(self, machine, extra_monitor_cores, placements):
         # pylint: disable=attribute-defined-outside-init
         self._real_machine = machine
         self._real_placements = placements
