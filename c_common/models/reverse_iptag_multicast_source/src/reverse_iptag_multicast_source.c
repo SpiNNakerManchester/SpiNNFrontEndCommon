@@ -55,11 +55,6 @@ typedef enum provenance_items {
     LATE_PACKETS
 } provenance_items;
 
-typedef union {
-	uint32_t u;
-	accum a;
-} uint_accum_union;
-
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
 #define SPIKE_HISTORY_CHANNEL 0
@@ -137,7 +132,6 @@ static uint8_t return_tag_id;
 static uint32_t return_tag_dest;
 static uint32_t buffered_in_sdp_port;
 static uint32_t tx_offset;
-static uint_accum_union rand_fract;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
@@ -910,9 +904,7 @@ bool read_parameters(address_t region_address) {
     return_tag_id = region_address[RETURN_TAG_ID];
     return_tag_dest = region_address[RETURN_TAG_DEST];
     buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
-    //tx_offset = region_address[TX_OFFSET];
-    rand_fract.u = region_address[TX_OFFSET];
-//    io_printf(IO_BUF,"tx_offset=%dus\n",tx_offset);
+    tx_offset = region_address[TX_OFFSET];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -1107,9 +1099,6 @@ void timer_callback(uint unused0, uint unused1) {
         return;
     }
 
-    //wait random amount of time (0-500us)
-    spin1_delay_us(tx_offset);
-
     if (send_packet_reqs &&
             ((time - last_request_tick) >= TICKS_BETWEEN_REQUESTS)) {
         send_buffer_request_pkt();
@@ -1156,8 +1145,7 @@ void c_main(void) {
     }
 
     // Set timer_callback
-    spin1_set_timer_tick(timer_period);
-    set_tx_offset(timer_period);
+    spin1_set_timer_tick_and_phase(timer_period, tx_offset);
 
     // Register callbacks
     simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);

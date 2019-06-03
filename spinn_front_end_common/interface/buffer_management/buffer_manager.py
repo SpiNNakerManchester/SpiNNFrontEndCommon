@@ -24,6 +24,9 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
+from spinn_front_end_common.interface.buffer_management.buffer_models \
+    import (
+        AbstractReceiveBuffersToHost)
 from .recording_utilities import (
     TRAFFIC_IDENTIFIER, get_last_sequence_number, get_region_pointer)
 
@@ -637,6 +640,10 @@ class BufferManager(object):
         :rtype: (bytearray, bool)
         """
         # Ensure that any transfers in progress are complete first
+        if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+            raise NotImplementedError(
+                "vertex {} does not implement AbstractReceiveBuffersToHost "
+                "so no data read".format(placement.vertex))
         with self._thread_lock_buffer_out:
             # data flush has been completed - return appropriate data
             (byte_array, missing) = self._received_data.get_region_data(

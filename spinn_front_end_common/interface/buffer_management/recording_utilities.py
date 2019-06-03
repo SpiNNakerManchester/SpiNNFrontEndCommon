@@ -1,6 +1,4 @@
 import struct
-from pacman.model.resources import (
-    ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     import ChannelBufferState
 from spinn_front_end_common.utilities.constants import (
@@ -34,144 +32,20 @@ def get_recording_header_size(n_recorded_regions):
             (2 * n_recorded_regions)) * 4
 
 
-def get_recording_data_size(recorded_region_sizes):
-    """ Get the size of the recorded data to be reserved
+def get_recording_data_constant_size(n_recorded_regions):
+    """ Get the size of the recorded data to be reserved that doesn't
 
-    :param recorded_region_sizes:\
-        A list of sizes of each region to be recorded.\
-        A size of 0 is acceptable.
+    :param n_recorded_regions: The number of regions to be recorded
     :rtype: int
     """
     return (
-        # The total recording data size
-        sum(recorded_region_sizes) +
 
         # The storage of the recording state
-        (len(recorded_region_sizes) *
+        (n_recorded_regions *
          ChannelBufferState.size_of_channel_state()) +
 
         # The SARK allocation of SDRAM overhead
-        (len(recorded_region_sizes) * SARK_PER_MALLOC_SDRAM_USAGE))
-
-
-def get_minimum_buffer_sdram(
-        buffered_sdram, minimum_sdram_for_buffering=(1024 * 1024)):
-    """ Get the minimum buffer SDRAM.
-
-    :param buffered_sdram:\
-        The maximum number of bytes to use per recorded region.\
-        Disabled regions can specify 0.
-    :type buffered_sdram: list(int)
-    :param minimum_sdram_for_buffering:\
-        The minimum SDRAM to reserve per recorded region for buffering
-    :type minimum_sdram_for_buffering: int
-    :rtype: list(int)
-    """
-
-    # The minimum SDRAM for each region is:
-    # - If the buffered_sdram_per_timestep for the region is > 0 and
-    #   n_machine_time_steps is defined then the minimum of the actual region
-    #   size and the minimum_sdram_for_buffering
-    # - If the SDRAM is 0 then 0
-    # - If n_machine_time_steps is None then minimum_sdram_for_buffering
-    return [
-        min(sdram, minimum_sdram_for_buffering)
-        for sdram in buffered_sdram
-    ]
-
-
-def get_recording_region_sizes(
-        buffered_sdram, minimum_sdram_for_buffering=(1024 * 1024),
-        maximum_sdram_for_buffering=None, use_auto_pause_and_resume=True):
-    """ Get the size of each recording region to be passed in to\
-        :py:func:`get_recording_resources`, based on the details of the\
-        simulation.
-
-    :param buffered_sdram:\
-        The maximum number of bytes to use of recording, per recorded region.
-        Disabled regions can specify 0.
-    :type buffered_sdram: list(int)
-    :param minimum_sdram_for_buffering:\
-        The minimum SDRAM to reserve per recorded region for buffering
-    :type minimum_sdram_for_buffering: int
-    :param maximum_sdram_for_buffering:\
-        The maximum size of each buffer, or None if no maximum
-    :type maximum_sdram_for_buffering: None or list(int)
-    :param use_auto_pause_and_resume:\
-        True if automatic pause and resume is to be used for buffering
-    :type use_auto_pause_and_resume: bool
-    :rtype: list(int)
-    """
-    if use_auto_pause_and_resume:
-        # If auto pause and resume is enabled, find the minimum sizes
-        return get_minimum_buffer_sdram(
-            buffered_sdram, minimum_sdram_for_buffering)
-    else:
-
-        # If auto pause and resume is disabled, use the actual region size
-        return get_recorded_region_sizes(
-            buffered_sdram, maximum_sdram_for_buffering)
-
-
-def get_recording_resources(
-        region_sizes, buffering_ip_address=None,
-        buffering_port=None, notification_tag=None):
-    """ Get the resources for recording
-
-    :param region_sizes:\
-        A list of the sizes of each region.  A size of 0 is acceptable to\
-        indicate an empty region
-    :type region_sizes: list(int)
-    :param buffering_ip_address:\
-        The IP address to receive buffering messages on, or None if buffering\
-        is not in use
-    :type buffering_ip_address: str
-    :param buffering_port:\
-        The port to receive buffering messages on, or None if a port is to be\
-        assigned
-    :type buffering_port: int
-    :param notification_tag:\
-        The tag to send buffering messages with, or None to use a default tag
-    :type notification_tag: int
-    :rtype: :py:class:`pacman.model.resources.ResourceContainer`
-    """
-    ip_tags = list()
-    if buffering_ip_address is not None:
-        ip_tags.append(IPtagResource(
-            buffering_ip_address, buffering_port, True, notification_tag,
-            TRAFFIC_IDENTIFIER))
-    # return the resources including the SDRAM requirements
-    return ResourceContainer(
-        iptags=ip_tags,
-        sdram=ConstantSDRAM(
-            get_recording_header_size(len(region_sizes)) +
-            get_recording_data_size(region_sizes)))
-
-
-def get_recorded_region_sizes(
-        buffered_sdram, maximum_sdram_for_buffering=None):
-    """ Get the size of each recording region to be passed in to\
-        get_recording_header_array
-
-    :param buffered_sdram:\
-        The maximum SDRAM used in bytes per region
-    :type buffered_sdram_per_timestep: list(int)
-    :param maximum_sdram_for_buffering:\
-        The maximum size of each buffer, or None if no maximum
-    :type maximum_sdram_for_buffering: None or list(int)
-    :rtype: list(int)
-    """
-
-    # The size of each buffer is the actual size needed for the number of
-    # timesteps, or the maximum for buffering if a maximum is specified
-    return [
-        sdram
-        if (maximum_sdram_for_buffering is None or
-            maximum_sdram_for_buffering[i] == 0 or
-            sdram < maximum_sdram_for_buffering[i])
-        else maximum_sdram_for_buffering[i]
-        for i, sdram in enumerate(buffered_sdram)
-    ]
+        (n_recorded_regions * SARK_PER_MALLOC_SDRAM_USAGE))
 
 
 def get_recording_header_array(
@@ -270,18 +144,3 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
         recording_data_address + _FIRST_REGION_ADDRESS_OFFSET + (region * 4),
         4)
     return _ONE_WORD.unpack_from(data)[0]
-
-
-def get_recorded_region_ids(buffered_sdram_per_timestep):
-    """ Get the IDs of regions where recording is enabled
-
-    :param buffered_sdram_per_timestep:\
-        The maximum SDRAM used by each region per timestep, where 0 indicates\
-        a disabled region
-    :type buffered_sdram_per_timestep: list(int)
-    :rtype: list(int)
-    """
-    return [
-        region_id
-        for region_id in range(len(buffered_sdram_per_timestep))
-        if buffered_sdram_per_timestep[region_id] > 0]
