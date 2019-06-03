@@ -34,7 +34,7 @@ class VirtualMachineGenerator(object):
             with_monitors=with_monitors, down_chips=down_chips,
             down_cores=down_cores, down_links=down_links,
             sdram_per_chip=max_sdram_size,
-            router_entries_per_chip=router_entries_per_chip)
+            router_entries_per_chip=router_entries_per_chip, validate=True)
 
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)

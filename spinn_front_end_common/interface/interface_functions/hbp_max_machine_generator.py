@@ -21,7 +21,7 @@ class HBPMaxMachineGenerator(object):
         # Return the width and height and assume that it has wrap arounds
         return virtual_machine(
             width=max_machine["width"], height=max_machine["height"],
-            with_wrap_arounds=None, version=None)
+            with_wrap_arounds=None, version=None, validate=False)
 
     def _max_machine_request(self, url, total_run_time):
         if url.endswith("/"):

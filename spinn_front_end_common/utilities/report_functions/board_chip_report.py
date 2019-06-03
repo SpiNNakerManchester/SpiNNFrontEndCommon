@@ -29,7 +29,8 @@ class BoardChipReport(object):
         with open(directory_name, "w") as writer:
             for ethernet_connected_chip in \
                     progress_bar.over(machine.ethernet_connected_chips):
-                chips = machine.get_chips_on_board(ethernet_connected_chip)
+                xys = machine.get_existing_xys_on_board(
+                    ethernet_connected_chip)
                 writer.write(
                     "board with IP address : {} : has chips {}\n".format(
-                        ethernet_connected_chip.ip_address, list(chips)))
+                        ethernet_connected_chip.ip_address, list(xys)))
