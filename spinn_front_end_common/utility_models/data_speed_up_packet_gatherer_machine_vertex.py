@@ -119,8 +119,9 @@ _FOUR_WORDS = struct.Struct("<IIII")
 def ceildiv(dividend, divisor):
     """ How to divide two possibly-integer numbers and round up.
     """
+    assert divisor > 0
     q, r = divmod(dividend, divisor)
-    return q + (r != 0)
+    return int(q) + (r != 0)
 
 
 # SDRAM requirement for storing missing SDP packets seq nums
