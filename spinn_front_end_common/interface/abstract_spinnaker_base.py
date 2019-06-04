@@ -1393,6 +1393,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Database", "send_stop_notification")
         inputs["WriteDataSpeedUpReportFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_report")
+        inputs["UsingReinjection"] = \
+            (self._config.getboolean("Machine", "enable_reinjection") and
+             self._config.getboolean(
+                 "Machine", "enable_advanced_monitor_support"))
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(

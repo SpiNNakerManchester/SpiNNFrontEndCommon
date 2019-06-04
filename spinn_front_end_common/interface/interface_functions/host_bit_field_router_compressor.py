@@ -717,8 +717,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # compress the router entries using rigs compressor
         compressed_router_table_entries = rigs_compressor.minimise(
             entries, target_length, time_to_try_for_each_iteration,
-            use_timer_cut_off, default_report_folder, router_table.x,
-            router_table.y)
+            use_timer_cut_off, default_report_folder, chip_x, chip_y)
 
         # convert back to pacman model
         compressed_pacman_table = \
