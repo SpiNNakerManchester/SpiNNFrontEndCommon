@@ -7,7 +7,7 @@ from pacman.operations.fixed_route_router.fixed_route_router import (
     RoutingMachineVertex)
 from pacman.operations.router_algorithms import BasicDijkstraRouting
 from spinn_machine import Machine, MulticastRoutingEntry
-from spinn_machine.machine_factory import create_one_board_submachine
+from spinn_machine import virtual_submachine
 from spinn_utilities.progress_bar import ProgressBar
 
 N_KEYS_PER_PARTITION_ID = 4
@@ -100,7 +100,7 @@ class DataInMulticastRoutingGenerator(object):
         # build fake setup for the routing
         eth_x = ethernet_connected_chip.x
         eth_y = ethernet_connected_chip.y
-        fake_machine = create_one_board_submachine(
+        fake_machine = virtual_submachine(
             self._real_machine, ethernet_connected_chip)
 
         # Build a fake graph with vertices for all the monitors
