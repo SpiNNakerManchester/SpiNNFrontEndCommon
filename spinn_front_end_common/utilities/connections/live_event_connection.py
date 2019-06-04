@@ -22,6 +22,9 @@ from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.utilities.utility_functions import send_port_trigger_message
+from spinnman.messages.sdp.sdp_message import SDPMessage
+from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.connections.udp_packet_connections import UDPConnection
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -52,7 +55,8 @@ class LiveEventConnection(DatabaseConnection):
         "_send_address_details",
         "_send_labels",
         "_sender_connection",
-        "_start_resume_callbacks"]
+        "_start_resume_callbacks",
+        "_error_keys"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT,
@@ -82,8 +86,10 @@ class LiveEventConnection(DatabaseConnection):
         self.add_database_callback(self._read_database_callback)
 
         self._live_packet_gather_label = live_packet_gather_label
-        self._receive_labels = receive_labels
-        self._send_labels = send_labels
+        self._receive_labels = (
+            list(receive_labels) if receive_labels is not None else None)
+        self._send_labels = (
+            list(send_labels) if send_labels is not None else None)
         self._machine_vertices = machine_vertices
         self._sender_connection = None
         self._send_address_details = dict()
@@ -106,6 +112,28 @@ class LiveEventConnection(DatabaseConnection):
                 self._init_callbacks[label] = list()
         self._receiver_listener = None
         self._receiver_connection = None
+        self._error_keys = set()
+
+    def add_send_label(self, label):
+        if self._send_labels is None:
+            self._send_labels = list()
+        if label not in self._send_labels:
+            self._send_labels.append(label)
+        if label not in self._start_resume_callbacks:
+            self._start_resume_callbacks[label] = list()
+            self._pause_stop_callbacks[label] = list()
+            self._init_callbacks[label] = list()
+
+    def add_receive_label(self, label):
+        if self._receive_labels is None:
+            self._receive_labels = list()
+        if label not in self._receive_labels:
+            self._receive_labels.append(label)
+            self._live_event_callbacks.append(list())
+        if label not in self._start_resume_callbacks:
+            self._start_resume_callbacks[label] = list()
+            self._pause_stop_callbacks[label] = list()
+            self._init_callbacks[label] = list()
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
@@ -135,6 +163,8 @@ class LiveEventConnection(DatabaseConnection):
         :type live_event_callback: function(str, int, [int]) -> None
         """
         label_id = self._receive_labels.index(label)
+        logger.info("Receive callback {} registered to label {}".format(
+            live_event_callback, label))
         self._live_event_callbacks[label_id].append(live_event_callback)
 
     def add_start_callback(self, label, start_callback):
@@ -196,7 +226,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def _init_sender(self, db, vertex_sizes):
         if self._sender_connection is None:
-            self._sender_connection = EIEIOConnection()
+            self._sender_connection = UDPConnection()
         for label in self._send_labels:
             self._send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -253,8 +283,12 @@ class LiveEventConnection(DatabaseConnection):
 
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
-            return db_reader.get_machine_live_input_details(send_label)
-        return db_reader.get_live_input_details(send_label)
+            x, y, p = db_reader.get_placement(send_label)
+        else:
+            x, y, p = db_reader.get_placements(send_label)[0]
+
+        ip_address = db_reader.get_ip_address(x, y)
+        return x, y, p, ip_address
 
     def __get_live_output_details(self, db_reader, receive_label):
         if self._machine_vertices:
@@ -273,7 +307,7 @@ class LiveEventConnection(DatabaseConnection):
     def __update_tag(self, connection, board_address, tag):
         # Update an IP Tag with the sender's address and port
         # This avoids issues with NAT firewalls
-        logger.info("Updating tag for {}".format(board_address))
+        logger.debug("Updating tag for {}".format(board_address))
         request = IPTagSet(
             0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
         request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
@@ -294,19 +328,19 @@ class LiveEventConnection(DatabaseConnection):
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
-        logger.info("Done updating tag for {}".format(board_address))
+        logger.debug("Done updating tag for {}".format(board_address))
 
     def _handle_possible_rerun_state(self):
         # reset from possible previous calls
         if self._sender_connection is not None:
             self._sender_connection.close()
             self._sender_connection = None
-        if self._receiver_connection is not None:
-            self._receiver_connection.close()
-            self._receiver_connection = None
         if self._receiver_listener is not None:
             self._receiver_listener.close()
             self._receiver_listener = None
+        if self._receiver_connection is not None:
+            self._receiver_connection.close()
+            self._receiver_connection = None
 
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
@@ -326,6 +360,7 @@ class LiveEventConnection(DatabaseConnection):
                 self.__launch_thread("pause_stop", label, callback)
 
     def _receive_packet_callback(self, packet):
+        logger.debug("Received packet")
         try:
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
@@ -347,6 +382,8 @@ class LiveEventConnection(DatabaseConnection):
                 if label_id not in key_times_labels[time]:
                     key_times_labels[time][label_id] = list()
                 key_times_labels[time][label_id].append(atom_id)
+            else:
+                self.__handle_unknown_key(key)
 
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
@@ -366,6 +403,13 @@ class LiveEventConnection(DatabaseConnection):
                                  element.payload)
                     else:
                         callback(self._receive_labels[label_id], atom_id)
+            else:
+                self.__handle_unknown_key(key)
+
+    def __handle_unknown_key(self, key):
+        if key not in self._error_keys:
+            self._error_keys.add(key)
+            logger.warning("Received unexpected key {}".format(key))
 
     def send_event(self, label, atom_id, send_full_keys=False):
         """ Send an event from a single atom
@@ -402,6 +446,7 @@ class LiveEventConnection(DatabaseConnection):
             msg_type = EIEIOType.KEY_32_BIT
 
         pos = 0
+        x, y, p, ip_address = self._send_address_details[label]
         while pos < len(atom_ids):
             message = EIEIODataMessage.create(msg_type)
             events_in_packet = 0
@@ -412,9 +457,25 @@ class LiveEventConnection(DatabaseConnection):
                 message.add_key(key)
                 pos += 1
                 events_in_packet += 1
-            ip_address, port = self._send_address_details[label]
-            self._sender_connection.send_eieio_message_to(
-                message, ip_address, port)
+
+            self._sender_connection.send_to(
+                self._get_sdp_data(message, x, y, p),
+                (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
+        self._handle_possible_rerun_state()
         DatabaseConnection.close(self)
+
+    @staticmethod
+    def _get_sdp_data(message, x, y, p):
+        # Create an SDP message - no reply so source is unimportant
+        # SDP port can be anything except 0 as the target doesn't care
+        sdp_message = SDPMessage(
+            SDPHeader(
+                flags=SDPFlag.REPLY_NOT_EXPECTED, tag=0,
+                destination_port=1, destination_cpu=p,
+                destination_chip_x=x, destination_chip_y=y,
+                source_port=0, source_cpu=0,
+                source_chip_x=0, source_chip_y=0),
+            data=message.bytestring)
+        return _TWO_SKIP.pack() + sdp_message.bytestring
