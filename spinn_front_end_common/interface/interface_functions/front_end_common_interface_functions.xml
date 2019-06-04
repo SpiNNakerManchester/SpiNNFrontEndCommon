@@ -23,7 +23,6 @@
             <param_name>machine</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>placements</param_name>
-            <param_name>board_version</param_name>
         </required_inputs>
         <outputs>
             <param_type>DataInMulticastRoutingTables</param_type>
