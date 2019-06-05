@@ -4,11 +4,11 @@ from six import iteritems
 from spinn_front_end_common.interface.ds.data_specification_targets import\
     DataSpecificationTargets
 from spinn_front_end_common.interface.ds.data_row_reader import DataRowReader
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.virtual_machine import virtual_machine
 
 
 class TestDataSpecificationTargets(unittest.TestCase):
-    machine = VirtualMachine(2, 2)
+    machine = virtual_machine(2, 2)
 
     def test_dict(self):
         check = dict()
