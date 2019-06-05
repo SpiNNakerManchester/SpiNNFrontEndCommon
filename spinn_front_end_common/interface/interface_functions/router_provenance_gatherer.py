@@ -116,7 +116,7 @@ class RouterProvenanceGatherer(object):
         for chip in progress.over(sorted(
                 machine.chips, key=lambda c: (c.x, c.y))):
             self._write_router_chip_diagnostic(
-                txrx, chip, seen_chips, items, reinjection_data)
+                txrx, chip, seen_chips, items, reinjection_data, machine)
         return items
 
     def _write_router_table_diagnostic(
@@ -132,7 +132,7 @@ class RouterProvenanceGatherer(object):
                     reinjection_status = reinjection_data[(x, y)]
                 items.extend(self._write_router_diagnostics(
                     x, y, router_diagnostic, reinjection_status, True,
-                    router_table))
+                    router_table, machine))
                 self._add_totals(router_diagnostic, reinjection_status)
             except Exception:
                 logger.warning(
@@ -140,7 +140,7 @@ class RouterProvenanceGatherer(object):
                     x, y, exc_info=True)
 
     def _write_router_chip_diagnostic(
-            self, txrx, chip, seen_chips, items, reinjection_data):
+            self, txrx, chip, seen_chips, items, reinjection_data, machine):
         # pylint: disable=too-many-arguments
         if not chip.virtual and (chip.x, chip.y) not in seen_chips:
             try:
@@ -154,7 +154,7 @@ class RouterProvenanceGatherer(object):
                         reinjection_status = reinjection_data[(chip.x, chip.y)]
                     items.extend(self._write_router_diagnostics(
                             chip.x, chip.y, diagnostic, reinjection_status,
-                            False, None))
+                            False, None, machine))
                     self._add_totals(diagnostic, reinjection_status)
             except Exception:
                 # There could be issues with unused chips - don't worry!
@@ -184,7 +184,7 @@ class RouterProvenanceGatherer(object):
 
     def _write_router_diagnostics(
             self, x, y, router_diagnostic, reinjection_status, expected,
-            router_table):
+            router_table, machine):
         """ Stores router diagnostics as a set of provenance data items
 
         :param x: x coordinate of the router in question
@@ -308,10 +308,13 @@ class RouterProvenanceGatherer(object):
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Reinjected"),
                 reinjection_status.n_reinjected_packets))
+
+
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Dumped_from_a_Link"),
                 str(reinjection_status.n_link_dumps),
-                report=reinjection_status.n_link_dumps > 0,
+                report=(reinjection_status.n_link_dumps > 0 and
+                        self._has_virtual_chip_connected(machine, x, y)),
                 message=(
                     "The extra monitor on {}, {} has detected that {} packets "
                     "were dumped from a outgoing link of this chip's router."
@@ -334,3 +337,11 @@ class RouterProvenanceGatherer(object):
                     " number is likely a overestimate.".format(
                         x, y, reinjection_status.n_processor_dumps))))
         return items
+
+    @staticmethod
+    def _has_virtual_chip_connected(machine, x, y):
+        for link in machine.get_chip_at(x, y).router.links:
+            if machine.get_chip_at(
+                    link.destination_x, link.destination_y).virtual:
+                return True
+        return False
