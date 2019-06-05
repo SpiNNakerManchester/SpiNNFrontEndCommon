@@ -36,8 +36,8 @@ class BufferManagerCreator(object):
 
         # Create the buffer manager
         buffer_manager = BufferManager(
-            placements=placements, tags=tags, transceiver=txrx,
-            extra_monitor_cores=extra_monitor_cores,
+            placements=placements, tags=tags, txrx=txrx,
+            monitors=extra_monitor_cores,
             packet_gather_cores_to_ethernet_connection_map=(
                 packet_gather_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,

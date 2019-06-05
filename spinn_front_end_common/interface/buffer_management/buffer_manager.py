@@ -21,6 +21,7 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
+from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import DataSpeedUpPacketGatherMachineVertex
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
@@ -105,7 +106,7 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, placements, tags, transceiver, extra_monitor_cores,
+    def __init__(self, placements, tags, txrx, monitors,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, report_folder, java_caller=None):
@@ -115,9 +116,9 @@ class BufferManager(object):
             :py:class:`pacman.model.placements.Placements`
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.Tags`
-        :param transceiver: \
-            The transceiver to use for sending and receiving information
-        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param txrx: \
+            The txrx to use for sending and receiving information
+        :type txrx: :py:class:`spinnman.txrx.Transceiver`
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to
         :param report_folder: The directory for reports which includes the
@@ -130,8 +131,8 @@ class BufferManager(object):
         # pylint: disable=too-many-arguments
         self._placements = placements
         self._tags = tags
-        self._transceiver = transceiver
-        self._extra_monitor_cores = extra_monitor_cores
+        self._transceiver = txrx
+        self._extra_monitor_cores = monitors
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
@@ -206,6 +207,7 @@ class BufferManager(object):
         :type packet:\
             :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
+        # pylint: disable=broad-except
         if isinstance(packet, SpinnakerRequestBuffers):
             # noinspection PyBroadException
             try:
@@ -589,23 +591,11 @@ class BufferManager(object):
                 self._packet_gather_cores_to_ethernet_connection_map)
             for placement in placements)
 
-        # set time out
-        for receiver in receivers:
-            receiver.set_cores_for_data_extraction(
-                transceiver=self._transceiver,
-                placements=self._placements,
-                extra_monitor_cores_for_router_timeout=(
-                    self._extra_monitor_cores))
-
-        try:
+        with DataSpeedUpPacketGatherMachineVertex.streaming(
+                receivers, self._transceiver, self._extra_monitor_cores,
+                self._placements):
             # get data
             self.__old_get_data_for_placements(placements, progress)
-        finally:
-            # revert time out
-            for receiver in receivers:
-                receiver.set_cores_for_data_streaming(
-                    transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores=self._extra_monitor_cores)
 
     def __old_get_data_for_placements(self, placements, progress):
         # get data
@@ -830,6 +820,7 @@ class BufferManager(object):
         end_state.set_update_completed()
 
     def _process_buffered_in_packet(self, packet):
+        # pylint: disable=broad-except
         logger.debug(
             "received {} read request(s) with sequence: {},"
             " from chip ({},{}, core {}",

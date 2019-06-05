@@ -836,6 +836,21 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self._send_end_flag()
                 log.debug("sent end flag")
 
+    @staticmethod
+    def streaming(gatherers, transceiver, extra_monitor_cores, placements):
+        """ Helper method for setting the router timeouts to a state usable\
+            for data streaming via a Python context manager (i.e., using\
+            the 'with' statement).
+
+        :param gatherers: All the gatherers that are to be set
+        :param transceiver: the SpiNNMan instance
+        :param extra_monitor_cores: the extra monitor cores to set
+        :param placements: placements object
+        :rtype: a context manager
+        """
+        return _StreamingContextManager(
+            gatherers, transceiver, extra_monitor_cores, placements)
+
     def set_cores_for_data_streaming(
             self, transceiver, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
@@ -1340,3 +1355,27 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         log.info("send SDP packet with missing sequence numbers: {} of {}",
                  packet_count + 1, n_packets)
+
+
+class _StreamingContextManager(object):
+    """ The implementation of the context manager object for streaming \
+    configuration control.
+    """
+    __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
+
+    def __init__(self, gatherers, txrx, monitors, placements):
+        self._gatherers = list(gatherers)
+        self._txrx = txrx
+        self._monitors = monitors
+        self._placements = placements
+
+    def __enter__(self):
+        for gatherer in self._gatherers:
+            gatherer.set_cores_for_data_streaming(
+                self._txrx, self._monitors, self._placements)
+
+    def __exit__(self, _type, _value, _tb):
+        for gatherer in self._gatherers:
+            gatherer.unset_cores_for_data_streaming(
+                self._txrx, self._monitors, self._placements)
+        return False
