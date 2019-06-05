@@ -107,7 +107,7 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, placements, tags, txrx, monitors,
+    def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, report_folder, java_caller=None):
@@ -117,9 +117,9 @@ class BufferManager(object):
             :py:class:`pacman.model.placements.Placements`
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.Tags`
-        :param txrx: \
-            The txrx to use for sending and receiving information
-        :type txrx: :py:class:`spinnman.txrx.Transceiver`
+        :param transceiver: \
+            The transceiver to use for sending and receiving information
+        :type transceiver: :py:class:`spinnman.txrx.Transceiver`
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to
         :param report_folder: The directory for reports which includes the
@@ -132,8 +132,8 @@ class BufferManager(object):
         # pylint: disable=too-many-arguments
         self._placements = placements
         self._tags = tags
-        self._transceiver = txrx
-        self._extra_monitor_cores = monitors
+        self._transceiver = transceiver
+        self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
