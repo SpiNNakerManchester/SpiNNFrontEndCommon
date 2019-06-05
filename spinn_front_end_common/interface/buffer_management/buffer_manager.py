@@ -21,8 +21,6 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
@@ -586,13 +584,14 @@ class BufferManager(object):
     def __old_get_data_for_placements_with_monitors(
             self, placements, progress):
         # locate receivers
-        receivers = OrderedSet(
+        receivers = list(OrderedSet(
             locate_extra_monitor_mc_receiver(
                 self._machine, placement.x, placement.y,
                 self._packet_gather_cores_to_ethernet_connection_map)
-            for placement in placements)
+            for placement in placements))
 
-        with DataSpeedUpPacketGatherMachineVertex.streaming(
+        # Ugly, to avoid an import loop...
+        with receivers[0].streaming(
                 receivers, self._transceiver, self._extra_monitor_cores,
                 self._placements):
             # get data
