@@ -1,4 +1,4 @@
-from spinn_machine import VirtualMachine, Machine, Router
+from spinn_machine import virtual_machine, Machine, Router
 
 
 class VirtualMachineGenerator(object):
@@ -27,14 +27,14 @@ class VirtualMachineGenerator(object):
         :param max_sdram_size: The SDRAM that should be given to each chip
         """
         # pylint: disable=too-many-arguments
-        machine = VirtualMachine(
+        machine = virtual_machine(
             width=width, height=height,
             with_wrap_arounds=virtual_has_wrap_arounds,
             version=version, n_cpus_per_chip=n_cpus_per_chip,
             with_monitors=with_monitors, down_chips=down_chips,
             down_cores=down_cores, down_links=down_links,
             sdram_per_chip=max_sdram_size,
-            router_entries_per_chip=router_entries_per_chip)
+            router_entries_per_chip=router_entries_per_chip, validate=True)
 
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)
