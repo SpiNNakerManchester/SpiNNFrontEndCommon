@@ -21,7 +21,8 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import DataSpeedUpPacketGatherMachineVertex
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)

@@ -359,7 +359,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             spec.write_value(board_chip_y)
             spec.write_value(mc_data_chips_to_keys[chip_xy])
             log.debug("for chip {}:{} base key is {}",
-                      *chip_xy, mc_data_chips_to_keys[chip_xy])
+                      chip_xy[0], chip_xy[1], mc_data_chips_to_keys[chip_xy])
 
         # End-of-Spec:
         spec.end_specification()
@@ -695,7 +695,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         position = 0
         command_id = _ONE_WORD.unpack_from(data, 0)[0]
         position += WORD_SIZE
-        log.debug("received packet with id {}\n", command_id)
+        log.debug("received packet with id {}", command_id)
 
         # process first missing
         if command_id == DATA_IN_COMMANDS.RECEIVE_FIRST_MISSING_SEQ.value:
