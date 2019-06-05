@@ -1,6 +1,7 @@
 import logging
 from spinn_utilities.log import FormatAdapter
-from spinn_machine import JsonMachine, VirtualMachine, Machine, Router
+from spinn_machine import json_machine, virtual_machine, Machine, Router
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 from spinn_machine import virtual_machine, Machine, Router
@@ -34,25 +35,15 @@ class VirtualMachineGenerator(object):
         """
 
         if json_path is None:
-            # pylint: disable=too-many-arguments
-            machine = VirtualMachine(
+           # pylint: disable=too-many-arguments
+            machine = virtual_machine(
                 width=width, height=height,
                 with_wrap_arounds=virtual_has_wrap_arounds,
                 version=version, n_cpus_per_chip=n_cpus_per_chip,
                 with_monitors=with_monitors, down_chips=down_chips,
                 down_cores=down_cores, down_links=down_links,
                 sdram_per_chip=max_sdram_size,
-                router_entries_per_chip=router_entries_per_chip)
-        # pylint: disable=too-many-arguments
-        machine = virtual_machine(
-            width=width, height=height,
-            with_wrap_arounds=virtual_has_wrap_arounds,
-            version=version, n_cpus_per_chip=n_cpus_per_chip,
-            with_monitors=with_monitors, down_chips=down_chips,
-            down_cores=down_cores, down_links=down_links,
-            sdram_per_chip=max_sdram_size,
-            router_entries_per_chip=router_entries_per_chip, validate=True)
-
+                router_entries_per_chip=router_entries_per_chip, validate=True)
         else:
             if (height is not None or width is not None or
                     virtual_has_wrap_arounds is not None or
@@ -60,7 +51,7 @@ class VirtualMachineGenerator(object):
                     down_cores is not None or down_links is not None):
                 logger.warning("As json_path specified all other virtual "
                                "machine settings ignored.")
-            machine = JsonMachine(json_path)
+            machine = json_machine(json_path)
 
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)
