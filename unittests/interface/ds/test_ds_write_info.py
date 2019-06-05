@@ -23,7 +23,7 @@ class TestDsWriteInfo(unittest.TestCase):
         foo['memory_written'] = 23
         asDict[c1] = foo
         check[c1] = foo
-        self.assertEqual(foo, asDict[c1])
+        self.assertEquals(foo, asDict[c1])
 
         c2 = (1, 1, 3)
         bar = dict()
@@ -32,9 +32,9 @@ class TestDsWriteInfo(unittest.TestCase):
         bar['memory_written'] = 56
         asDict[c2] = bar
         check[c2] = bar
-        self.assertEqual(bar, asDict[c2])
+        self.assertEquals(bar, asDict[c2])
 
-        self.assertEqual(2, len(asDict))
+        self.assertEquals(2, len(asDict))
 
         for key in asDict:
             self.assertDictEqual(check[key], asDict[key])

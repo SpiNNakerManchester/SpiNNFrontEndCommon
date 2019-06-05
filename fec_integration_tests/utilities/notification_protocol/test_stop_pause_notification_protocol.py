@@ -20,7 +20,7 @@ class TestStopPauseNotificationProtocol(unittest.TestCase):
         protocol.send_stop_pause_notification()
         message = listener.receive_eieio_message(timeout=10)
         self.assertIsInstance(message, EIEIOCommandMessage)
-        self.assertEqual(
+        self.assertEquals(
             message.eieio_header.command,
             EIEIO_COMMAND_IDS.STOP_PAUSE_NOTIFICATION.value)
 

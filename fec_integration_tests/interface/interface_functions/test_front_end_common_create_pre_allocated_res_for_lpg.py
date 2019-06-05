@@ -58,10 +58,10 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
-            self.assertEqual(
+            self.assertEquals(
                 sdram.sdram_usage.get_total_sdram(0),
                 LivePacketGatherMachineVertex.get_sdram_usage())
-        self.assertEqual(len(locs), 0)
+        self.assertEquals(len(locs), 0)
 
         locs = list()
         locs.append((0, 0))
@@ -71,11 +71,11 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         cores = pre_res.core_resources
         for core in cores:
             locs.remove((core.chip.x, core.chip.y))
-            self.assertEqual(core.n_cores, 1)
-        self.assertEqual(len(locs), 0)
+            self.assertEquals(core.n_cores, 1)
+        self.assertEquals(len(locs), 0)
 
         # verify specific cores
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
+        self.assertEquals(len(pre_res.specific_core_resources), 0)
 
     def test_one_lpg_params_and_3_specific(self):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
@@ -124,10 +124,10 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
-            self.assertEqual(
+            self.assertEquals(
                 sdram.sdram_usage.get_total_sdram(0),
                 LivePacketGatherMachineVertex.get_sdram_usage() * 2)
-        self.assertEqual(len(locs), 0)
+        self.assertEquals(len(locs), 0)
 
         locs = dict()
         locs[(0, 0)] = 0
@@ -140,10 +140,10 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             locs[(core.chip.x, core.chip.y)] += core.n_cores
 
         for (x, y) in [(0, 0), (4, 8), (8, 4)]:
-            self.assertEqual(locs[x, y], 2)
+            self.assertEquals(locs[x, y], 2)
 
         # verify specific cores
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
+        self.assertEquals(len(pre_res.specific_core_resources), 0)
 
     def test_added_pre_res(self):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
@@ -208,14 +208,14 @@ class TestLPGPreAllocateRes(unittest.TestCase):
                     LivePacketGatherMachineVertex.get_sdram_usage():
                 self.assertIn(sdram.chip.x, (2, 7))
                 self.assertIn(sdram.chip.y, (2, 7))
-                self.assertEqual(sdram.chip.x, sdram.chip.y)
+                self.assertEquals(sdram.chip.x, sdram.chip.y)
                 if sdram.chip.x == 2 and sdram.chip.y == 2:
-                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
+                    self.assertEquals(sdram.sdram_usage.get_total_sdram(0),
                                      30000)
                 elif sdram.chip.x == 7 and sdram.chip.y == 7:
-                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
+                    self.assertEquals(sdram.sdram_usage.get_total_sdram(0),
                                      50000)
-        self.assertEqual(len(locs), 0)
+        self.assertEquals(len(locs), 0)
 
         locs = list()
         locs.append((0, 0))
@@ -228,13 +228,13 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         for core in cores:
             locs.remove((core.chip.x, core.chip.y))
             if core.n_cores != 1:
-                self.assertEqual(core.chip.x, 3)
-                self.assertEqual(core.chip.y, 3)
-                self.assertEqual(core.n_cores, 2)
-        self.assertEqual(len(locs), 0)
+                self.assertEquals(core.chip.x, 3)
+                self.assertEquals(core.chip.y, 3)
+                self.assertEquals(core.n_cores, 2)
+        self.assertEquals(len(locs), 0)
 
         # verify specific cores
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
+        self.assertEquals(len(pre_res.specific_core_resources), 0)
 
     def test_none(self):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
@@ -244,9 +244,9 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine)
-        self.assertEqual(len(pre_res.specific_core_resources), 0)
-        self.assertEqual(len(pre_res.core_resources), 0)
-        self.assertEqual(len(pre_res.specific_sdram_usage), 0)
+        self.assertEquals(len(pre_res.specific_core_resources), 0)
+        self.assertEquals(len(pre_res.core_resources), 0)
+        self.assertEquals(len(pre_res.specific_sdram_usage), 0)
 
     def test_fail(self):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)

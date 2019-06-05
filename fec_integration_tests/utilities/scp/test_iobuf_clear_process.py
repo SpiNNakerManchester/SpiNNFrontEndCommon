@@ -30,11 +30,11 @@ class TestIOBufClearProcess(unittest.TestCase):
         self.assertTrue(receiver.is_next_message)
         data = receiver.next_message
         sdp_header = SDPHeader.from_bytestring(data, 2)
-        self.assertEqual(sdp_header.destination_chip_x, 0)
-        self.assertEqual(sdp_header.destination_chip_y, 0)
-        self.assertEqual(sdp_header.destination_cpu, 1)
+        self.assertEquals(sdp_header.destination_chip_x, 0)
+        self.assertEquals(sdp_header.destination_chip_y, 0)
+        self.assertEquals(sdp_header.destination_cpu, 1)
         command, = struct.unpack_from("<H", data, 10)
-        self.assertEqual(
+        self.assertEquals(
             command,
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
 

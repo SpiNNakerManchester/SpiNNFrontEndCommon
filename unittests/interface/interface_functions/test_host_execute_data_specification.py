@@ -89,35 +89,35 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # how much data is written
         header_and_table_size = (MAX_MEM_REGIONS + 2) * 4
         regions = transceiver.regions_written
-        self.assertEqual(len(regions), 4)
+        self.assertEquals(len(regions), 4)
 
         # Base address for header and table
-        self.assertEqual(regions[0][0], 0)
+        self.assertEquals(regions[0][0], 0)
 
         # Base address for region 0 (after header and table)
-        self.assertEqual(regions[1][0], header_and_table_size)
+        self.assertEquals(regions[1][0], header_and_table_size)
 
         # Base address for region 2
-        self.assertEqual(regions[2][0], header_and_table_size + 200)
+        self.assertEquals(regions[2][0], header_and_table_size + 200)
 
         # User 0 write address
-        self.assertEqual(regions[3][0], 1000)
+        self.assertEquals(regions[3][0], 1000)
 
         # Size of header and table
-        self.assertEqual(len(regions[0][1]), header_and_table_size)
+        self.assertEquals(len(regions[0][1]), header_and_table_size)
 
         # Size of region 0
-        self.assertEqual(len(regions[1][1]), 12)
+        self.assertEquals(len(regions[1][1]), 12)
 
         # Size of region 2
-        self.assertEqual(len(regions[2][1]), 4)
+        self.assertEquals(len(regions[2][1]), 4)
 
         # Size of user 0
-        self.assertEqual(len(regions[3][1]), 4)
+        self.assertEquals(len(regions[3][1]), 4)
 
         info = infos[(0, 0, 0)]
-        self.assertEqual(info["memory_used"], 372)
-        self.assertEqual(info["memory_written"], 88)
+        self.assertEquals(info["memory_used"], 372)
+        self.assertEquals(info["memory_written"], 88)
 
 
 if __name__ == "__main__":

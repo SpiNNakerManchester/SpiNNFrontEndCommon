@@ -46,8 +46,8 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server.start()
         generator = SpallocMaxMachineGenerator()
         machine = generator("localhost", server.port)
-        self.assertEqual(machine.max_chip_x, 7)
-        self.assertEqual(machine.max_chip_y, 7)
+        self.assertEquals(machine.max_chip_x, 7)
+        self.assertEquals(machine.max_chip_y, 7)
 
     def test_multiboard(self):
         server = _MockSpallocServer(
@@ -55,8 +55,8 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server.start()
         generator = SpallocMaxMachineGenerator()
         machine = generator("localhost", server.port)
-        self.assertEqual(machine.max_chip_x, 11)
-        self.assertEqual(machine.max_chip_y, 11)
+        self.assertEquals(machine.max_chip_x, 11)
+        self.assertEquals(machine.max_chip_y, 11)
 
     def test_specific_board(self):
         server = _MockSpallocServer(
@@ -64,8 +64,8 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server.start()
         generator = SpallocMaxMachineGenerator()
         machine = generator("localhost", server.port, "test")
-        self.assertEqual(machine.max_chip_x, (12 * 3) - 1)
-        self.assertEqual(machine.max_chip_y, (12 * 2) - 1)
+        self.assertEquals(machine.max_chip_x, (12 * 3) - 1)
+        self.assertEquals(machine.max_chip_y, (12 * 2) - 1)
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ class TestInsertLPGs(unittest.TestCase):
             machine=machine, machine_graph=graph, application_graph=None,
             graph_mapper=None)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
+        self.assertEquals(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
@@ -62,7 +62,7 @@ class TestInsertLPGs(unittest.TestCase):
             key = (x, y)
             locs.remove(key)
 
-        self.assertEqual(len(locs), 0)
+        self.assertEquals(len(locs), 0)
 
         verts = lpg_verts_mapping[default_params_holder].values()
         for vertex in graph.vertices:
@@ -105,7 +105,7 @@ class TestInsertLPGs(unittest.TestCase):
             machine=machine, machine_graph=graph, application_graph=app_graph,
             graph_mapper=app_graph_mapper)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
+        self.assertEquals(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
@@ -116,7 +116,7 @@ class TestInsertLPGs(unittest.TestCase):
             key = (x, y)
             locs.remove(key)
 
-        self.assertEqual(len(locs), 0)
+        self.assertEquals(len(locs), 0)
 
         verts = lpg_verts_mapping[default_params_holder].values()
         for vertex in graph.vertices:
@@ -128,7 +128,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertNotEqual(app_vertex, None)
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
-        self.assertEqual(len(app_verts), 3)
+        self.assertEquals(len(app_verts), 3)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip(self):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
@@ -173,14 +173,14 @@ class TestInsertLPGs(unittest.TestCase):
             machine=machine, machine_graph=graph, application_graph=None,
             graph_mapper=None)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
+        self.assertEquals(len(lpg_verts_mapping[default_params_holder]), 3)
 
         for eth_chip in chip_special:
             params = chip_special[eth_chip]
-            self.assertEqual(len(lpg_verts_mapping[params]), 1)
+            self.assertEquals(len(lpg_verts_mapping[params]), 1)
             vertex = lpg_verts_mapping[params][eth_chip]
-            self.assertEqual(eth_chip[0], list(vertex.constraints)[0].x)
-            self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
+            self.assertEquals(eth_chip[0], list(vertex.constraints)[0].x)
+            self.assertEquals(eth_chip[1], list(vertex.constraints)[0].y)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph(self):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
@@ -227,14 +227,14 @@ class TestInsertLPGs(unittest.TestCase):
             machine=machine, machine_graph=graph, application_graph=app_graph,
             graph_mapper=app_graph_mapper)
 
-        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
+        self.assertEquals(len(lpg_verts_mapping[default_params_holder]), 3)
 
         for eth_chip in chip_special:
             params = chip_special[eth_chip]
-            self.assertEqual(len(lpg_verts_mapping[params]), 1)
+            self.assertEquals(len(lpg_verts_mapping[params]), 1)
             vertex = lpg_verts_mapping[params][eth_chip]
-            self.assertEqual(eth_chip[0], list(vertex.constraints)[0].x)
-            self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
+            self.assertEquals(eth_chip[0], list(vertex.constraints)[0].x)
+            self.assertEquals(eth_chip[1], list(vertex.constraints)[0].y)
 
         verts = list(lpg_verts_mapping[default_params_holder].values())
         for params in chip_special.values():
@@ -249,7 +249,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertNotEqual(app_vertex, None)
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
-        self.assertEqual(len(app_verts), 6)
+        self.assertEquals(len(app_verts), 6)
 
 
 if __name__ == "__main__":

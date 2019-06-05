@@ -20,7 +20,7 @@ class TestStartResumeNotificationProtocol(unittest.TestCase):
         protocol.send_start_resume_notification()
         message = listener.receive_eieio_message(timeout=10)
         self.assertIsInstance(message, EIEIOCommandMessage)
-        self.assertEqual(
+        self.assertEquals(
             message.eieio_header.command,
             EIEIO_COMMAND_IDS.START_RESUME_NOTIFICATION.value)
 

@@ -164,10 +164,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         # Check that the number of times the data has been regenerated is
         # correct
-        self.assertEqual(vertex.regenerate_call_count, placements.n_placements)
+        self.assertEquals(vertex.regenerate_call_count, placements.n_placements)
 
         # Check that the number of regions rewritten is correct
-        self.assertEqual(
+        self.assertEquals(
             len(transceiver.regions_rewritten),
             placements.n_placements * len(reload_region_data))
 
@@ -183,7 +183,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
                 data = bytearray(numpy.array(data, dtype="uint32").tobytes())
 
                 # Check that the base address and data written is correct
-                self.assertEqual(regions_rewritten[pos], (address, data))
+                self.assertEquals(regions_rewritten[pos], (address, data))
 
         # Delete data files
         shutil.rmtree("test")

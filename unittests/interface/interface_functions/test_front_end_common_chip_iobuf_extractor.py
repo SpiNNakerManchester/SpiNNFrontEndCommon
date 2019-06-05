@@ -105,7 +105,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning111, warn_entries)
         self.assertIn(result_warning112, warn_entries)
         self.assertIn(result_warning003, warn_entries)
-        self.assertEqual(5, len(warn_entries))
+        self.assertEquals(5, len(warn_entries))
         os.rmdir(folder)
 
     def testCallChips(self):
@@ -141,7 +141,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertNotIn(result_warning111, warn_entries)
         self.assertNotIn(result_warning112, warn_entries)
         self.assertIn(result_warning003, warn_entries)
-        self.assertEqual(2, len(warn_entries))
+        self.assertEquals(2, len(warn_entries))
         os.rmdir(folder)
 
     def testCallBinary(self):
@@ -174,7 +174,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning001, warn_entries)
         self.assertIn(result_warning002, warn_entries)
         self.assertIn(result_warning003, warn_entries)
-        self.assertEqual(3, len(warn_entries))
+        self.assertEquals(3, len(warn_entries))
         os.rmdir(folder)
 
     def testCallBoth(self):
@@ -212,7 +212,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(result_warning111, warn_entries)
         self.assertNotIn(result_warning112, warn_entries)
         self.assertIn(result_warning003, warn_entries)
-        self.assertEqual(4, len(warn_entries))
+        self.assertEquals(4, len(warn_entries))
         os.rmdir(folder)
 
 

@@ -20,26 +20,26 @@ class TestDataSpecificationTargets(unittest.TestCase):
         with asDict.create_data_spec(0, 0, 0) as writer:
             writer.write(foo)
         check[c1] = DataRowReader(foo)
-        self.assertEqual(check[c1], asDict[c1])
+        self.assertEquals(check[c1], asDict[c1])
 
         c2 = (0, 1, 2)
         bar = bytearray(b"bar")
         with asDict.create_data_spec(0, 1, 2) as writer:
             writer.write(bar)
         check[c2] = DataRowReader(bar)
-        self.assertEqual(check[c2], asDict[c2])
+        self.assertEquals(check[c2], asDict[c2])
 
-        self.assertEqual(2, len(asDict))
+        self.assertEquals(2, len(asDict))
 
         asDict.set_app_id(12)
 
         for key in asDict:
-            self.assertEqual(check[key], asDict[key])
+            self.assertEquals(check[key], asDict[key])
             (x, y, p) = key
-            self.assertEqual(12, asDict.get_app_id(x, y, p))
+            self.assertEquals(12, asDict.get_app_id(x, y, p))
 
         for key, value in iteritems(asDict):
-            self.assertEqual(check[key], value)
+            self.assertEquals(check[key], value)
 
 
 if __name__ == "__main__":
