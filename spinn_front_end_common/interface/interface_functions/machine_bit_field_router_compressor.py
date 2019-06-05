@@ -4,8 +4,8 @@ import struct
 from collections import defaultdict
 
 from pacman.model.routing_tables import MulticastRoutingTables
-from spinn_front_end_common.utilities.ordered_covering import get_generality \
-    as ordered_covering_generality
+from pacman.operations.router_compressors.mundys_router_compressor.\
+    ordered_covering import get_generality as ordered_covering_generality
 from spinn_front_end_common.interface.interface_functions import \
     ChipIOBufExtractor
 from spinn_front_end_common.interface.interface_functions.\
