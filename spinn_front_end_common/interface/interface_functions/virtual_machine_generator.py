@@ -3,6 +3,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import JsonMachine, VirtualMachine, Machine, Router
 
 logger = FormatAdapter(logging.getLogger(__name__))
+from spinn_machine import virtual_machine, Machine, Router
 
 
 class VirtualMachineGenerator(object):
@@ -42,6 +43,15 @@ class VirtualMachineGenerator(object):
                 down_cores=down_cores, down_links=down_links,
                 sdram_per_chip=max_sdram_size,
                 router_entries_per_chip=router_entries_per_chip)
+        # pylint: disable=too-many-arguments
+        machine = virtual_machine(
+            width=width, height=height,
+            with_wrap_arounds=virtual_has_wrap_arounds,
+            version=version, n_cpus_per_chip=n_cpus_per_chip,
+            with_monitors=with_monitors, down_chips=down_chips,
+            down_cores=down_cores, down_links=down_links,
+            sdram_per_chip=max_sdram_size,
+            router_entries_per_chip=router_entries_per_chip, validate=True)
 
         else:
             if (height is not None or width is not None or
