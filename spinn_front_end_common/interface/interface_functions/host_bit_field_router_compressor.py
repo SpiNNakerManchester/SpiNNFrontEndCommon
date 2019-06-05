@@ -6,13 +6,13 @@ import os
 import struct
 from collections import defaultdict
 
-from rig.routing_table import MinimisationFailedError
-
 from pacman.exceptions import \
     PacmanAlgorithmFailedToGenerateOutputsException, \
     PacmanElementAllocationException
 from pacman.model.routing_tables import MulticastRoutingTables, \
     UnCompressedMulticastRoutingTable
+from pacman.operations.router_compressors.mundys_router_compressor.exceptions\
+    import MinimisationFailedError
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors.mundys_router_compressor. \
     routing_table_condenser import MundyRouterCompressor
