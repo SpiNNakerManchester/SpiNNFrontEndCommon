@@ -1,7 +1,7 @@
 import struct
 import pytest
 
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.virtual_machine import virtual_machine
 from spinnman.model.enums import CPUState
 from spinnman.model import IOBuffer
 from spinnman.utilities.appid_tracker import AppIdTracker
@@ -68,7 +68,7 @@ def test_router_compressor_on_error():
     routing_tables = MulticastRoutingTables(
         [UnCompressedMulticastRoutingTable(0, 0)])
     transceiver = MockTransceiverError()
-    machine = VirtualMachine(version=5)
+    machine = virtual_machine(version=5)
     with pytest.raises(SpinnFrontEndException):
         compressor(
             routing_tables, transceiver, machine, app_id=17,

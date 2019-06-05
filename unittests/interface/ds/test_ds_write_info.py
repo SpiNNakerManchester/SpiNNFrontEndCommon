@@ -4,14 +4,14 @@ from six import iteritems
 from spinn_front_end_common.interface.ds.data_specification_targets import\
     DataSpecificationTargets
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.virtual_machine import virtual_machine
 
 
 class TestDsWriteInfo(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        machine = VirtualMachine(2, 2)
+        machine = virtual_machine(2, 2)
         tempdir = tempfile.mkdtemp()
         dst = DataSpecificationTargets(machine, tempdir)
         print(tempdir)
