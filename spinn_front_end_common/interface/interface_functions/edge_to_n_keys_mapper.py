@@ -40,7 +40,7 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_application_partition(
+                        self.process_application_partition(
                             partition, n_keys_map, graph_mapper)
 
         else:
@@ -56,12 +56,12 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_machine_partition(partition, n_keys_map)
+                        self.process_machine_partition(partition, n_keys_map)
 
         return n_keys_map
 
     @staticmethod
-    def _process_application_partition(partition, n_keys_map, graph_mapper):
+    def process_application_partition(partition, n_keys_map, graph_mapper):
         vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
         vertex = graph_mapper.get_application_vertex(partition.pre_vertex)
 
@@ -72,7 +72,7 @@ class EdgeToNKeysMapper(object):
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
     @staticmethod
-    def _process_machine_partition(partition, n_keys_map):
+    def process_machine_partition(partition, n_keys_map):
         if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
             n_keys = partition.pre_vertex.get_n_keys_for_partition(
                 partition, None)

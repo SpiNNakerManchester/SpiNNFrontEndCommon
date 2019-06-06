@@ -1,3 +1,5 @@
+from spinn_front_end_common.interface.interface_functions import \
+    EdgeToNKeysMapper
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
@@ -11,7 +13,8 @@ class InsertEdgesToLivePacketGatherers(object):
     def __call__(
             self, live_packet_gatherer_parameters, placements,
             live_packet_gatherers_to_vertex_mapping, machine,
-            machine_graph, application_graph=None, graph_mapper=None):
+            machine_graph, application_graph=None, graph_mapper=None,
+            n_keys_map=None):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :param placements: the placements object
@@ -38,11 +41,12 @@ class InsertEdgesToLivePacketGatherers(object):
                 self._connect_lpg_vertex(
                     application_graph, graph_mapper, machine,
                     placements, machine_graph, vertex,
-                    live_packet_gatherers_to_vertex_mapping, lpg_params)
+                    live_packet_gatherers_to_vertex_mapping, lpg_params,
+                    n_keys_map)
 
     def _connect_lpg_vertex(
             self, app_graph, mapper, machine, placements, m_graph, vertex,
-            lpg_to_vertex, lpg_params):
+            lpg_to_vertex, lpg_params, n_keys_map):
         # pylint: disable=too-many-arguments
 
         # Find all Live Gatherer machine vertices
@@ -65,12 +69,16 @@ class InsertEdgesToLivePacketGatherers(object):
                 # update the app graph and graph mapper
                 app_graph_edge = self._update_app_graph_and_mapper(
                     app_graph, mapper, machine_lpg, vertex,
-                    lpg_params.partition_id, machine_edge, app_graph_edge)
+                    lpg_params.partition_id, machine_edge, app_graph_edge,
+                    n_keys_map, m_graph)
         else:
             # add a edge between the closest LPG and the vertex
-            self._process_m_vertex(
+            edge, lpg = self._process_m_vertex(
                 vertex, m_lpgs, machine, placements,
                 m_graph, lpg_params.partition_id)
+            # update n key map
+            partition = m_graph.get_outgoing_partition_for_edge(edge)
+            EdgeToNKeysMapper.process_machine_partition(partition, n_keys_map)
 
     def _process_m_vertex(
             self, machine_vertex, m_lpgs, machine,
@@ -103,7 +111,7 @@ class InsertEdgesToLivePacketGatherers(object):
     @staticmethod
     def _update_app_graph_and_mapper(
             application_graph, graph_mapper, machine_lpg, vertex,
-            partition_id, machine_edge, app_graph_edge):
+            partition_id, machine_edge, app_graph_edge, n_keys_map, m_graph):
         """ Handles changes to the application graph and graph mapper.
 
         :param application_graph: the app graph
@@ -111,6 +119,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine_lpg: the machine LPG
         :param vertex: the app vertex to link to
         :param partition_id: the partition ID to put the edge on
+        :param n_keys_map: map between partition and n keys
         :return the application edge for this vertex and LPG
         :rtype: ApplicationEdge
         """
@@ -126,6 +135,10 @@ class InsertEdgesToLivePacketGatherers(object):
 
         # add mapping between the app edge and the machine edge
         graph_mapper.add_edge_mapping(machine_edge, app_graph_edge)
+
+        partition = m_graph.get_outgoing_partition_for_edge(machine_edge)
+        EdgeToNKeysMapper.process_application_partition(
+            partition, n_keys_map, graph_mapper)
 
         # return the app edge for reuse as needed
         return app_graph_edge
