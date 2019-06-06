@@ -177,8 +177,8 @@ typedef enum callback_priorities {
 } callback_priorities;
 
 static uint data_in_mc_key_map[MAX_CHIP_ID][MAX_CHIP_ID] = {{0}};
-static uint chip_x = 0;
-static uint chip_y = 0;
+static uint chip_x = 0xFFFFFFF; // Not a legal chip coordinate
+static uint chip_y = 0xFFFFFFF; // Not a legal chip coordinate
 static bit_field_t missing_seq_nums_store = NULL;
 uint size_of_bitfield = 0;
 static bool alloc_in_sdram = false;
@@ -301,14 +301,12 @@ static inline uint data_in_n_missing_seq_packets(void) {
 static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
     if (seq_num == 0) {
         return start_sdram_address;
-    } else if (seq_num == 1) {
-        return start_sdram_address + (
-                DATA_IN_ADDRESS_PACKET_WORDS * sizeof(uint));
     }
 
     return start_sdram_address
-            + sizeof(uint) * DATA_IN_ADDRESS_PACKET_WORDS
-            + sizeof(uint) * DATA_IN_NORMAL_PACKET_WORDS * seq_num;
+            + (DATA_IN_ADDRESS_PACKET_WORDS
+                    + DATA_IN_NORMAL_PACKET_WORDS * (seq_num - 1))
+                    * sizeof(uint);
 }
 
 //! \brief searches through received seq nums and transmits missing ones back
@@ -379,6 +377,8 @@ static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
     if (prev_x != chip_x || prev_y != chip_y) {
         log_info("Changed stream target chip to %d,%d", chip_x, chip_y);
     }
+    log_info("Writing %u packets to 0x%08x",
+            receive_data_cmd->max_seq_num, receive_data_cmd->address);
 
     // allocate location for holding the seq numbers
     create_sequence_number_bitfield(receive_data_cmd->max_seq_num);

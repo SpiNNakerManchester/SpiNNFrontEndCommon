@@ -124,6 +124,10 @@ _TWO_WORDS = struct.Struct("<II")
 _THREE_WORDS = struct.Struct("<III")
 _FOUR_WORDS = struct.Struct("<IIII")
 
+# Set to true to check that the data is correct after it has been sent in.
+# This is expensive, and only works in Python 3.5 or later.
+VERIFY_SENT_DATA = False
+
 
 def ceildiv(dividend, divisor):
     """ How to divide two possibly-integer numbers and round up.
@@ -551,6 +555,21 @@ class DataSpeedUpPacketGatherMachineVertex(
                 transceiver, x, y, base_address, data[offset:n_bytes + offset])
             # end time recording
             end = datetime.datetime.now()
+        if VERIFY_SENT_DATA:
+            original_data = bytes(data[offset:n_bytes + offset])
+            verified_data = bytes(transceiver.read_memory(
+                x, y, base_address, n_bytes))
+            if original_data != verified_data:
+                log.error("VARIANCE: chip:{},{} address:{} len:{}",
+                          x,y,base_address, n_bytes)
+                log.error("original:{}", original_data.hex())
+                log.error("verified:{}", verified_data.hex())
+                i=0
+                for (a,b) in zip(original_data,verified_data):
+                    if a!=b:
+                        break
+                    i+=1
+                raise Exception("damn at " + str(i))
 
         # write report
         if self._write_data_speed_up_reports:
@@ -861,25 +880,26 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param placements: placements object
         :rtype: None
         """
+        lead_monitor = extra_monitor_cores[0]
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
-        self._last_status = extra_monitor_cores[0].get_reinjection_status(
+        self._last_status = lead_monitor.get_reinjection_status(
             placements, transceiver)
 
         # Set to not inject dropped packets
-        extra_monitor_cores[0].set_reinjection_packets(
+        lead_monitor.set_reinjection_packets(
             placements, extra_monitor_cores, transceiver,
             point_to_point=False, multicast=False, nearest_neighbour=False,
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        extra_monitor_cores[0].clear_reinjection_queue(
+        lead_monitor.clear_reinjection_queue(
             transceiver, placements, extra_monitor_cores)
 
         # set time outs
-        extra_monitor_cores[0].set_router_emergency_timeout(
+        lead_monitor.set_router_emergency_timeout(
             1, 1, transceiver, placements, extra_monitor_cores)
-        extra_monitor_cores[0].set_router_time_outs(
+        lead_monitor.set_router_time_outs(
             15, 15, transceiver, placements, extra_monitor_cores)
 
     @staticmethod
@@ -905,10 +925,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param placements: placements object
         :rtype: None
         """
+        lead_monitor = extra_monitor_cores[0]
         # Set the routers to temporary values
-        extra_monitor_cores[0].set_router_time_outs(
+        lead_monitor.set_router_time_outs(
             15, 4, transceiver, placements, extra_monitor_cores)
-        extra_monitor_cores[0].set_router_emergency_timeout(
+        lead_monitor.set_router_emergency_timeout(
             0, 0, transceiver, placements, extra_monitor_cores)
 
         if self._last_status is None:
@@ -917,15 +938,15 @@ class DataSpeedUpPacketGatherMachineVertex(
                 " unset")
         try:
             mantissa, exponent = self._last_status.router_timeout_parameters
-            extra_monitor_cores[0].set_router_time_outs(
+            lead_monitor.set_router_time_outs(
                 mantissa, exponent, transceiver, placements,
                 extra_monitor_cores)
             mantissa, exponent = \
                 self._last_status.router_emergency_timeout_parameters
-            extra_monitor_cores[0].set_router_emergency_timeout(
+            lead_monitor.set_router_emergency_timeout(
                 mantissa, exponent, transceiver, placements,
                 extra_monitor_cores)
-            extra_monitor_cores[0].set_reinjection_packets(
+            lead_monitor.set_reinjection_packets(
                 placements, extra_monitor_cores, transceiver,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
                 multicast=self._last_status.is_reinjecting_multicast,
