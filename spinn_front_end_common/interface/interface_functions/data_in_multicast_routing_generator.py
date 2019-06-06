@@ -142,12 +142,11 @@ class DataInMulticastRoutingGenerator(object):
             fake_graph.add_edge(
                 MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
                 counter)
-            fake_placement = fake_placements.get_placement_of_vertex(vertex)
+            placement = fake_placements.get_placement_of_vertex(vertex)
 
             # adjust to real chip ids
             real_chip_xy = self._real_machine.get_global_xy(
-                fake_placement.x, fake_placement.y,
-                ethernet_connected_chip.x, ethernet_connected_chip.y)
+                placement.x, placement.y, eth_x, eth_y)
             destination_to_partition_id_map[real_chip_xy] = counter
             counter += N_KEYS_PER_PARTITION_ID
 

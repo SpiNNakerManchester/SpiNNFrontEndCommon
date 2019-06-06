@@ -260,7 +260,7 @@ class ExtraMonitorSupportMachineVertex(
         spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG.value)
 
         # write address key and data key
-        base_key = mc_data_chips_to_keys[self._machine.get_local_xy(chip)]
+        base_key = mc_data_chips_to_keys[chip.x, chip.y]
         spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.RESTART_KEY_OFFSET.value)
