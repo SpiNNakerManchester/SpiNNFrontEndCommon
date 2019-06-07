@@ -903,16 +903,29 @@ class DataSpeedUpPacketGatherMachineVertex(
             15, 15, transceiver, placements, extra_monitor_cores)
 
     @staticmethod
-    def set_application_routing_tables(
+    def load_application_routing_tables(
             transceiver, extra_monitor_cores, placements):
-        """ Set all chips to have application table reloaded
+        """ Set all chips to have application table loaded in the router
 
         :param transceiver: the SpiNNMan instance
         :param extra_monitor_cores: the extra monitor cores to set
         :param placements: placements object
         :rtype: None
         """
-        extra_monitor_cores[0].set_up_application_mc_routes(
+        extra_monitor_cores[0].load_application_mc_routes(
+            placements, extra_monitor_cores, transceiver)
+
+    @staticmethod
+    def load_system_routing_tables(
+            transceiver, extra_monitor_cores, placements):
+        """ Set all chips to have the system table loaded in the router
+
+        :param transceiver: the SpiNNMan instance
+        :param extra_monitor_cores: the extra monitor cores to set
+        :param placements: placements object
+        :rtype: None
+        """
+        extra_monitor_cores[0].load_system_mc_routes(
             placements, extra_monitor_cores, transceiver)
 
     def unset_cores_for_data_streaming(

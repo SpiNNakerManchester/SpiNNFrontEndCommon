@@ -297,7 +297,7 @@ typedef enum data_spec_regions {
 
 enum speed_up_in_command {
     //! read in application mc routes
-    SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING = 6,
+    SDP_COMMAND_FOR_SAVING_APPLICATION_MC_ROUTING = 6,
     //! load application mc routes
     SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES = 7,
     //! load system mc routes
@@ -802,7 +802,7 @@ void reinjection_configure_router(void) {
 // data in speed up main functions
 //-----------------------------------------------------------------------------
 
-static void clear_router(void) {
+static void data_in_clear_router(void) {
     rtr_entry_t router_entry;
 
     // clear the currently loaded routing table entries
@@ -866,7 +866,7 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
 //! \brief private method for writing router entries to the router.
 //! \param[in] sdram_address: the sdram address where the router entries reside
 //! \param[in] n_entries: how many router entries to read in
-void data_in_read_and_load_router_entries(
+static void data_in_load_router(
         router_entry_t *sdram_address, uint n_entries) {
     io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
     if (n_entries == 0) {
@@ -903,7 +903,7 @@ void data_in_read_and_load_router_entries(
 }
 
 //! \brief reads in routers entries and places in application sdram location
-void data_in_read_router(void) {
+void data_in_save_router(void) {
     rtr_entry_t router_entry;
 
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
@@ -922,13 +922,14 @@ void data_in_speed_up_load_in_system_tables(data_in_data_items_t *items) {
     // read in router table into app store in sdram (in case its changed
     // since last time)
     io_printf(IO_BUF, "Saving existing router table\n");
-    data_in_read_router();
+    data_in_save_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
-    clear_router();
+    data_in_clear_router();
 
     // read in and load routing table entries
-    data_in_read_and_load_router_entries(
+    io_printf(IO_BUF, "Loading system (Fast Data In) routes\n");
+    data_in_load_router(
             items->system_router_entries, items->n_system_router_entries);
 }
 
@@ -936,10 +937,11 @@ void data_in_speed_up_load_in_system_tables(data_in_data_items_t *items) {
 //! functionality
 void data_in_speed_up_load_in_application_routes(void) {
     // clear the currently loaded routing table entries
-    clear_router();
+    data_in_clear_router();
 
     // load app router entries from sdram
-    data_in_read_and_load_router_entries(
+    io_printf(IO_BUF, "Loading application routes\n");
+    data_in_load_router(
             saved_application_router_table, N_USABLE_ROUTER_ENTRIES);
 }
 
@@ -949,9 +951,9 @@ void data_in_speed_up_load_in_application_routes(void) {
 //! \return: complete code if successful
 static uint data_in_speed_up_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
-    case SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING:
+    case SDP_COMMAND_FOR_SAVING_APPLICATION_MC_ROUTING:
         io_printf(IO_BUF, "Reading application router entries from router\n");
-        data_in_read_router();
+        data_in_save_router();
         msg->cmd_rc = RC_OK;
         break;
     case SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES:
@@ -1506,7 +1508,8 @@ static void data_in_initialise(void) {
     data_in_address_key = items->address_mc_key;
     data_in_data_key = items->data_mc_key;
     data_in_start_key = items->restart_mc_key;
-    data_in_speed_up_load_in_system_tables(items);
+    // Save the current (application?) state
+    data_in_save_router();
 
     // set up mc interrupts to deal with data writing
     set_vic_callback(MC_PAYLOAD_SLOT, CC_MC_INT, data_in_process_mc_payload_packet);

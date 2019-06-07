@@ -6,7 +6,7 @@ from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
 from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
-class SetSystemMCRoutesMessage(AbstractSCPRequest):
+class LoadSystemMCRoutesMessage(AbstractSCPRequest):
     """ An SCP Request to write the system multicast routes into the router
     """
 
@@ -25,7 +25,7 @@ class SetSystemMCRoutesMessage(AbstractSCPRequest):
             vertex for setting system multicast routes.
         """
 
-        super(SetSystemMCRoutesMessage, self).__init__(
+        super(LoadSystemMCRoutesMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(

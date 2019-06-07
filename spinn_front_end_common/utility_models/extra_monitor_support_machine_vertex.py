@@ -15,8 +15,8 @@ from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
         SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
-        ClearQueueProcess, SetApplicationMCRoutesProcess,
-        SetSystemMCRoutesProcess)
+        ClearQueueProcess, LoadApplicationMCRoutesProcess,
+        LoadSystemMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES)
 from .data_speed_up_packet_gatherer_machine_vertex import (
@@ -468,7 +468,7 @@ class ExtraMonitorSupportMachineVertex(
                 placements.get_placement_of_vertex(self))
             raise
 
-    def set_up_system_mc_routes(
+    def load_system_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
         """ Get the extra monitor cores to load up the system-based \
             multicast routes (used by data in).
@@ -485,17 +485,17 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = SetSystemMCRoutesProcess(
+        process = LoadSystemMCRoutesProcess(
             transceiver.scamp_connection_selector)
         try:
-            return process.set_system_mc_routes(core_subsets)
+            return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
                 placements.get_placement_of_vertex(self))
             raise
 
-    def set_up_application_mc_routes(
+    def load_application_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
         """ Get the extra monitor cores to load up the application-based\
             multicast routes (used by data in).
@@ -512,10 +512,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = SetApplicationMCRoutesProcess(
+        process = LoadApplicationMCRoutesProcess(
             transceiver.scamp_connection_selector)
         try:
-            return process.set_application_mc_routes(core_subsets)
+            return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,

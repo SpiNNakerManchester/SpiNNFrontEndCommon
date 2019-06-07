@@ -239,13 +239,15 @@ class HostExecuteDataSpecification(object):
 
     def __set_router_timeouts(self):
         receiver = next(itervalues(self._core_to_conn_map))
+        receiver.load_system_routing_tables(
+            self._txrx, self._monitors, self._placements)
         receiver.set_cores_for_data_streaming(
             self._txrx, self._monitors, self._placements)
         return receiver
 
     def __reset_router_timeouts(self, receiver):
         # reset router tables
-        receiver.set_application_routing_tables(
+        receiver.load_application_routing_tables(
             self._txrx, self._monitors, self._placements)
         # reset router timeouts
         receiver.unset_cores_for_data_streaming(
