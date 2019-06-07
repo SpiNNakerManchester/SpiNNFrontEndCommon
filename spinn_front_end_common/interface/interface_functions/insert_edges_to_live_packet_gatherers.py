@@ -76,9 +76,12 @@ class InsertEdgesToLivePacketGatherers(object):
             edge, lpg = self._process_m_vertex(
                 vertex, m_lpgs, machine, placements,
                 m_graph, lpg_params.partition_id)
+
             # update n key map
-            partition = m_graph.get_outgoing_partition_for_edge(edge)
-            EdgeToNKeysMapper.process_machine_partition(partition, n_keys_map)
+            if n_keys_map is not None:
+                partition = m_graph.get_outgoing_partition_for_edge(edge)
+                EdgeToNKeysMapper.process_machine_partition(
+                    partition, n_keys_map)
 
     def _process_m_vertex(
             self, machine_vertex, m_lpgs, machine,
@@ -136,9 +139,10 @@ class InsertEdgesToLivePacketGatherers(object):
         # add mapping between the app edge and the machine edge
         graph_mapper.add_edge_mapping(machine_edge, app_graph_edge)
 
-        partition = m_graph.get_outgoing_partition_for_edge(machine_edge)
-        EdgeToNKeysMapper.process_application_partition(
-            partition, n_keys_map, graph_mapper)
+        if n_keys_map is not None:
+            partition = m_graph.get_outgoing_partition_for_edge(machine_edge)
+            EdgeToNKeysMapper.process_application_partition(
+                partition, n_keys_map, graph_mapper)
 
         # return the app edge for reuse as needed
         return app_graph_edge
