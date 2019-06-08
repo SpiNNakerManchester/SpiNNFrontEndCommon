@@ -2,6 +2,7 @@ import unittest
 import struct
 import shutil
 import numpy
+from spinn_machine import SDRAM
 from pacman.model.resources import ResourceContainer
 from pacman.model.graphs.common import Slice, GraphMapper
 from pacman.model.placements import Placements, Placement
@@ -126,6 +127,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
     def test_with_application_vertices(self):
         """ Test that an application vertex's data is rewritten correctly
         """
+        # Create a default SDRAM to set the max to default
+        SDRAM()
         reload_region_data = [
             (0, [0] * 10),
             (1, [1] * 20)

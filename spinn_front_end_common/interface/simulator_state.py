@@ -9,6 +9,7 @@ class Simulator_State(Enum):
     RUN_FOREVER = (2, "finish run method but running forever")
     FINISHED = (3, "run ended shutdown not called")
     SHUTDOWN = (4, "shutdown called")
+    STOP_REQUESTED = (5, "stop requested in middle of run forever")
 
     def __new__(cls, value, doc=""):
         # pylint: disable=protected-access

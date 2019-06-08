@@ -48,6 +48,7 @@ typedef struct configuration_t {
     uint32_t return_tag_id;
     uint32_t return_tag_dest;
     uint32_t buffered_in_sdp_port;
+    uint32_t tx_offset;
 } configuration_t;
 
 //! The memory regions
@@ -160,6 +161,7 @@ static bool last_operation_was_write;
 static uint8_t return_tag_id;
 static uint32_t return_tag_dest;
 static uint32_t buffered_in_sdp_port;
+static uint32_t tx_offset;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
@@ -890,6 +892,7 @@ static bool read_parameters(configuration_t *config_ptr) {
     return_tag_id = config_ptr->return_tag_id;
     return_tag_dest = config_ptr->return_tag_id;
     buffered_in_sdp_port = config_ptr->buffered_in_sdp_port;
+    tx_offset = config_ptr->tx_offset;
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -1123,7 +1126,7 @@ void c_main(void) {
     }
 
     // Set timer_callback
-    spin1_set_timer_tick(timer_period);
+    spin1_set_timer_tick_and_phase(timer_period, tx_offset);
 
     // Register callbacks
     simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);

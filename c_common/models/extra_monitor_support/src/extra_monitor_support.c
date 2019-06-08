@@ -108,6 +108,11 @@
 // DMA slot
 #define DMA_SLOT           SLOT_3
 
+// DMA Error VIC slot
+#define DMA_ERROR_SLOT     SLOT_4
+
+#define DMA_TIMEOUT_SLOT   SLOT_5
+
 #define RTR_BLOCKED_BIT    25
 #define RTR_DOVRFLW_BIT    30
 #define RTR_DENABLE_BIT    2
@@ -802,7 +807,7 @@ static void dma_complete_reading_for_original_transmission(void) {
     // if a full packet, read another and try again
     //io_printf(IO_BUF, "next position %d, elements %d\n", position_in_store,
     //          number_of_elements_to_read_from_sdram);
-    if (position_in_store < number_of_elements_to_read_from_sdram - 1) {
+    if (position_in_store < number_of_elements_to_read_from_sdram) {
         //io_printf(IO_BUF, "setting off another DMA\n");
         //log_info("setting off another DMA");
         uint32_t num_items_to_read =
@@ -856,7 +861,7 @@ static void write_missing_sdp_seq_nums_into_sdram(
         missing_sdp_seq_num_sdram_address[
                 number_of_missing_seq_nums_in_sdram +
                 (offset - start_offset)] = data[offset];
-        if (data[offset] > max_seq_num){
+        if (data[offset] > max_seq_num) {
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
             data[offset], max_seq_num);
         } else {
@@ -874,7 +879,7 @@ static void write_missing_sdp_seq_nums_into_sdram(
 //! there is different behaviour
 static void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     uint32_t start_reading_offset = 1;
-    if (first){
+    if (first) {
         number_of_missing_seq_sdp_packets =
             data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
 
@@ -897,14 +902,44 @@ static void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         missing_sdp_seq_num_sdram_address = sark_xalloc(
                 sv->sdram_heap, size_of_data, 0,
                 ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+
+        // if not got enough sdram to alllocate all missing seq nums
+        if (missing_sdp_seq_num_sdram_address == NULL) {
+
+            // biggest sdram block
+            uint32_t max_bytes = sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
+
+            // if can hold more than this packets worth of data
+            if (max_bytes >= (
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)*
+                    WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE) {
+                io_printf(IO_BUF, "Activate bacon protocol!");
+                // allocate biggest block
+                missing_sdp_seq_num_sdram_address = sark_xalloc(
+                    sv->sdram_heap, max_bytes, 0,
+                    ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                // determine max full seq num packets to store
+                max_bytes = (max_bytes - (
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) *
+                    WORD_TO_BYTE_MULTIPLIER) - END_FLAG_SIZE;
+                number_of_missing_seq_sdp_packets = 1+ (max_bytes / (
+                        (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER)));
+            } else {
+                io_printf(IO_BUF, "cant allocate sdram for missing seq nums");
+                rt_error(RTE_SWERR);
+            }
+        }
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
     }
-
-    // write data to SDRAM and update packet counter
-    write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
-    number_of_missing_seq_sdp_packets -= 1;
+    if (number_of_missing_seq_sdp_packets > 0) {
+        // write data to SDRAM and update packet counter
+        write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
+        number_of_missing_seq_sdp_packets -= 1;
+    } else {
+        io_printf(IO_BUF, "Unable to save missing sequence number \n");
+    }
 }
 
 //! \brief sets off a DMA for retransmission stuff
@@ -1011,7 +1046,7 @@ static void dma_complete_writing_missing_seq_to_sdram(void) {
 //! \param[in] msg: the SDP message (without SCP header)
 static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
     struct sending_data_header_t *header = (struct sending_data_header_t *)
-	    msg->data;
+        msg->data;
     switch (header->command) {
     case SDP_COMMAND_FOR_SENDING_DATA:
         stop = 0;
@@ -1031,7 +1066,7 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
         transmit_dma_pointer = 0;
         position_in_store = 0;
         number_of_elements_to_read_from_sdram = (uint)
-        	(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
+            (bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
         //io_printf(IO_BUF, "elements to read %d \n",
         //          number_of_elements_to_read_from_sdram);
 
@@ -1046,7 +1081,7 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
         break;
 
     case SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS:
-	// start or continue to gather missing packet list
+    // start or continue to gather missing packet list
         //log_info("starting re send mode");
 
         // if already in a retransmission phase, don't process as normal
@@ -1071,7 +1106,7 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
             // put missing sequence numbers into SDRAM
             //io_printf(IO_BUF, "storing thing\n");
             store_missing_seq_nums(
-        	    msg->data,
+                msg->data,
                     (msg->length - LENGTH_OF_SDP_HEADER) /
                      WORD_TO_BYTE_MULTIPLIER,
                     header->command ==
@@ -1083,19 +1118,21 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
 
             // if got all missing packets, start retransmitting them to host
             if (number_of_missing_seq_sdp_packets == 0) {
-        	// packets all received, add finish flag for DMA stoppage
+            // packets all received, add finish flag for DMA stoppage
 
-        	//io_printf(IO_BUF, "starting resend process\n");
-        	missing_sdp_seq_num_sdram_address[
+                if (number_of_missing_seq_nums_in_sdram != 0) {
+                    //io_printf(IO_BUF, "starting resend process\n");
+                    missing_sdp_seq_num_sdram_address[
                         number_of_missing_seq_nums_in_sdram] = END_FLAG;
-        	number_of_missing_seq_nums_in_sdram += 1;
-        	position_in_read_data = 0;
-        	position_for_retransmission = 0;
+                    number_of_missing_seq_nums_in_sdram += 1;
+                    position_in_read_data = 0;
+                    position_for_retransmission = 0;
 
-        	//log_info("start retransmission");
-        	// start DMA off
-        	in_re_transmission_mode = true;
-        	retransmission_dma_read();
+                    //log_info("start retransmission");
+                    // start DMA off
+                    in_re_transmission_mode = true;
+                    retransmission_dma_read();
+                }
             }
         }
         break;
@@ -1127,6 +1164,19 @@ static INT_HANDLER speed_up_handle_dma(void) {
         io_printf(IO_BUF, "NOT VALID DMA CALLBACK PORT!!!!\n");
     }
     // and tell VIC we're done
+    vic[VIC_VADDR] = (uint) vic;
+}
+
+INT_HANDLER speed_up_handle_dma_error(void) {
+    io_printf(IO_BUF, "DMA Failed: 0x%08x!\n", dma[DMA_STAT]);
+    dma[DMA_CTRL] = 0x4;
+    vic[VIC_VADDR] = (uint) vic;
+    rt_error(RTE_DABT);
+}
+
+INT_HANDLER speed_up_handle_dma_timeout(void) {
+    io_printf(IO_BUF, "DMA Timeout: 0x%08x!\n", dma[DMA_STAT]);
+    dma[DMA_CTRL] = 0x10;
     vic[VIC_VADDR] = (uint) vic;
 }
 
@@ -1234,8 +1284,12 @@ static void data_speed_up_initialise(void) {
     first_data_key = config_ptr->first_data_key;
     end_flag_key = config_ptr->end_flag_key;
 
-    vic_vectors[DMA_SLOT] = speed_up_handle_dma;
+    vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
     vic_controls[DMA_SLOT] = VIC_ENABLE_VECTOR | DMA_DONE_INT;
+    vic_vectors[DMA_ERROR_SLOT] = speed_up_handle_dma_error;
+    vic_controls[DMA_ERROR_SLOT] = VIC_ENABLE_VECTOR | DMA_ERR_INT;
+    vic_vectors[DMA_TIMEOUT_SLOT] = speed_up_handle_dma_timeout;
+    vic_controls[DMA_TIMEOUT_SLOT] = VIC_ENABLE_VECTOR | DMA_TO_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
         data_to_transmit[i] =
@@ -1249,7 +1303,7 @@ static void data_speed_up_initialise(void) {
     // configuration for the DMA's by the speed data loader
     dma[DMA_CTRL] = 0x3f; // Abort pending and active transfers
     dma[DMA_CTRL] = 0x0d; // clear possible transfer done and restart
-    dma[DMA_GCTL] = 0x000c00; // enable DMA done interrupt
+    dma[DMA_GCTL] = 0x1ffc00; // enable DMA done and error interrupt
 }
 
 //-----------------------------------------------------------------------------
@@ -1272,7 +1326,7 @@ void c_main(void) {
     // set up VIC callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for WDOG)
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT) |
-            (1 << DMA_DONE_INT);
+            (1 << DMA_DONE_INT) | (1 << DMA_ERR_INT) | (1 << DMA_TO_INT);
     vic[VIC_DISABLE] = int_select;
     vic[VIC_DISABLE] = (1 << CC_TNF_INT);
 
