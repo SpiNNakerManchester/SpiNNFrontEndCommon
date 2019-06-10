@@ -1,5 +1,8 @@
 from setuptools import setup
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 import os
 
 __version__ = None
@@ -43,6 +46,7 @@ setup(
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
+                      'futures; python_version == "2.7"',
                       'six'],
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"

@@ -1,23 +1,24 @@
 from enum import Enum
-
+from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, SDRAMResource
-from spinn_front_end_common.abstract_models import \
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
+from pacman.model.resources import ConstantSDRAM, ResourceContainer
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import \
-    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess, \
-    SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess, \
-    ClearQueueProcess
-from .data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
-from spinn_utilities.overrides import overrides
-from spinn_front_end_common.utilities.helpful_functions \
-    import convert_vertices_to_core_subset
+    extra_monitor_scp_processes import (
+        ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
+        SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
+        ClearQueueProcess)
+from spinn_front_end_common.utilities.constants import (
+    SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES)
+from .data_speed_up_packet_gatherer_machine_vertex import (
+    DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset)
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -93,13 +94,17 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_resources_required():
-        return ResourceContainer(sdram=SDRAMResource(
+        return ResourceContainer(sdram=ConstantSDRAM(
             sdram=ExtraMonitorSupportMachineVertex.
             _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
-            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES))
+            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
+            # Data spec size
+            DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES +
+            # One malloc for extra sequence numbers
+            SARK_PER_MALLOC_SDRAM_USAGE))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

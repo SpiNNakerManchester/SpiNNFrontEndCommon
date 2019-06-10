@@ -1,7 +1,5 @@
-# general imports
 import logging
 from six import add_metaclass
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 logger = logging.getLogger(__name__)
@@ -36,16 +34,6 @@ class AbstractSendsBuffersFromHost(object):
         :param region: The region to get the buffer size of
         :type region: int
         :return: The size of the buffer space in bytes
-        :rtype: int
-        """
-
-    @abstractmethod
-    def get_max_buffer_size_possible(self, region):
-        """ Gets the max possible size of a buffered region
-
-        :param region: the region to find the max possible size of
-        :type region: int
-        :return: the max possible size of the buffered region
         :rtype: int
         """
 

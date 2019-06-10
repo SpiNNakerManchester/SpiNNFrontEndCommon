@@ -1,10 +1,7 @@
+import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-
-# front end common imports
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-
-import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -277,7 +274,14 @@ class RouterProvenanceGatherer(object):
             str(router_diagnostic.n_external_fixed_route_packets)))
         items.append(ProvenanceDataItem(
             self._add_name(names, "Dropped_FR_Packets"),
-            str(router_diagnostic.n_dropped_fixed_route_packets)))
+            str(router_diagnostic.n_dropped_fixed_route_packets),
+            report=router_diagnostic.n_dropped_fixed_route_packets > 0,
+            message=(
+                "The router on chip {}:{} dropped {} Fixed route packets. "
+                "This is indicative of a error within the data extraction "
+                "process. As this is the only expected user of fixed route "
+                "packets.".format(
+                    x, y, router_diagnostic.n_dropped_fixed_route_packets))))
         if reinjection_status is not None:
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Received_For_Reinjection"),

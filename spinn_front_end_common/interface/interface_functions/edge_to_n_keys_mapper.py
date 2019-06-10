@@ -1,14 +1,8 @@
-# pacman imports
-from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.routing_info \
-    import DictBasedMachinePartitionNKeysMap
-
-# utilities imports
 from spinn_utilities.progress_bar import ProgressBar
-
-# front end common imports
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesNKeysForPartition
+from pacman.model.graphs.common import EdgeTrafficType
+from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesNKeysForPartition)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
@@ -29,8 +23,8 @@ class EdgeToNKeysMapper(object):
                 "Please choose and try again")
         if (application_graph is None) != (graph_mapper is None):
             raise ConfigurationException(
-                "Can only do one graph. semantically doing 2 graphs makes no "
-                "sense. Please choose and try again")
+                "The application_graph and the graph_mapper must both be "
+                "specified or both must be None")
 
         if application_graph is not None:
             # generate progress bar

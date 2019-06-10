@@ -1,19 +1,22 @@
+from threading import Thread
+try:
+    from collections.abc import deque
+except ImportError:
+    from collections import deque
+import struct
+import traceback
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.enums import SCPResult
-from spinnman.connections.udp_packet_connections import utils
-from spinnman.connections.udp_packet_connections import UDPConnection
-
-from threading import Thread
-from collections import deque
-import struct
-import traceback
+from spinnman.connections.udp_packet_connections import (
+    utils, UDPConnection)
 
 
 class _SCPOKMessage(SDPMessage):
 
-    def __init__(self, x, y):
-        scp_header = SCPRequestHeader(command=SCPResult.RC_OK)
+    def __init__(self, x, y, sequence):
+        scp_header = SCPRequestHeader(
+            command=SCPResult.RC_OK, sequence=sequence)
         sdp_header = SDPHeader(
             flags=SDPFlag.REPLY_NOT_EXPECTED, destination_port=0,
             destination_cpu=0, destination_chip_x=x, destination_chip_y=y)
@@ -65,12 +68,17 @@ class MockMachine(Thread):
         data, address = self._receiver.receive_with_address()
         self._messages.append(data)
         sdp_header = SDPHeader.from_bytestring(data, 2)
+        _result, sequence = struct.unpack_from("<2H", data, 10)
         response = None
         if self._responses:
             response = self._responses.popleft()
+            response._data = (
+                response._data[:10] + struct.pack("<H", sequence) +
+                response._data[12:])
         else:
             response = _SCPOKMessage(
-                sdp_header.source_chip_x, sdp_header.source_chip_y)
+                sdp_header.source_chip_x, sdp_header.source_chip_y,
+                sequence)
         if response is not None:
             self._receiver.send_to(
                 struct.pack("<2x") + response.bytestring, address)

@@ -1,13 +1,8 @@
-# spinnman imports
+import re
 from spinnman.connections import SocketAddressWithChip
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
-
-# front end common imports
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
-# general imports
-import re
 
 
 class MachineGenerator(object):

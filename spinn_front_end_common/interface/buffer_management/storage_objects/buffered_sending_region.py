@@ -1,12 +1,36 @@
-# The size of the header of a message
-from spinnman.messages.eieio.command_messages \
-    import EventStopRequest, HostSendSequencedData
+import bisect
+import math
+from spinnman.messages.eieio.command_messages import HostSendSequencedData
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from spinnman.messages.eieio import EIEIOType
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 
-import bisect
-import math
+_HEADER_SIZE = EIEIODataHeader.get_header_size(
+    EIEIOType.KEY_32_BIT, is_payload_base=True)
+
+# The number of bytes in each key to be sent
+_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
+
+# The number of keys allowed (different from the actual number as there is
+#  an additional header)
+_N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
+                       (HostSendSequencedData.get_min_packet_length() +
+                        _HEADER_SIZE)) // _N_BYTES_PER_KEY
+
+
+def get_n_bytes(n_keys):
+    """ Get the number of bytes used by a given number of keys
+
+    :param n_keys: The number of keys
+    :type n_keys: int
+    """
+
+    # Get the total number of messages
+    n_messages = int(math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE))
+
+    # Add up the bytes
+    return ((_HEADER_SIZE * n_messages) +
+            (n_keys * _N_BYTES_PER_KEY))
 
 
 class BufferedSendingRegion(object):
@@ -17,9 +41,6 @@ class BufferedSendingRegion(object):
 
     __slots__ = [
 
-        # The maximum size of any buffer
-        "_max_size_of_buffer",
-
         # A dictionary of timestamp -> list of keys
         "_buffer",
 
@@ -27,32 +48,10 @@ class BufferedSendingRegion(object):
         "_timestamps",
 
         # The current position in the list of timestamps
-        "_current_timestamp_pos",
-
-        # int stating the size of the buffer
-        "_buffer_size",
-
-        # int stating the total size of the buffered region
-        "_total_region_size",
-
-        # The maximum number of packets in any timestamp
-        "_max_packets_in_timestamp"
+        "_current_timestamp_pos"
     ]
 
-    _HEADER_SIZE = EIEIODataHeader.get_header_size(
-        EIEIOType.KEY_32_BIT, is_payload_base=True)
-
-    # The number of bytes in each key to be sent
-    _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
-
-    # The number of keys allowed (different from the actual number as there is
-    #  an additional header)
-    _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
-                           (HostSendSequencedData.get_min_packet_length() +
-                            _HEADER_SIZE)) // _N_BYTES_PER_KEY
-
-    def __init__(self, max_buffer_size):
-        self._max_size_of_buffer = max_buffer_size
+    def __init__(self):
 
         # A dictionary of timestamp -> list of keys
         self._buffer = dict()
@@ -62,60 +61,6 @@ class BufferedSendingRegion(object):
 
         # The current position in the list of timestamps
         self._current_timestamp_pos = 0
-
-        self._buffer_size = None
-        self._total_region_size = None
-        self._max_packets_in_timestamp = 0
-
-    @property
-    def buffer_size(self):
-        """ The maximum size of this buffer
-        """
-        if self._buffer_size is None:
-            self._calculate_sizes()
-        return self._buffer_size
-
-    @property
-    def total_region_size(self):
-        """ The maximum size of this region
-        """
-        if self._total_region_size is None:
-            self._calculate_sizes()
-        return self._total_region_size
-
-    @property
-    def max_buffer_size_possible(self):
-        """ The maximum possible size of a buffer from this region
-        """
-        return self._max_size_of_buffer
-
-    def _calculate_sizes(self):
-        """ Deduce how big the buffer and the region needs to be
-        """
-        size = 0
-        for timestamp in self._timestamps:
-            n_keys = self.get_n_keys(timestamp)
-            size += self.get_n_bytes(n_keys)
-        size += EventStopRequest.get_min_packet_length()
-        if size > self._max_size_of_buffer:
-            self._buffer_size = self._max_size_of_buffer
-        else:
-            self._buffer_size = size
-        self._total_region_size = size
-
-    def get_n_bytes(self, n_keys):
-        """ Get the number of bytes used by a given number of keys
-
-        :param n_keys: The number of keys
-        :type n_keys: int
-        """
-
-        # Get the total number of messages
-        n_messages = int(math.ceil(float(n_keys) / self._N_KEYS_PER_MESSAGE))
-
-        # Add up the bytes
-        return ((self._HEADER_SIZE * n_messages) +
-                (n_keys * self._N_BYTES_PER_KEY))
 
     def add_key(self, timestamp, key):
         """ Add a key to be sent at a given time
@@ -129,10 +74,6 @@ class BufferedSendingRegion(object):
             bisect.insort(self._timestamps, timestamp)
             self._buffer[timestamp] = list()
         self._buffer[timestamp].append(key)
-        self._total_region_size = None
-        self._buffer_size = None
-        if len(self._buffer[timestamp]) > self._max_packets_in_timestamp:
-            self._max_packets_in_timestamp = len(self._buffer[timestamp])
 
     def add_keys(self, timestamp, keys):
         """ Add a set of keys to be sent at the given time
@@ -238,13 +179,3 @@ class BufferedSendingRegion(object):
 
         # The current position in the list of timestamps
         self._current_timestamp_pos = 0
-
-        self._buffer_size = None
-
-        self._total_region_size = None
-
-    @property
-    def max_packets_in_timestamp(self):
-        """ The maximum number of packets in any timestamp
-        """
-        return self._max_packets_in_timestamp

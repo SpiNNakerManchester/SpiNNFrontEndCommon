@@ -1,6 +1,5 @@
-import numpy
 import logging
-
+import numpy
 import scipy.stats
 from spinn_utilities.log import FormatAdapter
 

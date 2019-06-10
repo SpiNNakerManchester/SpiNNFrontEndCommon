@@ -1,25 +1,23 @@
-from pacman.model.resources import CoreResource
-from pacman.model.resources import PreAllocatedResourceContainer
-from pacman.model.resources import SpecificChipSDRAMResource
-from spinn_front_end_common.interface.interface_functions import \
-    PreAllocateResourcesForLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs import \
-    LivePacketGatherParameters
-from spinn_front_end_common.utility_models import \
-    LivePacketGatherMachineVertex
-from spinn_machine import VirtualMachine
-from spinnman.messages.eieio import EIEIOType
-
 import unittest
+from spinn_machine import virtual_machine
+from spinnman.messages.eieio import EIEIOType
+from pacman.model.resources import (
+    ConstantSDRAM, CoreResource, PreAllocatedResourceContainer,
+    SpecificChipSDRAMResource)
+from spinn_front_end_common.interface.interface_functions import (
+    PreAllocateResourcesForLivePacketGatherers)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import (
+    LivePacketGatherMachineVertex)
 
 
 class TestLPGPreAllocateRes(unittest.TestCase):
     """ tests the interaction of the pre resource calculations
-
     """
 
     def test_one_lpg_params(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
 
         default_params = {
             'use_prefix': False,
@@ -61,7 +59,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
             self.assertEqual(
-                sdram.sdram_usage,
+                sdram.sdram_usage.get_total_sdram(0),
                 LivePacketGatherMachineVertex.get_sdram_usage())
         self.assertEqual(len(locs), 0)
 
@@ -80,7 +78,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_one_lpg_params_and_3_specific(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
 
         default_params = {
             'use_prefix': False,
@@ -127,7 +125,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
             self.assertEqual(
-                sdram.sdram_usage,
+                sdram.sdram_usage.get_total_sdram(0),
                 LivePacketGatherMachineVertex.get_sdram_usage() * 2)
         self.assertEqual(len(locs), 0)
 
@@ -148,7 +146,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_added_pre_res(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
 
         default_params = {
             'use_prefix': False,
@@ -183,7 +181,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         cores = list()
         for chip in sdram_requirements:
             sdrams.append(SpecificChipSDRAMResource(
-                chip, sdram_requirements[chip]))
+                chip, ConstantSDRAM(sdram_requirements[chip])))
         for chip in core_requirements:
             cores.append(CoreResource(chip, core_requirements[chip]))
         pre_pre_res = PreAllocatedResourceContainer(
@@ -206,15 +204,17 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
-            if sdram.sdram_usage != \
+            if sdram.sdram_usage.get_total_sdram(0) != \
                     LivePacketGatherMachineVertex.get_sdram_usage():
                 self.assertIn(sdram.chip.x, (2, 7))
                 self.assertIn(sdram.chip.y, (2, 7))
                 self.assertEqual(sdram.chip.x, sdram.chip.y)
                 if sdram.chip.x == 2 and sdram.chip.y == 2:
-                    self.assertEqual(sdram.sdram_usage, 30000)
+                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
+                                     30000)
                 elif sdram.chip.x == 7 and sdram.chip.y == 7:
-                    self.assertEqual(sdram.sdram_usage, 50000)
+                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
+                                     50000)
         self.assertEqual(len(locs), 0)
 
         locs = list()
@@ -237,7 +237,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_none(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
         # run  pre allocator
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
@@ -249,7 +249,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_sdram_usage), 0)
 
     def test_fail(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         self.assertRaises(

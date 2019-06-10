@@ -1,8 +1,6 @@
 from six import add_metaclass
-
-from spinn_utilities.abstract_base import AbstractBase
-from spinn_utilities.abstract_base import abstractproperty
-from spinn_utilities.abstract_base import abstractmethod
+from spinn_utilities.abstract_base import (
+    AbstractBase, abstractproperty, abstractmethod)
 
 
 @add_metaclass(AbstractBase)
@@ -60,6 +58,10 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def tags(self):
+        pass
+
+    @abstractproperty
+    def time_scale_factor(self):
         pass
 
     @abstractproperty

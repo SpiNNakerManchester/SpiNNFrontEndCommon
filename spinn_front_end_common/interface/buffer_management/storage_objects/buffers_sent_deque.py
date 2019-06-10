@@ -1,15 +1,13 @@
-# spinnman imports
-from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages \
-    import EventStopRequest, HostSendSequencedData
-
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-
-# general imports
-from collections import deque
+try:
+    from collections.abc import deque
+except ImportError:
+    from collections import deque
 from threading import Lock
 import logging
+from spinn_utilities.log import FormatAdapter
+from spinnman.messages.eieio.command_messages import (
+    EventStopRequest, HostSendSequencedData)
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

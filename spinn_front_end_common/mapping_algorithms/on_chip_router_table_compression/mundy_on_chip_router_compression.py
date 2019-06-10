@@ -1,19 +1,16 @@
-from spinn_utilities.progress_bar import ProgressBar
-
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.mapping_algorithms \
-    import on_chip_router_table_compression
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-
-from spinnman.model.enums import CPUState
-from spinnman.model import ExecutableTargets
-
-from spinn_machine import CoreSubsets, Router
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.executable_finder import ExecutableFinder
+from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import CPUState
+from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.mapping_algorithms import (
+    on_chip_router_table_compression)
+from spinn_front_end_common.interface.interface_functions import (
+    ChipIOBufExtractor)
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
@@ -153,9 +150,9 @@ class MundyOnChipRouterCompression(object):
         """
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
+        executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets,
-            provenance_file_path)
+            txrx, executable_targets, executable_finder, provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:

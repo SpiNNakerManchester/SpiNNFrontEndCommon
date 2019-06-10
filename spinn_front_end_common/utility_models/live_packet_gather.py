@@ -1,21 +1,14 @@
 from spinn_utilities.overrides import overrides
-# pacman imports
-from pacman.model.constraints.placer_constraints\
-    import RadialPlacementFromChipConstraint
+from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import IPtagResource, ResourceContainer
-from pacman.model.resources import SDRAMResource
-
-# spinn front end imports
+from pacman.model.resources import (
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
+    ResourceContainer)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
-# spinnman imports
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 
 
 class LivePacketGather(
@@ -59,9 +52,6 @@ class LivePacketGather(
             label = "Live Packet Gatherer"
 
         super(LivePacketGather, self).__init__(label, constraints, 1)
-
-        # Try to place this near the Ethernet
-        self.add_constraint(RadialPlacementFromChipConstraint(0, 0))
 
         # storage objects
         self._iptags = None
@@ -116,7 +106,7 @@ class LivePacketGather(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 LivePacketGatherMachineVertex.get_sdram_usage()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(

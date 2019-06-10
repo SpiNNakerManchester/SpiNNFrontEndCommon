@@ -1,21 +1,24 @@
+import unittest
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
+from spinn_machine import virtual_machine
+from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.common import GraphMapper, Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
-from spinn_front_end_common.interface.interface_functions import \
-    InsertEdgesToLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs import \
-    LivePacketGatherParameters
-from spinn_front_end_common.utility_models \
-    import LivePacketGather, LivePacketGatherMachineVertex
-from spinn_machine import VirtualMachine
-from spinnman.messages.eieio import EIEIOType
+from spinn_front_end_common.interface.interface_functions import (
+    InsertEdgesToLivePacketGatherers)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import (
+    LivePacketGather, LivePacketGatherMachineVertex)
 from fec_integration_tests.interface.interface_functions.simple_test_vertex \
-    import SimpleTestVertex
-
-import unittest
-from collections import defaultdict
+    import (
+        SimpleTestVertex)
 
 
 class TestInsertLPGEdges(unittest.TestCase):
@@ -23,7 +26,7 @@ class TestInsertLPGEdges(unittest.TestCase):
     """
 
     def test_local_verts_go_to_local_lpgs(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -111,7 +114,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
     def test_local_verts_when_multiple_lpgs_are_local(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -227,7 +230,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                         edge.pre_vertex, verts_expected[chip.x, chip.y, p])
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()

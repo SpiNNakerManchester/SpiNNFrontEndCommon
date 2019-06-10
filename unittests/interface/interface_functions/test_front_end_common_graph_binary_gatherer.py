@@ -1,13 +1,9 @@
 import unittest
-
 from pacman.model.graphs.machine import MachineVertex, MachineGraph
 from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement
-
-from spinn_front_end_common.interface.interface_functions \
-    import GraphBinaryGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import LocateExecutableStartType
+from spinn_front_end_common.interface.interface_functions import (
+    GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
