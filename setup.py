@@ -40,11 +40,11 @@ setup(
                       'SpiNNaker_PACMAN >= 1!4.0.1, < 1!5.0.0',
                       'SpiNNaker_DataSpecification >= 1!4.0.1, < 1!5.0.0',
                       'spalloc >= 1.0.1, < 2.0.0',
+                      'cffconvert',
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
-                      'six',
-                      'cffconvert'],
+                      'six'],
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"
 )
