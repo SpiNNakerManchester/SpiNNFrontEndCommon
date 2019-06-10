@@ -21,3 +21,10 @@ class DataWritten(object):
     @property
     def memory_written(self):
         return self._memory_written
+
+    def __eq__(self, other):
+        if not isinstance(other, DataWritten):
+            return False
+        return (self._start_address == other.start_address and
+                self._memory_used == other.memory_used and
+                self._memory_written == other.memory_written)

@@ -355,8 +355,8 @@ class HostExecuteDataSpecification(object):
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
             :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
-        :return: map of of cores to a dict of \
-            'start_address', 'memory_used', 'memory_written'
+        :return: map of cores to \
+            :py:class:`~spinn_front_end_common.utilities.utility_objs.DataWritten`
         :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
         """
 

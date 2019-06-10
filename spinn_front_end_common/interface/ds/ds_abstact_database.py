@@ -96,8 +96,7 @@ class DsAbstractDatabase(object):
         :param x: core x
         :param y: core y
         :param p: core p
-        :rtype: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :rtype: DataWritten
         """
 
     @abstractmethod
@@ -108,8 +107,7 @@ class DsAbstractDatabase(object):
         :param x: core x
         :param y: core y
         :param p: core p
-        :param info: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :param info: DataWritten
         """
 
     @abstractmethod
@@ -128,11 +126,9 @@ class DsAbstractDatabase(object):
     @abstractmethod
     def info_iteritems(self):
         """
-        Yields the keys and values  for the Info data
+        Yields the keys and values for the Info data. Note that a DB \
+        transaction may be held while this iterator is processing.
 
-        dict with the keys
-            'start_address', 'memory_used' and 'memory_written'
-
-        :return Yields the (x, y, p) and Info
+        :return Yields the (x, y, p) and DataWritten
         :rtype: ((int, int, int),  dict)
         """

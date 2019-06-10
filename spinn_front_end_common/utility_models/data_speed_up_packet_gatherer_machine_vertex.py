@@ -197,8 +197,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     # report names for tracking used routers
-    OUT_REPORT_NAME = "routers_used_in_speed_up_process.txt"
-    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.txt"
+    OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
+    IN_REPORT_NAME = "speeds_gained_in_speed_up_process.rpt"
 
     # the end flag is set when the high bit of the sequence number word is set
     LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
