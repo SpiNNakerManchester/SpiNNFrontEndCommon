@@ -12,26 +12,21 @@ class EdgeToNKeysMapper(object):
 
     __slots__ = []
 
-    def __call__(self, machine_graph=None, application_graph=None,
-                 graph_mapper=None):
+    def __call__(self, machine_graph=None, graph_mapper=None):
 
         if machine_graph is None:
             raise ConfigurationException(
                 "A machine graph is required for this mapper. "
                 "Please choose and try again")
-        if (application_graph is None) != (graph_mapper is None):
-            raise ConfigurationException(
-                "The application_graph and the graph_mapper must both be "
-                "specified or both must be None")
 
-        if application_graph is not None:
+        if graph_mapper is not None:
             return self._allocate_by_app_graph_simple(
-                machine_graph, application_graph, graph_mapper)
+                machine_graph, graph_mapper)
         else:
             return self._allocate_by_machine_graph_only(machine_graph)
 
-    def _allocate_by_app_graph_simple(self, machine_graph, application_graph,
-                 graph_mapper):
+    def _allocate_by_app_graph_simple(
+            self, machine_graph, graph_mapper):
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
