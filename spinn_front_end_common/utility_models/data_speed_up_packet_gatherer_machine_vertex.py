@@ -565,7 +565,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 log.error("original:{}", original_data.hex())
                 log.error("verified:{}", verified_data.hex())
                 i = 0
-                for (a, b) in zip(original_data,verified_data):
+                for (a, b) in zip(original_data, verified_data):
                     if a != b:
                         break
                     i += 1
