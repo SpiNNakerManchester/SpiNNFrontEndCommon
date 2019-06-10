@@ -561,14 +561,14 @@ class DataSpeedUpPacketGatherMachineVertex(
                 x, y, base_address, n_bytes))
             if original_data != verified_data:
                 log.error("VARIANCE: chip:{},{} address:{} len:{}",
-                          x,y,base_address, n_bytes)
+                          x, y, base_address, n_bytes)
                 log.error("original:{}", original_data.hex())
                 log.error("verified:{}", verified_data.hex())
-                i=0
-                for (a,b) in zip(original_data,verified_data):
-                    if a!=b:
+                i = 0
+                for (a, b) in zip(original_data,verified_data):
+                    if a != b:
                         break
-                    i+=1
+                    i += 1
                 raise Exception("damn at " + str(i))
 
         # write report
