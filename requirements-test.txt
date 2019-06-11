@@ -1,7 +1,7 @@
 -r requirements.txt
 flake8
-pytest >= 3.6
-pytest-cov > 2.5.1
+# pytest will be brought in by pytest-cov
+pytest-cov
 sphinx==1.5.3
 testfixtures
 httpretty

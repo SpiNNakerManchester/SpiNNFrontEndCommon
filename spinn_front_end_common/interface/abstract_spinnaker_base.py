@@ -15,14 +15,9 @@ import threading
 from threading import Condition
 from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
-from cffconvert import Citation
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities import __version__ as spinn_utils_version
-from spinn_utilities.citation import CitationUpdaterAndDoiGenerator
-from spinn_utilities.citation import CitationAggregator
-from spinn_utilities.citation.tool_citation_generation import \
-    AGGREGATE_FILE_NAME
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
 from spinnman.model.enums.cpu_state import CPUState
@@ -2660,47 +2655,3 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         with self._state_condition:
             self._state = Simulator_State.STOP_REQUESTED
             self._state_condition.notify_all()
-
-    def _generate_bibtex(
-            self, top_module, doi_title, zenodo_access_token, tools_doi):
-        """ helper method for building bibtex from citation.cff's
-
-        :param top_module: the top module to start aggregating the \
-        citation.cffs from
-        :param doi_title: the title of the doi
-        :param zenodo_access_token: the access token for zenodo
-        :param tools_doi: the doi of the tools
-        :rtype: None
-        """
-
-        citation_aggregator = CitationAggregator()
-        citation_aggregator.create_aggregated_citation_file(
-            top_module, self._report_default_directory)
-        citation_updater_and_dio_generator = CitationUpdaterAndDoiGenerator()
-        citation_updater_and_dio_generator.update_citation_file_and_create_doi(
-            citation_file_path=os.path.join(
-                self._report_default_directory, AGGREGATE_FILE_NAME),
-            update_version=False, version_number=None, version_month=None,
-            version_year=None, version_day=None, doi_title=doi_title,
-            create_doi=True, publish_doi=True, previous_doi=tools_doi,
-            is_previous_doi_sibling=True,
-            zenodo_access_token=zenodo_access_token,
-            module_path=os.path.join(
-                self._report_default_directory, AGGREGATE_FILE_NAME))
-
-        # read in citation file
-        citation_read = open(
-            os.path.join(self._report_default_directory,
-                         AGGREGATE_FILE_NAME), "r")
-
-        # create citation object
-        citation = Citation(cffstr=citation_read.read())
-
-        # convert to bibtex
-        bib_tex = citation.as_bibtex()
-
-        # dump to terminal and into report folder
-        print(bib_tex)
-        with open(os.path.join(self._report_default_directory,
-                               "Bixtex"), "w") as f:
-            f.write(bib_tex + "\n")
