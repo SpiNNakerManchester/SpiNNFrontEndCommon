@@ -47,5 +47,7 @@ setup(
                       'scipy >= 0.16.0',
                       'numpy',
                       'futures; python_version == "2.7"',
-                      'six']
+                      'six'],
+    maintainer="SpiNNakerTeam",
+    maintainer_email="spinnakerusers@googlegroups.com"
 )
