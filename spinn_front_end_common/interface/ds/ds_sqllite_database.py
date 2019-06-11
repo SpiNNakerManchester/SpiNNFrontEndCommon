@@ -4,7 +4,7 @@ import sqlite3
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from .ds_abstact_database import DsAbstractDatabase
-from spinn_front_end_common.utilities.utility_objs.data_written import DataWritten
+from spinn_front_end_common.utilities.utility_objs import DataWritten
 
 DB_NAME = "ds.sqlite3"
 DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
