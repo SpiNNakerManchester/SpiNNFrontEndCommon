@@ -16,9 +16,10 @@ class MemoryMapOnHostReport(object):
             self, report_default_directory,
             processor_to_app_data_base_address):
         """
-
         :param report_default_directory:
         :param processor_to_app_data_base_address:
+        :type processor_to_app_data_base_address: \
+            dict(?,:py:class:`~spinn_front_end_common.utilities.utility_models.DataWritten`)
         :rtype: None
         """
 
@@ -38,5 +39,5 @@ class MemoryMapOnHostReport(object):
             f.write(
                 "{}: ('start_address': {}, hex:{}), "
                 "'memory_used': {}, 'memory_written': {} \n".format(
-                    key, data['start_address'], hex(data['start_address']),
-                    data['memory_used'], data['memory_written']))
+                    key, data.start_address, hex(data.start_address),
+                    data.memory_used, data.memory_written))
