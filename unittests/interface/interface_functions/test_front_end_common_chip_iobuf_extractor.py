@@ -1,11 +1,12 @@
 import os
 import tempfile
 import unittest
+from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, CoreSubset
-from spinnman.model import ExecutableTargets, IOBuffer
+from spinnman.model import IOBuffer
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
-from spinn_utilities.executable_finder import ExecutableFinder
+from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 
 
 class _PretendTransceiver(object):

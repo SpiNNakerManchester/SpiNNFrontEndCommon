@@ -1,10 +1,14 @@
-import re
+import logging
 import os
+import re
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
+from spinn_machine.core_subsets import CoreSubsets
 
+logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
 WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
@@ -16,7 +20,12 @@ class ChipIOBufExtractor(object):
         lines based on their prefix.
     """
 
-    __slots__ = []
+    __slots__ = ["_filename_template", "_recovery_mode"]
+
+    def __init__(self, recovery_mode=False,
+                 filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
+        self._filename_template = filename_template
+        self._recovery_mode = bool(recovery_mode)
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
@@ -24,11 +33,12 @@ class ChipIOBufExtractor(object):
 
         error_entries = list()
         warn_entries = list()
+        label = (("Recovering" if self._recovery_mode else "Extracting")
+                 + " IOBUF from the machine")
 
         # all the cores
         if from_cores == "ALL":
-            progress = ProgressBar(len(executable_targets.binaries),
-                                   "Extracting IOBUF from the machine")
+            progress = ProgressBar(len(executable_targets.binaries), label)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
                 self._run_for_core_subsets(
@@ -38,8 +48,7 @@ class ChipIOBufExtractor(object):
         elif from_cores:
             if binary_types:
                 # bit of both
-                progress = ProgressBar(len(executable_targets.binaries),
-                                       "Extracting IOBUF from the machine")
+                progress = ProgressBar(len(executable_targets.binaries), label)
                 binaries = executable_finder.get_executable_paths(binary_types)
                 iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
@@ -57,8 +66,7 @@ class ChipIOBufExtractor(object):
 
             else:
                 # some hard coded cores
-                progress = ProgressBar(len(executable_targets.binaries),
-                                       "Extracting IOBUF from the machine")
+                progress = ProgressBar(len(executable_targets.binaries), label)
                 iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     core_subsets = iocores.intersect(
@@ -71,8 +79,7 @@ class ChipIOBufExtractor(object):
             if binary_types:
                 # some binaries
                 binaries = executable_finder.get_executable_paths(binary_types)
-                progress = ProgressBar(len(binaries),
-                                       "Extracting IOBUF from the machine")
+                progress = ProgressBar(len(binaries), label)
                 for binary in progress.over(binaries):
                     core_subsets = executable_targets.get_cores_for_binary(
                         binary)
@@ -91,19 +98,19 @@ class ChipIOBufExtractor(object):
         replacer = Replacer(binary)
 
         # extract iobuf
-        io_buffers = list(transceiver.get_iobuf(core_subsets))
+        if self._recovery_mode:
+            io_buffers = self.__recover_iobufs(transceiver, core_subsets)
+        else:
+            io_buffers = list(transceiver.get_iobuf(core_subsets))
 
         # write iobuf
         for iobuf in io_buffers:
             file_name = os.path.join(
                 provenance_file_path,
-                "iobuf_for_chip_{}_{}_processor_id_{}.txt".format(
-                    iobuf.x, iobuf.y, iobuf.p))
+                self._filename_template.format(iobuf.x, iobuf.y, iobuf.p))
 
             # set mode of the file based off if the file already exists
-            mode = "w"
-            if os.path.exists(file_name):
-                mode = "a"
+            mode = "a" if os.path.exists(file_name) else "w"
 
             # write iobuf to file and call out errors and warnings.
             with open(file_name, mode) as f:
@@ -111,13 +118,26 @@ class ChipIOBufExtractor(object):
                     replaced = replacer.replace(line)
                     f.write(replaced)
                     f.write("\n")
-                    self._add_value_if_match(
+                    self.__add_value_if_match(
                         ERROR_ENTRY, replaced, error_entries, iobuf)
-                    self._add_value_if_match(
+                    self.__add_value_if_match(
                         WARNING_ENTRY, replaced, warn_entries, iobuf)
 
+    def __recover_iobufs(self, transceiver, core_subsets):
+        io_buffers = []
+        for core_subset in core_subsets:
+            cs = CoreSubsets()
+            cs.add_core_subset(core_subset)
+            try:
+                io_buffers.extend(transceiver.get_iobuf(cs))
+            except Exception as e:  # pylint: disable=broad-except
+                logger.warning(
+                    "failed to retrieve iobufs from chip {},{}; {}",
+                    core_subset.x, core_subset.y, str(e))
+        return io_buffers
+
     @staticmethod
-    def _add_value_if_match(regex, line, entries, place):
+    def __add_value_if_match(regex, line, entries, place):
         match = regex.match(line)
         if match:
             entries.append("{}, {}, {}: {} ({})".format(

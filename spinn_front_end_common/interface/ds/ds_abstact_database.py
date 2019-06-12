@@ -81,6 +81,14 @@ class DsAbstractDatabase(object):
         """
 
     @abstractmethod
+    def ds_mark_as_system(self, core_list):
+        """
+        Flags a list of processors as running system binaries.
+
+        :param core_list: list of (core x, core y, core p)
+        """
+
+    @abstractmethod
     def get_write_info(self, x, y, p):
         """
         Gets the provenance returned by the Data Spec executor
@@ -88,8 +96,7 @@ class DsAbstractDatabase(object):
         :param x: core x
         :param y: core y
         :param p: core p
-        :rtype: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :rtype: DataWritten
         """
 
     @abstractmethod
@@ -100,8 +107,7 @@ class DsAbstractDatabase(object):
         :param x: core x
         :param y: core y
         :param p: core p
-        :param info: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :param info: DataWritten
         """
 
     @abstractmethod
@@ -120,11 +126,9 @@ class DsAbstractDatabase(object):
     @abstractmethod
     def info_iteritems(self):
         """
-        Yields the keys and values  for the Info data
+        Yields the keys and values for the Info data. Note that a DB \
+        transaction may be held while this iterator is processing.
 
-        dict with the keys
-            'start_address', 'memory_used' and 'memory_written'
-
-        :return Yields the (x, y, p) and Info
+        :return Yields the (x, y, p) and DataWritten
         :rtype: ((int, int, int),  dict)
         """
