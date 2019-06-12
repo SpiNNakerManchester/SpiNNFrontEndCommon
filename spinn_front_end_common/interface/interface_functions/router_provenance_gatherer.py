@@ -331,4 +331,15 @@ class RouterProvenanceGatherer(object):
                     " each packet. These packets were reinjected and so this"
                     " number is likely a overestimate.".format(
                         x, y, reinjection_status.n_processor_dumps))))
+
+        items.append(ProvenanceDataItem(
+            self._add_name(names, "Error status"),
+            str(router_diagnostic.error_status),
+            report=router_diagnostic.error_status > 0,
+            message=(
+                "The router on {}, {} has a non-zero error status.  This could"
+                " indicate a hardware fault.  The errors set are {}, and the"
+                " error count is {}".format(
+                    x, y, router_diagnostic.errors_set,
+                    router_diagnostic.error_count))))
         return items
