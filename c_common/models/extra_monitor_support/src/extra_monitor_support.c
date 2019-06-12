@@ -767,7 +767,7 @@ static uint reinjection_sdp_command(sdp_msg_t *msg) {
 }
 
 // \brief SARK level timer interrupt setup
-void reinjection_configure_timer(void) {
+static void reinjection_configure_timer(void) {
     // Clear the interrupt
     tc[T1_CONTROL] = 0;
     tc[T1_INT_CLR] = 1;
@@ -778,13 +778,13 @@ void reinjection_configure_timer(void) {
 }
 
 // \brief pass, not a clue.
-void reinjection_configure_comms_controller(void) {
+static void reinjection_configure_comms_controller(void) {
     // remember SAR register contents (p2p source ID)
     cc_sar = cc[CC_SAR] & 0x0000ffff;
 }
 
 // \brief sets up SARK and router to have a interrupt when a packet is dropped
-void reinjection_configure_router(void) {
+static void reinjection_configure_router(void) {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
 
@@ -879,17 +879,19 @@ static void data_in_load_router(
         rt_error(RTE_SWERR);
     }
 
-    io_printf(IO_BUF, "Got start entry id of %d\n", start_entry_id);
     for (uint idx = 0; idx < n_entries; idx++) {
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
         if (sdram_address[idx].key != INVALID_ROUTER_ENTRY_KEY &&
                 sdram_address[idx].mask != INVALID_ROUTER_ENTRY_MASK &&
                 sdram_address[idx].route != INVALID_ROUTER_ENTRY_ROUTE) {
+#if 0
+            // Produces quite a lot of debugging output when enabled
             io_printf(IO_BUF,
                     "Setting key %08x, mask %08x, route %08x for entry %u\n",
                     sdram_address[idx].key, sdram_address[idx].mask,
                     sdram_address[idx].route, idx + start_entry_id);
+#endif
             // try setting the valid router entry
             if (rtr_mc_set(idx + start_entry_id, sdram_address[idx].key,
                     sdram_address[idx].mask, sdram_address[idx].route) != 1) {
@@ -918,7 +920,8 @@ void data_in_save_router(void) {
 
 //! \brief sets up system routes on router. required by the data in speed
 //! up functionality
-void data_in_speed_up_load_in_system_tables(data_in_data_items_t *items) {
+static void data_in_speed_up_load_in_system_tables(
+        data_in_data_items_t *items) {
     // read in router table into app store in sdram (in case its changed
     // since last time)
     io_printf(IO_BUF, "Saving existing router table\n");
@@ -935,7 +938,7 @@ void data_in_speed_up_load_in_system_tables(data_in_data_items_t *items) {
 
 //! \brief sets up application routes on router. required by data in speed up
 //! functionality
-void data_in_speed_up_load_in_application_routes(void) {
+static void data_in_speed_up_load_in_application_routes(void) {
     // clear the currently loaded routing table entries
     data_in_clear_router();
 

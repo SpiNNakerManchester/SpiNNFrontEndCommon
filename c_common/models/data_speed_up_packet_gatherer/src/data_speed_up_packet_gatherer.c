@@ -133,7 +133,6 @@ typedef union sdp_msg_out_payload_t {
 //! control value, which says how many timer ticks to run for before exiting
 static uint32_t simulation_ticks = 0;
 static uint32_t infinite_run = 0;
-static uint32_t time = 0;
 
 //! int as a bool to represent if this simulation should run forever
 static uint32_t infinite_run;
@@ -176,12 +175,15 @@ typedef enum callback_priorities {
     DMA = 0
 } callback_priorities;
 
+// Note that these addresses are *board-local* chip addresses.
 static uint data_in_mc_key_map[MAX_CHIP_ID][MAX_CHIP_ID] = {{0}};
 static uint chip_x = 0xFFFFFFF; // Not a legal chip coordinate
 static uint chip_y = 0xFFFFFFF; // Not a legal chip coordinate
+
 static bit_field_t missing_seq_nums_store = NULL;
-uint size_of_bitfield = 0;
+static uint size_of_bitfield = 0;
 static bool alloc_in_sdram = false;
+
 static uint total_received_seq_nums = 0;
 static uint last_seen_seq_num = 0;
 static uint start_sdram_address = 0;
@@ -235,7 +237,7 @@ static void process_sdp_message_into_mc_messages(
         const uint *data, uint n_elements, bool send_sdram_address,
         uint sdram_address) {
     // determine size of data to send
-    log_info("Writing %u elements to 0x%08x", n_elements, sdram_address);
+    log_debug("Writing %u elements to 0x%08x", n_elements, sdram_address);
 
     // send mc message with SDRAM location to correct chip
     if (send_sdram_address) {
@@ -249,13 +251,13 @@ static void process_sdp_message_into_mc_messages(
 }
 
 //! \brief creates a store for seq nums in a memory store.
-//! \param[in] max_seq_num: the max seq num expected during this stage
-static void create_sequence_number_bitfield(uint size) {
-    size_of_bitfield = get_bit_field_size(size + 1);
-    if (max_seq_num != size) {
-        max_seq_num = size;
+//! \param[in] max_seq: the max seq num expected during this stage
+static void create_sequence_number_bitfield(uint max_seq) {
+    size_of_bitfield = get_bit_field_size(max_seq + 1);
+    if (max_seq_num != max_seq) {
+        max_seq_num = max_seq;
         alloc_in_sdram = false;
-        if (size >= SDRAM_VS_DTCM_THRESHOLD || (NULL ==
+        if (max_seq_num >= SDRAM_VS_DTCM_THRESHOLD || (NULL ==
                 (missing_seq_nums_store = spin1_malloc(
                         size_of_bitfield * sizeof(uint32_t))))) {
             missing_seq_nums_store = sark_xalloc(
@@ -311,7 +313,7 @@ static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
 
 //! \brief searches through received seq nums and transmits missing ones back
 //! to host for retransmission
-void process_missing_seq_nums_and_request_retransmission(void) {
+static void process_missing_seq_nums_and_request_retransmission(void) {
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
 
     // check that missing seq transmission is actually needed, or
@@ -439,7 +441,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
 //! \brief processes sdp messages
 //! \param[in] mailbox: the sdp message
 //! \param[in] port: the port associated with this sdp message
-void data_in_receive_sdp_data(uint mailbox, uint port) {
+static void data_in_receive_sdp_data(uint mailbox, uint port) {
     // use as not important
     use(port);
 
@@ -471,11 +473,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
     spin1_msg_free((sdp_msg_t *) msg);
 }
 
-void resume_callback(void) {
-    time = UINT32_MAX;
-}
-
-void send_data(void) {
+static void send_data(void) {
     spin1_memcpy(&my_msg.data, data, position_in_store * sizeof(uint));
     my_msg.length = sizeof(sdp_hdr_t) + position_in_store * sizeof(uint);
 
@@ -491,7 +489,7 @@ void send_data(void) {
     data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload) {
+static void receive_data(uint key, uint payload) {
     if (key == new_sequence_key) {
         if (position_in_store != 1) {
             send_data();
@@ -599,17 +597,12 @@ static void initialise(uint32_t *timer_period) {
 void c_main(void) {
     log_info("Configuring packet gatherer");
 
-    // Load DTCM data
-    uint32_t timer_period;
-
     // initialise the code
+    uint32_t timer_period;
     initialise(&timer_period);
 
     // start execution
     log_info("Starting");
-
-    // Start the time at "-1" so that the first tick will be 0
-    time = UINT32_MAX;
 
     spin1_start(SYNC_NOWAIT);
 }
