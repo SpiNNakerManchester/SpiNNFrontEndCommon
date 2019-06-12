@@ -37,7 +37,7 @@ class VirtualMachineGenerator(object):
             router_entries_per_chip=router_entries_per_chip, validate=True)
 
         # Work out and add the SpiNNaker links and FPGA links
-        machine.add_spinnaker_links(version)
-        machine.add_fpga_links(version)
+        machine.add_spinnaker_links()
+        machine.add_fpga_links()
 
         return machine

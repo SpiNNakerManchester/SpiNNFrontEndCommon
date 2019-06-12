@@ -4,6 +4,7 @@ import sqlite3
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from .ds_abstact_database import DsAbstractDatabase
+from spinn_front_end_common.utilities.utility_objs import DataWritten
 
 DB_NAME = "ds.sqlite3"
 DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
@@ -140,13 +141,22 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         with self._db:
             for row in self._db.execute(
                     "SELECT app_id FROM core "
-                    + "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
+                    "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
                 return row["app_id"]
         return None
 
+    @overrides(DsAbstractDatabase.ds_mark_as_system)
+    def ds_mark_as_system(self, core_list):
+        with self._db:
+            for xyp in core_list:
+                self._db.execute(
+                    "UPDATE core SET is_system = 1 "
+                    "WHERE x = ? AND y = ? AND processor = ?", xyp)
+
     def _row_to_info(self, row):
-        return {key: row[key]
-                for key in ["start_address", "memory_used", "memory_written"]}
+        return DataWritten(start_address=row["start_address"],
+                           memory_used=row["memory_used"],
+                           memory_written=row["memory_written"])
 
     @overrides(DsAbstractDatabase.get_write_info)
     def get_write_info(self, x, y, p):
@@ -165,17 +175,24 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         :param x: core x
         :param y: core y
         :param p: core p
-        :param info: dict() with the keys
+        :param info: DataWritten or dict() with the keys
             'start_address', 'memory_used' and 'memory_written'
         """
+        if isinstance(info, DataWritten):
+            start = info.start_address
+            used = info.memory_used
+            written = info.memory_written
+        else:
+            start = info["start_address"]
+            used = info["memory_used"]
+            written = info["memory_written"]
         with self._db:
             cursor = self._db.cursor()
             cursor.execute(
                 "UPDATE core SET "
                 + "start_address = ?, memory_used = ?, memory_written = ? "
                 + "WHERE x = ? AND y = ? AND processor = ? ",
-                (info["start_address"], info["memory_used"],
-                 info["memory_written"], x, y, p))
+                (start, used, written, x, y, p))
             if cursor.rowcount == 0:
                 chip = self._machine.get_chip_at(x, y)
                 ethernet_id = self.__get_ethernet(
@@ -184,8 +201,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "start_address, memory_used, memory_written) "
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
-                    (x, y, p, ethernet_id, info["start_address"],
-                     info["memory_used"], info["memory_written"]))
+                    (x, y, p, ethernet_id, start, used, written))
 
     @overrides(DsAbstractDatabase.clear_write_info)
     def clear_write_info(self):

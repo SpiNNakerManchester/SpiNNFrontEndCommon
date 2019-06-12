@@ -43,7 +43,7 @@ MODIFIED_DIR = modified_src/
 
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
-	$(RM) $@
+	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
@@ -56,7 +56,7 @@ $(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(LOG_DICT_
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(SPINN_COMMON_BUILD):
-	$(MKDIR) $@
+	@$(MKDIR) $@
 
 # Installing rules
 install: install-libraries install-headers install-makefiles

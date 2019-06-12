@@ -100,3 +100,12 @@ class DataSpecificationTargets(MutableMapping):
         :rtype: int
         """
         return self._db.ds_get_app_id(x, y, p)
+
+    def mark_system_cores(self, core_subsets):
+        cores_to_mark = []
+        for subset in core_subsets:
+            x = subset.x
+            y = subset.y
+            for p in subset.processor_ids:
+                cores_to_mark.append((x, y, p))
+        self._db.ds_mark_as_system(cores_to_mark)

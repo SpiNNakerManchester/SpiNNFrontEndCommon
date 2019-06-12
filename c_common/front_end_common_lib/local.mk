@@ -42,18 +42,18 @@ endif
 # sources is copied only once after which all the targets are now available
 define add_source_dir#(src_dir, modified_dir)
 $(2)%.c: $(1)%.c
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
+	@python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
 
 $(2)%.h: $(1)%.h
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
+	@python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
 
 $(2)log_dict.dict: $(1)
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
+	@python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
 
 # Build the o files from the modified sources
 $$(BUILD_DIR)%.o: $(2)%.c
 	# local
-	-mkdir -p $$(dir $$@)
+	-@mkdir -p $$(dir $$@)
 	$$(CC) $$(CFLAGS) -o $$@ $$<
 endef
 
@@ -108,10 +108,11 @@ OBJECTS += $(_OBJS)
 include $(SPINN_DIRS)/make/spinnaker_tools.mk
 
 $(APP_DICT_FILE): $(LOG_DICT_FILES)
+	@echo mklogdict -o $(APP_DICT_FILE) $(LOG_DICT_FILES)
     # Add the two header lines once
-	head -2 $(firstword $(LOG_DICT_FILES)) > $(APP_DICT_FILE)
-	# Add the none header lines for each file remembering tail starts counting at 1
-	$(foreach ldf, $(LOG_DICT_FILES), tail -n +3 $(ldf) >> $(APP_DICT_FILE) ;)
+	@head -2 $(firstword $(LOG_DICT_FILES)) > $(APP_DICT_FILE)
+    # Add the none header lines for each file remembering tail starts counting at 1
+	@$(foreach ldf, $(LOG_DICT_FILES), tail -n +3 $(ldf) >> $(APP_DICT_FILE) ;)
 
 # Tidy and cleaning dependencies
 clean:
