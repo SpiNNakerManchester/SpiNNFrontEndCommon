@@ -75,6 +75,14 @@ enum sdp_port_commands {
 #define DATA_IN_NORMAL_PACKET_WORDS \
     (ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS)
 
+//! size of payload for a packet describing the first batch of missing inbound seqs
+#define ITEMS_PER_FIRST_MISSING_PACKET \
+    (ITEMS_PER_DATA_PACKET - 2)
+
+//! size of payload for a packet describing the further batches of missing inbound seqs
+#define ITEMS_PER_MORE_MISSING_PACKET \
+    (ITEMS_PER_DATA_PACKET - 1)
+
 //-----------------------------------------------------------------------------
 // TYPES AND GLOBALS
 //-----------------------------------------------------------------------------
@@ -122,11 +130,11 @@ typedef union sdp_msg_out_payload_t {
     struct {
         uint command;
         uint n_packets;
-        uint data[ITEMS_PER_DATA_PACKET - 2];
+        uint data[ITEMS_PER_FIRST_MISSING_PACKET];
     } first;
     struct {
         uint command;
-        uint data[ITEMS_PER_DATA_PACKET - 1];
+        uint data[ITEMS_PER_MORE_MISSING_PACKET];
     } more;
 } sdp_msg_out_payload_t;
 
@@ -180,7 +188,7 @@ static uint data_in_mc_key_map[MAX_CHIP_ID][MAX_CHIP_ID] = {{0}};
 static uint chip_x = 0xFFFFFFF; // Not a legal chip coordinate
 static uint chip_y = 0xFFFFFFF; // Not a legal chip coordinate
 
-static bit_field_t missing_seq_nums_store = NULL;
+static bit_field_t received_seq_nums_store = NULL;
 static uint size_of_bitfield = 0;
 static bool alloc_in_sdram = false;
 
@@ -191,7 +199,7 @@ static uint start_sdram_address = 0;
 //! Human readable definitions of the offsets for multicast key elements.
 //! These act as commands sent to the target extra monitor core.
 typedef enum key_offsets {
-    SDRAM_KEY_OFFSET = 0,
+    WRITE_ADDR_KEY_OFFSET = 0,
     DATA_KEY_OFFSET = 1,
     RESTART_KEY_OFFSET = 2
 } key_offsets;
@@ -229,19 +237,21 @@ static inline void send_mc_message(uint command, uint payload) {
 //! \brief sends multicast messages accordingly for an SDP message
 //! \param[in] data: the actual data from the SDP message
 //! \param[in] n_elements: the number of data items in the SDP message
-//! \param[in] send_sdram_address: bool flag for if we should send the sdram
-//                                 address of this set of data
-//! \param[in] sdram_address: the sdram address where this block of data is
-//                            to be written on
+//! \param[in] set_write_address: bool flag for if we should send the
+//                                address where our writes will start;
+//                                this is not set every time to reduce
+//                                on-chip network overhead
+//! \param[in] write_address: the sdram address where this block of data is
+//                            to be written to
 static void process_sdp_message_into_mc_messages(
-        const uint *data, uint n_elements, bool send_sdram_address,
-        uint sdram_address) {
+        const uint *data, uint n_elements, bool set_write_address,
+        uint write_address) {
     // determine size of data to send
-    log_debug("Writing %u elements to 0x%08x", n_elements, sdram_address);
+    log_debug("Writing %u elements to 0x%08x", n_elements, write_address);
 
     // send mc message with SDRAM location to correct chip
-    if (send_sdram_address) {
-        send_mc_message(SDRAM_KEY_OFFSET, sdram_address);
+    if (set_write_address) {
+        send_mc_message(WRITE_ADDR_KEY_OFFSET, write_address);
     }
 
     // send mc messages containing rest of sdp data
@@ -258,12 +268,12 @@ static void create_sequence_number_bitfield(uint max_seq) {
         max_seq_num = max_seq;
         alloc_in_sdram = false;
         if (max_seq_num >= SDRAM_VS_DTCM_THRESHOLD || (NULL ==
-                (missing_seq_nums_store = spin1_malloc(
+                (received_seq_nums_store = spin1_malloc(
                         size_of_bitfield * sizeof(uint32_t))))) {
-            missing_seq_nums_store = sark_xalloc(
+            received_seq_nums_store = sark_xalloc(
                     sv->sdram_heap, size_of_bitfield * sizeof(uint32_t), 0,
                     ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
-            if (missing_seq_nums_store == NULL) {
+            if (received_seq_nums_store == NULL) {
                 log_error(
                         "Failed to allocate %u bytes for missing seq num store",
                         size_of_bitfield * sizeof(uint32_t));
@@ -273,27 +283,30 @@ static void create_sequence_number_bitfield(uint max_seq) {
         }
     }
     log_debug("clearing bit field");
-    clear_bit_field(missing_seq_nums_store, size_of_bitfield);
+    clear_bit_field(received_seq_nums_store, size_of_bitfield);
 }
 
 static inline void free_sequence_number_bitfield(void) {
     if (alloc_in_sdram) {
-        sark_xfree(sv->sdram_heap, missing_seq_nums_store,
+        sark_xfree(sv->sdram_heap, received_seq_nums_store,
                 ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
     } else {
-        sark_free(missing_seq_nums_store);
+        sark_free(received_seq_nums_store);
     }
-    missing_seq_nums_store = NULL;
+    received_seq_nums_store = NULL;
     max_seq_num = 0;
 }
 
-//! \brief determines how many missing seq packets will be needed.
+//! \brief determines how many packets will be needed to describe missing seqs.
 static inline uint data_in_n_missing_seq_packets(void) {
-    uint received = count_bit_field(missing_seq_nums_store, size_of_bitfield);
-    uint missing_seq = max_seq_num - received;
-    missing_seq -= ITEMS_PER_DATA_PACKET - 2;
-    const uint denom = ITEMS_PER_DATA_PACKET - 1;
-    uint num = missing_seq / denom, rem = missing_seq % denom;
+    uint received = count_bit_field(received_seq_nums_store, size_of_bitfield);
+    uint missing_seq_count = max_seq_num - received;
+    if (missing_seq_count < ITEMS_PER_FIRST_MISSING_PACKET) {
+        return 0;
+    }
+    missing_seq_count -= ITEMS_PER_FIRST_MISSING_PACKET;
+    const uint denom = ITEMS_PER_MORE_MISSING_PACKET;
+    uint num = missing_seq_count / denom, rem = missing_seq_count % denom;
     return num + (rem > 0 ? 1 : 0);
 }
 
@@ -338,7 +351,7 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
     payload->first.n_packets = data_in_n_missing_seq_packets();
     data_ptr = data_start = payload->first.data;
     for (uint bit = 1; bit <= max_seq_num; bit++) {
-        if (bit_field_test(missing_seq_nums_store, bit)) {
+        if (bit_field_test(received_seq_nums_store, bit)) {
             continue;
         }
 
@@ -419,8 +432,8 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     uint this_sdram_address = calculate_sdram_address_from_seq_num(seq);
     bool send_sdram_address = (last_seen_seq_num != seq - 1);
 
-    if (!bit_field_test(missing_seq_nums_store, seq)) {
-        bit_field_set(missing_seq_nums_store, seq);
+    if (!bit_field_test(received_seq_nums_store, seq)) {
+        bit_field_set(received_seq_nums_store, seq);
         total_received_seq_nums++;
     }
     last_seen_seq_num = seq;
@@ -527,7 +540,7 @@ static void receive_data(uint key, uint payload) {
     }
 }
 
-static void initialise(uint32_t *timer_period) {
+static void initialise(void) {
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
 
@@ -538,9 +551,10 @@ static void initialise(uint32_t *timer_period) {
     }
 
     // Get the timing details and set up the simulation interface
+    uint32_t dummy;
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            APPLICATION_NAME_HASH, &dummy, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         rt_error(RTE_SWERR);
     }
@@ -598,8 +612,7 @@ void c_main(void) {
     log_info("Configuring packet gatherer");
 
     // initialise the code
-    uint32_t timer_period;
-    initialise(&timer_period);
+    initialise();
 
     // start execution
     log_info("Starting");
