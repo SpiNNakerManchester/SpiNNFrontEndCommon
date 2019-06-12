@@ -196,7 +196,7 @@ class BufferManager(object):
             self._machine, placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
         return receiver.get_data(
-            transceiver, self._placements.get_placement_of_vertex(sender),
+            self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
 
     def _receive_buffer_command_message(self, packet):
@@ -206,6 +206,7 @@ class BufferManager(object):
         :type packet:\
             :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
+        # pylint: disable=broad-except
         if isinstance(packet, SpinnakerRequestBuffers):
             # noinspection PyBroadException
             try:
@@ -583,31 +584,18 @@ class BufferManager(object):
     def __old_get_data_for_placements_with_monitors(
             self, placements, progress):
         # locate receivers
-        receivers = OrderedSet(
+        receivers = list(OrderedSet(
             locate_extra_monitor_mc_receiver(
                 self._machine, placement.x, placement.y,
                 self._packet_gather_cores_to_ethernet_connection_map)
-            for placement in placements)
+            for placement in placements))
 
-        # set time out
-        for receiver in receivers:
-            receiver.set_cores_for_data_extraction(
-                transceiver=self._transceiver,
-                placements=self._placements,
-                extra_monitor_cores_for_router_timeout=(
-                    self._extra_monitor_cores))
-
-        try:
+        # Ugly, to avoid an import loop...
+        with receivers[0].streaming(
+                receivers, self._transceiver, self._extra_monitor_cores,
+                self._placements):
             # get data
             self.__old_get_data_for_placements(placements, progress)
-        finally:
-            # revert time out
-            for receiver in receivers:
-                receiver.unset_cores_for_data_extraction(
-                    transceiver=self._transceiver,
-                    placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=(
-                        self._extra_monitor_cores))
 
     def __old_get_data_for_placements(self, placements, progress):
         # get data
@@ -832,6 +820,7 @@ class BufferManager(object):
         end_state.set_update_completed()
 
     def _process_buffered_in_packet(self, packet):
+        # pylint: disable=broad-except
         logger.debug(
             "received {} read request(s) with sequence: {},"
             " from chip ({},{}, core {}",

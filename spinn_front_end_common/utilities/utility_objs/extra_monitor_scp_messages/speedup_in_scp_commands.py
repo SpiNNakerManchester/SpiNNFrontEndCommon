@@ -1,16 +1,12 @@
 from enum import Enum
 
 
-class ReinjectorSCPCommands(Enum):
-    """ SCP Command codes for reinjection
+class SpeedupInSCPCommands(Enum):
+    """ SCP Command codes for data speed up in
     """
-    SET_ROUTER_TIMEOUT = 0
-    SET_ROUTER_EMERGENCY_TIMEOUT = 1
-    SET_PACKET_TYPES = 2
-    GET_STATUS = 3
-    RESET_COUNTERS = 4
-    EXIT = 5
-    CLEAR = 6
+    SAVE_APPLICATION_MC_ROUTES = 6,
+    LOAD_APPLICATION_MC_ROUTES = 7,
+    LOAD_SYSTEM_MC_ROUTES = 8
 
     def __new__(cls, value, doc=""):
         # pylint: disable=protected-access, unused-argument

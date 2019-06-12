@@ -15,7 +15,7 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            max_sdram_size=None, max_core_id=None):
+            max_sdram_size=None, max_core_id=None, repair_machine=False):
         """
         :param hostname: the hostname or IP address of the SpiNNaker machine
         :param bmp_details: the details of the BMP connections
@@ -36,6 +36,13 @@ class MachineGenerator(object):
             (mainly used in debugging purposes)
         :type max_sdram_size: int or None
         :type reset_machine_on_start_up: bool
+        :param repair_machine: Flag to set the behaviour if a repairable error
+            is found on the machine.
+            If true will create a machine without the problamatic bits.
+            (See machine_factory.machine_repair)
+            If False get machine will raise an Exception if a problamatic
+            machine is discovered.
+        :type repair_machine: bool
         :return: Connection details and Transceiver
         """
         # pylint: disable=too-many-arguments
@@ -53,7 +60,8 @@ class MachineGenerator(object):
             ignore_cores=downed_cores, ignored_links=downed_links,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            max_sdram_size=max_sdram_size, max_core_id=max_core_id)
+            max_sdram_size=max_sdram_size, max_core_id=max_core_id,
+            repair_machine=repair_machine)
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()

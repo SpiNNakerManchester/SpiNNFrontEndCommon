@@ -34,7 +34,7 @@ typedef enum eieio_prefix_types {
 typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
     BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
-    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT
+    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT, TX_OFFSET
 } read_in_parameters;
 
 //! The memory regions
@@ -131,6 +131,7 @@ static bool last_buffer_operation;
 static uint8_t return_tag_id;
 static uint32_t return_tag_dest;
 static uint32_t buffered_in_sdp_port;
+static uint32_t tx_offset;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
@@ -903,6 +904,7 @@ bool read_parameters(address_t region_address) {
     return_tag_id = region_address[RETURN_TAG_ID];
     return_tag_dest = region_address[RETURN_TAG_DEST];
     buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
+    tx_offset = region_address[TX_OFFSET];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -1135,7 +1137,7 @@ void c_main(void) {
     }
 
     // Set timer_callback
-    spin1_set_timer_tick(timer_period);
+    spin1_set_timer_tick_and_phase(timer_period, tx_offset);
 
     // Register callbacks
     simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);
