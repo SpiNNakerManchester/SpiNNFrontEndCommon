@@ -106,7 +106,7 @@ class GraphDataSpecificationWriter(object):
         """
         :param pl: placement of machine graph to cores
         :param vertex: the specific vertex to write DSG for.
-        :param targets: ???
+        :param targets: DataSpecificationTargets
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         """
