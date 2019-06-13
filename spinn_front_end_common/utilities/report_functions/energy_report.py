@@ -419,41 +419,33 @@ class EnergyReport(object):
         top_left_additions = [(0, 3), (1, 4), (2, 5), (3, 6), (4, 7)]
         bottom_right_additions = [(0, 4), (1, 5), (2, 6), (3, 7)]
 
-        machine_max_x = machine.max_chip_x
-        machine_max_y = machine.max_chip_y
-
         ethernet_chip_x = ethernet_connected_chip.x
         ethernet_chip_y = ethernet_connected_chip.y
 
         # bottom left, bottom
         fpga_0 = self._deduce_fpga(
             [bottom_additions, bottom_right_additions], [(5, 4), (0, 5)],
-            machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
-            machine)
+            ethernet_chip_x, ethernet_chip_y, machine)
         # left, and top right
         fpga_1 = self._deduce_fpga(
             [left_additions, top_left_additions], [(3, 4), (3, 2)],
-            machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
-            machine)
+            ethernet_chip_x, ethernet_chip_y, machine)
         # top and right
         fpga_2 = self._deduce_fpga(
             [top_additions, right_additions], [(2, 1), (0, 1)],
-            machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
-            machine)
+            ethernet_chip_x, ethernet_chip_y, machine)
         return fpga_1 + fpga_0 + fpga_2
 
     @staticmethod
     def _deduce_fpga(
-            shifts, overall_link_ids, machine_max_x, machine_max_y,
-            ethernet_chip_x, ethernet_chip_y, machine):
+            shifts, overall_link_ids, ethernet_chip_x, ethernet_chip_y,
+            machine):
         """ Figure out if each FPGA was on or not
 
         :param shifts: shifts from ethernet to find a FPGA edge
         :type shifts: iterable(iterable(int))
         :param overall_link_ids: which link IDs to check
         :type overall_link_ids: iterable(iterable(int))
-        :param machine_max_x: max machine x
-        :param machine_max_y: max machine y
         :param ethernet_chip_x: ethernet chip x
         :param ethernet_chip_y: ethernet chip y
         :param machine: machine rep
@@ -462,8 +454,8 @@ class EnergyReport(object):
         # pylint: disable=too-many-arguments
         for shift_group, link_ids in zip(shifts, overall_link_ids):
             for shift in shift_group:
-                new_x = (ethernet_chip_x + shift[0]) % (machine_max_x + 1)
-                new_y = (ethernet_chip_y + shift[1]) % (machine_max_y + 1)
+                new_x = (ethernet_chip_x + shift[0]) % (machine.width)
+                new_y = (ethernet_chip_y + shift[1]) % (machine.height)
                 chip = machine.get_chip_at(new_x, new_y)
                 if chip is not None:
                     for link_id in link_ids:

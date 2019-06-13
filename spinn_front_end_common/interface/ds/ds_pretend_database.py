@@ -1,5 +1,6 @@
 from six import iteritems
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.utility_objs import DataWritten
 from .ds_abstact_database import DsAbstractDatabase
 
 
@@ -49,6 +50,9 @@ class DsPretendDatabase(DsAbstractDatabase):
 
     @overrides(DsAbstractDatabase.set_write_info)
     def set_write_info(self, x, y, p, info):
+        if not isinstance(info, DataWritten):
+            info = DataWritten(info["start_address"], info["memory_used"],
+                               info["memory_written"])
         self._info_temp[(x, y, p)] = info
 
     @overrides(DsAbstractDatabase.clear_write_info)
