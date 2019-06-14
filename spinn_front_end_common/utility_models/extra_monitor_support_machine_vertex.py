@@ -280,15 +280,14 @@ class ExtraMonitorSupportMachineVertex(
         return route
 
     def set_router_time_outs(
-            self, timeout_mantissa, timeout_exponent, transceiver, placements,
+            self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
         """ Supports setting of the router time outs for a set of chips via\
             their extra monitor cores.
 
-        :param timeout_mantissa: what timeout mantissa to set it to
-        :type timeout_exponent: int
-        :type timeout_mantissa: int
-        :param timeout_exponent: what timeout exponent to set it to
+        :param timeout: The mantissa and exponent of the timeout value, \
+            each between 0 and 15
+        :type timeout: (int, int)
         :param transceiver: the spinnman interface
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :param placements: placements object
@@ -296,14 +295,13 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: which vertices to use
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
+        mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(
-                timeout_mantissa, timeout_exponent, core_subsets)
+            process.set_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
@@ -311,16 +309,13 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def set_router_emergency_timeout(
-            self, timeout_mantissa, timeout_exponent, transceiver, placements,
+            self, timeout, transceiver, placements,
             extra_monitor_cores_to_set):
         """ Sets the timeout of the routers
 
-        :param timeout_mantissa: \
-            The mantissa of the timeout value, between 0 and 15
-        :type timeout_mantissa: int
-        :param timeout_exponent: \
-            The exponent of the timeout value, between 0 and 15
-        :type timeout_exponent: int
+        :param timeout: The mantissa and exponent of the timeout value, \
+            each between 0 and 15
+        :type timeout: (int, int)
         :param transceiver: the spinnMan instance
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :param placements: the placements object
@@ -328,14 +323,13 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: \
             the set of vertices to change the local chip for.
         """
-        # pylint: disable=too-many-arguments
+        mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
             transceiver.scamp_connection_selector)
         try:
-            process.set_timeout(
-                timeout_mantissa, timeout_exponent, core_subsets)
+            process.set_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 transceiver, self._app_id, self,
