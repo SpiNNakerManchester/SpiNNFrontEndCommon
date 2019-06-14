@@ -388,7 +388,7 @@ static uint32_t dma_port_last_used = 0;
 static bool in_retransmission_mode = false;
 
 //! SDP message holder for transmissions
-sdp_msg_pure_data my_msg;
+static ushort my_addr;
 
 //! state for how many bytes it needs to send, gives approximate bandwidth if
 //! round number.
@@ -1393,45 +1393,63 @@ void __real_sark_int(void *pc);
 void __wrap_sark_int(void *pc) {
     // Check for extra messages added by this core
     uint cmd = sark.vcpu->mbox_ap_cmd;
-    if (cmd == SHM_MSG) {
-        sc[SC_CLR_IRQ] = SC_CODE + (1 << sark.phys_cpu);
-        sark.vcpu->mbox_ap_cmd = SHM_IDLE;
-
-        sdp_msg_t *shm_msg = (sdp_msg_t *) sark.vcpu->mbox_ap_msg;
-        sdp_msg_t *msg = sark_msg_get();
-
-        if (msg != NULL) {
-            sark_msg_cpy(msg, shm_msg);
-            sark_shmsg_free(shm_msg);
-
-            switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
-            case RE_INJECTION_FUNCTIONALITY:
-                msg->length = 12 + reinjection_sdp_command(msg);
-                reflect_sdp_message(msg);
-                sark_msg_send(msg, 10);
-                break;
-            case DATA_SPEED_UP_OUT_FUNCTIONALITY:
-                // These are all one-way messages
-                data_out_speed_up_command((sdp_msg_pure_data *) msg);
-                break;
-            case DATA_SPEED_UP_IN_FUNCTIONALITY:
-                msg->length = 12 + data_in_speed_up_command(msg);
-                reflect_sdp_message(msg);
-                sark_msg_send(msg, 10);
-                break;
-            default:
-                io_printf(IO_BUF, "unexpected port %d\n",
-                        (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
-                // Do nothing
-            }
-            sark_msg_free(msg);
-        } else {
-            sark_shmsg_free(shm_msg);
-        }
-    } else {
+    if (cmd != SHM_MSG) {
         // Run the default callback
         __real_sark_int(pc);
+        return;
     }
+
+    sdp_msg_t *shm_msg = (sdp_msg_t *) sark.vcpu->mbox_ap_msg;
+    if (shm_msg->dest_addr != my_addr) {
+        // Sometimes we get our own messages reflected to us?
+        // Let SARK handle them.
+        __real_sark_int(pc);
+        return;
+    }
+
+    sc[SC_CLR_IRQ] = SC_CODE + (1 << sark.phys_cpu);
+    sdp_msg_t *msg = sark_msg_get();
+
+    if (msg == NULL) {
+        sark_shmsg_free(shm_msg);
+        sark.vcpu->mbox_ap_cmd = SHM_IDLE;
+        return;
+    }
+
+    sark_msg_cpy(msg, shm_msg);
+    sark_shmsg_free(shm_msg);
+    sark.vcpu->mbox_ap_cmd = SHM_IDLE;
+
+    switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
+    case RE_INJECTION_FUNCTIONALITY:
+        msg->length = 12 + reinjection_sdp_command(msg);
+        reflect_sdp_message(msg);
+        while (!sark_msg_send(msg, 10)) {
+            io_printf(IO_BUF, "timeout when sending reinjection reply\n");
+        }
+        break;
+    case DATA_SPEED_UP_OUT_FUNCTIONALITY:
+        // These are all one-way messages
+        data_out_speed_up_command((sdp_msg_pure_data *) msg);
+        break;
+    case DATA_SPEED_UP_IN_FUNCTIONALITY:
+        msg->length = 12 + data_in_speed_up_command(msg);
+        reflect_sdp_message(msg);
+        while (!sark_msg_send(msg, 10)) {
+            io_printf(IO_BUF, "timeout when sending speedupctl reply\n");
+        }
+        break;
+    default:
+        io_printf(IO_BUF, "unexpected port %d\n",
+                (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+        io_printf(IO_BUF,
+                "from:%04x:%02x to:%04x:%02x cmd:%04x len:%d iam:%04x\n",
+                msg->srce_addr, msg->srce_port,
+                msg->dest_addr, msg->dest_port,
+                msg->cmd_rc, msg->length, my_addr);
+        // Do nothing
+    }
+    sark_msg_free(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -1525,6 +1543,7 @@ void c_main(void) {
     sark_cpu_state(CPU_STATE_RUN);
 
     // Configure
+    my_addr = sv->p2p_addr;
     reinjection_configure_timer();
     reinjection_configure_comms_controller();
     reinjection_configure_router();
