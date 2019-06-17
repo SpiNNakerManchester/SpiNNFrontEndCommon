@@ -318,7 +318,7 @@ class HostExecuteDataSpecification(object):
 
         progress.update()
 
-        self._java.execute_app_data_specification(True)
+        self._java.execute_app_data_specification(use_monitors)
 
         progress.end()
         return dw_write_info
