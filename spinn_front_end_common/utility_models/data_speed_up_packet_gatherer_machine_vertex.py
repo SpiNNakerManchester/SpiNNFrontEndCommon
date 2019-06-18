@@ -403,6 +403,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
     def get_local_provenance_data(self):
         prov_items = list()
+        significant_losses = defaultdict(list)
         for (placement, memory_address, length_in_bytes) in \
                 self._provenance_data_items.keys():
 
@@ -425,21 +426,33 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # handle lost sequence numbers
                 for i, n_lost_seq_nums in enumerate(lost_seq_nums):
-                    prov_items.append(ProvenanceDataItem(
-                        [top_level_name, "lost_seq_nums", chip_name, last_name,
-                         iteration_name, "iteration_{}".format(i)],
-                        n_lost_seq_nums, report=n_lost_seq_nums > 0,
-                        message=(
-                            "During the extraction of data of {} bytes from "
-                            "memory address {}, attempt {} had {} sequences "
-                            "that were lost. These had to be retransmitted and"
-                            " will have slowed down the data extraction "
-                            "process. Reduce the number of executing "
-                            "applications and remove routers between yourself"
-                            " and the SpiNNaker machine to reduce the chance "
-                            "of this occurring."
-                            .format(length_in_bytes, memory_address, i,
+                    # Zeroes are not reported at all
+                    if n_lost_seq_nums:
+                        prov_items.append(ProvenanceDataItem(
+                            [top_level_name, "lost_seq_nums", chip_name,
+                             last_name, iteration_name,
+                             "iteration_{}".format(i)],
+                            n_lost_seq_nums, report=n_lost_seq_nums > 100,
+                            message=(
+                                "During the extraction of data of {} bytes "
+                                "from memory address {}, attempt {} had {} "
+                                "sequences that were lost.".format(
+                                    length_in_bytes, memory_address, i,
                                     n_lost_seq_nums))))
+                    if n_lost_seq_nums > 100:
+                        significant_losses[placement.x,placement.y].append(i)
+        for chip in significant_losses:
+            n_times = len(significant_losses[chip])
+            chip_name = "chip{}:{}".format(*chip)
+            prov_items.append(ProvenanceDataItem(
+                [top_level_name, "serious_lost_seq_num_count", chip_name],
+                n_times, report=True, message=
+                "During the extraction of data from chip {}, there were {} "
+                "cases of serious data loss. The system recovered, but the "
+                "speed of download was compromised. Reduce the number of "
+                "executing applications and remove routers between yourself"
+                " and the SpiNNaker machine to reduce the chance of this "
+                "occurring.".format(chip, n_times)))
         return prov_items
 
     @staticmethod
