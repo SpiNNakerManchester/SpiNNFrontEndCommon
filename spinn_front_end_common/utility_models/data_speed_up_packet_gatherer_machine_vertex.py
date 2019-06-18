@@ -42,6 +42,17 @@ log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
 TIMEOUT_MESSAGE = "Failed to hear from the machine during {} attempts. "\
     "Please try removing firewalls."
+_MINOR_LOSS_MESSAGE = (
+    "During the extraction of data of {} bytes from memory address {}, "
+    "attempt {} had {} sequences that were lost.")
+_MINOR_LOSS_THRESHOLD = 10
+_MAJOR_LOSS_MESSAGE = (
+    "During the extraction of data from chip {}, there were {} cases of "
+    "serious data loss. The system recovered, but the speed of download "
+    "was compromised. Reduce the number of executing applications and remove "
+    "routers between yourself and the SpiNNaker machine to reduce the chance "
+    "of this occurring.")
+_MAJOR_LOSS_THRESHOLD = 100
 
 # Size of a SpiNNaker word
 WORD_SIZE = 4
@@ -432,27 +443,20 @@ class DataSpeedUpPacketGatherMachineVertex(
                             [top_level_name, "lost_seq_nums", chip_name,
                              last_name, iteration_name,
                              "iteration_{}".format(i)],
-                            n_lost_seq_nums, report=n_lost_seq_nums > 100,
-                            message=(
-                                "During the extraction of data of {} bytes "
-                                "from memory address {}, attempt {} had {} "
-                                "sequences that were lost.".format(
-                                    length_in_bytes, memory_address, i,
-                                    n_lost_seq_nums))))
-                    if n_lost_seq_nums > 100:
-                        significant_losses[placement.x,placement.y].append(i)
+                            n_lost_seq_nums, report=(
+                                n_lost_seq_nums > _MINOR_LOSS_THRESHOLD),
+                            message=_MINOR_LOSS_MESSAGE.format(
+                                length_in_bytes, memory_address, i,
+                                n_lost_seq_nums)))
+                    if n_lost_seq_nums > _MAJOR_LOSS_THRESHOLD:
+                        significant_losses[placement.x, placement.y] += [i]
         for chip in significant_losses:
             n_times = len(significant_losses[chip])
             chip_name = "chip{}:{}".format(*chip)
             prov_items.append(ProvenanceDataItem(
                 [top_level_name, "serious_lost_seq_num_count", chip_name],
-                n_times, report=True, message=
-                "During the extraction of data from chip {}, there were {} "
-                "cases of serious data loss. The system recovered, but the "
-                "speed of download was compromised. Reduce the number of "
-                "executing applications and remove routers between yourself"
-                " and the SpiNNaker machine to reduce the chance of this "
-                "occurring.".format(chip, n_times)))
+                n_times, report=True, message=_MAJOR_LOSS_MESSAGE.format(
+                    chip, n_times)))
         return prov_items
 
     @staticmethod
