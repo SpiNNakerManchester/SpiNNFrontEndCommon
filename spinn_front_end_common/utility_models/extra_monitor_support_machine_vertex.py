@@ -51,7 +51,7 @@ _KEY_OFFSETS = Enum(
     value="EXTRA_MONITOR_KEY_OFFSETS_TO_COMMANDS",
     names=[("ADDRESS_KEY_OFFSET", 0),
            ("DATA_KEY_OFFSET", 1),
-           ("RESTART_KEY_OFFSET", 2)])
+           ("BOUNDARY_KEY_OFFSET", 2)])
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -205,7 +205,7 @@ class ExtraMonitorSupportMachineVertex(
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_OUT_CONFIG.value,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
-            label="data_speed out config region")
+            label="data speed-up out config region")
         spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG.value)
 
         if Gatherer.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
@@ -256,14 +256,14 @@ class ExtraMonitorSupportMachineVertex(
             region=_DSG_REGIONS.DATA_IN_CONFIG.value,
             size=(_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
                   _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES),
-            label="data_speed in config region")
+            label="data speed-up in config region")
         spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG.value)
 
         # write address key and data key
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
         spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET.value)
-        spec.write_value(base_key + _KEY_OFFSETS.RESTART_KEY_OFFSET.value)
+        spec.write_value(base_key + _KEY_OFFSETS.BOUNDARY_KEY_OFFSET.value)
 
         # write table entries
         table = data_in_routing_tables.get_routing_table_for_chip(
