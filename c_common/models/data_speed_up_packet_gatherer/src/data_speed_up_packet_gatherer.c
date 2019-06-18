@@ -201,7 +201,7 @@ static uint start_sdram_address = 0;
 typedef enum key_offsets {
     WRITE_ADDR_KEY_OFFSET = 0,
     DATA_KEY_OFFSET = 1,
-    RESTART_KEY_OFFSET = 2
+    BOUNDARY_KEY_OFFSET = 2
 } key_offsets;
 
 typedef struct data_in_config_t {
@@ -332,6 +332,8 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
     // check that missing seq transmission is actually needed, or
     // have we finished
     if (total_received_seq_nums == max_seq_num) {
+        // send boundary key, so that monitor knows everything in the previous stream is done
+        send_mc_message(BOUNDARY_KEY_OFFSET, 0);
         payload->command = SDP_SEND_FINISHED_DATA_IN_CMD;
         my_msg.length = sizeof(sdp_hdr_t) + sizeof(int);
         //log_info("length of end data = %d", my_msg.length);
@@ -409,9 +411,8 @@ static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
         spin1_memcpy(receive_data_cmd->address, receive_data_cmd->data,
                 n_elements * sizeof(uint));
     } else {
-        // send start key, so that monitor is configured to start
-        send_mc_message(RESTART_KEY_OFFSET, 0);
-
+        // send start key, so that monitor knows everything in the previous stream is done
+        send_mc_message(BOUNDARY_KEY_OFFSET, 0);
         // send mc messages for first packet; the data lasts to the end of the
         // message
         process_sdp_message_into_mc_messages(

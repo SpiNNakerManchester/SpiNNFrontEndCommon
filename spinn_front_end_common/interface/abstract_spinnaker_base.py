@@ -1082,6 +1082,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceItems"] = version_provenance
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
+        inputs["DisableAdvancedMonitorUsageForDataIn"] = \
+            self._config.getboolean(
+                "Machine", "disable_advanced_monitor_usage_for_data_in")
 
         if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
