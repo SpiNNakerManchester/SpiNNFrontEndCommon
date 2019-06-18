@@ -16,6 +16,9 @@ static uint32_t *pointer_to_simulation_time;
 //! the pointer to the flag for if it is a infinite run
 static uint32_t *pointer_to_infinite_run;
 
+//! the pointer to the current simulation time
+static uint32_t *pointer_to_current_time;
+
 //! the function call to run when extracting provenance data from the chip
 static prov_callback_t stored_provenance_function = NULL;
 
@@ -148,6 +151,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             // resetting the simulation time pointer
             *pointer_to_simulation_time = msg->arg1;
             *pointer_to_infinite_run = msg->arg2;
+            *pointer_to_current_time = msg->arg3;
 
             if (stored_resume_function != NULL) {
                 log_info("Calling pre-resume function");
@@ -158,7 +162,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             spin1_resume(SYNC_WAIT);
 
             // If we are told to send a response, send it now
-            if (msg->arg3 == 1) {
+            if (msg->data[0] == 1) {
                 _send_ok_response(msg);
             }
 
@@ -267,7 +271,8 @@ void simulation_dma_transfer_done_callback_off(uint tag) {
 bool simulation_initialise(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
+        uint32_t *infinite_run_pointer, uint32_t *time_pointer,
+        int sdp_packet_callback_priority,
         int dma_transfer_done_callback_priority) {
 
     // handle the timing reading
@@ -294,6 +299,7 @@ bool simulation_initialise(
     // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
+    pointer_to_current_time = time_pointer;
 
     spin1_callback_on(
         SDP_PACKET_RX, _simulation_sdp_callback_handler,
