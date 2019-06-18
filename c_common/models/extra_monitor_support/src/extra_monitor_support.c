@@ -231,7 +231,7 @@ typedef struct router_entry_t {
 typedef struct data_in_data_items {
     uint32_t address_mc_key;
     uint32_t data_mc_key;
-    uint32_t restart_mc_key;
+    uint32_t boundary_mc_key;
     uint32_t n_system_router_entries;
     router_entry_t system_router_entries[];
 } data_in_data_items_t;
@@ -356,7 +356,7 @@ volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 router_entry_t *saved_application_router_table = NULL;
 uint data_in_address_key = 0;
 uint data_in_data_key = 0;
-uint data_in_start_key = 0;
+uint data_in_boundary_key = 0;
 address_t data_in_write_address = NULL, first_write_address = NULL;
 
 // ------------------------------------------------------------------------
@@ -817,8 +817,20 @@ static void data_in_clear_router(void) {
     }
 }
 
+static inline void data_in_process_boundary(void) {
+    if (data_in_write_address) {
+        uint written_words = data_in_write_address - first_write_address;
+        io_printf(IO_BUF, "Wrote %u words\n", written_words);
+        data_in_write_address = NULL;
+    }
+    first_write_address = NULL;
+}
+
 static inline void data_in_process_address(uint data) {
-    io_printf(IO_BUF, "Setting write address to %08x\n", data);
+    if (data_in_write_address) {
+        data_in_process_boundary();
+    }
+    io_printf(IO_BUF, "Setting write address to 0x%08x\n", data);
     data_in_write_address = (address_t) data;
     first_write_address = data_in_write_address;
 }
@@ -830,14 +842,8 @@ static inline void data_in_process_data(uint data) {
         io_printf(IO_BUF, "Write address not set when write data received!\n");
         rt_error(RTE_SWERR);
     }
-    *data_in_write_address++ = data;
-}
-
-static inline void data_in_process_start(void) {
-    uint written_words = data_in_write_address - first_write_address;
-    io_printf(IO_BUF, "Wrote %u words\n", written_words);
-    data_in_write_address = NULL;
-    first_write_address = NULL;
+    *data_in_write_address = data;
+    data_in_write_address++;
 }
 
 //! \brief process a mc packet with payload
@@ -852,12 +858,12 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
         data_in_process_address(data);
     } else if (key == data_in_data_key) {
         data_in_process_data(data);
-    } else if (key == data_in_start_key) {
-        data_in_process_start();
+    } else if (key == data_in_boundary_key) {
+        data_in_process_boundary();
     } else {
         io_printf(IO_BUF, "Failed to recognise mc key %u; "
                 "only understand keys (%u, %u, %u)\n",
-                key, data_in_address_key, data_in_data_key, data_in_start_key);
+                key, data_in_address_key, data_in_data_key, data_in_boundary_key);
     }
     // and tell VIC we're done
     vic[VIC_VADDR] = (uint) vic;
@@ -1528,7 +1534,7 @@ static void data_in_initialise(void) {
 
     data_in_address_key = items->address_mc_key;
     data_in_data_key = items->data_mc_key;
-    data_in_start_key = items->restart_mc_key;
+    data_in_boundary_key = items->boundary_mc_key;
     // Save the current (application?) state
     data_in_save_router();
 
