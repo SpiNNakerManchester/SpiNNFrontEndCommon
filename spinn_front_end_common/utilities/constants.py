@@ -26,6 +26,9 @@ SARK_PER_MALLOC_SDRAM_USAGE = 8
 DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = (
     APP_PTR_TABLE_BYTE_SIZE + SARK_PER_MALLOC_SDRAM_USAGE)
 
+# conversion from words to bytes
+WORD_TO_BYTE_MULTIPLIER = 4
+
 # The number of words used by the simulation interface
 # 4 for machine_time_step,
 # 4 for SDP port

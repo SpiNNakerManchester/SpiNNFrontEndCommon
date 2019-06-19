@@ -1,3 +1,5 @@
+from spinn_front_end_common.interface.interface_functions import \
+    EdgeToNKeysMapper
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge

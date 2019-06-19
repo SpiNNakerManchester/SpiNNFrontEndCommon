@@ -99,7 +99,7 @@ class MundyOnChipRouterCompression(object):
             self, table, txrx, app_id, compressor_app_id,
             compress_only_when_needed, compress_as_much_as_possible):
         # pylint: disable=too-many-arguments
-        data = self._build_data(
+        data = self.build_routing_table_data(
             table, app_id, compress_only_when_needed,
             compress_as_much_as_possible)
 
@@ -194,8 +194,9 @@ class MundyOnChipRouterCompression(object):
         txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets
 
-    def _build_data(
-            self, routing_table, app_id, compress_only_when_needed,
+    @staticmethod
+    def build_routing_table_data(
+            routing_table, app_id, compress_only_when_needed,
             compress_as_much_as_possible):
         """ Convert the router table into the data needed by the router\
             compressor c code.
@@ -229,11 +230,11 @@ class MundyOnChipRouterCompression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                self._make_source_hack(entry))
+                MundyOnChipRouterCompression.make_source_hack(entry))
         return bytearray(data)
 
     @staticmethod
-    def _make_source_hack(entry):
+    def make_source_hack(entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
 

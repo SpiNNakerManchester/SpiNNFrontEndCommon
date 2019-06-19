@@ -137,19 +137,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             verified before sending (default False)
         :param send_buffer_times: An array of arrays of time steps at which\
             keys should be sent (one array for each key, default disabled)
-        :param send_buffer_max_space: The maximum amount of space to use of\
-            the SDRAM on the machine (default is 1MB)
-        :param send_buffer_space_before_notify: The amount of space free in\
-            the sending buffer before the machine will ask the host for more\
-            data (default setting is optimised for most cases)
-        :param buffer_notification_ip_address: The IP address of the host that\
-            will send new buffers (must be specified if a send buffer is\
-            specified)
-        :param buffer_notification_port: The port that the host that will\
-            send new buffers is listening on (must be specified if a send\
-            buffer is specified)
-        :param buffer_notification_tag: The IP tag to use to notify the\
-            host about space in the buffer (default is to use any tag)
         :param reserve_reverse_ip_tag: True if the source should set up a tag\
             through which it can receive packets; if port is set to None this\
             can be used to enable the reception of packets on a randomly\

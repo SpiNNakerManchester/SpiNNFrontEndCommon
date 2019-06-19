@@ -5,6 +5,8 @@ class PacmanProvenanceExtractor(object):
     """ Extracts Provenance data from a :py:class:`PACMANAlgorithmExecutor`
     """
 
+    TOP_NAME = "pacman"
+
     def __init__(self):
         self._data_items = list()
 
@@ -15,8 +17,7 @@ class PacmanProvenanceExtractor(object):
         :rtype: None
         """
         for (algorithm, run_time, exec_names) in executor.algorithm_timings:
-            names = ["pacman"]
-            names.append(exec_names)
+            names = [self.TOP_NAME, exec_names]
             names.extend(["run_time_of_{}".format(algorithm)])
             self._data_items.append(ProvenanceDataItem(names, run_time))
 

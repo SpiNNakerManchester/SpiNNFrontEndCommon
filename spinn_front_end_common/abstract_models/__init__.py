@@ -22,16 +22,20 @@ from .abstract_vertex_with_dependent_vertices import (
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
 from .abstract_uses_memory_io import AbstractUsesMemoryIO
+from .abstract_supports_bit_field_generation import (
+    AbstractSupportsBitFieldGeneration)
+from .abstract_supports_bit_field_routing_compression import (
+    AbstractSupportsBitFieldRoutingCompression)
 
-__all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
-           "AbstractHasAssociatedBinary",
-           "AbstractMachineAllocationController",
-           "AbstractProvidesIncomingPartitionConstraints",
-           "AbstractProvidesKeyToAtomMapping",
-           "AbstractProvidesNKeysForPartition",
-           "AbstractProvidesOutgoingPartitionConstraints",
-           "AbstractRecordable", "AbstractRewritesDataSpecification",
-           "AbstractSendMeMulticastCommandsVertex",
-           "AbstractSupportsDatabaseInjection",
-           "AbstractVertexWithEdgeToDependentVertices",
-           "AbstractUsesMemoryIO"]
+__all__ = [
+    "AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
+    "AbstractHasAssociatedBinary", "AbstractMachineAllocationController",
+    "AbstractProvidesIncomingPartitionConstraints",
+    "AbstractProvidesKeyToAtomMapping", "AbstractProvidesNKeysForPartition",
+    "AbstractProvidesOutgoingPartitionConstraints",
+    "AbstractRecordable", "AbstractRewritesDataSpecification",
+    "AbstractSendMeMulticastCommandsVertex",
+    "AbstractSupportsDatabaseInjection",
+    "AbstractVertexWithEdgeToDependentVertices",
+    "AbstractUsesMemoryIO", "AbstractSupportsBitFieldGeneration",
+    "AbstractSupportsBitFieldRoutingCompression"]

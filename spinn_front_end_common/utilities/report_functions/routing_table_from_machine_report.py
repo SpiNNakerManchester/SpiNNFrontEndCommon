@@ -1,8 +1,10 @@
 import logging
 import os
+
+from pacman.model.routing_tables.compressed_multicast_routing_table import \
+    CompressedMulticastRoutingTable
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.routing_tables import (
-    MulticastRoutingTable, MulticastRoutingTables)
+from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.algorithm_reports import reports
 
 logger = logging.getLogger(__name__)
@@ -14,6 +16,7 @@ class RoutingTableFromMachineReport(object):
     def __call__(
             self, report_default_directory, routing_tables, transceiver,
             app_id):
+
         # pylint: disable=protected-access
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")
@@ -33,8 +36,10 @@ class RoutingTableFromMachineReport(object):
 
         return machine_routing_tables
 
-    def _read_routing_table(self, txrx, table, app_id):
-        machine_routing_table = MulticastRoutingTable(table.x, table.y)
+    @staticmethod
+    def _read_routing_table(txrx, table, app_id):
+        machine_routing_table = \
+            CompressedMulticastRoutingTable(table.x, table.y)
         for routing_entry in txrx.get_multicast_routes(
                 table.x, table.y, app_id):
             machine_routing_table.add_multicast_routing_entry(routing_entry)

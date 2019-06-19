@@ -394,8 +394,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_tokens = None
         self._load_outputs = None
         self._load_tokens = None
-        self._last_run_outputs = None
-        self._last_run_tokens = None
+        self._last_run_outputs = list()
+        self._last_run_tokens = list()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
@@ -1386,6 +1386,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
+        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
+        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
@@ -1405,6 +1407,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Database", "send_stop_notification")
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
+        inputs["UsingReinjection"] = \
+            (self._config.getboolean("Machine", "enable_reinjection") and
+             self._config.getboolean(
+                 "Machine", "enable_advanced_monitor_support"))
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(
@@ -1628,6 +1634,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean("Reports", "write_memory_map_report") and
             application_graph_changed
         )
+        inputs["NoSyncChanges"] = self._no_sync_changes
 
         if not application_graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1638,7 +1645,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board and application_graph_changed:
-            algorithms.append("RoutingSetup")
+
+            # only clear routing tables if we've not loaded them by now
+            found = False
+            for token in self._mapping_tokens:
+                if token.name == "DataLoaded":
+                    if token.part == "MulticastRoutesLoaded":
+                        found = True
+            if not found:
+                algorithms.append("RoutingSetup")
+
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
@@ -1656,8 +1672,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Add reports that depend on compression
         routing_tables_needed = False
         if application_graph_changed:
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
+            if self._config.getboolean(
+                    "Reports", "write_routing_table_reports"):
                 routing_tables_needed = True
                 algorithms.append("unCompressedRoutingTableReports")
                 algorithms.append("compressedRoutingTableReports")
@@ -1666,6 +1682,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_routing_compression_checker_report"):
                 routing_tables_needed = True
                 algorithms.append("routingCompressionCheckerReport")
+            if self._config.getboolean(
+                    "Reports",
+                    "write_routing_table_compression_bit_field_summary"):
+                algorithms.append("BitFieldCompressorReport")
 
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
@@ -1677,6 +1697,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # add optional algorithms
         optional_algorithms = list()
+
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
@@ -1706,6 +1727,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         executor = self._run_algorithms(
             inputs, algorithms, [], tokens, required_tokens, "loading",
             optional_algorithms)
+        self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._load_outputs = executor.get_items()
         self._load_tokens = executor.get_completed_tokens()
 
@@ -2503,7 +2525,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         energy_report = EnergyReport()
 
         # acquire provenance items
-        if self._last_run_outputs is not None:
+        if len(self._last_run_outputs) != 0:
             prov_items = self._last_run_outputs["ProvenanceItems"]
             pacman_provenance = list()
             router_provenance = list()

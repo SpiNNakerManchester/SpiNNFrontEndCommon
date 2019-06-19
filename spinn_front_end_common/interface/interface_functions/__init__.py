@@ -1,9 +1,9 @@
 from .application_finisher import ApplicationFinisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
-from .buffer_manager_creator import BufferManagerCreator
 from .chip_iobuf_clearer import ChipIOBufClearer
 from .chip_iobuf_extractor import ChipIOBufExtractor
+from .buffer_manager_creator import BufferManagerCreator
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
 from .database_interface import DatabaseInterface
@@ -18,6 +18,7 @@ from .graph_measurer import GraphMeasurer
 from .graph_provenance_gatherer import GraphProvenanceGatherer
 from .hbp_allocator import HBPAllocator
 from .hbp_max_machine_generator import HBPMaxMachineGenerator
+from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 from .host_execute_data_specification import HostExecuteDataSpecification
 from .insert_chip_power_monitors_to_graphs import (
     InsertChipPowerMonitorsToGraphs)
@@ -32,9 +33,13 @@ from .insert_live_packet_gatherers_to_graphs import (
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
+from .machine_bit_field_router_compressor import (
+    MachineBitFieldRouterCompressor)
 from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
+from .pre_allocate_for_bit_field_router_compressor import (
+    PreAllocateForBitFieldRouterCompressor)
 from .pre_allocate_resources_for_chip_power_monitor import (
     PreAllocateResourcesForChipPowerMonitor)
 from .pre_allocate_resources_for_live_packet_gatherers import (
@@ -64,15 +69,19 @@ __all__ = [
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
-    "HBPAllocator", "HBPMaxMachineGenerator",
+    "HBPAllocator", "HostBasedBitFieldRouterCompressor",
+    "HBPMaxMachineGenerator",
     "HostExecuteDataSpecification",
     "InsertChipPowerMonitorsToGraphs",
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
-    "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
-    "LocateExecutableStartType", "LoadFixedRoutes", "MachineGenerator",
+    "InsertLivePacketGatherersToGraphs",
+    "LoadExecutableImages", "LocateExecutableStartType",
+    "MachineBitFieldRouterCompressor", "LoadFixedRoutes",
+    "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",
+    "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",

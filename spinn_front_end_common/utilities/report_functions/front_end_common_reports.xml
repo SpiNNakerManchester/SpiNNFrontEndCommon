@@ -2,6 +2,45 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="BitFieldCompressorReport">
+        <python_module>spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</python_module>
+        <python_class>BitFieldCompressorReport</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>report_default_directory</param_name>
+            <param_name>provenance_items</param_name>
+            <param_name>machine_graph</param_name>
+            <param_name>placements</param_name>
+            <token part="MulticastRoutesLoaded">DataLoaded</token>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>BitFieldSummary</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="BoardChipReport">
         <python_module>spinn_front_end_common.utilities.report_functions.board_chip_report</python_module>
         <python_class>BoardChipReport</python_class>
