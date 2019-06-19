@@ -17,6 +17,7 @@ from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
@@ -73,10 +74,14 @@ DEFAULT_N_VIRTUAL_CORES = 16
 # The minimum time a board is kept in the off state in seconds
 MINIMUM_OFF_STATE_TIME = 20
 
+# 0-15 are reserved for system use (per lplana)
+ALANS_DEFAULT_RANDOM_APP_ID = 16
+
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow
     """
+    # pylint: disable=broad-except
 
     __slots__ = [
         # the object that contains a set of file paths, which should encompass
@@ -646,6 +651,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
+    @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
         if self._state in [Simulator_State.IN_RUN,
                            Simulator_State.RUN_FOREVER]:
@@ -1076,6 +1082,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceItems"] = version_provenance
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
+        inputs["DisableAdvancedMonitorUsageForDataIn"] = \
+            self._config.getboolean(
+                "Machine", "disable_advanced_monitor_usage_for_data_in")
 
         if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
@@ -1281,8 +1290,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._graph_mapper = executor.get_item(
                     "MemoryGraphMapper")
 
-        if self._txrx is not None and self._app_id is None:
-            self._app_id = self._txrx.app_id_tracker.get_new_id()
+        if self._app_id is None:
+            if self._txrx is None:
+                self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
+            else:
+                self._app_id = self._txrx.app_id_tracker.get_new_id()
 
         self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
 
@@ -1314,6 +1326,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "reset_machine_on_startup")
         inputs["BootPortNum"] = self._read_config_int(
             "Machine", "boot_connection_port_num")
+        inputs["RepairMachine"] = self._config.getboolean(
+            "Machine", "repair_machine")
 
     def generate_file_machine(self):
         inputs = {
@@ -1389,8 +1403,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Database", "send_start_notification")
         inputs["SendStopNotifications"] = self._config.getboolean(
             "Database", "send_stop_notification")
-        inputs["WriteDataSpeedUpReportFlag"] = self._config.getboolean(
-            "Reports", "write_data_speed_up_report")
+        inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
+            "Reports", "write_data_speed_up_reports")
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(
@@ -1433,6 +1447,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("DataInMulticastRoutingGenerator")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
@@ -1665,7 +1680,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
-        optional_algorithms.append("HostExecuteDataSpecification")
+        optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
@@ -1676,7 +1691,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("GraphBinaryGatherer")
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
-        optional_algorithms.append("LoadExecutableImages")
+        optional_algorithms.append("LoadApplicationExecutableImages")
+        algorithms.append("HostExecuteSystemDataSpecification")
+        algorithms.append("LoadSystemExecutableImages")
 
         # Something probably a report needs the routing tables
         # This report is one way to get them if done on machine
@@ -2364,8 +2381,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None):
+    @overrides(SimulatorInterface.stop,
+               extend_defaults=True, additional_arguments=(
+                   "turn_off_machine", "clear_routing_tables", "clear_tags"))
+    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
+             clear_routing_tables=None, clear_tags=None):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -2522,6 +2542,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             executable_finder=self._executable_finder,
             provenance_file_path=self._provenance_file_path)
 
+    @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
         """
         :param socket_address:

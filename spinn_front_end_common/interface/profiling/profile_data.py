@@ -1,5 +1,6 @@
 import logging
 import numpy
+import math
 import scipy.stats
 from spinn_utilities.log import FormatAdapter
 
@@ -163,8 +164,10 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        bins = numpy.arange(
-            0, self._max_time + machine_time_step_ms, machine_time_step_ms)
+        n_points = math.ceil(
+            self._max_time / machine_time_step_ms)
+        endpoint = n_points * machine_time_step_ms
+        bins = numpy.linspace(0, endpoint, n_points + 1)
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
@@ -181,8 +184,10 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        bins = numpy.arange(
-            0, self._max_time + machine_time_step_ms, machine_time_step_ms)
+        n_points = math.ceil(
+            self._max_time / machine_time_step_ms)
+        endpoint = n_points * machine_time_step_ms
+        bins = numpy.linspace(0, endpoint, n_points + 1)
         mean_per_ts = scipy.stats.binned_statistic(
             self._tags[tag][_START_TIME], self._tags[tag][_DURATION],
             "mean", bins).statistic

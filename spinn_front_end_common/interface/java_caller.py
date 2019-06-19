@@ -1,11 +1,17 @@
 from collections import defaultdict, OrderedDict
 import json
+import logging
 import os
 import subprocess
+from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.utilities.file_format_converters.convert_to_java_machine import (
     ConvertToJavaMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class JavaCaller(object):
@@ -203,9 +209,6 @@ class JavaCaller(object):
     def _json_placement(self, placement, transceiver):
 
         vertex = placement.vertex
-        if len(vertex.get_recorded_region_ids()) == 0:
-            return None
-        self._recording = True
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
@@ -213,10 +216,16 @@ class JavaCaller(object):
 
         json_vertex = OrderedDict()
         json_vertex["label"] = vertex.label
-        json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
-        json_vertex["recordingRegionBaseAddress"] = \
-            vertex.get_recording_region_base_address(
-                transceiver, placement)
+        if isinstance(vertex, AbstractReceiveBuffersToHost) and \
+                vertex.get_recorded_region_ids():
+            self._recording = True
+            json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
+            json_vertex["recordingRegionBaseAddress"] = \
+                vertex.get_recording_region_base_address(
+                    transceiver, placement)
+        else:
+            json_vertex["recordedRegionIds"] = []
+            json_vertex["recordingRegionBaseAddress"] = 0
         json_placement["vertex"] = json_vertex
 
         return json_placement
@@ -295,9 +304,12 @@ class JavaCaller(object):
 
     @property
     def _jar_file(self):
-        return os.path.join(
+        f = os.path.join(
             self._java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
+        if not os.path.exists(f):
+            logger.warn("no Java build in file {}; failure expected", f)
+        return f
 
     def _run_java(self, *args):
         if self._java_properties is None:
@@ -329,11 +341,36 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def host_execute_data_specification(self):
+    def execute_data_specification(self):
         """ Writes all the data specs, uploading the result to the machine.
         """
         result = self._run_java(
             'dse', self._machine_json(), self._report_folder)
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def execute_system_data_specification(self):
+        """ Writes all the data specs, uploading the result to the machine.
+        """
+        result = self._run_java(
+            'dse_sys', self._machine_json(), self._report_folder)
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def execute_app_data_specification(self, use_monitors):
+        if use_monitors:
+            result = self._run_java(
+                'dse_app_mon', self._placement_json, self._machine_json(),
+                self._report_folder, self._report_folder)
+        else:
+            result = self._run_java(
+                'dse_app', self._machine_json(), self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(

@@ -59,22 +59,18 @@ SDP_RUNNING_MESSAGE_CODES = Enum(
 SDP_PORTS = Enum(
     value="SDP_PORTS",
     names=[
-
         # command port for the buffered in functionality
         ("INPUT_BUFFERING_SDP_PORT", 1),
-
         # command port for the buffered out functionality
         ("OUTPUT_BUFFERING_SDP_PORT", 2),
-
         # command port for resetting runtime etc
         ("RUNNING_COMMAND_SDP_PORT", 3),
-
-        # extra monitor core re injection functionality
+        # extra monitor core reinjection functionality
         ("EXTRA_MONITOR_CORE_REINJECTION", 4),
-
         # extra monitor core data transfer functionality
-        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5)]
-)
+        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5),
+        # extra monitor core data in speed up functionality
+        ("EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP", 6)])
 
 # output buffering operations
 # a listing of what SpiNNaker specific EIEIO commands there are.

@@ -15,7 +15,6 @@ class BufferManagerCreator(object):
             packet_gather_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None, java_caller=None):
         """
-
         :param placements:
         :param tags:
         :param txrx:
@@ -25,8 +24,8 @@ class BufferManagerCreator(object):
         :param packet_gather_cores_to_ethernet_connection_map:
         :param machine:
         :param fixed_routes:
-        :param report_folder: The path where
-            the SQLite database holding the data will be placed,
+        :param report_folder: The path where \
+            the SQLite database holding the data will be placed, \
             and where any java provenance can be written.
         :type report_folder: str
         :return:
