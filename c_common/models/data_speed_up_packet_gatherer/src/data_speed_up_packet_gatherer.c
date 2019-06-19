@@ -383,6 +383,15 @@ static inline uint n_elements_in_msg(
     return (msg->length - offset) / sizeof(uint);
 }
 
+//! \brief because spin1_memcpy is stupid, especially for access to SDRAM
+static inline void copy_data(void *target, const void *source, uint n_words) {
+    uint *to = target;
+    const uint *from = source;
+    while (n_words-- > 0) {
+        *to++ = *from++;
+    }
+}
+
 static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
     const receive_data_to_location_msg_t *receive_data_cmd =
             (receive_data_to_location_msg_t *) msg->data;
@@ -408,8 +417,7 @@ static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
-        spin1_memcpy(receive_data_cmd->address, receive_data_cmd->data,
-                n_elements * sizeof(uint));
+        copy_data(receive_data_cmd->address, receive_data_cmd->data, n_elements);
     } else {
         // send start key, so that monitor knows everything in the previous stream is done
         send_mc_message(BOUNDARY_KEY_OFFSET, 0);
@@ -442,8 +450,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
-        spin1_memcpy((address_t) this_sdram_address, receive_data_cmd->data,
-                n_elements * sizeof(uint));
+        copy_data((address_t) this_sdram_address, receive_data_cmd->data, n_elements);
     } else {
         // transmit data to chip; the data lasts to the end of the message
         process_sdp_message_into_mc_messages(
@@ -488,7 +495,7 @@ static void data_in_receive_sdp_data(uint mailbox, uint port) {
 }
 
 static void send_data(void) {
-    spin1_memcpy(&my_msg.data, data, position_in_store * sizeof(uint));
+    copy_data(&my_msg.data, data, position_in_store);
     my_msg.length = sizeof(sdp_hdr_t) + position_in_store * sizeof(uint);
 
     if (seq_num > max_seq_num) {
