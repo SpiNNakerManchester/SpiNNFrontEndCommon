@@ -7,6 +7,8 @@ from .chip_iobuf_extractor import ChipIOBufExtractor
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
 from .database_interface import DatabaseInterface
+from .data_in_multicast_routing_generator import (
+    DataInMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .graph_binary_gatherer import GraphBinaryGatherer
@@ -58,6 +60,7 @@ __all__ = [
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
     "ChipRuntimeUpdater", "DatabaseInterface",
+    "DataInMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
@@ -67,9 +70,8 @@ __all__ = [
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
-    "InsertLivePacketGatherersToGraphs",
-    "LoadExecutableImages", "LocateExecutableStartType",
-    "LoadFixedRoutes", "MachineGenerator",
+    "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
+    "LocateExecutableStartType", "LoadFixedRoutes", "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
@@ -79,5 +81,4 @@ __all__ = [
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder",
-    "VirtualMachineGenerator"]
+    "TDMAAgendaBuilder", "VirtualMachineGenerator"]

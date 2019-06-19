@@ -97,6 +97,7 @@
         <required_inputs>
             <param_name>report_default_directory</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
+            <token>DataLoaded</token>
         </required_inputs>
     </algorithm>
     <algorithm name="MemoryMapOnHostChipReport">

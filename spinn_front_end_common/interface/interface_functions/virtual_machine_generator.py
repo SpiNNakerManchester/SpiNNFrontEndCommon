@@ -54,7 +54,7 @@ class VirtualMachineGenerator(object):
             machine = json_machine(json_path)
 
         # Work out and add the SpiNNaker links and FPGA links
-        machine.add_spinnaker_links(version)
-        machine.add_fpga_links(version)
+        machine.add_spinnaker_links()
+        machine.add_fpga_links()
 
         return machine
