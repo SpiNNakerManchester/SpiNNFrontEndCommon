@@ -118,7 +118,7 @@ class ProfileData(object):
                 # Add entry times and durations to dictionary
                 self._tags[tag_label] = (tag_entry_times, tag_durations)
             except:
-                print ""
+                print("")
 
             # Keep track of the maximum time
             self._max_time = numpy.max(tag_entry_times + tag_durations)
@@ -218,6 +218,6 @@ class ProfileData(object):
             else:
                 profiles = self._tags[tag][_DURATION]
         except:
-            print "No profile tags match" + tag
+            print ("No profile tags match{}".format(tag))
             profiles = []
         return profiles
