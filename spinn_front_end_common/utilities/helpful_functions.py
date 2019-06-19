@@ -288,7 +288,8 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 def _emergency_state_check(txrx, app_id):
     try:
-        rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+        rte_count = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
             logger.warning(
