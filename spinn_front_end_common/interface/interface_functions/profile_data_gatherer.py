@@ -3,11 +3,14 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 import numpy as np
-from spinnak_ear.IHCAN_vertex import IHCANVertex
-from spinnak_ear.OME_vertex import OMEVertex
-from spinnak_ear.DRNL_vertex import DRNLVertex
-from spinnak_ear.AN_group_vertex import ANGroupVertex
-
+from spinnak_ear.spinnak_ear_machine_vertices.ihcan_machine_vertex import \
+    IHCANMachineVertex
+from spinnak_ear.spinnak_ear_machine_vertices.ome_machine_vertex import \
+    OMEMachineVertex
+from spinnak_ear.spinnak_ear_machine_vertices.drnl_machine_vertex import \
+    DRNLMachineVertex
+from spinnak_ear.spinnak_ear_machine_vertices.an_group_machine_vertex import \
+    ANGroupMachineVertex
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +37,15 @@ class ProfileDataGatherer(object):
 
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
-            if isinstance(placement.vertex, AbstractHasProfileData) and not isinstance(placement.vertex,OMEVertex)\
-                    and not isinstance(placement.vertex,DRNLVertex) and not isinstance(placement.vertex,IHCANVertex) \
-                    and not isinstance(placement.vertex,ANGroupVertex):
+            if isinstance(placement.vertex, AbstractHasProfileData) and not \
+                    isinstance(
+                        placement.vertex, OMEMachineVertex)\
+                    and not isinstance(
+                        placement.vertex, DRNLMachineVertex) \
+                    and not isinstance(
+                        placement.vertex, IHCANMachineVertex) \
+                    and not isinstance(
+                        placement.vertex, ANGroupMachineVertex):
                 # get data
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
@@ -49,15 +58,19 @@ class ProfileDataGatherer(object):
         max_tag_len = max([len(tag) for tag in profile_data.tags])
 
         spike_profile = profile_data.get_complete_profile('INCOMING_SPIKE')
-        nonzero_rows_profile = profile_data.get_complete_profile('PROCESS_FIXED_SYNAPSES')
+        nonzero_rows_profile = \
+            profile_data.get_complete_profile('PROCESS_FIXED_SYNAPSES')
         timer_profile = profile_data.get_complete_profile('TIMER')
         spike_pro_overhead = np.asarray(
-            [sum(spike_profile[start_index:nonzero_rows_profile[1][i] + 1]) for i, start_index in
+            [sum(spike_profile[start_index:nonzero_rows_profile[1][i] + 1])
+             for i, start_index in
              enumerate(nonzero_rows_profile[0])])
 
         timer_profile_minus_spike= np.subtract(timer_profile,spike_pro_overhead)
-        np.savez_compressed(directory+'/{}_{}_{}_profile'.format(p.x, p.y, p.p),
-                            spike_profile=spike_profile,timer_profile=timer_profile_minus_spike)
+        np.savez_compressed(
+            directory+'/{}_{}_{}_profile'.format(p.x, p.y, p.p),
+            spike_profile=spike_profile,
+            timer_profile=timer_profile_minus_spike)
 
         # # write data
         # file_name = os.path.join(

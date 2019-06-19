@@ -1,3 +1,5 @@
+from pacman.model.partitioner_interfaces.splitter_by_atoms import \
+    SplitterByAtoms
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
@@ -10,7 +12,7 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 class CommandSender(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary,
+        AbstractHasAssociatedBinary, SplitterByAtoms,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
@@ -33,13 +35,13 @@ class CommandSender(
         # pylint: disable=too-many-arguments, arguments-differ
         self._machine_vertex.generate_data_specification(spec, placement)
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(SplitterByAtoms.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return self._machine_vertex
 
-    @overrides(ApplicationVertex.get_resources_used_by_atoms)
+    @overrides(SplitterByAtoms.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return self._machine_vertex.resources_required
 

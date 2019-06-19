@@ -1,3 +1,5 @@
+from pacman.model.partitioner_interfaces.splitter_by_atoms import \
+    SplitterByAtoms
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.graphs.application import ApplicationVertex
@@ -13,7 +15,7 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 class LivePacketGather(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary):
+        AbstractHasAssociatedBinary, SplitterByAtoms):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a SpiNNaker machine.
@@ -76,7 +78,7 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(SplitterByAtoms.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
@@ -103,7 +105,7 @@ class LivePacketGather(
     def n_atoms(self):
         return 1
 
-    @overrides(ApplicationVertex.get_resources_used_by_atoms)
+    @overrides(SplitterByAtoms.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
             sdram=ConstantSDRAM(

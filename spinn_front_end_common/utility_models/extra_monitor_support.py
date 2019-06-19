@@ -1,3 +1,5 @@
+from pacman.model.partitioner_interfaces.splitter_by_atoms import \
+    SplitterByAtoms
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
@@ -8,14 +10,14 @@ from .extra_monitor_support_machine_vertex import (
 
 class ExtraMonitorSupport(
         ApplicationVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification):
+        AbstractGeneratesDataSpecification, SplitterByAtoms):
     __slots__ = []
 
     def __init__(self, constraints):
         super(ExtraMonitorSupport, self).__init__(
             label="ExtraMonitorSupport", constraints=constraints)
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(SplitterByAtoms.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
         return ExtraMonitorSupportMachineVertex(constraints=constraints)
@@ -33,7 +35,7 @@ class ExtraMonitorSupport(
     def get_binary_file_name(self):
         return ExtraMonitorSupportMachineVertex.static_get_binary_file_name()
 
-    @overrides(ApplicationVertex.get_resources_used_by_atoms)
+    @overrides(SplitterByAtoms.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return ExtraMonitorSupportMachineVertex.static_resources_required()
 

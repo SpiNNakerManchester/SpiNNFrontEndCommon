@@ -1,3 +1,5 @@
+from pacman.model.partitioner_interfaces.splitter_by_atoms import \
+    SplitterByAtoms
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
@@ -8,7 +10,7 @@ from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 class ChipPowerMonitor(
         ApplicationVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification):
+        AbstractGeneratesDataSpecification, SplitterByAtoms):
     """ Represents idle time recording code in a application graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
@@ -34,7 +36,7 @@ class ChipPowerMonitor(
     def n_atoms(self):
         return 1
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(SplitterByAtoms.create_machine_vertex)
     def create_machine_vertex(
             self,
             vertex_slice, resources_required,  # @UnusedVariable
@@ -72,7 +74,7 @@ class ChipPowerMonitor(
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
-    @overrides(ApplicationVertex.get_resources_used_by_atoms,
+    @overrides(SplitterByAtoms.get_resources_used_by_atoms,
                additional_arguments={"machine_time_step", "time_scale_factor"})
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
