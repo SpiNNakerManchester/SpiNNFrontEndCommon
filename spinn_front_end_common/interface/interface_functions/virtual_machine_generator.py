@@ -2,9 +2,7 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import json_machine, virtual_machine, Machine, Router
 
-
 logger = FormatAdapter(logging.getLogger(__name__))
-from spinn_machine import virtual_machine, Machine, Router
 
 
 class VirtualMachineGenerator(object):
@@ -35,7 +33,7 @@ class VirtualMachineGenerator(object):
         """
 
         if json_path is None:
-           # pylint: disable=too-many-arguments
+            # pylint: disable=too-many-arguments
             machine = virtual_machine(
                 width=width, height=height,
                 with_wrap_arounds=virtual_has_wrap_arounds,
