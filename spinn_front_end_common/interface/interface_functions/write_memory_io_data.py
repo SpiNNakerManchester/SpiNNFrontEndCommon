@@ -92,6 +92,8 @@ class WriteMemoryIOData(object):
             for placement in progress.over(placements.placements):
                 app_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
+                if not isinstance(app_vertex, AbstractUsesMemoryIO):
+                    continue
                 # select the mode of writing and therefore buffer size
                 write_memory_function, _buf_size = self.__get_write_function(
                     placement.x, placement.y)
@@ -100,6 +102,8 @@ class WriteMemoryIOData(object):
                     processor_to_app_data_base_address, write_memory_function)
         elif isinstance(graph, MachineGraph):
             for placement in progress.over(placements.placements):
+                if not isinstance(placement.vertex, AbstractUsesMemoryIO):
+                    continue
                 # select the mode of writing and therefore buffer size
                 write_memory_function, _buf_size = self.__get_write_function(
                     placement.x, placement.y)
@@ -174,6 +178,7 @@ class WriteMemoryIOData(object):
         :param placement: The placement of the machine vertex
         :param vertex:\
             The vertex to write data for (might be an application vertex)
+        :type vertex: :py:class:`AbstractUsesMemoryIO`
         :param app_id: The ID of the application
         :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address
@@ -181,26 +186,24 @@ class WriteMemoryIOData(object):
             the function used to write data to spinnaker
         """
         # pylint: disable=too-many-arguments
-        if isinstance(vertex, AbstractUsesMemoryIO):
-            size = vertex.get_memory_io_data_size()
-            if self._txrx is not None:
-                tag = self.__remote_get_next_tag(self._txrx, placement)
-                start_address = self._txrx.malloc_sdram(
-                    placement.x, placement.y, size, app_id, tag)
-                end_address = start_address + size
-                delegate = _TranscieverDelegate(
-                    self._txrx, write_memory_function)
-                with MemoryIO(
-                        delegate, placement.x, placement.y,
-                        start_address, end_address) as io:
-                    vertex.write_data_to_memory_io(io, tag)
-            else:
-                tag = self.__local_get_next_tag(placement)
-                start_address = 0
-                filename = os.path.join(
-                    self._data_folder, "{}_data_{}_{}_{}_{}.dat".format(
-                        hostname, placement.x, placement.y, placement.p, tag))
-                with FileIO(filename, 0, size) as io:
-                    vertex.write_data_to_memory_io(io, tag)
-            base_address_map[placement.x, placement.y, placement.p] = \
-                DataWritten(start_address, size, size)
+        size = vertex.get_memory_io_data_size()
+        if self._txrx is not None:
+            tag = self.__remote_get_next_tag(self._txrx, placement)
+            start_address = self._txrx.malloc_sdram(
+                placement.x, placement.y, size, app_id, tag)
+            end_address = start_address + size
+            delegate = _TranscieverDelegate(self._txrx, write_memory_function)
+            with MemoryIO(
+                    delegate, placement.x, placement.y,
+                    start_address, end_address) as io:
+                vertex.write_data_to_memory_io(io, tag)
+        else:
+            tag = self.__local_get_next_tag(placement)
+            start_address = 0
+            filename = os.path.join(
+                self._data_folder, "{}_data_{}_{}_{}_{}.dat".format(
+                    hostname, placement.x, placement.y, placement.p, tag))
+            with FileIO(filename, 0, size) as io:
+                vertex.write_data_to_memory_io(io, tag)
+        base_address_map[placement.x, placement.y, placement.p] = \
+            DataWritten(start_address, size, size)
