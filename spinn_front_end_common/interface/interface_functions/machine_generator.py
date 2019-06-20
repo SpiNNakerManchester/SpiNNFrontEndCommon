@@ -6,7 +6,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class MachineGenerator(object):
-    """ Interface to make a transceiver and a spinn_machine object
+    """ Makes a transceiver and a :py:class:`~spinn_machine.Machine` object.
     """
 
     __slots__ = []
@@ -28,7 +28,7 @@ class MachineGenerator(object):
         :param auto_detect_bmp: \
             Whether the BMP should be automatically determined
         :type auto_detect_bmp: bool
-        :param boot_port_num: the port num used for the boot connection
+        :param boot_port_num: the port number used for the boot connection
         :type boot_port_num: int
         :param scamp_connection_data: \
             the list of SC&MP connection data or None
@@ -38,16 +38,18 @@ class MachineGenerator(object):
         :type reset_machine_on_start_up: bool
         :param repair_machine: Flag to set the behaviour if a repairable error
             is found on the machine.
-            If true will create a machine without the problamatic bits.
+            If true will create a machine without the problematic bits.
             (See machine_factory.machine_repair)
-            If False get machine will raise an Exception if a problamatic
+            If False get machine will raise an Exception if a problematic
             machine is discovered.
         :type repair_machine: bool
         :return: Connection details and Transceiver
+        :rtype: tuple(:py:class:`~spinnman.Transceiver`,\
+            :py:class:`~spinn_machine.Machine`)
         """
         # pylint: disable=too-many-arguments
 
-        # if the end user gives you scamp data, use it and don't discover them
+        # if the end user gives you SCAMP data, use it and don't discover them
         if scamp_connection_data is not None:
             scamp_connection_data = [
                 self._parse_scamp_connection(piece)
@@ -123,7 +125,7 @@ class MachineGenerator(object):
 
     def _parse_bmp_connection(self, bmp_detail):
         """ Parses one item of BMP connection data. Maximal format:\
-            cabinet;frame;host,port/boards
+            `cabinet;frame;host,port/boards`
             All parts except host can be omitted. Boards can be a \
             hyphen-separated range or a comma-separated list."""
         pieces = bmp_detail.split("/")
