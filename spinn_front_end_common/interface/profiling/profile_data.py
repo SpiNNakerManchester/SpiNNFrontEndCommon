@@ -109,8 +109,8 @@ class ProfileData(object):
             tag_entry_times = tag_entry_times[
                 :len(tag_exit_times) - len(tag_entry_times)]
 
-        if tag ==3:
-             self._tags[tag_label] = (tag_entry_times,tag_exit_times)
+        if tag == 3:
+            self._tags[tag_label] = (tag_entry_times, tag_exit_times)
         else:
             # Subtract entry times from exit times to get durations of each
             # call in ms
@@ -205,7 +205,7 @@ class ProfileData(object):
         """
         return numpy.std(self._tags[tag][_DURATION])
 
-    def get_se(self,tag):
+    def get_se(self, tag):
         """ Get the standard error in milliseconds of measurements with the\
             given tag
 
