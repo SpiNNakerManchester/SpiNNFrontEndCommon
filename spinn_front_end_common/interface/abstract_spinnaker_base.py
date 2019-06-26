@@ -322,7 +322,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Version information from the front end
         "_front_end_versions",
 
-        "_last_except_hook"
+        "_last_except_hook",
+
+        "_vertices_or_edges_added"
     ]
 
     def __init__(
@@ -467,6 +469,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._front_end_versions = front_end_versions
 
         self._last_except_hook = sys.excepthook
+        self._vertices_or_edges_added = False
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -2088,6 +2091,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _detect_if_graph_has_changed(self, reset_flags=True):
         """ Iterates though the original graphs and look for changes
         """
+        if self._vertices_or_edges_added:
+            self._vertices_or_edges_added = False
+            return True
         changed = False
 
         # if application graph is filled, check their changes
@@ -2272,6 +2278,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_application_graph.add_vertex(vertex_to_add)
+        self._vertices_or_edges_added = True
 
     def add_machine_vertex(self, vertex):
         """
@@ -2285,6 +2292,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_machine_graph.add_vertex(vertex)
+        self._vertices_or_edges_added = True
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -2296,6 +2304,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
+        self._vertices_or_edges_added = True
 
     def add_machine_edge(self, edge, partition_id):
         """
@@ -2305,6 +2314,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: None
         """
         self._original_machine_graph.add_edge(edge, partition_id)
+        self._vertices_or_edges_added = True
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
