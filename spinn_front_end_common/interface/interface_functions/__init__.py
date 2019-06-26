@@ -58,6 +58,7 @@ from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
 from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
+from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 
 __all__ = [
     "ApplicationFinisher",
@@ -90,4 +91,5 @@ __all__ = [
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder", "VirtualMachineGenerator"]
+    "TDMAAgendaBuilder", "VirtualMachineGenerator",
+    "SDRAMOutgoingPartitionAllocator"]
