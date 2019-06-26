@@ -144,14 +144,17 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             break;
 
         case CMD_RUNTIME:
-            log_info("Setting the runtime of this model to %d", msg->arg1);
+            log_info("Setting the runtime of this model to %d starting at %d",
+                    msg->arg1, msg->arg3);
             log_info("Setting the flag of infinite run for this model to %d",
                      msg->arg2);
 
             // resetting the simulation time pointer
             *pointer_to_simulation_time = msg->arg1;
             *pointer_to_infinite_run = msg->arg2;
-            *pointer_to_current_time = msg->arg3;
+            // We start at time - 1 because the first thing models do is
+            // increment a time counter
+            *pointer_to_current_time = (msg->arg3 - 1);
 
             if (stored_resume_function != NULL) {
                 log_info("Calling pre-resume function");
