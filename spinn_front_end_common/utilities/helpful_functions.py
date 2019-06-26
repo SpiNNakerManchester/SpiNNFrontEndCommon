@@ -288,13 +288,17 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 
 def _emergency_state_check(txrx, app_id):
-    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-    if rte_count or watchdog_count:
-        logger.warning(
-            "unexpected core states (rte={}, wdog={})",
-            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    try:
+        rte_count = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        if rte_count or watchdog_count:
+            logger.warning(
+                "unexpected core states (rte={}, wdog={})",
+                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    except Exception:  # pylint: disable=broad-except
+        logger.warning("failed to read core states", exc_info=True)
 
 
 # TRICKY POINT: Have to delay the import to here because of import circularity
