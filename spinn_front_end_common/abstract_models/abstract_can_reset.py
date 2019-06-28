@@ -9,6 +9,6 @@ class AbstractCanReset(object):
     """
 
     @abstractmethod
-    def reset(self):
-        """ Reset the object
+    def reset_to_first_timestep(self):
+        """ Reset the object to first time step
         """

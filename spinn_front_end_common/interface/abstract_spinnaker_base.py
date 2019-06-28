@@ -38,7 +38,7 @@ from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
-    AbstractCanReset)
+    AbstractCanReset, AbstractCanResetOnMachine)
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -747,9 +747,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         graph_changed = self._detect_if_graph_has_changed(True)
-
-        if (graph_changed and self._has_ran and
-                not self._has_reset_last):
+        if graph_changed and self._has_ran and not self._has_reset_last:
             self.stop()
             raise NotImplementedError(
                 "The network cannot be changed between runs without"
@@ -766,6 +764,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # create new sub-folder for reporting data
             self._set_up_output_folders(self._n_calls_to_run)
+
+        elif self._has_reset_last and self._txrx is not None:
+            # Do a reset on the machine now we know binaries are still running
+            self.__reset_graph_elements(self._txrx)
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
@@ -2050,25 +2052,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
 
-        # Reset any object that can reset
-        if self._original_application_graph.n_vertices:
-            for vertex in self._original_application_graph.vertices:
-                if isinstance(vertex, AbstractCanReset):
-                    vertex.reset()
-            for partition in \
-                    self._original_application_graph.outgoing_edge_partitions:
-                for edge in partition.edges:
-                    if isinstance(edge, AbstractCanReset):
-                        edge.reset()
-        elif self._original_machine_graph.n_vertices:
-            for machine_vertex in self._original_machine_graph.vertices:
-                if isinstance(machine_vertex, AbstractCanReset):
-                    machine_vertex.reset()
-            for partition in \
-                    self._original_machine_graph.outgoing_edge_partitions:
-                for machine_edge in partition.edges:
-                    if isinstance(machine_edge, AbstractCanReset):
-                        machine_edge.reset()
+        # Reset the graph off the machine, to set things to time 0
+        self.__reset_graph_elements()
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
         # add the extra xml files from the config file
@@ -2683,3 +2668,26 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         with self._state_condition:
             self._state = Simulator_State.STOP_REQUESTED
             self._state_condition.notify_all()
+
+    @staticmethod
+    def __reset_object(obj, txrx):
+        # Reset an object depending on the given parameters
+        if txrx is None and isinstance(obj, AbstractCanReset):
+            obj.reset_to_first_timestep()
+        elif txrx is not None and isinstance(obj, AbstractCanResetOnMachine):
+            obj.reset_on_machine(txrx)
+
+    def __reset_graph_elements(self, txrx=None):
+        # Reset any object that can reset
+        if self._original_application_graph.n_vertices:
+            for vertex in self._original_application_graph.vertices:
+                self.__reset_object(vertex, txrx)
+            for p in self._original_application_graph.outgoing_edge_partitions:
+                for edge in p.edges:
+                    self.__reset_object(edge, txrx)
+        elif self._original_machine_graph.n_vertices:
+            for machine_vertex in self._original_machine_graph.vertices:
+                self.__reset_object(machine_vertex, txrx)
+            for p in self._original_machine_graph.outgoing_edge_partitions:
+                for machine_edge in p.edges:
+                    self.__reset_object(machine_edge, txrx)
