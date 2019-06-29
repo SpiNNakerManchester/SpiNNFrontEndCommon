@@ -871,7 +871,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             while self._state != Simulator_State.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
                 self._do_run(
-                    self._max_run_time_steps, graph_changed, run_until_complete)
+                    self._max_run_time_steps, graph_changed,
+                    run_until_complete)
                 i += 1
 
         # Indicate that the signal handler needs to act
@@ -1815,7 +1816,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("SdramUsageReportPperChip")
 
         # clear iobuf if were in multirun mode
-        if (self._has_ran and not self._has_reset_last and
+        if (self._has_ran and not graph_changed and
                 not self._use_virtual_board and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
