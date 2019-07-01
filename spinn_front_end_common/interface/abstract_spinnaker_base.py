@@ -712,7 +712,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in self._executable_types)
-            if can_keep_running:
+            if not can_keep_running:
                 raise NotImplementedError(
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
@@ -1607,7 +1607,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
 
-    def _do_load(self, application_graph_changed):
+    def _do_load(self, graph_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1619,10 +1619,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         tokens = list(self._mapping_tokens)
         inputs["WriteMemoryMapReportFlag"] = (
             self._config.getboolean("Reports", "write_memory_map_report") and
-            application_graph_changed
+            graph_changed
         )
 
-        if not application_graph_changed and self._has_ran:
+        if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
 
@@ -1630,25 +1630,25 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board and application_graph_changed:
+        if not self._use_virtual_board and graph_changed:
             algorithms.append("RoutingSetup")
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
         loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and application_graph_changed:
+        if loading_algorithm is not None and graph_changed:
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
             "Reports", "write_memory_map_report")
-        if write_memory_report and application_graph_changed:
+        if write_memory_report and graph_changed:
             algorithms.append("MemoryMapOnHostReport")
             algorithms.append("MemoryMapOnHostChipReport")
 
         # Add reports that depend on compression
         routing_tables_needed = False
-        if application_graph_changed:
+        if graph_changed:
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
                 routing_tables_needed = True
@@ -1663,8 +1663,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
-        if (enable_advanced_monitor and
-                (application_graph_changed or not self._has_ran)):
+        if (enable_advanced_monitor and (graph_changed or not self._has_ran)):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
@@ -2070,11 +2069,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _detect_if_graph_has_changed(self, reset_flags=True):
         """ Iterates though the original graphs and look for changes
         """
-        if self._vertices_or_edges_added:
-            self._vertices_or_edges_added = False
-            return True
         changed = False
         data_changed = False
+        if self._vertices_or_edges_added:
+            self._vertices_or_edges_added = False
+            # Set changed - note that we can't return yet as we still have to
+            # mark vertices as not changed, otherwise they will keep reporting
+            # that they have changed when they haven't
+            changed = True
 
         # if application graph is filled, check their changes
         if self._original_application_graph.n_vertices:
