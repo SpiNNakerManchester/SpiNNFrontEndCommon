@@ -38,7 +38,7 @@ from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
-    AbstractCanReset, AbstractCanResetOnMachine)
+    AbstractCanReset)
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -746,7 +746,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
-        graph_changed = self._detect_if_graph_has_changed(True)
+        graph_changed, data_changed = self._detect_if_graph_has_changed(True)
         if graph_changed and self._has_ran and not self._has_reset_last:
             self.stop()
             raise NotImplementedError(
@@ -755,7 +755,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # If we have reset and the graph has changed, stop any running
         # application
-        if graph_changed and self._has_ran:
+        if (graph_changed or data_changed) and self._has_ran:
             if self._txrx is not None:
                 self._txrx.stop_application(self._app_id)
             # change number of resets as loading the binary again resets the
@@ -764,10 +764,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # create new sub-folder for reporting data
             self._set_up_output_folders(self._n_calls_to_run)
-
-        elif self._has_reset_last and self._txrx is not None:
-            # Do a reset on the machine now we know binaries are still running
-            self.__reset_graph_elements(self._txrx)
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
@@ -836,9 +832,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             steps = self._generate_steps(
                 n_machine_time_steps, self._max_run_time_steps)
 
-        # If we have never run before, or the graph has changed, or a reset
-        # has been requested, load the data
-        if not self._has_ran or graph_changed:
+        # If we have never run before, or the graph has changed, or data has
+        # been changed, generate and load the data
+        if not self._has_ran or graph_changed or data_changed:
             self._do_data_generation(self._max_run_time_steps)
 
             # If we are using a virtual board, don't load
@@ -2078,6 +2074,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._vertices_or_edges_added = False
             return True
         changed = False
+        data_changed = False
 
         # if application graph is filled, check their changes
         if self._original_application_graph.n_vertices:
@@ -2085,6 +2082,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
+                    if vertex.requires_data_generation:
+                        data_changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
             for partition in \
@@ -2093,6 +2092,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
                             changed = True
+                        if edge.requires_data_generation:
+                            data_changed = True
                         if reset_flags:
                             edge.mark_no_changes()
 
@@ -2102,6 +2103,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
+                    if machine_vertex.requires_data_generation:
+                        data_changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
             for partition in \
@@ -2110,9 +2113,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:
                             changed = True
+                        if machine_edge.requires_data_generation:
+                            data_changed = True
                         if reset_flags:
                             machine_edge.mark_no_changes()
-        return changed
+        return changed, data_changed
 
     @property
     def has_ran(self):
@@ -2671,24 +2676,22 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._state_condition.notify_all()
 
     @staticmethod
-    def __reset_object(obj, txrx):
-        # Reset an object depending on the given parameters
-        if txrx is None and isinstance(obj, AbstractCanReset):
+    def __reset_object(obj):
+        # Reset an object if appropriate
+        if isinstance(obj, AbstractCanReset):
             obj.reset_to_first_timestep()
-        elif txrx is not None and isinstance(obj, AbstractCanResetOnMachine):
-            obj.reset_on_machine(txrx)
 
-    def __reset_graph_elements(self, txrx=None):
+    def __reset_graph_elements(self):
         # Reset any object that can reset
         if self._original_application_graph.n_vertices:
             for vertex in self._original_application_graph.vertices:
-                self.__reset_object(vertex, txrx)
+                self.__reset_object(vertex)
             for p in self._original_application_graph.outgoing_edge_partitions:
                 for edge in p.edges:
-                    self.__reset_object(edge, txrx)
+                    self.__reset_object(edge)
         elif self._original_machine_graph.n_vertices:
             for machine_vertex in self._original_machine_graph.vertices:
-                self.__reset_object(machine_vertex, txrx)
+                self.__reset_object(machine_vertex)
             for p in self._original_machine_graph.outgoing_edge_partitions:
                 for machine_edge in p.edges:
-                    self.__reset_object(machine_edge, txrx)
+                    self.__reset_object(machine_edge)
