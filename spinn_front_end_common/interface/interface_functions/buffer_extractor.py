@@ -15,6 +15,8 @@ class BufferExtractor(object):
         # Count the regions to be read
         n_regions_to_read, recording_placements = self._count_regions(
             machine_graph, placements)
+        if not n_regions_to_read:
+            return
 
         # Read back the regions
         progress = ProgressBar(
