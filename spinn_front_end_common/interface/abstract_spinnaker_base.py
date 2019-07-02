@@ -1819,7 +1819,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
         # been regenerated
-        if self._has_ran and not self._use_virtual_board and graph_changed:
+        if self._has_ran and not self._use_virtual_board and not graph_changed:
             algorithms.append("DSGRegionReloader")
 
         # Update the run time if not using a virtual board
