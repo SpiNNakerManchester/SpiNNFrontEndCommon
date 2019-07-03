@@ -359,12 +359,35 @@ static inline void set_message_length(const void *end) {
 //! \brief searches through received seq nums and transmits missing ones back
 //! to host for retransmission
 static void process_missing_seq_nums_and_request_retransmission(void) {
+    //! \brief Used to guard access to the received_seq_nums_store from this
+    //!   function; it counts the number of running calls to this function.
+    //!   Access to this variable is only allowed when you have disabled
+    //!   interrupts!
+    static uint access_lock = 0;
+
+    uint sr;
+    sr = spin1_irq_disable();
+    if (++access_lock == 0) {
+        access_lock--;
+        spin1_mode_restore(sr);
+        return;
+    } else if (received_seq_nums_store == NULL) {
+        access_lock--;
+        spin1_mode_restore(sr);
+        return;
+    }
+    spin1_mode_restore(sr);
+
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
-    cancel_timeout();
 
     // check that missing seq transmission is actually needed, or
     // have we finished
     if (total_received_seq_nums == max_seq_num) {
+        free_sequence_number_bitfield();
+        sr = spin1_irq_disable();
+        access_lock--;
+        spin1_mode_restore(sr);
+
         // send boundary key, so that monitor knows everything in the previous
         // stream is done
         send_mc_message(BOUNDARY_KEY_OFFSET, 0);
@@ -372,7 +395,6 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
         my_msg.length = sizeof(sdp_hdr_t) + sizeof(int);
         send_sdp_message();
         log_info("Sent end flag");
-        free_sequence_number_bitfield();
         return;
     }
 
@@ -397,6 +419,10 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
             data_start = data_ptr = payload->more.data;
         }
     }
+
+    sr = spin1_irq_disable();
+    access_lock--;
+    spin1_mode_restore(sr);
 
     // send final message if required
     if (data_ptr > data_start) {
@@ -499,6 +525,7 @@ static void check_for_timeout(uint unused0, uint unused1) {
     use(unused1);
     if (wait_until != 0 && ++time > wait_until) {
         log_info("Timed out; checking for missing anyway");
+        cancel_timeout();
         process_missing_seq_nums_and_request_retransmission();
     }
 }
