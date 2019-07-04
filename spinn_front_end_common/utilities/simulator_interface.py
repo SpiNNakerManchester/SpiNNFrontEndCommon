@@ -61,6 +61,10 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
+    def time_scale_factor(self):
+        pass
+
+    @abstractproperty
     def run(self, run_time):
         pass
 

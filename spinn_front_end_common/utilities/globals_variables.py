@@ -1,3 +1,5 @@
+from pacman.executor import injection_decorator
+
 _failed_state = None
 _simulator = None
 
@@ -34,6 +36,7 @@ def set_simulator(new_simulator):
 def unset_simulator():
     global _simulator
     _simulator = None
+    injection_decorator._instances = list()
 
 
 def has_simulator():

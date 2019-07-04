@@ -65,10 +65,14 @@ static void reset_core_counters(void)
 //! \return None
 void resume_callback() {
     // change simulation ticks to be a number related to sampling frequency
-    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-    log_info("total_sim_ticks = %d", simulation_ticks);
-    recording_reset();
-    log_info("resume_callback");
+    if (time == UINT32_MAX) {
+        log_info("resume_skipped as time still zero");
+    } else {
+        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+        log_info("total_sim_ticks = %d", simulation_ticks);
+        recording_reset();
+        log_info("resume_callback");
+    }
 }
 
 static void sample_in_slot(uint unused0, uint unused1)

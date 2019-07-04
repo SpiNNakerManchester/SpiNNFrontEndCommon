@@ -6,7 +6,9 @@ from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
 from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
+from .globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -14,9 +16,9 @@ _ONE_WORD = struct.Struct("<I")
 
 def locate_extra_monitor_mc_receiver(
         machine, placement_x, placement_y,
-        extra_monitor_cores_to_ethernet_connection_map):
+        packet_gather_cores_to_ethernet_connection_map):
     chip = machine.get_chip_at(placement_x, placement_y)
-    return extra_monitor_cores_to_ethernet_connection_map[
+    return packet_gather_cores_to_ethernet_connection_map[
         chip.nearest_ethernet_x, chip.nearest_ethernet_y]
 
 
@@ -125,6 +127,23 @@ def sort_out_downed_chips_cores_links(
             x, y, link_id = downed_link.split(",")
             ignored_links.add((int(x), int(y), int(link_id)))
     return ignored_chips, ignored_cores, ignored_links
+
+
+def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
+    """ flood fills a binary to spinnaker on a given app_id \
+    given the executable targets and binary.
+
+    :param executable_targets: the executable targets object
+    :param binary: the binary to flood fill
+    :param txrx: spinnman instance
+    :type txrx: :py:class:`~spinnman.Tranceiver`
+    :param app_id: the app id to load it on
+    :return: the number of cores it was loaded onto
+    """
+    core_subset = executable_targets.get_cores_for_binary(binary)
+    txrx.execute_flood(
+        core_subset, binary, app_id, wait=True, is_filename=True)
+    return len(core_subset)
 
 
 def read_config(config, section, item):
@@ -265,3 +284,64 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def _emergency_state_check(txrx, app_id):
+    try:
+        rte_count = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        if rte_count or watchdog_count:
+            logger.warning(
+                "unexpected core states (rte={}, wdog={})",
+                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    except Exception:  # pylint: disable=broad-except
+        logger.warning("failed to read core states", exc_info=True)
+
+
+# TRICKY POINT: Have to delay the import to here because of import circularity
+def _emergency_iobuf_extract(txrx, executable_targets):
+    # pylint: disable=protected-access
+    from spinn_front_end_common.interface.interface_functions import (
+        ChipIOBufExtractor)
+    sim = get_simulator()
+    extractor = ChipIOBufExtractor(
+        recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
+    extractor(txrx, executable_targets, sim._executable_finder,
+              sim._provenance_file_path)
+
+
+def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
+    """ Used to get at least *some* information out of a core when something\
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+
+    :param txrx: The transceiver.
+    :param app_id: The ID of the application.
+    :param vertex: The vertex to retrieve the IOBUF from if it is suspected\
+        as being dead
+    :type vertex: \
+        :py:class:`spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary`
+    :param placement: Where the vertex is located.
+    """
+    # pylint: disable=protected-access
+    _emergency_state_check(txrx, app_id)
+    target = ExecutableTargets()
+    path = get_simulator()._executable_finder.get_executable_path(
+        vertex.get_binary_file_name())
+    target.add_processor(
+        path, placement.x, placement.y, placement.p,
+        vertex.get_binary_start_type())
+    _emergency_iobuf_extract(txrx, target)
+
+
+def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
+    """ Used to get at least *some* information out of a core when something\
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+
+    :param txrx: The transceiver.
+    :param app_id: The ID of the application.
+    :param executable_targets: The what/where mapping
+    """
+    _emergency_state_check(txrx, app_id)
+    _emergency_iobuf_extract(txrx, executable_targets)

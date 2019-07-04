@@ -2,10 +2,12 @@ import logging
 import os
 import struct
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
 from spinnman.model.enums import CPUState
-from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.mapping_algorithms import (
     on_chip_router_table_compression)
 from spinn_front_end_common.interface.interface_functions import (
@@ -149,9 +151,9 @@ class MundyOnChipRouterCompression(object):
         """
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
+        executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets,
-            provenance_file_path)
+            txrx, executable_targets, executable_finder, provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
@@ -186,7 +188,8 @@ class MundyOnChipRouterCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(_BINARY_PATH, core_subsets)
+        executable_targets.add_subsets(_BINARY_PATH, core_subsets,
+                                       ExecutableType.RUNNING)
 
         txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets

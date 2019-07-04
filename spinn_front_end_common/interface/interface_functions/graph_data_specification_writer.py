@@ -1,10 +1,15 @@
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
-from data_specification.utility_calls import (
-    get_data_spec_and_file_writer_filename)
+from data_specification import DataSpecificationGenerator
+from data_specification.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.interface.ds.data_specification_targets import (
+    DataSpecificationTargets)
 
 
 class GraphDataSpecificationWriter(object):
@@ -17,7 +22,15 @@ class GraphDataSpecificationWriter(object):
         # Dict of list of region sizes by vertex
         "_region_sizes",
         # Dict of list of vertices by chip coordinates
-        "_vertices_by_chip"
+        "_vertices_by_chip",
+        # spinnmachine instance
+        "_machine",
+        # hostname
+        "_hostname",
+        # directory where reports go
+        "_report_dir",
+        # bool for writing texts
+        "_write_text",
     )
 
     def __init__(self):
@@ -28,7 +41,7 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder, machine, graph_mapper=None,
+            machine, data_n_timesteps, graph_mapper=None,
             placement_order=None):
         """
         :param placements: placements of machine graph to cores
@@ -36,21 +49,25 @@ class GraphDataSpecificationWriter(object):
         :param report_default_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
-        :param app_data_runtime_folder:\
-            Folder where data specifications should be written to
         :param machine: the python representation of the SpiNNaker machine
+        :param data_n_timesteps: The number of timesteps for which data space\
+            will been reserved
         :param graph_mapper:\
             the mapping between application and machine graph
         :param placement:\
             the optional order in which placements should be examined
-
         :return: DSG targets (map of placement tuple and filename)
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=attribute-defined-outside-init
+        self._machine = machine
+        self._hostname = hostname
+        self._report_dir = report_default_directory
+        self._write_text = write_text_specs
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        dsg_targets = dict()
+        targets = DataSpecificationTargets(machine, self._report_dir)
 
         if placement_order is None:
             placement_order = placements.placements
@@ -60,10 +77,8 @@ class GraphDataSpecificationWriter(object):
         vertices_to_reset = list()
         for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
-            generated = self._generate_data_spec_for_vertices(
-                placement, placement.vertex, dsg_targets, hostname,
-                report_default_directory, write_text_specs,
-                app_data_runtime_folder, machine)
+            generated = self.__generate_data_spec_for_vertices(
+                placement, placement.vertex, targets, data_n_timesteps)
 
             if generated and isinstance(
                     placement.vertex, AbstractRewritesDataSpecification):
@@ -74,10 +89,8 @@ class GraphDataSpecificationWriter(object):
             if not generated and graph_mapper is not None:
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
-                generated = self._generate_data_spec_for_vertices(
-                    placement, associated_vertex, dsg_targets, hostname,
-                    report_default_directory, write_text_specs,
-                    app_data_runtime_folder, machine)
+                generated = self.__generate_data_spec_for_vertices(
+                    placement, associated_vertex, targets, data_n_timesteps)
                 if generated and isinstance(
                         associated_vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(associated_vertex)
@@ -86,53 +99,37 @@ class GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.mark_regions_reloaded()
 
-        return dsg_targets
+        return targets
 
-    def _generate_data_spec_for_vertices(
-            self, placement, vertex, dsg_targets, hostname,
-            report_default_directory, write_text_specs,
-            app_data_runtime_folder, machine):
+    def __generate_data_spec_for_vertices(
+            self, pl, vertex, targets, data_n_timesteps):
         """
-        :param placement: placement of machine graph to cores
+        :param pl: placement of machine graph to cores
         :param vertex: the specific vertex to write DSG for.
-        :param hostname: SpiNNaker machine name
-        :param report_default_directory: the location where reports are stored
-        :param write_text_specs:\
-            True if the textual version of the specification is to be written
-        :param app_data_runtime_folder: \
-            Folder where data specifications should be written to
-        :param machine: the python representation of the SpiNNaker machine
+        :param targets: DataSpecificationTargets
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         """
-        # pylint: disable=too-many-arguments
-
         # if the vertex can generate a DSG, call it
         if not isinstance(vertex, AbstractGeneratesDataSpecification):
             return False
 
-        # build the writers for the reports and data
-        data_writer_filename, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, hostname,
-            report_default_directory,
-            write_text_specs, app_data_runtime_folder)
+        with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
+            report_writer = get_report_writer(
+                pl.x, pl.y, pl.p, self._hostname,
+                self._report_dir, self._write_text)
+            spec = DataSpecificationGenerator(data_writer, report_writer)
 
-        # link DSG file to vertex
-        dsg_targets[placement.x, placement.y, placement.p] = \
-            data_writer_filename
+            # generate the DSG file
+            vertex.generate_data_specification(spec, pl)
 
-        # generate the DSG file
-        vertex.generate_data_specification(spec, placement)
-
-        # Check the memory usage
-        self._region_sizes[placement.vertex] = spec.region_sizes
-        self._vertices_by_chip[placement.x, placement.y].append(
-            placement.vertex)
-        self._sdram_usage[placement.x, placement.y] += sum(
-            spec.region_sizes)
-        if (self._sdram_usage[placement.x, placement.y] <=
-                machine.get_chip_at(placement.x, placement.y).sdram.size):
-            return True
+            # Check the memory usage
+            self._region_sizes[pl.vertex] = spec.region_sizes
+            self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
+            self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
+            if (self._sdram_usage[pl.x, pl.y] <=
+                    self._machine.get_chip_at(pl.x, pl.y).sdram.size):
+                return True
 
         # creating the error message which contains the memory usage of
         #  what each core within the chip uses and its original
@@ -141,10 +138,11 @@ class GraphDataSpecificationWriter(object):
             "    {}: {} (total={}, estimated={})".format(
                 vert, self._region_sizes[vert],
                 sum(self._region_sizes[vert]),
-                vert.resources_required.sdram.get_value())
-            for vert in self._vertices_by_chip[placement.x, placement.y]))
+                vert.resources_required.sdram.get_total_sdram(
+                    data_n_timesteps))
+            for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(
             "Too much SDRAM has been used on {}, {}.  Vertices and"
             " their usage on that chip is as follows:\n{}".format(
-                placement.x, placement.y, memory_usage))
+                pl.x, pl.y, memory_usage))

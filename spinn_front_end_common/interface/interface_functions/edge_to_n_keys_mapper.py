@@ -23,8 +23,8 @@ class EdgeToNKeysMapper(object):
                 "Please choose and try again")
         if (application_graph is None) != (graph_mapper is None):
             raise ConfigurationException(
-                "Can only do one graph. semantically doing 2 graphs makes no "
-                "sense. Please choose and try again")
+                "The application_graph and the graph_mapper must both be "
+                "specified or both must be None")
 
         if application_graph is not None:
             # generate progress bar

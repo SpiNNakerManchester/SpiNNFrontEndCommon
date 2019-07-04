@@ -1,9 +1,15 @@
 import unittest
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 from spinnman.transceiver import Transceiver
-from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
 from spinn_front_end_common.interface.interface_functions import (
     LoadExecutableImages)
+
+SIM = ExecutableType.USES_SIMULATION_INTERFACE
 
 
 class _MockTransceiver(Transceiver):
@@ -38,13 +44,13 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         transceiver = _MockTransceiver(self)
         loader = LoadExecutableImages()
         targets = ExecutableTargets()
-        targets.add_processor("test.aplx", 0, 0, 0)
-        targets.add_processor("test.aplx", 0, 0, 1)
-        targets.add_processor("test.aplx", 0, 0, 2)
-        targets.add_processor("test2.aplx", 0, 1, 0)
-        targets.add_processor("test2.aplx", 0, 1, 1)
-        targets.add_processor("test2.aplx", 0, 1, 2)
-        loader.__call__(targets, 30, transceiver)
+        targets.add_processor("test.aplx", 0, 0, 0, SIM)
+        targets.add_processor("test.aplx", 0, 0, 1, SIM)
+        targets.add_processor("test.aplx", 0, 0, 2, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 0, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 1, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 2, SIM)
+        loader.load_app_images(targets, 30, transceiver)
 
 
 if __name__ == "__main__":

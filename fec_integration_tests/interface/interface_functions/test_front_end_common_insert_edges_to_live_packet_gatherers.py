@@ -1,6 +1,9 @@
 import unittest
-from collections import defaultdict
-from spinn_machine import VirtualMachine
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
+from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.common import GraphMapper, Slice
@@ -23,7 +26,7 @@ class TestInsertLPGEdges(unittest.TestCase):
     """
 
     def test_local_verts_go_to_local_lpgs(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -111,7 +114,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
     def test_local_verts_when_multiple_lpgs_are_local(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -227,7 +230,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                         edge.pre_vertex, verts_expected[chip.x, chip.y, p])
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()

@@ -1,5 +1,5 @@
 from spalloc import ProtocolClient
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
 
 
@@ -41,10 +41,10 @@ class SpallocMaxMachineGenerator(object):
 
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
-        return VirtualMachine(
+        return virtual_machine(
             width=max_width, height=max_height, with_wrap_arounds=None,
             version=None, sdram_per_chip=max_sdram_size,
-            n_cpus_per_chip=max_core_id)
+            n_cpus_per_chip=max_core_id, validate=False)
 
     @staticmethod
     def _filter(machines, target_name):

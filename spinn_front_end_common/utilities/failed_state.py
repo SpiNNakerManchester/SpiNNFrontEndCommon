@@ -1,7 +1,12 @@
+import logging
+from spinn_utilities.log import FormatAdapter
+
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .simulator_interface import SimulatorInterface
 
 FAILED_STATE_MSG = "This call is only valid between setup and end/stop"
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class FailedState(SimulatorInterface):
@@ -57,10 +62,14 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     def stop(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
+        logger.error("Ignoring call to stop/end as no simulator running")
 
     @property
     def transceiver(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
+
+    @property
+    def time_scale_factor(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
