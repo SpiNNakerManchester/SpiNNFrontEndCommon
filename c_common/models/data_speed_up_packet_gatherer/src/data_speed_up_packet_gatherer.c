@@ -631,10 +631,11 @@ static void receive_data(uint key, uint payload) {
 
 static void initialise(void) {
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
 
     // Read the header
-    if (!data_specification_read_header(address)) {
+    if (!data_specification_read_header(ds_regions)) {
         log_error("Failed to read the data spec header");
         rt_error(RTE_SWERR);
     }
@@ -642,7 +643,7 @@ static void initialise(void) {
     // Get the timing details and set up the simulation interface
     uint32_t dummy;
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM_REGION, address),
+            data_specification_get_region(SYSTEM_REGION, ds_regions),
             APPLICATION_NAME_HASH, &dummy, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         rt_error(RTE_SWERR);
@@ -651,7 +652,7 @@ static void initialise(void) {
     log_info("Initialising data out");
 
     data_out_config_t *config = (data_out_config_t *)
-            data_specification_get_region(CONFIG, address);
+            data_specification_get_region(CONFIG, ds_regions);
     new_sequence_key = config->new_seq_key;
     first_data_key = config->first_data_key;
     end_flag_key = config->end_flag_key;
@@ -671,7 +672,7 @@ static void initialise(void) {
 
     // Get the address this core's DTCM data starts at from SRAM
     data_in_config_t *chip_key_map = (data_in_config_t *)
-            data_specification_get_region(CHIP_TO_KEY, address);
+            data_specification_get_region(CHIP_TO_KEY, ds_regions);
 
     uint n_chips = chip_key_map->n_chips;
     for (uint i = 0; i < n_chips; i++) {

@@ -386,23 +386,24 @@ void read_parameters(address_t region_address) {
 bool initialize(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
 
     // Read the header
-    if (!data_specification_read_header(address)) {
+    if (!data_specification_read_header(ds_regions)) {
         return false;
     }
 
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM_REGION, address),
+            data_specification_get_region(SYSTEM_REGION, ds_regions),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
-        record_provenance_data,
-        data_specification_get_region(PROVENANCE_REGION, address));
+            record_provenance_data,
+            data_specification_get_region(PROVENANCE_REGION, ds_regions));
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (infinite_run != TRUE) {
@@ -411,7 +412,7 @@ bool initialize(uint32_t *timer_period) {
 
     // Read the parameters
     read_parameters(
-        data_specification_get_region(CONFIGURATION_REGION, address));
+            data_specification_get_region(CONFIGURATION_REGION, ds_regions));
 
     return true;
 }
