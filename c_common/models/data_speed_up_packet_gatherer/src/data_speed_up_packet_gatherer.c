@@ -367,7 +367,7 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
 
     uint sr;
     sr = spin1_irq_disable();
-    if (++access_lock == 1) {
+    if (++access_lock > 1) {
         access_lock--;
         spin1_mode_restore(sr);
         return;
