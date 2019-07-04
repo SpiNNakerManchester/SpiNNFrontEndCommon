@@ -448,7 +448,7 @@ void _recording_buffer_state_data_write(){
     for (uint32_t recording_region_id = 0;
              recording_region_id < n_recording_regions;
              recording_region_id++) {
-        address_t recording_region_address =
+        recording_channel_t *recording_region_address =
             region_addresses[recording_region_id];
         spin1_memcpy(
              recording_region_address,
