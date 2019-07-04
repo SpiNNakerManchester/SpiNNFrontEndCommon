@@ -591,7 +591,7 @@ static void initialise(void) {
 
     // Get the address this core's DTCM data starts at from SRAM
     data_in_config_t *chip_key_map = (data_in_config_t *)
-            data_specification_get_region(CHIP_TO_KEY, address);
+            data_specification_get_region(CHIP_TO_KEY, ds_regions);
 
     uint n_chips = chip_key_map->n_chips;
     for (uint i = 0; i < n_chips; i++) {

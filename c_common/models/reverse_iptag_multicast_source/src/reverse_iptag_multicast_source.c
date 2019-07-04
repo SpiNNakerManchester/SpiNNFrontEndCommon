@@ -975,7 +975,8 @@ bool setup_buffer_region(address_t region_address) {
 //! \brief Initialises the recording parts of the model
 //! \return True if recording initialisation is successful, false otherwise
 static bool initialise_recording(){
-    address_t ds_regions = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
     address_t recording_region = data_specification_get_region(
             RECORDING_REGION, ds_regions);
 
