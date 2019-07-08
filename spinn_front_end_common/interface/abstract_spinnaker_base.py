@@ -1330,6 +1330,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "boot_connection_port_num")
         inputs["RepairMachine"] = self._config.getboolean(
             "Machine", "repair_machine")
+        inputs["IgnoreBadEthernets"] = self._config.getboolean(
+            "Machine", "ignore_bad_ethernets")
 
     def generate_file_machine(self):
         inputs = {
