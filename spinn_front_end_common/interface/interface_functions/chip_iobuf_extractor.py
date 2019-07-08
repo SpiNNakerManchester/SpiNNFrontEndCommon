@@ -7,6 +7,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 from spinn_machine.core_subsets import CoreSubsets
+from spinnman.model.io_buffer import IOBuffer
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -126,14 +127,16 @@ class ChipIOBufExtractor(object):
     def __recover_iobufs(self, transceiver, core_subsets):
         io_buffers = []
         for core_subset in core_subsets:
-            cs = CoreSubsets()
-            cs.add_core_subset(core_subset)
-            try:
-                io_buffers.extend(transceiver.get_iobuf(cs))
-            except Exception as e:  # pylint: disable=broad-except
-                logger.warning(
-                    "failed to retrieve iobufs from chip {},{}; {}",
-                    core_subset.x, core_subset.y, str(e))
+            for p in core_subset.processor_ids:
+                cs = CoreSubsets()
+                cs.add_processor(core_subset.x, core_subset.y, p)
+                try:
+                    io_buffers.extend(transceiver.get_iobuf(cs))
+                except Exception as e:  # pylint: disable=broad-except
+                    io_buffers.append(IOBuffer(
+                        core_subset.x, core_subset.y, p,
+                        "failed to retrieve iobufs from {},{},{}; {}".format(
+                            core_subset.x, core_subset.y, p, str(e))))
         return io_buffers
 
     @staticmethod

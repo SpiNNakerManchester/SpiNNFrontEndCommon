@@ -288,6 +288,7 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 
 def _emergency_state_check(txrx, app_id):
+    # pylint: disable=broad-except
     try:
         rte_count = txrx.get_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)

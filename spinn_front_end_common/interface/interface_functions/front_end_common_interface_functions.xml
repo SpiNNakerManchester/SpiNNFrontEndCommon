@@ -559,6 +559,10 @@
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
+            <parameter>
+            	<param_name>disable_advanced_monitor_usage</param_name>
+            	<param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -575,6 +579,7 @@
             <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>disable_advanced_monitor_usage</param_name>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
             <token part="SystemBinariesLoaded">DataLoaded</token>
         </optional_inputs>
@@ -934,6 +939,10 @@
                 <param_name>router_entries_per_chip</param_name>
                 <param_type>RouterTableEntriesPerRouter</param_type>
             </parameter>
+            <parameter>
+                <param_name>json_path</param_name>
+                <param_type>MachineJsonPath</param_type>
+            </parameter>
         </input_definitions>
         <optional_inputs>
             <param_name>width</param_name>
@@ -947,6 +956,7 @@
             <param_name>down_links</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>router_entries_per_chip</param_name>
+            <param_name>json_path</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>

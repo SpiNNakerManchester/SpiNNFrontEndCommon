@@ -197,7 +197,8 @@ class HostExecuteDataSpecification(object):
             placements=None, extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
             report_folder=None, java_caller=None,
-            processor_to_app_data_base_address=None):
+            processor_to_app_data_base_address=None,
+            disable_advanced_monitor_usage=False):
         """ Execute the data specs for all non-system targets.
 
         :param machine: the python representation of the SpiNNaker machine
@@ -212,6 +213,8 @@ class HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :param processor_to_app_data_base_address: \
             map of placement and DSG data
+        :param disable_advanced_monitor_usage: \
+            whether to avoid using advanced monitors even if they're available
         :return: map of placement and DSG data
         """
         # pylint: disable=too-many-arguments
@@ -226,6 +229,10 @@ class HostExecuteDataSpecification(object):
         self._monitors = extra_monitor_cores
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
+
+        # Allow override to disable
+        if disable_advanced_monitor_usage:
+            uses_advanced_monitors = False
 
         impl_method = self.__java_app if java_caller else self.__python_app
         try:
@@ -311,7 +318,7 @@ class HostExecuteDataSpecification(object):
 
         progress.update()
 
-        self._java.execute_app_data_specification(True)
+        self._java.execute_app_data_specification(use_monitors)
 
         progress.end()
         return dw_write_info

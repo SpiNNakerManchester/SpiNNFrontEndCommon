@@ -187,21 +187,21 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
 } sdp_msg_pure_data;
 
 //! dumped packet type
-typedef struct {
+typedef struct dumped_packet_t {
     uint hdr;
     uint key;
     uint pld;
 } dumped_packet_t;
 
 //! packet queue type
-typedef struct {
+typedef struct pkt_queue_t {
     uint head;
     uint tail;
     dumped_packet_t queue[PKT_QUEUE_SIZE];
 } pkt_queue_t;
 
 //! SDP tags used by the SDRAM reader component.
-typedef enum dma_tags_for_data_speed_up {
+enum dma_tags_for_data_speed_up {
     //! DMA complete tag for original transmission, this isn't used yet, but
     //! needed for full protocol
     DMA_TAG_READ_FOR_TRANSMISSION = 0,
@@ -211,7 +211,7 @@ typedef enum dma_tags_for_data_speed_up {
     DMA_TAG_RETRANSMISSION_READING = 2,
     //! DMA complete tag for writing the missing SEQ numbers to SDRAM
     DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS = 3
-} dma_tags_for_data_speed_up;
+};
 
 //! \brief message payload for the data speed up out SDP messages
 typedef struct sdp_data_out_t {
@@ -231,19 +231,19 @@ typedef struct router_entry_t {
 typedef struct data_in_data_items {
     uint32_t address_mc_key;
     uint32_t data_mc_key;
-    uint32_t restart_mc_key;
+    uint32_t boundary_mc_key;
     uint32_t n_system_router_entries;
     router_entry_t system_router_entries[];
 } data_in_data_items_t;
 
 //! \brief position in SDP message for missing sequence numbers
-typedef enum missing_seq_num_sdp_data_positions {
+enum missing_seq_num_sdp_data_positions {
     POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 1,
     START_OF_MISSING_SEQ_NUMS = 2
-} missing_seq_num_sdp_data_positions;
+};
 
 // Dropped packet re-injection internal control commands (RC of SCP message)
-typedef enum reinjector_command_codes {
+enum reinjector_command_codes {
     CMD_DPRI_SET_ROUTER_TIMEOUT = 0,
     CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
     CMD_DPRI_SET_PACKET_TYPES = 2,
@@ -251,15 +251,15 @@ typedef enum reinjector_command_codes {
     CMD_DPRI_RESET_COUNTERS = 4,
     CMD_DPRI_EXIT = 5,
     CMD_DPRI_CLEAR = 6
-} reinjector_command_codes;
+};
 
 //! flag positions for packet types being reinjected
-typedef enum reinjection_flag_positions {
+enum reinjection_flag_positions {
     DPRI_PACKET_TYPE_MC = 1,
     DPRI_PACKET_TYPE_PP = 2,
     DPRI_PACKET_TYPE_NN = 4,
     DPRI_PACKET_TYPE_FR = 8
-} reinjection_flag_positions;
+};
 
 //! defintion of response packet for reinjector status
 typedef struct reinjector_status_response_packet_t {
@@ -283,17 +283,17 @@ typedef struct reinject_config_t {
 } reinject_config_t;
 
 //! values for port numbers this core will respond to
-typedef enum functionality_to_port_num_map {
-    RE_INJECTION_FUNCTIONALITY = 4,
-    DATA_SPEED_UP_OUT_FUNCTIONALITY = 5,
-    DATA_SPEED_UP_IN_FUNCTIONALITY = 6
-} functionality_to_port_num_map;
+enum functionality_to_port_num_map {
+    REINJECTION_PORT = 4,
+    DATA_SPEED_UP_OUT_PORT = 5,
+    DATA_SPEED_UP_IN_PORT = 6
+};
 
-typedef enum data_spec_regions {
+enum data_spec_regions {
     CONFIG_REINJECTION = 0,
     CONFIG_DATA_SPEED_UP_OUT = 1,
     CONFIG_DATA_SPEED_UP_IN = 2
-} data_spec_regions;
+};
 
 enum speed_up_in_command {
     //! read in application mc routes
@@ -313,10 +313,10 @@ typedef struct data_speed_out_config_t {
 } data_speed_out_config_t;
 
 //! values for the priority for each callback
-typedef enum callback_priorities {
+enum callback_priorities {
     SDP = 0,
     DMA = 0
-} callback_priorities;
+};
 
 // ------------------------------------------------------------------------
 // global variables for reinjector functionality
@@ -356,7 +356,7 @@ volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 router_entry_t *saved_application_router_table = NULL;
 uint data_in_address_key = 0;
 uint data_in_data_key = 0;
-uint data_in_start_key = 0;
+uint data_in_boundary_key = 0;
 address_t data_in_write_address = NULL, first_write_address = NULL;
 
 // ------------------------------------------------------------------------
@@ -388,7 +388,7 @@ static uint32_t dma_port_last_used = 0;
 static bool in_retransmission_mode = false;
 
 //! SDP message holder for transmissions
-sdp_msg_pure_data my_msg;
+static ushort my_addr;
 
 //! state for how many bytes it needs to send, gives approximate bandwidth if
 //! round number.
@@ -817,8 +817,20 @@ static void data_in_clear_router(void) {
     }
 }
 
+static inline void data_in_process_boundary(void) {
+    if (data_in_write_address) {
+        uint written_words = data_in_write_address - first_write_address;
+        io_printf(IO_BUF, "Wrote %u words\n", written_words);
+        data_in_write_address = NULL;
+    }
+    first_write_address = NULL;
+}
+
 static inline void data_in_process_address(uint data) {
-    io_printf(IO_BUF, "Setting write address to %08x\n", data);
+    if (data_in_write_address) {
+        data_in_process_boundary();
+    }
+    io_printf(IO_BUF, "Setting write address to 0x%08x\n", data);
     data_in_write_address = (address_t) data;
     first_write_address = data_in_write_address;
 }
@@ -830,14 +842,8 @@ static inline void data_in_process_data(uint data) {
         io_printf(IO_BUF, "Write address not set when write data received!\n");
         rt_error(RTE_SWERR);
     }
-    *data_in_write_address++ = data;
-}
-
-static inline void data_in_process_start(void) {
-    uint written_words = data_in_write_address - first_write_address;
-    io_printf(IO_BUF, "Wrote %u words\n", written_words);
-    data_in_write_address = NULL;
-    first_write_address = NULL;
+    *data_in_write_address = data;
+    data_in_write_address++;
 }
 
 //! \brief process a mc packet with payload
@@ -852,12 +858,12 @@ INT_HANDLER data_in_process_mc_payload_packet(void) {
         data_in_process_address(data);
     } else if (key == data_in_data_key) {
         data_in_process_data(data);
-    } else if (key == data_in_start_key) {
-        data_in_process_start();
+    } else if (key == data_in_boundary_key) {
+        data_in_process_boundary();
     } else {
         io_printf(IO_BUF, "Failed to recognise mc key %u; "
                 "only understand keys (%u, %u, %u)\n",
-                key, data_in_address_key, data_in_data_key, data_in_start_key);
+                key, data_in_address_key, data_in_data_key, data_in_boundary_key);
     }
     // and tell VIC we're done
     vic[VIC_VADDR] = (uint) vic;
@@ -1378,7 +1384,11 @@ static INT_HANDLER data_out_dma_timeout(void) {
 //-----------------------------------------------------------------------------
 // common code
 //-----------------------------------------------------------------------------
-static inline void reflect_sdp_message(sdp_msg_t *msg) {
+
+#define SDP_REPLY_HEADER_LEN 12
+
+static inline void reflect_sdp_message(sdp_msg_t *msg, uint body_length) {
+    msg->length = SDP_REPLY_HEADER_LEN + body_length;
     uint dest_port = msg->dest_port;
     uint dest_addr = msg->dest_addr;
 
@@ -1389,49 +1399,63 @@ static inline void reflect_sdp_message(sdp_msg_t *msg) {
     msg->srce_addr = dest_addr;
 }
 
+static inline sdp_msg_t *get_message_from_mailbox(void) {
+    sdp_msg_t *shm_msg = (sdp_msg_t *) sark.vcpu->mbox_ap_msg;
+    sdp_msg_t *msg = sark_msg_get();
+    if (msg != NULL) {
+        sark_msg_cpy(msg, shm_msg);
+    }
+    sark_shmsg_free(shm_msg);
+    sark.vcpu->mbox_ap_cmd = SHM_IDLE;
+    return msg;
+}
+
 void __real_sark_int(void *pc);
+// Check for extra messages added by this core
 void __wrap_sark_int(void *pc) {
-    // Check for extra messages added by this core
-    uint cmd = sark.vcpu->mbox_ap_cmd;
-    if (cmd == SHM_MSG) {
-        sc[SC_CLR_IRQ] = SC_CODE + (1 << sark.phys_cpu);
-        sark.vcpu->mbox_ap_cmd = SHM_IDLE;
-
-        sdp_msg_t *shm_msg = (sdp_msg_t *) sark.vcpu->mbox_ap_msg;
-        sdp_msg_t *msg = sark_msg_get();
-
-        if (msg != NULL) {
-            sark_msg_cpy(msg, shm_msg);
-            sark_shmsg_free(shm_msg);
-
-            switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
-            case RE_INJECTION_FUNCTIONALITY:
-                msg->length = 12 + reinjection_sdp_command(msg);
-                reflect_sdp_message(msg);
-                sark_msg_send(msg, 10);
-                break;
-            case DATA_SPEED_UP_OUT_FUNCTIONALITY:
-                // These are all one-way messages
-                data_out_speed_up_command((sdp_msg_pure_data *) msg);
-                break;
-            case DATA_SPEED_UP_IN_FUNCTIONALITY:
-                msg->length = 12 + data_in_speed_up_command(msg);
-                reflect_sdp_message(msg);
-                sark_msg_send(msg, 10);
-                break;
-            default:
-                io_printf(IO_BUF, "unexpected port %d\n",
-                        (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
-                // Do nothing
-            }
-            sark_msg_free(msg);
-        } else {
-            sark_shmsg_free(shm_msg);
-        }
-    } else {
+    // Get the message from SCAMP and see if t belongs to SARK
+    if (sark.vcpu->mbox_ap_cmd != SHM_MSG) {
         // Run the default callback
         __real_sark_int(pc);
+        return;
     }
+
+    // Make a copy so we can release the mailbox, and flag as ready for
+    // interrupt again
+    sdp_msg_t *msg = get_message_from_mailbox();
+    sc[SC_CLR_IRQ] = SC_CODE + (1 << sark.phys_cpu);
+    if (msg == NULL) {
+        return;
+    }
+
+    switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
+    case REINJECTION_PORT:
+        reflect_sdp_message(msg, reinjection_sdp_command(msg));
+        while (!sark_msg_send(msg, 10)) {
+            io_printf(IO_BUF, "timeout when sending reinjection reply\n");
+        }
+        break;
+    case DATA_SPEED_UP_OUT_PORT:
+        // These are all one-way messages; replies are out of band
+        data_out_speed_up_command((sdp_msg_pure_data *) msg);
+        break;
+    case DATA_SPEED_UP_IN_PORT:
+        reflect_sdp_message(msg, data_in_speed_up_command(msg));
+        while (!sark_msg_send(msg, 10)) {
+            io_printf(IO_BUF, "timeout when sending speedup ctl reply\n");
+        }
+        break;
+    default:
+        io_printf(IO_BUF, "unexpected port %d\n",
+                (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+        io_printf(IO_BUF,
+                "from:%04x:%02x to:%04x:%02x cmd:%04x len:%d iam:%04x\n",
+                msg->srce_addr, msg->srce_port,
+                msg->dest_addr, msg->dest_port,
+                msg->cmd_rc, msg->length, my_addr);
+        // Do nothing
+    }
+    sark_msg_free(msg);
 }
 
 //-----------------------------------------------------------------------------
@@ -1510,7 +1534,7 @@ static void data_in_initialise(void) {
 
     data_in_address_key = items->address_mc_key;
     data_in_data_key = items->data_mc_key;
-    data_in_start_key = items->restart_mc_key;
+    data_in_boundary_key = items->boundary_mc_key;
     // Save the current (application?) state
     data_in_save_router();
 
@@ -1525,6 +1549,7 @@ void c_main(void) {
     sark_cpu_state(CPU_STATE_RUN);
 
     // Configure
+    my_addr = sv->p2p_addr;
     reinjection_configure_timer();
     reinjection_configure_comms_controller();
     reinjection_configure_router();
