@@ -419,8 +419,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def _calculate_mask(n_neurons):
-        temp_value = int(math.ceil(math.log(n_neurons, 2)))
-        max_key = (int(math.pow(2, temp_value)) - 1)
+        temp_value = n_neurons.bit_length()
+        max_key = 2**temp_value - 1
         mask = 0xFFFFFFFF - max_key
         return mask
 
