@@ -279,13 +279,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Get a mask and maximum number of keys for the number of keys
         # requested
-        self._mask, max_key = self._calculate_mask(n_keys)
-
-        # Check that the number of keys and the virtual key don't interfere
-        if n_keys > max_key:
-            raise ConfigurationException(
-                "The mask calculated from the number of keys will not work "
-                "with the virtual key specified")
+        self._mask = self._calculate_mask(n_keys)
 
         if self._prefix is not None:
             # Check that the prefix doesn't change the virtual key in the
@@ -426,11 +420,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @staticmethod
     def _calculate_mask(n_neurons):
         if n_neurons == 1:
-            return 0xFFFFFFFF, 1
+            return 0xFFFFFFFF
         temp_value = int(math.ceil(math.log(n_neurons, 2)))
         max_key = (int(math.pow(2, temp_value)) - 1)
         mask = 0xFFFFFFFF - max_key
-        return mask, max_key
+        return mask
 
     def enable_recording(self, new_state=True):
         """ Enable recording of the keys sent
