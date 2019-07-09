@@ -42,6 +42,17 @@ log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
 TIMEOUT_MESSAGE = "Failed to hear from the machine during {} attempts. "\
     "Please try removing firewalls."
+_MINOR_LOSS_MESSAGE = (
+    "During the extraction of data of {} bytes from memory address {}, "
+    "attempt {} had {} sequences that were lost.")
+_MINOR_LOSS_THRESHOLD = 10
+_MAJOR_LOSS_MESSAGE = (
+    "During the extraction of data from chip {}, there were {} cases of "
+    "serious data loss. The system recovered, but the speed of download "
+    "was compromised. Reduce the number of executing applications and remove "
+    "routers between yourself and the SpiNNaker machine to reduce the chance "
+    "of this occurring.")
+_MAJOR_LOSS_THRESHOLD = 100
 
 # Size of a SpiNNaker word
 WORD_SIZE = 4
@@ -214,6 +225,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     _ADDRESS_PACKET_BYTE_FORMAT = struct.Struct(
         "<{}B".format(BYTES_IN_FULL_PACKET_WITH_ADDRESS))
+
+    # Router timeouts, in mantissa,exponent form. See datasheet for details
+    LONG_TIMEOUT = (14, 14)
+    SHORT_TIMEOUT = (1, 1)
+    TEMP_TIMEOUT = (15, 4)
+    ZERO_TIMEOUT = (0, 0)
 
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
@@ -397,6 +414,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
     def get_local_provenance_data(self):
         prov_items = list()
+        significant_losses = defaultdict(list)
         for (placement, memory_address, length_in_bytes) in \
                 self._provenance_data_items.keys():
 
@@ -419,21 +437,26 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # handle lost sequence numbers
                 for i, n_lost_seq_nums in enumerate(lost_seq_nums):
-                    prov_items.append(ProvenanceDataItem(
-                        [top_level_name, "lost_seq_nums", chip_name, last_name,
-                         iteration_name, "iteration_{}".format(i)],
-                        n_lost_seq_nums, report=n_lost_seq_nums > 0,
-                        message=(
-                            "During the extraction of data of {} bytes from "
-                            "memory address {}, attempt {} had {} sequences "
-                            "that were lost. These had to be retransmitted and"
-                            " will have slowed down the data extraction "
-                            "process. Reduce the number of executing "
-                            "applications and remove routers between yourself"
-                            " and the SpiNNaker machine to reduce the chance "
-                            "of this occurring."
-                            .format(length_in_bytes, memory_address, i,
-                                    n_lost_seq_nums))))
+                    # Zeroes are not reported at all
+                    if n_lost_seq_nums:
+                        prov_items.append(ProvenanceDataItem(
+                            [top_level_name, "lost_seq_nums", chip_name,
+                             last_name, iteration_name,
+                             "iteration_{}".format(i)],
+                            n_lost_seq_nums, report=(
+                                n_lost_seq_nums > _MINOR_LOSS_THRESHOLD),
+                            message=_MINOR_LOSS_MESSAGE.format(
+                                length_in_bytes, memory_address, i,
+                                n_lost_seq_nums)))
+                    if n_lost_seq_nums > _MAJOR_LOSS_THRESHOLD:
+                        significant_losses[placement.x, placement.y] += [i]
+        for chip in significant_losses:
+            n_times = len(significant_losses[chip])
+            chip_name = "chip{}:{}".format(*chip)
+            prov_items.append(ProvenanceDataItem(
+                [top_level_name, "serious_lost_seq_num_count", chip_name],
+                n_times, report=True, message=_MAJOR_LOSS_MESSAGE.format(
+                    chip, n_times)))
         return prov_items
 
     @staticmethod
@@ -898,9 +921,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # set time outs
         lead_monitor.set_router_emergency_timeout(
-            1, 1, transceiver, placements, extra_monitor_cores)
+            self.SHORT_TIMEOUT, transceiver, placements, extra_monitor_cores)
         lead_monitor.set_router_time_outs(
-            15, 15, transceiver, placements, extra_monitor_cores)
+            self.LONG_TIMEOUT, transceiver, placements, extra_monitor_cores)
 
     @staticmethod
     def load_application_routing_tables(
@@ -941,24 +964,21 @@ class DataSpeedUpPacketGatherMachineVertex(
         lead_monitor = extra_monitor_cores[0]
         # Set the routers to temporary values
         lead_monitor.set_router_time_outs(
-            15, 4, transceiver, placements, extra_monitor_cores)
+            self.TEMP_TIMEOUT, transceiver, placements, extra_monitor_cores)
         lead_monitor.set_router_emergency_timeout(
-            0, 0, transceiver, placements, extra_monitor_cores)
+            self.ZERO_TIMEOUT, transceiver, placements, extra_monitor_cores)
 
         if self._last_status is None:
             log.warning(
                 "Cores have not been set for data extraction, so can't be"
                 " unset")
         try:
-            mantissa, exponent = self._last_status.router_timeout_parameters
             lead_monitor.set_router_time_outs(
-                mantissa, exponent, transceiver, placements,
-                extra_monitor_cores)
-            mantissa, exponent = \
-                self._last_status.router_emergency_timeout_parameters
+                self._last_status.router_timeout_parameters,
+                transceiver, placements, extra_monitor_cores)
             lead_monitor.set_router_emergency_timeout(
-                mantissa, exponent, transceiver, placements,
-                extra_monitor_cores)
+                self._last_status.router_emergency_timeout_parameters,
+                transceiver, placements, extra_monitor_cores)
             lead_monitor.set_reinjection_packets(
                 placements, extra_monitor_cores, transceiver,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,

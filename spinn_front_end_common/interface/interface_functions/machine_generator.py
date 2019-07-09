@@ -15,7 +15,8 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            max_sdram_size=None, max_core_id=None, repair_machine=False):
+            max_sdram_size=None, max_core_id=None, repair_machine=False,
+            ignore_bad_ethernets=True):
         """
         :param hostname: the hostname or IP address of the SpiNNaker machine
         :param bmp_details: the details of the BMP connections
@@ -43,6 +44,14 @@ class MachineGenerator(object):
             If False get machine will raise an Exception if a problamatic
             machine is discovered.
         :type repair_machine: bool
+        :param ignore_bad_ethernets: Flag to say that ip_address information
+            on none ethernet chips should be ignored.
+            None_ethernet chips are defined here as ones that do not report
+            themselves their nearest ethernet.
+            The bad ipaddress is always logged
+            If True the ipaddress is ignored
+            If False the chip with the bad ipaddress is removed.
+        :type ignore_bad_ethernets: bool
         :return: Connection details and Transceiver
         """
         # pylint: disable=too-many-arguments
@@ -61,7 +70,8 @@ class MachineGenerator(object):
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
             max_sdram_size=max_sdram_size, max_core_id=max_core_id,
-            repair_machine=repair_machine)
+            repair_machine=repair_machine,
+            ignore_bad_ethernets=ignore_bad_ethernets)
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()
