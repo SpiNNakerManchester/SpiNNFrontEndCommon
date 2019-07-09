@@ -9,8 +9,6 @@ from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.mapping_algorithms import (
-    on_chip_router_table_compression)
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 
