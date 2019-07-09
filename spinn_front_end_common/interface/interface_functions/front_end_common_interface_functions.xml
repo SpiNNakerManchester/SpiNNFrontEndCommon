@@ -559,6 +559,10 @@
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
+            <parameter>
+            	<param_name>disable_advanced_monitor_usage</param_name>
+            	<param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -575,6 +579,7 @@
             <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>disable_advanced_monitor_usage</param_name>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
             <token part="SystemBinariesLoaded">DataLoaded</token>
         </optional_inputs>
@@ -752,7 +757,10 @@
                 <param_name>repair_machine</param_name>
                 <param_type>RepairMachine</param_type>
             </parameter>
-
+            <parameter>
+                <param_name>ignore_bad_ethernets</param_name>
+                <param_type>IgnoreBadEthernets</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hostname</param_name>
@@ -767,6 +775,7 @@
             <param_name>boot_port_num</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>repair_machine</param_name>
+             <param_name>ignore_bad_ethernets</param_name>
         </required_inputs>
         <optional_inputs>
                 <param_name>max_core_id</param_name>
@@ -934,6 +943,10 @@
                 <param_name>router_entries_per_chip</param_name>
                 <param_type>RouterTableEntriesPerRouter</param_type>
             </parameter>
+            <parameter>
+                <param_name>json_path</param_name>
+                <param_type>MachineJsonPath</param_type>
+            </parameter>
         </input_definitions>
         <optional_inputs>
             <param_name>width</param_name>
@@ -947,6 +960,7 @@
             <param_name>down_links</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>router_entries_per_chip</param_name>
+            <param_name>json_path</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>

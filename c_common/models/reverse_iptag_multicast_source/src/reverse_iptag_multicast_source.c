@@ -149,8 +149,8 @@ static uint8_t *end_of_buffer_region;
 static uint8_t *write_pointer;
 static uint8_t *read_pointer;
 
-sdp_msg_t req;
-req_packet_sdp_t *req_ptr;
+static sdp_msg_t req;
+static req_packet_sdp_t *req_ptr;
 static eieio_msg_t msg_from_sdram;
 static bool msg_from_sdram_in_use;
 static int msg_from_sdram_length;
@@ -962,9 +962,10 @@ static bool setup_buffer_region(address_t region_address) {
 //! \brief Initialises the recording parts of the model
 //! \return True if recording initialisation is successful, false otherwise
 static bool initialise_recording(void) {
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
     address_t recording_region = data_specification_get_region(
-            RECORDING_REGION, address);
+            RECORDING_REGION, ds_regions);
 
     log_info("Recording starts at 0x%08x", recording_region);
 
@@ -985,27 +986,28 @@ static void provenance_callback(address_t address) {
 
 static bool initialise(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
 
     // Read the header
-    if (!data_specification_read_header(address)) {
+    if (!data_specification_read_header(ds_regions)) {
         return false;
     }
 
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM, address),
+            data_specification_get_region(SYSTEM, ds_regions),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
             &infinite_run, SDP_CALLBACK, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
             provenance_callback,
-            data_specification_get_region(PROVENANCE_REGION, address));
+            data_specification_get_region(PROVENANCE_REGION, ds_regions));
 
     // Read the parameters
-    if (!read_parameters((configuration_t *)
-            data_specification_get_region(CONFIGURATION, address))) {
+    if (!read_parameters(
+            data_specification_get_region(CONFIGURATION, ds_regions))) {
         return false;
     }
 
@@ -1016,8 +1018,8 @@ static bool initialise(uint32_t *timer_period) {
 
     // Read the buffer region
     if (buffer_region_size > 0) {
-        if (!setup_buffer_region(data_specification_get_region(
-                BUFFER_REGION, address))) {
+        if (!setup_buffer_region(
+                data_specification_get_region(BUFFER_REGION, ds_regions))) {
             return false;
         }
     }
@@ -1026,9 +1028,10 @@ static bool initialise(uint32_t *timer_period) {
 }
 
 static void resume_callback(void) {
-    address_t address = data_specification_get_data_address();
-    setup_buffer_region(data_specification_get_region(
-            BUFFER_REGION, address));
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
+    setup_buffer_region(
+            data_specification_get_region(BUFFER_REGION, ds_regions));
 
     // set the code to start sending packet requests again
     send_packet_reqs = true;

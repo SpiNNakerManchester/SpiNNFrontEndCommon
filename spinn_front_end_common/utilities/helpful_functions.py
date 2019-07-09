@@ -9,6 +9,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableTargets, ExecutableType)
 from .globals_variables import get_simulator
+from spinnman.model.cpu_infos import CPUInfos
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -287,13 +288,34 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 
 def _emergency_state_check(txrx, app_id):
-    rte_count = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-    watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-    if rte_count or watchdog_count:
-        logger.warning(
-            "unexpected core states (rte={}, wdog={})",
-            txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-            txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    # pylint: disable=broad-except
+    try:
+        rte_count = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        if rte_count or watchdog_count:
+            logger.warning(
+                "unexpected core states (rte={}, wdog={})",
+                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    except Exception:
+        logger.exception(
+            "Could not read the status count - going to individual cores")
+        machine = txrx.get_machine_details()
+        infos = CPUInfos()
+        errors = list()
+        for chip in machine.chips:
+            for p in chip.processors:
+                try:
+                    info = txrx.get_cpu_information_from_core(
+                        chip.x, chip.y, p)
+                    if info.state in (
+                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
+                        infos.add_processor(chip.x, chip.y, p, info)
+                except Exception:
+                    errors.append((chip.x, chip.y, p))
+        logger.warn(txrx.get_core_status_string(infos))
+        logger.warn("Could not read information from cores {}".format(errors))
 
 
 # TRICKY POINT: Have to delay the import to here because of import circularity

@@ -137,15 +137,19 @@ static bool read_parameters(struct parameters_t *params)
 
 static bool initialize(uint32_t *timer_ptr)
 {
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
+    if (!data_specification_read_header(ds_regions)) {
+        return false;
+    }
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM, address),
+            data_specification_get_region(SYSTEM, ds_regions),
             APPLICATION_NAME_HASH, timer_ptr, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         return false;
     }
-    if (!read_parameters((struct parameters_t *)
-            data_specification_get_region(CONFIG, address))) {
+    if (!read_parameters(
+            data_specification_get_region(CONFIG, ds_regions))) {
         return false;
     }
 
@@ -154,7 +158,7 @@ static bool initialize(uint32_t *timer_ptr)
     log_info("total_sim_ticks = %d", simulation_ticks);
 
     address_t recording_region =
-            data_specification_get_region(RECORDING, address);
+            data_specification_get_region(RECORDING, ds_regions);
     bool success = recording_initialize(recording_region, &recording_flags);
     return success;
 }
