@@ -5,6 +5,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -18,10 +19,8 @@ _ONE_WORD = struct.Struct("<I")
 _FOUR_WORDS = struct.Struct("<IIII")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
-_BINARY_PATH = os.path.join(
-    os.path.dirname(on_chip_router_table_compression.__file__),
-    "rt_minimise.aplx")
-
+_BINARY_PATH = get_simulator()._executable_finder.get_executable_path(
+    "mundy_minimise.aplx")
 
 class MundyOnChipRouterCompression(object):
     """ Compressor that uses a on chip router compressor
