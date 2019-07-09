@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "spin1_api.h"
-#include "ordered_covering.h"
 #include "remove_default_routes.h"
 #include <debug.h>
 /*****************************************************************************/
@@ -119,19 +118,6 @@ bool load_routing_table(table_t *table, uint32_t app_id) {
 }
 ;
 
-//! \brief Method used to sort routing table entries.
-//! \param[in] va: ?????
-//! \param[in] vb: ??????
-//! \return ???????
-int compare_rte(const void *va, const void *vb) {
-    // Grab the keys and masks
-    keymask_t a = ((entry_t *) va)->keymask;
-    keymask_t b = ((entry_t *) vb)->keymask;
-
-    // Perform the comparison
-    return ((int) keymask_count_xs(a)) - ((int) keymask_count_xs(b));
-}
-
 //! \brief frees memory allocated and calls spin1 exit and sets the user0
 //! error code correctly.
 //! \param[in] header the header object
@@ -171,81 +157,20 @@ void compress_start() {
     uint32_t size_original, size_rde, size_oc;
     size_original = table.size;
 
-    // Try to load the table
-    log_debug("check if compression is needed and compress if needed");
-    if ((header->compress_only_when_needed == 1
-            && !load_routing_table(&table, header->app_id))
-            || header->compress_only_when_needed == 0) {
-
-        // Otherwise remove default routes.
-        log_debug("remove default routes from minimiser");
+    if (!load_routing_table(&table, header->app_id)){
         remove_default_routes_minimise(&table);
         size_rde = table.size;
-
-        // Try to load the table
-        log_debug("check if compression is needed and try with no defaults");
-        if ((header->compress_only_when_needed == 1
-                && !load_routing_table(&table, header->app_id))
-                || header->compress_only_when_needed == 0) {
-
-            // Try to use Ordered Covering the minimise the table. This
-            // requires that the table be reloaded from memory and that it
-            // be sorted in ascending order of generality.
-
-            log_debug("free the tables entries");
-            FREE(table.entries);
-            read_table(&table, header);
-
-            log_debug("do qsort");
-            qsort(table.entries, table.size, sizeof(entry_t), compare_rte);
-
-            // Get the target length of the routing table
-            log_debug("acquire target length");
-            uint32_t target_length = 0;
-            if (header->compress_as_much_as_possible == 0) {
-                target_length = rtr_alloc_max();
-            }
-            log_info("target length of %d", target_length);
-
-            // Perform the minimisation
-            aliases_t aliases = aliases_init();
-            log_debug("minimise");
-            oc_minimise(&table, target_length, &aliases);
-            log_debug("done minimise");
-            size_oc = table.size;
-
-            // report size to the host for provenance aspects
-            log_info("has compressed the router table to %d entries", size_oc);
-
-            // Clean up the memory used by the aliases table
-            log_debug("clear up aliases");
-            aliases_clear(&aliases);
-
-            // Try to load the routing table
-            log_debug("try loading tables");
-            if (!load_routing_table(&table, header->app_id)) {
-
-                // Otherwise give up and exit with an error
-                log_error(
-                    "Failed to minimise routing table to fit %u entries. "
-                    "(Original table: %u after removing default entries: %u "
-                    "after Ordered Covering: %u).",
-                    rtr_alloc_max(), size_original, size_rde, size_oc);
-
-                // Free the block of SDRAM used to load the routing table.
-                log_debug("free sdram blocks which held router tables");
-                FREE((void *) header);
-
-                // set the failed flag and exit
-                sark.vcpu->user0 = 1;
-                spin1_exit(0);
-            } else {
-                cleanup_and_exit(header, table);
+        size_oc = table.size;
+        if (!load_routing_table(&table, header->app_id)) {
+            // Otherwise give up and exit with an error
+            log_error(
+                "Failed to minimise routing table to fit %u entries. "
+                "(Original table: %u after removing default entries: %u "
+                "after Ordered Covering: %u).",
+                rtr_alloc_max(), size_original, size_rde, size_oc);
             }
         }
-    } else {
-        cleanup_and_exit(header, table);
-    }
+    cleanup_and_exit(header, table);
 }
 
 //! \brief the main entrance.
