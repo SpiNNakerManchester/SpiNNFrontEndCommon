@@ -22,6 +22,7 @@ _SDRAM_TAG = 1
 _BINARY_PATH = get_simulator()._executable_finder.get_executable_path(
     "mundy_minimise.aplx")
 
+
 class MundyOnChipRouterCompression(object):
     """ Compressor that uses a on chip router compressor
     """
