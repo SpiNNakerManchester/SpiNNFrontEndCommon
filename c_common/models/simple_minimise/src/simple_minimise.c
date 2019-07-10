@@ -154,7 +154,22 @@ void cleanup_and_exit(header_t *header, table_t table) {
     spin1_exit(0);
 }
 
-static inline bool find_merge(uint32_t left, uint32_t index) {
+static inline entry_t merge(entry_t *entry1, entry_t *entry2) {
+    entry_t result;
+    result.keymask = keymask_merge(entry1->keymask, entry2->keymask);
+    result.route = entry1->route;
+    if (entry1->source == entry2->source){
+        result.source = entry1->source;
+    } else {
+        result.source = 0;
+    }
+    return result;
+}
+
+static inline bool find_merge(table_t *table, uint32_t left, uint32_t index) {
+    entry_t merged = merge(&(table->entries[left]), &(table->entries[index]));
+    //Todo check
+    table->entries[left] = merged;
     return true;
 }
 
@@ -165,7 +180,7 @@ static inline void compress_by_route(table_t *table, uint32_t left, uint32_t rig
     while (left < right) {
         index = left + 1;
         while (index <= right){
-            merged = find_merge(left, index);
+            merged = find_merge(table, left, index);
             if (merged) {
                 table->entries[index] = table->entries[right];
                 right -= 1;
