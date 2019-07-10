@@ -54,10 +54,15 @@ typedef struct _entry_t
 
 typedef struct _table_t
 {
-  unsigned int size;  // Number of entries in the table
+  uint32_t size;  // Number of entries in the table
   entry_t *entries;   // Entries in the table
 } table_t;
 
+//static void entry_copy(table_t *table, uint32_t old_index, uint32_t new_index){
+//    table->entries[new_index].keymask = table->entries[old_index].keymask;
+//    table->entries[new_index].route = table->entries[old_index].route;
+//    table->entries[new_index].source = table->entries[old_index].source;
+//}
 
 #define __ROUTING_TABLE_H__
 #endif  // __ROUTING_TABLE_H__
