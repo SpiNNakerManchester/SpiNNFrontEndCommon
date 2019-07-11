@@ -97,10 +97,10 @@ void read_table(table_t *table, header_t *header) {
 //! \param[in] app_id: the app id for the routing table entries to be loaded
 //! under
 //! \return bool saying if the table was loaded into the router or not
-bool load_routing_table(table_t *table, uint32_t size, uint32_t app_id) {
+bool load_routing_table(table_t *table, uint32_t app_id) {
 
     // Try to allocate sufficient room for the routing table.
-    uint32_t entry_id = rtr_alloc_id(size, app_id);
+    uint32_t entry_id = rtr_alloc_id(table->size, app_id);
     if (entry_id == 0) {
         log_info("Unable to allocate routing table of size %u\n", table->size);
         return FALSE;
@@ -110,7 +110,7 @@ bool load_routing_table(table_t *table, uint32_t size, uint32_t app_id) {
     // Note that although the allocation included the specified
     // application ID we also need to include it as the most significant
     // byte in the route (see `sark_hw.c`).
-    for (uint32_t i = 0; i < size; i++) {
+    for (uint32_t i = 0; i < table->size; i++) {
         entry_t entry = table->entries[i];
         uint32_t route = entry.route | (app_id << 24);
         rtr_mc_set(entry_id + i, entry.keymask.key, entry.keymask.mask,
@@ -126,7 +126,7 @@ bool load_routing_table(table_t *table, uint32_t size, uint32_t app_id) {
 //! \param[in] va: ?????
 //! \param[in] vb: ??????
 //! \return ???????
-int compare_rte(const void *va, const void *vb) {
+int compare_rte_by_route(const void *va, const void *vb) {
     entry_t* entry_a = (entry_t *) va;
     entry_t* entry_b = (entry_t *) vb;
     if (entry_a->route < entry_b->route) {
@@ -168,7 +168,16 @@ static inline entry_t merge(entry_t *entry1, entry_t *entry2) {
 
 static inline bool find_merge(table_t *table, uint32_t left, uint32_t index) {
     entry_t merged = merge(&(table->entries[left]), &(table->entries[index]));
-    //Todo check
+    for (uint32_t check = 0; check < table->size; check++) {
+        if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
+            return false;
+        }
+    }
+    for (uint32_t check = remaining_index; check < previous_index; check++) {
+        if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
+            return false;
+        }
+    }
     table->entries[left] = merged;
     return true;
 }
@@ -200,7 +209,7 @@ static inline void compress_by_route(table_t *table, uint32_t left, uint32_t rig
     }
 }
 
-static inline void minimise(table_t *table, uint32_t target_length){
+static inline void simple_minimise(table_t *table, uint32_t target_length){
     uint32_t left, right;
     write_index = 0;
     previous_index = 0;
@@ -218,6 +227,8 @@ static inline void minimise(table_t *table, uint32_t target_length){
         left = right + 1;
         previous_index = write_index;
     }
+
+    table->size = write_index;
 }
 
 //! \brief the callback for setting off the router compressor
@@ -246,7 +257,7 @@ void compress_start() {
     // Try to load the table
     log_debug("check if compression is needed and compress if needed");
     if ((header->compress_only_when_needed == 1
-            && !load_routing_table(&table, table.size, header->app_id))
+            && !load_routing_table(&table, header->app_id))
             || header->compress_only_when_needed == 0) {
 
         // Otherwise remove default routes.
@@ -257,7 +268,7 @@ void compress_start() {
         // Try to load the table
         log_debug("check if compression is needed and try with no defaults");
         if ((header->compress_only_when_needed == 1
-                && !load_routing_table(&table, table.size, header->app_id))
+                && !load_routing_table(&table, header->app_id))
                 || header->compress_only_when_needed == 0) {
 
             // Try to use Ordered Covering the minimise the table. This
@@ -268,8 +279,8 @@ void compress_start() {
             FREE(table.entries);
             read_table(&table, header);
 
-            log_debug("do qsort");
-            qsort(table.entries, table.size, sizeof(entry_t), compare_rte);
+            log_debug("do qsort by route");
+            qsort(table.entries, table.size, sizeof(entry_t), compare_rte_by_route);
 
             // Get the target length of the routing table
             log_debug("acquire target length");
@@ -281,7 +292,7 @@ void compress_start() {
 
             // Perform the minimisation
             log_debug("minimise");
-            minimise(&table, target_length);
+            simple_minimise(&table, target_length);
             log_debug("done minimise");
             size_oc = table.size;
 
@@ -293,7 +304,7 @@ void compress_start() {
 
             // Try to load the routing table
             log_debug("try loading tables");
-            if (!load_routing_table(&table, write_index, header->app_id)) {
+            if (!load_routing_table(&table, header->app_id)) {
 
                 // Otherwise give up and exit with an error
                 log_error(
