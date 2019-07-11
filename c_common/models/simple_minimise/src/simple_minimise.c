@@ -168,12 +168,12 @@ static inline entry_t merge(entry_t *entry1, entry_t *entry2) {
 
 static inline bool find_merge(table_t *table, uint32_t left, uint32_t index) {
     entry_t merged = merge(&(table->entries[left]), &(table->entries[index]));
-    for (uint32_t check = 0; check < table->size; check++) {
+    for (uint32_t check = 0; check < previous_index; check++) {
         if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
             return false;
         }
     }
-    for (uint32_t check = remaining_index; check < previous_index; check++) {
+    for (uint32_t check = remaining_index; check < table->size; check++) {
         if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
             return false;
         }
