@@ -32,8 +32,8 @@ class MundyOnChipRouterCompression(object):
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
-            provenance_file_path, compress_only_when_needed=True,
-            compress_as_much_as_possible=False):
+            provenance_file_path, compress_only_when_needed=False,
+            compress_as_much_as_possible=True):
         """
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface

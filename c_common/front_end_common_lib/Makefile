@@ -19,7 +19,7 @@ OBJS = data_specification.o simulation.o recording.o profiler.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers
-HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h debug.h
+HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h debug.h aliases.h bitset.h merge.h ordered_covering.h platform.h remove_default_routes.h routing_table.h unordered_remove_default_routes.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
