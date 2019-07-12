@@ -23,7 +23,7 @@ from pacman.model.routing_tables import (
     MulticastRoutingTables, MulticastRoutingTable)
 from spinn_front_end_common.mapping_algorithms\
     .on_chip_router_table_compression.mundy_on_chip_router_compression import (
-    MundyOnChipRouterCompression)
+        MundyOnChipRouterCompression)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
