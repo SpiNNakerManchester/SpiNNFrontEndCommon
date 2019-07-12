@@ -28,6 +28,27 @@ int compare_rte(const void *va, const void *vb) {
     return ((int) keymask_count_xs(a)) - ((int) keymask_count_xs(b));
 }
 
+static inline void mundy_minimise(table_t *table, uint32_t target_length){
+    uint32_t left, right;
+
+    log_info("do qsort by route");
+    qsort(table->entries, table->size, sizeof(entry_t), compare_rte);
+
+    // Perform the minimisation
+    aliases_t aliases = aliases_init();
+    log_debug("minimise");
+    oc_minimise(table, target_length, &aliases);
+    log_debug("done minimise");
+
+    // Clean up the memory used by the aliases table
+    log_debug("clear up aliases");
+    aliases_clear(&aliases);
+}
+
+static inline void minimise(table_t *table, uint32_t target_length){
+    mundy_minimise(table, target_length);
+}
+
 //! \brief the callback for setting off the router compressor
 void compress_start() {
     log_info("Starting on chip router compressor");
@@ -76,9 +97,6 @@ void compress_start() {
             FREE(table.entries);
             read_table(&table, header);
 
-            log_debug("do qsort");
-            qsort(table.entries, table.size, sizeof(entry_t), compare_rte);
-
             // Get the target length of the routing table
             log_debug("acquire target length");
             uint32_t target_length = 0;
@@ -88,18 +106,11 @@ void compress_start() {
             log_info("target length of %d", target_length);
 
             // Perform the minimisation
-            aliases_t aliases = aliases_init();
-            log_debug("minimise");
-            oc_minimise(&table, target_length, &aliases);
-            log_debug("done minimise");
+            minimise(&table, target_length);
             size_oc = table.size;
 
             // report size to the host for provenance aspects
             log_info("has compressed the router table to %d entries", size_oc);
-
-            // Clean up the memory used by the aliases table
-            log_debug("clear up aliases");
-            aliases_clear(&aliases);
 
             // Try to load the routing table
             log_debug("try loading tables");
