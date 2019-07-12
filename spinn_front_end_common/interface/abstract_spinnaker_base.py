@@ -1166,6 +1166,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "height")
             inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
                 "Machine", "requires_wrap_arounds")
+            inputs["MachineJsonPath"] = self._read_config(
+                "Machine", "json_path")
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
@@ -1328,6 +1330,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "boot_connection_port_num")
         inputs["RepairMachine"] = self._config.getboolean(
             "Machine", "repair_machine")
+        inputs["IgnoreBadEthernets"] = self._config.getboolean(
+            "Machine", "ignore_bad_ethernets")
 
     def generate_file_machine(self):
         inputs = {
