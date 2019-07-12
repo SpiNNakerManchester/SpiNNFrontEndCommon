@@ -88,6 +88,11 @@ static inline void compress_by_route(table_t *table, uint32_t left, uint32_t rig
 
 static inline void simple_minimise(table_t *table, uint32_t target_length){
     uint32_t left, right;
+
+    log_info("do qsort by route");
+    qsort(table->entries, table->size, sizeof(entry_t), compare_rte_by_route);
+
+    log_info("doing sort");
     write_index = 0;
     previous_index = 0;
     max_index = table->size - 1;
@@ -100,6 +105,7 @@ static inline void simple_minimise(table_t *table, uint32_t target_length){
             right += 1;
         }
         remaining_index = right + 1;
+        log_info("compress %u %u", left, right);
         compress_by_route(table, left, right);
         left = right + 1;
         previous_index = write_index;
@@ -108,8 +114,14 @@ static inline void simple_minimise(table_t *table, uint32_t target_length){
     table->size = write_index;
 }
 
+static inline void minimise(table_t *table, uint32_t target_length){
+    simple_minimise(table, target_length);
+}
+
 //! \brief the callback for setting off the router compressor
 void compress_start() {
+    uint32_t size_original;
+
     log_info("Starting on chip router compressor");
 
     // Prepare to minimise the routing tables
@@ -128,7 +140,6 @@ void compress_start() {
     log_debug("finished reading table");
 
     // Store intermediate sizes for later reporting (if we fail to minimise)
-    uint32_t size_original, size_oc;
     size_original = table.size;
 
     // Try to load the table
@@ -143,18 +154,13 @@ void compress_start() {
             if (load_routing_table(&table, header->app_id)){
                 cleanup_and_exit(header, table);
             } else {
-                //Opps we need the defaulst back before trying compression
+                //Opps we need the defaults back before trying compression
                 log_debug("free the tables entries");
                 FREE(table.entries);
                 read_table(&table, header);
             }
         }
     }
-
-    // Try to minimise the table.
-
-    log_debug("do qsort by route");
-    qsort(table.entries, table.size, sizeof(entry_t), compare_rte_by_route);
 
     // Get the target length of the routing table
     log_debug("acquire target length");
@@ -166,15 +172,11 @@ void compress_start() {
 
     // Perform the minimisation
     log_debug("minimise");
-    simple_minimise(&table, target_length);
+    minimise(&table, target_length);
     log_debug("done minimise");
-    size_oc = table.size;
 
     // report size to the host for provenance aspects
-    log_info("has compressed the router table to %d entries", size_oc);
-
-    // Clean up the memory used by the aliases table
-    log_debug("clear up aliases");
+    log_info("has compressed the router table to %d entries", table.size);
 
     // Try to load the routing table
     log_debug("try loading tables");
@@ -187,7 +189,7 @@ void compress_start() {
             "Failed to minimise routing table to fit %u entries. "
             "(Original table: %u after removing default entries: %u "
             "after Ordered Covering: %u).",
-            rtr_alloc_max(), size_original, write_index, size_oc);
+            rtr_alloc_max(), size_original, write_index, table.size);
 
         // Free the block of SDRAM used to load the routing table.
         log_debug("free sdram blocks which held router tables");
