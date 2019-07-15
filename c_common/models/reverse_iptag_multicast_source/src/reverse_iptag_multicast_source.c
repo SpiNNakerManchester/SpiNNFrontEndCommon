@@ -1010,7 +1010,7 @@ bool initialise(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, ds_regions),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK, DMA)) {
+            &infinite_run, &time, SDP_CALLBACK, DMA)) {
         return false;
     }
     simulation_set_provenance_function(

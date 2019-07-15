@@ -23,6 +23,11 @@ class DsAbstractDatabase(object):
         """
 
     @abstractmethod
+    def clear_ds(self):
+        """ Clear all saved data specification data
+        """
+
+    @abstractmethod
     def save_ds(self, core_x, core_y, core_p, ds):
         """
 
