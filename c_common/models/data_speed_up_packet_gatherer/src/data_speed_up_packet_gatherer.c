@@ -141,7 +141,7 @@ typedef union sdp_msg_out_payload_t {
 //! control value, which says how many timer ticks to run for before exiting
 static uint32_t simulation_ticks = 0;
 static uint32_t infinite_run = 0;
-static uint32_t time = 0;
+static uint32_t timer = 0;
 
 //! the key that causes sequence number to be processed
 static uint32_t new_sequence_key = 0;
@@ -643,7 +643,7 @@ static void initialise(void) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, ds_regions),
             APPLICATION_NAME_HASH, &dummy, &simulation_ticks,
-            &infinite_run, &time, SDP, DMA)) {
+            &infinite_run, &timer, SDP, DMA)) {
         rt_error(RTE_SWERR);
     }
 
