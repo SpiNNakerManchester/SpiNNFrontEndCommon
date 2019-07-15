@@ -6,7 +6,7 @@ from spinn_utilities.abstract_base import (
 @add_metaclass(AbstractBase)
 class AbstractChangableAfterRun(object):
     """ An item that can be changed after a call to run, the changes to which\
-        might or might not require mapping
+        might or might not require mapping.
     """
 
     __slots__ = ()
@@ -17,6 +17,8 @@ class AbstractChangableAfterRun(object):
             performed.  Note that this should return True the first time it\
             is called, as the vertex must require mapping as it has been\
             created!
+
+        :rtype: bool
         """
 
     @abstractmethod
