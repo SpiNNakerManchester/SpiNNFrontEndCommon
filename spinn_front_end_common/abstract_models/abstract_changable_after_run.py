@@ -16,7 +16,7 @@ class AbstractChangableAfterRun(object):
         """ True if changes that have been made require that mapping be\
             performed.  By default this returns False but can be overridden to\
             indicate changes that require mapping.
-            
+
         :rtype: bool
         """
         return False
@@ -26,6 +26,8 @@ class AbstractChangableAfterRun(object):
         """ True if changes that have been made require that data generation\
             be performed.  By default this returns False but can be overridden\
             to indicate changes that require data regeneration.
+
+        :rtype: bool
         """
         return False
 
