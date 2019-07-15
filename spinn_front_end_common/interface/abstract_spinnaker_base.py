@@ -1004,7 +1004,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param required_tokens: The tokens that must be generated
         :param optional_algorithms: optional algorithms to use
         :param provenance_name: the name for provenance
-        :return:  None
+        :return: None
         """
         # pylint: disable=too-many-arguments
         optional = optional_algorithms
@@ -1159,6 +1159,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "height")
             inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
                 "Machine", "requires_wrap_arounds")
+            inputs["MachineJsonPath"] = self._read_config(
+                "Machine", "json_path")
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
@@ -1321,6 +1323,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "boot_connection_port_num")
         inputs["RepairMachine"] = self._config.getboolean(
             "Machine", "repair_machine")
+        inputs["IgnoreBadEthernets"] = self._config.getboolean(
+            "Machine", "ignore_bad_ethernets")
 
     def generate_file_machine(self):
         inputs = {
@@ -1463,6 +1467,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_router_summary_report"):
                 algorithms.append("RouterSummaryReport")
+            if self._config.getboolean(
+                    "Reports", "write_compressed_router_summary_report") and \
+                    self.use_virtual_board:
+                algorithms.append("CompressedRouterSummaryReport")
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
                 optional_algorithms.append("unCompressedRoutingTableReports")
@@ -2552,7 +2560,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @staticmethod
     def _check_provenance(items, initial_message=None):
-        """ Display any errors from provenance data
+        """ Display any errors from provenance data.
         """
         initial_message_printed = False
         for item in items:
@@ -2587,7 +2595,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Executes the power saving mode of turning off the SpiNNaker\
             machine.
 
-        :return: bool when successful, false otherwise
+        :return: true when successful, false otherwise
         :rtype: bool
         """
         # already off or no machine to turn off
@@ -2638,15 +2646,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def config(self):
-        """ Helper method for the front end implementations until we remove\
-            config
+        """ Provides access to the configuration for front end interfaces.
         """
         return self._config
 
     @property
     def get_number_of_available_cores_on_machine(self):
-        """ Returns the number of available cores on the machine after taking\
-            into account preallocated resources
+        """ The number of available cores on the machine after taking\
+            into account preallocated resources.
 
         :return: number of available cores
         :rtype: int

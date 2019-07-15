@@ -11,8 +11,8 @@ class TagsLoader(object):
     def __call__(
             self, transceiver, tags=None, iptags=None, reverse_iptags=None):
         """
-        :param tags: the tags object which contains IP and reverse IP tags.
-            could be none if these are being given in separate lists
+        :param tags: the tags object which contains IP and reverse IP tags;
+            could be `None` if these are being given in separate lists
         :param iptags: a list of IP tags, given when tags is none
         :param reverse_iptags: a list of reverse IP tags when tags is none.
         :param transceiver: the transceiver object

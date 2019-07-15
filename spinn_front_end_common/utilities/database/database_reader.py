@@ -36,7 +36,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: dictionary of atom IDs indexed by event key
-        :rtype: dict
+        :rtype: dict(int, int)
         """
         event_id_to_atom_id_mapping = dict()
         for row in self._cursor.execute(
@@ -53,6 +53,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: dictionary of event keys indexed by atom ID
+        :rtype: dict(int, int)
         """
         atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
@@ -71,7 +72,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port, strip SDP)
-        :rtype: (str, int, bool)
+        :rtype: tuple(str, int, bool)
         """
         self._cursor.execute(
             "SELECT * FROM IP_tags AS tag"
@@ -98,7 +99,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port)
-        :rtype: (str, int)
+        :rtype: tuple(str, int)
         """
         self._cursor.execute(
             "SELECT tag.board_address, tag.port AS port"
@@ -119,7 +120,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port, strip SDP)
-        :rtype: (str, int, bool)
+        :rtype: tuple(str, int, bool)
         """
         self._cursor.execute(
             "SELECT * FROM IP_tags AS tag"
@@ -144,7 +145,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port)
-        :rtype: (str, int)
+        :rtype: tuple(str, int)
         """
         self._cursor.execute(
             "SELECT tag.board_address, tag.port AS port"
@@ -217,7 +218,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: The x, y, p coordinates of the vertex
-        :rtype: (int, int, int)
+        :rtype: tuple(int, int, int)
         """
         self._cursor.execute(
             "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
@@ -233,7 +234,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label:str
         :return: A list of x, y, p coordinates of the vertices
-        :rtype: list of (int, int, int)
+        :rtype: list(tuple(int, int, int))
         """
         self._cursor.execute(
             "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
