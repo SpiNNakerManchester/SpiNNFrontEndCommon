@@ -58,9 +58,9 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :param region: the region to locate the base address of
     :type region: int
     :param placement: the placement object to get the region address of
-    :type placement: pacman.model.placements.Placement
+    :type placement: :py:class:`~pacman.model.placements.Placement`
     :param transceiver: the python interface to the SpiNNaker machine
-    :type transceiver: spiNNMan.transciever.Transciever
+    :type transceiver: :py:class:`~spinnman.Transceiver`
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
@@ -108,7 +108,8 @@ def sort_out_downed_chips_cores_links(
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
             set of ((x, y), link ID) of down links)
-    :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
+    :rtype: tuple(set(tuple(int, int)), set(tuple(int, int, int)),\
+        set(tuple(tuple(int, int), int)))
     """
     ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
@@ -234,7 +235,7 @@ def determine_flow_states(executable_types, no_sync_changes):
     :param executable_types: \
         the execute types to locate start and end states from
     :type executable_types: dict(\
-        :py:class:`spinn_front_end_common.utilities.utility_objs.executable_type.ExecutableType`\
+        :py:class:`~spinn_front_end_common.utilities.utility_objs.ExecutableType`\
         -> any)
     :param no_sync_changes: the number of times sync signals been sent
     :type no_sync_changes: int
