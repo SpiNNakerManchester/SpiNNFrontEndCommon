@@ -688,6 +688,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             for edge in outgoing_partition.edges:
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
+
         # sort out machine graph
         self._machine_graph = MachineGraph(
             label=self._original_machine_graph.label)
@@ -758,6 +759,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (graph_changed or data_changed) and self._has_ran:
             if self._txrx is not None:
                 self._txrx.stop_application(self._app_id)
+
             # change number of resets as loading the binary again resets the
             # sync to 0
             self._no_sync_changes = 0
@@ -1671,7 +1673,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
-        if (enable_advanced_monitor and (graph_changed or not self._has_ran)):
+        if enable_advanced_monitor and (graph_changed or not self._has_ran):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 

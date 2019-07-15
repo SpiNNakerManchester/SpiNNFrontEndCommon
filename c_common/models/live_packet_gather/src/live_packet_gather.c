@@ -303,7 +303,7 @@ void incoming_event_process_callback(uint unused0, uint unused1) {
         if (circular_buffer_get_next(without_payload_buffer, &key)) {
             process_incoming_event(key);
         } else if (circular_buffer_get_next(with_payload_buffer, &key)
-            && circular_buffer_get_next(with_payload_buffer, &payload)) {
+                && circular_buffer_get_next(with_payload_buffer, &payload)) {
             process_incoming_event_payload(key, payload);
         } else {
             processing_events = false;
