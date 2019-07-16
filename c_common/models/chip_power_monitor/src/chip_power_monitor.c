@@ -121,7 +121,6 @@ static void sample_in_slot(uint unused0, uint unused1)
     }
 
     recording_do_timestep_update(time);
-
 }
 
 static bool read_parameters(struct parameters_t *params)
@@ -145,7 +144,7 @@ static bool initialize(uint32_t *timer_ptr)
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, ds_regions),
             APPLICATION_NAME_HASH, timer_ptr, &simulation_ticks,
-            &infinite_run, SDP, DMA)) {
+            &infinite_run, &time, SDP, DMA)) {
         return false;
     }
     if (!read_parameters(

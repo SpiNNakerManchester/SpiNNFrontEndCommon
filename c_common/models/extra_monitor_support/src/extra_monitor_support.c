@@ -57,7 +57,7 @@ enum data_out_sdp_commands {
     //! send data command ID in SDP
     SDP_CMD_START_SENDING_DATA = 100,
     //! start missing SDP sequence numbers in SDP
-    //! (this includes n SDP packets expected)
+    //! (this includes number of SDP packets expected)
     SDP_CMD_START_OF_MISSING_SDP_PACKETS = 1000,
     //! other missing SDP sequence numbers in SDP
     SDP_CMD_MORE_MISSING_SDP_PACKETS = 1001,

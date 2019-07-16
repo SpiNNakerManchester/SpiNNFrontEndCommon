@@ -1,26 +1,38 @@
 from six import add_metaclass
 from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod, abstractproperty)
+    AbstractBase, abstractmethod)
 
 
 @add_metaclass(AbstractBase)
 class AbstractChangableAfterRun(object):
     """ An item that can be changed after a call to run, the changes to which\
-        might or might not require mapping
+        might or might not require mapping or data generation.
     """
 
     __slots__ = ()
 
-    @abstractproperty
+    @property
     def requires_mapping(self):
         """ True if changes that have been made require that mapping be\
-            performed.  Note that this should return True the first time it\
-            is called, as the vertex must require mapping as it has been\
-            created!
+            performed.  By default this returns False but can be overridden to\
+            indicate changes that require mapping.
+
+        :rtype: bool
         """
+        return False
+
+    @property
+    def requires_data_generation(self):
+        """ True if changes that have been made require that data generation\
+            be performed.  By default this returns False but can be overridden\
+            to indicate changes that require data regeneration.
+
+        :rtype: bool
+        """
+        return False
 
     @abstractmethod
     def mark_no_changes(self):
-        """ Marks the point after which changes are reported.  Immediately\
-            after calling this method, requires_mapping should return False.
+        """ Marks the point after which changes are reported, so that new\
+            changes can be detected before the next check.
         """

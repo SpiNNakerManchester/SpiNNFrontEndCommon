@@ -37,7 +37,8 @@ from pacman.model.resources import (PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
-    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun)
+    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
+    AbstractCanReset)
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -322,7 +323,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Version information from the front end
         "_front_end_versions",
 
-        "_last_except_hook"
+        "_last_except_hook",
+
+        "_vertices_or_edges_added"
     ]
 
     def __init__(
@@ -467,6 +470,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._front_end_versions = front_end_versions
 
         self._last_except_hook = sys.excepthook
+        self._vertices_or_edges_added = False
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -684,6 +688,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             for edge in outgoing_partition.edges:
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
+
         # sort out machine graph
         self._machine_graph = MachineGraph(
             label=self._original_machine_graph.label)
@@ -704,16 +709,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.verify_not_running()
 
         # verify that we can keep doing auto pause and resume
-        can_keep_running = True
         if self._has_ran:
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in self._executable_types)
-
-        if self._has_ran and not can_keep_running:
-            raise NotImplementedError(
-                "Only binaries that use the simulation interface can be run"
-                " more than once")
+            if not can_keep_running:
+                raise NotImplementedError(
+                    "Only binaries that use the simulation interface can be"
+                    " run more than once")
 
         self._state = Simulator_State.IN_RUN
 
@@ -744,30 +747,31 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
-        application_graph_changed = self._detect_if_graph_has_changed(True)
+        graph_changed, data_changed = self._detect_if_graph_has_changed(True)
+        if graph_changed and self._has_ran and not self._has_reset_last:
+            self.stop()
+            raise NotImplementedError(
+                "The network cannot be changed between runs without"
+                " resetting")
+
+        # If we have reset and the graph has changed, stop any running
+        # application
+        if (graph_changed or data_changed) and self._has_ran:
+            if self._txrx is not None:
+                self._txrx.stop_application(self._app_id)
+
+            # change number of resets as loading the binary again resets the
+            # sync to 0
+            self._no_sync_changes = 0
+
+            # create new sub-folder for reporting data
+            self._set_up_output_folders(self._n_calls_to_run)
 
         # build the graphs to modify with system requirements
-        if (self._has_reset_last or not self._has_ran or
-                application_graph_changed):
+        if not self._has_ran or graph_changed:
             self._build_graphs_for_usege()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
-
-        # create new sub-folder for reporting data if the graph has changed and
-        # reset has been called.
-        if (self._has_ran and application_graph_changed and
-                self._has_reset_last):
-            self._set_up_output_folders(self._n_calls_to_run)
-
-        # verify that the if graph has changed, and has ran, that a reset has
-        # been called, otherwise system go boom boom
-        if not self._has_ran or application_graph_changed:
-            if (application_graph_changed and self._has_ran and
-                    not self._has_reset_last):
-                self.stop()
-                raise NotImplementedError(
-                    "The network cannot be changed between runs without"
-                    " resetting")
 
             # Reset the machine graph if there is an application graph
             if self._application_graph.n_vertices:
@@ -775,8 +779,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._graph_mapper = None
 
             # Reset the machine if the graph has changed
-            if (self._has_ran and application_graph_changed and
-                    not self._use_virtual_board):
+            if not self._use_virtual_board:
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
@@ -831,23 +834,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             steps = self._generate_steps(
                 n_machine_time_steps, self._max_run_time_steps)
 
-        # Keep track of if loading was done; if loading is done before run,
-        # run doesn't need to rewrite data again
-        loading_done = False
-
-        # If we have never run before, or the graph has changed, or a reset
-        # has been requested, load the data
-        if (not self._has_ran or application_graph_changed or
-                self._has_reset_last):
-
-            # Data generation needs to be done if not already done
-            if not self._has_ran or application_graph_changed:
-                self._do_data_generation(self._max_run_time_steps)
+        # If we have never run before, or the graph has changed, or data has
+        # been changed, generate and load the data
+        if not self._has_ran or graph_changed or data_changed:
+            self._do_data_generation(self._max_run_time_steps)
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load(application_graph_changed)
-                loading_done = True
+                self._do_load(graph_changed)
 
         # Run for each of the given steps
         if run_time is not None:
@@ -855,15 +849,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         len(steps), run_time)
             for i, step in enumerate(steps):
                 logger.info("Run {} of {}", i + 1, len(steps))
-                self._do_run(step, loading_done, run_until_complete)
+                self._do_run(step, graph_changed, run_until_complete)
         elif run_time is None and run_until_complete:
             logger.info("Running until complete")
-            self._do_run(None, loading_done, True)
+            self._do_run(None, graph_changed, True)
         elif (not self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume") or
                 not is_per_timestep_sdram):
             logger.info("Running forever")
-            self._do_run(None, loading_done, run_until_complete)
+            self._do_run(None, graph_changed, run_until_complete)
             logger.info("Waiting for stop request")
             with self._state_condition:
                 while self._state != Simulator_State.STOP_REQUESTED:
@@ -875,7 +869,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             while self._state != Simulator_State.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
                 self._do_run(
-                    self._max_run_time_steps, loading_done, run_until_complete)
+                    self._max_run_time_steps, graph_changed,
+                    run_until_complete)
                 i += 1
 
         # Indicate that the signal handler needs to act
@@ -1011,7 +1006,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param required_tokens: The tokens that must be generated
         :param optional_algorithms: optional algorithms to use
         :param provenance_name: the name for provenance
-        :return:  None
+        :return: None
         """
         # pylint: disable=too-many-arguments
         optional = optional_algorithms
@@ -1474,6 +1469,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_router_summary_report"):
                 algorithms.append("RouterSummaryReport")
+            if self._config.getboolean(
+                    "Reports", "write_compressed_router_summary_report") and \
+                    self.use_virtual_board:
+                algorithms.append("CompressedRouterSummaryReport")
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
                 optional_algorithms.append("unCompressedRoutingTableReports")
@@ -1618,7 +1617,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
 
-    def _do_load(self, application_graph_changed):
+    def _do_load(self, graph_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1630,10 +1629,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         tokens = list(self._mapping_tokens)
         inputs["WriteMemoryMapReportFlag"] = (
             self._config.getboolean("Reports", "write_memory_map_report") and
-            application_graph_changed
+            graph_changed
         )
 
-        if not application_graph_changed and self._has_ran:
+        if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
 
@@ -1641,25 +1640,25 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board and application_graph_changed:
+        if not self._use_virtual_board and graph_changed:
             algorithms.append("RoutingSetup")
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
         loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and application_graph_changed:
+        if loading_algorithm is not None and graph_changed:
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
             "Reports", "write_memory_map_report")
-        if write_memory_report and application_graph_changed:
+        if write_memory_report and graph_changed:
             algorithms.append("MemoryMapOnHostReport")
             algorithms.append("MemoryMapOnHostChipReport")
 
         # Add reports that depend on compression
         routing_tables_needed = False
-        if application_graph_changed:
+        if graph_changed:
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
                 routing_tables_needed = True
@@ -1674,8 +1673,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
-        if (enable_advanced_monitor and
-                (application_graph_changed or not self._has_ran)):
+        if enable_advanced_monitor and (graph_changed or not self._has_ran):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
@@ -1685,11 +1683,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
-
-        # Reload any parameters over the loaded data if we have already
-        # run and not using a virtual board
-        if self._has_ran and not self._use_virtual_board:
-            optional_algorithms.append("DSGRegionReloader")
 
         # Get the executable targets
         optional_algorithms.append("GraphBinaryGatherer")
@@ -1716,14 +1709,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
 
-    def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
+    def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
 
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
-            n_machine_time_steps, loading_done, run_until_complete)
+            n_machine_time_steps, graph_changed, run_until_complete)
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -1787,7 +1780,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*e_inf)
 
     def _create_execute_workflow(
-            self, n_machine_time_steps, loading_done, run_until_complete):
+            self, n_machine_time_steps, graph_changed, run_until_complete):
         # calculate number of machine time steps
         run_until_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
@@ -1828,16 +1821,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("SdramUsageReportPperChip")
 
         # clear iobuf if were in multirun mode
-        if (self._has_ran and not self._has_reset_last and
+        if (self._has_ran and not graph_changed and
                 not self._use_virtual_board and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
-        # been regenerated during a load
-        if (self._has_ran and not self._use_virtual_board and
-                not loading_done):
+        # been regenerated
+        if self._has_ran and not self._use_virtual_board and not graph_changed:
             algorithms.append("DSGRegionReloader")
 
         # Update the run time if not using a virtual board
@@ -2052,10 +2044,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
 
         logger.info("Resetting")
-        if self._txrx is not None:
-
-            # Stop the application
-            self._txrx.stop_application(self._app_id)
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
@@ -2066,13 +2054,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # has ran for over multiple calls to run
         self._current_run_timesteps = 0
 
-        # change number of resets as loading the binary again resets the sync\
-        # to 0
-        self._no_sync_changes = 0
-
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
+
+        # Reset the graph off the machine, to set things to time 0
+        self.__reset_graph_elements()
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
         # add the extra xml files from the config file
@@ -2093,6 +2080,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Iterates though the original graphs and look for changes
         """
         changed = False
+        data_changed = False
+        if self._vertices_or_edges_added:
+            self._vertices_or_edges_added = False
+            # Set changed - note that we can't return yet as we still have to
+            # mark vertices as not changed, otherwise they will keep reporting
+            # that they have changed when they haven't
+            changed = True
 
         # if application graph is filled, check their changes
         if self._original_application_graph.n_vertices:
@@ -2100,6 +2094,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
+                    if vertex.requires_data_generation:
+                        data_changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
             for partition in \
@@ -2108,6 +2104,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
                             changed = True
+                        if edge.requires_data_generation:
+                            data_changed = True
                         if reset_flags:
                             edge.mark_no_changes()
 
@@ -2117,6 +2115,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
+                    if machine_vertex.requires_data_generation:
+                        data_changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
             for partition in \
@@ -2125,9 +2125,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:
                             changed = True
+                        if machine_edge.requires_data_generation:
+                            data_changed = True
                         if reset_flags:
                             machine_edge.mark_no_changes()
-        return changed
+        return changed, data_changed
 
     @property
     def has_ran(self):
@@ -2276,6 +2278,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_application_graph.add_vertex(vertex_to_add)
+        self._vertices_or_edges_added = True
 
     def add_machine_vertex(self, vertex):
         """
@@ -2289,6 +2292,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_machine_graph.add_vertex(vertex)
+        self._vertices_or_edges_added = True
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -2300,6 +2304,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
+        self._vertices_or_edges_added = True
 
     def add_machine_edge(self, edge, partition_id):
         """
@@ -2309,6 +2314,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: None
         """
         self._original_machine_graph.add_edge(edge, partition_id)
+        self._vertices_or_edges_added = True
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
@@ -2556,7 +2562,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @staticmethod
     def _check_provenance(items, initial_message=None):
-        """ Display any errors from provenance data
+        """ Display any errors from provenance data.
         """
         initial_message_printed = False
         for item in items:
@@ -2591,7 +2597,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Executes the power saving mode of turning off the SpiNNaker\
             machine.
 
-        :return: bool when successful, false otherwise
+        :return: true when successful, false otherwise
         :rtype: bool
         """
         # already off or no machine to turn off
@@ -2642,15 +2648,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def config(self):
-        """ Helper method for the front end implementations until we remove\
-            config
+        """ Provides access to the configuration for front end interfaces.
         """
         return self._config
 
     @property
     def get_number_of_available_cores_on_machine(self):
-        """ Returns the number of available cores on the machine after taking\
-            into account preallocated resources
+        """ The number of available cores on the machine after taking\
+            into account preallocated resources.
 
         :return: number of available cores
         :rtype: int
@@ -2680,3 +2685,24 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         with self._state_condition:
             self._state = Simulator_State.STOP_REQUESTED
             self._state_condition.notify_all()
+
+    @staticmethod
+    def __reset_object(obj):
+        # Reset an object if appropriate
+        if isinstance(obj, AbstractCanReset):
+            obj.reset_to_first_timestep()
+
+    def __reset_graph_elements(self):
+        # Reset any object that can reset
+        if self._original_application_graph.n_vertices:
+            for vertex in self._original_application_graph.vertices:
+                self.__reset_object(vertex)
+            for p in self._original_application_graph.outgoing_edge_partitions:
+                for edge in p.edges:
+                    self.__reset_object(edge)
+        elif self._original_machine_graph.n_vertices:
+            for machine_vertex in self._original_machine_graph.vertices:
+                self.__reset_object(machine_vertex)
+            for p in self._original_machine_graph.outgoing_edge_partitions:
+                for machine_edge in p.edges:
+                    self.__reset_object(machine_edge)

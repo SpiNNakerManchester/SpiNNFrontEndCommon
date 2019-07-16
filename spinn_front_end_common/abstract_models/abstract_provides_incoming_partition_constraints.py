@@ -16,8 +16,8 @@ class AbstractProvidesIncomingPartitionConstraints(object):
 
         :param partition: An partition that goes in to this vertex
         :type partition:\
-            :py:class:`pacman.utilities.utility_objs.outgoing_partition.OutgoingPartition`
+            :py:class:`~pacman.utilities.utility_objs.OutgoingPartition`
         :return: A list of constraints
         :rtype: \
-            list(:py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`)
+            list(:py:class:`~pacman.model.constraints.AbstractConstraint`)
         """

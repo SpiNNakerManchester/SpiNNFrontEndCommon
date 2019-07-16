@@ -39,9 +39,9 @@ static struct provenance_data_struct provenance_data;
 
 //! human readable definitions of each region in SDRAM
 enum regions_e {
-    SYSTEM_REGION,
-    CONFIGURATION_REGION,
-    PROVENANCE_REGION
+    SYSTEM_R,
+    CONFIGURATION_R,
+    PROVENANCE_R
 };
 
 //! Human readable definitions of each element in the configuration region in
@@ -273,12 +273,12 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
     do {
        if (circular_buffer_get_next(without_payload_buffer, &key)) {
            process_incoming_event(key);
-       } else if (circular_buffer_get_next(with_payload_buffer, &key)
-               && circular_buffer_get_next(with_payload_buffer, &payload)) {
-           process_incoming_event_payload(key, payload);
-       } else {
-           processing_events = false;
-       }
+        } else if (circular_buffer_get_next(with_payload_buffer, &key)
+                && circular_buffer_get_next(with_payload_buffer, &payload)) {
+            process_incoming_event_payload(key, payload);
+        } else {
+            processing_events = false;
+        }
     } while (processing_events);
 }
 
@@ -340,14 +340,14 @@ static bool initialize(uint32_t *timer_period_ptr) {
 
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM_REGION, ds_regions),
+            data_specification_get_region(SYSTEM_R, ds_regions),
             APPLICATION_NAME_HASH, timer_period_ptr, &simulation_ticks,
-            &infinite_run, SDP, DMA)) {
+            &infinite_run, &time, SDP, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
             record_provenance_data,
-            data_specification_get_region(PROVENANCE_REGION, ds_regions));
+            data_specification_get_region(PROVENANCE_R, ds_regions));
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (infinite_run != TRUE) {
@@ -356,7 +356,7 @@ static bool initialize(uint32_t *timer_period_ptr) {
 
     // Read the parameters
     read_parameters(
-            data_specification_get_region(CONFIGURATION_REGION, ds_regions));
+            data_specification_get_region(CONFIGURATION_R, ds_regions));
 
     return true;
 }

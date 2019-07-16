@@ -33,6 +33,9 @@ static uint32_t *sim_time_ptr;
 //! the pointer to the flag for if it is a infinite run
 static uint32_t *inf_run_flag_ptr;
 
+//! the pointer to the current simulation time
+static uint32_t *curr_time_ptr;
+
 //! general collection of provenance-related information
 static struct {
     //! the function call to run when extracting provenance data from the chip
@@ -41,7 +44,7 @@ static struct {
     exit_callback_t exit_callback;
     //! the function call to run just before resuming a simulation
     resume_callback_t resume_callback;
-    //! the region ID for storing provenance data from the chip
+    //! the region for storing provenance data from the chip
     simulation_provenance_t *data;
 } provenance = {
     NULL, NULL, NULL, NULL
@@ -154,13 +157,17 @@ static void control_scp_callback(uint mailbox, uint port) {
         break;
 
     case CMD_RUNTIME:
-        log_info("Setting the runtime of this model to %d", msg->arg1);
+        log_info("Setting the runtime of this model to %d starting at %d",
+                msg->arg1, msg->arg3);
         log_info("Setting the flag of infinite run for this model to %d",
                 msg->arg2);
 
         // resetting the simulation time pointer
         *sim_time_ptr = msg->arg1;
         *inf_run_flag_ptr = msg->arg2;
+        // We start at time - 1 because the first thing models do is
+        // increment a time counter
+        *curr_time_ptr = msg->arg3 - 1;
 
         if (provenance.resume_callback != NULL) {
             log_info("Calling pre-resume function");
@@ -171,8 +178,8 @@ static void control_scp_callback(uint mailbox, uint port) {
         spin1_resume(SYNC_WAIT);
 
         // If we are told to send a response, send it now
-        if (msg->arg3 == 1) {
-            send_ok_response(msg);
+        if (msg->data[0] == 1) {
+            _send_ok_response(msg);
         }
 
         // free the message to stop overload
@@ -277,7 +284,8 @@ void simulation_dma_transfer_done_callback_off(uint tag) {
 bool simulation_initialise(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
+        uint32_t *infinite_run_pointer, uint32_t *time_pointer,
+        int sdp_packet_callback_priority,
         int dma_transfer_done_callback_priority) {
     simulation_config_t *config = (simulation_config_t *) address;
 
@@ -302,6 +310,7 @@ bool simulation_initialise(
     // handle the SDP callback for the simulation
     sim_time_ptr = simulation_ticks_pointer;
     inf_run_flag_ptr = infinite_run_pointer;
+    curr_time_ptr = time_pointer;
 
     spin1_callback_on(SDP_PACKET_RX, sdp_callback_handler,
             sdp_packet_callback_priority);
