@@ -24,11 +24,12 @@ class AbstractGeneratesDataSpecification(object):
 
     @abstractmethod
     def generate_data_specification(self, spec, placement):
-        """ Generate a data specification
+        """ Generate a data specification.
 
         :param spec: The data specification to write to
-        :param placement: the placement object this spec is associated with
         :type spec:\
-            :py:class:`data_specification.DataSpecificationGenerator`
+            :py:class:`~data_specification.DataSpecificationGenerator`
+        :param placement: the placement object this spec is associated with
+        :type spec: Placement
         :rtype: None
         """

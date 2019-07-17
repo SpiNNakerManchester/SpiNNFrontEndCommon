@@ -25,7 +25,8 @@ class ChipRuntimeUpdater(object):
     __slots__ = []
 
     def __call__(
-            self, txrx, app_id, executable_types, run_until_timesteps):
+            self, txrx, app_id, executable_types, run_until_timesteps,
+            current_timesteps):
 
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
@@ -37,9 +38,10 @@ class ChipRuntimeUpdater(object):
         if run_until_timesteps is None:
             infinite_run = 1
             run_until_timesteps = 0
+            current_timesteps = 0
 
         # TODO: Expose the connection selector in SpiNNMan
         process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
         process.update_runtime(
-            run_until_timesteps, infinite_run, core_subsets,
+            current_timesteps, run_until_timesteps, infinite_run, core_subsets,
             len(core_subsets))

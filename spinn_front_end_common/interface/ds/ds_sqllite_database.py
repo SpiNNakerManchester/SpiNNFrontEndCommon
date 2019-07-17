@@ -36,9 +36,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, report_folder, init=True):
+    def __init__(self, machine, report_folder, init=None):
         self._machine = machine
         database_file = os.path.join(report_folder, DB_NAME)
+
+        if init is None:
+            init = not os.path.exists(database_file)
 
         self._db = sqlite3.connect(database_file)
         self._db.text_factory = memoryview
@@ -94,6 +97,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     (ethernet_x, ethernet_y)):
                 return row["ethernet_id"]
         return self._root_ethernet_id
+
+    @overrides(DsAbstractDatabase.clear_ds)
+    def clear_ds(self):
+        with self._db:
+            self._db.execute(
+                "DELETE FROM core")
 
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):

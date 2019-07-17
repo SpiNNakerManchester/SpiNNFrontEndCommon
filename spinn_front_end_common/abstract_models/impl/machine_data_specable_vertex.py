@@ -52,5 +52,17 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
             reverse_iptags, machine_time_step, time_scale_factor):
+        """
+        :param spec: The data specification to write into.
+        :type spec:\
+            :py:class:`~data_specification.DataSpecificationGenerator`
+        :param placement: Where this node is on the SpiNNaker machine.
+        :param machine_graph: The graph containing this node.
+        :param routing_info:
+        :param iptags:
+        :param reverse_iptags:
+        :param machine_time_step:
+        :param time_step_factor:
+        """
         # pylint: disable=too-many-arguments
         pass

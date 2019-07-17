@@ -247,6 +247,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     TEMP_TIMEOUT = (15, 4)
     ZERO_TIMEOUT = (0, 0)
 
+    # Initial port for the reverse IP tag (to be replaced later)
+    _TAG_INITIAL_PORT = 10000
+
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
             report_default_directory,
@@ -313,8 +316,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                 SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
                 SIZE_DATA_IN_CHIP_TO_KEY_SPACE),
             iptags=[IPtagResource(
-                port=None, strip_sdp=True,
-                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
+                port=DataSpeedUpPacketGatherMachineVertex._TAG_INITIAL_PORT,
+                strip_sdp=True, ip_address="localhost",
+                traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -375,7 +379,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Note: The port doesn't matter as we are going to override this later
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
-        iptag.port = 10000
         spec.write_value(iptag.tag)
         self._remote_tag = iptag.tag
 

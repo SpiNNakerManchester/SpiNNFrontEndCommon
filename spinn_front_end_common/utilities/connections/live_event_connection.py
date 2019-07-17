@@ -81,10 +81,10 @@ class LiveEventConnection(DatabaseConnection):
             vertex to which received events are being sent
         :param receive_labels: \
             Labels of vertices from which live events will be received.
-        :type receive_labels: iterable of str
+        :type receive_labels: iterable(str)
         :param send_labels: \
             Labels of vertices to which live events will be sent
-        :type send_labels: iterable of str
+        :type send_labels: iterable(str)
         :param local_host: Optional specification of the local hostname or\
             IP address of the interface to listen on
         :type local_host: str
@@ -175,7 +175,7 @@ class LiveEventConnection(DatabaseConnection):
             received. This should take as parameters the label of the vertex,\
             the simulation timestep when the event occurred, and an\
             array-like of atom IDs.
-        :type live_event_callback: function(str, int, [int]) -> None
+        :type live_event_callback: function(str, int, list(int)) -> None
         """
         label_id = self._receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}".format(
@@ -448,7 +448,7 @@ class LiveEventConnection(DatabaseConnection):
             The label of the vertex from which the events will originate
         :type label: str
         :param atom_ids: array-like of atom IDs sending events
-        :type atom_ids: [int]
+        :type atom_ids: list(int)
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
             send 16-bit atom IDs directly

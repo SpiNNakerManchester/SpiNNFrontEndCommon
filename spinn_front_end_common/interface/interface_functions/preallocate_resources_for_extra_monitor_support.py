@@ -29,8 +29,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             n_cores_to_allocate=1):
         """
         :param machine: SpiNNaker machine object
-        :param pre_allocated_resources: resources already pre allocated
-        :param n_cores_to_allocate: config params for how many gatherers to use
+        :param pre_allocated_resources: resources already preallocated
+        :param n_cores_to_allocate: how many gatherers to use
         """
 
         progress = ProgressBar(

@@ -19,7 +19,7 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 @add_metaclass(AbstractBase)
 class AbstractProvidesOutgoingPartitionConstraints(object):
-    """ A vertex that can provide constraints for its outgoing edge partitions
+    """ A vertex that can provide constraints for its outgoing edge partitions.
     """
 
     __slots__ = ()
@@ -32,5 +32,5 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
         :param partition: An edge that comes out of this vertex
         :return: A list of constraints
         :rtype: \
-            list(:py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`)
+            list(:py:class:`~pacman.model.constraints.AbstractConstraint`)
         """

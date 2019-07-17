@@ -37,6 +37,7 @@ from .abstract_vertex_with_dependent_vertices import (
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
 from .abstract_uses_memory_io import AbstractUsesMemoryIO
+from .abstract_can_reset import AbstractCanReset
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
@@ -49,4 +50,4 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices",
-           "AbstractUsesMemoryIO"]
+           "AbstractUsesMemoryIO", "AbstractCanReset"]

@@ -13,10 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import (
         AbstractReceiveBuffersToHost)
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class BufferExtractor(object):
@@ -30,6 +34,9 @@ class BufferExtractor(object):
         # Count the regions to be read
         n_regions_to_read, recording_placements = self._count_regions(
             machine_graph, placements)
+        if not n_regions_to_read:
+            logger.info("No recorded data to extract")
+            return
 
         # Read back the regions
         progress = ProgressBar(
