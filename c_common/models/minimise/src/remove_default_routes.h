@@ -4,6 +4,7 @@
 #include "routing_table.h"
 
 #ifndef __REMOVE_DEFAULT_ROUTES_H__
+#define __REMOVE_DEFAULT_ROUTES_H__
 
 static inline void remove_default_routes_minimise(table_t *table)
 {
@@ -75,5 +76,4 @@ static inline void remove_default_routes_minimise(table_t *table)
   bitset_delete(&remove);
 }
 
-#define __REMOVE_DEFAULT_ROUTES_H__
 #endif  // __REMOVE_DEFAULT_ROUTES_H__

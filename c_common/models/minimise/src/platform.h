@@ -1,4 +1,5 @@
 #ifndef __PLATFORM_H__
+#define __PLATFORM_H__
 
 #ifdef SPINNAKER
   static inline void * safe_malloc(uint bytes)
@@ -43,5 +44,4 @@
   #define FREE   safe_xfree
 #endif
 
-#define __PLATFORM_H__
 #endif  // __PLATFORN_H__

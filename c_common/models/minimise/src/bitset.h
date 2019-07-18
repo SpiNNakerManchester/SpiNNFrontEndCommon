@@ -3,6 +3,7 @@
 #include "platform.h"
 
 #ifndef __BITSET_H__
+#define __BITSET_H__
 
 typedef struct _bitset_t
 {
@@ -116,5 +117,4 @@ static inline bool bitset_remove(bitset_t* b, unsigned int i)
   }
 }
 
-#define __BITSET_H__
 #endif  // __BITSET_H__

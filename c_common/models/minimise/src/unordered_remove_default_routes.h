@@ -4,6 +4,7 @@
 #include "routing_table.h"
 
 #ifndef __REMOVE_DEFAULT_ROUTES_H__
+#define __REMOVE_DEFAULT_ROUTES_H__
 
 static inline void remove_default_routes_minimise(table_t *table) {
     uint32_t after_size = table->size;
@@ -46,5 +47,4 @@ static inline void remove_default_routes_minimise(table_t *table) {
     }
 }
 
-#define __REMOVE_DEFAULT_ROUTES_H__
 #endif

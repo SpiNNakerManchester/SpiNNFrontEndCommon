@@ -4,6 +4,7 @@
 #include "routing_table.h"
 
 #ifndef __ORDERED_COVERING_H__
+#define __ORDERED_COVERING_H__
 
 
 // Get the goodness for a merge
@@ -523,5 +524,4 @@ static inline void oc_minimise(
 }
 
 
-#define __ORDERED_COVERING_H__
 #endif  // __ORDERED_COVERING_H__

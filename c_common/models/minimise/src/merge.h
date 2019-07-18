@@ -2,6 +2,7 @@
 #include "routing_table.h"
 
 #ifndef __MERGE_H__
+#define __MERGE_H__
 
 typedef struct _merge_t
 {
@@ -126,5 +127,4 @@ static inline void merge_remove(merge_t* m, unsigned int i)
 }
 
 
-#define __MERGE_H__
 #endif  // __MERGE_H__

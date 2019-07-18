@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #ifndef __ROUTING_TABLE_H__
+#define __ROUTING_TABLE_H__
 
 typedef struct _keymask_t
 {
@@ -64,5 +65,4 @@ typedef struct _table_t
 //    table->entries[new_index].source = table->entries[old_index].source;
 //}
 
-#define __ROUTING_TABLE_H__
 #endif  // __ROUTING_TABLE_H__
