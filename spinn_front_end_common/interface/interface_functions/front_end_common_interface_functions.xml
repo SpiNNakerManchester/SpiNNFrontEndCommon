@@ -1670,16 +1670,11 @@
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
-            <parameter>
-                <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-            </parameter>
         </input_definitions>
         <optional_inputs>
             <one_of>
                 <all_of>
                     <param_name>graph_mapper</param_name>
-                    <param_name>application_graph</param_name>
                     <param_name>machine_graph</param_name>
                 </all_of>
                 <all_of>
