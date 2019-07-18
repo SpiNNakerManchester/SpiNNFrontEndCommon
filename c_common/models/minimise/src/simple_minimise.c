@@ -62,6 +62,7 @@ static inline bool find_merge(table_t *table, uint32_t left, uint32_t index) {
 static inline void compress_by_route(table_t *table, uint32_t left, uint32_t right){
     uint32_t index;
     bool merged;
+    merged = false;
 
     while (left < right) {
         index = left + 1;
