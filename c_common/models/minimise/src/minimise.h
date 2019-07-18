@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdlib.h>
 #include "spin1_api.h"
 #include <debug.h>
 #include "remove_default_routes.h"
