@@ -1,0 +1,9 @@
+**/spinnaker_tools/**
+**/spinn_common/**
+**/modified_src/**
+**/reports/**
+**/application_generated_data_files/**
+**/*.aplx
+**/*.json
+**/c_common/models/**/build/*.txt
+**/iobuf_for_*.txt
