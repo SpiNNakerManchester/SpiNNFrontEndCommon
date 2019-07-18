@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdbool.h>
 #include "platform.h"
 #include "routing_table.h"
