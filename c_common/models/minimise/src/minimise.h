@@ -222,4 +222,4 @@ void compress_start() {
     }
 }
 
-#endif __MINIMISE_H__
+#endif //__MINIMISE_H__
