@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include "spin1_api.h"
 #include <debug.h>
+#include "remove_default_routes.h"
+
+#ifndef __MINIMISE_H__
+#define __MINIMISE_H__
+
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation.
  *
@@ -216,3 +221,5 @@ void compress_start() {
         spin1_exit(0);
     }
 }
+
+#endif __MINIMISE_H__
