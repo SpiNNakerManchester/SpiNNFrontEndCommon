@@ -489,6 +489,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
 
+    @property
+    def executable_finder(self):
+        return self._executable_finder
+
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
             msg = "Changing mapping inputs is not supported after run"
@@ -1587,6 +1591,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._json_folder, java_call, java_spinnaker_path,
                         java_properties)
             inputs["JavaCaller"] = self._java_caller
+
+            # add the sdram allocator to ensure the sdram is allocated before
+            #  dsg on a real machine
+            algorithms.append("SDRAMOutgoingPartitionAllocator")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
