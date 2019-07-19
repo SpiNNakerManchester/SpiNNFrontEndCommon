@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 try:
     from collections.abc import defaultdict
 except ImportError:
@@ -232,6 +247,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     TEMP_TIMEOUT = (15, 4)
     ZERO_TIMEOUT = (0, 0)
 
+    # Initial port for the reverse IP tag (to be replaced later)
+    _TAG_INITIAL_PORT = 10000
+
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
             report_default_directory,
@@ -298,8 +316,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                 SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
                 SIZE_DATA_IN_CHIP_TO_KEY_SPACE),
             iptags=[IPtagResource(
-                port=None, strip_sdp=True,
-                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
+                port=DataSpeedUpPacketGatherMachineVertex._TAG_INITIAL_PORT,
+                strip_sdp=True, ip_address="localhost",
+                traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -360,7 +379,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Note: The port doesn't matter as we are going to override this later
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
-        iptag.port = 10000
         spec.write_value(iptag.tag)
         self._remote_tag = iptag.tag
 

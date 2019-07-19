@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 // SARK-based program
 #include <sark.h>
 #include <stdbool.h>
@@ -57,7 +74,7 @@ typedef enum data_out_sdp_commands {
     //! send data command ID in SDP
     SDP_CMD_START_SENDING_DATA = 100,
     //! start missing SDP sequence numbers in SDP
-    //! (this includes n SDP packets expected)
+    //! (this includes number of SDP packets expected)
     SDP_CMD_START_OF_MISSING_SDP_PACKETS = 1000,
     //! other missing SDP sequence numbers in SDP
     SDP_CMD_MORE_MISSING_SDP_PACKETS = 1001,

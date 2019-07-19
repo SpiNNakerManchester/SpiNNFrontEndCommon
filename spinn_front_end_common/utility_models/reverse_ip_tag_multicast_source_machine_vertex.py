@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import math
 import struct
 import numpy
@@ -266,13 +281,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Get a mask and maximum number of keys for the number of keys
         # requested
-        self._mask, max_key = self._calculate_mask(n_keys)
-
-        # Check that the number of keys and the virtual key don't interfere
-        if n_keys > max_key:
-            raise ConfigurationException(
-                "The mask calculated from the number of keys will not work "
-                "with the virtual key specified")
+        self._mask = self._calculate_mask(n_keys)
 
         if self._prefix is not None:
             # Check that the prefix doesn't change the virtual key in the
@@ -412,12 +421,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def _calculate_mask(n_neurons):
-        if n_neurons == 1:
-            return 0xFFFFFFFF, 1
-        temp_value = int(math.ceil(math.log(n_neurons, 2)))
-        max_key = (int(math.pow(2, temp_value)) - 1)
+        temp_value = n_neurons.bit_length()
+        max_key = 2**temp_value - 1
         mask = 0xFFFFFFFF - max_key
-        return mask, max_key
+        return mask
 
     def enable_recording(self, new_state=True):
         """ Enable recording of the keys sent

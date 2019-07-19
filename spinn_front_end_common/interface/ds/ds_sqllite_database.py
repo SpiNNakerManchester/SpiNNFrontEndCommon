@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
 import sqlite3
@@ -21,9 +36,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, report_folder, init=True):
+    def __init__(self, machine, report_folder, init=None):
         self._machine = machine
         database_file = os.path.join(report_folder, DB_NAME)
+
+        if init is None:
+            init = not os.path.exists(database_file)
 
         self._db = sqlite3.connect(database_file)
         self._db.text_factory = memoryview
@@ -79,6 +97,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     (ethernet_x, ethernet_y)):
                 return row["ethernet_id"]
         return self._root_ethernet_id
+
+    @overrides(DsAbstractDatabase.clear_ds)
+    def clear_ds(self):
+        with self._db:
+            self._db.execute(
+                "DELETE FROM core")
 
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):

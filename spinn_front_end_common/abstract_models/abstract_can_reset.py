@@ -1,8 +1,4 @@
-# THIS FILE WAS USED IN AN OLDER MAKE STYLE
-# Make now has to convert c files before building
-# SEE http://spinnakermanchester.github.io/spynnaker/5.0.0/Makefiles.html
-
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2019 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,4 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-$(error inclusion of Makefile.SpiNNFrontEndCommon)
+from six import add_metaclass
+from spinn_utilities.abstract_base import (
+    AbstractBase, abstractmethod)
+
+
+@add_metaclass(AbstractBase)
+class AbstractCanReset(object):
+    """ Indicates an object that can be reset to time 0
+    """
+
+    @abstractmethod
+    def reset_to_first_timestep(self):
+        """ Reset the object to first time step
+        """

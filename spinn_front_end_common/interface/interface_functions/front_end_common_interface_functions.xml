@@ -1,3 +1,19 @@
+<!--
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
@@ -837,8 +853,8 @@
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
             <parameter>
-            	<param_name>disable_advanced_monitor_usage</param_name>
-            	<param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
+                <param_name>disable_advanced_monitor_usage</param_name>
+                <param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1034,7 +1050,10 @@
                 <param_name>repair_machine</param_name>
                 <param_type>RepairMachine</param_type>
             </parameter>
-
+            <parameter>
+                <param_name>ignore_bad_ethernets</param_name>
+                <param_type>IgnoreBadEthernets</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hostname</param_name>
@@ -1049,6 +1068,7 @@
             <param_name>boot_port_num</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>repair_machine</param_name>
+             <param_name>ignore_bad_ethernets</param_name>
         </required_inputs>
         <optional_inputs>
                 <param_name>max_core_id</param_name>
@@ -1216,6 +1236,10 @@
                 <param_name>router_entries_per_chip</param_name>
                 <param_type>RouterTableEntriesPerRouter</param_type>
             </parameter>
+            <parameter>
+                <param_name>json_path</param_name>
+                <param_type>MachineJsonPath</param_type>
+            </parameter>
         </input_definitions>
         <optional_inputs>
             <param_name>width</param_name>
@@ -1229,6 +1253,7 @@
             <param_name>down_links</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>router_entries_per_chip</param_name>
+            <param_name>json_path</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1805,12 +1830,17 @@
                 <param_name>run_until_timesteps</param_name>
                 <param_type>RunUntilTimeSteps</param_type>
             </parameter>
+            <parameter>
+                <param_name>current_timesteps</param_name>
+                <param_type>FirstMachineTimeStep</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
             <param_name>app_id</param_name>
             <param_name>executable_types</param_name>
             <param_name>run_until_timesteps</param_name>
+            <param_name>current_timesteps</param_name>
             <token>BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
@@ -1922,16 +1952,11 @@
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
-            <parameter>
-                <param_name>application_graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-            </parameter>
         </input_definitions>
         <optional_inputs>
             <one_of>
                 <all_of>
                     <param_name>graph_mapper</param_name>
-                    <param_name>application_graph</param_name>
                     <param_name>machine_graph</param_name>
                 </all_of>
                 <all_of>

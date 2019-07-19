@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*! \file
  *
  *  \brief implementation of recording.h
@@ -448,7 +465,7 @@ void _recording_buffer_state_data_write(){
     for (uint32_t recording_region_id = 0;
              recording_region_id < n_recording_regions;
              recording_region_id++) {
-        address_t recording_region_address =
+        recording_channel_t *recording_region_address =
             region_addresses[recording_region_id];
         spin1_memcpy(
              recording_region_address,
