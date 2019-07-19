@@ -1485,7 +1485,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_router_summary_report"):
                 algorithms.append("RouterSummaryReport")
             if self._config.getboolean(
-                    "Reports", "write_compressed_router_summary_report") and \
+                   "Reports", "write_compressed_router_summary_report") and \
                     self.use_virtual_board:
                 algorithms.append("CompressedRouterSummaryReport")
             if self._config.getboolean("Reports",
