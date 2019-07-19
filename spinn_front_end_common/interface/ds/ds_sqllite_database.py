@@ -1,9 +1,25 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
 import sqlite3
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from .ds_abstact_database import DsAbstractDatabase
+from spinn_front_end_common.utilities.utility_objs import DataWritten
 
 DB_NAME = "ds.sqlite3"
 DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
@@ -20,9 +36,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, report_folder, init=True):
+    def __init__(self, machine, report_folder, init=None):
         self._machine = machine
         database_file = os.path.join(report_folder, DB_NAME)
+
+        if init is None:
+            init = not os.path.exists(database_file)
 
         self._db = sqlite3.connect(database_file)
         self._db.text_factory = memoryview
@@ -78,6 +97,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     (ethernet_x, ethernet_y)):
                 return row["ethernet_id"]
         return self._root_ethernet_id
+
+    @overrides(DsAbstractDatabase.clear_ds)
+    def clear_ds(self):
+        with self._db:
+            self._db.execute(
+                "DELETE FROM core")
 
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):
@@ -140,13 +165,22 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         with self._db:
             for row in self._db.execute(
                     "SELECT app_id FROM core "
-                    + "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
+                    "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
                 return row["app_id"]
         return None
 
+    @overrides(DsAbstractDatabase.ds_mark_as_system)
+    def ds_mark_as_system(self, core_list):
+        with self._db:
+            for xyp in core_list:
+                self._db.execute(
+                    "UPDATE core SET is_system = 1 "
+                    "WHERE x = ? AND y = ? AND processor = ?", xyp)
+
     def _row_to_info(self, row):
-        return {key: row[key]
-                for key in ["start_address", "memory_used", "memory_written"]}
+        return DataWritten(start_address=row["start_address"],
+                           memory_used=row["memory_used"],
+                           memory_written=row["memory_written"])
 
     @overrides(DsAbstractDatabase.get_write_info)
     def get_write_info(self, x, y, p):
@@ -165,17 +199,24 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         :param x: core x
         :param y: core y
         :param p: core p
-        :param info: dict() with the keys
+        :param info: DataWritten or dict() with the keys
             'start_address', 'memory_used' and 'memory_written'
         """
+        if isinstance(info, DataWritten):
+            start = info.start_address
+            used = info.memory_used
+            written = info.memory_written
+        else:
+            start = info["start_address"]
+            used = info["memory_used"]
+            written = info["memory_written"]
         with self._db:
             cursor = self._db.cursor()
             cursor.execute(
                 "UPDATE core SET "
                 + "start_address = ?, memory_used = ?, memory_written = ? "
                 + "WHERE x = ? AND y = ? AND processor = ? ",
-                (info["start_address"], info["memory_used"],
-                 info["memory_written"], x, y, p))
+                (start, used, written, x, y, p))
             if cursor.rowcount == 0:
                 chip = self._machine.get_chip_at(x, y)
                 ethernet_id = self.__get_ethernet(
@@ -184,8 +225,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "start_address, memory_used, memory_written) "
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
-                    (x, y, p, ethernet_id, info["start_address"],
-                     info["memory_used"], info["memory_written"]))
+                    (x, y, p, ethernet_id, start, used, written))
 
     @overrides(DsAbstractDatabase.clear_write_info)
     def clear_write_info(self):

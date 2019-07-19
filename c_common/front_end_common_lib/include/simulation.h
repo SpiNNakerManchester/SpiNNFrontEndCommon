@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*! \file
  *
  *  \brief Simulation Functions Header File
@@ -59,12 +76,14 @@ typedef void (*exit_callback_t)();
 //! \param[in] address The address of the region
 //! \param[in] expected_application_magic_number The expected value of the magic
 //!            number that checks if the data was meant for this code
-//! \param[out] simulation_ticks_pointer Pointer to the number of simulation
-//!            ticks, to allow this to be updated when requested via SDP
-//! \param[out] infinite_run_pointer Pointer to the infinite run flag, to allow
-//!            this to be updated when requested via SDP
 //! \param[out] timer_period a pointer to an int to receive the timer period,
 //!             in microseconds
+//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
+//!            ticks, to allow this to be updated when requested via SDP
+//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
+//!            this to be updated when requested via SDP
+//! \param[in] time_pointer Pointer to the current time, to allow this to be
+//!            updated when requested via SDP
 //! \param[in] sdp_packet_callback_priority The priority to use for the
 //!            SDP packet reception
 //! \param[in] dma_transfer_complete_priority The priority to use for the
@@ -73,8 +92,8 @@ typedef void (*exit_callback_t)();
 bool simulation_initialise(
         address_t address, uint32_t expected_application_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
-        int dma_transfer_complete_priority);
+        uint32_t *infinite_run_pointer, uint32_t *time_pointer,
+        int sdp_packet_callback_priority, int dma_transfer_complete_priority);
 
 //! \brief Set the address of the data region where provenance data is to be
 //!        stored

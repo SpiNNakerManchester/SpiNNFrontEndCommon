@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from enum import Enum
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 
@@ -61,22 +76,18 @@ SDP_RUNNING_MESSAGE_CODES = Enum(
 SDP_PORTS = Enum(
     value="SDP_PORTS",
     names=[
-
         # command port for the buffered in functionality
         ("INPUT_BUFFERING_SDP_PORT", 1),
-
         # command port for the buffered out functionality
         ("OUTPUT_BUFFERING_SDP_PORT", 2),
-
         # command port for resetting runtime etc
         ("RUNNING_COMMAND_SDP_PORT", 3),
-
-        # extra monitor core re injection functionality
+        # extra monitor core reinjection functionality
         ("EXTRA_MONITOR_CORE_REINJECTION", 4),
-
         # extra monitor core data transfer functionality
-        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5)]
-)
+        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5),
+        # extra monitor core data in speed up functionality
+        ("EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP", 6)])
 
 # output buffering operations
 # a listing of what SpiNNaker specific EIEIO commands there are.

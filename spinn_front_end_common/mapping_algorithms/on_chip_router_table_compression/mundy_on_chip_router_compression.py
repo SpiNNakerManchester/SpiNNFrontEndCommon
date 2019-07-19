@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
 import struct
@@ -5,8 +20,9 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
 from spinnman.model.enums import CPUState
-from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.mapping_algorithms import (
     on_chip_router_table_compression)
 from spinn_front_end_common.interface.interface_functions import (
@@ -38,6 +54,7 @@ class MundyOnChipRouterCompression(object):
         """
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface
+        :type transceiver: :py:class:`~spinnman.Transceiver`
         :param machine: the SpiNNaker machine representation
         :param app_id: the application ID used by the main application
         :param provenance_file_path: the path to where to write the data
@@ -120,6 +137,9 @@ class MundyOnChipRouterCompression(object):
         """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
+
+        :param txrx: the spinnman interface
+        :type txrx: :py:class:`~spinnman.Transceiver`
         """
 
         for core_subset in executable_targets.all_core_subsets:
@@ -144,7 +164,8 @@ class MundyOnChipRouterCompression(object):
             executable_targets, txrx, provenance_file_path, compressor_app_id):
         """
         :param executable_targets:
-        :param txrx:
+        :param txrx: the spinnman interface
+        :type txrx: :py:class:`~spinnman.Transceiver`
         :param provenance_file_path:
         :rtype: None
         """
@@ -165,8 +186,10 @@ class MundyOnChipRouterCompression(object):
         """ Loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
-        :param compressor_app_id: the app ID of the compressor compressor
+        :param compressor_app_id: \
+            the application ID of the compressor compressor
         :param txrx: the spinnman interface
+        :type txrx: :py:class:`~spinnman.Transceiver`
         :param machine: the SpiNNaker machine representation
         :return:\
             the executable targets that represent all cores/chips which have\
@@ -187,7 +210,8 @@ class MundyOnChipRouterCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(_BINARY_PATH, core_subsets)
+        executable_targets.add_subsets(_BINARY_PATH, core_subsets,
+                                       ExecutableType.RUNNING)
 
         txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets

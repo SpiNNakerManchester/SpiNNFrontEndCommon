@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
@@ -6,8 +21,9 @@ from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification)
-from spinn_front_end_common.interface.ds.data_specification_targets import \
-    DataSpecificationTargets
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.interface.ds import DataSpecificationTargets
 
 
 class _MockCPUInfo(object):
@@ -25,6 +41,7 @@ class _MockCPUInfo(object):
 class _MockTransceiver(object):
     """ Pretend transceiver
     """
+    # pylint: disable=unused-argument
 
     def __init__(self, user_0_addresses):
         """
@@ -80,8 +97,13 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.write_value(3)
             spec.end_specification()
 
-        infos = executor.__call__(
-            transceiver, machine, 30, dsg_targets, tempdir)
+        # Execute the spec
+        targets = ExecutableTargets()
+        targets.add_processor("text.aplx", 0, 0, 0,
+                              ExecutableType.USES_SIMULATION_INTERFACE)
+        infos = executor.execute_application_data_specs(
+            transceiver, machine, 30, dsg_targets, False, targets,
+            report_folder=tempdir)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -116,8 +138,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions[3][1]), 4)
 
         info = infos[(0, 0, 0)]
-        self.assertEqual(info["memory_used"], 372)
-        self.assertEqual(info["memory_written"], 88)
+        self.assertEqual(info.memory_used, 372)
+        self.assertEqual(info.memory_written, 88)
 
 
 if __name__ == "__main__":

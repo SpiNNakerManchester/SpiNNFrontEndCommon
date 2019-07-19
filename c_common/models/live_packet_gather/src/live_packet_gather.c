@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <common-typedefs.h>
 #include <circular_buffer.h>
 #include <data_specification.h>
@@ -303,7 +320,7 @@ void incoming_event_process_callback(uint unused0, uint unused1) {
         if (circular_buffer_get_next(without_payload_buffer, &key)) {
             process_incoming_event(key);
         } else if (circular_buffer_get_next(with_payload_buffer, &key)
-        	&& circular_buffer_get_next(with_payload_buffer, &payload)) {
+                && circular_buffer_get_next(with_payload_buffer, &payload)) {
             process_incoming_event_payload(key, payload);
         } else {
             processing_events = false;
@@ -386,23 +403,24 @@ void read_parameters(address_t region_address) {
 bool initialize(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
 
     // Read the header
-    if (!data_specification_read_header(address)) {
+    if (!data_specification_read_header(ds_regions)) {
         return false;
     }
 
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM_REGION, address),
+            data_specification_get_region(SYSTEM_REGION, ds_regions),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP, DMA)) {
+            &infinite_run, &time, SDP, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
-        record_provenance_data,
-        data_specification_get_region(PROVENANCE_REGION, address));
+            record_provenance_data,
+            data_specification_get_region(PROVENANCE_REGION, ds_regions));
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (infinite_run != TRUE) {
@@ -411,7 +429,7 @@ bool initialize(uint32_t *timer_period) {
 
     // Read the parameters
     read_parameters(
-        data_specification_get_region(CONFIGURATION_REGION, address));
+            data_specification_get_region(CONFIGURATION_REGION, ds_regions));
 
     return true;
 }

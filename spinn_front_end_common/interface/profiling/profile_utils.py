@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import struct
 from .profile_data import ProfileData
@@ -13,7 +28,7 @@ _ONE_WORD = struct.Struct("<I")
 
 
 def get_profile_region_size(n_samples):
-    """ Get the size of the region of the profile data
+    """ Get the size of the region of the profile data.
 
     :param n_samples: number of different samples to record
     :return: the size in bytes used by the profile region
@@ -23,13 +38,12 @@ def get_profile_region_size(n_samples):
 
 
 def reserve_profile_region(spec, region, n_samples):
-    """ Reserves the profile region for recording the profile data
+    """ Reserves the profile region for recording the profile data.
 
     :param spec: the DSG specification writer
     :param region: region ID for the profile data
     :param n_samples: number of elements being sampled
     :rtype: None
-
     """
     size = get_profile_region_size(n_samples)
     spec.reserve_memory_region(
@@ -37,7 +51,7 @@ def reserve_profile_region(spec, region, n_samples):
 
 
 def write_profile_region_data(spec, region, n_samples):
-    """ Writes the profile region data
+    """ Writes the profile region data.
 
     :param spec: the DSG specification writer
     :param region: region ID for the profile data
@@ -49,13 +63,14 @@ def write_profile_region_data(spec, region, n_samples):
 
 
 def get_profiling_data(profile_region, tag_labels, txrx, placement):
-    """ Utility function to get profile data from a profile region
+    """ Utility function to get profile data from a profile region.
 
     :param profile_region: DSG region to get profiling data out of SDRAM
     :param tag_labels: labels for the profiling data
     :param txrx: SpiNNMan transceiver
     :param placement: placement
-    :return: ProfileData
+    :return: \
+        :py:class:`~spinn_front_end_common.interface.profiling.ProfileData`
     """
 
     profile_data = ProfileData(tag_labels)
