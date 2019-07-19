@@ -46,7 +46,7 @@
 //! convert between words to bytes
 #define WORD_TO_BYTE_MULTIPLIER 4
 
-/ max id needed to cover the chips in either direction on a spinn-5 board
+//! max id needed to cover the chips in either direction on a spinn-5 board
 #define MAX_CHIP_ID 8
 
 //! size of total missing seq packets as elements

@@ -440,10 +440,11 @@ class HostBasedBitFieldRouterCompressor(object):
             flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
             return flag
         except Exception:
-            print "failed to read word {} and shifting {} bits as words " \
-                  "length is {} neuron id {} for n neurons of {}".format(
+            print(
+                "failed to read word {} and shifting {} bits as words "
+                "length is {} neuron id {} for n neurons of {}".format(
                     word_id, bit_in_word, len(bit_field), neuron_id,
-                    len(bit_field) * self._BITS_IN_A_WORD)
+                    len(bit_field) * self._BITS_IN_A_WORD))
             import sys
             sys.exit()
 

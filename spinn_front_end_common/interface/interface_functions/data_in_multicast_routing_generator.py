@@ -16,8 +16,8 @@
 from six import iteritems
 from pacman.model.graphs.machine import MachineGraph, MachineEdge
 from pacman.model.placements import Placements, Placement
-from pacman.model.routing_tables import (
-    MulticastRoutingTables, MulticastRoutingTable)
+from pacman.model.routing_tables import MulticastRoutingTables, \
+    UnCompressedMulticastRoutingTable
 from pacman.operations.fixed_route_router.fixed_route_router import (
     RoutingMachineVertex)
 from pacman.operations.router_algorithms import BasicDijkstraRouting
@@ -82,7 +82,7 @@ class DataInMulticastRoutingGenerator(object):
         """
         for fake_chip_x, fake_chip_y in \
                 routing_tables_by_partition.get_routers():
-            multicast_routing_table = MulticastRoutingTable(
+            multicast_routing_table = UnCompressedMulticastRoutingTable(
                 *self._real_machine.get_global_xy(
                     fake_chip_x, fake_chip_y,
                     ethernet_chip.x, ethernet_chip.y))
