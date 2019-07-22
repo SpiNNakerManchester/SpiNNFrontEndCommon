@@ -37,7 +37,7 @@ class BitFieldCompressorReport(object):
     @staticmethod
     def _merged_component(provenance_items, writer):
         top_bit_field = 0
-        min_bit_field = sys.maxint
+        min_bit_field = sys.maxsize
         total_bit_fields_merged = 0
         average_per_chip_merged = 0
         n_chips = 0
@@ -93,7 +93,7 @@ class BitFieldCompressorReport(object):
                             seen_partitions.append(incoming_partition)
 
         max_bit_fields_on_chip = 0
-        min_bit_fields_on_chip = sys.maxint
+        min_bit_fields_on_chip = sys.maxsize
 
         for chip_key in to_merge_per_chip.keys():
             if to_merge_per_chip[chip_key] > max_bit_fields_on_chip:
