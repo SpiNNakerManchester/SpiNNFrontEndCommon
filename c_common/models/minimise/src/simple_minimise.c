@@ -97,55 +97,52 @@ static inline void swap(table_t *table, uint32_t a, uint32_t b){
 static void quicksort(table_t *table, uint32_t low, uint32_t high){
     // Sorts the entries in place based on route
     // param low: Inclusive lowest index to consider
-    // param high: Inclusive highest index to consider
-    for (uint32_t i = 0; i < table->size; i++) {
-        entry_t entry = table->entries[i];
-        log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-    }
-    log_info("sort %u %u", low, high);
-    if (low < high) {
-        uint32_t right = low + 1;
-        uint32_t left = low;
-        uint32_t h_write = high;
-        log_info("pre sort %u %u %u %u %u" , low, left, right, h_write, high);
-        entry_t entry = table->entries[left];
-        log_info("entry %u %u %u %u %u", left, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-        uint32_t pivot = table->entries[left].route;
-        log_info("A sort %u %u %u %u %u %u", low, left, right, h_write, high, pivot);
-        while (right <= h_write){
-            if (table->entries[right].route < pivot){
-                swap(table, left, right);
-                left++;
-                right++;
-                log_info("B sort %u %u %u %u %u %u", low, left, right, h_write, high, pivot);
-                for (uint32_t i = 0; i < table->size; i++) {
-                    entry_t entry = table->entries[i];
-                    log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-                }
-            } else if (table->entries[right].route > pivot) {
-                swap(table, h_write, right);
+    // param high: Exclusive highest index to consider
+
+    // Location to write any smaller values to
+    // Will always point to most left entry with pivot value
+    uint32_t l_write;
+
+    // Location of entry currently being checked.
+    // At the end check will point to either
+    //     the right most entry with a value greater than the pivot
+    //     or high indicating there are no entries greater than the pivot
+    uint32_t check;
+
+    // Location to write any greater values to
+    // Until the algorithm ends this will point to an unsorted value
+    uint32_t h_write;
+
+    if (low < high - 1) {
+        // pick low entry for the pivot
+        uint32_t pivot = table->entries[low].route;
+        //Start at low + 1 as entry low is the pivot
+        check = low + 1;
+        // If we find any less than swap with the first pivot
+        l_write = low;
+        // if we find any higher swap with last entry in the sort section
+        h_write = high -1;
+
+        while (check <= h_write){
+            if (table->entries[check].route < pivot){
+                // swap the check to the left
+                swap(table, l_write, check);
+                l_write++;
+                // move the check on as known to be pivot value
+                check++;
+            } else if (table->entries[check].route > pivot) {
+                // swap the check to the right
+                swap(table, h_write, check);
                 h_write--;
-                log_info("C sort %u %u %u %u %u %u", low, left, right, h_write, high, pivot);
-                for (uint32_t i = 0; i < table->size; i++) {
-                    entry_t entry = table->entries[i];
-                    log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-                }
+                // Do not move the check as it has an unknown value
             } else {
-                right++;
-                log_info("D sort %u %u %u %u %u %u", low, left, right, h_write, high, pivot);
-                for (uint32_t i = 0; i < table->size; i++) {
-                    entry_t entry = table->entries[i];
-                    log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-                }
+                // Move check as it has the pivot value
+                check++;
             }
         }
-        log_info("end sort %u %u %u %u %u", low, left, right, h_write, high);
-        quicksort(table, low, left - 1);
-        quicksort(table, right, high);
-    }
-    for (uint32_t i = 0; i < table->size; i++) {
-        entry_t entry = table->entries[i];
-        log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
+        // Now sort the ones less than or more than the pivot
+        quicksort(table, low, l_write);
+        quicksort(table, check, high);
     }
 }
 
@@ -158,7 +155,12 @@ static inline void simple_minimise(table_t *table, uint32_t target_length){
     }
 
     log_info("do qsort by route");
-    quicksort(table, 0, table->size-1);
+    quicksort(table, 0, table->size);
+
+    for (uint32_t i = 0; i < table->size; i++) {
+        entry_t entry = table->entries[i];
+        log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
+    }
 
     return;
 
