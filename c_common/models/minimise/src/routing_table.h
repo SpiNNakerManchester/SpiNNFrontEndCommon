@@ -65,4 +65,46 @@ typedef struct _table_t
 //    table->entries[new_index].source = table->entries[old_index].source;
 //}
 
+typedef struct {
+
+    // Application ID to use to load the routing table. This can be left as `0'
+    // to load routing entries with the same application ID that was used to
+    // load this application.
+    uint32_t app_id;
+
+    //flag for compressing when only needed
+    uint32_t compress_only_when_needed;
+
+    // flag that uses the available entries of the router table instead of
+    //compressing as much as possible.
+    uint32_t compress_as_much_as_possible;
+
+    // Initial size of the routing table.
+    uint32_t table_size;
+
+    // Routing table entries
+    entry_t entries[];
+} header_t;
+
+table_t table;
+
+static table_t get_table(){
+    return table;
+}
+
+//! \brief Read a new copy of the routing table from SDRAM.
+//! \param[in] table : the table containing router table entries
+//! \param[in] header: the header object
+static void read_table(header_t *header) {
+    // Copy the size of the table
+    table.size = header->table_size;
+
+    // Allocate space for the routing table entries
+    table.entries = MALLOC(table.size * sizeof(entry_t));
+
+    // Copy in the routing table entries
+    spin1_memcpy((void *) table.entries, (void *) header->entries,
+            sizeof(entry_t) * table.size);
+}
+
 #endif  // __ROUTING_TABLE_H__

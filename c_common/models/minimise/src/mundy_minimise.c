@@ -18,7 +18,7 @@ int compare_rte(const void *va, const void *vb) {
 
 void minimise(table_t *table, uint32_t target_length){
     log_info("do qsort by route");
-    qsort(table->entries, table->size, sizeof(entry_t), compare_rte);
+    //qsort(table->entries, table->size, sizeof(entry_t), compare_rte);
 
     // Perform the minimisation
     aliases_t aliases = aliases_init();

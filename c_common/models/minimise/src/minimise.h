@@ -18,27 +18,6 @@
  * (entry_t is defined in `routing_table.h` but is described below).
  */
 
-typedef struct {
-
-    // Application ID to use to load the routing table. This can be left as `0'
-    // to load routing entries with the same application ID that was used to
-    // load this application.
-    uint32_t app_id;
-
-    //flag for compressing when only needed
-    uint32_t compress_only_when_needed;
-
-    // flag that uses the available entries of the router table instead of
-    //compressing as much as possible.
-    uint32_t compress_as_much_as_possible;
-
-    // Initial size of the routing table.
-    uint32_t table_size;
-
-    // Routing table entries
-    entry_t entries[];
-} header_t;
-
 /* entry_t is defined as:
  *
  *     typedef struct
@@ -74,21 +53,6 @@ void print_header(header_t *header) {
         "compress_as_much_as_possible = %d",
         header->compress_as_much_as_possible);
     log_info("table_size = %d", header->table_size);
-}
-
-//! \brief Read a new copy of the routing table from SDRAM.
-//! \param[in] table : the table containing router table entries
-//! \param[in] header: the header object
-void read_table(table_t *table, header_t *header) {
-    // Copy the size of the table
-    table->size = header->table_size;
-
-    // Allocate space for the routing table entries
-    table->entries = MALLOC(table->size * sizeof(entry_t));
-
-    // Copy in the routing table entries
-    spin1_memcpy((void *) table->entries, (void *) header->entries,
-            sizeof(entry_t) * table->size);
 }
 
 //! \brief Load a routing table to the router.
@@ -156,7 +120,8 @@ void compress_start() {
     // Load the routing table
     table_t table;
     log_debug("start reading table");
-    read_table(&table, header);
+    read_table(header);
+    table = get_table();
     log_debug("finished reading table");
 
     // Store intermediate sizes for later reporting (if we fail to minimise)
@@ -177,7 +142,8 @@ void compress_start() {
                 //Opps we need the defaults back before trying compression
                 log_debug("free the tables entries");
                 FREE(table.entries);
-                read_table(&table, header);
+                read_table(header);
+                table = get_table();
             }
         }
     }
