@@ -325,10 +325,10 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # remove bitfields from cores that have been merged into the
         # router table
-        # self._remove_merged_bitfields_from_cores(
-        #    self._best_bit_fields_by_processor, router_table.x,
-        #    router_table.y, transceiver,
-        #    bit_field_chip_base_addresses, bit_fields_by_processor)
+        self._remove_merged_bitfields_from_cores(
+            self._best_bit_fields_by_processor, router_table.x,
+            router_table.y, transceiver,
+            bit_field_chip_base_addresses, bit_fields_by_processor)
 
         # report
         if produce_report:
@@ -718,7 +718,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # compress the router entries using rigs compressor
         compressed_router_table_entries = rigs_compressor.minimise(
             entries, target_length, time_to_try_for_each_iteration,
-            use_timer_cut_off, default_report_folder, chip_x, chip_y)
+            use_timer_cut_off)
 
         # convert back to pacman model
         compressed_pacman_table = \
