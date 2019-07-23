@@ -168,8 +168,7 @@ class HostBasedBitFieldRouterCompressor(object):
         for router_table in progress.over(router_tables.routing_tables, False):
             self.collect_bit_field_sdram_base_addresses(
                 router_table.x, router_table.y, machine, placements,
-                transceiver, graph_mapper, bit_field_sdram_base_addresses,
-                machine_graph)
+                transceiver, graph_mapper, bit_field_sdram_base_addresses)
 
         # start the routing table choice conversion
         for router_table in progress.over(router_tables.routing_tables):
@@ -178,14 +177,13 @@ class HostBasedBitFieldRouterCompressor(object):
                 bit_field_sdram_base_addresses, transceiver, machine_graph,
                 placements, machine, graph_mapper, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off,
-                compressed_pacman_router_tables, key_atom_map,
-                default_report_folder)
+                compressed_pacman_router_tables, key_atom_map)
         # return compressed tables
         return compressed_pacman_router_tables
 
     def collect_bit_field_sdram_base_addresses(
             self, chip_x, chip_y, machine, placements, transceiver,
-            graph_mapper, bit_field_sdram_base_addresses, machine_graph):
+            graph_mapper, bit_field_sdram_base_addresses):
 
         # locate the bitfields in a chip level scope
         n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
@@ -263,8 +261,7 @@ class HostBasedBitFieldRouterCompressor(object):
             bit_field_sdram_base_addresses, transceiver, machine_graph,
             placements, machine, graph_mapper, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
-            compressed_pacman_router_tables, key_atom_map,
-            default_report_folder):
+            compressed_pacman_router_tables, key_atom_map):
         """ entrance method for doing on host compression. Utilisable as a \
         public method for other compressors.
 
@@ -287,7 +284,6 @@ class HostBasedBitFieldRouterCompressor(object):
         should be allowed to handle per time step
         :param compressed_pacman_router_tables: a data holder for compressed \
         tables
-        :param default_report_folder: default report folder
         :return: None
         """
 
@@ -316,8 +312,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # execute binary search
         self._start_binary_search(
             router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map,
-            default_report_folder)
+            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map)
 
         # add final to compressed tables
         compressed_pacman_router_tables.add_routing_table(
@@ -612,8 +607,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def _start_binary_search(
             self, router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map,
-            default_report_folder):
+            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map):
         """ start binary search of the merging of bitfield to router table
 
         :param router_table: uncompressed router table
@@ -631,8 +625,7 @@ class HostBasedBitFieldRouterCompressor(object):
         try:
             self._best_routing_table = self._run_algorithm(
                 [router_table], target_length, router_table.x, router_table.y,
-                time_to_try_for_each_iteration, use_timer_cut_off,
-                default_report_folder)
+                time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_processor = []
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
@@ -645,13 +638,12 @@ class HostBasedBitFieldRouterCompressor(object):
             routing_table=router_table, target_length=target_length,
             time_to_try_for_each_iteration=time_to_try_for_each_iteration,
             use_timer_cut_off=use_timer_cut_off,
-            key_to_n_atoms_map=key_atom_map,
-            default_report_folder=default_report_folder))
+            key_to_n_atoms_map=key_atom_map))
 
     def _binary_search_check(
             self, mid_point, sorted_bit_fields, routing_table, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
-            key_to_n_atoms_map, default_report_folder):
+            key_to_n_atoms_map):
         """ check function for fix max success
 
         :param mid_point: the point if the list to stop at
@@ -681,7 +673,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 self._run_algorithm(
                     bit_field_router_tables, target_length, routing_table.x,
                     routing_table.y, time_to_try_for_each_iteration,
-                    use_timer_cut_off, default_report_folder)
+                    use_timer_cut_off)
             self._best_bit_fields_by_processor = \
                 new_bit_field_by_processor
             return True
@@ -692,8 +684,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def _run_algorithm(
             self, router_tables, target_length, chip_x, chip_y,
-            time_to_try_for_each_iteration, use_timer_cut_off,
-            default_report_folder):
+            time_to_try_for_each_iteration, use_timer_cut_off):
         """ attempts to covert the mega router tables into 1 router table. will\
         raise a MinimisationFailedError exception if it fails to compress to \
         the correct length
