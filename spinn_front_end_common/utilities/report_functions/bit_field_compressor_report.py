@@ -1,3 +1,18 @@
+# Copyright (c) 2019-2020 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
 import sys
@@ -37,7 +52,7 @@ class BitFieldCompressorReport(object):
     @staticmethod
     def _merged_component(provenance_items, writer):
         top_bit_field = 0
-        min_bit_field = sys.maxint
+        min_bit_field = sys.maxsize
         total_bit_fields_merged = 0
         average_per_chip_merged = 0
         n_chips = 0
@@ -93,7 +108,7 @@ class BitFieldCompressorReport(object):
                             seen_partitions.append(incoming_partition)
 
         max_bit_fields_on_chip = 0
-        min_bit_fields_on_chip = sys.maxint
+        min_bit_fields_on_chip = sys.maxsize
 
         for chip_key in to_merge_per_chip.keys():
             if to_merge_per_chip[chip_key] > max_bit_fields_on_chip:

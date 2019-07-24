@@ -1,3 +1,18 @@
+# Copyright (c) 2019-2020 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import division
 
 import functools
@@ -168,8 +183,7 @@ class HostBasedBitFieldRouterCompressor(object):
         for router_table in progress.over(router_tables.routing_tables, False):
             self.collect_bit_field_sdram_base_addresses(
                 router_table.x, router_table.y, machine, placements,
-                transceiver, graph_mapper, bit_field_sdram_base_addresses,
-                machine_graph)
+                transceiver, graph_mapper, bit_field_sdram_base_addresses)
 
         # start the routing table choice conversion
         for router_table in progress.over(router_tables.routing_tables):
@@ -178,14 +192,13 @@ class HostBasedBitFieldRouterCompressor(object):
                 bit_field_sdram_base_addresses, transceiver, machine_graph,
                 placements, machine, graph_mapper, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off,
-                compressed_pacman_router_tables, key_atom_map,
-                default_report_folder)
+                compressed_pacman_router_tables, key_atom_map)
         # return compressed tables
         return compressed_pacman_router_tables
 
     def collect_bit_field_sdram_base_addresses(
             self, chip_x, chip_y, machine, placements, transceiver,
-            graph_mapper, bit_field_sdram_base_addresses, machine_graph):
+            graph_mapper, bit_field_sdram_base_addresses):
 
         # locate the bitfields in a chip level scope
         n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
@@ -263,8 +276,7 @@ class HostBasedBitFieldRouterCompressor(object):
             bit_field_sdram_base_addresses, transceiver, machine_graph,
             placements, machine, graph_mapper, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
-            compressed_pacman_router_tables, key_atom_map,
-            default_report_folder):
+            compressed_pacman_router_tables, key_atom_map):
         """ entrance method for doing on host compression. Utilisable as a \
         public method for other compressors.
 
@@ -287,7 +299,6 @@ class HostBasedBitFieldRouterCompressor(object):
         should be allowed to handle per time step
         :param compressed_pacman_router_tables: a data holder for compressed \
         tables
-        :param default_report_folder: default report folder
         :return: None
         """
 
@@ -316,8 +327,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # execute binary search
         self._start_binary_search(
             router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map,
-            default_report_folder)
+            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map)
 
         # add final to compressed tables
         compressed_pacman_router_tables.add_routing_table(
@@ -325,10 +335,10 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # remove bitfields from cores that have been merged into the
         # router table
-        # self._remove_merged_bitfields_from_cores(
-        #    self._best_bit_fields_by_processor, router_table.x,
-        #    router_table.y, transceiver,
-        #    bit_field_chip_base_addresses, bit_fields_by_processor)
+        self._remove_merged_bitfields_from_cores(
+            self._best_bit_fields_by_processor, router_table.x,
+            router_table.y, transceiver,
+            bit_field_chip_base_addresses, bit_fields_by_processor)
 
         # report
         if produce_report:
@@ -440,8 +450,9 @@ class HostBasedBitFieldRouterCompressor(object):
             flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
             return flag
         except Exception:
-            print("failed to read word {} and shifting {} bits as words " \
-                  "length is {} neuron id {} for n neurons of {}".format(
+            print(
+                "failed to read word {} and shifting {} bits as words "
+                "length is {} neuron id {} for n neurons of {}".format(
                     word_id, bit_in_word, len(bit_field), neuron_id,
                     len(bit_field) * self._BITS_IN_A_WORD))
             import sys
@@ -611,8 +622,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def _start_binary_search(
             self, router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map,
-            default_report_folder):
+            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map):
         """ start binary search of the merging of bitfield to router table
 
         :param router_table: uncompressed router table
@@ -630,8 +640,7 @@ class HostBasedBitFieldRouterCompressor(object):
         try:
             self._best_routing_table = self._run_algorithm(
                 [router_table], target_length, router_table.x, router_table.y,
-                time_to_try_for_each_iteration, use_timer_cut_off,
-                default_report_folder)
+                time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_processor = []
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
@@ -644,13 +653,12 @@ class HostBasedBitFieldRouterCompressor(object):
             routing_table=router_table, target_length=target_length,
             time_to_try_for_each_iteration=time_to_try_for_each_iteration,
             use_timer_cut_off=use_timer_cut_off,
-            key_to_n_atoms_map=key_atom_map,
-            default_report_folder=default_report_folder))
+            key_to_n_atoms_map=key_atom_map))
 
     def _binary_search_check(
             self, mid_point, sorted_bit_fields, routing_table, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
-            key_to_n_atoms_map, default_report_folder):
+            key_to_n_atoms_map):
         """ check function for fix max success
 
         :param mid_point: the point if the list to stop at
@@ -680,7 +688,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 self._run_algorithm(
                     bit_field_router_tables, target_length, routing_table.x,
                     routing_table.y, time_to_try_for_each_iteration,
-                    use_timer_cut_off, default_report_folder)
+                    use_timer_cut_off)
             self._best_bit_fields_by_processor = \
                 new_bit_field_by_processor
             return True
@@ -691,8 +699,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def _run_algorithm(
             self, router_tables, target_length, chip_x, chip_y,
-            time_to_try_for_each_iteration, use_timer_cut_off,
-            default_report_folder):
+            time_to_try_for_each_iteration, use_timer_cut_off):
         """ attempts to covert the mega router tables into 1 router table. will\
         raise a MinimisationFailedError exception if it fails to compress to \
         the correct length
@@ -717,7 +724,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # compress the router entries using rigs compressor
         compressed_router_table_entries = rigs_compressor.minimise(
             entries, target_length, time_to_try_for_each_iteration,
-            use_timer_cut_off, default_report_folder, chip_x, chip_y)
+            use_timer_cut_off)
 
         # convert back to pacman model
         compressed_pacman_table = \

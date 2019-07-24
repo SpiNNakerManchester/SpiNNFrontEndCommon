@@ -1,3 +1,18 @@
+# Copyright (c) 2019-2020 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import functools
 import logging
 import struct
@@ -7,7 +22,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import get_generality as ordered_covering_generality
 from spinn_front_end_common.interface.interface_functions import \
-    ChipIOBufExtractor
+    ChipIOBufExtractor, LoadExecutableImages
 from spinn_front_end_common.interface.interface_functions.\
     host_bit_field_router_compressor import \
     HostBasedBitFieldRouterCompressor
@@ -15,7 +30,8 @@ from spinn_front_end_common.mapping_algorithms. \
     on_chip_router_table_compression.mundy_on_chip_router_compression import \
     MundyOnChipRouterCompression
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
+    ExecutableType
 from spinn_machine import CoreSubsets, Router
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
@@ -100,7 +116,8 @@ class MachineBitFieldRouterCompressor(object):
             read_algorithm_iobuf, produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
-            no_sync_changes, threshold_percentage, graph_mapper=None,
+            no_sync_changes, threshold_percentage,
+            executable_targets, graph_mapper=None,
             compress_only_when_needed=True,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
@@ -121,6 +138,7 @@ class MachineBitFieldRouterCompressor(object):
         when needed
         :param compress_as_much_as_possible: bool flag asking if should \
         compress as much as possible
+        :param executable_targets: the set of targets and executables
         :rtype: executable targets
         """
 
@@ -148,7 +166,8 @@ class MachineBitFieldRouterCompressor(object):
         # create executable targets
         (compressor_executable_targets, bit_field_sorter_executable_path,
          bit_field_compressor_executable_path) = self._generate_core_subsets(
-            routing_tables, executable_finder, machine, progress_bar)
+            routing_tables, executable_finder, machine, progress_bar,
+            executable_targets)
 
         # load data into sdram
         on_host_chips = self._load_data(
@@ -233,24 +252,32 @@ class MachineBitFieldRouterCompressor(object):
         return compressor_executable_targets, prov_items
 
     def _generate_core_subsets(
-            self, routing_tables, executable_finder, machine, progress_bar):
+            self, routing_tables, executable_finder, machine, progress_bar,
+            system_executable_targets):
         """ generates the core subsets for the binaries
 
         :param routing_tables: the routing tables
         :param executable_finder: the executable path finder
         :param machine: the spinn machine instance
         :param progress_bar: progress bar
+        :param system_executable_targets: the executables targets to cores
         :return: tuple of (targets, sorter path and compressor path)
         """
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
+
+        _, cores = LoadExecutableImages.filter_targets(
+            system_executable_targets, lambda ty: ty is ExecutableType.SYSTEM)
 
         for routing_table in progress_bar.over(routing_tables, False):
             # add 1 core to the sorter, and the rest to compressors
             sorter = None
             for processor in machine.get_chip_at(
                     routing_table.x, routing_table.y).processors:
-                if not processor.is_monitor:
+                if (not processor.is_monitor and
+                        not cores.all_core_subsets.is_core(
+                            routing_table.x, routing_table.y,
+                            processor.processor_id)):
                     if sorter is None:
                         sorter = processor
                         bit_field_sorter_cores.add_processor(

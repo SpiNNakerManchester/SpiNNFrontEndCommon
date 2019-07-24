@@ -44,7 +44,7 @@ class LoadExecutableImages(object):
 
     def __load_images(self, executable_targets, app_id, txrx, filt, label):
         # Compute what work is to be done here
-        binaries, cores = self.__filter(executable_targets, filt)
+        binaries, cores = self.filter_targets(executable_targets, filt)
 
         # ISSUE: Loading order may be non-constant on older Python
         progress = ProgressBar(cores.total_processors + 1, label)
@@ -57,7 +57,7 @@ class LoadExecutableImages(object):
         progress.end()
 
     @staticmethod
-    def __filter(targets, filt):
+    def filter_targets(targets, filt):
         binaries = []
         cores = ExecutableTargets()
         for exe_type in targets.executable_types_in_binary_set():

@@ -16,8 +16,7 @@
 from six import iteritems
 from pacman.model.graphs.machine import MachineGraph, MachineEdge
 from pacman.model.placements import Placements, Placement
-from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.model.routing_tables.uncompressed_multicast_routing_table import \
+from pacman.model.routing_tables import MulticastRoutingTables, \
     UnCompressedMulticastRoutingTable
 from pacman.operations.fixed_route_router.fixed_route_router import (
     RoutingMachineVertex)

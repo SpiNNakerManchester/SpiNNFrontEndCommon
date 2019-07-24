@@ -14,11 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.interface.interface_functions import \
-    EdgeToNKeysMapper
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.interface.interface_functions import \
+    EdgeToNKeysMapper
 
 
 class InsertEdgesToLivePacketGatherers(object):
@@ -39,8 +39,9 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine: the SpiNNaker machine
         :param machine_graph: the machine graph
         :param application_graph: the application graph
-        :param graph_mapper: the mapping between application and machine graphs
-        :param n_keys_map: map of n keys
+        :param graph_mapper: \
+            the mapping between application and machine graphs
+        :param n_keys_map: key map
         :rtype: None
         """
         # pylint: disable=too-many-arguments

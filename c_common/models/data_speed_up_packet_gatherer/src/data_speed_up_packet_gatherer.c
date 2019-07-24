@@ -22,6 +22,7 @@
 #include <simulation.h>
 #include <debug.h>
 #include <bit_field.h>
+#include <sdp_no_scp.h>
 
 //-----------------------------------------------------------------------------
 // MAGIC NUMBERS
@@ -30,22 +31,22 @@
 //! timeout used in sending SDP messages
 #define SDP_TIMEOUT 100
 
- //! whatever SDP flags do
+//! whatever SDP flags do
 #define SDP_FLAGS 0x07
 
- //! the source port for the SDP messages. possibly used by host
+//! the source port for the SDP messages. possibly used by host
 #define SDP_SOURCE_PORT 3
 
- //! the time to wait before trying again to send a message (MC, SDP)
+//! the time to wait before trying again to send a message (MC, SDP)
 #define MESSAGE_DELAY_TIME_WHEN_FAIL 1
-
-//! How many multicast packets are to be received per SDP packet
-#define ITEMS_PER_DATA_PACKET 68
 
 //! first sequence number to use and reset to
 #define FIRST_SEQ_NUM 0
 
-// max id needed to cover the chips in either direction on a spinn-5 board
+//! convert between words to bytes
+#define WORD_TO_BYTE_MULTIPLIER 4
+
+//! max id needed to cover the chips in either direction on a spinn-5 board
 #define MAX_CHIP_ID 8
 
 //! size of total missing seq packets as elements
@@ -100,30 +101,6 @@ enum sdp_port_commands {
 #define ITEMS_PER_MORE_MISSING_PACKET \
     (ITEMS_PER_DATA_PACKET - 1)
 
-//-----------------------------------------------------------------------------
-// TYPES AND GLOBALS
-//-----------------------------------------------------------------------------
-
-//! struct for a SDP message with pure data, no SCP header
-typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
-    struct sdp_msg *next;	// Next in free list
-    uint16_t length;		// length
-    uint16_t checksum;		// checksum (if used)
-
-    // sdp_hdr_t
-    // The length field measures from HERE...
-    uint8_t flags;	    	// SDP flag byte
-    uint8_t tag;		    // SDP IPtag
-    uint8_t dest_port;		// SDP destination port/CPU
-    uint8_t srce_port;		// SDP source port/CPU
-    uint16_t dest_addr;		// SDP destination address
-    uint16_t srce_addr;		// SDP source address
-
-    // User data (272 bytes when no SCP header)
-    uint32_t data[ITEMS_PER_DATA_PACKET];
-
-    uint32_t _PAD;		// Private padding
-} sdp_msg_pure_data;
 
 //! meaning of payload in first data in SDP packet
 typedef struct receive_data_to_location_msg_t {

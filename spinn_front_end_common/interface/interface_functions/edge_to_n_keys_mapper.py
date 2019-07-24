@@ -59,7 +59,6 @@ class EdgeToNKeysMapper(object):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     self.process_application_partition(
                         partition, n_keys_map, graph_mapper)
-
         return n_keys_map
 
     def _allocate_by_machine_graph_only(self, machine_graph):

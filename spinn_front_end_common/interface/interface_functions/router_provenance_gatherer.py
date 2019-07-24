@@ -54,9 +54,7 @@ class RouterProvenanceGatherer(object):
             provenance_data_objects=None, extra_monitor_vertices=None,
             placements=None):
         """
-        :param transceiver: the SpiNNMan interface object
         :type transceiver: :py:class:`~spinnman.Transceiver`
-        :param machine: the SpiNNaker machine
         :type machine: :py:class:`~spinn_machine.Machine`
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran

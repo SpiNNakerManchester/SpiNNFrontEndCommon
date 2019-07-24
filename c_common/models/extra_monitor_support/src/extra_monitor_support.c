@@ -57,8 +57,8 @@ extern INT_HANDLER sark_int_han(void);
 //! flag for saying stuff has ended
 #define END_FLAG 0xFFFFFFFF
 
-//! items per SDP packet for sending
-#define ITEMS_PER_DATA_PACKET 68
+//! convert between words to bytes
+#define WORD_TO_BYTE_MULTIPLIER 4
 
 #define SEQUENCE_NUMBER_SIZE 1
 
@@ -352,6 +352,7 @@ volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 
 //! data in variables
 router_entry_t *saved_application_router_table = NULL;
+int application_table_n_valid_entries = 0;
 uint data_in_address_key = 0;
 uint data_in_data_key = 0;
 uint data_in_boundary_key = 0;
@@ -911,14 +912,23 @@ static void data_in_load_router(
 //! \brief reads in routers entries and places in application sdram location
 void data_in_save_router(void) {
     rtr_entry_t router_entry;
-
+    application_table_n_valid_entries = 0;
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
             entry_id < N_ROUTER_ENTRIES; entry_id++, i++) {
         (void) rtr_mc_get(entry_id, &router_entry);
-        // move to sdram
-        saved_application_router_table[i].key = router_entry.key;
-        saved_application_router_table[i].mask = router_entry.mask;
-        saved_application_router_table[i].route = router_entry.route;
+
+        if (router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
+                router_entry.mask != INVALID_ROUTER_ENTRY_MASK &&
+                router_entry.route != INVALID_ROUTER_ENTRY_ROUTE){
+            // move to sdram
+            saved_application_router_table[
+                application_table_n_valid_entries].key = router_entry.key;
+            saved_application_router_table[
+                application_table_n_valid_entries].mask = router_entry.mask;
+            saved_application_router_table[
+                application_table_n_valid_entries].route = router_entry.route;
+            application_table_n_valid_entries += 1;
+        }
     }
 }
 
@@ -949,7 +959,7 @@ static void data_in_speed_up_load_in_application_routes(void) {
     // load app router entries from sdram
     io_printf(IO_BUF, "Loading application routes\n");
     data_in_load_router(
-            saved_application_router_table, N_USABLE_ROUTER_ENTRIES);
+            saved_application_router_table, application_table_n_valid_entries);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
