@@ -1983,7 +1983,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements)
+                placements=self._placements,
+                using_reinjection=self._config.getboolean(
+                    "Machine", "enable_reinjection"))
         except Exception:
             logger.exception("Error reading router provenance")
 
