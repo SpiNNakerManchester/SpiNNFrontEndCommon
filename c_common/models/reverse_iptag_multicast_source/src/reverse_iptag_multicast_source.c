@@ -182,7 +182,8 @@ static bool stopped = false;
 static bool recording_in_progress = false;
 static recorded_packet_t *recorded_packet;
 
-#define BITS(value,shift,mask)  (((value) >> (shift)) & (mask))
+#define BITS(value, shift, mask) \
+    (((value) >> (shift)) & (mask))
 
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
