@@ -73,10 +73,10 @@
 //! \param[in] level The level of the messsage
 //! \param[in] message The user-defined part of the debug message.
 #define __log_mini(level, message, ...) \
-    do {							\
-	if (level <= LOG_LEVEL) {				\
-	    fprintf(stderr, message "\n", ##__VA_ARGS__);	\
-	} 							\
+    do {                                                  \
+	    if (level <= LOG_LEVEL) {                         \
+	        fprintf(stderr, message "\n", ##__VA_ARGS__); \
+	    }                                                 \
     } while (0)
 
 //! \brief This macro logs errors.
