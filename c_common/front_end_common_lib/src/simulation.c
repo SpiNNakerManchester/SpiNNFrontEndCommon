@@ -61,14 +61,14 @@ static void *simulation_store_provenance_data(void) {
     extern diagnostics_t diagnostics;
 
     // store the data into the provenance data region
-    prov->TRANSMISSION_EVENT_OVERFLOW = diagnostics.tx_packet_queue_full;
-    prov->CALLBACK_QUEUE_OVERLOADED = diagnostics.task_queue_full;
-    prov->DMA_QUEUE_OVERLOADED = diagnostics.dma_queue_full;
-    prov->TIMER_TIC_HAS_OVERRUN =
+    prov->transmission_event_overflow = diagnostics.tx_packet_queue_full;
+    prov->callback_queue_overloads = diagnostics.task_queue_full;
+    prov->dma_queue_overloads = diagnostics.dma_queue_full;
+    prov->timer_tic_has_overrun =
             diagnostics.total_times_tick_tic_callback_overran;
-    prov->MAX_NUMBER_OF_TIMER_TIC_OVERRUN =
+    prov->max_num_timer_tic_overrun =
             diagnostics.largest_number_of_concurrent_timer_tic_overruns;
-    return prov->PROVENANCE_DATA_ELEMENTS;
+    return prov->provenance_data_elements;
 }
 
 //! \brief helper private method for running provenance data storage
@@ -286,10 +286,10 @@ bool simulation_initialise(
     struct simulation_config *config = (void *) address;
 
     // handle the timing reading
-    if (config->APPLICATION_MAGIC_NUMBER != expected_app_magic_number) {
+    if (config->application_magic_number != expected_app_magic_number) {
         log_error("Unexpected magic number 0x%08x instead of 0x%08x at 0x%08x",
-                config->APPLICATION_MAGIC_NUMBER, expected_app_magic_number,
-                &config->APPLICATION_MAGIC_NUMBER);
+                config->application_magic_number, expected_app_magic_number,
+                &config->application_magic_number);
         return false;
     }
 
@@ -301,7 +301,7 @@ bool simulation_initialise(
     }
 
     // transfer data to pointers for end user usage
-    *timer_period = config->SIMULATION_TIMER_PERIOD;
+    *timer_period = config->timer_period;
 
     // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
@@ -310,7 +310,7 @@ bool simulation_initialise(
 
     spin1_callback_on(SDP_PACKET_RX, simulation_sdp_callback_handler,
             sdp_packet_callback_priority);
-    simulation_sdp_callback_on(config->SIMULATION_CONTROL_SDP_PORT,
+    simulation_sdp_callback_on(config->control_sdp_port,
             simulation_control_scp_callback);
     spin1_callback_on(DMA_TRANSFER_DONE, simulation_dma_transfer_done_callback,
             dma_transfer_done_callback_priority);

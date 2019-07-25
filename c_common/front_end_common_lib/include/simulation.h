@@ -38,24 +38,26 @@
 // the position and human readable terms for each element from the region
 // containing the timing details.
 struct simulation_config {
-    uint32_t APPLICATION_MAGIC_NUMBER;
-    uint32_t SIMULATION_TIMER_PERIOD;
-    uint32_t SIMULATION_CONTROL_SDP_PORT;
-    uint32_t SIMULATION_N_TIMING_DETAIL_WORDS;
+    uint32_t application_magic_number;
+    uint32_t timer_period;
+    uint32_t control_sdp_port;
+    uint32_t num_timing_detail_words;
 };
 
 //! elements that are always grabbed for provenance if possible when requested
 struct simulation_provenance {
-    uint32_t TRANSMISSION_EVENT_OVERFLOW;
-    uint32_t CALLBACK_QUEUE_OVERLOADED;
-    uint32_t DMA_QUEUE_OVERLOADED;
-    uint32_t TIMER_TIC_HAS_OVERRUN;
-    uint32_t MAX_NUMBER_OF_TIMER_TIC_OVERRUN;
-    uint32_t PROVENANCE_DATA_ELEMENTS[];
+    uint32_t transmission_event_overflow;
+    uint32_t callback_queue_overloads;
+    uint32_t dma_queue_overloads;
+    uint32_t timer_tic_has_overrun;
+    uint32_t max_num_timer_tic_overrun;
+    uint32_t provenance_data_elements[];
 };
 
 typedef enum simulation_commands {
-    CMD_STOP = 6, CMD_RUNTIME = 7, PROVENANCE_DATA_GATHERING = 8,
+    CMD_STOP = 6,
+    CMD_RUNTIME = 7,
+    PROVENANCE_DATA_GATHERING = 8,
     IOBUF_CLEAR = 9
 } simulation_commands;
 
@@ -145,7 +147,7 @@ void simulation_ready_to_read(void);
 //! \param[in] sdp_callback The callback to call when a packet is received
 //! \return true if successful, false otherwise
 bool simulation_sdp_callback_on(
-    uint sdp_port, callback_t sdp_callback);
+        uint sdp_port, callback_t sdp_callback);
 
 //! \brief disables SDP callbacks on the given port
 //| \param[in] sdp_port The SDP port to disable callbacks for

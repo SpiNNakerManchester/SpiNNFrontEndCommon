@@ -20,6 +20,7 @@
 #include <debug.h>
 #include <simulation.h>
 #include <sark.h>
+#include <eieio.h>
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
@@ -66,17 +67,6 @@ struct config {
     uint32_t return_tag_dest;
     uint32_t buffered_in_sdp_port;
     uint32_t tx_offset;
-};
-
-enum bit_offsets {
-    APPLY_PREFIX = 15,
-    PREFIX_UPPER = 14,
-    APPLY_PAYLOAD_PREFIX = 13,
-    PAYLOAD_IS_TIMESTAMP = 12,
-    PACKET_TYPE = 10,
-    COUNT = 0,
-    PACKET_CLASS = 14,
-    PACKET_COMMAND = 0
 };
 
 //! The memory regions
