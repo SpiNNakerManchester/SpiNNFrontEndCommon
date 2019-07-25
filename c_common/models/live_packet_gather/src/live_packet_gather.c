@@ -111,6 +111,16 @@ static struct lpg_config config;
 
 #define BUFFER_CAPACITY 256
 
+//! \brief Because WHY OH WHY would you use aligned memory? At least with this
+//! we don't get data aborts.
+static inline void write_unaligned(
+        void *base, uint32_t index, uint32_t value) {
+    uint16_t *ary = base;
+    uint32_t idx = index * 2;
+    ary[idx++] = CLAMP16(value);
+    ary[idx] = CLAMP16(value >> 16);
+}
+
 static void flush_events(void) {
     // Send the event message only if there is data
     if (buffer_index > 0) {
@@ -136,8 +146,7 @@ static void flush_events(void) {
                     uint16_t *temp = sdp_msg_aer_payload_prefix;
                     temp[0] = CLAMP16(time);
                 } else {
-                    uint32_t *temp = sdp_msg_aer_payload_prefix;
-                    temp[0] = time;
+                    write_unaligned(sdp_msg_aer_payload_prefix, 0, time);
                 }
             }
 
@@ -147,9 +156,8 @@ static void flush_events(void) {
 
         // reset packet content
         uint16_t words_to_clear = (buffer_index * event_size) >> 2;
-        uint32_t *temp = sdp_msg_aer_data;
         for (uint32_t i = 0; i < words_to_clear; i++) {
-            temp[i] = 0;
+            write_unaligned(sdp_msg_aer_data, i, 0);
         }
     }
 
@@ -220,14 +228,13 @@ static void process_incoming_event(uint key) {
         }
     } else {
         // 32 bit packet
-        uint32_t *buf_pointer = sdp_msg_aer_data;
-        buf_pointer[buffer_index++] = key;
+        write_unaligned(sdp_msg_aer_data, buffer_index++, key);
 
         // if there is a payload to be added
         if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            buf_pointer[buffer_index++] = 0;
+            write_unaligned(sdp_msg_aer_data, buffer_index++, 0);
         } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            buf_pointer[buffer_index++] = time;
+            write_unaligned(sdp_msg_aer_data, buffer_index++, time);
         }
     }
 
@@ -253,14 +260,13 @@ static void process_incoming_event_payload(uint key, uint payload) {
         }
     } else {
         //32 bit packet
-        uint32_t *buf_pointer = sdp_msg_aer_data;
-        buf_pointer[buffer_index++] = key;
+        write_unaligned(sdp_msg_aer_data, buffer_index++, key);
 
         //if there is a payload to be added
         if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            buf_pointer[buffer_index++] = payload;
+            write_unaligned(sdp_msg_aer_data, buffer_index++, payload);
         } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            buf_pointer[buffer_index++] = time;
+            write_unaligned(sdp_msg_aer_data, buffer_index++, time);
         }
     }
 
