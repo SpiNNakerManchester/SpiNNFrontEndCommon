@@ -86,7 +86,10 @@ ifndef PROFILER
 endif
 
 # Set up the default C Flags
-FEC_OPT = $(OTIME)
+ifndef FEC_OPT
+    FEC_OPT := $(OTIME)
+endif
+
 CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(FEC_OPT) 
 
 # Get the application name hash by running md5sum on application name and 
