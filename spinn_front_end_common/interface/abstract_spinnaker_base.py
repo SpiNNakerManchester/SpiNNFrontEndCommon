@@ -1865,7 +1865,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         if self._config.getboolean(
                 "Reports", "write_sdram_usage_report_per_chip"):
-            algorithms.append("SdramUsageReportPperChip")
+            algorithms.append("SdramUsageReportPerChip")
 
         # clear iobuf if were in multirun mode
         if (self._has_ran and not graph_changed and
