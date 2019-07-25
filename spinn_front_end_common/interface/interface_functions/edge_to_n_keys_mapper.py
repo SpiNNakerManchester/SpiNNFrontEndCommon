@@ -54,8 +54,7 @@ class EdgeToNKeysMapper(object):
         # iterate over each partition in the graph
         for vertex in progress.over(machine_graph.vertices):
             partitions = machine_graph.\
-                get_outgoing_edge_partitions_starting_at_vertex(
-                    vertex)
+                get_outgoing_edge_partitions_starting_at_vertex(vertex)
             for partition in partitions:
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     self.process_application_partition(
@@ -74,8 +73,7 @@ class EdgeToNKeysMapper(object):
 
         for vertex in progress.over(machine_graph.vertices):
             partitions = machine_graph.\
-                get_outgoing_edge_partitions_starting_at_vertex(
-                    vertex)
+                get_outgoing_edge_partitions_starting_at_vertex(vertex)
             for partition in partitions:
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     self.process_machine_partition(partition, n_keys_map)

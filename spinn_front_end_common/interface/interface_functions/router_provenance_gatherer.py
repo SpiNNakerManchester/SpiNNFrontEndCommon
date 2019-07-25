@@ -62,7 +62,7 @@ class RouterProvenanceGatherer(object):
         :param extra_monitor_vertices: \
             vertices which represent the extra monitor code
         :param using_reinjection: bool flag for if the extra monitor is in \
-        reinjection mode
+            reinjection mode
         :param placements: the placements object
         """
         # pylint: disable=too-many-arguments

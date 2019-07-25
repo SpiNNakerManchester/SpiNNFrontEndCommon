@@ -138,6 +138,8 @@ class InsertEdgesToLivePacketGatherers(object):
         :param graph_mapper: the graph mapper
         :param machine_lpg: the machine LPG
         :param vertex: the application vertex to link to
+        :param machine_edge: the machine edge
+        :param m_graph: the machine graph
         :param partition_id: the partition ID to put the edge on
         :param n_keys_map: map between partition and n keys
         :return the application edge for this vertex and LPG

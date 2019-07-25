@@ -28,3 +28,12 @@ class AbstractSupportsBitFieldGeneration(object):
         :param placement: placement
         :return: the sdram address for the bitfield address
         """
+
+    @abstractmethod
+    def bit_field_builder_region(self, transceiver, placement):
+        """ returns the sdram address for the bit field builder data
+
+        :param transceiver: txrx
+        :param placement: placement
+        :return: the sdram address for the bitfield builder data
+        """
