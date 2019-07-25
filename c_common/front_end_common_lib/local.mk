@@ -90,7 +90,7 @@ ifndef FEC_OPT
     FEC_OPT := $(OTIME)
 endif
 
-CFLAGS = -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(OTIME)
+CFLAGS = -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(OSPACE)
 
 # Get the application name hash by running md5sum on application name and 
 # extracting the first 8 bytes
