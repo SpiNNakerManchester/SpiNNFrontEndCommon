@@ -18,9 +18,9 @@ APP = bit_field_sorter_and_searcher
 SOURCES = bit_field_sorter_and_searcher.c
 
 CFLAGS += -DSPINNAKER -Wshadow
-FEC_OPT := $(OSPACE)
+FEC_OPT = $(OSPACE)
 
 include ../fec_models.mk
 
-FEC_OPT := $(OSPACE)
+FEC_OPT = $(OSPACE)
 

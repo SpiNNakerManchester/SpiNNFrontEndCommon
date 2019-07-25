@@ -18,8 +18,8 @@ APP = bit_field_compressor
 SOURCES = bit_field_compressor.c
 
 CFLAGS += -DSPINNAKER
-FEC_OPT := $(OSPACE)
+FEC_OPT = $(OSPACE)
 
 include ../fec_models.mk
 
-FEC_OPT := $(OSPACE)
+FEC_OPT = $(OSPACE)
