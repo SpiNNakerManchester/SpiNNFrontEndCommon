@@ -1451,6 +1451,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._json_folder, "constraints.json")
 
         algorithms = list()
+        algorithms.append("AutoPauseAndResumeSafety")
 
         if self._live_packet_recorder_params:
             algorithms.append(

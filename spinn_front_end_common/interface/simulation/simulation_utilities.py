@@ -40,7 +40,7 @@ def get_simulation_header_array(
     if timer_period is None:
         data.append(machine_time_step * time_scale_factor)
     else:
-        data.append(timer_period)
+        data.append(timer_period * time_scale_factor)
 
     # add SDP port number for receiving synchronisations and new run times
     data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
