@@ -64,7 +64,7 @@ class BitFieldCompressorReport(object):
                 bits = prov_item.names[1].split("_")
                 writer.write(
                     "Chip {}:{} has {} bitfields merged into it\n".format(
-                        bits[0], bits[1], prov_item.value))
+                        bits[3], bits[4], prov_item.value))
                 total_bit_fields_merged += int(prov_item.value)
                 if int(prov_item.value) > top_bit_field:
                     top_bit_field = int(prov_item.value)

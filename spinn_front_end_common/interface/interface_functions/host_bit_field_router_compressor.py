@@ -109,8 +109,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     # structs for performance requirements.
     _ONE_WORDS = struct.Struct("<I")
-    _TWO_WORDS = struct.Struct("<II")
-    _FOUR_WORDS = struct.Struct("<IIII")
+    _THREE_WORDS = struct.Struct("<III")
 
     # for router report
     _LOWER_16_BITS = 0xFFFF
@@ -786,7 +785,7 @@ class HostBasedBitFieldRouterCompressor(object):
                     # write key and n words
                     transceiver.write_memory(
                         chip_x, chip_y, writing_address,
-                        self._TWO_WORDS.pack(
+                        self._THREE_WORDS.pack(
                             bf_by_key.master_pop_key,
                             len(bf_by_key.bit_field), words_writing_address),
                         self._SIZE_OF_FILTER_INFO_IN_BYTES)
