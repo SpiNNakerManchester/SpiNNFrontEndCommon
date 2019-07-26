@@ -148,6 +148,9 @@ class MachineBitFieldRouterCompressor(object):
         else:
             prov_items = list()
 
+        if len(routing_tables.routing_tables) == 0:
+            return ExecutableTargets(), prov_items
+
         # new app id for this simulation
         routing_table_compressor_app_id = \
             transceiver.app_id_tracker.get_new_id()

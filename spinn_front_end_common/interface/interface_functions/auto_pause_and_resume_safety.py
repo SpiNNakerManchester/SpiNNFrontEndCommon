@@ -1,6 +1,7 @@
 from spinn_front_end_common.abstract_models.\
     abstract_supports_auto_pause_and_resume import \
     AbstractSupportsAutoPauseAndResume
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.progress_bar import ProgressBar
 import numpy
 import math
@@ -41,7 +42,7 @@ class AutoPauseAndResumeSafety(object):
             low = low / MILLISECONDS_TO_MICROSECONDS
             high = high / MILLISECONDS_TO_MICROSECONDS
 
-            raise Exception(
+            raise ConfigurationException(
                 "Given the time periods of {} requested by the combination "
                 "results in a lowest common time step of {}. Unfortunately "
                 "this means that the runtime {} cannot be meet correctly. "
