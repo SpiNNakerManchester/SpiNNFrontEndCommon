@@ -1853,7 +1853,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         if self._config.getboolean(
                 "Reports", "write_sdram_usage_report_per_chip"):
-            algorithms.append("SdramUsageReportPperChip")
+            algorithms.append("SdramUsageReportPerChip")
 
         # clear iobuf if were in multirun mode
         if (self._has_ran and not graph_changed and
@@ -1971,7 +1971,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements)
+                placements=self._placements,
+                using_reinjection=self._config.getboolean(
+                    "Machine", "enable_reinjection"))
         except Exception:
             logger.exception("Error reading router provenance")
 

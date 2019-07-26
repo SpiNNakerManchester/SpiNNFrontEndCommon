@@ -116,7 +116,10 @@ class BitFieldCompressorReport(object):
             if to_merge_per_chip[chip_key] < min_bit_fields_on_chip:
                 min_bit_fields_on_chip = to_merge_per_chip[chip_key]
 
-        average = float(total_to_merge) / float(len(to_merge_per_chip))
+        if len(to_merge_per_chip) == 0:
+            average = 0
+        else:
+            average = float(total_to_merge) / float(len(to_merge_per_chip))
 
         return (total_to_merge, max_bit_fields_on_chip,
                 min_bit_fields_on_chip, average)
