@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import shutil
 import os
 import struct
 from spinn_utilities.progress_bar import ProgressBar
@@ -40,8 +39,6 @@ class DSGRegionReloader(object):
         "_report_dir",
         "_txrx",
         "_write_text"]
-
-    _DELETE_TEMP_DIRS = False
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
@@ -106,11 +103,6 @@ class DSGRegionReloader(object):
         for vertex in application_vertices_to_reset:
             vertex.mark_regions_reloaded()
 
-        # FIXME: Needs correct logic for whether to delete
-        if self._DELETE_TEMP_DIRS:
-            shutil.rmtree(reloaded_dsg_data_files_file_path)
-            shutil.rmtree(reloaded_dsg_report_files_file_path)
-
     def _regenerate_data_spec_for_vertices(self, placement, vertex):
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):
@@ -133,6 +125,12 @@ class DSGRegionReloader(object):
         data_spec_executor = DataSpecificationExecutor(
             spec_reader, SDRAM.max_sdram_found)
         data_spec_executor.execute()
+        try:
+            spec_reader.close()
+            os.remove(spec_file)
+        except Exception:
+            # Ignore the deletion of files as non-critical
+            pass
 
         # Read the region table for the placement
         regions_base_address = self._txrx.get_cpu_information_from_core(
