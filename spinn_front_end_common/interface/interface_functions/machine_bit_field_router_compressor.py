@@ -215,8 +215,7 @@ class MachineBitFieldRouterCompressor(object):
                 bit_field_sdram_base_addresses = defaultdict(dict)
                 host_compressor.collect_bit_field_sdram_base_addresses(
                     chip_x, chip_y, machine, placements, transceiver,
-                    graph_mapper, bit_field_sdram_base_addresses,
-                    machine_graph)
+                    graph_mapper, bit_field_sdram_base_addresses)
 
                 host_compressor.start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
@@ -235,8 +234,7 @@ class MachineBitFieldRouterCompressor(object):
                     use_timer_cut_off=use_timer_cut_off,
                     compressed_pacman_router_tables=(
                         compressed_pacman_router_tables),
-                    key_atom_map=key_atom_map,
-                    default_report_folder=default_report_folder)
+                    key_atom_map=key_atom_map)
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
