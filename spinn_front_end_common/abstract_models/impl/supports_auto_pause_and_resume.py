@@ -7,5 +7,5 @@ from spinn_utilities.overrides import overrides
 class SupportsAutoPauseAndResume(AbstractSupportsAutoPauseAndResume):
 
     @overrides(AbstractSupportsAutoPauseAndResume.my_local_time_period)
-    def my_local_time_period(self, simulator_time_step, time_scale_factor):
-        return simulator_time_step * time_scale_factor
+    def my_local_time_period(self, simulator_time_step):
+        return simulator_time_step
