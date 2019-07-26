@@ -215,8 +215,7 @@ class MachineBitFieldRouterCompressor(object):
                 bit_field_sdram_base_addresses = defaultdict(dict)
                 host_compressor.collect_bit_field_sdram_base_addresses(
                     chip_x, chip_y, machine, placements, transceiver,
-                    graph_mapper, bit_field_sdram_base_addresses,
-                    machine_graph)
+                    graph_mapper, bit_field_sdram_base_addresses)
 
                 host_compressor.start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
