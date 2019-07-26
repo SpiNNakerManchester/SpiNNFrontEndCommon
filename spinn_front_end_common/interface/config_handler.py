@@ -1,6 +1,22 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 import logging
 import os
+import errno
 import shutil
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
@@ -141,42 +157,47 @@ class ConfigHandler(object):
     def child_folder(self, parent, child_name):
         child = os.path.join(parent, child_name)
         if not os.path.exists(child):
-            os.makedirs(child)
+            self._make_dirs(child)
         return child
 
     def _remove_excess_folders(self, max_kept, starting_directory):
-        files_in_report_folder = os.listdir(starting_directory)
+        try:
+            files_in_report_folder = os.listdir(starting_directory)
 
-        # while there's more than the valid max, remove the oldest one
-        if len(files_in_report_folder) > max_kept:
+            # while there's more than the valid max, remove the oldest one
+            if len(files_in_report_folder) > max_kept:
 
-            # sort files into time frame
-            files_in_report_folder.sort(
-                key=lambda temp_file:
-                os.path.getmtime(os.path.join(starting_directory, temp_file)))
+                # sort files into time frame
+                files_in_report_folder.sort(
+                    key=lambda temp_file: os.path.getmtime(
+                        os.path.join(starting_directory, temp_file)))
 
-            # remove only the number of files required, and only if they have
-            # the finished flag file created
-            num_files_to_remove = len(files_in_report_folder) - max_kept
-            files_removed = 0
-            files_not_closed = 0
-            for current_oldest_file in files_in_report_folder:
-                finished_flag = os.path.join(os.path.join(
-                    starting_directory, current_oldest_file),
-                    FINISHED_FILENAME)
-                if os.path.exists(finished_flag):
-                    shutil.rmtree(
-                        os.path.join(starting_directory, current_oldest_file),
-                        ignore_errors=True)
-                    files_removed += 1
-                else:
-                    files_not_closed += 1
-                if files_removed + files_not_closed >= num_files_to_remove:
-                    break
-            if files_not_closed > max_kept // 4:
-                logger.warning(
-                    "{} has {} old reports that have not been closed",
-                    starting_directory, files_not_closed)
+                # remove only the number of files required, and only if they
+                # have the finished flag file created
+                num_files_to_remove = len(files_in_report_folder) - max_kept
+                files_removed = 0
+                files_not_closed = 0
+                for current_oldest_file in files_in_report_folder:
+                    finished_flag = os.path.join(os.path.join(
+                        starting_directory, current_oldest_file),
+                        FINISHED_FILENAME)
+                    if os.path.exists(finished_flag):
+                        shutil.rmtree(os.path.join(
+                            starting_directory, current_oldest_file),
+                            ignore_errors=True)
+                        files_removed += 1
+                    else:
+                        files_not_closed += 1
+                    if files_removed + files_not_closed >= num_files_to_remove:
+                        break
+                if files_not_closed > max_kept // 4:
+                    logger.warning(
+                        "{} has {} old reports that have not been closed",
+                        starting_directory, files_not_closed)
+        except IOError:
+            # This might happen if there is an open file, or more than one
+            # process in the same folder, but we shouldn't die because of it
+            pass
 
     def _set_up_report_specifics(self, n_calls_to_run):
         """
@@ -198,7 +219,7 @@ class ConfigHandler(object):
         elif default_report_file_path == "REPORTS":
             report_default_directory = REPORTS_DIRNAME
             if not os.path.exists(report_default_directory):
-                os.makedirs(report_default_directory)
+                self._make_dirs(report_default_directory)
         else:
             report_default_directory = self.child_folder(
                 default_report_file_path,  REPORTS_DIRNAME)
@@ -290,13 +311,13 @@ class ConfigHandler(object):
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")
         if not os.path.exists(self._json_folder):
-            os.makedirs(self._json_folder)
+            self._make_dirs(self._json_folder)
 
         # make a folder for the provenance data storage
         self._provenance_file_path = os.path.join(
             self._report_default_directory, "provenance_data")
         if not os.path.exists(self._provenance_file_path):
-            os.makedirs(self._provenance_file_path)
+            self._make_dirs(self._provenance_file_path)
 
     def write_finished_file(self):
         # write a finished file that allows file removal to only remove folders
@@ -320,3 +341,12 @@ class ConfigHandler(object):
 
     def _read_config_boolean(self, section, item):
         return read_config_boolean(self._config, section, item)
+
+    @staticmethod
+    def _make_dirs(path):
+        # Workaround for Python 2/3 Compatibility (Python 3 raises on exists)
+        try:
+            os.makedirs(path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise

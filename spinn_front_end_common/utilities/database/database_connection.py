@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 from threading import Thread
 from six import raise_from
@@ -91,13 +106,16 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = data[2:].decode()
+        if len(data) > 2:
+            database_path = data[2:].decode()
 
-        # Call the callback
-        database_reader = DatabaseReader(database_path)
-        for database_callback in self._database_callback_functions:
-            database_callback(database_reader)
-        database_reader.close()
+            # Call the callback
+            database_reader = DatabaseReader(database_path)
+            for database_callback in self._database_callback_functions:
+                database_callback(database_reader)
+            database_reader.close()
+        else:
+            logger.warning("Database path was empty - assuming no database")
 
         # Send the response
         logger.info("Notifying the toolchain that the database has been read")

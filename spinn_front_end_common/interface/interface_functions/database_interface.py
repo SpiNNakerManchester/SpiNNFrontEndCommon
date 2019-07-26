@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.database import DatabaseWriter
 
@@ -24,10 +39,10 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, user_create_database, tags,
-            runtime, machine, time_scale_factor, machine_time_step,
-            placements, routing_infos, router_tables, database_directory,
-            create_atom_to_event_id_mapping=False, application_graph=None,
-            graph_mapper=None):
+            runtime, machine, data_n_timesteps, time_scale_factor,
+            machine_time_step, placements, routing_infos, router_tables,
+            database_directory, create_atom_to_event_id_mapping=False,
+            application_graph=None, graph_mapper=None):
         # pylint: disable=too-many-arguments
 
         self._writer = DatabaseWriter(database_directory)
@@ -38,8 +53,8 @@ class DatabaseInterface(object):
         if self.needs_database:
             self._write_to_db(machine, time_scale_factor, machine_time_step,
                               runtime, application_graph, machine_graph,
-                              graph_mapper, placements, routing_infos,
-                              router_tables, tags,
+                              data_n_timesteps, graph_mapper, placements,
+                              routing_infos, router_tables, tags,
                               create_atom_to_event_id_mapping)
 
         return self, self.database_file_path
@@ -58,9 +73,27 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, machine_time_step,
-            runtime, application_graph, machine_graph, graph_mapper,
-            placements, routing_infos, router_tables, tags,
+            runtime, application_graph, machine_graph, data_n_timesteps,
+            graph_mapper, placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
+        """
+
+        :param machine:
+        :param time_scale_factor:
+        :param machine_time_step:
+        :param runtime:
+        :param application_graph:
+        :param machine_graph:
+        :param data_n_timesteps: The number of timesteps for which data space\
+            will been reserved
+        :param graph_mapper:
+        :param placements:
+        :param routing_infos:
+        :param router_tables:
+        :param tags:
+        :param create_atom_to_event_id_mapping:
+        :return:
+        """
         # pylint: disable=too-many-arguments
         with self._writer as w, ProgressBar(9, "Creating database") as p:
             w.add_system_params(time_scale_factor, machine_time_step, runtime)
@@ -70,7 +103,8 @@ class DatabaseInterface(object):
             if application_graph is not None and application_graph.n_vertices:
                 w.add_application_vertices(application_graph)
             p.update()
-            w.add_vertices(machine_graph, graph_mapper, application_graph)
+            w.add_vertices(machine_graph, data_n_timesteps, graph_mapper,
+                           application_graph)
             p.update()
             w.add_placements(placements)
             p.update()

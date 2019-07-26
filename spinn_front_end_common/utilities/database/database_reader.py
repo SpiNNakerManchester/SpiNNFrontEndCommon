@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import sqlite3
 
 
@@ -36,7 +51,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: dictionary of atom IDs indexed by event key
-        :rtype: dict
+        :rtype: dict(int, int)
         """
         event_id_to_atom_id_mapping = dict()
         for row in self._cursor.execute(
@@ -53,6 +68,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: dictionary of event keys indexed by atom ID
+        :rtype: dict(int, int)
         """
         atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
@@ -71,7 +87,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port, strip SDP)
-        :rtype: (str, int, bool)
+        :rtype: tuple(str, int, bool)
         """
         self._cursor.execute(
             "SELECT * FROM IP_tags AS tag"
@@ -98,7 +114,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port)
-        :rtype: (str, int)
+        :rtype: tuple(str, int)
         """
         self._cursor.execute(
             "SELECT tag.board_address, tag.port AS port"
@@ -119,7 +135,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port, strip SDP)
-        :rtype: (str, int, bool)
+        :rtype: tuple(str, int, bool)
         """
         self._cursor.execute(
             "SELECT * FROM IP_tags AS tag"
@@ -144,7 +160,7 @@ class DatabaseReader(object):
         :param label: The label of the vertex
         :type label: str
         :return: tuple of (IP address, port)
-        :rtype: (str, int)
+        :rtype: tuple(str, int)
         """
         self._cursor.execute(
             "SELECT tag.board_address, tag.port AS port"
@@ -210,6 +226,62 @@ class DatabaseReader(object):
             " WHERE parameter_id = ?"
             " LIMIT 1", (parameter_name, ))
         return float(self._cursor.fetchone()["value"])
+
+    def get_placement(self, label):
+        """ Get the placement of a machine vertex with a given label
+
+        :param label: The label of the vertex
+        :type label: str
+        :return: The x, y, p coordinates of the vertex
+        :rtype: tuple(int, int, int)
+        """
+        self._cursor.execute(
+            "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
+            " JOIN Machine_Vertices AS vertex"
+            " ON vertex.vertex_id = placement.vertex_id"
+            " WHERE vertex.label = ? LIMIT 1", (label, ))
+        row = self._cursor.fetchone()
+        return (int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
+
+    def get_placements(self, label):
+        """ Get the placements of an application vertex with a given label
+
+        :param label: The label of the vertex
+        :type label:str
+        :return: A list of x, y, p coordinates of the vertices
+        :rtype: list(tuple(int, int, int))
+        """
+        self._cursor.execute(
+            "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
+            " JOIN graph_mapper_vertex AS mapper"
+            "   ON placement.vertex_id = mapper.machine_vertex_id"
+            " JOIN Application_vertices AS vertex"
+            "   ON mapper.application_vertex_id = vertex.vertex_id"
+            " WHERE vertex.vertex_label = ?", (label, ))
+        rows = self._cursor.fetchall()
+        return [(int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
+                for row in rows]
+
+    def get_ip_address(self, x, y):
+        """ Get an IP address to contact a chip
+
+        :param x: The x-coordinate of the chip
+        :param y: The y-coordinate of the chip
+        :return: The IP address of the Ethernet to use to contact the chip
+        """
+        self._cursor.execute(
+            "SELECT eth_chip.ip_address FROM Machine_chip as chip"
+            " JOIN Machine_chip as eth_chip"
+            "   ON chip.nearest_ethernet_x = eth_chip.chip_x AND "
+            "     chip.nearest_ethernet_y = eth_chip.chip_y"
+            " WHERE chip.chip_x = ? AND chip.chip_y = ?", (x, y))
+        row = self._cursor.fetchone()
+        if row is None:
+            self._cursor.execute(
+                "SELECT ip_address FROM Machine_chip"
+                " WHERE chip_x=0 AND chip_y=0")
+            row = self._cursor.fetchone()
+        return row["ip_address"]
 
     def close(self):
         self._connection.close()

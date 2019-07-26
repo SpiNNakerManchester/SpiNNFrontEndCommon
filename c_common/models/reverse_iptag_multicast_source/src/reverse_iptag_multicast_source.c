@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <common-typedefs.h>
 #include <data_specification.h>
 #include <debug.h>
@@ -34,7 +51,7 @@ typedef enum eieio_prefix_types {
 typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
     BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
-    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT
+    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT, TX_OFFSET
 } read_in_parameters;
 
 //! The memory regions
@@ -131,6 +148,7 @@ static bool last_buffer_operation;
 static uint8_t return_tag_id;
 static uint32_t return_tag_dest;
 static uint32_t buffered_in_sdp_port;
+static uint32_t tx_offset;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
@@ -815,7 +833,8 @@ void fetch_and_process_packet() {
 
             last_len = len;
             if (len > MAX_PACKET_SIZE) {
-                log_error("Packet from SDRAM of %u bytes is too big!", len);
+                log_error("Packet from SDRAM at 0x%08x of %u bytes is too big!",
+                    src_ptr, len);
                 rt_error(RTE_SWERR);
             }
             uint32_t final_space = (end_of_buffer_region - read_pointer);
@@ -902,6 +921,7 @@ bool read_parameters(address_t region_address) {
     return_tag_id = region_address[RETURN_TAG_ID];
     return_tag_dest = region_address[RETURN_TAG_DEST];
     buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
+    tx_offset = region_address[TX_OFFSET];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -972,9 +992,10 @@ bool setup_buffer_region(address_t region_address) {
 //! \brief Initialises the recording parts of the model
 //! \return True if recording initialisation is successful, false otherwise
 static bool initialise_recording(){
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
     address_t recording_region = data_specification_get_region(
-            RECORDING_REGION, address);
+            RECORDING_REGION, ds_regions);
 
     log_info("Recording starts at 0x%08x", recording_region);
 
@@ -994,27 +1015,28 @@ static void provenance_callback(address_t address) {
 bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
 
     // Read the header
-    if (!data_specification_read_header(address)) {
+    if (!data_specification_read_header(ds_regions)) {
         return false;
     }
 
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM, address),
+            data_specification_get_region(SYSTEM, ds_regions),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK, DMA)) {
+            &infinite_run, &time, SDP_CALLBACK, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
-        provenance_callback,
-        data_specification_get_region(PROVENANCE_REGION, address));
+            provenance_callback,
+            data_specification_get_region(PROVENANCE_REGION, ds_regions));
 
     // Read the parameters
     if (!read_parameters(
-            data_specification_get_region(CONFIGURATION, address))) {
+            data_specification_get_region(CONFIGURATION, ds_regions))) {
         return false;
     }
 
@@ -1026,7 +1048,7 @@ bool initialise(uint32_t *timer_period) {
     // Read the buffer region
     if (buffer_region_size > 0) {
         if (!setup_buffer_region(data_specification_get_region(
-                BUFFER_REGION, address))) {
+                BUFFER_REGION, ds_regions))) {
             return false;
         }
     }
@@ -1036,9 +1058,10 @@ bool initialise(uint32_t *timer_period) {
 
 void resume_callback() {
 
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
     setup_buffer_region(data_specification_get_region(
-        BUFFER_REGION, address));
+            BUFFER_REGION, ds_regions));
 
     // set the code to start sending packet requests again
     send_packet_reqs = true;
@@ -1134,7 +1157,7 @@ void c_main(void) {
     }
 
     // Set timer_callback
-    spin1_set_timer_tick(timer_period);
+    spin1_set_timer_tick_and_phase(timer_period, tx_offset);
 
     // Register callbacks
     simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);

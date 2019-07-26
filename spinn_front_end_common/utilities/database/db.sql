@@ -1,3 +1,18 @@
+-- Copyright (c) 2017-2019 The University of Manchester
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 -- We want foreign key enforcement; it should be default on, but it isn't for
 -- messy historical reasons.
 PRAGMA foreign_keys = ON;
@@ -9,16 +24,19 @@ CREATE TABLE IF NOT EXISTS configuration_parameters(
 
 CREATE TABLE IF NOT EXISTS Machine_layout(
     machine_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x_dimension INT,
-    y_dimension INT);
+    x_dimension INTEGER,
+    y_dimension INTEGER);
 
 -- A collection of processors
 CREATE TABLE IF NOT EXISTS Machine_chip(
-    no_processors INT,
+    no_processors INTEGER,
     chip_x INTEGER,
     chip_y INTEGER,
     machine_id INTEGER,
-    avilableSDRAM INT,
+    avilableSDRAM INTEGER,
+    ip_address INTEGER,
+    nearest_ethernet_x INTEGER,
+    nearest_ethernet_y INTEGER,
     PRIMARY KEY (chip_x, chip_y, machine_id),
     FOREIGN KEY (machine_id)
         REFERENCES Machine_layout(machine_id));
@@ -28,8 +46,8 @@ CREATE TABLE IF NOT EXISTS Processor(
     chip_x INTEGER,
     chip_y INTEGER,
     machine_id INTEGER,
-    available_DTCM INT,
-    available_CPU INT,
+    available_DTCM INTEGER,
+    available_CPU INTEGER,
     physical_id INTEGER,
     PRIMARY KEY (chip_x, chip_y, machine_id, physical_id),
     FOREIGN KEY (chip_x, chip_y, machine_id)
@@ -39,9 +57,9 @@ CREATE TABLE IF NOT EXISTS Processor(
 CREATE TABLE IF NOT EXISTS Application_vertices(
     vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
     vertex_label TEXT,
-    no_atoms INT,
-    max_atom_constrant INT,
-    recorded INT);
+    no_atoms INTEGER,
+    max_atom_constrant INTEGER,
+    recorded INTEGER);
 
 -- A communication link between two application vertices
 CREATE TABLE IF NOT EXISTS Application_edges(
@@ -68,9 +86,9 @@ CREATE TABLE IF NOT EXISTS Application_graph(
 CREATE TABLE IF NOT EXISTS Machine_vertices(
     vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT,
-    cpu_used INT,
-    sdram_used INT,
-    dtcm_used INT);
+    cpu_used INTEGER,
+    sdram_used INTEGER,
+    dtcm_used INTEGER);
 
 -- A communication link between two machine vertices
 CREATE TABLE IF NOT EXISTS Machine_edges(
@@ -99,8 +117,8 @@ CREATE TABLE IF NOT EXISTS Machine_graph(
 CREATE TABLE IF NOT EXISTS graph_mapper_vertex(
     application_vertex_id INTEGER,
     machine_vertex_id INTEGER,
-    lo_atom INT,
-    hi_atom INT,
+    lo_atom INTEGER,
+    hi_atom INTEGER,
     PRIMARY KEY (application_vertex_id, machine_vertex_id),
     FOREIGN KEY (machine_vertex_id)
         REFERENCES Machine_vertices(vertex_id),
@@ -122,9 +140,9 @@ CREATE TABLE IF NOT EXISTS graph_mapper_edges(
 CREATE TABLE IF NOT EXISTS Placements(
     vertex_id INTEGER PRIMARY KEY,
     machine_id INTEGER,
-    chip_x INT,
-    chip_y INT,
-    chip_p INT,
+    chip_x INTEGER,
+    chip_y INTEGER,
+    chip_p INTEGER,
     FOREIGN KEY (vertex_id)
         REFERENCES Machine_vertices(vertex_id),
     FOREIGN KEY (chip_x, chip_y, chip_p, machine_id)
@@ -134,8 +152,8 @@ CREATE TABLE IF NOT EXISTS Placements(
 -- packets.
 CREATE TABLE IF NOT EXISTS Routing_info(
     edge_id INTEGER,
-    "key" INT,
-    mask INT,
+    "key" INTEGER,
+    mask INTEGER,
     PRIMARY KEY (edge_id, "key", mask),
     FOREIGN KEY (edge_id)
         REFERENCES Machine_edges(edge_id));
@@ -145,9 +163,9 @@ CREATE TABLE IF NOT EXISTS Routing_table(
     chip_x INTEGER,
     chip_y INTEGER,
     position INTEGER,
-    key_combo INT,
-    mask INT,
-    route INT,
+    key_combo INTEGER,
+    mask INTEGER,
+    route INTEGER,
     PRIMARY KEY (chip_x, chip_y, position));
 
 CREATE TABLE IF NOT EXISTS IP_tags(

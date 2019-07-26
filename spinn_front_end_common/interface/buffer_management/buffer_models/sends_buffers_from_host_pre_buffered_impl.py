@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 from six import add_metaclass
 from spinn_utilities.abstract_base import (
@@ -31,22 +46,6 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """ Return the regions which has buffers to send
         """
         return self.send_buffers.keys()
-
-    def get_max_buffer_size_possible(self, region):
-        """ Return the max possible size of a buffered region
-
-        :param region: the region to find the max possible size of
-        :return: the max possible size of the buffered region
-        """
-        return self.send_buffers[region].max_buffer_size_possible
-
-    def get_region_buffer_size(self, region):
-        """ Return the size of a given regions buffer
-
-        :param region: the region to find the size of
-        :return: the size of the buffer
-        """
-        return self.send_buffers[region].buffer_size
 
     def is_next_timestamp(self, region):
         """ Check if there are more time stamps which need transmitting

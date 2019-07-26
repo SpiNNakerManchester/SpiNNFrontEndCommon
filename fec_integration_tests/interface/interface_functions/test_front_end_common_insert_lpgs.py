@@ -1,6 +1,21 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 from six import itervalues
-from spinn_machine import VirtualMachine
+from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from pacman.model.graphs.common import GraphMapper
@@ -17,7 +32,7 @@ class TestInsertLPGs(unittest.TestCase):
     """
 
     def test_that_3_lpgs_are_generated_on_3_board(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -69,7 +84,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertIn(vertex, verts)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()
@@ -131,7 +146,7 @@ class TestInsertLPGs(unittest.TestCase):
         self.assertEqual(len(app_verts), 3)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -183,7 +198,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph(self):
-        machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()

@@ -1,10 +1,25 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from enum import Enum
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
-from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
@@ -14,7 +29,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SARK_PER_MALLOC_SDRAM_USAGE, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -46,9 +61,6 @@ class CommandSenderMachineVertex(
 
     # bool for if the command does not have a payload (false = 0)
     _HAS_NO_PAYLOAD = 0
-
-    # the number of malloc requests used by the DSG
-    TOTAL_REQUIRED_MALLOCS = 5
 
     # The name of the binary file
     BINARY_FILE_NAME = 'command_sender_multicast_source.aplx'
@@ -128,12 +140,10 @@ class CommandSenderMachineVertex(
             self.get_n_command_bytes(self._commands_at_start_resume) +
             self.get_n_command_bytes(self._commands_at_pause_stop) +
             SYSTEM_BYTES_REQUIREMENT +
-            self.get_provenance_data_size(0) +
-            (self.get_number_of_mallocs_used_by_dsg() *
-             SARK_PER_MALLOC_SDRAM_USAGE))
+            self.get_provenance_data_size(0))
 
         # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=SDRAMResource(sdram))
+        return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
@@ -284,10 +294,6 @@ class CommandSenderMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
-
-    @staticmethod
-    def get_number_of_mallocs_used_by_dsg():
-        return CommandSenderMachineVertex.TOTAL_REQUIRED_MALLOCS
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)

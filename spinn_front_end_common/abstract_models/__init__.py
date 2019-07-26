@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from .abstract_changable_after_run import AbstractChangableAfterRun
 from .abstract_generates_data_specification import (
     AbstractGeneratesDataSpecification)
@@ -22,6 +37,7 @@ from .abstract_vertex_with_dependent_vertices import (
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
 from .abstract_uses_memory_io import AbstractUsesMemoryIO
+from .abstract_can_reset import AbstractCanReset
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
@@ -34,4 +50,4 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices",
-           "AbstractUsesMemoryIO"]
+           "AbstractUsesMemoryIO", "AbstractCanReset"]

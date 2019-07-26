@@ -1,12 +1,29 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
+import sys
 import sqlite3
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs.application.application_vertex import (
+    ApplicationVertex)
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping, AbstractRecordable,
     AbstractSupportsDatabaseInjection)
-from pacman.utilities.utility_calls import get_max_atoms_per_core
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -112,11 +129,21 @@ class DatabaseWriter(object):
             int(x_dimension), int(y_dimension))
 
     def __insert_machine_chip(self, no_processors, chip, machine_id):
-        return self.__insert(
-            "INSERT INTO Machine_chip("
-            "  no_processors, chip_x, chip_y, machine_id) "
-            "VALUES (?, ?, ?, ?)",
-            int(no_processors), int(chip.x), int(chip.y), int(machine_id))
+        if not chip.virtual:
+            return self.__insert(
+                "INSERT INTO Machine_chip("
+                "  no_processors, chip_x, chip_y, machine_id,"
+                "  ip_address, nearest_ethernet_x, nearest_ethernet_y) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                int(no_processors), int(chip.x), int(chip.y), int(machine_id),
+                chip.ip_address,
+                int(chip.nearest_ethernet_x), int(chip.nearest_ethernet_y))
+        else:
+            return self.__insert(
+                "INSERT INTO Machine_chip("
+                "  no_processors, chip_x, chip_y, machine_id) "
+                "VALUES (?, ?, ?, ?)",
+                int(no_processors), int(chip.x), int(chip.y), int(machine_id))
 
     def __insert_processor(self, chip, machine_id, available_DTCM,
                            available_CPU, physical_id):
@@ -172,8 +199,8 @@ class DatabaseWriter(object):
             "  label, cpu_used, sdram_used, dtcm_used) "
             "VALUES(?, ?, ?, ?)",
             str(vertex.label), _extract_int(cpu_used.get_value()),
-            _extract_int(sdram_used.get_value()),
-            _extract_int(dtcm_used.get_value()))
+            _extract_int(sdram_used),
+            _extract_int(dtcm_used))
         self._vertex_to_id[vertex] = v_id
         return v_id
 
@@ -299,13 +326,15 @@ class DatabaseWriter(object):
         with self._connection:
             # add vertices
             for vertex in application_graph.vertices:
-                max_atoms_per_core = get_max_atoms_per_core(vertex)
                 if isinstance(vertex, AbstractRecordable):
                     self.__insert_app_vertex(
-                        vertex, max_atoms_per_core,
+                        vertex, vertex.get_max_atoms_per_core(),
                         vertex.is_recording_spikes())
+                elif isinstance(vertex, ApplicationVertex):
+                    self.__insert_app_vertex(
+                        vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
-                    self.__insert_app_vertex(vertex, max_atoms_per_core, 0)
+                    self.__insert_app_vertex(vertex, sys.maxsize, 0)
 
             # add edges
             for vertex in application_graph.vertices:
@@ -336,11 +365,14 @@ class DatabaseWriter(object):
                 self.__insert_cfg("infinite_run", "True")
                 self.__insert_cfg("runtime", -1)
 
-    def add_vertices(self, machine_graph, graph_mapper, application_graph):
+    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper,
+                     application_graph):
         """ Add the machine graph, graph mapper and application graph \
             into the database.
 
         :param machine_graph: the machine graph object
+        :param data_n_timesteps: The number of timesteps for which data space\
+            will been reserved
         :param graph_mapper: the graph mapper object
         :param application_graph: the application graph object
         :rtype: None
@@ -349,7 +381,9 @@ class DatabaseWriter(object):
             for vertex in machine_graph.vertices:
                 req = vertex.resources_required
                 self.__insert_machine_vertex(
-                    vertex, req.cpu_cycles, req.sdram, req.dtcm)
+                    vertex, req.cpu_cycles,
+                    req.sdram.get_total_sdram(data_n_timesteps),
+                    req.dtcm.get_value())
 
             # add machine edges
             for edge in machine_graph.edges:

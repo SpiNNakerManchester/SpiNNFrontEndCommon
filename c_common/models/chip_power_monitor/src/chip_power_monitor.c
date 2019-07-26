@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <spin1_api.h>
 #include <simulation.h>
 #include <spinnaker.h>
@@ -65,10 +82,14 @@ static void reset_core_counters(void)
 //! \return None
 void resume_callback() {
     // change simulation ticks to be a number related to sampling frequency
-    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-    log_info("total_sim_ticks = %d", simulation_ticks);
-    recording_reset();
-    log_info("resume_callback");
+    if (time == UINT32_MAX) {
+        log_info("resume_skipped as time still zero");
+    } else {
+        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+        log_info("total_sim_ticks = %d", simulation_ticks);
+        recording_reset();
+        log_info("resume_callback");
+    }
 }
 
 static void sample_in_slot(uint unused0, uint unused1)
@@ -132,15 +153,19 @@ bool read_parameters(address_t address)
 
 static bool initialize(uint32_t *timer)
 {
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *ds_regions =
+            data_specification_get_data_address();
+    if (!data_specification_read_header(ds_regions)) {
+        return false;
+    }
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM, address),
+            data_specification_get_region(SYSTEM, ds_regions),
             APPLICATION_NAME_HASH, timer, &simulation_ticks,
-            &infinite_run, SDP, DMA)) {
+            &infinite_run, &time, SDP, DMA)) {
         return false;
     }
     if (!read_parameters(
-            data_specification_get_region(CONFIG, address))) {
+            data_specification_get_region(CONFIG, ds_regions))) {
         return false;
     }
 
@@ -149,7 +174,7 @@ static bool initialize(uint32_t *timer)
     log_info("total_sim_ticks = %d", simulation_ticks);
 
     address_t recording_region =
-        data_specification_get_region(RECORDING, address);
+            data_specification_get_region(RECORDING, ds_regions);
     bool success = recording_initialize(recording_region, &recording_flags);
     return success;
 }

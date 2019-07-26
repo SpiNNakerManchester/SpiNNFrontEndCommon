@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
@@ -34,16 +49,6 @@ class AbstractSendsBuffersFromHost(object):
         :param region: The region to get the buffer size of
         :type region: int
         :return: The size of the buffer space in bytes
-        :rtype: int
-        """
-
-    @abstractmethod
-    def get_max_buffer_size_possible(self, region):
-        """ Gets the max possible size of a buffered region
-
-        :param region: the region to find the max possible size of
-        :type region: int
-        :return: the max possible size of the buffered region
         :rtype: int
         """
 
