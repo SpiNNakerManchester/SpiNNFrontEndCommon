@@ -25,6 +25,8 @@ from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.abstract_models.impl.\
+    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
 from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -51,10 +53,12 @@ CONFIG_SIZE_IN_BYTES = 8
 @supports_injection
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
+        AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
+        SupportsAutoPauseAndResume):
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
     """
+
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     # data regions

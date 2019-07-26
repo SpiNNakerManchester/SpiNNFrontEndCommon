@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
+
+from spinn_front_end_common.abstract_models.impl.\
+    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
@@ -36,7 +39,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractProvidesOutgoingPartitionConstraints,
+        SupportsAutoPauseAndResume):
 
     # Regions for populations
     DATA_REGIONS = Enum(

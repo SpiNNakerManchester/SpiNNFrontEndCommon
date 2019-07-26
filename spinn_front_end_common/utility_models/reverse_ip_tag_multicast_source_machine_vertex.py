@@ -18,6 +18,9 @@ import struct
 import numpy
 from enum import Enum
 from six.moves import xrange
+
+from spinn_front_end_common.abstract_models.impl.\
+    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
@@ -73,7 +76,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
-        AbstractReceiveBuffersToHost, AbstractRecordable):
+        AbstractReceiveBuffersToHost, AbstractRecordable,
+        SupportsAutoPauseAndResume):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets
     """

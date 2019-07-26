@@ -15,6 +15,9 @@
 
 from enum import Enum
 import struct
+
+from spinn_front_end_common.abstract_models.impl.\
+    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType
 from pacman.executor.injection_decorator import inject_items
@@ -41,7 +44,7 @@ _TWO_BYTES = struct.Struct("<BB")
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        AbstractSupportsDatabaseInjection):
+        AbstractSupportsDatabaseInjection, SupportsAutoPauseAndResume):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
