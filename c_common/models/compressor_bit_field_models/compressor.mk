@@ -22,4 +22,3 @@ FEC_OPT = $(OSPACE)
 
 include ../fec_models.mk
 
-FEC_OPT = $(OSPACE)
