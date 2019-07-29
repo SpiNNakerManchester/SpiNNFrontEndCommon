@@ -854,13 +854,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            steps = self._generate_steps(
-                n_machine_time_steps, self._max_run_time_steps)
+            steps = self._generate_steps(n_machine_time_steps)
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
         if not self._has_ran or graph_changed or data_changed:
-            self._do_data_generation(self._max_run_time_steps)
+            self._do_data_generation()
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
@@ -986,26 +985,31 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
 
-        # determine if
+        # determine if the max time steps is a full multiple of lowest common
+        #  denominator. If not, floor it to one.
+        lowest_common_denominator = (
+            self._mapping_outputs["LowestCommonDenominatorTimePeriod"])
+
+        if max_time_steps % lowest_common_denominator != 0:
+            max_time_steps = (
+                math.floor(max_time_steps / lowest_common_denominator) *
+                lowest_common_denominator)
 
         return max_time_steps
 
-    @staticmethod
-    def _generate_steps(n_steps, n_steps_per_segment):
+    def _generate_steps(self, n_steps):
         """ Generates the list of "timer" runs. These are usually in terms of\
             time steps, but need not be.
 
         :param n_steps: the total runtime in machine time steps
         :type n_steps: int
-        :param n_steps_per_segment: the minimum allowed per chunk
-        :type n_steps_per_segment: int
         :return: list of time steps
         """
-        if (n_steps == 0):
+        if n_steps == 0:
             return [0]
-        n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
-        left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
-        steps = [int(n_steps_per_segment)] * n_full_iterations
+        n_full_iterations = int(math.floor(n_steps / self._max_run_time_steps))
+        left_over_steps = n_steps - n_full_iterations * self._max_run_time_steps
+        steps = [int(self._max_run_time_steps)] * n_full_iterations
         if left_over_steps:
             steps.append(int(left_over_steps))
         return steps
@@ -1626,7 +1630,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
 
-    def _do_data_generation(self, n_machine_time_steps):
+    def _do_data_generation(self):
 
         # set up timing
         data_gen_timer = Timer()
@@ -1635,10 +1639,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        inputs["RunUntilTimeSteps"] = n_machine_time_steps
 
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
-        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["DataNTimeSteps"] = self._max_run_time_steps
 
         # Run the data generation algorithms
@@ -1857,7 +1859,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["ExtractIobufFromCores"] = self._config.get(
             "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+        inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
