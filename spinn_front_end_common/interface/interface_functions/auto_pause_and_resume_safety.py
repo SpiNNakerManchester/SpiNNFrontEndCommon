@@ -32,8 +32,13 @@ class AutoPauseAndResumeSafety(object):
         lowest_common_denominator = numpy.lcm.reduce(list(time_periods))
         print("{}".format(lowest_common_denominator))
 
-        micro_seconds_of_runtime = runtime * MILLISECONDS_TO_MICROSECONDS
+        # only check combination to runtime if we're not running forever
+        if runtime is None:
+            return lowest_common_denominator
 
+        # check combination to runtime to see if we can finish at reasonable
+        # points
+        micro_seconds_of_runtime = runtime * MILLISECONDS_TO_MICROSECONDS
         if micro_seconds_of_runtime % micro_seconds_of_runtime != 0:
             low = math.floor(
                 micro_seconds_of_runtime / lowest_common_denominator)
