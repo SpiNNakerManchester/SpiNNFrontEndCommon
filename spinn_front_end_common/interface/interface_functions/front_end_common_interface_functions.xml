@@ -1120,7 +1120,6 @@
             <parameter>
                 <param_name>router_tables</param_name>
                 <param_type>MemoryCompressedRoutingTables</param_type>
-                <param_type>MemoryRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>

@@ -19,7 +19,7 @@ class AutoPauseAndResumeSafety(object):
         time_periods = set()
 
         progress_bar = ProgressBar(
-            len(machine_graph.vertices) * 2,
+            len(machine_graph.vertices),
             "checking compatibility of time periods and runtime")
 
         # locate the unique time periods to link
@@ -39,13 +39,17 @@ class AutoPauseAndResumeSafety(object):
         # check combination to runtime to see if we can finish at reasonable
         # points
         micro_seconds_of_runtime = runtime * MILLISECONDS_TO_MICROSECONDS
-        if micro_seconds_of_runtime % micro_seconds_of_runtime != 0:
-            low = math.floor(
+        if micro_seconds_of_runtime % lowest_common_denominator != 0:
+            low_cycles = math.floor(
                 micro_seconds_of_runtime / lowest_common_denominator)
-            high = math.ceil(
+            high_cycles = math.ceil(
                 micro_seconds_of_runtime / lowest_common_denominator)
-            low = low / MILLISECONDS_TO_MICROSECONDS
-            high = high / MILLISECONDS_TO_MICROSECONDS
+            low_runtime = (
+                (low_cycles * lowest_common_denominator) /
+                MILLISECONDS_TO_MICROSECONDS)
+            high_runtime = (
+                (high_cycles * lowest_common_denominator) /
+                MILLISECONDS_TO_MICROSECONDS)
 
             raise ConfigurationException(
                 "Given the time periods of {} requested by the combination "
@@ -53,8 +57,8 @@ class AutoPauseAndResumeSafety(object):
                 "this means that the runtime {} cannot be meet correctly. "
                 "Please change your runtime to either of these "
                 "run times [{}:{}].".format(
-                    time_periods, lowest_common_denominator, runtime, low,
-                    high))
+                    time_periods, lowest_common_denominator, runtime,
+                    low_runtime, high_runtime))
 
         return lowest_common_denominator
 
