@@ -692,7 +692,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
     // free the data holders we don't care about now that we've got our
     // sorted bitfields list
-    for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
+    for (int r_id = 0; r_id < n_unique_redundant_packets; r_id++) {
         _coverage_t* cov_element = coverage[r_id];
         FREE(cov_element->bit_field_addresses);
         FREE(cov_element->processor_ids);
