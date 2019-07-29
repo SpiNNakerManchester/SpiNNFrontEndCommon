@@ -50,7 +50,7 @@ static inline bool find_merge(uint32_t left, uint32_t index) {
             return false;
         }
     }
-    for (uint32_t check = remaining_index; check < table->size; check++) {
+    for (uint32_t check = remaining_index; check < Routing_table_sdram_get_n_entries(); check++) {
         if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
             return false;
         }
@@ -149,15 +149,16 @@ static void quicksort(uint32_t low, uint32_t high){
 static inline void simple_minimise(uint32_t target_length){
     uint32_t left, right;
 
-    for (uint32_t i = 0; i < table->size; i++) {
+    uint32_t table_size = Routing_table_sdram_get_n_entries();
+    for (uint32_t i = 0; i < table_size; i++) {
         entry_t entry = table->entries[i];
         log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
     }
 
     log_info("do qsort by route");
-    quicksort(0, table->size);
+    quicksort(0, table_size);
 
-    for (uint32_t i = 0; i < table->size; i++) {
+    for (uint32_t i = 0; i < table_size; i++) {
         entry_t entry = table->entries[i];
         log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
     }
@@ -166,12 +167,12 @@ static inline void simple_minimise(uint32_t target_length){
 
     uint32_t write_index = 0;
     uint32_t previous_index = 0;
-    uint32_t max_index = table->size - 1;
+    uint32_t max_index = table_size - 1;
     left = 0;
 
-    while (left < table->size){
+    while (left < table_size){
         right = left;
-        while (right < (table->size -1) &&
+        while (right < (table_size -1) &&
                 table->entries[right+1].route == table->entries[left].route ){
             right += 1;
         }
@@ -182,7 +183,7 @@ static inline void simple_minimise(uint32_t target_length){
         previous_index = write_index;
     }
 
-    table->size = write_index;
+    routing_table_remove_from_size(table_size-write_index);
 }
 
 void minimise(uint32_t target_length){

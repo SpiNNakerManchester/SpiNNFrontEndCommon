@@ -44,6 +44,14 @@
 
 table_t *table;
 
+uint32_t Routing_table_sdram_get_n_entries(){
+    return table->size;
+}
+
+void routing_table_remove_from_size(int size_to_remove){
+    table->size -= size_to_remove;
+}
+
 //! \brief prints the header object for debug purposes
 //! \param[in] header: the header to print
 void print_header(header_t *header) {
@@ -140,7 +148,7 @@ void compress_start() {
     log_debug("finished reading table");
 
     // Store intermediate sizes for later reporting (if we fail to minimise)
-    size_original = table->size;
+    size_original = Routing_table_sdram_get_n_entries();
 
     // Try to load the table
     log_debug("check if compression is needed and compress if needed");
@@ -176,7 +184,8 @@ void compress_start() {
     log_debug("done minimise");
 
     // report size to the host for provenance aspects
-    log_info("has compressed the router table to %d entries", table->size);
+    log_info("has compressed the router table to %d entries",
+        Routing_table_sdram_get_n_entries());
 
     // Try to load the routing table
     log_debug("try loading tables");
@@ -187,9 +196,8 @@ void compress_start() {
         // Otherwise give up and exit with an error
         log_error(
             "Failed to minimise routing table to fit %u entries. "
-            "(Original table: %u after removing default entries: %u "
-            "after Ordered Covering: %u).",
-            rtr_alloc_max(), size_original, table->size, table->size);
+            "(Original table: %u after compression: %u).",
+            rtr_alloc_max(), size_original, Routing_table_sdram_get_n_entries());
 
         // Free the block of SDRAM used to load the routing table.
         log_debug("free sdram blocks which held router tables");
