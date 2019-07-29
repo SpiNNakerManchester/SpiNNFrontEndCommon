@@ -86,25 +86,4 @@ typedef struct {
     entry_t entries[];
 } header_t;
 
-table_t table;
-
-static table_t get_table(){
-    return table;
-}
-
-//! \brief Read a new copy of the routing table from SDRAM.
-//! \param[in] table : the table containing router table entries
-//! \param[in] header: the header object
-static void read_table(header_t *header) {
-    // Copy the size of the table
-    table.size = header->table_size;
-
-    // Allocate space for the routing table entries
-    table.entries = MALLOC(table.size * sizeof(entry_t));
-
-    // Copy in the routing table entries
-    spin1_memcpy((void *) table.entries, (void *) header->entries,
-            sizeof(entry_t) * table.size);
-}
-
 #endif  // __ROUTING_TABLE_H__

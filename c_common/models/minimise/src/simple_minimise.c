@@ -43,7 +43,7 @@ static inline entry_t merge(entry_t *entry1, entry_t *entry2) {
     return result;
 }
 
-static inline bool find_merge(table_t *table, uint32_t left, uint32_t index) {
+static inline bool find_merge(uint32_t left, uint32_t index) {
     entry_t merged = merge(&(table->entries[left]), &(table->entries[index]));
     for (uint32_t check = 0; check < previous_index; check++) {
         if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
@@ -59,7 +59,7 @@ static inline bool find_merge(table_t *table, uint32_t left, uint32_t index) {
     return true;
 }
 
-static inline void compress_by_route(table_t *table, uint32_t left, uint32_t right){
+static inline void compress_by_route(uint32_t left, uint32_t right){
     uint32_t index;
     bool merged;
     merged = false;
@@ -67,7 +67,7 @@ static inline void compress_by_route(table_t *table, uint32_t left, uint32_t rig
     while (left < right) {
         index = left + 1;
         while (index <= right){
-            merged = find_merge(table, left, index);
+            merged = find_merge(left, index);
             if (merged) {
                 table->entries[index] = table->entries[right];
                 right -= 1;
@@ -87,14 +87,14 @@ static inline void compress_by_route(table_t *table, uint32_t left, uint32_t rig
     }
 }
 
-static inline void swap(table_t *table, uint32_t a, uint32_t b){
+static inline void swap(uint32_t a, uint32_t b){
     log_info("swap %u %u", a, b);
     entry_t temp = table->entries[a];
     table->entries[a] = table->entries[b];
     table->entries[b] = temp;
 }
 
-static void quicksort(table_t *table, uint32_t low, uint32_t high){
+static void quicksort(uint32_t low, uint32_t high){
     // Sorts the entries in place based on route
     // param low: Inclusive lowest index to consider
     // param high: Exclusive highest index to consider
@@ -126,13 +126,13 @@ static void quicksort(table_t *table, uint32_t low, uint32_t high){
         while (check <= h_write){
             if (table->entries[check].route < pivot){
                 // swap the check to the left
-                swap(table, l_write, check);
+                swap(l_write, check);
                 l_write++;
                 // move the check on as known to be pivot value
                 check++;
             } else if (table->entries[check].route > pivot) {
                 // swap the check to the right
-                swap(table, h_write, check);
+                swap(h_write, check);
                 h_write--;
                 // Do not move the check as it has an unknown value
             } else {
@@ -141,12 +141,12 @@ static void quicksort(table_t *table, uint32_t low, uint32_t high){
             }
         }
         // Now sort the ones less than or more than the pivot
-        quicksort(table, low, l_write);
-        quicksort(table, check, high);
+        quicksort(low, l_write);
+        quicksort(check, high);
     }
 }
 
-static inline void simple_minimise(table_t *table, uint32_t target_length){
+static inline void simple_minimise(uint32_t target_length){
     uint32_t left, right;
 
     for (uint32_t i = 0; i < table->size; i++) {
@@ -155,7 +155,7 @@ static inline void simple_minimise(table_t *table, uint32_t target_length){
     }
 
     log_info("do qsort by route");
-    quicksort(table, 0, table->size);
+    quicksort(0, table->size);
 
     for (uint32_t i = 0; i < table->size; i++) {
         entry_t entry = table->entries[i];
@@ -177,7 +177,7 @@ static inline void simple_minimise(table_t *table, uint32_t target_length){
         }
         remaining_index = right + 1;
         log_info("compress %u %u", left, right);
-        compress_by_route(table, left, right);
+        compress_by_route(left, right);
         left = right + 1;
         previous_index = write_index;
     }
@@ -185,8 +185,8 @@ static inline void simple_minimise(table_t *table, uint32_t target_length){
     table->size = write_index;
 }
 
-void minimise(table_t *table, uint32_t target_length){
-    simple_minimise(table, target_length);
+void minimise(uint32_t target_length){
+    simple_minimise(target_length);
 }
 
 //! \brief the main entrance.
