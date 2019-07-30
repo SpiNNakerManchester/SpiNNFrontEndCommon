@@ -1856,6 +1856,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Add the database writer in case it is needed
         if not self._has_ran or graph_changed:
             algorithms.append("DatabaseInterface")
+        else:
+            inputs["DatabaseFilePath"] = self._last_run_outputs[
+                "DatabaseFilePath"]
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
