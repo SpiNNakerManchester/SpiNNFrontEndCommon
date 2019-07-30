@@ -127,25 +127,16 @@ static inline void simple_minimise(uint32_t target_length){
     int left, right;
 
     int table_size = Routing_table_sdram_get_n_entries();
-    for (int i = 0; i < table_size; i++) {
-        entry_t entry = table->entries[i];
-        log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-    }
 
     log_info("do qsort by route");
     quicksort(0, table_size);
 
-    for (int i = 0; i < table_size; i++) {
-        entry_t entry = table->entries[i];
-        log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
-    }
-
     write_index = 0;
-    previous_index = 0;
     max_index = table_size - 1;
+    previous_index = 0;
     left = 0;
 
-    while (left < table_size){
+    while (left < max_index){
         right = left;
         while (right < (table_size -1) &&
                 table->entries[right+1].route == table->entries[left].route ){
