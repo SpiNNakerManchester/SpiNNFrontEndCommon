@@ -15,7 +15,7 @@
 
 static int write_index, previous_index, remaining_index, max_index;
 
-static inline entry_t merge(entry_t* entry1, entry_t *entry2) {
+static inline entry_t merge(entry_t* entry1, entry_t* entry2) {
     entry_t result;
     result.keymask = keymask_merge(entry1->keymask, entry2->keymask);
     result.route = entry1->route;
@@ -28,18 +28,23 @@ static inline entry_t merge(entry_t* entry1, entry_t *entry2) {
 }
 
 static inline bool find_merge(int left, int index) {
-    entry_t merged = merge(&(table->entries[left]), &(table->entries[index]));
+    entry_t* entry1 = routing_table_sdram_stores_get_entry(left);
+    entry_t* entry2 = routing_table_sdram_stores_get_entry(index);
+
+    entry_t merged = merge(entry1, entry2);
     for (int check = 0; check < previous_index; check++) {
-        if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
+        entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
+        if (keymask_intersect(check_entry->keymask, merged.keymask)) {
             return false;
         }
     }
     for (int check = remaining_index; check < Routing_table_sdram_get_n_entries(); check++) {
-        if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
+        entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
+        if (keymask_intersect(check_entry->keymask, merged.keymask)) {
             return false;
         }
     }
-    table->entries[left] = merged;
+    put_entry(&merged, left);
     return true;
 }
 
@@ -53,20 +58,20 @@ static inline void compress_by_route(int left, int right){
         while (index <= right){
             merged = find_merge(left, index);
             if (merged) {
-                table->entries[index] = table->entries[right];
+                copy_entry(index, right);
                 right -= 1;
                 break;
             }
             index += 1;
         }
         if (!merged) {
-            table->entries[write_index] = table->entries[left];
+            copy_entry(write_index, left);
             write_index += 1;
             left += 1;
         }
     }
     if (left == right){
-        table->entries[write_index] = table->entries[left];
+        copy_entry(write_index, left);
         write_index += 1;
     }
 }
@@ -92,7 +97,7 @@ static void quicksort(int low, int high){
 
     if (low < high - 1) {
         // pick low entry for the pivot
-        uint32_t pivot = table->entries[low].route;
+        uint32_t pivot = routing_table_sdram_stores_get_entry(low)->route;
         //Start at low + 1 as entry low is the pivot
         check = low + 1;
         // If we find any less than swap with the first pivot
@@ -101,13 +106,14 @@ static void quicksort(int low, int high){
         h_write = high -1;
 
         while (check <= h_write){
-            if (table->entries[check].route < pivot){
+            uint32_t check_route = routing_table_sdram_stores_get_entry(check)->route;
+            if (check_route < pivot){
                 // swap the check to the left
                 swap(l_write, check);
                 l_write++;
                 // move the check on as known to be pivot value
                 check++;
-            } else if (table->entries[check].route > pivot) {
+            } else if (check_route > pivot) {
                 // swap the check to the right
                 swap(h_write, check);
                 h_write--;
@@ -138,8 +144,9 @@ static inline void simple_minimise(uint32_t target_length){
 
     while (left < max_index){
         right = left;
+        uint32_t left_route = routing_table_sdram_stores_get_entry(left)->route;
         while (right < (table_size -1) &&
-                table->entries[right+1].route == table->entries[left].route ){
+                routing_table_sdram_stores_get_entry(right+1)->route == left_route){
             right += 1;
         }
         remaining_index = right + 1;

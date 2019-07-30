@@ -44,23 +44,28 @@
 
 table_t *table;
 
-int Routing_table_sdram_get_n_entries(){
+static inline int Routing_table_sdram_get_n_entries(){
     return table->size;
 }
 
-void routing_table_remove_from_size(int size_to_remove){
+static inline void routing_table_remove_from_size(int size_to_remove){
     table->size -= size_to_remove;
 }
 
-entry_t* routing_table_sdram_stores_get_entry(int index){
+static inline entry_t* routing_table_sdram_stores_get_entry(int index){
     return &table->entries[index];
 }
 
-void put_entry(entry_t* entry, int index){
+static inline void put_entry(entry_t* entry, int index){
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(index);
     e_ptr->keymask = entry->keymask;
     e_ptr->route = entry->route;
     e_ptr->source = entry->source;
+}
+
+static inline void copy_entry(int new_index, int old_index){
+    entry_t* e_ptr = routing_table_sdram_stores_get_entry(old_index);
+    put_entry(e_ptr, new_index);
 }
 
 static inline void swap(int a, int b){
