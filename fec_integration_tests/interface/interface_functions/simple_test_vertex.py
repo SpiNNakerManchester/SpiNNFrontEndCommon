@@ -1,27 +1,41 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+""" test vertex used in many unit tests
 """
-test vertex used in many unit tests
-"""
 
-# pacman imports
-
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import DTCMResource, ResourceContainer, \
-    SDRAMResource, CPUCyclesPerTickResource
+from pacman.model.resources import (
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from pacman.model.graphs.machine import SimpleMachineVertex
-from pacman.model.decorators import overrides
 
 
 class SimpleTestVertex(ApplicationVertex):
     """
     test vertex
     """
+    # pylint: disable=unused-argument
+
     _model_based_max_atoms_per_core = None
 
     def __init__(self, n_atoms, label="testVertex", max_atoms_per_core=256,
                  constraints=None, fixed_sdram_value=None):
-        ApplicationVertex.__init__(
-            self, label=label, max_atoms_per_core=max_atoms_per_core,
+        # pylint: disable=too-many-arguments
+        super(SimpleTestVertex, self).__init__(
+            label=label, max_atoms_per_core=max_atoms_per_core,
             constraints=constraints)
         self._model_based_max_atoms_per_core = max_atoms_per_core
         self._n_atoms = n_atoms
@@ -35,7 +49,7 @@ class SimpleTestVertex(ApplicationVertex):
         :return:
         """
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 self.get_sdram_usage_for_atoms(vertex_slice, None)),
             cpu_cycles=CPUCyclesPerTickResource(
                 self.get_cpu_usage_for_atoms(vertex_slice, None)),
@@ -68,8 +82,7 @@ class SimpleTestVertex(ApplicationVertex):
         """
         if self._fixed_sdram_value is None:
             return 1 * vertex_slice.n_atoms
-        else:
-            return self._fixed_sdram_value
+        return self._fixed_sdram_value
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(

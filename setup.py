@@ -1,5 +1,23 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from setuptools import setup
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 import os
 
 __version__ = None
@@ -9,7 +27,7 @@ assert __version__
 # Build a list of all project modules, as well as supplementary files
 main_package = "spinn_front_end_common"
 extensions = {".aplx", ".boot", ".cfg", ".json", ".sql", ".template", ".xml",
-              ".xsd"}
+              ".xsd", ".dict"}
 main_package_dir = os.path.join(os.path.dirname(__file__), main_package)
 start = len(main_package_dir)
 packages = []
@@ -29,7 +47,7 @@ for dirname, dirnames, filenames in os.walk(main_package_dir):
 setup(
     name="SpiNNFrontEndCommon",
     version=__version__,
-    description="Common Spinnaker Front end functions",
+    description="Common SpiNNaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     packages=packages,
     package_data=package_data,
@@ -43,5 +61,8 @@ setup(
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
-                      'six']
+                      'futures; python_version == "2.7"',
+                      'six'],
+    maintainer="SpiNNakerTeam",
+    maintainer_email="spinnakerusers@googlegroups.com"
 )

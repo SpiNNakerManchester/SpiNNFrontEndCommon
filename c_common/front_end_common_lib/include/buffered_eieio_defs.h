@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef BUFFERED_EIEIO_DEFS_H
 #define BUFFERED_EIEIO_DEFS_H
 
@@ -13,13 +30,13 @@ typedef enum eieio_command_messages {
     // End of all buffers, stop execution
     EVENT_STOP_COMMANDS,
 
-    // Stop complaining that there is sdram free space for buffers
+    // Stop complaining that there is SDRAM free space for buffers
     STOP_SENDING_REQUESTS,
 
-    // Start complaining that there is sdram free space for buffers
+    // Start complaining that there is SDRAM free space for buffers
     START_SENDING_REQUESTS,
 
-    // Spinnaker requesting new buffers for spike source population
+    // SpiNNaker requesting new buffers for spike source population
     SPINNAKER_REQUEST_BUFFERS,
 
     // Buffers being sent from host to SpiNNaker

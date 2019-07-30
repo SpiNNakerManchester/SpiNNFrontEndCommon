@@ -1,8 +1,23 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from .channel_buffer_state import ChannelBufferState
 
 
 class EndBufferingState(object):
-    """ Stores the buffering state at the end of a simulation
+    """ Stores the buffering state at the end of a simulation.
     """
 
     __slots__ = [
@@ -14,13 +29,11 @@ class EndBufferingState(object):
         "_buffering_out_fsm_state"
     ]
 
-    def __init__(
-            self, buffering_out_fsm_state, list_channel_buffer_state):
+    def __init__(self, buffering_out_fsm_state, list_channel_buffer_state):
         """
-
         :param buffering_out_fsm_state: Final sequence number received
         :param list_channel_buffer_state: a list of channel state, where each\
-                channel is stored in a ChannelBufferState object
+            channel is stored in a ChannelBufferState object
         """
         self._buffering_out_fsm_state = buffering_out_fsm_state
         self._list_channel_buffer_state = list_channel_buffer_state

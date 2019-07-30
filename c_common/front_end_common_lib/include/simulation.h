@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*! \file
  *
  *  \brief Simulation Functions Header File
@@ -14,7 +31,7 @@
 #include "common-typedefs.h"
 #include <spin1_api.h>
 
-// constant for how many dma ids you can use (caps the values of the tags as
+// constant for how many DMA IDs you can use (caps the values of the tags as
 // well)
 #define MAX_DMA_CALLBACK_TAG 16
 
@@ -59,12 +76,14 @@ typedef void (*exit_callback_t)();
 //! \param[in] address The address of the region
 //! \param[in] expected_application_magic_number The expected value of the magic
 //!            number that checks if the data was meant for this code
-//! \param[out] simulation_ticks_pointer Pointer to the number of simulation
-//!            ticks, to allow this to be updated when requested via SDP
-//! \param[out] infinite_run_pointer Pointer to the infinite run flag, to allow
-//!            this to be updated when requested via SDP
 //! \param[out] timer_period a pointer to an int to receive the timer period,
 //!             in microseconds
+//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
+//!            ticks, to allow this to be updated when requested via SDP
+//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
+//!            this to be updated when requested via SDP
+//! \param[in] time_pointer Pointer to the current time, to allow this to be
+//!            updated when requested via SDP
 //! \param[in] sdp_packet_callback_priority The priority to use for the
 //!            SDP packet reception
 //! \param[in] dma_transfer_complete_priority The priority to use for the
@@ -73,8 +92,8 @@ typedef void (*exit_callback_t)();
 bool simulation_initialise(
         address_t address, uint32_t expected_application_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
-        int dma_transfer_complete_priority);
+        uint32_t *infinite_run_pointer, uint32_t *time_pointer,
+        int sdp_packet_callback_priority, int dma_transfer_complete_priority);
 
 //! \brief Set the address of the data region where provenance data is to be
 //!        stored
@@ -96,7 +115,9 @@ void simulation_set_provenance_function(
 void simulation_set_exit_function(exit_callback_t exit_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
+//!        the resetting up of states as required to resume.  Note that
+//!        following this function, the code should call
+//!        simulation_ready_to_read (see later).
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t resume_function);
@@ -107,6 +128,10 @@ void simulation_exit();
 
 //! \brief Starts the simulation running, returning when it is complete,
 void simulation_run();
+
+//! \brief Indicates that all data has been written and the core is going
+//!        idle, so any data can now be read
+void simulation_ready_to_read();
 
 //! \brief Registers an additional SDP callback on a given SDP port.  This is
 //!        required when using simulation_register_sdp_callback, as this will
@@ -121,14 +146,14 @@ bool simulation_sdp_callback_on(
 //| \param[in] sdp_port The SDP port to disable callbacks for
 void simulation_sdp_callback_off(uint sdp_port);
 
-//! \brief registers a dma transfer callback to the simulation system
-//! \param[in] tag: the dma transfer tag to register against
+//! \brief registers a DMA transfer callback to the simulation system
+//! \param[in] tag: the DMA transfer tag to register against
 //! \param[in] callback: the callback to register for the given tag
 //! \return true if successful, false otherwise
 bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback);
 
-//! \brief turns off a registered callback for a given dma transfer done tag
-//! \param[in] tag: the dma transfer tag to de-register
+//! \brief turns off a registered callback for a given DMA transfer done tag
+//! \param[in] tag: the DMA transfer tag to de-register
 void simulation_dma_transfer_done_callback_off(uint tag);
 
 #endif // _SIMULATION_H_

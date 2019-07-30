@@ -1,26 +1,36 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import struct
 import tempfile
 import numpy
-
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from pacman.model.graphs.machine.machine_graph import MachineGraph
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
-
-from spinnman.model.heap_element import HeapElement
+from pacman.executor import PACMANAlgorithmExecutor
+from pacman.model.resources import ResourceContainer
+from pacman.model.graphs.machine import MachineVertex, MachineGraph
+from pacman.model.placements import Placements, Placement
+from spinnman.model import HeapElement
 from spinnman.exceptions import SpinnmanInvalidParameterException
-from spinnman.messages.spinnaker_boot.system_variable_boot_values \
-    import SystemVariableDefinition
-
-from spinn_front_end_common.utilities.function_list \
-    import get_front_end_common_pacman_xml_paths
-from spinn_front_end_common.abstract_models.abstract_uses_memory_io \
-    import AbstractUsesMemoryIO
+from spinnman.messages.spinnaker_boot import SystemVariableDefinition
+from spinn_front_end_common.utilities.function_list import (
+    get_front_end_common_pacman_xml_paths)
+from spinn_front_end_common.abstract_models.abstract_uses_memory_io import (
+    AbstractUsesMemoryIO)
 
 
 class _MockTransceiver(object):
+    # pylint: disable=unused-argument
 
     _HEAP_SIZE = 120 * 1024 * 1024
 
@@ -39,7 +49,8 @@ class _MockTransceiver(object):
                 HeapElement(0, self._HEAP_SIZE, 0x00000000)]
         return self._heap[x, y, heap]
 
-    def write_memory(self, x, y, address, data, n_bytes=None):
+    def write_memory(self, x, y, address, data, n_bytes=None,
+                     offset=0, cpu=0, is_filename=False):  # @UnusedVariable
         memory = self._get_memory(x, y)
         if isinstance(data, int):
             memory[address:address + 4] = numpy.array(
@@ -50,7 +61,7 @@ class _MockTransceiver(object):
             numpy_data = numpy.frombuffer(data[:n_bytes], dtype="uint8")
             memory[address:address + n_bytes] = numpy_data
 
-    def read_memory(self, x, y, address, n_bytes):
+    def read_memory(self, x, y, address, n_bytes, cpu=0):
         memory = self._get_memory(x, y)
         return bytearray(memory[address:address + n_bytes])
 
@@ -60,7 +71,7 @@ class _MockTransceiver(object):
         data_to_fill = numpy.array([repeat_value], dtype="uint{}".format(
             data_type.value * 8)).view("uint8")
         data_to_write = numpy.tile(
-            data_to_fill, bytes_to_fill / data_type.value)
+            data_to_fill, bytes_to_fill // data_type.value)
         memory[address:address + bytes_to_fill] = data_to_write
 
     def get_heap(self, x, y, heap):
@@ -103,7 +114,7 @@ class _MockTransceiver(object):
 class MyVertex(MachineVertex, AbstractUsesMemoryIO):
 
     def __init__(self):
-        MachineVertex.__init__(self)
+        super(MyVertex, self).__init__()
         self._test_tag = None
         self._tag = None
 
@@ -118,7 +129,7 @@ class MyVertex(MachineVertex, AbstractUsesMemoryIO):
         memory.write(struct.pack("<I", tag))
         memory.seek(0)
         self._tag = tag
-        self._test_tag = struct.unpack("<I", memory.read(4))[0]
+        self._test_tag, = struct.unpack("<I", memory.read(4))
 
 
 def test_memory_io():
@@ -129,7 +140,7 @@ def test_memory_io():
     placements.add_placement(Placement(vertex, 0, 0, 1))
     transceiver = _MockTransceiver()
     temp = tempfile.mkdtemp()
-    print "ApplicationDataFolder =", temp
+    print("ApplicationDataFolder = {}".format(temp))
     inputs = {
         "MemoryTransceiver": transceiver,
         "MemoryMachineGraph": graph,

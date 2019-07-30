@@ -1,13 +1,24 @@
-import unittest
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import unittest
 from pacman.model.graphs.machine import MachineVertex, MachineGraph
 from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement
-
-from spinn_front_end_common.interface.interface_functions \
-    import GraphBinaryGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import LocateExecutableStartType
+from spinn_front_end_common.interface.interface_functions import (
+    GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
@@ -15,7 +26,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self, binary_file_name, binary_start_type):
-        MachineVertex.__init__(self)
+        super(_TestVertexWithBinary, self).__init__()
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 
@@ -30,16 +41,11 @@ class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
 
 
 class _TestVertexWithoutBinary(MachineVertex):
-
-    def __init__(self):
-        MachineVertex.__init__(self)
-
     def resources_required(self):
         return ResourceContainer()
 
 
 class _TestExecutableFinder(object):
-
     def get_executable_path(self, executable_name):
         return executable_name
 
@@ -72,7 +78,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph, placements)
-        self.assertEqual(start_type.keys()[0], ExecutableType.RUNNING)
+        self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
         test_cores = targets.get_cores_for_binary("test.aplx")

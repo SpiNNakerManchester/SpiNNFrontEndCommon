@@ -1,29 +1,37 @@
-# pacman imports
-from pacman.model.constraints.placer_constraints\
-    import RadialPlacementFromChipConstraint
-from pacman.model.decorators import overrides
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import IPtagResource, ResourceContainer
-from pacman.model.resources import SDRAMResource
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# spinn front end imports
+from spinn_utilities.overrides import overrides
+from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import (
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
+    ResourceContainer)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
-# spinnman imports
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 
 
 class LivePacketGather(
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        ApplicationVertex):
+        ApplicationVertex, AbstractGeneratesDataSpecification,
+        AbstractHasAssociatedBinary):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
-        a spinnaker machine.
+        a SpiNNaker machine.
     """
 
     def __init__(
@@ -34,8 +42,7 @@ class LivePacketGather(
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, constraints=None,
             label=None):
-        """
-        """
+        # pylint: disable=too-many-arguments, too-many-locals
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
                 use_payload_prefix and payload_as_time_stamps):
@@ -59,10 +66,7 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        ApplicationVertex.__init__(self, label, constraints, 1)
-
-        # Try to place this near the Ethernet
-        self.add_constraint(RadialPlacementFromChipConstraint(0, 0))
+        super(LivePacketGather, self).__init__(label, constraints, 1)
 
         # storage objects
         self._iptags = None
@@ -117,7 +121,7 @@ class LivePacketGather(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 LivePacketGatherMachineVertex.get_sdram_usage()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(

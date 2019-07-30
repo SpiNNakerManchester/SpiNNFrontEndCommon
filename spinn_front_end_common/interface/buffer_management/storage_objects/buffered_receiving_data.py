@@ -1,6 +1,30 @@
-from collections import defaultdict
-from spinn_storage_handlers \
-    import BufferedBytearrayDataStorage, BufferedTempfileDataStorage
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import logging
+import os
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
+from spinn_utilities.log import FormatAdapter
+from .sqllite_database import SqlLiteDatabase
+
+DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+DB_FILE_NAME = "buffer.sqlite3"
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class BufferedReceivingData(object):
@@ -13,9 +37,11 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
+        # the AbstractDatabase holding the data to store
+        "_db",
 
-        # the data to store
-        "_data",
+        # the path to the database
+        "_db_file",
 
         # dict of booleans indicating if a region on a core has been flushed
         "_is_flushed",
@@ -36,19 +62,22 @@ class BufferedReceivingData(object):
         "_end_buffering_state"
     ]
 
-    def __init__(self, store_to_file=False):
+    def __init__(self, report_folder):
         """
-
-        :param store_to_file: A boolean to identify if the data will be stored\
-                in memory using a byte array or in a temporary file on the disk
-        :type store_to_file: bool
+        :param report_folder: The directory to write the database used to
+            store some of the data.
+        :type report_folder: str
         """
+        self._db_file = os.path.join(report_folder, DB_FILE_NAME)
+        self._db = None
+        self.reset()
 
-        self._data = None
-        if store_to_file:
-            self._data = defaultdict(BufferedTempfileDataStorage)
-        else:
-            self._data = defaultdict(BufferedBytearrayDataStorage)
+    def reset(self):
+        if os.path.exists(self._db_file):
+            if self._db:
+                self._db.close()
+            os.remove(self._db_file)
+        self._db = SqlLiteDatabase(self._db_file)
         self._is_flushed = defaultdict(lambda: False)
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
@@ -71,7 +100,8 @@ class BufferedReceivingData(object):
         :param data: data to be stored
         :type data: bytearray
         """
-        self._data[x, y, p, region].write(data)
+        # pylint: disable=too-many-arguments
+        self._db.store_data_in_region_buffer(x, y, p, region, data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
         """ Check if the data region has been flushed
@@ -104,6 +134,7 @@ class BufferedReceivingData(object):
         :param data: data to be stored
         :type data: bytearray
         """
+        # pylint: disable=too-many-arguments
         self.store_data_in_region_buffer(x, y, p, region, data)
         self._is_flushed[x, y, p, region] = True
 
@@ -119,7 +150,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: SpinnakerRequestReadData packet received
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
         """
         self._last_packet_received[x, y, p] = packet
 
@@ -134,7 +165,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: SpinnakerRequestReadData packet received
         :rtype:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
         """
         return self._last_packet_received[x, y, p]
 
@@ -149,7 +180,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: last HostDataRead packet sent
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
         """
         self._last_packet_sent[x, y, p] = packet
 
@@ -164,7 +195,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: last HostDataRead packet sent
         :rtype:\
-                :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
         """
         return self._last_packet_sent[x, y, p]
 
@@ -208,40 +239,19 @@ class BufferedReceivingData(object):
         :type p: int
         :param region: Region containing the data
         :type region: int
-        :return: an array contained all the data received during the\,
-                simulation, and a flag indicating if any data was missing
+        :return: an array contained all the data received during the\
+            simulation, and a flag indicating if any data was missing
         :rtype: (bytearray, bool)
         """
-        missing = None
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = (x, y, p, region)
-        data = self._data[x, y, p, region].read_all()
-        return data, missing
+        return self._db.get_region_data(x, y, p, region)
 
     def get_region_data_pointer(self, x, y, p, region):
-        """ Get the data received during the simulation for a region of a core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
-        :return: all the data received during the simulation,\
-                and a flag indicating if any data was lost
-        :rtype:\
-            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
-             bool)
         """
-        missing = False
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = True
-        else:
-            missing = self._end_buffering_state[x, y, p, region].missing_info
-        data_pointer = self._data[x, y, p, region]
-        return data_pointer, missing
+        It is no longer possible to get access to the data pointer.
+
+        Use get_region_data to get the data and missing flag directly.
+        """
+        raise NotImplementedError("Use get_region_data instead!.")
 
     def store_end_buffering_state(self, x, y, p, region, state):
         """ Store the end state of buffering
@@ -254,6 +264,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param state: The end state
         """
+        # pylint: disable=too-many-arguments
         self._end_buffering_state[x, y, p, region] = state
 
     def is_end_buffering_state_recovered(self, x, y, p, region):
@@ -332,17 +343,26 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+        self._end_buffering_sequence_no = dict()
 
+    # ToDo Being changed in later PR so currently broken
     def clear(self, x, y, p, region_id):
-        """ clears the data from a given data region (only clears things\
+        """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
-        :param x: placement x coord
-        :param y: placement y coord
-        :param p: placement p coord
-        :param region_id: the recording region id to clear data from
+        :param x: placement x coordinate
+        :type x: int
+        :param y: placement y coordinate
+        :type y: int
+        :param p: placement p coordinate
+        :type p: int
+        :param region_id: the recording region ID to clear data from
+        :type region_id: int
         :rtype: None
         """
-        del self._end_buffering_state[x, y, p, region_id]
-        del self._data[x, y, p, region_id]
-        del self._is_flushed[x, y, p, region_id]
+        logger.warning("unimplemented method")
+        # del self._end_buffering_state[x, y, p, region_id]
+        # with self._db:
+        #     c = self._db.cursor()
+        #     self.__delete_contents(c, x, y, p, region_id)
+        # del self._is_flushed[x, y, p, region_id]

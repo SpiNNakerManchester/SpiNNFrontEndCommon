@@ -1,19 +1,31 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import sys
 import unittest
-
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import spinn_front_end_common.interface.abstract_spinnaker_base as base
-from spinn_front_end_common.interface.abstract_spinnaker_base \
-    import AbstractSpinnakerBase
+import spinn_front_end_common.interface.config_handler as config_handler
+from spinn_front_end_common.interface.abstract_spinnaker_base import (
+    AbstractSpinnakerBase)
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
-from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities import FailedState
+from spinn_front_end_common.utilities import globals_variables, FailedState
 
 
 class Close_Once(object):
-
-    __slots__ = ("closed")
+    __slots__ = ["closed"]
 
     def __init__(self):
         self.closed = False
@@ -21,15 +33,14 @@ class Close_Once(object):
     def close(self):
         if self.closed:
             raise Exception("Close called twice")
-        else:
-            self.closed = True
+        self.closed = True
 
 
 class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
     def __init__(self, machine_time_step=None, time_scale_factor=None):
-        AbstractSpinnakerBase.__init__(
-            self, base.CONFIG_FILE, ExecutableFinder())
+        super(MainInterfaceTimingImpl, self).__init__(
+            config_handler.CONFIG_FILE, ExecutableFinder())
         self.set_up_timings(machine_time_step, time_scale_factor)
 
 
@@ -42,7 +53,8 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        interface = AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
+        interface = AbstractSpinnakerBase(
+            config_handler.CONFIG_FILE, ExecutableFinder())
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -57,7 +69,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
+        AbstractSpinnakerBase(config_handler.CONFIG_FILE, ExecutableFinder())
 
     def test_timings(self):
 

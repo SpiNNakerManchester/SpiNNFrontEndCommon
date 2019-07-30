@@ -1,5 +1,19 @@
-from six import add_metaclass
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from six import add_metaclass
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -11,27 +25,11 @@ class AbstractReceiveBuffersToHost(object):
     __slots__ = ()
 
     @abstractmethod
-    def get_minimum_buffer_sdram_usage(self):
-        """ Get the minimum amount of SDRAM to reserve for buffers
-        """
-
-    @abstractmethod
-    def get_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
-        """ Get the number of timesteps that can be stored fully in the given\
-            buffer space in bytes
-
-        :param buffer_space: The buffer space in bytes
-        :param machine_time_step: The size of each time step
-        :return: The number of time steps that can be stored in the buffer
-        :rtype: int
-        """
-
-    @abstractmethod
     def get_recorded_region_ids(self):
-        """ Get the recording region ids that have been recorded using buffering
+        """ Get the recording region IDs that have been recorded using buffering
 
         :return: The region numbers that have active recording
-        :rtype: iterable of int
+        :rtype: iterable(int)
         """
 
     @abstractmethod

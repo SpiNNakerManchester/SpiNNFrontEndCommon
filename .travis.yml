@@ -1,7 +1,24 @@
-language: python
-python: "2.7"
-dist: trusty
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+language: python
+python:
+  - 2.7
+  - 3.6
+  - 3.7
+dist: xenial
 addons:
   apt:
     packages:
@@ -10,13 +27,15 @@ addons:
       - libxml2-utils
       - gcc-arm-none-eabi
       - libnewlib-arm-none-eabi
-
+      - openjdk-8-jre-headless
+      - ant
 cache: pip
 
 before_install:
   # Work around ludicrous Travis bug
   - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
   - python support/travis_blocking_stdout.py
+  - support/rat.sh download
   # Bring pip up to date 
   - pip install --upgrade pip setuptools wheel
   - pip install --only-binary=numpy,scipy numpy scipy
@@ -36,7 +55,7 @@ before_install:
 install:
   # These things ought to be enough
   - pip install -r requirements-test.txt
-  - pip install python-coveralls
+  - pip install python-coveralls 'coverage>=4.4'
   - python ./setup.py install
 
 before_script:
@@ -52,9 +71,12 @@ script:
   - flake8 unittests integration_tests
   # XML
   - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh
-  # C 
-  - make -C c_common
-  - support/run-vera.sh c_common
+  # C  # Vera before make to avoid vera seeing modified stuff
+  - support/run-vera.sh c_common/front_end_common_lib
+  - support/run-vera.sh c_common/models
+  - CFLAGS=-fdiagnostics-color make -C c_common
+  # Copyright check
+  - support/rat.sh run
   # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json

@@ -1,15 +1,26 @@
-from six import add_metaclass
-
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
-
-from .abstract_provides_provenance_data_from_machine \
-    import AbstractProvidesProvenanceDataFromMachine
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-
-from data_specification.utility_calls import get_region_base_address_offset
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import struct
 from enum import Enum
+from six import add_metaclass
+from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from data_specification.utility_calls import get_region_base_address_offset
+from .abstract_provides_provenance_data_from_machine import (
+    AbstractProvidesProvenanceDataFromMachine)
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -18,7 +29,7 @@ _ONE_WORD = struct.Struct("<I")
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine):
     """ An implementation that gets provenance data from a region of ints on\
-        the machine
+        the machine.
     """
 
     __slots__ = ()
@@ -33,33 +44,31 @@ class ProvidesProvenanceDataFromMachineImpl(
                ("TIMER_TIC_HAS_OVERRUN", 3),
                ("MAX_NUMBER_OF_TIMER_TIC_OVERRUN", 4)]
     )
+    NUM_PROVENANCE_DATA_ENTRIES = len(PROVENANCE_DATA_ENTRIES)
 
     @abstractproperty
     def _provenance_region_id(self):
         """
-
         :return: provenance_region_id
         """
 
     @abstractproperty
     def _n_additional_data_items(self):
         """
-
         :return: n_additional_data_items
         """
 
     def reserve_provenance_data_region(self, spec):
         spec.reserve_memory_region(
             self._provenance_region_id,
-            (len(self.PROVENANCE_DATA_ENTRIES) +
-                self._n_additional_data_items) * 4,
+            self.get_provenance_data_size(self._n_additional_data_items),
             label="Provenance", empty=True)
 
     @staticmethod
     def get_provenance_data_size(n_additional_data_items):
         return (
-            (len(ProvidesProvenanceDataFromMachineImpl
-                 .PROVENANCE_DATA_ENTRIES) + n_additional_data_items) * 4)
+            (ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES
+             + n_additional_data_items) * 4)
 
     def _get_provenance_region_address(self, transceiver, placement):
 
@@ -70,18 +79,18 @@ class ProvidesProvenanceDataFromMachineImpl(
         # Get the provenance region base address
         base_address_offset = get_region_base_address_offset(
             app_data_base_address, self._provenance_region_id)
-        base_address_buffer = buffer(transceiver.read_memory(
-            placement.x, placement.y, base_address_offset, 4))
-        return _ONE_WORD.unpack(base_address_buffer)[0]
+        base_address = transceiver.read_memory(
+            placement.x, placement.y, base_address_offset, 4)
+        return _ONE_WORD.unpack(base_address)[0]
 
     def _read_provenance_data(self, transceiver, placement):
         provenance_address = self._get_provenance_region_address(
             transceiver, placement)
-        data = buffer(transceiver.read_memory(
+        data = transceiver.read_memory(
             placement.x, placement.y, provenance_address,
-            self.get_provenance_data_size(self._n_additional_data_items)))
+            self.get_provenance_data_size(self._n_additional_data_items))
         return struct.unpack_from("<{}I".format(
-            len(self.PROVENANCE_DATA_ENTRIES) + self._n_additional_data_items),
+            self.NUM_PROVENANCE_DATA_ENTRIES + self._n_additional_data_items),
             data)
 
     @staticmethod
@@ -161,7 +170,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         data_items.append(ProvenanceDataItem(
             self._add_name(names, "Times_the_timer_tic_over_ran"),
             number_of_times_timer_tic_over_ran,
-            report=number_of_times_timer_tic_over_ran > 4,
+            report=number_of_times_timer_tic_over_ran != 0,
             message=(
                 "A Timer tick callback was still executing when the next "
                 "timer tick callback was fired off for {} on {}, {}, {}, {} "
@@ -186,8 +195,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         return data_items
 
     def _get_remaining_provenance_data_items(self, provenance_data):
-        return provenance_data[
-            len(self.PROVENANCE_DATA_ENTRIES):]
+        return provenance_data[self.NUM_PROVENANCE_DATA_ENTRIES:]
 
     def get_provenance_data_from_machine(self, transceiver, placement):
         provenance_data = self._read_provenance_data(

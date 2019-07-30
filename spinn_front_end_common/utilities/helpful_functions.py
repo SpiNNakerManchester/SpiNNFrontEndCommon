@@ -1,33 +1,40 @@
-# dsg imports
-from data_specification import utility_calls
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
-# SpiNMachine imports
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_machine import CoreSubsets
-
-# general imports
 import os
 import logging
 import struct
-import datetime
-import shutil
-from ConfigParser import RawConfigParser
-
+from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
+from data_specification import utility_calls
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
+from .globals_variables import get_simulator
+from spinnman.model.cpu_infos import CPUInfos
 
-logger = logging.getLogger(__name__)
-FINISHED_FILENAME = "finished"
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 
 def locate_extra_monitor_mc_receiver(
         machine, placement_x, placement_y,
-        extra_monitor_cores_to_ethernet_connection_map):
+        packet_gather_cores_to_ethernet_connection_map):
     chip = machine.get_chip_at(placement_x, placement_y)
-    return extra_monitor_cores_to_ethernet_connection_map[
+    return packet_gather_cores_to_ethernet_connection_map[
         chip.nearest_ethernet_x, chip.nearest_ethernet_y]
 
 
@@ -41,11 +48,23 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param data_format: the format to read memory
     :param transceiver: the SpinnMan interface
     """
+    # pylint: disable=too-many-arguments
 
-    # turn byte array into str for unpack to work
-    data = buffer(transceiver.read_memory(x, y, address, length))
-    result = struct.unpack_from(data_format, data)[0]
-    return result
+    data = transceiver.read_memory(x, y, address, length)
+    return struct.unpack_from(data_format, data)[0]
+
+
+def write_address_to_user0(txrx, x, y, p, address):
+    """ Writes the given address into the user_0 register of the given core.
+
+    :param txrx: The transceiver.
+    :param x: Chip coordinate.
+    :param y: Chip coordinate.
+    :param p: Core ID on chip.
+    :param address: Value to write (32-bit integer)
+    """
+    user_0_address = txrx.get_user_0_register_address_from_core(p)
+    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -54,178 +73,21 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :param region: the region to locate the base address of
     :type region: int
     :param placement: the placement object to get the region address of
-    :type placement: pacman.model.placements.Placement
-    :param transceiver: the python interface to the spinnaker machine
-    :type transceiver: spiNNMan.transciever.Transciever
+    :type placement: :py:class:`~pacman.model.placements.Placement`
+    :param transceiver: the python interface to the SpiNNaker machine
+    :type transceiver: :py:class:`~spinnman.Transceiver`
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset_in_pointer_table = \
-        utility_calls.get_region_base_address_offset(
-            regions_base_address, region)
-    region_address = buffer(transceiver.read_memory(
-        placement.x, placement.y, region_offset_in_pointer_table, 4))
-    region_address_decoded = _ONE_WORD.unpack_from(region_address)[0]
-    return region_address_decoded
+    region_offset = utility_calls.get_region_base_address_offset(
+        regions_base_address, region)
 
-
-def child_folder(parent, child_name):
-    child = os.path.join(parent, child_name)
-    if not os.path.exists(child):
-        os.makedirs(child)
-    return child
-
-
-def set_up_output_application_data_specifics(
-        where_to_write_application_data_files,
-        max_application_binaries_kept, n_calls_to_run,
-        this_run_time_string):
-    """
-
-    :param where_to_write_application_data_files:\
-        the location where all app data is by default written to
-    :param max_application_binaries_kept:\
-        The max number of report folders to keep active at any one time
-    :param n_calls_to_run: the counter of how many times run has been called.
-    :param this_run_time_string: the time stamp string for this run
-    :return: the run folder for this simulation to hold app data
-    """
-    this_run_time_folder = None
-    if where_to_write_application_data_files == "DEFAULT":
-        directory = os.getcwd()
-        application_generated_data_file_folder = \
-            child_folder(directory, 'application_generated_data_files')
-
-    else:
-        # add time stamped folder for this run
-        application_generated_data_file_folder = \
-            child_folder(where_to_write_application_data_files,
-                         'application_generated_data_files')
-    # add time stamped folder for this run
-    this_run_time_folder = \
-        child_folder(application_generated_data_file_folder,
-                     this_run_time_string)
-
-    # remove folders that are old and above the limit
-    _remove_excess_folders(
-        max_application_binaries_kept,
-        application_generated_data_file_folder)
-
-    # store timestamp in latest/time_stamp
-    time_of_run_file_name = os.path.join(this_run_time_folder, "time_stamp")
-    with open(time_of_run_file_name, "w") as writer:
-        writer.writelines("{}".format(this_run_time_string))
-
-    # create sub folder within reports for sub runs (where changes need to be
-    # recorded)
-    this_run_time_sub_folder = child_folder(
-        this_run_time_folder, "run_{}".format(n_calls_to_run))
-
-    return this_run_time_sub_folder, this_run_time_folder
-
-
-def set_up_report_specifics(
-        default_report_file_path, max_reports_kept, n_calls_to_run,
-        this_run_time_string=None):
-    """
-
-    :param default_report_file_path: The location where all reports reside
-    :param max_reports_kept:\
-        The max number of report folders to keep active at any one time
-    :param n_calls_to_run: the counter of how many times run has been called.
-    :param this_run_time_string: holder for the timestamp for future runs
-    :return: The folder for this run, the time_stamp
-    """
-
-    # determine common report folder
-    config_param = default_report_file_path
-    if config_param == "DEFAULT":
-        directory = os.getcwd()
-
-        # global reports folder
-        report_default_directory = child_folder(directory, 'reports')
-    elif config_param == "REPORTS":
-        report_default_directory = 'reports'
-        if not os.path.exists(report_default_directory):
-            os.makedirs(report_default_directory)
-    else:
-        report_default_directory = child_folder(config_param, 'reports')
-
-    # clear and clean out folders considered not useful anymore
-    if len(os.listdir(report_default_directory)) > 0:
-        _remove_excess_folders(max_reports_kept, report_default_directory)
-
-    # determine the time slot for later
-    if this_run_time_string is None:
-        this_run_time = datetime.datetime.now()
-        this_run_time_string = (
-            "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-                this_run_time.year, this_run_time.month, this_run_time.day,
-                this_run_time.hour, this_run_time.minute,
-                this_run_time.second, this_run_time.microsecond))
-
-    # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = child_folder(report_default_directory,
-                                   this_run_time_string)
-
-    # create sub folder within reports for sub runs (where changes need to be
-    # recorded)
-    app_sub_folder_name = child_folder(
-        app_folder_name, "run_{}".format(n_calls_to_run))
-
-    # store timestamp in latest/time_stamp for provenance reasons
-    time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
-    with open(time_of_run_file_name, "w") as writer:
-        writer.writelines("{}".format(this_run_time_string))
-    return app_sub_folder_name, app_folder_name, this_run_time_string
-
-
-def write_finished_file(app_data_runtime_folder, report_default_directory):
-    # write a finished file that allows file removal to only remove folders
-    # that are finished
-    app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
-    with open(app_file_name, "w") as writer:
-        writer.writelines("finished")
-
-    app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
-    with open(app_file_name, "w") as writer:
-        writer.writelines("finished")
-
-
-def _remove_excess_folders(max_to_keep, starting_directory):
-    files_in_report_folder = os.listdir(starting_directory)
-
-    # while there's more than the valid max, remove the oldest one
-    if len(files_in_report_folder) > max_to_keep:
-
-        # sort files into time frame
-        files_in_report_folder.sort(
-            cmp, key=lambda temp_file:
-            os.path.getmtime(os.path.join(starting_directory,
-                                          temp_file)))
-
-        # remove only the number of files required, and only if they have
-        # the finished flag file created
-        num_files_to_remove = len(files_in_report_folder) - max_to_keep
-        files_removed = 0
-        files_not_closed = 0
-        for current_oldest_file in files_in_report_folder:
-            finished_flag = os.path.join(os.path.join(
-                starting_directory, current_oldest_file), FINISHED_FILENAME)
-            if os.path.exists(finished_flag):
-                shutil.rmtree(os.path.join(starting_directory,
-                                           current_oldest_file),
-                              ignore_errors=True)
-                files_removed += 1
-            else:
-                files_not_closed += 1
-            if (files_removed + files_not_closed) >= num_files_to_remove:
-                break
-        if files_not_closed > max_to_keep / 4:
-            logger.warning("{} has {} old reports that have not been closed".
-                           format(starting_directory, files_not_closed))
+    # Get the actual address of the region
+    region_address = transceiver.read_memory(
+        placement.x, placement.y, region_offset, 4)
+    return _ONE_WORD.unpack_from(region_address)[0]
 
 
 def convert_string_into_chip_and_core_subset(cores):
@@ -260,8 +122,9 @@ def sort_out_downed_chips_cores_links(
         a tuple of (\
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
-            set of ((x, y), link id) of down links)
-    :rtype: ({(int, int,), }, {(int, int, int), }, {((int, int), int), })
+            set of ((x, y), link ID) of down links)
+    :rtype: tuple(set(tuple(int, int)), set(tuple(int, int, int)),\
+        set(tuple(tuple(int, int), int)))
     """
     ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
@@ -283,68 +146,21 @@ def sort_out_downed_chips_cores_links(
     return ignored_chips, ignored_cores, ignored_links
 
 
-def translate_iobuf_extraction_elements(
-        hard_coded_cores, hard_coded_model_binary, executable_targets,
-        executable_finder):
+def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
+    """ flood fills a binary to spinnaker on a given app_id \
+    given the executable targets and binary.
+
+    :param executable_targets: the executable targets object
+    :param binary: the binary to flood fill
+    :param txrx: spinnman instance
+    :type txrx: :py:class:`~spinnman.Tranceiver`
+    :param app_id: the app id to load it on
+    :return: the number of cores it was loaded onto
     """
-
-    :param hard_coded_cores: list of cores to read iobuf from
-    :param hard_coded_model_binary: list of binary names to read iobuf from
-    :param executable_targets: the targets of cores and executable binaries
-    :param executable_finder: where to find binaries paths from binary names
-    :return: core subsets for the cores to read iobuf from
-    """
-    # all the cores
-    if hard_coded_cores == "ALL" and hard_coded_model_binary == "None":
-        return executable_targets.all_core_subsets
-
-    # some hard coded cores
-    if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        ignored_cores = convert_string_into_chip_and_core_subset(
-            hard_coded_cores)
-        return ignored_cores
-
-    # some binaries
-    if hard_coded_cores == "None" and hard_coded_model_binary != "None":
-        return _handle_model_binaries(
-            hard_coded_model_binary, executable_targets, executable_finder)
-
-    # nothing
-    if hard_coded_cores == "None" and hard_coded_model_binary == "None":
-        return CoreSubsets()
-
-    # bit of both
-    if hard_coded_cores != "None" and hard_coded_model_binary != "None":
-        model_core_subsets = _handle_model_binaries(
-            hard_coded_model_binary, executable_targets, executable_finder)
-        hard_coded_core_core_subsets = \
-            convert_string_into_chip_and_core_subset(hard_coded_cores)
-        for core_subset in hard_coded_core_core_subsets:
-            model_core_subsets.add_core_subset(core_subset)
-        return model_core_subsets
-
-    # should never get here,
-    raise ConfigurationException("Something odd has happened")
-
-
-def _handle_model_binaries(
-        hard_coded_model_binary, executable_targets, executable_finder):
-    """
-    :param hard_coded_model_binary: list of binary names to read iobuf from
-    :param executable_targets: the targets of cores and executable binaries
-    :param executable_finder: where to find binaries paths from binary names
-    :return: core subsets from binaries that need iobuf to be read from them
-    """
-    model_binaries = hard_coded_model_binary.split(",")
-    cores = CoreSubsets()
-    for model_binary in model_binaries:
-        model_binary_path = \
-            executable_finder.get_executable_path(model_binary)
-        core_subsets = \
-            executable_targets.get_cores_for_binary(model_binary_path)
-        for core_subset in core_subsets:
-            cores.add_core_subset(core_subset)
-    return cores
+    core_subset = executable_targets.get_cores_for_binary(binary)
+    txrx.execute_flood(
+        core_subset, binary, app_id, wait=True, is_filename=True)
+    return len(core_subset)
 
 
 def read_config(config, section, item):
@@ -367,6 +183,11 @@ def read_config_int(config, section, item):
     return int(value)
 
 
+_BOOLEAN_STATES = {
+    'true': True, '1': True, 'on': True, 'yes': True,
+    'false': False, '0': False, 'off': False, 'no': False}
+
+
 def read_config_boolean(config, section, item):
     """ Get the boolean value of a config item, returning None if the value\
         is "None"
@@ -374,8 +195,8 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
-    if value.lower() in RawConfigParser._boolean_states:
-        return RawConfigParser._boolean_states[value.lower()]
+    if value.lower() in _BOOLEAN_STATES:
+        return _BOOLEAN_STATES[value.lower()]
     raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
         value, section, item))
 
@@ -398,9 +219,9 @@ def generate_unique_folder_name(folder, filename, extension):
 
 
 def get_ethernet_chip(machine, board_address):
-    """ locate the chip with the given board IP address
+    """ Locate the chip with the given board IP address
 
-    :param machine: the spinnaker machine
+    :param machine: the SpiNNaker machine
     :param board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
     :raises ConfigurationException:\
@@ -415,48 +236,146 @@ def get_ethernet_chip(machine, board_address):
 
 
 def convert_time_diff_to_total_milliseconds(sample):
-    """ converts between a time diff and total milliseconds
+    """ Convert between a time diff and total milliseconds.
 
     :return: total milliseconds
+    :rtype: float
     """
     return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)
 
 
 def determine_flow_states(executable_types, no_sync_changes):
-    """ returns the start and end states for these executable types
+    """ Get the start and end states for these executable types.
 
-    :param executable_types: the execute types to locate start and end states\
-     from
+    :param executable_types: \
+        the execute types to locate start and end states from
+    :type executable_types: dict(\
+        :py:class:`~spinn_front_end_common.utilities.utility_objs.ExecutableType`\
+        -> any)
     :param no_sync_changes: the number of times sync signals been sent
+    :type no_sync_changes: int
     :return: dict of executable type to states.
+    :rtype: 2-tuple
     """
     expected_start_states = dict()
     expected_end_states = dict()
-    for executable_start_type in executable_types.keys():
+    for start_type in executable_types.keys():
 
         # cores that ignore all control and are just running
-        if executable_start_type == ExecutableType.RUNNING:
+        if start_type == ExecutableType.RUNNING:
             expected_start_states[ExecutableType.RUNNING] = [
                 CPUState.RUNNING, CPUState.FINISHED]
             expected_end_states[ExecutableType.RUNNING] = [
                 CPUState.RUNNING, CPUState.FINISHED]
 
         # cores that require a sync barrier
-        elif executable_start_type == ExecutableType.SYNC:
+        elif start_type == ExecutableType.SYNC:
             expected_start_states[ExecutableType.SYNC] = [CPUState.SYNC0]
             expected_end_states[ExecutableType.SYNC] = [CPUState.FINISHED]
 
         # cores that use our sim interface
-        elif (executable_start_type ==
-                ExecutableType.USES_SIMULATION_INTERFACE):
+        elif start_type == ExecutableType.USES_SIMULATION_INTERFACE:
             if no_sync_changes % 2 == 0:
-                expected_start_states[executable_start_type] = [CPUState.SYNC0]
+                expected_start_states[start_type] = [CPUState.SYNC0]
             else:
-                expected_start_states[executable_start_type] = [CPUState.SYNC1]
-            expected_end_states[executable_start_type] = [CPUState.PAUSED]
+                expected_start_states[start_type] = [CPUState.SYNC1]
+            expected_end_states[start_type] = [CPUState.PAUSED]
 
     # if no states, go boom.
-    if len(expected_start_states) == 0:
+    if not expected_start_states:
         raise ConfigurationException(
             "Unknown executable start types {}".format(executable_types))
     return expected_start_states, expected_end_states
+
+
+def convert_vertices_to_core_subset(vertices, placements):
+    """ Converts vertices into core subsets.
+
+    :param extra_monitor_cores_to_set:\
+        the vertices to convert to core subsets
+    :param placements: the placements object
+    :return: the CoreSubSets of the vertices
+    """
+    core_subsets = CoreSubsets()
+    for vertex in vertices:
+        placement = placements.get_placement_of_vertex(vertex)
+        core_subsets.add_processor(placement.x, placement.y, placement.p)
+    return core_subsets
+
+
+def _emergency_state_check(txrx, app_id):
+    # pylint: disable=broad-except
+    try:
+        rte_count = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        if rte_count or watchdog_count:
+            logger.warning(
+                "unexpected core states (rte={}, wdog={})",
+                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
+                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
+    except Exception:
+        logger.exception(
+            "Could not read the status count - going to individual cores")
+        machine = txrx.get_machine_details()
+        infos = CPUInfos()
+        errors = list()
+        for chip in machine.chips:
+            for p in chip.processors:
+                try:
+                    info = txrx.get_cpu_information_from_core(
+                        chip.x, chip.y, p)
+                    if info.state in (
+                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
+                        infos.add_processor(chip.x, chip.y, p, info)
+                except Exception:
+                    errors.append((chip.x, chip.y, p))
+        logger.warn(txrx.get_core_status_string(infos))
+        logger.warn("Could not read information from cores {}".format(errors))
+
+
+# TRICKY POINT: Have to delay the import to here because of import circularity
+def _emergency_iobuf_extract(txrx, executable_targets):
+    # pylint: disable=protected-access
+    from spinn_front_end_common.interface.interface_functions import (
+        ChipIOBufExtractor)
+    sim = get_simulator()
+    extractor = ChipIOBufExtractor(
+        recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
+    extractor(txrx, executable_targets, sim._executable_finder,
+              sim._provenance_file_path)
+
+
+def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
+    """ Used to get at least *some* information out of a core when something\
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+
+    :param txrx: The transceiver.
+    :param app_id: The ID of the application.
+    :param vertex: The vertex to retrieve the IOBUF from if it is suspected\
+        as being dead
+    :type vertex: \
+        :py:class:`spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary`
+    :param placement: Where the vertex is located.
+    """
+    # pylint: disable=protected-access
+    _emergency_state_check(txrx, app_id)
+    target = ExecutableTargets()
+    path = get_simulator()._executable_finder.get_executable_path(
+        vertex.get_binary_file_name())
+    target.add_processor(
+        path, placement.x, placement.y, placement.p,
+        vertex.get_binary_start_type())
+    _emergency_iobuf_extract(txrx, target)
+
+
+def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
+    """ Used to get at least *some* information out of a core when something\
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+
+    :param txrx: The transceiver.
+    :param app_id: The ID of the application.
+    :param executable_targets: The what/where mapping
+    """
+    _emergency_state_check(txrx, app_id)
+    _emergency_iobuf_extract(txrx, executable_targets)

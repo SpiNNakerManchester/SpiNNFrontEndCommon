@@ -1,6 +1,22 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 class LivePacketGatherParameters(object):
-    """ parameter holder for LPG's so that they can be instantiated at a\
-     later date.
+    """ Parameter holder for LPGs so that they can be instantiated at a\
+        later date.
     """
 
     __slots__ = [
@@ -17,7 +33,7 @@ class LivePacketGatherParameters(object):
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
             payload_right_shift, number_of_packets_sent_per_time_step,
             partition_id):
-
+        # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
         self._hostname = hostname
         self._tag = tag

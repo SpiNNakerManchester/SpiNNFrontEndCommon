@@ -1,16 +1,27 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 import struct
-
+from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.processes import RoundRobinConnectionSelector
 from spinnman.messages.sdp import SDPHeader
 from spinnman.connections.udp_packet_connections import SCAMPConnection
-
-from spinn_machine import CoreSubsets, CoreSubset
-
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
-from spinn_front_end_common.utilities.constants \
-    import SDP_RUNNING_MESSAGE_CODES
-
+from spinn_front_end_common.utilities.constants import (
+    SDP_RUNNING_MESSAGE_CODES)
 from fec_integration_tests.mock_machine import MockMachine
 
 
@@ -37,7 +48,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         self.assertEqual(sdp_header.destination_chip_x, 0)
         self.assertEqual(sdp_header.destination_chip_y, 0)
         self.assertEqual(sdp_header.destination_cpu, 1)
-        command = struct.unpack_from("<H", data, 10)[0]
+        command, = struct.unpack_from("<H", data, 10)
         self.assertEqual(
             command,
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)

@@ -1,16 +1,30 @@
-# spinnman imports
-from spinnman.messages.eieio.command_messages \
-    import EventStopRequest, HostSendSequencedData
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-
-# general imports
-from collections import deque
+try:
+    from collections.abc import deque
+except ImportError:
+    from collections import deque
 from threading import Lock
 import logging
+from spinn_utilities.log import FormatAdapter
+from spinnman.messages.eieio.command_messages import (
+    EventStopRequest, HostSendSequencedData)
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # The total number of sequence numbers
 _N_SEQUENCES = 256
@@ -46,13 +60,12 @@ class BuffersSentDeque(object):
     def __init__(self, region, sent_stop_message=False,
                  n_sequences_per_tranmission=64):
         """
-
         :param region: The region being managed
         :type region: int
         :param sent_stop_message: True if the stop message has been sent
         :type sent_stop_message: bool
-        :param n_sequences_per_tranmission: The number of sequences allowed\
-            in each transmission set
+        :param n_sequences_per_tranmission: \
+            The number of sequences allowed in each transmission set
         :type n_sequences_per_tranmission: int
         """
 
@@ -105,7 +118,7 @@ class BuffersSentDeque(object):
 
         :param message: The message to be added
         :type message:\
-                    :py:class:`spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage`
+            :py:class:`spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage`
         """
 
         # If full, raise an exception
@@ -126,8 +139,8 @@ class BuffersSentDeque(object):
     def messages(self):
         """ The messages that have been added to the set
 
-        :rtype: iterable of\
-                    :py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`
+        :rtype: \
+            iterable(:py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`)
         """
         return self._buffers_sent
 
@@ -181,8 +194,8 @@ class BuffersSentDeque(object):
         """
         min_sequence = (self._last_received_sequence_number -
                         self._n_sequences_per_transmission)
-        logger.debug("Removing buffers between {} and {}".format(
-            min_sequence, self._last_received_sequence_number))
+        logger.debug("Removing buffers between {} and {}",
+                     min_sequence, self._last_received_sequence_number)
 
         # If we are at the start of the sequence numbers, keep going back up to
         # the allowed window
@@ -190,14 +203,14 @@ class BuffersSentDeque(object):
             back_min_sequence = min_sequence + _N_SEQUENCES
             while (self._buffers_sent and
                     self._buffers_sent[0].sequence_no > back_min_sequence):
-                logger.debug("Removing buffer with sequence {}".format(
-                    self._buffers_sent[0].sequence_no))
+                logger.debug("Removing buffer with sequence {}",
+                             self._buffers_sent[0].sequence_no)
                 self._buffers_sent.popleft()
 
         # Go back through the queue until we reach the last received sequence
         while (self._buffers_sent and
                 min_sequence < self._buffers_sent[0].sequence_no <=
                 self._last_received_sequence_number):
-            logger.debug("Removing buffer with sequence {}".format(
-                self._buffers_sent[0].sequence_no))
+            logger.debug("Removing buffer with sequence {}",
+                         self._buffers_sent[0].sequence_no)
             self._buffers_sent.popleft()

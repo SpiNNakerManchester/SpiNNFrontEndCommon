@@ -1,19 +1,30 @@
-# general imports
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 from six import add_metaclass
-
-# spinn front end common imports
+from spinn_utilities.abstract_base import (
+    AbstractBase, abstractmethod, abstractproperty)
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
-
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod, \
-    abstractproperty
 
 logger = logging.getLogger(__name__)
 
 
 @add_metaclass(AbstractBase)
 class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
-    """ Implementation of the AbstractSendsBuffersFromHost\
+    """ Implementation of :py:class:`AbstractSendsBuffersFromHost`\
         which uses an existing set of buffers for the details
     """
 
@@ -36,22 +47,6 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """
         return self.send_buffers.keys()
 
-    def get_max_buffer_size_possible(self, region):
-        """ Return the max possible size of a buffered region
-
-        :param region: the region to find the max possible size of
-        :return: the max possible size of the buffered region
-        """
-        return self.send_buffers[region].max_buffer_size_possible
-
-    def get_region_buffer_size(self, region):
-        """ Return the size of a given regions buffer
-
-        :param region: the region to find the size of
-        :return: the size of the buffer
-        """
-        return self.send_buffers[region].buffer_size
-
     def is_next_timestamp(self, region):
         """ Check if there are more time stamps which need transmitting
 
@@ -63,7 +58,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def get_next_timestamp(self, region):
         """ Return the next time stamp available in the buffered region
 
-        :param region: the region id which is being asked
+        :param region: the region ID which is being asked
         :return: the next time stamp
         """
         return self.send_buffers[region].next_timestamp
@@ -72,8 +67,8 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """ Check if there is more keys to transmit for a given region in a\
             given timestamp
 
-        :param region: the region id to check
-        :param timestamp:  the timestamp to check
+        :param region: the region ID to check
+        :param timestamp: the timestamp to check
         :return: bool
         """
         return self.send_buffers[region].is_next_key(timestamp)
@@ -88,7 +83,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def is_empty(self, region):
         """ Check if a region is empty
 
-        :param region: the region id to check
+        :param region: the region ID to check
         :return: bool
         """
         return len(self.send_buffers[region].timestamps) == 0

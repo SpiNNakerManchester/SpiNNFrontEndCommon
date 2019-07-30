@@ -1,9 +1,30 @@
-from spinn_front_end_common.interface.interface_functions \
-    import LoadExecutableImages
-from spinnman.transceiver import Transceiver
-from spinnman.model import ExecutableTargets
-from collections import defaultdict
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
+from spinnman.transceiver import Transceiver
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.interface.interface_functions import (
+    LoadExecutableImages)
+
+SIM = ExecutableType.USES_SIMULATION_INTERFACE
 
 
 class _MockTransceiver(Transceiver):
@@ -38,13 +59,13 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         transceiver = _MockTransceiver(self)
         loader = LoadExecutableImages()
         targets = ExecutableTargets()
-        targets.add_processor("test.aplx", 0, 0, 0)
-        targets.add_processor("test.aplx", 0, 0, 1)
-        targets.add_processor("test.aplx", 0, 0, 2)
-        targets.add_processor("test2.aplx", 0, 1, 0)
-        targets.add_processor("test2.aplx", 0, 1, 1)
-        targets.add_processor("test2.aplx", 0, 1, 2)
-        loader.__call__(targets, 30, transceiver)
+        targets.add_processor("test.aplx", 0, 0, 0, SIM)
+        targets.add_processor("test.aplx", 0, 0, 1, SIM)
+        targets.add_processor("test.aplx", 0, 0, 2, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 0, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 1, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 2, SIM)
+        loader.load_app_images(targets, 30, transceiver)
 
 
 if __name__ == "__main__":

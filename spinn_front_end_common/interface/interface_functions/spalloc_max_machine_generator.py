@@ -1,5 +1,21 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spalloc import ProtocolClient
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.virtual_machine import virtual_machine
+from spinn_machine.machine import Machine
 
 
 class SpallocMaxMachineGenerator(object):
@@ -10,7 +26,8 @@ class SpallocMaxMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, spalloc_server, spalloc_port=22244, spalloc_machine=None):
+            self, spalloc_server, spalloc_port=22244, spalloc_machine=None,
+            max_sdram_size=None, max_core_id=None):
         with ProtocolClient(spalloc_server, spalloc_port) as client:
             machines = client.list_machines()
             # Close the context immediately; don't want to keep this particular
@@ -34,18 +51,21 @@ class SpallocMaxMachineGenerator(object):
             raise Exception(
                 "The spalloc server appears to have no compatible machines")
 
+        if max_core_id is None:
+            max_core_id = Machine.MAX_CORES_PER_CHIP
+
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
-        return VirtualMachine(
+        return virtual_machine(
             width=max_width, height=max_height, with_wrap_arounds=None,
-            version=None)
+            version=None, sdram_per_chip=max_sdram_size,
+            n_cpus_per_chip=max_core_id, validate=False)
 
     @staticmethod
-    def _filter(machines, filter):  # @ReservedAssignment
-        if filter is None:
+    def _filter(machines, target_name):
+        if target_name is None:
             return (m for m in machines if "default" in m["tags"])
-        else:
-            return (m for m in machines if m["name"] == filter)
+        return (m for m in machines if m["name"] == target_name)
 
     @staticmethod
     def _get_size(machine):
