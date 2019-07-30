@@ -13,25 +13,9 @@
  * (entry_t is defined in `routing_table.h` but is described below).
  */
 
-static uint32_t write_index, previous_index, remaining_index, max_index;
+static int write_index, previous_index, remaining_index, max_index;
 
-//! \brief Method used to sort routing table entries.
-//! \param[in] va: ?????
-//! \param[in] vb: ??????
-//! \return ???????
-int compare_rte_by_route(const void *va, const void *vb) {
-    entry_t* entry_a = (entry_t *) va;
-    entry_t* entry_b = (entry_t *) vb;
-    if (entry_a->route < entry_b->route) {
-        return -1;
-    } else  if (entry_a->route > entry_b->route) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-static inline entry_t merge(entry_t *entry1, entry_t *entry2) {
+static inline entry_t merge(entry_t* entry1, entry_t *entry2) {
     entry_t result;
     result.keymask = keymask_merge(entry1->keymask, entry2->keymask);
     result.route = entry1->route;
@@ -43,14 +27,14 @@ static inline entry_t merge(entry_t *entry1, entry_t *entry2) {
     return result;
 }
 
-static inline bool find_merge(uint32_t left, uint32_t index) {
+static inline bool find_merge(int left, int index) {
     entry_t merged = merge(&(table->entries[left]), &(table->entries[index]));
-    for (uint32_t check = 0; check < previous_index; check++) {
+    for (int check = 0; check < previous_index; check++) {
         if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
             return false;
         }
     }
-    for (uint32_t check = remaining_index; check < Routing_table_sdram_get_n_entries(); check++) {
+    for (int check = remaining_index; check < Routing_table_sdram_get_n_entries(); check++) {
         if (keymask_intersect(table->entries[check].keymask, merged.keymask)) {
             return false;
         }
@@ -59,8 +43,8 @@ static inline bool find_merge(uint32_t left, uint32_t index) {
     return true;
 }
 
-static inline void compress_by_route(uint32_t left, uint32_t right){
-    uint32_t index;
+static inline void compress_by_route(int left, int right){
+    int index;
     bool merged;
     merged = false;
 
@@ -87,31 +71,24 @@ static inline void compress_by_route(uint32_t left, uint32_t right){
     }
 }
 
-static inline void swap(uint32_t a, uint32_t b){
-    log_info("swap %u %u", a, b);
-    entry_t temp = table->entries[a];
-    table->entries[a] = table->entries[b];
-    table->entries[b] = temp;
-}
-
-static void quicksort(uint32_t low, uint32_t high){
+static void quicksort(int low, int high){
     // Sorts the entries in place based on route
     // param low: Inclusive lowest index to consider
     // param high: Exclusive highest index to consider
 
     // Location to write any smaller values to
     // Will always point to most left entry with pivot value
-    uint32_t l_write;
+    int l_write;
 
     // Location of entry currently being checked.
     // At the end check will point to either
     //     the right most entry with a value greater than the pivot
     //     or high indicating there are no entries greater than the pivot
-    uint32_t check;
+    int check;
 
     // Location to write any greater values to
     // Until the algorithm ends this will point to an unsorted value
-    uint32_t h_write;
+    int h_write;
 
     if (low < high - 1) {
         // pick low entry for the pivot
@@ -147,10 +124,10 @@ static void quicksort(uint32_t low, uint32_t high){
 }
 
 static inline void simple_minimise(uint32_t target_length){
-    uint32_t left, right;
+    int left, right;
 
-    uint32_t table_size = Routing_table_sdram_get_n_entries();
-    for (uint32_t i = 0; i < table_size; i++) {
+    int table_size = Routing_table_sdram_get_n_entries();
+    for (int i = 0; i < table_size; i++) {
         entry_t entry = table->entries[i];
         log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
     }
@@ -158,16 +135,14 @@ static inline void simple_minimise(uint32_t target_length){
     log_info("do qsort by route");
     quicksort(0, table_size);
 
-    for (uint32_t i = 0; i < table_size; i++) {
+    for (int i = 0; i < table_size; i++) {
         entry_t entry = table->entries[i];
         log_info("entry %u %u %u %u %u", i, entry.keymask.key, entry.keymask.mask, entry.route, entry.source);
     }
 
-    return;
-
-    uint32_t write_index = 0;
-    uint32_t previous_index = 0;
-    uint32_t max_index = table_size - 1;
+    write_index = 0;
+    previous_index = 0;
+    max_index = table_size - 1;
     left = 0;
 
     while (left < table_size){
