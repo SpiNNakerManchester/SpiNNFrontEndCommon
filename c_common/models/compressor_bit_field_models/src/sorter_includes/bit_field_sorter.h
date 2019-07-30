@@ -532,7 +532,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
 
         // malloc list size for the corresponding processors ids for the
         // bitfields
-        log_debug(
+        log_info(
             "trying to allocate %d bytes, for x bitfields same xr packets %d",
             n_bf_with_same_r_packets * sizeof(uint32_t),
             n_bf_with_same_r_packets);
@@ -695,15 +695,25 @@ sorted_bit_fields_t* bit_field_sorter_sort(
     for (int r_id = 0; r_id < n_unique_redundant_packets; r_id++) {
         _coverage_t* cov_element = coverage[r_id];
         FREE(cov_element->bit_field_addresses);
+        cov_element->bit_field_addresses = NULL;
         FREE(cov_element->processor_ids);
+        cov_element->processor_ids = NULL;
         FREE(cov_element);
+        cov_element = NULL;
+    }
+
+    for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++){
         _proc_cov_by_bitfield_t* proc_cov_element = proc_cov_by_bf[r_id];
         FREE(proc_cov_element->redundant_packets);
+        proc_cov_element->redundant_packets = NULL;
         FREE(proc_cov_element);
+        proc_cov_element = NULL;
+
     }
     FREE(coverage);
+    coverage = NULL;
     FREE(proc_cov_by_bf);
-
+    proc_cov_by_bf = NULL;
     return sorted_bit_fields;
 
 }
