@@ -29,7 +29,7 @@ from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-_FILE_NAME = "bit_field_compression_summary.rpt"
+_FILE_NAME = "bit_field_summary.rpt"
 
 
 class BitFieldCompressorReport(object):
