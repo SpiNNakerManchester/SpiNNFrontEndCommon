@@ -75,6 +75,7 @@ from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
 from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 from .auto_pause_and_resume_safety import AutoPauseAndResumeSafety
+from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 
 __all__ = [
     "ApplicationFinisher",
@@ -109,4 +110,4 @@ __all__ = [
     "SpallocMaxMachineGenerator", "TagsLoader",
     "TDMAAgendaBuilder", "VirtualMachineGenerator",
     "SDRAMOutgoingPartitionAllocator",
-    "AutoPauseAndResumeSafety"]
+    "ReadRoutingTablesFromMachine", "AutoPauseAndResumeSafety"]

@@ -1505,19 +1505,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_router_summary_report"):
                 algorithms.append("RouterSummaryReport")
-            if self._config.getboolean(
-                   "Reports", "write_compressed_router_summary_report") and \
-                    self.use_virtual_board:
-                algorithms.append("CompressedRouterSummaryReport")
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
-                optional_algorithms.append("unCompressedRoutingTableReports")
-                optional_algorithms.append("compressedRoutingTableReports")
-                optional_algorithms.append("comparisonOfRoutingTablesReport")
-            if self._config.getboolean(
-                    "Reports", "write_routing_tables_from_machine_report"):
-                optional_algorithms.append(
-                    "RoutingTableFromMachineReport")
 
             # only add board chip report if requested
             if self._config.getboolean("Reports", "write_board_chip_report"):
@@ -1688,11 +1675,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         found = True
             if not found:
                 algorithms.append("RoutingSetup")
+
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
         loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and graph_changed:
+        if loading_algorithm is not None and (graph_changed or data_changed):
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
 
@@ -1709,8 +1697,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_routing_table_reports"):
                 routing_tables_needed = True
                 algorithms.append("unCompressedRoutingTableReports")
-                algorithms.append("compressedRoutingTableReports")
-                algorithms.append("comparisonOfRoutingTablesReport")
+
+                if self._config.getboolean(
+                        "Reports",
+                        "write_routing_tables_from_machine_reports"):
+                    algorithms.append("ReadRoutingTablesFromMachine")
+                    algorithms.append("compressedRoutingTableReports")
+                    algorithms.append("comparisonOfRoutingTablesReport")
+                    algorithms.append("CompressedRouterSummaryReport")
+                    algorithms.append("RoutingTableFromMachineReport")
             if self._config.getboolean(
                     "Reports", "write_routing_compression_checker_report"):
                 routing_tables_needed = True
@@ -1730,8 +1725,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add optional algorithms
         optional_algorithms = list()
 
-        optional_algorithms.append("RoutingTableLoader")
-        optional_algorithms.append("TagsLoader")
+        if graph_changed or data_changed:
+            optional_algorithms.append("RoutingTableLoader")
+            optional_algorithms.append("TagsLoader")
+
         optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
