@@ -385,14 +385,16 @@ static inline _proc_cov_by_bitfield_t** create_coverage_by_bit_field(
         proc_cov_by_bf[r_id]->length_of_list = core_n_bit_fields;
 
         // malloc for n redundant packets
-        proc_cov_by_bf[r_id]->redundant_packets =
-            MALLOC(core_n_bit_fields * sizeof(uint));
-        if (proc_cov_by_bf[r_id]->redundant_packets == NULL){
-            log_error(
-                "failed to allocate memory of %d for processor coverage for "
-                "region %d, might as well fail",
-                core_n_bit_fields * sizeof(int), r_id);
-            return NULL;
+        if (core_n_bit_fields != 0) {
+            proc_cov_by_bf[r_id]->redundant_packets =
+                MALLOC(core_n_bit_fields * sizeof(uint));
+            if (proc_cov_by_bf[r_id]->redundant_packets == NULL){
+                log_error(
+                    "failed to allocate memory of %d for processor coverage "
+                    "for region %d, might as well fail",
+                    core_n_bit_fields * sizeof(int), r_id);
+                return NULL;
+            }
         }
 
         for (uint32_t bf_id = 0; bf_id < core_n_bit_fields; bf_id++){
@@ -704,8 +706,10 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++){
         _proc_cov_by_bitfield_t* proc_cov_element = proc_cov_by_bf[r_id];
-        FREE(proc_cov_element->redundant_packets);
-        proc_cov_element->redundant_packets = NULL;
+        if (proc_cov_element->length_of_list != 0) {
+            FREE(proc_cov_element->redundant_packets);
+            proc_cov_element->redundant_packets = NULL;
+        }
         FREE(proc_cov_element);
         proc_cov_element = NULL;
 

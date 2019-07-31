@@ -1138,7 +1138,7 @@ void start_compression_process(uint unused0, uint unused1) {
     // check state
     if (bit_field_by_processor == NULL && !read_success){
         log_error("failed to read in bitfields, quitting");
-        terminate(EXIT_MALLOC);;
+        terminate(EXIT_MALLOC);
     }
 
     // set off the first compression attempt (aka no bitfields).
