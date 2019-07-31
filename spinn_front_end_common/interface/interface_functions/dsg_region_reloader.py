@@ -125,6 +125,12 @@ class DSGRegionReloader(object):
         data_spec_executor = DataSpecificationExecutor(
             spec_reader, SDRAM.max_sdram_found)
         data_spec_executor.execute()
+        try:
+            spec_reader.close()
+            os.remove(spec_file)
+        except Exception:
+            # Ignore the deletion of files as non-critical
+            pass
 
         # Read the region table for the placement
         regions_base_address = self._txrx.get_cpu_information_from_core(

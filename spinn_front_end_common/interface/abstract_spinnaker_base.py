@@ -1854,7 +1854,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("ChipRuntimeUpdater")
 
         # Add the database writer in case it is needed
-        algorithms.append("DatabaseInterface")
+        if not self._has_ran or graph_changed:
+            algorithms.append("DatabaseInterface")
+        else:
+            inputs["DatabaseFilePath"] = self._last_run_outputs[
+                "DatabaseFilePath"]
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
