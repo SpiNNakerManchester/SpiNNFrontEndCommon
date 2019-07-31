@@ -863,7 +863,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load(graph_changed)
+                self._do_load(graph_changed, data_changed)
 
         # Run for each of the given steps
         if run_time is not None:
@@ -1642,7 +1642,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
 
-    def _do_load(self, graph_changed):
+    def _do_load(self, graph_changed, data_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
