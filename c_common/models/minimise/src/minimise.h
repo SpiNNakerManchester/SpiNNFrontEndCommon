@@ -68,7 +68,7 @@ static inline void copy_entry(int new_index, int old_index){
     put_entry(e_ptr, new_index);
 }
 
-static inline void swap(int a, int b){
+static inline void swap_entries(int a, int b){
     log_info("swap %u %u", a, b);
     entry_t temp = *routing_table_sdram_stores_get_entry(a);
     put_entry(routing_table_sdram_stores_get_entry(b), a);
