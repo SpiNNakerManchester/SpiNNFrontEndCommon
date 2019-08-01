@@ -28,7 +28,7 @@ import sys
 import time
 import threading
 from threading import Condition
-from six import iteritems, iterkeys, reraise
+from six import iteritems, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
@@ -38,6 +38,8 @@ from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
+from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinnman.model.cpu_infos import CPUInfos
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
@@ -1934,8 +1936,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
+        real_exception = exception
         if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
             logger.error(exception.exception, exc_info=exc_info)
+            real_exception = exception.exception
         else:
             logger.error(exception, exc_info=exc_info)
 
@@ -1960,20 +1964,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             logger.exception("Error reading router provenance")
 
         # Find the cores that are not in an expected state
-        unsuccessful_cores = self._txrx.get_cores_not_in_state(
-            executable_targets.all_core_subsets,
-            {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED})
+        unsuccessful_cores = CPUInfos()
+        if isinstance(real_exception, SpiNNManCoresNotInStateException):
+            unsuccessful_cores = real_exception.failed_core_states()
 
         # If there are no cores in a bad state, find those not yet in
         # their finished state
-        unsuccessful_core_subset = CoreSubsets()
         if not unsuccessful_cores:
             for executable_type in self._executable_types:
-                unsuccessful_cores = self._txrx.get_cores_not_in_state(
+                failed_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for x, y, p in iterkeys(unsuccessful_cores):
-                    unsuccessful_core_subset.add_processor(x, y, p)
+                for (x, y, p), core_info in failed_cores:
+                    unsuccessful_cores.add_processor(x, y, p, core_info)
 
         # Print the details of error cores
         for (x, y, p), core_info in iteritems(unsuccessful_cores):
