@@ -98,7 +98,7 @@ static read_request_packet_data *data_ptr;
 //! \brief checks that a channel has been initialised
 //! \param[in] channel the channel to check
 //! \return True if the channel has been initialised or false otherwise
-static inline bool has_been_initialsed(uint8_t channel) {
+static inline bool has_been_initialised(uint8_t channel) {
     return g_recording_channels[channel].start != NULL;
 }
 
@@ -493,7 +493,7 @@ void recording_finalise(void) {
     // Loop through channels
     for (uint32_t channel = 0; channel < n_recording_regions; channel++) {
         // If this channel's in use
-        if (has_been_initialsed(channel)) {
+        if (has_been_initialised(channel)) {
             recording_channel_t *recording_channel =
                     &g_recording_channels[channel];
 
