@@ -30,32 +30,14 @@
 //! timeout used in sending SDP messages
 #define SDP_TIMEOUT 100
 
- //! whatever SDP flags do
-#define SDP_FLAGS 0x07
-
- //! the source port for the SDP messages. possibly used by host
-#define SDP_SOURCE_PORT 3
-
- //! the time to wait before trying again to send a message (MC, SDP)
+//! the time to wait before trying again to send a message (MC, SDP)
 #define MESSAGE_DELAY_TIME_WHEN_FAIL 1
-
-//! How many multicast packets are to be received per SDP packet
-#define ITEMS_PER_DATA_PACKET 68
 
 //! first sequence number to use and reset to
 #define FIRST_SEQ_NUM 0
 
-// max id needed to cover the chips in either direction on a spinn-5 board
-#define MAX_CHIP_ID 8
-
-//! size of total missing seq packets as elements
-#define TOTAL_MISSING_SEQ_PACKETS_IN_ELEMENTS 1
-
-// bit shift to find x coord from the chip int in sdp message
-#define BIT_SHIFT_CHIP_X_COORD 16
-
-// mask for getting y coord from the chip int in sdp message
-#define BIT_MASK_FOR_CHIP_Y_COORD 0x0000FFFF
+// max index needed to cover the chips in either direction on a spinn-5 board
+#define MAX_CHIP_INDEX 8
 
 // sdp port commands received
 enum sdp_port_commands {
@@ -73,32 +55,34 @@ enum sdp_port_commands {
 // threshold for sdram vs dtcm missing seq store.
 #define SDRAM_VS_DTCM_THRESHOLD 40000
 
-// location of command ids in sdp message
+// location of command IDs in SDP message
 #define COMMAND_ID 0
 
-//! offset with just command and seq in bytes
-#define SEND_SEQ_DATA_HEADER_WORDS 2
+enum {
+    //! How many multicast packets are to be received per SDP packet
+    ITEMS_PER_DATA_PACKET = 68,
+    //! offset with just command and seq in bytes
+    SEND_SEQ_DATA_HEADER_WORDS = 2,
+    //! offset with command, x, y, address in bytes
+    SEND_DATA_LOCATION_HEADER_WORDS = 4
+};
 
-//! offset with command, x, y, address in bytes
-#define SEND_DATA_LOCATION_HEADER_WORDS 4
-
-//! size of data stored in packet with command and address
-//! defined from calculation:
-#define DATA_IN_ADDRESS_PACKET_WORDS \
-    (ITEMS_PER_DATA_PACKET - SEND_DATA_LOCATION_HEADER_WORDS)
-
-//! size of data stored in packet with command and seq
-//! defined from calculation:
-#define DATA_IN_NORMAL_PACKET_WORDS \
-    (ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS)
-
-//! size of payload for a packet describing the first batch of missing inbound seqs
-#define ITEMS_PER_FIRST_MISSING_PACKET \
-    (ITEMS_PER_DATA_PACKET - 2)
-
-//! size of payload for a packet describing the further batches of missing inbound seqs
-#define ITEMS_PER_MORE_MISSING_PACKET \
-    (ITEMS_PER_DATA_PACKET - 1)
+enum {
+    //! size of data stored in packet with command and address
+    //! defined from calculation:
+    DATA_IN_ADDRESS_PACKET_WORDS =
+            ITEMS_PER_DATA_PACKET - SEND_DATA_LOCATION_HEADER_WORDS,
+    //! size of data stored in packet with command and seq
+    //! defined from calculation:
+    DATA_IN_NORMAL_PACKET_WORDS =
+            ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS,
+    //! size of payload for a packet describing the first batch of missing
+    //! inbound seqs
+    ITEMS_PER_FIRST_MISSING_PACKET = ITEMS_PER_DATA_PACKET - 2,
+    //! size of payload for a packet describing the further batches of missing
+    //! inbound seqs
+    ITEMS_PER_MORE_MISSING_PACKET = ITEMS_PER_DATA_PACKET - 1
+};
 
 //-----------------------------------------------------------------------------
 // TYPES AND GLOBALS
@@ -177,11 +161,11 @@ static uint32_t position_in_store = 0;
 static sdp_msg_pure_data my_msg;
 
 //! human readable definitions of each region in SDRAM
-typedef enum regions_e {
+enum {
     SYSTEM_REGION,
     CONFIG,
     CHIP_TO_KEY
-} regions_e;
+};
 
 //! human readable definitions of the data in each region
 typedef struct data_out_config_t {
@@ -192,15 +176,15 @@ typedef struct data_out_config_t {
 } data_out_config_t;
 
 //! values for the priority for each callback
-typedef enum callback_priorities {
+enum {
     MC_PACKET = -1,
     SDP = 0,
     DMA = 0,
     TIMER = 1
-} callback_priorities;
+};
 
 // Note that these addresses are *board-local* chip addresses.
-static uint data_in_mc_key_map[MAX_CHIP_ID][MAX_CHIP_ID] = {{0}};
+static uint data_in_mc_key_map[MAX_CHIP_INDEX][MAX_CHIP_INDEX] = {{0}};
 static uint chip_x = 0xFFFFFFF; // Not a legal chip coordinate
 static uint chip_y = 0xFFFFFFF; // Not a legal chip coordinate
 
@@ -219,7 +203,7 @@ static uint time, wait_until;
 
 //! Human readable definitions of the offsets for multicast key elements.
 //! These act as commands sent to the target extra monitor core.
-typedef enum key_offsets {
+typedef enum {
     WRITE_ADDR_KEY_OFFSET = 0,
     DATA_KEY_OFFSET = 1,
     BOUNDARY_KEY_OFFSET = 2
@@ -250,7 +234,7 @@ static inline void send_sdp_message(void) {
 //! \brief sends a multicast (with payload) message to the current target chip
 //! \param[in] command: the key offset, which indicates the command being sent
 //! \param[in] payload: the argument to the command
-static inline void send_mc_message(uint command, uint payload) {
+static inline void send_mc_message(key_offsets command, uint payload) {
     uint key = data_in_mc_key_map[chip_x][chip_y] + command;
     while (spin1_send_mc_packet(key, payload, WITH_PAYLOAD) == 0) {
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
@@ -457,7 +441,8 @@ static inline uint n_elements_in_msg(
 }
 
 //! \brief because spin1_memcpy is stupid, especially for access to SDRAM
-static inline void copy_data(void *target, const void *source, uint n_words) {
+static inline void copy_data(
+        void *restrict target, const void *source, uint n_words) {
     uint *to = target;
     const uint *from = source;
     while (n_words-- > 0) {
