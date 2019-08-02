@@ -1,4 +1,5 @@
 import logging
+import os
 import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
@@ -11,57 +12,106 @@ from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 
 logger = logging.getLogger(__name__)
-_ONE_WORD = struct.Struct("<I")
 _FOUR_WORDS = struct.Struct("<IIII")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
-SIZE_OF_A_SDRAM_ENTRY = 4 * 4
-SURPLUS_DATA_ENTRIES = 3 * 4
-TIME_EXPECTED_TO_RUN = 1000
-OVER_RUN_THRESHOLD_BEFORE_ERROR = 1000
 
 
-class AbstractCompression(object):
+def mundy_on_chip_router_compression(
+        routing_tables, transceiver, machine, app_id,
+        provenance_file_path, compress_only_when_needed=True,
+        compress_as_much_as_possible=False):
+    """
+
+    :param routing_tables:
+    :param transceiver: the spinnman interface
+    :param machine: the SpiNNaker machine representation
+    :param app_id: the application ID used by the main application
+    :param provenance_file_path: the path to where to write the data
+    :param compress_as_much_as_possible:\
+        If False, the compressor will only reduce the table until it fits\
+        in the router space, otherwise it will try to reduce until it\
+        until it can't reduce it any more
+    :param compress_only_when_needed:\
+        If True, the compressor will only compress if the table doesn't\
+        fit in the current router space, otherwise it will just load\
+        the table
+    :type compress_only_when_needed: bool
+    :return:
+    """
+    # pylint: disable=too-many-arguments
+    binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
+    compression = Compression(
+        app_id, binary_path, compress_as_much_as_possible,
+        compress_only_when_needed, machine, provenance_file_path,
+        routing_tables, transceiver)
+    compression._compress()
+
+
+def pair_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path,
+        compress_only_when_needed=False,
+        compress_as_much_as_possible=True):
+    # pylint: disable=too-many-arguments
+    binary_path = executable_finder.get_executable_path(
+        "simple_minimise.aplx")
+    compression = Compression(
+        app_id, binary_path, compress_as_much_as_possible,
+        compress_only_when_needed, machine, provenance_file_path,
+        routing_tables, transceiver)
+    compression._compress()
+
+
+class Compression(object):
     """ Compressor that uses a on chip router compressor
     """
 
-    __slots__ = ["_transceiver"]
+    __slots__ = ["_app_id",
+                 "_binary_path",
+                 "_compress_as_much_as_possible",
+                 "_compress_only_when_needed",
+                 "_compressor_app_id",
+                 "_machine",
+                 "_provenance_file_path",
+                 "_transceiver",
+                 "_routing_tables",
+                 ]
 
+    def __init__(
+            self, app_id, binary_path, compress_as_much_as_possible,
+            compress_only_when_needed, machine, provenance_file_path,
+            routing_tables, transceiver):
+        self._app_id = app_id
+        self._binary_path = binary_path
+        self._compress_as_much_as_possible = compress_as_much_as_possible
+        self._compress_only_when_needed = compress_only_when_needed
+        self._machine = machine
+        self._provenance_file_path = provenance_file_path
+        self._transceiver = transceiver
+        self._routing_tables = routing_tables
 
-    def _compress(
-            self, routing_tables, transceiver,
-            machine, app_id, provenance_file_path, binary_path,
-            compress_only_when_needed=False,
-            compress_as_much_as_possible=True):
+    def _compress(self):
         """
         :param routing_tables: the memory routing tables to be compressed
-        :param transceiver: the spinnman interface
-        :param machine: the SpiNNaker machine representation
-        :param app_id: the application ID used by the main application
-        :param provenance_file_path: the path to where to write the data
-        :param binary_path:
         :return: flag stating routing compression and loading has been done
         """
         # pylint: disable=too-many-arguments
 
         # build progress bar
         progress = ProgressBar(
-            len(routing_tables.routing_tables) + 2,
+            len(self._routing_tables.routing_tables) + 2,
             "Running routing table compression on chip")
 
-        self._transceiver = transceiver
-        compressor_app_id = transceiver.app_id_tracker.get_new_id()
+        self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
 
         # figure size of SDRAM needed for each chip for storing the routing
         # table
-        for routing_table in progress.over(routing_tables, False):
-            self._load_routing_table(
-                routing_table, app_id, compressor_app_id,
-                compress_only_when_needed, compress_as_much_as_possible)
+        for routing_table in progress.over(self._routing_tables, False):
+            self._load_routing_table(routing_table)
 
         # load the router compressor executable
-        executable_targets = self._load_executables(
-            binary_path, routing_tables, compressor_app_id, machine)
+        executable_targets = self._load_executables()
 
         # update progress bar
         progress.update()
@@ -69,48 +119,40 @@ class AbstractCompression(object):
         # Wait for the executable to finish
         succeeded = False
         try:
-            transceiver.wait_for_cores_to_be_in_state(
-                executable_targets.all_core_subsets, compressor_app_id,
+            self._transceiver.wait_for_cores_to_be_in_state(
+                executable_targets.all_core_subsets, self._compressor_app_id,
                 [CPUState.FINISHED])
             succeeded = True
         finally:
             # get the debug data
             if not succeeded:
                 self._handle_failure(
-                    executable_targets, provenance_file_path, compressor_app_id)
+                    executable_targets)
 
         # Check if any cores have not completed successfully
-        self._check_for_success(
-            executable_targets, provenance_file_path, compressor_app_id)
+        self._check_for_success(executable_targets)
 
         # update progress bar
         progress.update()
 
         # stop anything that's associated with the compressor binary
-        transceiver.stop_application(compressor_app_id)
-        transceiver.app_id_tracker.free_id(compressor_app_id)
+        self._transceiver.stop_application(self._compressor_app_id)
+        self._transceiver.app_id_tracker.free_id(self._compressor_app_id)
 
         # update the progress bar
         progress.end()
 
-    def _load_routing_table(
-            self, table, app_id, compressor_app_id,
-            compress_only_when_needed, compress_as_much_as_possible):
-        # pylint: disable=too-many-arguments
-        data = self._build_data(
-            table, app_id, compress_only_when_needed,
-            compress_as_much_as_possible)
+    def _load_routing_table(self, table):
+        data = self._build_data(table)
 
         # go to spinnman and ask for a memory region of that size per chip.
         base_address = self._transceiver.malloc_sdram(
-            table.x, table.y, len(data), compressor_app_id, _SDRAM_TAG)
+            table.x, table.y, len(data), self._compressor_app_id, _SDRAM_TAG)
 
         # write SDRAM requirements per chip
         self._transceiver.write_memory(table.x, table.y, base_address, data)
 
-    def _check_for_success(
-            self, executable_targets, provenance_file_path,
-            compressor_app_id):
+    def _check_for_success(self, executable_targets):
         """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
@@ -125,40 +167,33 @@ class AbstractCompression(object):
 
                 # The result is 0 if success, otherwise failure
                 if result != 0:
-                    self._handle_failure(
-                        executable_targets, provenance_file_path, compressor_app_id)
+                    self._handle_failure(executable_targets)
 
                     raise SpinnFrontEndException(
                         "The router compressor on {}, {} failed to complete"
                         .format(x, y))
 
-    def _handle_failure(
-            self, executable_targets, provenance_file_path, compressor_app_id):
+    def _handle_failure(self, executable_targets):
         """
         :param executable_targets:
-        :param provenance_file_path:
         :rtype: None
         """
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            self._transceiver, executable_targets, executable_finder, provenance_file_path)
+            self._transceiver, executable_targets, executable_finder,
+            self._provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
             logger.error(error)
-        self._transceiver.stop_application(compressor_app_id)
-        self._transceiver.app_id_tracker.free_id(compressor_app_id)
+        self._transceiver.stop_application(self._compressor_app_id)
+        self._transceiver.app_id_tracker.free_id(self._compressor_app_id)
 
-    def _load_executables(self, binary_path, routing_tables,
-                          compressor_app_id, machine):
+    def _load_executables(self):
         """ Loads the router compressor onto the chips.
 
-        :param binary_path:
-        :param routing_tables: the router tables needed to be compressed
-        :param compressor_app_id: the app ID of the compressor compressor
-        :param machine: the SpiNNaker machine representation
         :return:\
             the executable targets that represent all cores/chips which have\
             active routing tables
@@ -166,10 +201,10 @@ class AbstractCompression(object):
 
         # build core subsets
         core_subsets = CoreSubsets()
-        for routing_table in routing_tables:
+        for routing_table in self._routing_tables:
 
             # get the first none monitor core
-            chip = machine.get_chip_at(routing_table.x, routing_table.y)
+            chip = self._machine.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
 
             # add to the core subsets
@@ -178,31 +213,19 @@ class AbstractCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(binary_path, core_subsets,
+        executable_targets.add_subsets(self._binary_path, core_subsets,
                                        ExecutableType.RUNNING)
 
-        self._transceiver.execute_application(executable_targets, compressor_app_id)
+        self._transceiver.execute_application(
+            executable_targets, self._compressor_app_id)
         return executable_targets
 
-    def _build_data(
-            self, routing_table, app_id, compress_only_when_needed,
-            compress_as_much_as_possible):
+    def _build_data(self, routing_table):
         """ Convert the router table into the data needed by the router\
             compressor c code.
 
         :param routing_table: the pacman router table instance
-        :param app_id: the application ID to load the entries in by
-        :param compress_only_when_needed:\
-            If True, the compressor will only compress if the table doesn't\
-            fit in the current router space, otherwise it will just load\
-            the table
-        :type compress_only_when_needed: bool
-        :param compress_as_much_as_possible:\
-            If False, the compressor will only reduce the table until it fits\
-            in the router space, otherwise it will try to reduce until it\
-            until it can't reduce it any more
-        :type compress_as_much_as_possible: bool
-        :return: The byte array of data
+       :return: The byte array of data
         """
 
         # write header data of the app ID to load the data, if to store
@@ -210,8 +233,8 @@ class AbstractCompression(object):
 
         data = b''
         data += _FOUR_WORDS.pack(
-            app_id, int(compress_only_when_needed),
-            int(compress_as_much_as_possible),
+            self._app_id, int(self._compress_only_when_needed),
+            int(self._compress_as_much_as_possible),
             # Write the size of the table
             routing_table.number_of_entries)
 
