@@ -352,7 +352,7 @@ static inline void recording_send_buffering_out_trigger_message(
         uint32_t channel_space_available =
                 compute_available_space_in_channel(channel);
 
-        if (has_been_initialsed(channel) && (flush_all ||
+        if (has_been_initialised(channel) && (flush_all ||
                 (channel_space_total - channel_space_available) >=
                      buffer_size_before_trigger)) {
             uint8_t *buffer_region = g_recording_channels[channel].start;
@@ -424,7 +424,7 @@ static void buffering_in_handler(uint mailbox, uint port) {
 bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
-    if (has_been_initialsed(channel)) {
+    if (has_been_initialised(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
         uint32_t space_available = compute_available_space_in_channel(channel);
 
