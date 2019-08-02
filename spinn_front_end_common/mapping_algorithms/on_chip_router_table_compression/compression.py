@@ -22,8 +22,9 @@ def mundy_on_chip_router_compression(
         provenance_file_path, compress_only_when_needed=True,
         compress_as_much_as_possible=False):
     """
+    Load routing tables and compress then using Mundy's algorithm
 
-    :param routing_tables:
+    :param routing_tables: the memory routing tables to be compressed
     :param transceiver: the spinnman interface
     :param machine: the SpiNNaker machine representation
     :param app_id: the application ID used by the main application
@@ -32,6 +33,7 @@ def mundy_on_chip_router_compression(
         If False, the compressor will only reduce the table until it fits\
         in the router space, otherwise it will try to reduce until it\
         until it can't reduce it any more
+    :type compress_as_much_as_possible: bool
     :param compress_only_when_needed:\
         If True, the compressor will only compress if the table doesn't\
         fit in the current router space, otherwise it will just load\
@@ -41,7 +43,7 @@ def mundy_on_chip_router_compression(
     """
     # pylint: disable=too-many-arguments
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = Compression(
+    compression = _Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
@@ -53,17 +55,40 @@ def pair_compression(
         machine, app_id, provenance_file_path,
         compress_only_when_needed=False,
         compress_as_much_as_possible=True):
+    """
+    Load routing tables and compress then using Pair Algorithm
+
+    See pacman/operations/router_compressors/pair_compressor.py which is the
+        exact same algorithm implemented in python
+
+    :param routing_tables: the memory routing tables to be compressed
+    :param transceiver: the spinnman interface
+    :param executable_finder:
+    :param machine: the SpiNNaker machine representation
+    :param app_id: the application ID used by the main application
+    :param provenance_file_path: the path to where to write the data
+    :param compress_as_much_as_possible:\
+        If False, the compressor will only reduce the table until it fits\
+        in the router space, otherwise it will try to reduce until it\
+        until it can't reduce it any more
+    :type compress_as_much_as_possible: bool
+    :param compress_only_when_needed:\
+        If True, the compressor will only compress if the table doesn't\
+        fit in the current router space, otherwise it will just load\
+        the table
+    :type compress_only_when_needed: bool
+     """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_minimise.aplx")
-    compression = Compression(
+    compression = _Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
     compression._compress()
 
 
-class Compression(object):
+class _Compression(object):
     """ Compressor that uses a on chip router compressor
     """
 
@@ -93,7 +118,6 @@ class Compression(object):
 
     def _compress(self):
         """
-        :param routing_tables: the memory routing tables to be compressed
         :return: flag stating routing compression and loading has been done
         """
         # pylint: disable=too-many-arguments
@@ -174,10 +198,6 @@ class Compression(object):
                         .format(x, y))
 
     def _handle_failure(self, executable_targets):
-        """
-        :param executable_targets:
-        :rtype: None
-        """
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         executable_finder = ExecutableFinder(binary_search_paths=[])
@@ -224,7 +244,7 @@ class Compression(object):
         """ Convert the router table into the data needed by the router\
             compressor c code.
 
-        :param routing_table: the pacman router table instance
+       :param routing_table: the pacman router table instance
        :return: The byte array of data
         """
 

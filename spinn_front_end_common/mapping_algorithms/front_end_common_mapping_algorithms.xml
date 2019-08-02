@@ -19,8 +19,8 @@
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="MundyOnChipRouterCompression">
-        <python_module>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.mundy_on_chip_router_compression</python_module>
-        <python_class>MundyOnChipRouterCompression</python_class>
+        <python_module>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression</python_module>
+        <python_function>mundy_on_chip_router_compression</python_function>
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
@@ -53,9 +53,9 @@
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
-    </algorithm><algorithm name="SimpleOnChipRouterCompression">
-        <python_module>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.simple_on_chip_router_compression</python_module>
-        <python_class>SimpleOnChipRouterCompression</python_class>
+    </algorithm><algorithm name="PairOnChipRouterCompression">
+        <python_module>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression</python_module>
+        <python_function>pair_compression</python_function>
         <input_definitions>
             <parameter>
                 <param_name>routing_tables</param_name>
