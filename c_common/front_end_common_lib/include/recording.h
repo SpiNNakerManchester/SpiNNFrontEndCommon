@@ -66,15 +66,6 @@ typedef struct {
     uint8_t sequence;
 } host_data_read_ack_packet_header;
 
-//! \brief Determines if the given channel has space assigned for recording.
-//! \param[in] recording_flags The flags as returned by recording_initialize
-//! \param[in] channel The channel to check
-//! \return True if the channel is enabled, false otherwise
-inline bool recording_is_channel_enabled(
-        uint32_t recording_flags, uint8_t channel) {
-    return (recording_flags & (1 << channel)) != 0;
-}
-
 //! \brief records some data into a specific recording channel.
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
