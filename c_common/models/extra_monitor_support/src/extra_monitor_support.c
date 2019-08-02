@@ -20,7 +20,7 @@
 #include <stdbool.h>
 #include <common-typedefs.h>
 
-extern void spin1_wfi();
+extern void spin1_wfi(void);
 extern INT_HANDLER sark_int_han(void);
 
 // ------------------------------------------------------------------------
@@ -37,14 +37,15 @@ extern INT_HANDLER sark_int_han(void);
 //! ??????????????????
 #define DMA_WIDTH 1
 
-//! marker for doing a DMA read
-#define DMA_READ  0
-
-//! marker for doing DMA write (don't think this is used in here yet)
-#define DMA_WRITE 1
-
 //! the number of DMA buffers to build
 #define N_DMA_BUFFERS 2
+
+enum {
+    //! marker for doing a DMA read
+    DMA_READ = 0,
+    //! marker for doing DMA write (don't think this is used in here yet)
+    DMA_WRITE = 1
+};
 
 //-----------------------------------------------------------------------------
 // magic numbers for data speed up extractor
@@ -65,6 +66,7 @@ extern INT_HANDLER sark_int_han(void);
 #define SDP_PAYLOAD_BYTES (SDP_PAYLOAD_WORDS * sizeof(uint))
 
 #define TX_NOT_FULL_MASK 0x10000000
+
 //-----------------------------------------------------------------------------
 //! SDP flags
 //-----------------------------------------------------------------------------
@@ -133,7 +135,7 @@ typedef enum data_out_sdp_commands {
 // VIC stuff
 //-----------------------------------------------------------------------------
 
-enum em_slots {
+enum {
     // CPU VIC slot (WDOG and SDP)
     CPU_SLOT = SLOT_0,
     // communications controller VIC slot
@@ -150,32 +152,42 @@ enum em_slots {
     MC_PAYLOAD_SLOT = SLOT_6
 };
 
-#define RTR_BLOCKED_BIT    25
-#define RTR_DOVRFLW_BIT    30
-#define RTR_DENABLE_BIT    2
-#define RTR_FPE_BIT        17
-#define RTR_LE_BIT         6
+enum {
+    RTR_DOVRFLW_BIT = 30,
+    RTR_BLOCKED_BIT = 25,
+    RTR_FPE_BIT = 17,
+    RTR_LE_BIT = 6,
+    RTR_DENABLE_BIT = 2
+};
 
-#define RTR_BLOCKED_MASK   (1 << RTR_BLOCKED_BIT)   // router blocked
-#define RTR_DOVRFLW_MASK   (1 << RTR_DOVRFLW_BIT)   // router dump overflow
-#define RTR_DENABLE_MASK   (1 << RTR_DENABLE_BIT)   // enable dump interrupts
-#define RTR_FPE_MASK       ((1 << RTR_FPE_BIT) - 1)  // if the dumped packet was a processor failure
-#define RTR_LE_MASK        ((1 << RTR_LE_BIT) -1) // if the dumped packet was a link failure
+enum {
+    RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT,   // router blocked
+    RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT,   // router dump overflow
+    RTR_DENABLE_MASK = 1 << RTR_DENABLE_BIT,   // enable dump interrupts
+    RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,     // if the dumped packet was a processor failure
+    RTR_LE_MASK = (1 << RTR_LE_BIT) - 1        // if the dumped packet was a link failure
+};
 
-#define PKT_CONTROL_SHFT   16
-#define PKT_PLD_SHFT       17
-#define PKT_TYPE_SHFT      22
-#define PKT_ROUTE_SHFT     24
+enum {
+    PKT_CONTROL_SHFT = 16,
+    PKT_PLD_SHFT = 17,
+    PKT_TYPE_SHFT = 22,
+    PKT_ROUTE_SHFT = 24
+};
 
-#define PKT_CONTROL_MASK   (0xff << PKT_CONTROL_SHFT)
-#define PKT_PLD_MASK       (1 << PKT_PLD_SHFT)
-#define PKT_TYPE_MASK      (3 << PKT_TYPE_SHFT)
-#define PKT_ROUTE_MASK     (7 << PKT_ROUTE_SHFT)
+enum {
+    PKT_CONTROL_MASK = 0xff << PKT_CONTROL_SHFT,
+    PKT_PLD_MASK = 1 << PKT_PLD_SHFT,
+    PKT_TYPE_MASK = 3 << PKT_TYPE_SHFT,
+    PKT_ROUTE_MASK = 7 << PKT_ROUTE_SHFT
+};
 
-#define PKT_TYPE_MC        (0 << PKT_TYPE_SHFT)
-#define PKT_TYPE_PP        (1 << PKT_TYPE_SHFT)
-#define PKT_TYPE_NN        (2 << PKT_TYPE_SHFT)
-#define PKT_TYPE_FR        (3 << PKT_TYPE_SHFT)
+enum {
+    PKT_TYPE_MC = 0 << PKT_TYPE_SHFT,
+    PKT_TYPE_PP = 1 << PKT_TYPE_SHFT,
+    PKT_TYPE_NN = 2 << PKT_TYPE_SHFT,
+    PKT_TYPE_FR = 3 << PKT_TYPE_SHFT
+};
 
 #define ROUTER_TIMEOUT_MASK 0xFF
 
@@ -362,19 +374,19 @@ static bool run = true;
 
 // VIC
 typedef void (*isr_t) (void);
-volatile isr_t* const vic_vectors  = (isr_t *) (VIC_BASE + 0x100);
-volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
+static volatile isr_t* const vic_vectors = (isr_t *) (VIC_BASE + 0x100);
+static volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 
 // ------------------------------------------------------------------------
 // global variables for data speed up in functionality
 // ------------------------------------------------------------------------
 
 //! data in variables
-router_entry_t *saved_application_router_table = NULL;
-uint data_in_address_key = 0;
-uint data_in_data_key = 0;
-uint data_in_boundary_key = 0;
-address_t data_in_write_address = NULL, first_write_address = NULL;
+static router_entry_t *saved_application_router_table = NULL;
+static uint data_in_address_key = 0;
+static uint data_in_data_key = 0;
+static uint data_in_boundary_key = 0;
+static address_t data_in_write_address = NULL, first_write_address = NULL;
 
 // ------------------------------------------------------------------------
 // global variables for data speed up out functionality
@@ -393,7 +405,7 @@ static uint32_t retransmitted_seq_num_items_read = 0;
 static uint32_t n_missing_seq_sdp_packets = 0;
 static uint32_t n_missing_seq_nums_in_sdram = 0;
 static uint32_t n_elements_to_read_from_sdram = 0;
-address_t missing_sdp_seq_num_sdram_address = NULL;
+static address_t missing_sdp_seq_num_sdram_address = NULL;
 static uint32_t max_seq_num = 0;
 
 //! retransmission DMA stuff
@@ -454,7 +466,7 @@ static inline uint sdram_max_block_size(void) {
 // ------------------------------------------------------------------------
 
 //! \brief the plugin callback for the timer
-INT_HANDLER reinjection_timer_callback(void) {
+static INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
     tc[T1_INT_CLR] = 1;
 
@@ -481,7 +493,7 @@ INT_HANDLER reinjection_timer_callback(void) {
 }
 
 //! \brief the plugin callback for sending packets????
-INT_HANDLER reinjection_ready_to_send_callback(void) {
+static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
@@ -533,7 +545,7 @@ INT_HANDLER reinjection_ready_to_send_callback(void) {
 }
 
 //! \brief the callback plugin for handling dropped packets
-INT_HANDLER reinjection_dropped_packet_callback(void) {
+static INT_HANDLER reinjection_dropped_packet_callback(void) {
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
     uint pld = rtr[RTR_DDAT];
@@ -864,7 +876,7 @@ static inline void data_in_process_data(uint data) {
 }
 
 //! \brief process a mc packet with payload
-INT_HANDLER data_in_process_mc_payload_packet(void) {
+static INT_HANDLER data_in_process_mc_payload_packet(void) {
     // get data from comm controller
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
@@ -928,7 +940,7 @@ static void data_in_load_router(
 }
 
 //! \brief reads in routers entries and places in application sdram location
-void data_in_save_router(void) {
+static void data_in_save_router(void) {
     rtr_entry_t router_entry;
 
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
