@@ -98,7 +98,7 @@ static read_request_packet_data *data_ptr;
 //! \brief checks that a channel has been initialised
 //! \param[in] channel the channel to check
 //! \return True if the channel has been initialised or false otherwise
-static inline bool _has_been_initialsed(uint8_t channel) {
+static inline bool _has_been_initialised(uint8_t channel) {
     return g_recording_channels[channel].start != NULL;
 }
 
@@ -356,7 +356,7 @@ static inline void _recording_send_buffering_out_trigger_message(
         uint32_t channel_space_available = compute_available_space_in_channel(
                 channel);
 
-        if (_has_been_initialsed(channel) && (flush_all ||
+        if (_has_been_initialised(channel) && (flush_all ||
                 (channel_space_total - channel_space_available) >=
                      buffer_size_before_trigger)) {
             uint8_t *buffer_region = g_recording_channels[channel].start;
@@ -428,7 +428,7 @@ static void _buffering_in_handler(uint mailbox, uint port) {
 bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
-    if (_has_been_initialsed(channel)) {
+    if (_has_been_initialised(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
         uint32_t space_available = compute_available_space_in_channel(channel);
 
@@ -498,7 +498,7 @@ void recording_finalise() {
     // Loop through channels
     for (uint32_t channel = 0; channel < n_recording_regions; channel++) {
         // If this channel's in use
-        if (_has_been_initialsed(channel)) {
+        if (_has_been_initialised(channel)) {
             recording_channel_t *recording_channel =
                 &g_recording_channels[channel];
 
