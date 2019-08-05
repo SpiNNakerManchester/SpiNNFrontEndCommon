@@ -127,13 +127,16 @@ class DsSqlliteDatabase(object):
         :param bytearray ds: the data spec as byte code
         """
         chip = self._machine.get_chip_at(core_x, core_y)
-        ethernet_id = self.__get_ethernet(
-            chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         with self._db:
             self._db.execute(
                 "INSERT INTO core(x, y, processor, ethernet_id, content) "
-                + "VALUES(?, ?, ?, ?, ?) ",
-                (core_x, core_y, core_p, ethernet_id, sqlite3.Binary(ds)))
+                + "VALUES(?, ?, ?, (SELECT COALESCE(("
+                + "SELECT ethernet_id FROM ethernet "
+                + "WHERE ethernet_x = ? AND ethernet_y = ?"
+                + "), ?)), ?) ",
+                (core_x, core_y, core_p, chip.nearest_ethernet_x,
+                 chip.nearest_ethernet_y, self._root_ethernet_id,
+                 sqlite3.Binary(ds)))
 
     def get_ds(self, x, y, p):
         """ Retrieves the data spec as byte code for this core.
@@ -263,13 +266,16 @@ class DsSqlliteDatabase(object):
                 (start, used, written, x, y, p))
             if cursor.rowcount == 0:
                 chip = self._machine.get_chip_at(x, y)
-                ethernet_id = self.__get_ethernet(
-                    chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 cursor.execute(
                     "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "start_address, memory_used, memory_written) "
-                    + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
-                    (x, y, p, ethernet_id, start, used, written))
+                    + "VALUES(?, ?, ?, (SELECT COALESCE(("
+                    + "SELECT ethernet_id FROM ethernet "
+                    + "WHERE ethernet_x = ? AND ethernet_y = ?"
+                    + "), ?)), ?, ?, ?) ",
+                    (x, y, p, chip.nearest_ethernet_x,
+                     chip.nearest_ethernet_y, self._root_ethernet_id,
+                     start, used, written))
 
     def set_size_info(self, x, y, p, memory_used):
         with self._db:
@@ -281,13 +287,14 @@ class DsSqlliteDatabase(object):
                 (memory_used, x, y, p))
             if cursor.rowcount == 0:
                 chip = self._machine.get_chip_at(x, y)
-                ethernet_id = self.__get_ethernet(
-                    chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 cursor.execute(
-                    "INSERT INTO core(x, y, processor, ethernet_id, "
-                    + "memory_used) "
-                    + "VALUES(?, ?, ?, ?, ?) ",
-                    (x, y, p, ethernet_id, int(memory_used)))
+                    "INSERT INTO core(x, y, processor, memory_used, "
+                    + "ethernet_id) VALUES(?, ?, ?, ?, (SELECT COALESCE(("
+                    + "  SELECT ethernet_id FROM ethernet "
+                    + "  WHERE ethernet_x = ? AND ethernet_y = ?), ?)))",
+                    (x, y, p, int(memory_used),
+                     chip.nearest_ethernet_x, chip.nearest_ethernet_y,
+                     self._root_ethernet_id))
 
     def clear_write_info(self):
         """ Clears the provenance for all rows
