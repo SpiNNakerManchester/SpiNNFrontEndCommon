@@ -130,7 +130,7 @@ bool load_routing_table(uint32_t app_id) {
     // Indicate we were able to allocate routing table entries.
     return TRUE;
 }
-;
+
 //! \brief frees memory allocated and calls spin1 exit and sets the user0
 //! error code correctly.
 //! \param[in] header the header object
