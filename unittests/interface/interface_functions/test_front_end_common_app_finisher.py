@@ -20,6 +20,7 @@ from six import itervalues
 from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.interface.interface_functions import (
     ApplicationFinisher)
+from spinnman.model.cpu_infos import CPUInfos
 
 
 class _MockTransceiver(object):
@@ -40,7 +41,7 @@ class _MockTransceiver(object):
         return count
 
     def get_cores_in_state(self, core_subsets, states):
-        cores_in_state = CoreSubsets()
+        cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
         for core_subset in core_subsets:
             x = core_subset.x
@@ -50,9 +51,9 @@ class _MockTransceiver(object):
                 if (x, y, p) in core_states:
                     if hasattr(states, "__iter__"):
                         if core_states[x, y, p] in states:
-                            cores_in_state.add_processor(x, y, p)
+                            cores_in_state.add_processor(x, y, p, None)
                     elif core_states[x, y, p] == states:
-                        cores_in_state.add_processor(x, y, p)
+                        cores_in_state.add_processor(x, y, p, None)
 
         self._current_state += 1
         return cores_in_state
