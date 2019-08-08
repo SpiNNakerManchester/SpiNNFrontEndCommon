@@ -120,9 +120,11 @@ void recording_finalise();
 //!            }
 //! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
+//! \param[out] words_read: the number of words read by the recordings
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags);
+        address_t recording_data_address, uint32_t *recording_flags,
+        uint32_t *words_read);
 
 //! \brief resets recording to the state just after initialisation
 void recording_reset();

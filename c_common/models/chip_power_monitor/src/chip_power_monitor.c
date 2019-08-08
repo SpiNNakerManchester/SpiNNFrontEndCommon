@@ -175,7 +175,9 @@ static bool initialize(uint32_t *timer)
 
     address_t recording_region =
             data_specification_get_region(RECORDING, ds_regions);
-    bool success = recording_initialize(recording_region, &recording_flags);
+    uint32_t words_read;
+    bool success = recording_initialize(
+        recording_region, &recording_flags, &words_read);
     return success;
 }
 

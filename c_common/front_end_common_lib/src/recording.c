@@ -59,7 +59,7 @@ struct recording_data_t {
     uint32_t time_between_triggers;
     uint32_t last_sequence_number;
     recording_channel_t *region_pointers[0];
-};
+} recording_data_t;
 
 //---------------------------------------
 // Globals
@@ -91,6 +91,12 @@ static read_request_packet_data *data_ptr;
 
 //! The time between buffer read messages
 #define MIN_TIME_BETWEEN_TRIGGERS 50
+
+//! n words outside struct per recording region used
+#define N_WORDS_USED_OUTSIDE_STRUCT_PER_REGION 2
+
+//! word to byte conversion
+#define WORD_TO_BYTE_CONVERSION 4
 
 //---------------------------------------
 // Private method
@@ -545,7 +551,8 @@ void _recording_dma_finished(uint unused, uint tag) {
 }
 
 bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags) {
+        address_t recording_data_address, uint32_t *recording_flags,
+        uint32_t *words_read) {
     struct recording_data_t *recording_data =
         (struct recording_data_t *) recording_data_address;
 
@@ -606,7 +613,8 @@ bool recording_initialize(
                     counter, size);
                 return false;
             }
-            recording_data->region_pointers[counter] = region_addresses[counter];
+            recording_data->region_pointers[counter] =
+                region_addresses[counter];
             *recording_flags = (*recording_flags | (1 << counter));
         } else {
             recording_data->region_pointers[counter] = 0;
@@ -641,6 +649,11 @@ bool recording_initialize(
     // register DMA transfer done callback
     simulation_dma_transfer_done_callback_on(
         RECORDING_DMA_COMPLETE_TAG_ID, _recording_dma_finished);
+
+    // update word tracker for anything else
+    *words_read += (
+        (sizeof(recording_data_t) / WORD_TO_BYTE_CONVERSION) +
+        (N_WORDS_USED_OUTSIDE_STRUCT_PER_REGION * n_recording_regions));
 
     return true;
 }
