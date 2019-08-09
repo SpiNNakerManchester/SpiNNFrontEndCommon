@@ -25,6 +25,9 @@ SDRAM_BASE_ADDR = 0x70000000
 MAX_SAFE_BINARY_SIZE = 32 * 1024
 MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
 
+# converts between micro and milli seconds
+MICRO_TO_MILLISECOND_CONVERSION = 1000
+
 # max size expected to be used by the reverse ip_tag multicast source
 # during buffered operations
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
@@ -39,6 +42,9 @@ SARK_PER_MALLOC_SDRAM_USAGE = 8
 # This is the amount required by the pointer table plus a SARK allocation
 DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = (
     APP_PTR_TABLE_BYTE_SIZE + SARK_PER_MALLOC_SDRAM_USAGE)
+
+# conversion from words to bytes
+WORD_TO_BYTE_MULTIPLIER = 4
 
 # The number of words used by the simulation interface
 # 4 for machine_time_step,
