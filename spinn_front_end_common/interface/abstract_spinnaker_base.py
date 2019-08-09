@@ -694,7 +694,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         self._run(run_time)
 
-    def _build_graphs_for_usege(self):
+    def _build_graphs_for_usage(self):
         # sort out app graph
         self._application_graph = ApplicationGraph(
             label=self._original_application_graph.label)
@@ -786,7 +786,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
-            self._build_graphs_for_usege()
+            self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
@@ -796,7 +796,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._graph_mapper = None
 
             # Reset the machine if the graph has changed
-            if not self._use_virtual_board:
+            if not self._use_virtual_board and self._n_calls_to_run > 1:
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
