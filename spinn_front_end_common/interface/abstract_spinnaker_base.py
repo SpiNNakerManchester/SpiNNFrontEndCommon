@@ -342,7 +342,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         "_last_except_hook",
 
-        "_vertices_or_edges_added"
+        "_vertices_or_edges_added",
+
+        # Set of all seen vertext labels
+        "_vertext_labels"
     ]
 
     def __init__(
@@ -488,6 +491,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
+        self._vertext_labels = set()
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -2248,12 +2252,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def none_labelled_vertex_count(self):
         """ The number of times vertices have not been labelled.
         """
-        return self._none_labelled_vertex_count
-
-    def increment_none_labelled_vertex_count(self):
-        """ Increment the number of new vertices which have not been labelled.
-        """
         self._none_labelled_vertex_count += 1
+        return self._none_labelled_vertex_count - 1
 
     @property
     def none_labelled_edge_count(self):
@@ -2288,9 +2288,34 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def add_application_vertex(self, vertex_to_add):
+    def _check_vertex_label(self, vertex, prefix):
         """
-        :param vertex_to_add: the vertex to add to the graph
+        Checks to see if a vertex label is not None and has been used.
+
+        If the vertex label is None the prefix is used.
+
+        If required the vertex label can be created using the prefix, and
+        (also if not unigue) have a number added on the end.
+
+        :param vertex: vertex to check
+        :param prefix: Prefix to use if required
+        """
+        if vertex.label is None:
+            label = prefix
+        else:
+            label = vertex.label
+            if label not in self._vertext_labels:
+                self._vertext_labels.add(label)
+                return
+
+        # Exceptional use of an underscore param
+        # as this is a rare case where a change is allowed/ supported
+        vertex._label = label + self.none_labelled_vertex_count
+        self._vertext_labels.add(vertex._label)
+
+    def add_application_vertex(self, vertex, prefix="_vertex"):
+        """
+        :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
@@ -2299,10 +2324,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        self._original_application_graph.add_vertex(vertex_to_add)
+        self._check_vertex_label(vertex, prefix)
+        self._original_application_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
-    def add_machine_vertex(self, vertex):
+    def add_machine_vertex(self, vertex, prefix="_vertex"):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
@@ -2313,6 +2339,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
+        self._check_vertex_label(vertex, prefix)
         self._original_machine_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
