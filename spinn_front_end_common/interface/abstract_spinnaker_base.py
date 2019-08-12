@@ -2310,7 +2310,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Exceptional use of an underscore param
         # as this is a rare case where a change is allowed/ supported
-        vertex._label = label + self.none_labelled_vertex_count
+        vertex._label = label + str(self.none_labelled_vertex_count)
         self._vertext_labels.add(vertex._label)
 
     def add_application_vertex(self, vertex, prefix="_vertex"):
