@@ -2299,6 +2299,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         :param vertex: vertex to check
         :param prefix: Prefix to use if required
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         if vertex.label is None:
             label = prefix
@@ -2306,18 +2308,20 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             label = vertex.label
             if label not in self._vertext_labels:
                 self._vertext_labels.add(label)
+                vertex.addedToGraph()
                 return
 
-        # Exceptional use of an underscore param
-        # as this is a rare case where a change is allowed/ supported
-        vertex._label = label + str(self.none_labelled_vertex_count)
+        vertex.set_label(label + str(self.none_labelled_vertex_count))
         self._vertext_labels.add(vertex._label)
+        vertex.addedToGraph()
 
     def add_application_vertex(self, vertex, prefix="_vertex"):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         if (self._original_machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
@@ -2333,6 +2337,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
         if self._original_application_graph.n_vertices > 0:
