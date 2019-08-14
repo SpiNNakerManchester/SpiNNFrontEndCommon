@@ -231,9 +231,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_dsg_algorithm",
 
         #
-        "_none_labelled_vertex_count",
-
-        #
         "_none_labelled_edge_count",
 
         #
@@ -435,7 +432,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_algorithm = "GraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
-        self._none_labelled_vertex_count = 0
         self._none_labelled_edge_count = 0
 
         # database objects
@@ -2249,13 +2245,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_algorithm = new_dsg_algorithm
 
     @property
-    def none_labelled_vertex_count(self):
-        """ The number of times vertices have not been labelled.
-        """
-        self._none_labelled_vertex_count += 1
-        return self._none_labelled_vertex_count - 1
-
-    @property
     def none_labelled_edge_count(self):
         """ The number of times edges have not been labelled.
         """
@@ -2288,33 +2277,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def _check_vertex_label(self, vertex, prefix):
-        """
-        Checks to see if a vertex label is not None and has been used.
-
-        If the vertex label is None the prefix is used.
-
-        If required the vertex label can be created using the prefix, and
-        (also if not unigue) have a number added on the end.
-
-        :param vertex: vertex to check
-        :param prefix: Prefix to use if required
-        :raises PacmanConfigurationException:
-            If there is an attempt to add the same vertex more than once
-        """
-        if vertex.label is None:
-            label = prefix
-        else:
-            label = vertex.label
-            if label not in self._vertext_labels:
-                self._vertext_labels.add(label)
-                vertex.addedToGraph()
-                return
-
-        vertex.set_label(label + str(self.none_labelled_vertex_count))
-        self._vertext_labels.add(vertex._label)
-        vertex.addedToGraph()
-
     def add_application_vertex(self, vertex, prefix="_vertex"):
         """
         :param vertex: the vertex to add to the graph
@@ -2328,7 +2290,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        self._check_vertex_label(vertex, prefix)
         self._original_application_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
@@ -2345,7 +2306,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        self._check_vertex_label(vertex, prefix)
         self._original_machine_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
