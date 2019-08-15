@@ -568,9 +568,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             reader = FileDataReader(data)
             if n_bytes is None:
                 n_bytes = os.stat(data).st_size
-                data = reader.readall()
-            else:
-                data = reader.read(n_bytes)
+            data = reader.read(n_bytes)
         elif n_bytes is None:
             n_bytes = len(data)
         transceiver = get_simulator().transceiver
