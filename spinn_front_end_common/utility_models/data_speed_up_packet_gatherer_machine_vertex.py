@@ -565,10 +565,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 raise Exception(
                     "when using a file, you can only have a offset of 0")
 
-            reader = FileDataReader(data)
-            if n_bytes is None:
-                n_bytes = os.stat(data).st_size
-            data = reader.read(n_bytes)
+            with FileDataReader(data) as reader:
+                # n_bytes=None already means 'read everything'
+                data = reader.read(n_bytes)
+            # Number of bytes to write is now length of buffer we have
+            n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
         transceiver = get_simulator().transceiver
