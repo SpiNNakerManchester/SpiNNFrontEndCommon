@@ -88,8 +88,7 @@ class DSGRegionReloader(object):
             # If the spec wasn't generated directly, and there is an
             # application vertex, try with that
             if not generated and graph_mapper is not None:
-                associated_vertex = graph_mapper.get_application_vertex(
-                    placement.vertex)
+                associated_vertex = placement.vertex.app_vertex
                 generated = self._regenerate_data_spec_for_vertices(
                     placement, associated_vertex)
 

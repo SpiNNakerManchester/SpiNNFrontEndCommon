@@ -65,8 +65,7 @@ class ProcessPartitionConstraints(object):
 
     @staticmethod
     def _process_application_partition(partition, graph_mapper):
-        vertex = graph_mapper.get_application_vertex(
-            partition.pre_vertex)
+        vertex = partition.pre_vertex.app_vertex
         if isinstance(vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(

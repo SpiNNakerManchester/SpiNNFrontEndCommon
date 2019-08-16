@@ -68,8 +68,9 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    def __init__(self, label, constraints):
-        super(CommandSenderMachineVertex, self).__init__(label, constraints)
+    def __init__(self, label, constraints, app_vertex):
+        super(CommandSenderMachineVertex, self).__init__(
+            label, constraints, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()

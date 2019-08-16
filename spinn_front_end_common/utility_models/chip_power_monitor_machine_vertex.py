@@ -68,18 +68,19 @@ class ChipPowerMonitorMachineVertex(
     SAMPLE_RECORDING_REGION = 0
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
+            self, label, constraints, app_vertex, n_samples_per_recording,
             sampling_frequency):
         """
         :param label: vertex label
         :param constraints: constraints on this vertex
+        :param app_vertex: associated application vertex
         :param n_samples_per_recording: how may samples between recording entry
         :type n_samples_per_recording: int
         :param sampling_frequency: how often to sample
         :type sampling_frequency: microseconds
         """
         super(ChipPowerMonitorMachineVertex, self).__init__(
-            label=label, constraints=constraints)
+            label=label, constraints=constraints, app_vertex=app_vertex)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 

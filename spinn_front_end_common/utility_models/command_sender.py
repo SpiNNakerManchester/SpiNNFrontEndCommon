@@ -34,7 +34,8 @@ class CommandSender(
     def __init__(self, label, constraints):
 
         super(CommandSender, self).__init__(label, constraints, 1)
-        self._machine_vertex = CommandSenderMachineVertex(label, constraints)
+        self._machine_vertex = CommandSenderMachineVertex(
+            label, constraints, self)
 
     def add_commands(
             self, start_resume_commands, pause_stop_commands,

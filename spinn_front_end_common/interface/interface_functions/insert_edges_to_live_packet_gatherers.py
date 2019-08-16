@@ -133,7 +133,7 @@ class InsertEdgesToLivePacketGatherers(object):
         # pylint: disable=too-many-arguments
 
         # locate app vertex for LPG
-        lpg_app_vertex = graph_mapper.get_application_vertex(machine_lpg)
+        lpg_app_vertex = machine_lpg.app_vertex
 
         # if not built the app edge, add the app edge now
         if app_graph_edge is None:

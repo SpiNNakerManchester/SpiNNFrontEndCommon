@@ -100,9 +100,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 machine_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
             if application_graph is not None:
-                app_source = graph_mapper.get_application_vertex(vertex)
-                app_dest = graph_mapper.get_application_vertex(
-                    data_gatherer_vertex)
+                app_source = vertex.app_vertex
+                app_dest = data_gatherer_vertex.app_vertex
 
                 # locate if edge is already built; if not, build it and map it
                 if not self._has_edge_already(

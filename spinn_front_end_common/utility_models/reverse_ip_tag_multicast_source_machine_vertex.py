@@ -106,7 +106,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, n_keys, label, constraints=None,
+            self, n_keys, label, app_vertex, constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -131,6 +131,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param n_keys: The number of keys to be sent via this multicast source
         :param label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
+        :param app_vertex: The associated application vertex
         :param board_address: The IP address of the board on which to place\
             this vertex if receiving data, either buffered or live (by\
             default, any board is chosen)
@@ -172,7 +173,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
-            label, constraints)
+            label, constraints, app_vertex)
 
         self._reverse_iptags = None
         self._n_keys = n_keys

@@ -34,6 +34,7 @@ class DataSpeedUpPacketGather(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
+            app_vertex=self,
             x=x, y=y, ip_address=ip_address, constraints=constraints,
             extra_monitors_by_chip=extra_monitors_by_chip,
             report_default_directory=report_default_directory,

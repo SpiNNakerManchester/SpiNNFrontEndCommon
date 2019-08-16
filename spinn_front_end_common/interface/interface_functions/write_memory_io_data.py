@@ -74,7 +74,7 @@ class WriteMemoryIOData(object):
 
     def __call__(
             self, graph, placements, app_id, app_data_runtime_folder, hostname,
-            transceiver=None, graph_mapper=None, uses_advanced_monitors=False,
+            transceiver=None, uses_advanced_monitors=False,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
         """
@@ -86,7 +86,6 @@ class WriteMemoryIOData(object):
         :param transceiver:\
             The transceiver to write data using; if None only data files\
             are written
-        :param graph_mapper: The optional mapping between graphs
         :param processor_to_app_data_base_address:\
             Optional existing dictionary of processor to base address
         :return: The mapping between processor and addresses allocated
@@ -105,8 +104,7 @@ class WriteMemoryIOData(object):
 
         if isinstance(graph, ApplicationGraph):
             for placement in progress.over(placements.placements):
-                app_vertex = graph_mapper.get_application_vertex(
-                    placement.vertex)
+                app_vertex = placement.vertex.app_vertex
                 if not isinstance(app_vertex, AbstractUsesMemoryIO):
                     continue
                 # select the mode of writing and therefore buffer size

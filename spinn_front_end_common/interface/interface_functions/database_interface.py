@@ -73,16 +73,15 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, machine_time_step,
-            runtime, application_graph, machine_graph, data_n_timesteps,
+            runtime, app_graph, machine_graph, data_n_timesteps,
             graph_mapper, placements, routing_infos, router_tables, tags,
-            create_atom_to_event_id_mapping):
+            create_mapping):
         """
-
         :param machine:
         :param time_scale_factor:
         :param machine_time_step:
         :param runtime:
-        :param application_graph:
+        :param app_graph:
         :param machine_graph:
         :param data_n_timesteps: The number of timesteps for which data space\
             will been reserved
@@ -91,7 +90,7 @@ class DatabaseInterface(object):
         :param routing_infos:
         :param router_tables:
         :param tags:
-        :param create_atom_to_event_id_mapping:
+        :param create_mapping:
         :return:
         """
         # pylint: disable=too-many-arguments
@@ -100,11 +99,11 @@ class DatabaseInterface(object):
             p.update()
             w.add_machine_objects(machine)
             p.update()
-            if application_graph is not None and application_graph.n_vertices:
-                w.add_application_vertices(application_graph)
+            if app_graph is not None and app_graph.n_vertices:
+                w.add_application_vertices(app_graph)
             p.update()
-            w.add_vertices(machine_graph, data_n_timesteps, graph_mapper,
-                           application_graph)
+            w.add_vertices(
+                machine_graph, data_n_timesteps, graph_mapper, app_graph)
             p.update()
             w.add_placements(placements)
             p.update()
@@ -114,10 +113,8 @@ class DatabaseInterface(object):
             p.update()
             w.add_tags(machine_graph, tags)
             p.update()
-            if (graph_mapper is not None and application_graph is not None
-                    and create_atom_to_event_id_mapping):
+            if app_graph is not None and create_mapping:
                 w.create_atom_to_event_id_mapping(
-                    graph_mapper=graph_mapper,
-                    application_graph=application_graph,
-                    machine_graph=machine_graph, routing_infos=routing_infos)
+                    app_graph=app_graph, machine_graph=machine_graph,
+                    routing_infos=routing_infos)
             p.update()

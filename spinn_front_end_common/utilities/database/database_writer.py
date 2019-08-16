@@ -396,10 +396,8 @@ class DatabaseWriter(object):
 
             if application_graph is not None:
                 for machine_vertex in machine_graph.vertices:
-                    app_vertex = graph_mapper.get_application_vertex(
-                        machine_vertex)
                     self.__insert_graph_mapper_vertex(
-                        app_vertex, machine_vertex,
+                        machine_vertex.app_vertex, machine_vertex,
                         graph_mapper.get_slice(machine_vertex))
 
                 # add graph_mapper edges
@@ -473,8 +471,7 @@ class DatabaseWriter(object):
                         self.__insert_reverse_ip_tag(vertex, reverse_ip_tag)
 
     def create_atom_to_event_id_mapping(
-            self, application_graph, machine_graph, routing_infos,
-            graph_mapper):
+            self, application_graph, machine_graph, routing_infos):
         """
 
         :param application_graph:
@@ -492,8 +489,7 @@ class DatabaseWriter(object):
                             vertex):
                     if have_app_graph:
                         self._insert_vertex_atom_to_key_map(
-                            graph_mapper.get_application_vertex(vertex),
-                            partition, routing_infos)
+                            vertex.app_vertex, partition, routing_infos)
                     else:
                         self._insert_vertex_atom_to_key_map(
                             vertex, partition, routing_infos)

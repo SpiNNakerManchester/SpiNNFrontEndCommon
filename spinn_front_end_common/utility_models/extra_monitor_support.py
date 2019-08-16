@@ -33,7 +33,8 @@ class ExtraMonitorSupport(
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        return ExtraMonitorSupportMachineVertex(constraints=constraints)
+        return ExtraMonitorSupportMachineVertex(
+            constraints=constraints, app_vertex=self)
 
     @property
     @overrides(ApplicationVertex.n_atoms)

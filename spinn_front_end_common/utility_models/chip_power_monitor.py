@@ -55,7 +55,7 @@ class ChipPowerMonitor(
             vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return ChipPowerMonitorMachineVertex(
-            constraints=constraints, label=label,
+            constraints=constraints, label=label, app_vertex=self,
             n_samples_per_recording=self._n_samples_per_recording,
             sampling_frequency=self._sampling_frequency)
 

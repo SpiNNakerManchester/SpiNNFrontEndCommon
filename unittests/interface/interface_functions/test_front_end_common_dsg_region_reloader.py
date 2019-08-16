@@ -72,7 +72,7 @@ class _TestApplicationVertex(
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        return _TestMachineVertex()
+        return _TestMachineVertex(label, constraints, self)
 
     def requires_memory_regions_to_be_reloaded(self):
         return self._requires_regions_to_be_reloaded

@@ -352,13 +352,11 @@ class TestInsertLPGEdges(unittest.TestCase):
         # check app graph
         for chip in machine.ethernet_connected_chips:
             app_verts_expected = [
-                app_graph_mapper.get_application_vertex(vert)
-                for vert in verts_expected[chip.x, chip.y]]
+                vert.app_vertex for vert in verts_expected[chip.x, chip.y]]
             lpg_machine = live_packet_gatherers_to_vertex_mapping[
                 default_params_holder][chip.x, chip.y]
-            lpg_app = app_graph_mapper.get_application_vertex(lpg_machine)
-            edges = app_graph.get_edges_ending_at_vertex(lpg_app)
-            for edge in edges:
+            for edge in app_graph.get_edges_ending_at_vertex(
+                    lpg_machine.app_vertex):
                 self.assertIn(edge.pre_vertex, app_verts_expected)
 
 

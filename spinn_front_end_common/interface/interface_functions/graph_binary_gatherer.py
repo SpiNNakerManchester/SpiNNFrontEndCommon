@@ -31,21 +31,19 @@ class GraphBinaryGatherer(object):
         self._exe_targets = None
 
     def __call__(
-            self, placements, graph, executable_finder, graph_mapper=None):
+            self, placements, graph, executable_finder):
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)
             self.__get_binary(placement, vertex)
-            if graph_mapper is not None:
-                self.__get_binary(placement,
-                                  graph_mapper.get_application_vertex(vertex))
+            self.__get_binary(placement, vertex.app_vertex)
 
         return self._exe_targets
 
     def __get_binary(self, placement, vertex):
-        # If we've got junk input (shouldn't happen), ignore it
+        # If we've got junk input, ignore it
         if vertex is None:
             return
         # if the vertex cannot generate a DSG, ignore it

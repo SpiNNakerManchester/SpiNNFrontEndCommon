@@ -139,7 +139,7 @@ class TestInsertLPGs(unittest.TestCase):
 
         app_verts = set()
         for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
-            app_vertex = app_graph_mapper.get_application_vertex(vertex)
+            app_vertex = vertex.app_vertex
             self.assertNotEqual(app_vertex, None)
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
@@ -260,8 +260,7 @@ class TestInsertLPGs(unittest.TestCase):
 
         app_verts = set()
         for vertex in verts:
-            app_vertex = app_graph_mapper.get_application_vertex(vertex)
-            self.assertNotEqual(app_vertex, None)
+            app_vertex = vertex.app_vertex
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
         self.assertEqual(len(app_verts), 6)
