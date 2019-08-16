@@ -71,24 +71,35 @@ class InsertEdgesToLivePacketGatherers(object):
             app_graph_edge = None
 
             # iterate through the associated machine vertices
-            machine_vertices = mapper.get_machine_vertices(vertex)
-            for machine_vertex in machine_vertices:
+            for machine_vertex in mapper.get_machine_vertices(vertex):
+                machine_lpg = self._find_closest_live_packet_gatherer(
+                    machine_vertex, m_lpgs, machine, placements)
+
+                # locate app vertex for LPG
+                lpg_app_vertex = machine_lpg.app_vertex
+
+                # if not built the app edge, add the app edge now
+                if app_graph_edge is None:
+                    app_graph_edge = ApplicationEdge(vertex, lpg_app_vertex)
+                    app_graph.add_edge(app_graph_edge, lpg_params.partition_id)
+
                 # add a edge between the closest LPG and the vertex
-                machine_edge, machine_lpg = self._process_m_vertex(
-                    machine_vertex, m_lpgs, machine, placements,
-                    m_graph, lpg_params.partition_id)
+                machine_edge = app_graph_edge.create_machine_edge(
+                    machine_vertex, machine_lpg, None)
+                m_graph.add_edge(machine_edge, lpg_params.partition_id)
 
-                # update the app graph and graph mapper
-                app_graph_edge = self._update_app_graph_and_mapper(
-                    app_graph, mapper, machine_lpg, vertex,
-                    lpg_params.partition_id, machine_edge, app_graph_edge)
+                # add mapping between the app edge and the machine edge
+                mapper.add_edge_mapping(machine_edge, app_graph_edge)
         else:
-            # add a edge between the closest LPG and the vertex
-            self._process_m_vertex(
-                vertex, m_lpgs, machine, placements,
-                m_graph, lpg_params.partition_id)
+            machine_lpg = self._find_closest_live_packet_gatherer(
+                machine_vertex, m_lpgs, machine, placements)
 
-    def _process_m_vertex(
+            # add a edge between the closest LPG and the vertex
+            m_graph.add_edge(
+                MachineEdge(machine_vertex, machine_lpg),
+                lpg_params.partition_id)
+
+    def __process_m_vertex(
             self, machine_vertex, m_lpgs, machine,
             placements, machine_graph, partition_id):
         """ Locates and places an edge for a machine vertex.
@@ -115,36 +126,6 @@ class InsertEdgesToLivePacketGatherers(object):
 
         # return the machine edge
         return machine_edge, machine_lpg
-
-    @staticmethod
-    def _update_app_graph_and_mapper(
-            application_graph, graph_mapper, machine_lpg, vertex,
-            partition_id, machine_edge, app_graph_edge):
-        """ Handles changes to the application graph and graph mapper.
-
-        :param application_graph: the application graph
-        :param graph_mapper: the graph mapper
-        :param machine_lpg: the machine LPG
-        :param vertex: the application vertex to link to
-        :param partition_id: the partition ID to put the edge on
-        :return the application edge for this vertex and LPG
-        :rtype: ApplicationEdge
-        """
-        # pylint: disable=too-many-arguments
-
-        # locate app vertex for LPG
-        lpg_app_vertex = machine_lpg.app_vertex
-
-        # if not built the app edge, add the app edge now
-        if app_graph_edge is None:
-            app_graph_edge = ApplicationEdge(vertex, lpg_app_vertex)
-            application_graph.add_edge(app_graph_edge, partition_id)
-
-        # add mapping between the app edge and the machine edge
-        graph_mapper.add_edge_mapping(machine_edge, app_graph_edge)
-
-        # return the app edge for reuse as needed
-        return app_graph_edge
 
     @staticmethod
     def _find_closest_live_packet_gatherer(

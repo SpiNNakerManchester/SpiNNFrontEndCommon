@@ -948,8 +948,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                             dependant_vertex)
                     for edge_identifier in edge_partition_ids:
                         dependant_edge = ApplicationEdge(
-                            pre_vertex=vertex,
-                            post_vertex=dependant_vertex)
+                            pre_vertex=vertex, post_vertex=dependant_vertex)
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 

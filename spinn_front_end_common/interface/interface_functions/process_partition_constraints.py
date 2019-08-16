@@ -47,8 +47,7 @@ class ProcessPartitionConstraints(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_application_partition(
-                            partition, graph_mapper)
+                        self._process_application_partition(partition)
         else:
             # generate progress bar
             progress = ProgressBar(
@@ -64,14 +63,13 @@ class ProcessPartitionConstraints(object):
                         self._process_machine_partition(partition)
 
     @staticmethod
-    def _process_application_partition(partition, graph_mapper):
+    def _process_application_partition(partition):
         vertex = partition.pre_vertex.app_vertex
-        if isinstance(vertex,
-                      AbstractProvidesOutgoingPartitionConstraints):
+        if isinstance(vertex, AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(
                 vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
-            app_edge = graph_mapper.get_application_edge(edge)
+            app_edge = edge.app_edge
             if isinstance(app_edge.post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 partition.add_constraints(

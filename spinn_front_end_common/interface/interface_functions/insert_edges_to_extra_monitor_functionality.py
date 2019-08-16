@@ -93,25 +93,25 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         # locate if edge is already built; if not, build it and do mapping
         if not self._has_edge_already(
                 vertex, data_gatherer_vertex, machine_graph):
-            machine_edge = MachineEdge(
-                vertex, data_gatherer_vertex,
-                traffic_type=DataSpeedUp.TRAFFIC_TYPE)
-            machine_graph.add_edge(
-                machine_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-
             if application_graph is not None:
-                app_source = vertex.app_vertex
-                app_dest = data_gatherer_vertex.app_vertex
-
-                # locate if edge is already built; if not, build it and map it
-                if not self._has_edge_already(
-                        app_source, app_dest, application_graph):
+                app_edge = self._get_app_edge(
+                    application_graph, vertex.app_vertex,
+                    data_gatherer_vertex.app_vertex)
+                if app_edge is None:
                     app_edge = ApplicationEdge(
-                        app_source, app_dest,
+                        vertex.app_vertex, data_gatherer_vertex.app_vertex,
                         traffic_type=DataSpeedUp.TRAFFIC_TYPE)
                     application_graph.add_edge(
                         app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-                    graph_mapper.add_edge_mapping(machine_edge, app_edge)
+                machine_edge = app_edge.create_machine_edge(
+                    vertex, data_gatherer_vertex, None)
+                graph_mapper.add_edge_mapping(machine_edge, app_edge)
+            else:
+                machine_edge = MachineEdge(
+                    vertex, data_gatherer_vertex,
+                    traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+            machine_graph.add_edge(
+                machine_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
     @staticmethod
     def _get_gatherer_vertex(machine, v_to_2_chip_map, placements, vertex):
@@ -120,6 +120,13 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         ethernet_chip = machine.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         return v_to_2_chip_map[ethernet_chip.x, ethernet_chip.y]
+
+    @staticmethod
+    def _get_app_edge(graph, source, destination):
+        for edge in graph.get_edges_ending_at_vertex(destination):
+            if edge.pre_vertex == source:
+                return edge
+        return None
 
     @staticmethod
     def _has_edge_already(source, destination, graph):

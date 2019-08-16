@@ -402,8 +402,7 @@ class DatabaseWriter(object):
 
                 # add graph_mapper edges
                 for edge in machine_graph.edges:
-                    self.__insert_graph_mapper_edge(
-                        graph_mapper.get_application_edge(edge), edge)
+                    self.__insert_graph_mapper_edge(edge.app_edge, edge)
 
     def add_placements(self, placements):
         """ Adds the placements objects into the database
