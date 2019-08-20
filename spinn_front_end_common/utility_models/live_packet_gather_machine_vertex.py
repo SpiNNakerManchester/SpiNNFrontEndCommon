@@ -56,8 +56,9 @@ class LivePacketGatherMachineVertex(
     _PROVENANCE_REGION_SIZE = 8
 
     def __init__(
-            self, label, app_vertex, use_prefix=False, key_prefix=None,
-            prefix_type=None, message_type=EIEIOType.KEY_32_BIT,
+            self, label, app_vertex, vertex_slice,
+            use_prefix=False, key_prefix=None, prefix_type=None,
+            message_type=EIEIOType.KEY_32_BIT,
             right_shift=0, payload_as_time_stamps=True,
             use_payload_prefix=True, payload_prefix=None,
             payload_right_shift=0, number_of_packets_sent_per_time_step=0,
@@ -67,7 +68,8 @@ class LivePacketGatherMachineVertex(
 
         # inheritance
         super(LivePacketGatherMachineVertex, self).__init__(
-            label, constraints=constraints, app_vertex=app_vertex)
+            label, constraints=constraints, app_vertex=app_vertex,
+            vertex_slice=vertex_slice)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),

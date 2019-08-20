@@ -85,8 +85,7 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_application_partition(partition, n_keys_map, graph_mapper):
-        vertex_slice = graph_mapper.get_slice(
-            partition.pre_vertex)
+        vertex_slice = partition.pre_vertex.vertex_slice
         vertex = partition.pre_vertex.app_vertex
 
         if isinstance(vertex, AbstractProvidesNKeysForPartition):

@@ -55,30 +55,35 @@ class InsertChipPowerMonitorsToGraphs(object):
         # build constraint
         constraint = ChipAndCoreConstraint(chip.x, chip.y)
 
-        # build machine vert
-        machine_vertex = ChipPowerMonitorMachineVertex(
-            label=_LABEL.format("machine", chip.x, chip.y),
-            sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording,
-            constraints=[constraint])
-
-        # add vert to graph
-        machine_graph.add_vertex(machine_vertex)
+        vertex_slice = Slice(0, 0)
 
         # deal with app graphs if needed
         if application_graph is not None:
-
             # build app vertex
-            vertex_slice = Slice(0, 0)
             application_vertex = ChipPowerMonitor(
                 label=_LABEL.format("application", chip.x, chip.y),
                 constraints=[constraint],
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording)
-
             # add to graph
             application_graph.add_vertex(application_vertex)
-
+            # build machine vert
+            machine_vertex = application_vertex.create_machine_vertex(
+                label=_LABEL.format("machine", chip.x, chip.y),
+                vertex_slice=vertex_slice, resources_required=None,
+                constraints=[constraint])
+            # add vert to graph
+            machine_graph.add_vertex(machine_vertex)
             # update graph mapper
             graph_mapper.add_vertex_mapping(
-                machine_vertex, vertex_slice, application_vertex)
+                machine_vertex, application_vertex)
+        else:
+            # build machine vert
+            machine_vertex = ChipPowerMonitorMachineVertex(
+                label=_LABEL.format("machine", chip.x, chip.y),
+                sampling_frequency=sampling_frequency,
+                n_samples_per_recording=n_samples_per_recording,
+                constraints=[constraint], app_vertex=None,
+                vertex_slice=vertex_slice)
+            # add vert to graph
+            machine_graph.add_vertex(machine_vertex)

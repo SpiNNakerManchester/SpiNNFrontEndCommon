@@ -88,20 +88,23 @@ class InsertExtraMonitorVerticesToGraphs(object):
         extra_monitor_vertices = list()
 
         for chip in progress.over(machine.chips, finish_at_end=False):
-            if not chip.virtual:
+            if chip.virtual:
+                continue
+            if application_graph is not None:
+                # add to both application graph and machine graph
+                app_vertex = self.__new_app_monitor(chip)
+                application_graph.add_vertex(app_vertex)
+                machine_vertex = app_vertex.machine_vertex
+                machine_graph.add_vertex(machine_vertex)
+                graph_mapper.add_vertex_mapping(machine_vertex, app_vertex)
+            else:
                 # add to machine graph
                 machine_vertex = self.__new_mach_monitor(chip)
                 machine_graph.add_vertex(machine_vertex)
 
-                vertex_to_chip_map[chip.x, chip.y] = machine_vertex
-                extra_monitor_vertices.append(machine_vertex)
+            vertex_to_chip_map[chip.x, chip.y] = machine_vertex
+            extra_monitor_vertices.append(machine_vertex)
 
-                # add application graph as needed
-                if application_graph is not None:
-                    app_vertex = self.__new_app_monitor(chip)
-                    application_graph.add_vertex(app_vertex)
-                    graph_mapper.add_vertex_mapping(
-                        machine_vertex, Slice(0, 0), app_vertex)
         return extra_monitor_vertices
 
     def _handle_data_extraction_vertices(
@@ -136,8 +139,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 machine_vertex = app_vertex.machine_vertex
                 machine_graph.add_vertex(machine_vertex)
                 application_graph.add_vertex(app_vertex)
-                graph_mapper.add_vertex_mapping(
-                    machine_vertex, Slice(0, 0), app_vertex)
+                graph_mapper.add_vertex_mapping(machine_vertex, app_vertex)
             else:
                 machine_vertex = self.__new_mach_gatherer(
                     ethernet_chip, vertex_to_chip_map,
@@ -155,8 +157,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     @staticmethod
     def __new_mach_monitor(chip):
-        return ExtraMonitorSupportMachineVertex(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        return ExtraMonitorSupportMachineVertex(
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
+            app_vertex=None)
 
     @staticmethod
     def __new_app_gatherer(
@@ -176,7 +179,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             ethernet_chip, vertex_to_chip_map, default_report_directory,
             write_data_speed_up_reports):
         return DataSpeedUpPacketGatherMachineVertex(
-            x=ethernet_chip.x, y=ethernet_chip.y,
+            app_vertex=None, x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],

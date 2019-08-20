@@ -106,7 +106,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, n_keys, label, app_vertex, constraints=None,
+            self, vertex_slice, label, app_vertex, constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -173,10 +173,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
-            label, constraints, app_vertex)
+            label, constraints, app_vertex, vertex_slice)
 
         self._reverse_iptags = None
-        self._n_keys = n_keys
+        self._n_keys = vertex_slice.n_keys
 
         # Set up for receiving live packets
         if receive_port is not None or reserve_reverse_ip_tag:
@@ -221,7 +221,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
-            self._install_virtual_key(n_keys)
+            self._install_virtual_key(vertex_slice.n_keys)
 
         self._n_vertices += 1
 

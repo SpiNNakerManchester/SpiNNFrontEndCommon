@@ -89,9 +89,9 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints, app_vertex, reinject_multicast=None,
-            reinject_point_to_point=False, reinject_nearest_neighbour=False,
-            reinject_fixed_route=False):
+            self, constraints, app_vertex,
+            reinject_multicast=None, reinject_point_to_point=False,
+            reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
         :param constraints: constraints on this vertex
         :param reinject_multicast: \
@@ -105,7 +105,7 @@ class ExtraMonitorSupportMachineVertex(
         # pylint: disable=too-many-arguments
         super(ExtraMonitorSupportMachineVertex, self).__init__(
             label="SYSTEM:ExtraMonitor", constraints=constraints,
-            app_vertex=app_vertex)
+            app_vertex=app_vertex, vertex_slice=None)
 
         if reinject_multicast is None:
             config = globals_variables.get_simulator().config

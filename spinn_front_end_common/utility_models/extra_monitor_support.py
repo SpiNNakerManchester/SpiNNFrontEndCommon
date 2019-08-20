@@ -24,17 +24,18 @@ from .extra_monitor_support_machine_vertex import (
 class ExtraMonitorSupport(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
-    __slots__ = []
+    __slots__ = ["machine_vertex"]
 
     def __init__(self, constraints):
         super(ExtraMonitorSupport, self).__init__(
             label="ExtraMonitorSupport", constraints=constraints)
+        self.machine_vertex = ExtraMonitorSupportMachineVertex(
+            constraints=constraints, app_vertex=self)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        return ExtraMonitorSupportMachineVertex(
-            constraints=constraints, app_vertex=self)
+        return self.machine_vertex
 
     @property
     @overrides(ApplicationVertex.n_atoms)

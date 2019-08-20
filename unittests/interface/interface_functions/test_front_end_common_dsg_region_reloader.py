@@ -72,7 +72,7 @@ class _TestApplicationVertex(
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        return _TestMachineVertex(label, constraints, self)
+        return _TestMachineVertex(label, constraints, self, vertex_slice)
 
     def requires_memory_regions_to_be_reloaded(self):
         return self._requires_regions_to_be_reloaded
@@ -155,8 +155,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         m_vertex_2 = vertex.create_machine_vertex(m_slice_2, None, None, None)
 
         graph_mapper = GraphMapper()
-        graph_mapper.add_vertex_mapping(m_vertex_1, m_slice_1, vertex)
-        graph_mapper.add_vertex_mapping(m_vertex_2, m_slice_2, vertex)
+        graph_mapper.add_vertex_mapping(m_vertex_1, vertex)
+        graph_mapper.add_vertex_mapping(m_vertex_2, vertex)
 
         placements = Placements([
             Placement(m_vertex_1, 0, 0, 1),

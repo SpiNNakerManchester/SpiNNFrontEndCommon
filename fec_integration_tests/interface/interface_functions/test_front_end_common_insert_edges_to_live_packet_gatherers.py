@@ -288,8 +288,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             mac_vertex = vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
-            app_graph_mapper.add_vertex_mapping(
-                mac_vertex, Slice(0, 0), vertex)
+            app_graph_mapper.add_vertex_mapping(mac_vertex, vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=mac_vertex))
             live_packet_gatherers_to_vertex_mapping[
@@ -324,8 +323,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             mac_vertex = vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
-            app_graph_mapper.add_vertex_mapping(
-                mac_vertex, vertex_slice, vertex)
+            app_graph_mapper.add_vertex_mapping(mac_vertex, vertex)
             live_packet_gatherers[default_params_holder].append(vertex)
             verts_expected[eth_x, eth_y].append(mac_vertex)
             placements.add_placement(

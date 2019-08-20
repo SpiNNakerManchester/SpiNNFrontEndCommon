@@ -34,7 +34,7 @@ from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.common import EdgeTrafficType
+from pacman.model.graphs.common import EdgeTrafficType, Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
@@ -256,7 +256,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             write_data_speed_up_reports, constraints=None):
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
-            constraints=constraints, app_vertex=app_vertex)
+            constraints=constraints, app_vertex=app_vertex,
+            vertex_slice=Slice(0, 0))
 
         # data holders for the output, and sequence numbers
         self._view = None

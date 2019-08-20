@@ -18,6 +18,7 @@ from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask
@@ -70,7 +71,7 @@ class CommandSenderMachineVertex(
 
     def __init__(self, label, constraints, app_vertex):
         super(CommandSenderMachineVertex, self).__init__(
-            label, constraints, app_vertex)
+            label, constraints, app_vertex, Slice(0, 0))
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()

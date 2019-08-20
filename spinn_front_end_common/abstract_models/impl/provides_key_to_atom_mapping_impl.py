@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import inject_items
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping)
 
@@ -22,15 +21,16 @@ from spinn_front_end_common.abstract_models import (
 class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
     __slots__ = ()
 
-    @inject_items({
-        "graph_mapper": "MemoryGraphMapper"
-    })
     @overrides(
-        AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping,
-        additional_arguments={"graph_mapper"})
+        AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping)
     def routing_key_partition_atom_mapping(
-            self, routing_info, partition, graph_mapper):
+            self, routing_info, partition):
         # pylint: disable=arguments-differ
-        vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
-        keys = routing_info.get_keys(vertex_slice.n_atoms)
-        return list(enumerate(keys, vertex_slice.lo_atom))
+        vertex_slice = partition.pre_vertex.vertex_slice
+        if vertex_slice is not None:
+            keys = routing_info.get_keys(vertex_slice.n_atoms)
+            start = vertex_slice.lo_atom
+        else:
+            keys = routing_info.get_keys(1)
+            start = 0
+        return list(enumerate(keys, start))

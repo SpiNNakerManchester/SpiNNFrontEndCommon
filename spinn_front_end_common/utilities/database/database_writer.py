@@ -365,7 +365,7 @@ class DatabaseWriter(object):
                 self.__insert_cfg("infinite_run", "True")
                 self.__insert_cfg("runtime", -1)
 
-    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper,
+    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper, # FIXME remove the graph mapper
                      application_graph):
         """ Add the machine graph, graph mapper and application graph \
             into the database.
@@ -373,7 +373,6 @@ class DatabaseWriter(object):
         :param machine_graph: the machine graph object
         :param data_n_timesteps: The number of timesteps for which data space\
             will been reserved
-        :param graph_mapper: the graph mapper object
         :param application_graph: the application graph object
         :rtype: None
         """
@@ -398,7 +397,7 @@ class DatabaseWriter(object):
                 for machine_vertex in machine_graph.vertices:
                     self.__insert_graph_mapper_vertex(
                         machine_vertex.app_vertex, machine_vertex,
-                        graph_mapper.get_slice(machine_vertex))
+                        machine_vertex.vertex_slice)
 
                 # add graph_mapper edges
                 for edge in machine_graph.edges:
