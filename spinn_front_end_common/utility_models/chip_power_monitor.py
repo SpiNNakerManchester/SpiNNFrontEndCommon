@@ -51,8 +51,8 @@ class ChipPowerMonitor(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self,
-            vertex_slice, resources_required,  # @UnusedVariable
+            self, vertex_slice,
+            resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label, app_vertex=self,

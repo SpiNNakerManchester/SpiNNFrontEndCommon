@@ -41,95 +41,97 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param graph_mapper: the graph mapper
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, attribute-defined-outside-init
         n_app_vertices = 0
         if application_graph is not None:
             n_app_vertices = application_graph.n_vertices
+        self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
+        self._machine = machine
+        self._placements = placements
 
         progress = ProgressBar(
             machine_graph.n_vertices + n_app_vertices,
             "Inserting edges between vertices which require FR speed up "
             "functionality.")
 
-        for vertex in progress.over(machine_graph.vertices, False):
-            if isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                self._process_vertex(
-                    vertex, machine, placements, machine_graph,
-                    vertex_to_ethernet_connected_chip_mapping,
-                    application_graph, graph_mapper)
+        if application_graph is None:
+            for vertex in progress.over(machine_graph.vertices):
+                if isinstance(vertex, ExtraMonitorSupportMachineVertex):
+                    self._process_mach_graph_vertex(vertex, machine_graph)
+        else:
+            for vertex in progress.over(machine_graph.vertices, False):
+                if isinstance(vertex, ExtraMonitorSupportMachineVertex):
+                    self._process_app_graph_vertex(
+                        vertex, machine_graph, application_graph, graph_mapper)
+            for app_vertex in progress.over(application_graph.vertices):
+                if not isinstance(app_vertex, ExtraMonitorSupport):
+                    continue
+                for vertex in graph_mapper.get_machine_vertices(app_vertex):
+                    self._process_app_graph_vertex(
+                        vertex, machine_graph, application_graph, graph_mapper)
 
-        if application_graph is not None:
-            for vertex in progress.over(application_graph.vertices, False):
-                if isinstance(vertex, ExtraMonitorSupport):
-                    machine_verts = graph_mapper.get_machine_vertices(vertex)
-                    for machine_vertex in machine_verts:
-                        self._process_vertex(
-                            machine_vertex, machine, placements, machine_graph,
-                            vertex_to_ethernet_connected_chip_mapping,
-                            application_graph, graph_mapper)
-        progress.end()
-
-    def _process_vertex(
-            self, vertex, machine, placements, machine_graph,
-            vertex_to_ethernet_connected_chip_mapping, application_graph,
-            graph_mapper):
+    def _process_app_graph_vertex(
+            self, vertex, machine_graph, application_graph, graph_mapper):
         """ Inserts edges as required for a given vertex
 
         :param vertex: the extra monitor core
-        :param machine: the spinnMachine instance
-        :param placements: the placements object
         :param machine_graph: machine graph object
-        :param vertex_to_ethernet_connected_chip_mapping: \
-            the ethernet to multicast gatherer map
-        :param application_graph: app graph object
+        :param application_graph: app graph object; not None
         :param graph_mapper: the mapping between app and machine graph
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
-        data_gatherer_vertex = self._get_gatherer_vertex(
-            machine, vertex_to_ethernet_connected_chip_mapping, placements,
-            vertex)
+        gatherer = self._get_gatherer_vertex(vertex)
 
         # locate if edge is already built; if not, build it and do mapping
-        if not self._has_edge_already(
-                vertex, data_gatherer_vertex, machine_graph):
-            if application_graph is not None:
-                app_edge = self._get_app_edge(
-                    application_graph, vertex.app_vertex,
-                    data_gatherer_vertex.app_vertex)
-                if app_edge is None:
-                    app_edge = ApplicationEdge(
-                        vertex.app_vertex, data_gatherer_vertex.app_vertex,
-                        traffic_type=DataSpeedUp.TRAFFIC_TYPE)
-                    application_graph.add_edge(
-                        app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-                machine_edge = app_edge.create_machine_edge(
-                    vertex, data_gatherer_vertex, None)
-                graph_mapper.add_edge_mapping(machine_edge, app_edge)
-            else:
-                machine_edge = MachineEdge(
-                    vertex, data_gatherer_vertex,
+        if not self.__has_edge_already(vertex, gatherer, machine_graph):
+            # See if there's an application edge already
+            app_edge = self.__get_app_edge(
+                application_graph, vertex.app_vertex, gatherer.app_vertex)
+            if app_edge is None:
+                app_edge = ApplicationEdge(
+                    vertex.app_vertex, gatherer.app_vertex,
                     traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+                application_graph.add_edge(
+                    app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+            # Use the application edge to build the machine edge
+            edge = app_edge.create_machine_edge(vertex, gatherer, None)
+            graph_mapper.add_edge_mapping(edge, app_edge)
             machine_graph.add_edge(
-                machine_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+                edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
-    @staticmethod
-    def _get_gatherer_vertex(machine, v_to_2_chip_map, placements, vertex):
-        placement = placements.get_placement_of_vertex(vertex)
-        chip = machine.get_chip_at(placement.x, placement.y)
-        ethernet_chip = machine.get_chip_at(
+    def _process_mach_graph_vertex(self, vertex, machine_graph):
+        """ Inserts edges as required for a given vertex
+
+        :param vertex: the extra monitor core
+        :param machine_graph: machine graph object, which is not associated\
+            with any application graph
+        :rtype: None
+        """
+        gatherer = self._get_gatherer_vertex(vertex)
+
+        # locate if edge is already built; if not, build it and do mapping
+        if not self.__has_edge_already(vertex, gatherer, machine_graph):
+            edge = MachineEdge(
+                vertex, gatherer, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+            machine_graph.add_edge(
+                edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+
+    def _get_gatherer_vertex(self, vertex):
+        placement = self._placements.get_placement_of_vertex(vertex)
+        chip = self._machine.get_chip_at(placement.x, placement.y)
+        ethernet_chip = self._machine.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        return v_to_2_chip_map[ethernet_chip.x, ethernet_chip.y]
+        return self._chip_to_gatherer_map[ethernet_chip.x, ethernet_chip.y]
 
     @staticmethod
-    def _get_app_edge(graph, source, destination):
+    def __get_app_edge(graph, source, destination):
         for edge in graph.get_edges_ending_at_vertex(destination):
             if edge.pre_vertex == source:
                 return edge
         return None
 
     @staticmethod
-    def _has_edge_already(source, destination, graph):
+    def __has_edge_already(source, destination, graph):
         """ Checks if a edge already exists
 
         :param source: the source of the edge

@@ -224,6 +224,8 @@ class DatabaseWriter(object):
 
     def __insert_graph_mapper_vertex(
             self, app_vertex, machine_vertex, vertex_slice):
+        if app_vertex is None:
+            return None
         return self.__insert(
             "INSERT INTO graph_mapper_vertex ("
             "  application_vertex_id, machine_vertex_id, "
@@ -234,6 +236,8 @@ class DatabaseWriter(object):
             int(vertex_slice.lo_atom), int(vertex_slice.hi_atom))
 
     def __insert_graph_mapper_edge(self, app_edge, machine_edge):
+        if app_edge is None:
+            return None
         return self.__insert(
             "INSERT INTO graph_mapper_edges ("
             "  application_edge_id, machine_edge_id) "
@@ -365,10 +369,8 @@ class DatabaseWriter(object):
                 self.__insert_cfg("infinite_run", "True")
                 self.__insert_cfg("runtime", -1)
 
-    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper, # FIXME remove the graph mapper
-                     application_graph):
-        """ Add the machine graph, graph mapper and application graph \
-            into the database.
+    def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
+        """ Add the machine graph and application graph into the database.
 
         :param machine_graph: the machine graph object
         :param data_n_timesteps: The number of timesteps for which data space\
@@ -398,8 +400,6 @@ class DatabaseWriter(object):
                     self.__insert_graph_mapper_vertex(
                         machine_vertex.app_vertex, machine_vertex,
                         machine_vertex.vertex_slice)
-
-                # add graph_mapper edges
                 for edge in machine_graph.edges:
                     self.__insert_graph_mapper_edge(edge.app_edge, edge)
 
@@ -471,11 +471,9 @@ class DatabaseWriter(object):
     def create_atom_to_event_id_mapping(
             self, application_graph, machine_graph, routing_infos):
         """
-
         :param application_graph:
         :param machine_graph:
         :param routing_infos:
-        :param graph_mapper:
         :rtype: None
         """
         have_app_graph = (application_graph is not None and
@@ -495,7 +493,6 @@ class DatabaseWriter(object):
     def _insert_vertex_atom_to_key_map(
             self, vertex, partition, routing_infos):
         """
-
         :param vertex:
         :param partition:
         :param routing_infos:

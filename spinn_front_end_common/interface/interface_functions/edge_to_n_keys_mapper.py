@@ -28,20 +28,17 @@ class EdgeToNKeysMapper(object):
     __slots__ = []
 
     def __call__(self, machine_graph=None, graph_mapper=None):
-
         if machine_graph is None:
             raise ConfigurationException(
                 "A machine graph is required for this mapper. "
                 "Please choose and try again")
 
         if graph_mapper is not None:
-            return self._allocate_by_app_graph_simple(
-                machine_graph, graph_mapper)
+            return self._allocate_by_app_graph_simple(machine_graph)
         else:
             return self._allocate_by_machine_graph_only(machine_graph)
 
-    def _allocate_by_app_graph_simple(
-            self, machine_graph, graph_mapper):
+    def _allocate_by_app_graph_simple(self, machine_graph):
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
@@ -59,7 +56,7 @@ class EdgeToNKeysMapper(object):
             for partition in partitions:
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     self._process_application_partition(
-                        partition, n_keys_map, graph_mapper)
+                        partition, n_keys_map)
 
         return n_keys_map
 
@@ -84,12 +81,12 @@ class EdgeToNKeysMapper(object):
         return n_keys_map
 
     @staticmethod
-    def _process_application_partition(partition, n_keys_map, graph_mapper):
+    def _process_application_partition(partition, n_keys_map):
         vertex_slice = partition.pre_vertex.vertex_slice
         vertex = partition.pre_vertex.app_vertex
 
         if isinstance(vertex, AbstractProvidesNKeysForPartition):
-            n_keys = vertex.get_n_keys_for_partition(partition, graph_mapper)
+            n_keys = vertex.get_n_keys_for_partition(partition)
         else:
             n_keys = vertex_slice.n_atoms
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
@@ -97,8 +94,7 @@ class EdgeToNKeysMapper(object):
     @staticmethod
     def _process_machine_partition(partition, n_keys_map):
         if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
-            n_keys = partition.pre_vertex.get_n_keys_for_partition(
-                partition, None)
+            n_keys = partition.pre_vertex.get_n_keys_for_partition(partition)
         else:
             n_keys = 1
         n_keys_map.set_n_keys_for_partition(partition, n_keys)

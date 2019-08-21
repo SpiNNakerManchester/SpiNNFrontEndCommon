@@ -23,6 +23,8 @@ from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 
+_LPG_SLICE = Slice(0, 0)
+
 
 class InsertLivePacketGatherersToGraphs(object):
     """ Adds LPGs as required into a given graph
@@ -52,35 +54,54 @@ class InsertLivePacketGatherersToGraphs(object):
         lpg_params_to_vertices = defaultdict(dict)
 
         # for every Ethernet connected chip, add the gatherers required
-        for chip in progress.over(machine.ethernet_connected_chips):
-            for params in live_packet_gatherer_parameters:
-                if (params.board_address is None or
-                        params.board_address == chip.ip_address):
-                    lpg_params_to_vertices[params][chip.x, chip.y] = \
-                        self._add_lpg_vertex(application_graph, graph_mapper,
-                                             machine_graph, chip, params)
+        if application_graph is not None:
+            for chip in progress.over(machine.ethernet_connected_chips):
+                for params in live_packet_gatherer_parameters:
+                    if (params.board_address is None or
+                            params.board_address == chip.ip_address):
+                        lpg_params_to_vertices[params][chip.x, chip.y] = \
+                            self._add_app_lpg_vertex(
+                                application_graph, graph_mapper,
+                                machine_graph, chip, params)
+        else:
+            for chip in progress.over(machine.ethernet_connected_chips):
+                for params in live_packet_gatherer_parameters:
+                    if (params.board_address is None or
+                            params.board_address == chip.ip_address):
+                        lpg_params_to_vertices[params][chip.x, chip.y] = \
+                            self._add_mach_lpg_vertex(
+                                machine_graph, chip, params)
 
         return lpg_params_to_vertices
 
-    def _add_lpg_vertex(self, app_graph, mapper, m_graph, chip, params):
+    def _add_app_lpg_vertex(self, app_graph, mapper, m_graph, chip, params):
+        """ Adds a LPG vertex to a machine graph that has an associated\
+            application graph.
+        """
         # pylint: disable=too-many-arguments
-        if app_graph is not None:
-            _slice = Slice(0, 0)
-            app_vtx = self._create_vertex(LivePacketGather, params)
-            app_graph.add_vertex(app_vtx)
-            resources = app_vtx.get_resources_used_by_atoms(_slice)
-            m_vtx = app_vtx.create_machine_vertex(
-                _slice, resources, label="LivePacketGatherer")
-            mapper.add_vertex_mapping(m_vtx, app_vtx)
-        else:
-            m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
+        app_vtx = self._create_vertex(LivePacketGather, params)
+        app_graph.add_vertex(app_vtx)
+        resources = app_vtx.get_resources_used_by_atoms(_LPG_SLICE)
+        vtx = app_vtx.create_machine_vertex(
+            _LPG_SLICE, resources, label="LivePacketGatherer")
+        mapper.add_vertex_mapping(vtx, app_vtx)
+        vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
+        m_graph.add_vertex(vtx)
+        return vtx
 
-        m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
-        m_graph.add_vertex(m_vtx)
-        return m_vtx
+    def _add_mach_lpg_vertex(self, graph, chip, params):
+        """ Adds a LPG vertex to a machine graph without an associated\
+            application graph.
+        """
+        vtx = self._create_vertex(
+            LivePacketGatherMachineVertex, params,
+            app_vertex=None, vertex_slice=_LPG_SLICE)
+        vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
+        graph.add_vertex(vtx)
+        return vtx
 
     @staticmethod
-    def _create_vertex(lpg_vertex_class, params):
+    def _create_vertex(lpg_vertex_class, params, **kwargs):
         """ Creates a Live Packet Gather Vertex
 
         :param lpg_vertex_class: the type to create for the vertex
@@ -104,4 +125,4 @@ class InsertLivePacketGatherersToGraphs(object):
             payload_right_shift=params.payload_right_shift,
             number_of_packets_sent_per_time_step=(
                 params.number_of_packets_sent_per_time_step),
-            label="LiveSpikeReceiver")
+            label="LiveSpikeReceiver", **kwargs)

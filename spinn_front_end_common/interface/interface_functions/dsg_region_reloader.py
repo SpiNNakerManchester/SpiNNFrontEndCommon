@@ -42,7 +42,7 @@ class DSGRegionReloader(object):
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
-            write_text_specs, application_data_file_path, graph_mapper=None):
+            write_text_specs, application_data_file_path):
         """
         :param transceiver: SpiNNMan transceiver for communication
         :param placements: the list of placements of the machine graph to cores
@@ -52,8 +52,6 @@ class DSGRegionReloader(object):
             True if the textual version of the specification is to be written
         :param application_data_file_path:\
             Folder where data specifications should be written to
-        :param graph_mapper:\
-            the mapping between application and machine graph
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
@@ -84,18 +82,18 @@ class DSGRegionReloader(object):
             # If the region was regenerated, mark it reloaded
             if generated:
                 placement.vertex.mark_regions_reloaded()
-
-            # If the spec wasn't generated directly, and there is an
-            # application vertex, try with that
-            if not generated and graph_mapper is not None:
+            else:
+                # If the spec wasn't generated directly, but there is an
+                # application vertex, try with that
                 associated_vertex = placement.vertex.app_vertex
-                generated = self._regenerate_data_spec_for_vertices(
-                    placement, associated_vertex)
+                if associated_vertex is not None:
+                    generated = self._regenerate_data_spec_for_vertices(
+                        placement, associated_vertex)
 
-                # If the region was regenerated, remember the application
-                # vertex for resetting later
-                if generated:
-                    application_vertices_to_reset.add(associated_vertex)
+                    # If the region was regenerated, remember the application
+                    # vertex for resetting later
+                    if generated:
+                        application_vertices_to_reset.add(associated_vertex)
 
         # Only reset the application vertices here, otherwise only one
         # machine vertices data will be updated
@@ -120,12 +118,11 @@ class DSGRegionReloader(object):
         vertex.regenerate_data_specification(spec, placement)
 
         # execute the spec
-        spec_reader = FileDataReader(spec_file)
-        data_spec_executor = DataSpecificationExecutor(
-            spec_reader, SDRAM.max_sdram_found)
-        data_spec_executor.execute()
+        with FileDataReader(spec_file) as spec_reader:
+            data_spec_executor = DataSpecificationExecutor(
+                spec_reader, SDRAM.max_sdram_found)
+            data_spec_executor.execute()
         try:
-            spec_reader.close()
             os.remove(spec_file)
         except Exception:
             # Ignore the deletion of files as non-critical
