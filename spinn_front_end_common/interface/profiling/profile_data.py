@@ -92,7 +92,8 @@ class ProfileData(object):
         for tag in numpy.unique(sample_tags):
             if tag == 3:
                 self._add_tag_data(
-                    entry_tags, sample_times[sample_entry_indices], exit_tags, sample_times[sample_exit_indices], tag)
+                    entry_tags, sample_times[sample_entry_indices], exit_tags,
+                    sample_times[sample_exit_indices], tag)
             else:
                 self._add_tag_data(
                     entry_tags, entry_times_ms, exit_tags, exit_times_ms, tag)
@@ -129,12 +130,9 @@ class ProfileData(object):
         else:
             # Subtract entry times from exit times to get durations of each
             # call in ms
-            try:
-                tag_durations = numpy.subtract(tag_exit_times, tag_entry_times)
-                # Add entry times and durations to dictionary
-                self._tags[tag_label] = (tag_entry_times, tag_durations)
-            except:
-                print("")
+            tag_durations = numpy.subtract(tag_exit_times, tag_entry_times)
+            # Add entry times and durations to dictionary
+            self._tags[tag_label] = (tag_entry_times, tag_durations)
 
             # Keep track of the maximum time
             self._max_time = numpy.max(tag_entry_times + tag_durations)
@@ -166,7 +164,7 @@ class ProfileData(object):
         """
         return self._tags[tag][_DURATION].size
 
-    def get_mean_n_calls_per_ts(self, tag, run_time_ms, machine_time_step_ms):
+    def get_mean_n_calls_per_ts(self, tag, machine_time_step_ms):
         """ Get the mean number of times the given tag was recorded per\
             timestep
 
@@ -175,8 +173,6 @@ class ProfileData(object):
         :param machine_time_step_ms:\
             The time step of the simulation in microseconds
         :type machine_time_step_ms: int
-        :param run_time_ms: The run time of the simulation in milliseconds
-        :type run_time_ms: float
         :rtype: float
         """
         n_points = math.ceil(
@@ -186,7 +182,7 @@ class ProfileData(object):
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
-    def get_mean_ms_per_ts(self, tag, run_time_ms, machine_time_step_ms):
+    def get_mean_ms_per_ts(self, tag,  machine_time_step_ms):
         """ Get the mean time in milliseconds spent on operations with the\
             given tag per timestep
 
@@ -195,8 +191,6 @@ class ProfileData(object):
         :param machine_time_step_ms:\
             The time step of the simulation in microseconds
         :type machine_time_step_ms: int
-        :param run_time_ms: The run time of the simulation in milliseconds
-        :type run_time_ms: float
         :rtype: float
         """
         n_points = math.ceil(
@@ -209,35 +203,3 @@ class ProfileData(object):
         mean_per_ts[numpy.isnan(mean_per_ts)] = 0
         return numpy.average(
             mean_per_ts[numpy.logical_not(numpy.isnan(mean_per_ts))])
-
-    def get_sd(self,tag):
-        """ Get the standard deviation in milliseconds of measurements with the\
-            given tag
-
-        :param tag: The tag to get the sd of measurements for
-        :type tag: str
-        :rtype: float
-        """
-        return numpy.std(self._tags[tag][_DURATION])
-
-    def get_se(self, tag):
-        """ Get the standard error in milliseconds of measurements with the\
-            given tag
-
-        :param tag: The tag to get the sd of measurements for
-        :type tag: str
-        :rtype: float
-        """
-        return numpy.std(self._tags[tag][_DURATION]) / \
-               numpy.sqrt(self._tags[tag][_DURATION].size)
-
-    def get_complete_profile(self,tag):
-        try:
-            if tag == 'PROCESS_FIXED_SYNAPSES':
-                profiles = self._tags[tag]
-            else:
-                profiles = self._tags[tag][_DURATION]
-        except:
-            print ("No profile tags match{}".format(tag))
-            profiles = []
-        return profiles

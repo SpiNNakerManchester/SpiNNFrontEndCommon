@@ -18,7 +18,28 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
-        <algorithm name="ReadRoutingTablesFromMachine">
+    <algorithm name="BuildsAutoPauseResumeTimePeriodMap">
+        <python_module>spinn_front_end_common.interface.interface_functions.builds_auto_pause_resume_time_period_map</python_module>
+       <python_class>BuildsAutoPauseResumeTimePeriodMap</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>default_machine_time_step</param_name>
+                <param_type>DefaultMachineTimeStep</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine_graph</param_name>
+            <param_name>default_machine_time_step</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>MachineTimeStepMap</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="ReadRoutingTablesFromMachine">
         <python_module>spinn_front_end_common.interface.interface_functions.read_routing_tables_from_machine</python_module>
         <python_class>ReadRoutingTablesFromMachine</python_class>
         <input_definitions>
@@ -58,8 +79,8 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>machine_time_period_map</param_name>
+                <param_type>MachineTimeStepMap</param_type>
             </parameter>
             <parameter>
                 <param_name>runtime</param_name>
@@ -69,7 +90,7 @@
         <required_inputs>
             <param_name>machine_graph</param_name>
             <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>machine_time_period_map</param_name>
             <param_name>runtime</param_name>
         </required_inputs>
         <outputs>
@@ -182,14 +203,6 @@
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
             </parameter>
@@ -203,8 +216,6 @@
             <param_name>produce_report</param_name>
             <param_name>use_timer_cut_off</param_name>
             <param_name>machine_graph</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>routing_infos</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
@@ -306,14 +317,6 @@
                 <param_type>RouterCompressorBitFieldUseCutOff</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
                 <param_name>provenance_data_objects</param_name>
                 <param_type>ProvenanceItems</param_type>
             </parameter>
@@ -336,8 +339,6 @@
             <param_name>threshold_percentage</param_name>
             <param_name>time_to_try_for_each_iteration</param_name>
             <param_name>use_timer_cut_off</param_name>
-            <param_name>machine_time_step</param_name>
-            <param_name>time_scale_factor</param_name>
             <param_name>executable_targets</param_name>
             <token part="BitFieldData">DataLoaded</token>
         </required_inputs>
@@ -584,8 +585,8 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>default_machine_time_step</param_name>
+                <param_type>DefaultMachineTimeStep</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -593,7 +594,7 @@
             <param_name>n_samples_per_recording</param_name>
             <param_name>sampling_frequency</param_name>
             <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>default_machine_time_step</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>pre_allocated_resources</param_name>
@@ -785,8 +786,8 @@
                 <param_type>NPacketsPerTimeWindow</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>default_machine_time_step</param_name>
+                <param_type>DefaultMachineTimeStep</param_type>
             </parameter>
             <parameter>
                 <param_name>time_scale_factor</param_name>
@@ -800,7 +801,7 @@
         <required_inputs>
             <param_name>other_cpu_demands_in_cpu_cycles</param_name>
             <param_name>n_packets_per_time_window</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>default_machine_time_step</param_name>
             <param_name>time_scale_factor</param_name>
             <param_name>number_of_cpu_cycles_per_receive</param_name>
             <param_name>machine_graph</param_name>
@@ -1766,8 +1767,8 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>default_machine_time_step</param_name>
+                <param_type>DefaultMachineTimeStep</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -1804,7 +1805,7 @@
             <param_name>machine</param_name>
             <param_name>data_n_timesteps</param_name>
             <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>default_machine_time_step</param_name>
             <param_name>placements</param_name>
             <param_name>routing_infos</param_name>
             <param_name>router_tables</param_name>
@@ -2237,8 +2238,8 @@
                 <param_type>RunTime</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>machine_time_period_map</param_name>
+                <param_type>MachineTimeStepMap</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -2246,7 +2247,7 @@
             <param_name>placements</param_name>
             <param_name>provenance_file_path</param_name>
             <param_name>run_time_ms</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>machine_time_period_map</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>

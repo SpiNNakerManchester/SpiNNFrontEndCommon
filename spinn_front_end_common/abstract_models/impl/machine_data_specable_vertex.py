@@ -29,40 +29,40 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
+        "time_period_map": "MachineTimeStepMap",
         "time_scale_factor": "TimeScaleFactor"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor"
+            "time_period_map", "time_scale_factor"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor):
+            time_period_map, time_scale_factor):
         # pylint: disable=too-many-arguments, arguments-differ
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(
             spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor)
+            reverse_iptags, time_period_map, time_scale_factor)
 
     @abstractmethod
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor):
+            reverse_iptags, time_period_map, time_scale_factor):
         """
         :param spec: The data specification to write into.
         :type spec:\
             :py:class:`~data_specification.DataSpecificationGenerator`
         :param placement: Where this node is on the SpiNNaker machine.
         :param machine_graph: The graph containing this node.
-        :param routing_info:
-        :param iptags:
-        :param reverse_iptags:
-        :param machine_time_step:
-        :param time_step_factor:
+        :param routing_info: routing infos
+        :param iptags: store of iptags
+        :param reverse_iptags: store of reverse iptags
+        :param time_period_map: map of vertex to timer period
+        :param time_scale_factor: time scale factor used by simulator
         """
         # pylint: disable=too-many-arguments
         pass

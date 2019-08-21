@@ -66,35 +66,37 @@ class ChipPowerMonitor(
         return ChipPowerMonitorMachineVertex.binary_file_name()
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
+                   "local_time_step_map": "MachineTimeStepMap",
                    "n_machine_time_steps": "PlanNTimeSteps"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "n_machine_time_steps"})
+        additional_arguments=[
+            "local_time_step_map", "time_scale_factor",
+            "n_machine_time_steps"])
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
+            self, spec, placement, local_time_step_map, time_scale_factor,
             n_machine_time_steps):
         # pylint: disable=too-many-arguments, arguments-differ
         # pylint: disable=protected-access
 
         # generate spec for the machine vertex
         placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
+            spec, local_time_step_map, time_scale_factor, n_machine_time_steps)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ChipPowerMonitorMachineVertex.binary_start_type()
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
+        "default_machine_time_step": "DefaultMachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
     @overrides(SplitterByAtoms.get_resources_used_by_atoms,
-               additional_arguments={"machine_time_step", "time_scale_factor"})
+               additional_arguments={
+                   "default_machine_time_step", "time_scale_factor"})
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
-            machine_time_step, time_scale_factor):
+            default_machine_time_step, time_scale_factor):
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
-            machine_time_step, time_scale_factor,
+            default_machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)

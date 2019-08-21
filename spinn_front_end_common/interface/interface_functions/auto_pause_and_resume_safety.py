@@ -1,32 +1,27 @@
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_auto_pause_and_resume import \
-    AbstractSupportsAutoPauseAndResume
+from spinn_front_end_common.utilities.constants import \
+    MICRO_TO_MILLISECOND_CONVERSION
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.progress_bar import ProgressBar
 import numpy
 import math
 
-MILLISECONDS_TO_MICROSECONDS = 1000
-
 
 class AutoPauseAndResumeSafety(object):
 
     def __call__(
-            self, machine_graph, time_scale_factor, machine_time_step,
+            self, machine_graph, time_scale_factor, machine_time_period_map,
             runtime):
 
         # store for all the time periods requested
         time_periods = set()
 
         progress_bar = ProgressBar(
-            len(machine_graph.vertices),
+            len(machine_time_period_map.keys()),
             "checking compatibility of time periods and runtime")
 
         # locate the unique time periods to link
-        for vertex in progress_bar.over(machine_graph.vertices, False):
-            if isinstance(vertex, AbstractSupportsAutoPauseAndResume):
-                time_periods.add(math.floor(vertex.my_local_time_period(
-                    machine_time_step)))
+        for vertex in progress_bar.over(machine_time_period_map.keys()):
+            time_periods.add(machine_time_period_map[vertex])
 
         # determine the lowest common denominator.
         lowest_common_denominator = numpy.lcm.reduce(list(time_periods))
@@ -38,7 +33,7 @@ class AutoPauseAndResumeSafety(object):
 
         # check combination to runtime to see if we can finish at reasonable
         # points
-        micro_seconds_of_runtime = runtime * MILLISECONDS_TO_MICROSECONDS
+        micro_seconds_of_runtime = runtime * MICRO_TO_MILLISECOND_CONVERSION
         if micro_seconds_of_runtime % lowest_common_denominator != 0:
             low_cycles = math.floor(
                 micro_seconds_of_runtime / lowest_common_denominator)
@@ -46,10 +41,10 @@ class AutoPauseAndResumeSafety(object):
                 micro_seconds_of_runtime / lowest_common_denominator)
             low_runtime = (
                 (low_cycles * lowest_common_denominator) /
-                MILLISECONDS_TO_MICROSECONDS)
+                MICRO_TO_MILLISECOND_CONVERSION)
             high_runtime = (
                 (high_cycles * lowest_common_denominator) /
-                MILLISECONDS_TO_MICROSECONDS)
+                MICRO_TO_MILLISECOND_CONVERSION)
 
             raise ConfigurationException(
                 "Given the time periods of {} requested by the combination "
@@ -61,11 +56,3 @@ class AutoPauseAndResumeSafety(object):
                     low_runtime, high_runtime))
 
         return lowest_common_denominator
-
-
-
-
-
-
-
-

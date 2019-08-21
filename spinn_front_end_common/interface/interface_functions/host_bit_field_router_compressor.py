@@ -16,7 +16,6 @@
 from __future__ import division
 
 import functools
-import math
 import os
 import struct
 from collections import defaultdict
@@ -131,7 +130,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self, router_tables, machine, placements, transceiver,
             default_report_folder, produce_report,
             use_timer_cut_off, machine_graph, routing_infos,
-            machine_time_step, time_scale_factor, target_length=None,
+            target_length=None,
             time_to_try_for_each_iteration=None, graph_mapper=None):
         """ compresses bitfields and router table entries together as /
         feasible as possible
@@ -143,10 +142,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param graph_mapper: mapping between graphs
         :param produce_report: boolean flag for producing report
         :param default_report_folder: report folder
-        :param machine_time_step: time step
-        :type machine_time_step: int
-        :param time_scale_factor: time scale factor
-        :type time_scale_factor: int
         :param machine_graph: the machine graph level
         :param target_length: length of table entries to get to.
         :param use_timer_cut_off: bool flag for using timer or not for \
@@ -217,12 +212,6 @@ class HostBasedBitFieldRouterCompressor(object):
                         api_vertex.bit_field_base_address(
                             transceiver, placements.get_placement_of_vertex(
                                 machine_vertex))
-
-    def calculate_threshold(self, machine_time_step, time_scale_factor):
-        return(
-            ((int(math.floor(machine_time_step / self._MS_TO_SEC))) *
-             time_scale_factor * self._N_PACKETS_PER_SECOND) /
-            self._THRESHOLD_FRACTION_EFFECT)
 
     @staticmethod
     def generate_key_to_atom_map(machine_graph, routing_infos, graph_mapper):

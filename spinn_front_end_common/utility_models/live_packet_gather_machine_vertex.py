@@ -17,7 +17,8 @@ from enum import Enum
 import struct
 
 from spinn_front_end_common.abstract_models.impl.\
-    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
+    machine_supports_auto_pause_and_resume import \
+    MachineSupportsAutoPauseAndResume
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType
 from pacman.executor.injection_decorator import inject_items
@@ -44,7 +45,7 @@ _TWO_BYTES = struct.Struct("<BB")
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        AbstractSupportsDatabaseInjection, SupportsAutoPauseAndResume):
+        AbstractSupportsDatabaseInjection, MachineSupportsAutoPauseAndResume):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -163,23 +164,23 @@ class LivePacketGatherMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
+        "local_time_step_map": "MachineTimeStepMap",
         "time_scale_factor": "TimeScaleFactor",
         "tags": "MemoryTags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "tags"
+            "local_time_step_map", "time_scale_factor", "tags"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, tags):
+            local_time_step_map, time_scale_factor, tags):
         # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec, machine_time_step, time_scale_factor)
+        self._write_setup_info(spec, local_time_step_map, time_scale_factor)
         self._write_configuration_region(
             spec, tags.get_ip_tags_for_vertex(self))
 
@@ -275,7 +276,7 @@ class LivePacketGatherMachineVertex(
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
 
-    def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
+    def _write_setup_info(self, spec, local_time_step_map, time_scale_factor):
         """ Write basic info to the system region
         """
         # Write this to the system region (to be picked up by the simulation):
@@ -283,7 +284,8 @@ class LivePacketGatherMachineVertex(
             region=(LivePacketGatherMachineVertex.
                     _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name(), local_time_step_map[self],
+            time_scale_factor))
 
     @staticmethod
     def get_cpu_usage():

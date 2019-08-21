@@ -328,7 +328,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
+        "local_time_step_map": "MachineTimeStepMap",
         "time_scale_factor": "TimeScaleFactor",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "machine": "MemoryExtendedMachine",
@@ -338,12 +338,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor",
+            "local_time_step_map", "time_scale_factor",
             "mc_data_chips_to_keys", "machine", "app_id"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor, mc_data_chips_to_keys,
+            local_time_step_map, time_scale_factor, mc_data_chips_to_keys,
             machine, app_id):
         # pylint: disable=too-many-arguments, arguments-differ
 
@@ -357,7 +357,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write data for the simulation data item
         spec.switch_write_focus(_DATA_REGIONS.SYSTEM.value)
         spec.write_array(simulation_utilities.get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name(), local_time_step_map[self],
+            time_scale_factor))
 
         # the keys for the special cases
         if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:

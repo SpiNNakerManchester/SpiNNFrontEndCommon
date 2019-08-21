@@ -26,7 +26,8 @@ from pacman.model.resources import (
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.abstract_models.impl.\
-    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
+    machine_supports_auto_pause_and_resume import \
+    MachineSupportsAutoPauseAndResume
 from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -54,7 +55,7 @@ CONFIG_SIZE_IN_BYTES = 8
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost,
-        SupportsAutoPauseAndResume):
+        MachineSupportsAutoPauseAndResume):
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
     """
@@ -101,7 +102,7 @@ class ChipPowerMonitorMachineVertex(
         # pylint: disable=arguments-differ
         sim = globals_variables.get_simulator()
         return self.get_resources(
-            sim.machine_time_step, sim.time_scale_factor,
+            sim.default_machine_time_step, sim.time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
 
     @staticmethod
@@ -147,26 +148,26 @@ class ChipPowerMonitorMachineVertex(
         return BINARY_FILE_NAME
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
+                   "local_time_step_map": "MachineTimeStepMap",
                    "data_n_time_steps": "DataNTimeSteps"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
-                   "machine_time_step", "time_scale_factor",
+                   "local_time_step_map", "time_scale_factor",
                    "data_n_time_steps"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, data_n_time_steps):
+            local_time_step_map, time_scale_factor, data_n_time_steps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
+            spec, local_time_step_map, time_scale_factor, data_n_time_steps)
 
     def _generate_data_specification(
-            self, spec, machine_time_step, time_scale_factor,
+            self, spec, local_time_step_map, time_scale_factor,
             data_n_time_steps):
         """ Supports the application vertex calling this directly
 
         :param spec: data spec
-        :param machine_time_step: machine time step
+        :param local_time_step_map: map of time steps and vertex
         :param time_scale_factor: time scale factor
         :param data_n_time_steps: timesteps to reserve data for
         :rtype: None
@@ -177,7 +178,7 @@ class ChipPowerMonitorMachineVertex(
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
+            spec, local_time_step_map, time_scale_factor, data_n_time_steps)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -196,12 +197,12 @@ class ChipPowerMonitorMachineVertex(
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
     def _write_setup_info(
-            self, spec, machine_time_step, time_scale_factor,
+            self, spec, local_time_step_map, time_scale_factor,
             n_machine_time_steps):
         """ Writes the system data as required.
 
         :param spec: the DSG spec writer
-        :param machine_time_step: the machine time step
+        :param local_time_step_map: map between time steps and vertices
         :param time_scale_factor: the time scale factor
         :rtype: None
         """
@@ -209,13 +210,15 @@ class ChipPowerMonitorMachineVertex(
         spec.switch_write_focus(
             region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name(), local_time_step_map[self],
+            time_scale_factor))
 
         spec.switch_write_focus(
             region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor) * n_machine_time_steps]
+                local_time_step_map[self], time_scale_factor) *
+            n_machine_time_steps]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
@@ -262,14 +265,14 @@ class ChipPowerMonitorMachineVertex(
         return [0]
 
     def _deduce_sdram_requirements_per_timer_tick(
-            self, machine_time_step, time_scale_factor):
+            self, my_machine_time_step, time_scale_factor):
         """ Deduce SDRAM usage per timer tick
 
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
         :return: the SDRAM usage
         """
-        timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
+        timer_tick_in_micro_seconds = my_machine_time_step * time_scale_factor
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)

@@ -20,7 +20,8 @@ from enum import Enum
 from six.moves import xrange
 
 from spinn_front_end_common.abstract_models.impl.\
-    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
+    machine_supports_auto_pause_and_resume import \
+    MachineSupportsAutoPauseAndResume
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
@@ -45,7 +46,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES,
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
@@ -77,7 +79,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
         AbstractReceiveBuffersToHost, AbstractRecordable,
-        SupportsAutoPauseAndResume):
+        MachineSupportsAutoPauseAndResume):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets
     """
@@ -241,13 +243,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def recording_sdram_per_timestep(
-            machine_time_step, is_recording, receive_rate, send_buffer_times,
-            n_keys):
+            my_machine_time_step, is_recording, receive_rate,
+            send_buffer_times, n_keys):
 
         # If recording live data, use the user provided receive rate
         if is_recording and send_buffer_times is None:
             keys_per_timestep = math.ceil(
-                (receive_rate / (machine_time_step * 1000.0)) * 1.1
+                (receive_rate / (
+                    my_machine_time_step * MICRO_TO_MILLISECOND_CONVERSION)) *
+                1.1
             )
             header_size = EIEIODataHeader.get_header_size(
                 EIEIOType.KEY_32_BIT, is_payload_base=True)
@@ -315,8 +319,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def resources_required(self):
         sim = globals_variables.get_simulator()
         sdram = self.get_sdram_usage(
-                self._send_buffer_times, self._is_recording,
-                sim.machine_time_step, self._receive_rate, self._n_keys)
+            self._send_buffer_times, self._is_recording,
+            sim.default_machine_time_step, self._receive_rate, self._n_keys)
 
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
@@ -327,7 +331,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def get_sdram_usage(
-            send_buffer_times, recording_enabled, machine_time_step,
+            send_buffer_times, recording_enabled, my_machine_time_step,
             receive_rate, n_keys):
 
         static_usage = (
@@ -343,7 +347,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             .send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
             ReverseIPTagMulticastSourceMachineVertex.
             recording_sdram_per_timestep(
-                machine_time_step, recording_enabled, receive_rate,
+                my_machine_time_step, recording_enabled, receive_rate,
                 send_buffer_times, n_keys))
         static_usage += per_timestep
         return VariableSDRAM(static_usage, per_timestep)
@@ -492,8 +496,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec, machine_time_step,
-                             time_scale_factor):
+    def _write_configuration(
+            self, spec, my_machine_time_step, time_scale_factor):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
@@ -541,14 +545,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_value(data=self._receive_sdp_port)
 
         # write timer offset in microseconds
-        max_offset = (
-            machine_time_step * time_scale_factor) // _MAX_OFFSET_DENOMINATOR
+        max_offset = ((
+            my_machine_time_step * time_scale_factor) //
+            _MAX_OFFSET_DENOMINATOR)
+
         spec.write_value(
             int(math.ceil(max_offset / self._n_vertices)) * self._n_data_specs)
         self._n_data_specs += 1
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
+        "local_time_step_map": "MachineTimeStepMap",
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
@@ -558,14 +564,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "machine_graph",
+            "local_time_step_map", "time_scale_factor", "machine_graph",
             "routing_info", "first_machine_time_step",
             "data_n_time_steps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, data_n_time_steps):
+            local_time_step_map, time_scale_factor, machine_graph,
+            routing_info, first_machine_time_step, data_n_time_steps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
 
@@ -575,7 +581,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
+            self.get_binary_file_name(), local_time_step_map[self],
             time_scale_factor))
 
         # Write the additional recording information
@@ -583,14 +589,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
         recording_size = 0
         if self._is_recording:
             per_timestep = self.recording_sdram_per_timestep(
-                machine_time_step, self._is_recording, self._receive_rate,
+                local_time_step_map[self], self._is_recording,
+                self._receive_rate,
                 self._send_buffer_times, self._n_keys)
             recording_size = per_timestep * data_n_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
         self._write_configuration(
-            spec, machine_time_step, time_scale_factor)
+            spec, local_time_step_map[self], time_scale_factor)
 
         # End spec
         spec.end_specification()

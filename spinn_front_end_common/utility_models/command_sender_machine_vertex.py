@@ -16,7 +16,8 @@
 from enum import Enum
 
 from spinn_front_end_common.abstract_models.impl.\
-    supports_auto_pause_and_resume import SupportsAutoPauseAndResume
+    machine_supports_auto_pause_and_resume import \
+    MachineSupportsAutoPauseAndResume
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
@@ -40,7 +41,7 @@ class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
         AbstractProvidesOutgoingPartitionConstraints,
-        SupportsAutoPauseAndResume):
+        MachineSupportsAutoPauseAndResume):
 
     # Regions for populations
     DATA_REGIONS = Enum(
@@ -150,17 +151,17 @@ class CommandSenderMachineVertex(
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
+        "local_time_step_map": "MachineTimeStepMap",
         "time_scale_factor": "TimeScaleFactor",
         "n_machine_time_steps": "RunTimeMachineTimeSteps"
         })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "n_machine_time_steps"
+            "local_time_step_map", "time_scale_factor", "n_machine_time_steps"
         })
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
+            self, spec, placement, local_time_step_map, time_scale_factor,
             n_machine_time_steps):  # @UnusedVariable
         # pylint: disable=too-many-arguments
         timed_commands_size = self.get_timed_commands_bytes()
@@ -179,7 +180,7 @@ class CommandSenderMachineVertex(
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
+            self.get_binary_file_name(), local_time_step_map[self],
             time_scale_factor))
 
         # write commands

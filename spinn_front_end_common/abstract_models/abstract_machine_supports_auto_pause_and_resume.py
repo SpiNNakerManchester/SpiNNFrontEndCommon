@@ -3,13 +3,12 @@ from six import add_metaclass
 
 
 @add_metaclass(AbstractBase)
-class AbstractSupportsAutoPauseAndResume(object):
+class AbstractMachineSupportsAutoPauseAndResume(object):
 
     @abstractmethod
-    def my_local_time_period(
-            self, simulator_time_step):
-        """
-        
+    def my_local_time_period(self, simulator_time_step):
+        """ allows a machine vertex to define its time step
+
         :param simulator_time_step: the simulator time step
         :return: the time period (machine time step) for this machine vertex
         """
