@@ -77,12 +77,15 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
             r_id, core_n_filters);
 
         // malloc for bitfield region addresses
-        bit_field_by_processor[r_id].bit_field_addresses =
-            MALLOC(core_n_filters * sizeof(filter_info_t));
-        if (bit_field_by_processor[r_id].bit_field_addresses == NULL) {
-            log_error("failed to allocate memory for bitfield addresses for "
-                      "region %d, might as well fail", r_id);
-            return NULL;
+        if (core_n_filters != 0) {
+            bit_field_by_processor[r_id].bit_field_addresses =
+                MALLOC(core_n_filters * sizeof(filter_info_t));
+            if (bit_field_by_processor[r_id].bit_field_addresses == NULL) {
+                log_error(
+                    "failed to allocate memory for bitfield addresses for "
+                    "region %d, might as well fail", r_id);
+                return NULL;
+            }
         }
 
         // populate table for addresses where each bitfield component starts

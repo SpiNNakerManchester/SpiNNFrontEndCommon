@@ -73,6 +73,7 @@ from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
 from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
+from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 from .auto_pause_and_resume_safety import AutoPauseAndResumeSafety
 from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine

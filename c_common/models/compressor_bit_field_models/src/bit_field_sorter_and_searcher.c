@@ -1129,16 +1129,16 @@ void start_compression_process(uint unused0, uint unused1) {
 
     //rt_error(RTE_SWERR);
 
-    log_debug("read in bitfields");
+    log_info("read in bitfields");
     bool read_success = false;
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             &n_bf_addresses, region_addresses, &read_success);
-    log_debug("finished reading in bitfields");
+    log_info("finished reading in bitfields");
 
     // check state
     if (bit_field_by_processor == NULL && !read_success){
         log_error("failed to read in bitfields, quitting");
-        terminate(EXIT_MALLOC);;
+        terminate(EXIT_MALLOC);
     }
 
     // set off the first compression attempt (aka no bitfields).
@@ -1150,7 +1150,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // check there are bitfields to merge, if not don't start search
     if (n_bf_addresses == 0){
-        log_debug(
+        log_info(
             "no bitfields to compress, just try the uncompressed and "
             "quit based on that's result.");
         reading_bit_fields = false;
@@ -1159,9 +1159,10 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // if there are bitfields to merge
     // sort the bitfields into order of best impact on worst cores.
+    log_info("sorting");
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
-    log_debug("finished sorting bitfields");
+    log_info("finished sorting bitfields");
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
