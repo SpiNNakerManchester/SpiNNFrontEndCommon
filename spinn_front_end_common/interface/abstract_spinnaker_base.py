@@ -897,7 +897,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             i = 0
             while self._state != Simulator_State.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
-                self._do_run(graph_changed, run_until_complete)
+                self._do_run(
+                    self._max_run_time_steps, graph_changed,
+                    run_until_complete)
                 i += 1
 
         # Indicate that the signal handler needs to act
@@ -1020,10 +1022,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             steps.append(int(left_over_steps))
         return steps
 
-    def _calculate_number_of_machine_time_steps(self):
-        if self._max_run_time_steps is not None:
-            total_time_steps = (
-                self._max_run_time_steps + self._current_run_timesteps)
+    def _calculate_number_of_machine_time_steps(self, step):
+        if step is not None:
+            total_time_steps = self._current_run_timesteps + step
             self._no_machine_time_steps = total_time_steps
             return total_time_steps
 
@@ -1770,14 +1771,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
 
-    def _do_run(self, graph_changed, run_until_complete):
+    def _do_run(self, step, graph_changed, run_until_complete):
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
 
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
-            graph_changed, run_until_complete)
+            step, graph_changed, run_until_complete)
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -1840,13 +1841,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # reraise exception
             reraise(*e_inf)
 
-    def _create_execute_workflow(self, graph_changed, run_until_complete):
+    def _create_execute_workflow(
+            self, step, graph_changed, run_until_complete):
         # calculate number of machine time steps
-        run_until_timesteps = self._calculate_number_of_machine_time_steps()
+        run_until_timesteps = (
+            self._calculate_number_of_machine_time_steps(step))
         run_time = None
         if self._max_run_time_steps is not None:
             run_time = (
-                self._max_run_time_steps * self._default_machine_time_step /
+                step * self._default_machine_time_step /
                 MICRO_TO_MILLISECOND_CONVERSION)
 
         # if running again, load the outputs from last load or last mapping
@@ -1859,7 +1862,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
-        inputs["RunTimeMachineTimeSteps"] = self._max_run_time_steps
         inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
@@ -2206,6 +2208,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def default_machine_time_step(self):
         return self._default_machine_time_step
+
+    @property
+    def local_timer_period_map(self):
+        return self._mapping_outputs["MachineTimeStepMap"]
 
     @property
     def time_scale_factor(self):

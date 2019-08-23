@@ -60,6 +60,10 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
+    def local_timer_period_map(self):
+        pass
+
+    @abstractproperty
     def no_machine_time_steps(self):
         pass
 

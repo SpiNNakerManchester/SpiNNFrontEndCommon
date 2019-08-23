@@ -153,16 +153,12 @@ class CommandSenderMachineVertex(
     @inject_items({
         "local_time_step_map": "MachineTimeStepMap",
         "time_scale_factor": "TimeScaleFactor",
-        "n_machine_time_steps": "RunTimeMachineTimeSteps"
         })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "local_time_step_map", "time_scale_factor", "n_machine_time_steps"
-        })
+        additional_arguments={"local_time_step_map", "time_scale_factor"})
     def generate_data_specification(
-            self, spec, placement, local_time_step_map, time_scale_factor,
-            n_machine_time_steps):  # @UnusedVariable
+            self, spec, placement, local_time_step_map, time_scale_factor):
         # pylint: disable=too-many-arguments
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \

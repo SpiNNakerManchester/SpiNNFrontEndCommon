@@ -25,13 +25,12 @@ from pacman.exceptions import \
     PacmanElementAllocationException
 from pacman.model.routing_tables import MulticastRoutingTables, \
     UnCompressedMulticastRoutingTable
-from pacman.operations.router_compressors.mundys_router_compressor.exceptions\
-    import MinimisationFailedError
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors.mundys_router_compressor. \
     routing_table_condenser import MundyRouterCompressor
 from pacman.operations.router_compressors.mundys_router_compressor \
     import ordered_covering as rigs_compressor
+from pacman.exceptions import MinimisationFailedError
 from spinn_front_end_common.abstract_models import \
     AbstractProvidesNKeysForPartition
 from spinn_front_end_common.abstract_models.\
