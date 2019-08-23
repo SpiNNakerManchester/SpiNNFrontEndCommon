@@ -276,9 +276,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_minimum_auto_time_steps",
 
         #
-        "_time_scale_factor",
-
-        #
         "_app_id",
 
         # If not None path to append pacman exutor provenance info to
@@ -456,7 +453,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Buffers", "minimum_auto_time_steps")
 
         self._machine_time_step = None
-        self._time_scale_factor = None
 
         self._app_id = self._read_config_int("Machine", "app_id")
 
@@ -600,11 +596,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "invalid machine_time_step {}: must greater than zero".format(
                     self._machine_time_step))
 
-        if time_scale_factor is None:
-            self._time_scale_factor = self._read_config_int(
-                "Machine", "time_scale_factor")
-        else:
-            self._time_scale_factor = time_scale_factor
+        if time_scale_factor is not None:
+           self._config.set("Machine", "time_scale_factor", time_scale_factor)
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
@@ -757,7 +750,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             total_run_time = (
                 total_run_timesteps *
                 (float(self._machine_time_step) / 1000.0) *
-                self._time_scale_factor)
+                self.time_scale_factor)
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
@@ -1141,7 +1134,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
         inputs["MachineTimeStep"] = self._machine_time_step
-        inputs["TimeScaleFactor"] = self._time_scale_factor
+        inputs["TimeScaleFactor"] = self.time_scale_factor
 
         # Set up common machine details
         self._handle_machine_common_config(inputs)
@@ -1403,7 +1396,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["APPID"] = self._app_id
-        inputs["TimeScaleFactor"] = self._time_scale_factor
+        inputs["TimeScaleFactor"] = self.time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
@@ -2163,7 +2156,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def time_scale_factor(self):
-        return self._time_scale_factor
+        return self._read_config_int("Machine", "time_scale_factor")
 
     @property
     def machine(self):
@@ -2179,7 +2172,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def timescale_factor(self):
-        return self._time_scale_factor
+        return self._read_config_int("Machine", "time_scale_factor")
 
     @property
     def machine_graph(self):
@@ -2555,7 +2548,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._report_default_directory,
                 self._read_config_int("Machine", "version"),
                 self._spalloc_server, self._remote_spinnaker_url,
-                self._time_scale_factor, self._machine_time_step,
+                self.time_scale_factor, self._machine_time_step,
                 pacman_provenance, router_provenance, self._machine_graph,
                 self._current_run_timesteps, self._buffer_manager,
                 self._mapping_time, self._load_time, self._execute_time,
