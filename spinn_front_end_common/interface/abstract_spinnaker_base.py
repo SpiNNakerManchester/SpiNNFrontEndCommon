@@ -597,7 +597,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._machine_time_step))
 
         if time_scale_factor is not None:
-           self._config.set("Machine", "time_scale_factor", time_scale_factor)
+            self._config.set("Machine", "time_scale_factor", time_scale_factor)
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
