@@ -342,6 +342,22 @@ class ConfigHandler(object):
     def _read_config_boolean(self, section, item):
         return read_config_boolean(self._config, section, item)
 
+    @property
+    def machine_time_step(self):
+        return self._read_config_int("Machine", "machine_time_step")
+
+    @machine_time_step.setter
+    def _set_machine_time_step(self, new_value):
+        self._config.set("Machine", "machine_time_step", new_value)
+
+    @property
+    def time_scale_factor(self):
+        return self._read_config_int("Machine", "time_scale_factor")
+
+    @time_scale_factor.setter
+    def _set_time_scale_factor(self, new_value):
+        self._config.set("Machine", "time_scale_factor", new_value)
+
     @staticmethod
     def _make_dirs(path):
         # Workaround for Python 2/3 Compatibility (Python 3 raises on exists)
