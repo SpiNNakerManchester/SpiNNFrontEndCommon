@@ -110,6 +110,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # to the spalloc system
         "_n_chips_required",
 
+        # the number of boards required for this simulation to run, mainly tied
+        # to the spalloc system
+        "_n_boards_required",
+
         # The IP-address of the SpiNNaker machine
         "_hostname",
 
@@ -348,7 +352,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None, default_config_paths=None,
+            n_chips_required=None, n_boards_required=None,
+            default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         # pylint: disable=too-many-arguments
         ConfigHandler.__init__(
@@ -368,7 +373,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Will search these locations for binaries: {}",
             self._executable_finder.binary_paths)
 
-        self._n_chips_required = n_chips_required
+        if n_chips_required is None or n_boards_required is None:
+            self._n_chips_required = n_chips_required
+            self._n_boards_required = n_boards_required
+        else:
+            raise ConfigurationException(
+                "Please use at most one of n_chips_required or "
+                "n_boards_required")
         self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
@@ -530,12 +541,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(msg)
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
-
-    def set_n_chips_required(self, n_chips_required):
-        if self.has_ran:
-            msg = "Setting n_chips_required is not supported after run"
-            raise ConfigurationException(msg)
-        self._n_chips_required = n_chips_required
 
     def add_extraction_timing(self, timing):
         ms = convert_time_diff_to_total_milliseconds(timing)
@@ -1212,14 +1217,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Machine", "spalloc_user")
                 inputs["SpallocMachine"] = self._read_config(
                     "Machine", "spalloc_machine")
-                if self._n_chips_required is None:
+                if self._n_chips_required is None and \
+                        self._n_boards_required is None:
                     algorithms.append("SpallocMaxMachineGenerator")
                     need_virtual_board = True
 
             # if using HBP server system
             if self._remote_spinnaker_url is not None:
                 inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-                if self._n_chips_required is None:
+                if self._n_chips_required is None and \
+                        self._n_boards_required is None:
                     algorithms.append("HBPMaxMachineGenerator")
                     need_virtual_board = True
 
@@ -1274,6 +1281,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 # If we are using an allocation server but have been told how
                 # many chips to use, just use that as an input
                 inputs["NChipsRequired"] = self._n_chips_required
+                inputs["NBoardsRequired"] = self._n_boards_required
 
             if self._spalloc_server is not None:
                 algorithms.append("SpallocAllocator")

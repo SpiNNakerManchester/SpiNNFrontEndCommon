@@ -91,27 +91,30 @@ class SpallocAllocator(object):
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, spalloc_user, n_chips, spalloc_port=None,
-            spalloc_machine=None):
+            self, spalloc_server, spalloc_user, n_chips=None, n_boards=None,
+            spalloc_port=None, spalloc_machine=None):
         """
         :param spalloc_server: \
             The server from which the machine should be requested
         :param spalloc_port: The port of the SPALLOC server
         :param spalloc_user: The user to allocate the machine to
-        :param n_chips: The number of chips required
+        :param n_chips: The number of chips required.
+            IGNORED if n_boards is not None
+        :param n_boards: The number of boards required
         :param spalloc_port: The optional port number to speak to spalloc
         :param spalloc_machine: The optional spalloc machine to use
         """
         # pylint: disable=too-many-arguments
 
         # Work out how many boards are needed
-        n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
-
-        # If the number of boards rounded up is less than 10% of a board bigger
-        # than the actual number of boards, add another board just in case.
-        if math.ceil(n_boards) - n_boards < 0.1:
-            n_boards += 1
-        n_boards = int(math.ceil(n_boards))
+        if n_boards is None:
+            n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
+            # If the number of boards rounded up is less than 10% of a board
+            # bigger than the actual number of boards,
+            # add another board just in case.
+            if math.ceil(n_boards) - n_boards < 0.1:
+                n_boards += 1
+            n_boards = int(math.ceil(n_boards))
 
         spalloc_kw_args = {
             'hostname': spalloc_server,
