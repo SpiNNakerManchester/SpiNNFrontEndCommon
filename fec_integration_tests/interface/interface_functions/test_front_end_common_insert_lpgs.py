@@ -18,7 +18,6 @@ from six import itervalues
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
-from pacman.model.graphs.common import GraphMapper
 from pacman.model.graphs.machine import MachineGraph
 from spinn_front_end_common.interface.interface_functions import (
     InsertLivePacketGatherersToGraphs)
@@ -63,8 +62,7 @@ class TestInsertLPGs(unittest.TestCase):
         edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=None,
-            graph_mapper=None)
+            machine=machine, machine_graph=graph, application_graph=None)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = list()
@@ -87,7 +85,6 @@ class TestInsertLPGs(unittest.TestCase):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
-        app_graph_mapper = GraphMapper()
 
         default_params = {
             'use_prefix': False,
@@ -117,8 +114,7 @@ class TestInsertLPGs(unittest.TestCase):
         edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=app_graph,
-            graph_mapper=app_graph_mapper)
+            machine=machine, machine_graph=graph, application_graph=app_graph)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = list()
@@ -185,8 +181,7 @@ class TestInsertLPGs(unittest.TestCase):
         edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=None,
-            graph_mapper=None)
+            machine=machine, machine_graph=graph, application_graph=None)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
 
@@ -201,7 +196,6 @@ class TestInsertLPGs(unittest.TestCase):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
-        app_graph_mapper = GraphMapper()
 
         default_params = {
             'use_prefix': False,
@@ -239,8 +233,7 @@ class TestInsertLPGs(unittest.TestCase):
         edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=app_graph,
-            graph_mapper=app_graph_mapper)
+            machine=machine, machine_graph=graph, application_graph=app_graph)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
 

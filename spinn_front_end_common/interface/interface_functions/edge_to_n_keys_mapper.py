@@ -27,13 +27,13 @@ class EdgeToNKeysMapper(object):
 
     __slots__ = []
 
-    def __call__(self, machine_graph=None, graph_mapper=None):
+    def __call__(self, machine_graph=None):
         if machine_graph is None:
             raise ConfigurationException(
                 "A machine graph is required for this mapper. "
                 "Please choose and try again")
 
-        if graph_mapper is not None:
+        if list(machine_graph.vertices)[0].app_vertex is not None:
             return self._allocate_by_app_graph_simple(machine_graph)
         else:
             return self._allocate_by_machine_graph_only(machine_graph)

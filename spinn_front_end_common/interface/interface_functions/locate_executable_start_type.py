@@ -15,13 +15,14 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
+from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class LocateExecutableStartType(object):
-    def __call__(self, graph, placements, graph_mapper=None):
+    def __call__(self, graph, placements):
         if not graph.vertices:
             return [ExecutableType.NO_APPLICATION]
 
@@ -48,9 +49,8 @@ class LocateExecutableStartType(object):
                     self._add_vertex_to_subset(
                         vertex, placements,
                         binary_start_types[placement_binary_start_type])
-                elif graph_mapper is not None:
-                    machine_verts = graph_mapper.get_machine_vertices(vertex)
-                    for machine_vertex in machine_verts:
+                elif isinstance(vertex, ApplicationVertex):
+                    for machine_vertex in vertex.machine_vertices:
                         self._add_vertex_to_subset(
                             machine_vertex, placements,
                             binary_start_types[placement_binary_start_type])

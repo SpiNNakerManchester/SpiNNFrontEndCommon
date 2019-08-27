@@ -32,7 +32,7 @@ class InsertLivePacketGatherersToGraphs(object):
 
     def __call__(
             self, live_packet_gatherer_parameters, machine, machine_graph,
-            application_graph=None, graph_mapper=None):
+            application_graph=None):
         """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:\
@@ -61,8 +61,7 @@ class InsertLivePacketGatherersToGraphs(object):
                             params.board_address == chip.ip_address):
                         lpg_params_to_vertices[params][chip.x, chip.y] = \
                             self._add_app_lpg_vertex(
-                                application_graph, graph_mapper,
-                                machine_graph, chip, params)
+                                application_graph, machine_graph, chip, params)
         else:
             for chip in progress.over(machine.ethernet_connected_chips):
                 for params in live_packet_gatherer_parameters:
@@ -74,7 +73,7 @@ class InsertLivePacketGatherersToGraphs(object):
 
         return lpg_params_to_vertices
 
-    def _add_app_lpg_vertex(self, app_graph, mapper, m_graph, chip, params):
+    def _add_app_lpg_vertex(self, app_graph, m_graph, chip, params):
         """ Adds a LPG vertex to a machine graph that has an associated\
             application graph.
         """
@@ -84,7 +83,7 @@ class InsertLivePacketGatherersToGraphs(object):
         resources = app_vtx.get_resources_used_by_atoms(_LPG_SLICE)
         vtx = app_vtx.create_machine_vertex(
             _LPG_SLICE, resources, label="LivePacketGatherer")
-        mapper.add_vertex_mapping(vtx, app_vtx)
+        app_vtx.remember_associated_machine_vertex(vtx)
         vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
         m_graph.add_vertex(vtx)
         return vtx

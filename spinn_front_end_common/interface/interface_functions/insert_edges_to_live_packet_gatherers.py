@@ -26,7 +26,7 @@ class InsertEdgesToLivePacketGatherers(object):
     def __call__(
             self, live_packet_gatherer_parameters, placements,
             live_packet_gatherers_to_vertex_mapping, machine,
-            machine_graph, application_graph=None, graph_mapper=None):
+            machine_graph, application_graph=None):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :param placements: the placements object
@@ -36,8 +36,6 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine: the SpiNNaker machine
         :param machine_graph: the machine graph
         :param application_graph: the application graph
-        :param graph_mapper: \
-            the mapping between application and machine graphs
         :rtype: None
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
@@ -65,11 +63,10 @@ class InsertEdgesToLivePacketGatherers(object):
                 # locate vertices to connect to a LPG with these params
                 for vertex in live_packet_gatherer_parameters[lpg_params]:
                     self._connect_lpg_vertex_in_app_graph(
-                        application_graph, graph_mapper, machine_graph, vertex,
-                        lpg_params)
+                        application_graph, machine_graph, vertex, lpg_params)
 
     def _connect_lpg_vertex_in_app_graph(
-            self, app_graph, mapper, m_graph, app_vertex, lpg_params):
+            self, app_graph, m_graph, app_vertex, lpg_params):
         # pylint: disable=too-many-arguments
 
         # Find all Live Gatherer machine vertices
@@ -80,7 +77,7 @@ class InsertEdgesToLivePacketGatherers(object):
         app_edge = None
 
         # iterate through the associated machine vertices
-        for machine_vertex in mapper.get_machine_vertices(app_vertex):
+        for machine_vertex in app_vertex.machine_vertices:
             machine_lpg = self._find_closest_live_packet_gatherer(
                 machine_vertex, m_lpgs)
 
@@ -98,7 +95,7 @@ class InsertEdgesToLivePacketGatherers(object):
             m_graph.add_edge(machine_edge, lpg_params.partition_id)
 
             # add mapping between the app edge and the machine edge
-            mapper.add_edge_mapping(machine_edge, app_edge)
+            app_edge.remember_associated_machine_edge(machine_edge)
 
     def _connect_lpg_vertex_in_mach_graph(
             self, m_graph, vertex, lpg_params):

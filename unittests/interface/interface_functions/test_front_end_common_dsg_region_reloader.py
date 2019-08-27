@@ -19,7 +19,7 @@ import shutil
 import numpy
 from spinn_machine import SDRAM
 from pacman.model.resources import ResourceContainer
-from pacman.model.graphs.common import Slice, GraphMapper
+from pacman.model.graphs.common import Slice
 from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
@@ -154,9 +154,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         m_vertex_1 = vertex.create_machine_vertex(m_slice_1, None, None, None)
         m_vertex_2 = vertex.create_machine_vertex(m_slice_2, None, None, None)
 
-        graph_mapper = GraphMapper()
-        graph_mapper.add_vertex_mapping(m_vertex_1, vertex)
-        graph_mapper.add_vertex_mapping(m_vertex_2, vertex)
+        vertex.remember_associated_machine_vertex(m_vertex_1)
+        vertex.remember_associated_machine_vertex(m_vertex_2)
 
         placements = Placements([
             Placement(m_vertex_1, 0, 0, 1),
@@ -171,9 +170,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(
-            transceiver, placements, "localhost", "test", False, "test",
-            graph_mapper)
+        reloader(transceiver, placements, "localhost", "test", False, "test")
 
         regions_rewritten = transceiver.regions_rewritten
 

@@ -793,6 +793,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Reset the machine graph if there is an application graph
             if self._application_graph.n_vertices:
                 self._machine_graph = MachineGraph(self._graph_label)
+                self._application_graph.forget_machine_graph()
                 self._graph_mapper = None
 
             # Reset the machine if the graph has changed
@@ -1378,8 +1379,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if (self._application_graph.n_vertices > 0 and
-                self._graph_mapper is None):
+        if self._application_graph.n_vertices and self._graph_mapper is None:
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph.n_vertices > 0:
             inputs['MemoryMachineGraph'] = self._machine_graph
@@ -1391,6 +1391,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "you graph has no vertices in it, but you have requested that"
                 " we still execute.")
             inputs["MemoryApplicationGraph"] = self._application_graph
+            self._application_graph.forget_machine_graph()
             inputs["MemoryGraphMapper"] = GraphMapper()
             inputs['MemoryMachineGraph'] = self._machine_graph
         else:

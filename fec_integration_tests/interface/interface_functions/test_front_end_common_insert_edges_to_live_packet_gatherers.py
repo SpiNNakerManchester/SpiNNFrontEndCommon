@@ -21,7 +21,7 @@ except ImportError:
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.common import GraphMapper, Slice
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
@@ -117,8 +117,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=None,
-            graph_mapper=None)
+            machine=machine, machine_graph=graph, application_graph=None)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -228,8 +227,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=None,
-            graph_mapper=None)
+            machine=machine, machine_graph=graph, application_graph=None)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -248,7 +246,6 @@ class TestInsertLPGEdges(unittest.TestCase):
         machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
-        app_graph_mapper = GraphMapper()
 
         default_params = {
             'use_prefix': False,
@@ -288,7 +285,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             mac_vertex = vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
-            app_graph_mapper.add_vertex_mapping(mac_vertex, vertex)
+            vertex.remember_associated_machine_vertex(mac_vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=mac_vertex))
             live_packet_gatherers_to_vertex_mapping[
@@ -323,7 +320,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             mac_vertex = vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
-            app_graph_mapper.add_vertex_mapping(mac_vertex, vertex)
+            vertex.remember_associated_machine_vertex(mac_vertex)
             live_packet_gatherers[default_params_holder].append(vertex)
             verts_expected[eth_x, eth_y].append(mac_vertex)
             placements.add_placement(
@@ -336,8 +333,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=app_graph,
-            graph_mapper=app_graph_mapper)
+            machine=machine, machine_graph=graph, application_graph=app_graph)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:

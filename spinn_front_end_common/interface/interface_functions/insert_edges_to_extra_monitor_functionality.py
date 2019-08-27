@@ -30,7 +30,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
-                 application_graph=None, graph_mapper=None):
+                 application_graph=None):
         """
         :param machine_graph: the machine graph instance
         :param placements: the placements
@@ -38,7 +38,6 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param application_graph: the application graph
         :param vertex_to_ethernet_connected_chip_mapping: \
             mapping between ethernet connected chips and packet gatherers
-        :param graph_mapper: the graph mapper
         :rtype: None
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
@@ -62,22 +61,21 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             for vertex in progress.over(machine_graph.vertices, False):
                 if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph, graph_mapper)
+                        vertex, machine_graph, application_graph)
             for app_vertex in progress.over(application_graph.vertices):
                 if not isinstance(app_vertex, ExtraMonitorSupport):
                     continue
-                for vertex in graph_mapper.get_machine_vertices(app_vertex):
+                for vertex in app_vertex.machine_vertices:
                     self._process_app_graph_vertex(
-                        vertex, machine_graph, application_graph, graph_mapper)
+                        vertex, machine_graph, application_graph)
 
     def _process_app_graph_vertex(
-            self, vertex, machine_graph, application_graph, graph_mapper):
+            self, vertex, machine_graph, application_graph):
         """ Inserts edges as required for a given vertex
 
         :param vertex: the extra monitor core
         :param machine_graph: machine graph object
         :param application_graph: app graph object; not None
-        :param graph_mapper: the mapping between app and machine graph
         :rtype: None
         """
         gatherer = self._get_gatherer_vertex(vertex)
@@ -95,7 +93,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
             edge = app_edge.create_machine_edge(vertex, gatherer, None)
-            graph_mapper.add_edge_mapping(edge, app_edge)
+            app_edge.remember_associated_machine_edge(edge)
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 

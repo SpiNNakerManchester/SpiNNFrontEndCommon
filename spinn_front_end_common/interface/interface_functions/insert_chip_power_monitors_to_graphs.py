@@ -29,7 +29,7 @@ class InsertChipPowerMonitorsToGraphs(object):
 
     def __call__(
             self, machine, machine_graph, n_samples_per_recording,
-            sampling_frequency, application_graph=None, graph_mapper=None):
+            sampling_frequency, application_graph=None):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
 
@@ -52,12 +52,12 @@ class InsertChipPowerMonitorsToGraphs(object):
         else:
             for chip in progress.over(machine.chips):
                 self._add_power_monitor_for_chip_with_application_graph(
-                    chip, machine_graph, application_graph, graph_mapper,
+                    chip, machine_graph, application_graph,
                     sampling_frequency, n_samples_per_recording)
 
     @staticmethod
     def _add_power_monitor_for_chip_with_application_graph(
-            chip, machine_graph, application_graph, graph_mapper,
+            chip, machine_graph, application_graph,
             sampling_frequency, n_samples_per_recording):
         # build constraint
         constraint = ChipAndCoreConstraint(chip.x, chip.y)
@@ -78,7 +78,7 @@ class InsertChipPowerMonitorsToGraphs(object):
         # add vert to graph
         machine_graph.add_vertex(vertex)
         # update graph mapper
-        graph_mapper.add_vertex_mapping(vertex, app_vertex)
+        app_vertex.remember_associated_machine_vertex(vertex)
 
     @staticmethod
     def _add_power_monitor_for_chip_without_application_graph(

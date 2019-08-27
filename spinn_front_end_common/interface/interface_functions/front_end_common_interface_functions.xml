@@ -57,22 +57,12 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
+        <required_inputs>
+            <param_name>machine_graph</param_name>
+        </required_inputs>
         <optional_inputs>
-            <one_of>
-                <all_of>
-                    <param_name>graph_mapper</param_name>
-                    <param_name>application_graph</param_name>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-                <all_of>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-            </one_of>
+            <param_name>application_graph</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="LoadFixedRoutes">
@@ -118,10 +108,6 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -138,7 +124,6 @@
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>graph_mapper</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="InsertExtraMonitorVerticesToGraphs">
@@ -158,20 +143,12 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>write_data_speed_up_reports</param_name>
                 <param_type>WriteDataSpeedUpReportsFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>n_cores_to_allocate</param_name>
-                <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -181,9 +158,7 @@
             <param_name>write_data_speed_up_reports</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>graph_mapper</param_name>
             <param_name>application_graph</param_name>
-            <param_name>n_cores_to_allocate</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
@@ -294,10 +269,6 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
@@ -307,7 +278,6 @@
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>graph_mapper</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForLivePacketGatherers">
@@ -365,10 +335,6 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -382,7 +348,6 @@
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>graph_mapper</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="InsertLivePacketGatherersToGraphs">
@@ -405,10 +370,6 @@
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>live_packet_gatherer_parameters</param_name>
@@ -416,7 +377,6 @@
             <param_name>machine</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>graph_mapper</param_name>
             <param_name>application_graph</param_name>
         </optional_inputs>
         <outputs>
@@ -1050,10 +1010,6 @@
         <python_class>LocateExecutableStartType</python_class>
         <input_definitions>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -1067,9 +1023,6 @@
             <param_name>graph</param_name>
             <param_name>placements</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>ExecutableTypes</param_type>
         </outputs>
@@ -1642,22 +1595,10 @@
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
-        <optional_inputs>
-            <one_of>
-                <all_of>
-                    <param_name>graph_mapper</param_name>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-                <all_of>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-            </one_of>
-        </optional_inputs>
+        <required_inputs>
+            <param_name>machine_graph</param_name>
+        </required_inputs>
         <outputs>
             <param_type>MemoryMachinePartitionNKeysMap</param_type>
         </outputs>

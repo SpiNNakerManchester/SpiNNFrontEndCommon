@@ -27,18 +27,15 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def __call__(
             self, machine, machine_graph, default_report_directory,
-            write_data_speed_up_reports, n_cores_to_allocate=1,
-            graph_mapper=None, application_graph=None):
+            write_data_speed_up_reports, application_graph=None):
         """
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
-        :param n_cores_to_allocate: n cores to allocate for reception
         :param default_report_directory: the directory where reports go
         :param write_data_speed_up_out_report: \
             determine whether to write the report for data speed up out
         :param write_data_speed_up_in_report: \
             determine whether to write the report for data speed up in
-        :param graph_mapper: graph mapper
         :param application_graph: app graph.
         :return: Ethernet chip to gatherer vertex map, \
             list of extra_monitor vertices, vertex_to_chip_map
@@ -56,7 +53,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         if application_graph is not None:
             extra_monitors = self._add_second_monitors_app_graph(
                 progress, machine, application_graph, machine_graph,
-                graph_mapper, vertex_to_chip_map)
+                vertex_to_chip_map)
         else:
             extra_monitors = self._add_second_monitors_mach_graph(
                 progress, machine, machine_graph, vertex_to_chip_map)
@@ -65,7 +62,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         if application_graph is not None:
             self._add_data_extraction_vertices_app_graph(
                 progress, machine, application_graph, machine_graph,
-                graph_mapper, chip_to_gatherer_map, vertex_to_chip_map,
+                chip_to_gatherer_map, vertex_to_chip_map,
                 default_report_directory, write_data_speed_up_reports)
         else:
             self._add_data_extraction_vertices_mach_graph(
@@ -77,7 +74,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _add_second_monitors_app_graph(
             self, progress, machine, application_graph, machine_graph,
-            graph_mapper, vertex_to_chip_map):
+            vertex_to_chip_map):
         """ Handles placing the second monitor vertex with extra functionality\
             into the graph
 
@@ -85,7 +82,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine: spinnMachine instance
         :param application_graph: app graph
         :param machine_graph: machine graph
-        :param graph_mapper: graph mapper
         :param vertex_to_chip_map: map between vertex and chip
         :return: list of extra monitor vertices
         :rtype: list(MachineVertex)
@@ -102,7 +98,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             application_graph.add_vertex(app_vertex)
             vertex = app_vertex.machine_vertex
             machine_graph.add_vertex(vertex)
-            graph_mapper.add_vertex_mapping(vertex, app_vertex)
+            app_vertex.remember_associated_machine_vertex(vertex)
             vertex_to_chip_map[chip.x, chip.y] = vertex
             extra_monitor_vertices.append(vertex)
 
@@ -137,8 +133,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _add_data_extraction_vertices_app_graph(
             self, progress, machine, application_graph, machine_graph,
-            graph_mapper, chip_to_gatherer_map,
-            vertex_to_chip_map, default_report_directory,
+            chip_to_gatherer_map, vertex_to_chip_map, default_report_directory,
             write_data_speed_up_reports):
         """ Places vertices for receiving data extraction packets.
 
@@ -150,7 +145,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
             the default directory for where reports are to be written
         :param write_data_speed_up_reports: \
             determine whether to write the reports for data speed up
-        :param graph_mapper: graph mapper
         :param chip_to_gatherer_map: vertex to chip map
         :param vertex_to_chip_map: map between chip and extra monitor
         :rtype: None
@@ -166,7 +160,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             vertex = app_vertex.machine_vertex
             machine_graph.add_vertex(vertex)
             application_graph.add_vertex(app_vertex)
-            graph_mapper.add_vertex_mapping(vertex, app_vertex)
+            app_vertex.remember_associated_machine_vertex(vertex)
             # update mapping for edge builder
             chip_to_gatherer_map[chip.x, chip.y] = vertex
 
