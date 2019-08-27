@@ -1422,22 +1422,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
 
-        # add paths for each file based version
-        inputs["FileCoreAllocationsFilePath"] = os.path.join(
-            self._json_folder, "core_allocations.json")
-        inputs["FileSDRAMAllocationsFilePath"] = os.path.join(
-            self._json_folder, "sdram_allocations.json")
-        inputs["FileMachineFilePath"] = os.path.join(
-            self._json_folder, "machine.json")
-        inputs["FileMachineGraphFilePath"] = os.path.join(
-            self._json_folder, "machine_graph.json")
-        inputs["FilePlacementFilePath"] = os.path.join(
-            self._json_folder, "placements.json")
-        inputs["FileRoutingPathsFilePath"] = os.path.join(
-            self._json_folder, "routing_paths.json")
-        inputs["FileConstraintsFilePath"] = os.path.join(
-            self._json_folder, "constraints.json")
-
         algorithms = list()
 
         if self._live_packet_recorder_params:
