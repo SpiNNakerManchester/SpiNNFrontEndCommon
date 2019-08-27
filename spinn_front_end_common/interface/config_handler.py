@@ -20,6 +20,7 @@ import errno
 import shutil
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     read_config, read_config_boolean, read_config_int)
 
@@ -65,6 +66,7 @@ class ConfigHandler(object):
 
         #
         "_use_virtual_board",
+
     ]
 
     def __init__(
@@ -347,7 +349,7 @@ class ConfigHandler(object):
         return self._read_config_int("Machine", "machine_time_step")
 
     @machine_time_step.setter
-    def _set_machine_time_step(self, new_value):
+    def machine_time_step(self, new_value):
         self._config.set("Machine", "machine_time_step", new_value)
 
     @property
@@ -355,8 +357,31 @@ class ConfigHandler(object):
         return self._read_config_int("Machine", "time_scale_factor")
 
     @time_scale_factor.setter
-    def _set_time_scale_factor(self, new_value):
+    def time_scale_factor(self, new_value):
         self._config.set("Machine", "time_scale_factor", new_value)
+
+    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
+        """ Set up timings of the machine
+
+        :param machine_time_step:\
+            An explicitly specified time step for the machine.  If None,\
+            the value is read from the config
+        :param time_scale_factor:\
+            An explicitly specified time scale factor for the simulation.\
+            If None, the value is read from the config
+        """
+
+        # set up timings
+        if machine_time_step is not None:
+            self.machine_time_step = machine_time_step
+
+        if self.machine_time_step <= 0:
+            raise ConfigurationException(
+                "invalid machine_time_step {}: must greater than zero".format(
+                    self.machine_time_step))
+
+        if time_scale_factor is not None:
+            self.time_scale_factor = time_scale_factor
 
     @staticmethod
     def _make_dirs(path):
