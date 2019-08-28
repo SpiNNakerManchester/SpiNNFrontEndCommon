@@ -1754,11 +1754,18 @@
                 <param_name>n_chips</param_name>
                 <param_type>NChipsRequired</param_type>
             </parameter>
+            <parameter>
+                <param_name>n_boards</param_name>
+                <param_type>NBoardsRequired</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hbp_server_url</param_name>
             <param_name>total_run_time</param_name>
-            <param_name>n_chips</param_name>
+            <one_of>
+                <param_name>n_chips</param_name>
+                <param_name>n_boards</param_name>
+            </one_of>
         </required_inputs>
         <outputs>
             <param_type>IPAddress</param_type>
