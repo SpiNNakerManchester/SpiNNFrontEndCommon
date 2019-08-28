@@ -1280,8 +1280,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
                 # If we are using an allocation server but have been told how
                 # many chips to use, just use that as an input
-                inputs["NChipsRequired"] = self._n_chips_required
-                inputs["NBoardsRequired"] = self._n_boards_required
+                if self._n_chips_required:
+                    inputs["NChipsRequired"] = self._n_chips_required
+                if self._n_boards_required:
+                    inputs["NBoardsRequired"] = self._n_boards_required
 
             if self._spalloc_server is not None:
                 algorithms.append("SpallocAllocator")
