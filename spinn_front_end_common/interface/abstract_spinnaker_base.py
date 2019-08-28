@@ -1326,6 +1326,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Failure to detect machine of with {} chips as requested. "
                     "Only found {}".format(self._n_chips_required,
                                            self._machine))
+        if self._n_boards_required:
+            if len(self._machine.ethernet_connected_chips) \
+                    < self._n_boards_required:
+                raise ConfigurationException(
+                    "Failure to detect machine of with {} boards as requested. "
+                    "Only found {}".format(self._n_boards_required,
+                                           self._machine))
+
+
 
         return self._machine
 
