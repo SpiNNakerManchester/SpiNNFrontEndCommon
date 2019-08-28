@@ -163,7 +163,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         ])
 
         user_0_addresses = {
-            (placement.x, placement.y, placement.p): i * 1000
+            placement.location: i * 1000
             for i, placement in enumerate(placements.placements)
         }
         region_addresses = [i for i in range(MAX_MEM_REGIONS)]
@@ -185,8 +185,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         # Check that the data rewritten is correct
         for i, placement in enumerate(placements.placements):
-            user_0_address = user_0_addresses[
-                placement.x, placement.y, placement.p]
+            user_0_address = user_0_addresses[placement.location]
             for j in range(len(reload_region_data)):
                 pos = (i * len(reload_region_data)) + j
                 region, data = reload_region_data[j]

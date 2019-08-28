@@ -61,7 +61,8 @@ class WriteMemoryIOData(object):
     __slots__ = [
         # The next tag to use by chip
         "_next_tag",
-        "_data_folder", "_machine", "_monitor_map", "_txrx", "_use_monitors"
+        "_data_folder", "_machine", "_monitor_map", "_txrx", "_use_monitors",
+        "_app_id", "_hostname"
     ]
 
     def __init__(self):
@@ -71,6 +72,8 @@ class WriteMemoryIOData(object):
         self._monitor_map = None
         self._txrx = None
         self._use_monitors = False
+        self._app_id = 0
+        self._hostname = ""
 
     def __call__(
             self, graph, placements, app_id, app_data_runtime_folder, hostname,
@@ -101,6 +104,8 @@ class WriteMemoryIOData(object):
         self._use_monitors = uses_advanced_monitors
         self._monitor_map = extra_monitor_cores_to_ethernet_connection_map
         self._data_folder = app_data_runtime_folder
+        self._hostname = hostname
+        self._app_id = app_id
 
         if isinstance(graph, ApplicationGraph):
             for placement in progress.over(placements.placements):
@@ -110,8 +115,8 @@ class WriteMemoryIOData(object):
                 # select the mode of writing and therefore buffer size
                 write_memory_function, _buf_size = self.__get_write_function(
                     placement.x, placement.y)
-                self._write_data_for_vertex(
-                    placement, app_vertex, app_id, hostname,
+                self.__write_data_for_vertex(
+                    placement, app_vertex,
                     processor_to_app_data_base_address, write_memory_function)
         elif isinstance(graph, MachineGraph):
             for placement in progress.over(placements.placements):
@@ -120,8 +125,8 @@ class WriteMemoryIOData(object):
                 # select the mode of writing and therefore buffer size
                 write_memory_function, _buf_size = self.__get_write_function(
                     placement.x, placement.y)
-                self._write_data_for_vertex(
-                    placement, placement.vertex, app_id, hostname,
+                self.__write_data_for_vertex(
+                    placement, placement.vertex,
                     processor_to_app_data_base_address, write_memory_function)
 
         return processor_to_app_data_base_address
@@ -183,17 +188,14 @@ class WriteMemoryIOData(object):
         self._next_tag[key] = next_tag + 1
         return next_tag
 
-    def _write_data_for_vertex(
-            self, placement, vertex, app_id,
-            hostname, base_address_map, write_memory_function):
+    def __write_data_for_vertex(
+            self, placement, vertex, base_address_map, write_memory_function):
         """ Write the data for the given vertex, if it supports the interface
 
         :param placement: The placement of the machine vertex
         :param vertex:\
             The vertex to write data for (might be an application vertex)
         :type vertex: :py:class:`AbstractUsesMemoryIO`
-        :param app_id: The ID of the application
-        :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address
         :param write_memory_function: \
             the function used to write data to spinnaker
@@ -203,20 +205,18 @@ class WriteMemoryIOData(object):
         if self._txrx is not None:
             tag = self.__remote_get_next_tag(self._txrx, placement)
             start_address = self._txrx.malloc_sdram(
-                placement.x, placement.y, size, app_id, tag)
-            end_address = start_address + size
+                placement.x, placement.y, size, self._app_id, tag)
             delegate = _TranscieverDelegate(self._txrx, write_memory_function)
-            with MemoryIO(
-                    delegate, placement.x, placement.y,
-                    start_address, end_address) as io:
+            with MemoryIO(delegate, placement.x, placement.y, start_address,
+                          start_address + size) as io:
                 vertex.write_data_to_memory_io(io, tag)
         else:
             tag = self.__local_get_next_tag(placement)
             start_address = 0
             filename = os.path.join(
                 self._data_folder, "{}_data_{}_{}_{}_{}.dat".format(
-                    hostname, placement.x, placement.y, placement.p, tag))
+                    self._hostname, placement.x, placement.y, placement.p, tag))
             with FileIO(filename, 0, size) as io:
                 vertex.write_data_to_memory_io(io, tag)
-        base_address_map[placement.x, placement.y, placement.p] = \
+        base_address_map[placement.location] = \
             DataWritten(start_address, size, size)

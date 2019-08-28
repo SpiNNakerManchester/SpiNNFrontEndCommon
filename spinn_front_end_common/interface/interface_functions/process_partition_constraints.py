@@ -18,16 +18,10 @@ from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractProvidesIncomingPartitionConstraints)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class ProcessPartitionConstraints(object):
-    def __call__(self, machine_graph=None, application_graph=None):
-        if machine_graph is None:
-            raise ConfigurationException(
-                "A machine graph is required for this mapper. "
-                "Please choose and try again")
-
+    def __call__(self, machine_graph, application_graph=None):
         if application_graph is not None:
             # generate progress bar
             progress = ProgressBar(
@@ -36,10 +30,9 @@ class ProcessPartitionConstraints(object):
 
             # iterate over each partition in the graph
             for vertex in progress.over(machine_graph.vertices):
-                partitions = machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(
-                        vertex)
-                for partition in partitions:
+                for partition in machine_graph.\
+                        get_outgoing_edge_partitions_starting_at_vertex(
+                            vertex):
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
                         self._process_application_partition(partition)
         else:
@@ -49,10 +42,9 @@ class ProcessPartitionConstraints(object):
                 "Getting constraints for machine graph")
 
             for vertex in progress.over(machine_graph.vertices):
-                partitions = machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(
-                        vertex)
-                for partition in partitions:
+                for partition in machine_graph.\
+                        get_outgoing_edge_partitions_starting_at_vertex(
+                            vertex):
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
                         self._process_machine_partition(partition)
 
@@ -63,12 +55,11 @@ class ProcessPartitionConstraints(object):
             partition.add_constraints(
                 vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
-            app_edge = edge.app_edge
-            if isinstance(app_edge.post_vertex,
+            post_vertex = edge.app_edge.post_vertex
+            if isinstance(post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 partition.add_constraints(
-                    app_edge.post_vertex.get_incoming_partition_constraints(
-                        partition))
+                    post_vertex.get_incoming_partition_constraints(partition))
 
     @staticmethod
     def _process_machine_partition(partition):
@@ -78,8 +69,8 @@ class ProcessPartitionConstraints(object):
                 partition.pre_vertex.get_outgoing_partition_constraints(
                     partition))
         for edge in partition.edges:
-            if isinstance(edge.post_vertex,
+            post_vertex = edge.post_vertex
+            if isinstance(post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 partition.add_constraints(
-                    edge.post_vertex.get_incoming_partition_constraints(
-                        partition))
+                    post_vertex.get_incoming_partition_constraints(partition))

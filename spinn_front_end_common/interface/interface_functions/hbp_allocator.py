@@ -107,8 +107,7 @@ class HBPAllocator(object):
         a number of chips.
     """
 
-    def __call__(
-            self, hbp_server_url, total_run_time, n_chips):
+    def __call__(self, hbp_server_url, total_run_time, n_chips):
         """
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine

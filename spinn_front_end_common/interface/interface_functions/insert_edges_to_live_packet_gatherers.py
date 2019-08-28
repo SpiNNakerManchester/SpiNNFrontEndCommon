@@ -56,16 +56,16 @@ class InsertEdgesToLivePacketGatherers(object):
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
                 for vertex in live_packet_gatherer_parameters[lpg_params]:
-                    self._connect_lpg_vertex_in_mach_graph(
+                    self._connect_lpg_vertex_in_machine_graph(
                         machine_graph, vertex, lpg_params)
         else:
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
                 for vertex in live_packet_gatherer_parameters[lpg_params]:
-                    self._connect_lpg_vertex_in_app_graph(
+                    self._connect_lpg_vertex_in_application_graph(
                         application_graph, machine_graph, vertex, lpg_params)
 
-    def _connect_lpg_vertex_in_app_graph(
+    def _connect_lpg_vertex_in_application_graph(
             self, app_graph, m_graph, app_vertex, lpg_params):
         # pylint: disable=too-many-arguments
 
@@ -97,7 +97,7 @@ class InsertEdgesToLivePacketGatherers(object):
             # add mapping between the app edge and the machine edge
             app_edge.remember_associated_machine_edge(machine_edge)
 
-    def _connect_lpg_vertex_in_mach_graph(
+    def _connect_lpg_vertex_in_machine_graph(
             self, m_graph, vertex, lpg_params):
         # Find all Live Gatherer machine vertices
         lpg = self._find_closest_live_packet_gatherer(

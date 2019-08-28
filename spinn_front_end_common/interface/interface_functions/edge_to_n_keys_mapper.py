@@ -27,7 +27,7 @@ class EdgeToNKeysMapper(object):
 
     __slots__ = []
 
-    def __call__(self, machine_graph=None):
+    def __call__(self, machine_graph):
         if machine_graph is None:
             raise ConfigurationException(
                 "A machine graph is required for this mapper. "
@@ -50,10 +50,9 @@ class EdgeToNKeysMapper(object):
 
         # iterate over each partition in the graph
         for vertex in progress.over(machine_graph.vertices):
-            partitions = machine_graph.\
-                get_outgoing_edge_partitions_starting_at_vertex(
-                    vertex)
-            for partition in partitions:
+            for partition in machine_graph.\
+                    get_outgoing_edge_partitions_starting_at_vertex(
+                        vertex):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     self._process_application_partition(
                         partition, n_keys_map)
@@ -71,10 +70,9 @@ class EdgeToNKeysMapper(object):
             "machine graph")
 
         for vertex in progress.over(machine_graph.vertices):
-            partitions = machine_graph.\
-                get_outgoing_edge_partitions_starting_at_vertex(
-                    vertex)
-            for partition in partitions:
+            for partition in machine_graph.\
+                    get_outgoing_edge_partitions_starting_at_vertex(
+                        vertex):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     self._process_machine_partition(partition, n_keys_map)
 
@@ -82,13 +80,12 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_application_partition(partition, n_keys_map):
-        vertex_slice = partition.pre_vertex.vertex_slice
         vertex = partition.pre_vertex.app_vertex
 
         if isinstance(vertex, AbstractProvidesNKeysForPartition):
             n_keys = vertex.get_n_keys_for_partition(partition)
         else:
-            n_keys = vertex_slice.n_atoms
+            n_keys = partition.pre_vertex.vertex_slice.n_atoms
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
     @staticmethod
