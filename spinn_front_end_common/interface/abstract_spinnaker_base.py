@@ -43,7 +43,6 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
-from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
@@ -1243,7 +1242,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             do_partitioning = False
             if need_virtual_board:
-
                 # If we are using an allocation server, and we need a virtual
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
@@ -1261,7 +1259,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         "Mapping",
                         "application_to_machine_graph_algorithms").split(","))
                     outputs.append("MemoryMachineGraph")
-                    outputs.append("MemoryGraphMapper")
                     do_partitioning = True
 
                 # only add machine graph is it has vertices. as the check for
@@ -1301,8 +1298,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if do_partitioning:
                 self._machine_graph = executor.get_item(
                     "MemoryMachineGraph")
-                self._graph_mapper = executor.get_item(
-                    "MemoryGraphMapper")
 
         if self._app_id is None:
             if self._txrx is None:
@@ -1383,8 +1378,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph.n_vertices > 0:
             inputs['MemoryMachineGraph'] = self._machine_graph
-            if self._graph_mapper is not None:
-                inputs["MemoryGraphMapper"] = self._graph_mapper
         elif self._config.getboolean(
                 "Mode", "violate_no_vertex_in_graphs_restriction"):
             logger.warning(
@@ -1392,7 +1385,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 " we still execute.")
             inputs["MemoryApplicationGraph"] = self._application_graph
             self._application_graph.forget_machine_graph()
-            inputs["MemoryGraphMapper"] = GraphMapper()
             inputs['MemoryMachineGraph'] = self._machine_graph
         else:
             raise ConfigurationException(
@@ -1558,9 +1550,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if add_data_speed_up:
             outputs.append("MemoryFixedRoutes")
 
-        if self._application_graph.n_vertices > 0:
-            outputs.append("MemoryGraphMapper")
-
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
@@ -1594,7 +1583,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
-        self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")
 
