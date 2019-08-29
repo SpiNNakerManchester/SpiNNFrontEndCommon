@@ -18,11 +18,11 @@ import logging
 import os
 import errno
 import shutil
+import time
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.helpful_functions import (
     read_config, read_config_boolean, read_config_int)
-import time
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
