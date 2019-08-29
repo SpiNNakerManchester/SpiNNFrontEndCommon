@@ -22,6 +22,7 @@ import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.helpful_functions import (
     read_config, read_config_boolean, read_config_int)
+import time
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -67,9 +68,7 @@ class ConfigHandler(object):
         "_use_virtual_board",
     ]
 
-    def __init__(
-            self, configfile, default_config_paths, validation_cfg):
-
+    def __init__(self, configfile, default_config_paths, validation_cfg):
         # global params
         if default_config_paths is None:
             default_config_paths = []
@@ -154,9 +153,20 @@ class ConfigHandler(object):
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
 
-    def child_folder(self, parent, child_name):
+    def child_folder(self, parent, child_name, must_create=False):
+        """
+        :param must_create: If `True`, the directory named by `child_name`\
+            (but not necessarily its parents) must be created by this call,\
+            and an exception will be thrown if this fails.
+        :raises OSError: if the directory existed ahead of time and creation\
+            was required by the user
+        """
         child = os.path.join(parent, child_name)
-        if not os.path.exists(child):
+        if must_create:
+            # Throws OSError or FileExistsError (a subclass of OSError) if the
+            # directory exists.
+            os.makedirs(child)
+        elif not os.path.exists(child):
             self._make_dirs(child)
         return child
 
@@ -201,8 +211,8 @@ class ConfigHandler(object):
 
     def _set_up_report_specifics(self, n_calls_to_run):
         """
-        :param n_calls_to_run:
-        the counter of how many times run has been called.
+        :param n_calls_to_run: \
+            the counter of how many times run has been called.
         :type n_calls_to_run: int
         :return: The folder for this run, the time_stamp
         """
@@ -222,7 +232,7 @@ class ConfigHandler(object):
                 self._make_dirs(report_default_directory)
         else:
             report_default_directory = self.child_folder(
-                default_report_file_path,  REPORTS_DIRNAME)
+                default_report_file_path, REPORTS_DIRNAME)
 
         # clear and clean out folders considered not useful anymore
         if os.listdir(report_default_directory):
@@ -230,17 +240,20 @@ class ConfigHandler(object):
                 self._config.getint("Reports", "max_reports_kept"),
                 report_default_directory)
 
-        # determine the time slot for later
+        # determine the time slot for later while also making the report folder
         if self._this_run_time_string is None:
-            now = datetime.datetime.now()
-            self._this_run_time_string = (
-                "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-                    now.year, now.month, now.day,
-                    now.hour, now.minute, now.second, now.microsecond))
-
-        # handle timing app folder and cleaning of report folder from last run
-        self._report_simulation_top_directory = self.child_folder(
-            report_default_directory, self._this_run_time_string)
+            while True:
+                try:
+                    timestamp = self.__make_timestamp()
+                    self._report_simulation_top_directory = self.child_folder(
+                        report_default_directory, timestamp, must_create=True)
+                    self._this_run_time_string = timestamp
+                    break
+                except OSError:
+                    time.sleep(0.5)
+        else:
+            self._report_simulation_top_directory = self.child_folder(
+                report_default_directory, self._this_run_time_string)
 
         # create sub folder within reports for sub runs
         # (where changes need to be recorded)
@@ -254,10 +267,17 @@ class ConfigHandler(object):
         with open(time_of_run_file_name, "w") as f:
             f.writelines(self._this_run_time_string)
 
+    @staticmethod
+    def __make_timestamp():
+        now = datetime.datetime.now()
+        return "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+            now.year, now.month, now.day,
+            now.hour, now.minute, now.second, now.microsecond)
+
     def set_up_output_application_data_specifics(self, n_calls_to_run):
         """
-        :param n_calls_to_run:
-        the counter of how many times run has been called.
+        :param n_calls_to_run: \
+            the counter of how many times run has been called.
         :type n_calls_to_run: int
         :return: the run folder for this simulation to hold app data
         """
