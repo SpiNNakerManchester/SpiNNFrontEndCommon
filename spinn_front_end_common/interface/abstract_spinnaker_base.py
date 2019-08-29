@@ -500,6 +500,28 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
 
+    def set_n_boards_required(self, n_boards_required):
+        """
+        Sets the machine requirements.
+
+        Warning: This method should not be called after the machine
+        requirements have be computed based on the graph.
+
+        :param n_boards_required: The number of boards required
+        :raises: ConfigurationException
+            If any machine requirements have already been set
+        """
+        # Catch the unchanged case including leaving it None
+        if n_boards_required == self._n_boards_required:
+            return
+        if self._n_boards_required is not None:
+            raise ConfigurationException(
+                "Illegal attempt to change previously set value.")
+        if self._n_chips_required is not None:
+            raise ConfigurationException(
+                "Clash with n_chips_required.")
+        self._n_boards_required = n_boards_required
+
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
             msg = "Changing mapping inputs is not supported after run"
