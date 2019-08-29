@@ -357,7 +357,8 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     extractor = ChipIOBufExtractor(
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor(txrx, executable_targets, sim._executable_finder,
-              sim._provenance_file_path)
+              sim._app_provenance_file_path, sim._system_provenance_file_path,
+              sim.get_generated_output("BinaryToExecutableType"))
 
 
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):

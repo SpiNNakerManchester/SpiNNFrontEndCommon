@@ -21,7 +21,8 @@ from spinnman.model import ExecutableTargets
 
 
 def run_system_application(
-        executable_cores, app_id, transceiver, provenance_file_path,
+        executable_cores, app_id, transceiver, app_provenance_file_path,
+        system_proveance_file_path, binary_start_types,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         handle_failure_function, cpu_end_states, needs_sync_barrier,
         no_sync_changes, binaries_to_track=None):
@@ -86,15 +87,17 @@ def run_system_application(
     # Check if any cores have not completed successfully
     if succeeded and check_for_success_function is not None:
         check_for_success_function(
-            executable_cores, transceiver, provenance_file_path,
-            app_id, executable_finder)
+            executable_cores, transceiver, app_provenance_file_path,
+            system_proveance_file_path, binary_start_types, app_id,
+            executable_finder)
 
     # if doing iobuf, read iobuf
     if read_algorithm_iobuf:
         iobuf_reader = ChipIOBufExtractor()
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
-            provenance_file_path)
+            app_provenance_file_path, system_proveance_file_path,
+            binary_start_types)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)

@@ -173,7 +173,8 @@ class MundyOnChipRouterCompression(object):
         iobuf_extractor = ChipIOBufExtractor()
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets, executable_finder, provenance_file_path)
+            txrx, executable_targets, executable_finder,
+            None, {_BINARY_PATH: ExecutableType.SYSTEM}, provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:

@@ -2092,6 +2092,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             errors, warnings = iobuf(
                 self._txrx, executable_targets, self._executable_finder,
                 self._app_provenance_file_path,
+                self._system_provenance_file_path,
+                self._mapping_outputs["BinaryToExecutableType"],
                 self._config.get("Reports", "extract_iobuf_from_cores"),
                 self._config.get("Reports", "extract_iobuf_from_binary_types")
             )
@@ -2624,7 +2626,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
-            provenance_file_path=self._app_provenance_file_path)
+            app_provenance_file_path=self._app_provenance_file_path,
+            system_provenance_file_path=self._system_provenance_file_path,
+            binary_executable_types=(
+                self._mapping_outputs["BinaryToExecutableType"]))
 
     @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):

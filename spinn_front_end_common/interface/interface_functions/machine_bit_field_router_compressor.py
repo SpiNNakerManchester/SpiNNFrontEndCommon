@@ -171,6 +171,10 @@ class MachineBitFieldRouterCompressor(object):
             routing_tables, executable_finder, machine, progress_bar,
             executable_targets)
 
+        executable_binary_map = {
+            bit_field_sorter_executable_path: ExecutableType.SYSTEM,
+            bit_field_compressor_executable_path: ExecutableType.SYSTEM}
+
         # load data into sdram
         on_host_chips = self._load_data(
             addresses, transceiver, routing_table_compressor_app_id,
@@ -186,8 +190,8 @@ class MachineBitFieldRouterCompressor(object):
             system_control_logic.run_system_application(
                 compressor_executable_targets,
                 routing_table_compressor_app_id, transceiver,
-                provenance_file_path, executable_finder,
-                read_algorithm_iobuf,
+                None, provenance_file_path, executable_binary_map,
+                executable_finder, read_algorithm_iobuf,
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,
@@ -311,16 +315,20 @@ class MachineBitFieldRouterCompressor(object):
                 bit_field_compressor_executable_path)
 
     def _check_bit_field_router_compressor_for_success(
-            self, executable_targets, transceiver, provenance_file_path,
-            compressor_app_id, executable_finder, host_chips,
-            sorter_binary_path, prov_data_items):
+            self, executable_targets, transceiver, app_provenance_file_path,
+            system_provenance_file_path, binary_start_types, compressor_app_id,
+            executable_finder, host_chips, sorter_binary_path,
+            prov_data_items):
         """ Goes through the cores checking for cores that have failed to\
             generate the compressed routing tables with bitfield
 
         :param executable_targets: cores to load router compressor with\
          bitfield on
         :param transceiver: SpiNNMan instance
-        :param provenance_file_path: path to provenance folder
+        :param app_provenance_file_path: path to provenance folder for apps
+        :param system_provenance_file_path: path to provenance folder for \
+        systems.
+        :param binary_start_types: the map of binary to start type
         :param compressor_app_id: the app id for the compressor c code
         :param host_chips: the chips which need to be ran on host.
         :param executable_finder: executable path finder
@@ -357,8 +365,10 @@ class MachineBitFieldRouterCompressor(object):
 
                 if result != self.SUCCESS:
                     self._call_iobuf_and_clean_up(
-                        executable_targets, transceiver, provenance_file_path,
-                        compressor_app_id, executable_finder)
+                        executable_targets, transceiver,
+                        app_provenance_file_path, system_provenance_file_path,
+                        binary_start_types, compressor_app_id,
+                        executable_finder)
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
                     raise SpinnFrontEndException(
@@ -369,8 +379,9 @@ class MachineBitFieldRouterCompressor(object):
 
     @staticmethod
     def _call_iobuf_and_clean_up(
-            executable_targets, transceiver, provenance_file_path,
-            compressor_app_id, executable_finder):
+            executable_targets, transceiver, app_provenance_file_path,
+            system_provenance_file_path, binary_start_types, compressor_app_id,
+            executable_finder):
         """handles the reading of iobuf and cleaning the cores off the machine
 
         :param executable_targets: cores which are running the router \
@@ -383,7 +394,8 @@ class MachineBitFieldRouterCompressor(object):
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
             transceiver, executable_targets, executable_finder,
-            provenance_file_path)
+            app_provenance_file_path, system_provenance_file_path,
+            binary_start_types)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
