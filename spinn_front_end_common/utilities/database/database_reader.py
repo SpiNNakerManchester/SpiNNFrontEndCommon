@@ -55,11 +55,9 @@ class DatabaseReader(object):
         """
         event_id_to_atom_id_mapping = dict()
         for row in self._cursor.execute(
-                "SELECT n.atom_id AS a_id, n.event_id AS event"
-                " FROM event_to_atom_mapping AS n"
-                " JOIN Application_vertices AS p ON n.vertex_id = p.vertex_id"
-                " WHERE p.vertex_label = ?", (label, )):
-            event_id_to_atom_id_mapping[row["event"]] = row["a_id"]
+                "SELECT * FROM label_event_atom_view"
+                " WHERE label = ?", (label, )):
+            event_id_to_atom_id_mapping[row["event"]] = row["atom"]
         return event_id_to_atom_id_mapping
 
     def get_atom_id_to_key_mapping(self, label):
@@ -72,12 +70,9 @@ class DatabaseReader(object):
         """
         atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
-                "SELECT n.atom_id AS a_id, n.event_id AS event"
-                " FROM event_to_atom_mapping AS n"
-                " JOIN Application_vertices AS p"
-                "   ON n.vertex_id = p.vertex_id"
-                " WHERE p.vertex_label = ?", (label, )):
-            atom_to_event_id_mapping[row["a_id"]] = row["event"]
+                "SELECT * FROM label_event_atom_view"
+                " WHERE label = ?", (label, )):
+            atom_to_event_id_mapping[row["atom"]] = row["event"]
         return atom_to_event_id_mapping
 
     def get_live_output_details(self, label, receiver_label):
@@ -90,19 +85,13 @@ class DatabaseReader(object):
         :rtype: tuple(str, int, bool)
         """
         self._cursor.execute(
-            "SELECT * FROM IP_tags AS tag"
-            " JOIN graph_mapper_vertex AS mapper"
-            "   ON tag.vertex_id = mapper.machine_vertex_id"
-            " JOIN Application_vertices AS post_vertices"
-            "   ON mapper.application_vertex_id = post_vertices.vertex_id"
-            " JOIN Application_edges AS edges"
-            "   ON mapper.application_vertex_id = edges.post_vertex"
-            " JOIN Application_vertices AS pre_vertices"
-            "   ON edges.pre_vertex = pre_vertices.vertex_id"
-            " WHERE pre_vertices.vertex_label = ?"
-            "   AND post_vertices.vertex_label = ?"
+            "SELECT * FROM app_output_tag_view"
+            " WHERE pre_vertex_label = ?"
+            "   AND post_vertex_label = ?"
             " LIMIT 1", (label, receiver_label))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None, None, None, None)
         return (
             row["ip_address"], row["port"], row["strip_sdp"],
             row["board_address"], row["tag"])
@@ -117,15 +106,12 @@ class DatabaseReader(object):
         :rtype: tuple(str, int)
         """
         self._cursor.execute(
-            "SELECT tag.board_address, tag.port AS port"
-            " FROM Reverse_IP_tags AS tag"
-            " JOIN graph_mapper_vertex AS mapper"
-            "   ON tag.vertex_id = mapper.machine_vertex_id"
-            " JOIN Application_vertices AS application"
-            "   ON mapper.application_vertex_id = application.vertex_id"
-            " WHERE application.vertex_label = ?"
+            "SELECT * FROM app_input_tag_view"
+            " WHERE application_label = ?"
             " LIMIT 1", (label, ))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None)
         return row["board_address"], row["port"]
 
     def get_machine_live_output_details(self, label, receiver_label):
@@ -138,17 +124,13 @@ class DatabaseReader(object):
         :rtype: tuple(str, int, bool)
         """
         self._cursor.execute(
-            "SELECT * FROM IP_tags AS tag"
-            " JOIN Machine_vertices AS post_vertices"
-            "   ON tag.vertex_id = post_vertices.vertex_id"
-            " JOIN Machine_edges AS edges"
-            "   ON post_vertices.vertex_id = edges.post_vertex"
-            " JOIN Machine_vertices AS pre_vertices"
-            "   ON edges.pre_vertex = pre_vertices.vertex_id"
-            " WHERE pre_vertices.label = ?"
-            "   AND post_vertices.label = ?"
+            "SELECT * FROM machine_output_tag_view"
+            " WHERE pre_vertex_label = ?"
+            "   AND post_vertex_label = ?"
             " LIMIT 1", (label, receiver_label))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None, None, None, None)
         return (
             row["ip_address"], row["port"], row["strip_sdp"],
             row["board_address"], row["tag"])
@@ -163,40 +145,32 @@ class DatabaseReader(object):
         :rtype: tuple(str, int)
         """
         self._cursor.execute(
-            "SELECT tag.board_address, tag.port AS port"
-            " FROM Reverse_IP_tags AS tag"
-            " JOIN Machine_vertices AS post_vertices"
-            "   ON tag.vertex_id = post_vertices.vertex_id"
-            " WHERE post_vertices.label = ?"
+            "SELECT * FROM machine_input_tag_view"
+            " WHERE machine_label = ?"
             " LIMIT 1", (label, ))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None)
         return row["board_address"], row["port"]
 
     def get_machine_live_output_key(self, label, receiver_label):
         self._cursor.execute(
-            "SELECT * FROM Routing_info AS r_info"
-            " JOIN Machine_edges AS edges"
-            "   ON edges.edge_id = r_info.edge_id"
-            " JOIN Machine_vertices AS post_vertices"
-            "   ON post_vertices.vertex_id = edges.post_vertex"
-            " JOIN Machine_vertices AS pre_vertices"
-            "   ON pre_vertices.vertex_id = edges.pre_vertex"
-            " WHERE pre_vertices.label = ?"
-            "   AND post_vertices.label = ?"
+            "SELECT * FROM machine_edge_key_view"
+            " WHERE pre_vertex_label = ?"
+            "   AND post_vertex_label = ?"
             " LIMIT 1", (label, receiver_label))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None)
         return (row["key"], row["mask"])
 
     def get_machine_live_input_key(self, label):
         self._cursor.execute(
-            "SELECT * FROM Routing_info AS r_info"
-            " JOIN Machine_edges AS edges"
-            "   ON edges.edge_id = r_info.edge_id"
-            " JOIN Machine_vertices AS pre_vertices"
-            "   ON pre_vertices.vertex_id = edges.pre_vertex"
-            " WHERE pre_vertices.label = ?"
-            " LIMIT 1", (label, ))
+            "SELECT * FROM machine_edge_key_view"
+            " WHERE pre_vertex_label = ? LIMIT 1", (label, ))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None)
         return (row["key"], row["mask"])
 
     def get_n_atoms(self, label):
@@ -211,7 +185,10 @@ class DatabaseReader(object):
             "SELECT no_atoms FROM Application_vertices "
             "WHERE vertex_label = ?"
             " LIMIT 1", (label, ))
-        return self._cursor.fetchone()["no_atoms"]
+        row = self._cursor.fetchone()
+        if row is None:
+            return 0
+        return row["no_atoms"]
 
     def get_configuration_parameter_value(self, parameter_name):
         """ Get the value of a configuration parameter
@@ -241,6 +218,8 @@ class DatabaseReader(object):
             " ON vertex.vertex_id = placement.vertex_id"
             " WHERE vertex.label = ? LIMIT 1", (label, ))
         row = self._cursor.fetchone()
+        if row is None:
+            return (None, None, None)
         return (int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
 
     def get_placements(self, label):
@@ -258,9 +237,8 @@ class DatabaseReader(object):
             " JOIN Application_vertices AS vertex"
             "   ON mapper.application_vertex_id = vertex.vertex_id"
             " WHERE vertex.vertex_label = ?", (label, ))
-        rows = self._cursor.fetchall()
         return [(int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
-                for row in rows]
+                for row in self._cursor.fetchall()]
 
     def get_ip_address(self, x, y):
         """ Get an IP address to contact a chip
@@ -279,8 +257,10 @@ class DatabaseReader(object):
         if row is None:
             self._cursor.execute(
                 "SELECT ip_address FROM Machine_chip"
-                " WHERE chip_x=0 AND chip_y=0")
+                " WHERE chip_x = 0 AND chip_y = 0")
             row = self._cursor.fetchone()
+        if row is None:
+            return None
         return row["ip_address"]
 
     def close(self):

@@ -193,3 +193,77 @@ CREATE TABLE IF NOT EXISTS event_to_atom_mapping(
     event_id INTEGER PRIMARY KEY,
     FOREIGN KEY (vertex_id)
         REFERENCES Machine_vertices(vertex_id));
+
+-- Views that simplify common queries
+
+CREATE VIEW IF NOT EXISTS label_event_atom_view AS SELECT
+    e_to_a.atom_id AS atom,
+    e_to_a.event_id AS event,
+    app_vtx.vertex_label AS label
+FROM event_to_atom_mapping AS e_to_a
+    NATURAL JOIN Application_vertices AS app_vtx;
+
+CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
+    IP_tags.ip_address AS ip_address,
+    IP_tags.port AS port,
+    IP_tags.strip_sdp AS strip_sdp,
+    IP_tags.board_address AS board_address,
+    IP_tags.tag AS tag,
+    pre_vertices.vertex_label AS pre_vertex_label,
+    post_vertices.vertex_label AS post_vertex_label
+FROM IP_tags
+    JOIN graph_mapper_vertex AS mapper
+        ON IP_tags.vertex_id = mapper.machine_vertex_id
+    JOIN Application_vertices AS post_vertices
+        ON mapper.application_vertex_id = post_vertices.vertex_id
+    JOIN Application_edges AS edges
+        ON mapper.application_vertex_id = edges.post_vertex
+    JOIN Application_vertices AS pre_vertices
+        ON edges.pre_vertex = pre_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
+    IP_tags.ip_address AS ip_address,
+    IP_tags.port AS port,
+    IP_tags.strip_sdp AS strip_sdp,
+    IP_tags.board_address AS board_address,
+    IP_tags.tag AS tag,
+    pre_vertices.label AS pre_vertex_label,
+    post_vertices.label AS post_vertex_label
+FROM IP_tags
+    JOIN Machine_vertices AS post_vertices
+        ON tag.vertex_id = post_vertices.vertex_id
+    JOIN Machine_edges AS edges
+        ON post_vertices.vertex_id = edges.post_vertex
+    JOIN Machine_vertices AS pre_vertices
+        ON edges.pre_vertex = pre_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS app_input_tag_view AS SELECT
+    Reverse_IP_tags.board_address AS board_address,
+    Reverse_IP_tags.port AS port,
+    application.vertex_label AS application_label
+FROM Reverse_IP_tags
+    JOIN graph_mapper_vertex AS mapper
+        ON Reverse_IP_tags.vertex_id = mapper.machine_vertex_id
+    JOIN Application_vertices AS application
+        ON mapper.application_vertex_id = application.vertex_id;
+
+CREATE VIEW IF NOT EXISTS machine_input_tag_view AS SELECT
+    Reverse_IP_tags.board_address AS board_address,
+    Reverse_IP_tags.port AS port,
+    post_vertices.label AS machine_label
+FROM Reverse_IP_tags
+    JOIN Machine_vertices AS post_vertices
+        ON Reverse_IP_tags.vertex_id = post_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS machine_edge_key_view AS SELECT
+    Routing_info."key" AS "key",
+    Routing_info.mask AS mask,
+    pre_vertices.label AS pre_vertex_label,
+    post_vertices.label AS post_vertex_label
+FROM Routing_info
+    JOIN Machine_edges
+        ON Machine_edges.edge_id = Routing_info.edge_id
+    JOIN Machine_vertices AS post_vertices
+        ON post_vertices.vertex_id = Machine_edges.post_vertex
+    JOIN Machine_vertices AS pre_vertices
+        ON pre_vertices.vertex_id = Machine_edges.pre_vertex;

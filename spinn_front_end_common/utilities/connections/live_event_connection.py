@@ -314,6 +314,9 @@ class LiveEventConnection(DatabaseConnection):
             host, port, strip_sdp, board_address, tag = \
                 db_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
+        if host is None:
+            raise Exception("no live output tag found for {}".format(
+                receive_label))
         if not strip_sdp:
             raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
