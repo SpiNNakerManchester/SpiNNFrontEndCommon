@@ -231,9 +231,9 @@ CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
     post_vertices.label AS post_vertex_label
 FROM IP_tags
     JOIN Machine_vertices AS post_vertices
-        ON tag.vertex_id = post_vertices.vertex_id
+        ON IP_tags.vertex_id = post_vertices.vertex_id
     JOIN Machine_edges AS edges
-        ON post_vertices.vertex_id = edges.post_vertex
+        ON edges.post_vertex = post_vertices.vertex_id
     JOIN Machine_vertices AS pre_vertices
         ON edges.pre_vertex = pre_vertices.vertex_id;
 
