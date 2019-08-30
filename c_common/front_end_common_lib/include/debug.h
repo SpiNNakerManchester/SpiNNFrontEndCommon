@@ -68,6 +68,16 @@
 #include "spin-print.h"
 #include <assert.h>
 
+static inline uint32_t float_to_int(float f) {
+    union {
+        float f;
+        uint32_t i;
+    } dat;
+
+    dat.f = f;
+    return dat.i;
+}
+
 //! \brief This macro prints a debug message if level is less than or equal
 //!        to the LOG_LEVEL
 //! \param[in] level The level of the messsage
