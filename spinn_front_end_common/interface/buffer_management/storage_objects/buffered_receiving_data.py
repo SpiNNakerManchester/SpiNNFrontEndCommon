@@ -243,6 +243,7 @@ class BufferedReceivingData(object):
             simulation, and a flag indicating if any data was missing
         :rtype: (bytearray, bool)
         """
+        print ("a")
         return self._db.get_region_data(x, y, p, region)
 
     def get_region_data_pointer(self, x, y, p, region):

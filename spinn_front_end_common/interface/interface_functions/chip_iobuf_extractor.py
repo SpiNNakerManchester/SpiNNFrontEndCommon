@@ -60,6 +60,9 @@ class ChipIOBufExtractor(object):
             progress = ProgressBar(len(executable_targets.binaries), label)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
+                if binary not in binary_executable_types or \
+                        binary_executable_types[binary] is None:
+                    print("AHHHHH")
                 if (binary_executable_types[binary].value ==
                         ExecutableType.SYSTEM.value):
                     prov_path = system_provenance_file_path

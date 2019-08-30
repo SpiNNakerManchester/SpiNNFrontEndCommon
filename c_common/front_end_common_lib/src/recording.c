@@ -491,7 +491,7 @@ void _recording_buffer_state_data_write(){
 void recording_finalise() {
     uint8_t i;
 
-    log_debug("Finalising recording channels");
+    log_info("Finalising recording channels");
 
     // wait till all DMA's have been finished
     while (circular_buffer_size(dma_complete_buffer) != 0) {
@@ -606,7 +606,7 @@ bool recording_initialize(
             region_sizes[counter] = size;
             region_addresses[counter] = sark_xalloc(
                 sv->sdram_heap, size + sizeof(recording_channel_t), 0,
-                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8);
             if (region_addresses[counter] == NULL) {
                 log_error(
                     "Could not allocate recording region %u of %u bytes",
@@ -615,6 +615,7 @@ bool recording_initialize(
             }
             recording_data->region_pointers[counter] =
                 region_addresses[counter];
+            log_info("recording address is %x", region_addresses[counter]);
             *recording_flags = (*recording_flags | (1 << counter));
         } else {
             recording_data->region_pointers[counter] = 0;
