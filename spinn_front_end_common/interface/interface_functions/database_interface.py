@@ -56,7 +56,7 @@ class DatabaseInterface(object):
 
         if self.needs_database:
             logger.info("creating live event connection database in {}",
-                        database_directory)
+                        self._writer.database_path)
             self._write_to_db(machine, time_scale_factor, machine_time_step,
                               runtime, application_graph, machine_graph,
                               data_n_timesteps, graph_mapper, placements,
