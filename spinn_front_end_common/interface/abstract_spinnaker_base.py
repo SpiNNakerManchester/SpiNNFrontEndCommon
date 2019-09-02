@@ -110,6 +110,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # to the spalloc system
         "_n_chips_required",
 
+        # the number of boards required for this simulation to run, mainly tied
+        # to the spalloc system
+        "_n_boards_required",
+
         # The IP-address of the SpiNNaker machine
         "_hostname",
 
@@ -348,7 +352,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None, default_config_paths=None,
+            n_chips_required=None, n_boards_required=None,
+            default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         # pylint: disable=too-many-arguments
         ConfigHandler.__init__(
@@ -368,7 +373,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Will search these locations for binaries: {}",
             self._executable_finder.binary_paths)
 
-        self._n_chips_required = n_chips_required
+        if n_chips_required is None or n_boards_required is None:
+            self._n_chips_required = n_chips_required
+            self._n_boards_required = n_boards_required
+        else:
+            raise ConfigurationException(
+                "Please use at most one of n_chips_required or "
+                "n_boards_required")
         self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
@@ -489,6 +500,28 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
 
+    def set_n_boards_required(self, n_boards_required):
+        """
+        Sets the machine requirements.
+
+        Warning: This method should not be called after the machine
+        requirements have be computed based on the graph.
+
+        :param n_boards_required: The number of boards required
+        :raises: ConfigurationException
+            If any machine requirements have already been set
+        """
+        # Catch the unchanged case including leaving it None
+        if n_boards_required == self._n_boards_required:
+            return
+        if self._n_boards_required is not None:
+            raise ConfigurationException(
+                "Illegal attempt to change previously set value.")
+        if self._n_chips_required is not None:
+            raise ConfigurationException(
+                "Clash with n_chips_required.")
+        self._n_boards_required = n_boards_required
+
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
             msg = "Changing mapping inputs is not supported after run"
@@ -530,12 +563,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(msg)
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
-
-    def set_n_chips_required(self, n_chips_required):
-        if self.has_ran:
-            msg = "Setting n_chips_required is not supported after run"
-            raise ConfigurationException(msg)
-        self._n_chips_required = n_chips_required
 
     def add_extraction_timing(self, timing):
         ms = convert_time_diff_to_total_milliseconds(timing)
@@ -1212,14 +1239,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Machine", "spalloc_user")
                 inputs["SpallocMachine"] = self._read_config(
                     "Machine", "spalloc_machine")
-                if self._n_chips_required is None:
+                if self._n_chips_required is None and \
+                        self._n_boards_required is None:
                     algorithms.append("SpallocMaxMachineGenerator")
                     need_virtual_board = True
 
             # if using HBP server system
             if self._remote_spinnaker_url is not None:
                 inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-                if self._n_chips_required is None:
+                if self._n_chips_required is None and \
+                        self._n_boards_required is None:
                     algorithms.append("HBPMaxMachineGenerator")
                     need_virtual_board = True
 
@@ -1273,7 +1302,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
                 # If we are using an allocation server but have been told how
                 # many chips to use, just use that as an input
-                inputs["NChipsRequired"] = self._n_chips_required
+                if self._n_chips_required:
+                    inputs["NChipsRequired"] = self._n_chips_required
+                if self._n_boards_required:
+                    inputs["NBoardsRequired"] = self._n_boards_required
 
             if self._spalloc_server is not None:
                 algorithms.append("SpallocAllocator")
@@ -1317,6 +1349,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 raise ConfigurationException(
                     "Failure to detect machine of with {} chips as requested. "
                     "Only found {}".format(self._n_chips_required,
+                                           self._machine))
+        if self._n_boards_required:
+            if len(self._machine.ethernet_connected_chips) \
+                    < self._n_boards_required:
+                raise ConfigurationException(
+                    "Failure to detect machine with {} boards as requested. "
+                    "Only found {}".format(self._n_boards_required,
                                            self._machine))
 
         return self._machine
@@ -1421,22 +1460,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Database", "send_stop_notification")
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
-
-        # add paths for each file based version
-        inputs["FileCoreAllocationsFilePath"] = os.path.join(
-            self._json_folder, "core_allocations.json")
-        inputs["FileSDRAMAllocationsFilePath"] = os.path.join(
-            self._json_folder, "sdram_allocations.json")
-        inputs["FileMachineFilePath"] = os.path.join(
-            self._json_folder, "machine.json")
-        inputs["FileMachineGraphFilePath"] = os.path.join(
-            self._json_folder, "machine_graph.json")
-        inputs["FilePlacementFilePath"] = os.path.join(
-            self._json_folder, "placements.json")
-        inputs["FileRoutingPathsFilePath"] = os.path.join(
-            self._json_folder, "routing_paths.json")
-        inputs["FileConstraintsFilePath"] = os.path.join(
-            self._json_folder, "constraints.json")
 
         algorithms = list()
 
