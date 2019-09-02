@@ -606,7 +606,7 @@ bool recording_initialize(
             region_sizes[counter] = size;
             region_addresses[counter] = sark_xalloc(
                 sv->sdram_heap, size + sizeof(recording_channel_t), 0,
-                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8);
+                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
             if (region_addresses[counter] == NULL) {
                 log_error(
                     "Could not allocate recording region %u of %u bytes",
