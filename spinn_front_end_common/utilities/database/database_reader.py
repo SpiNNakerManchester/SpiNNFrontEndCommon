@@ -87,8 +87,8 @@ class DatabaseReader(object):
         self._cursor.execute(
             "SELECT * FROM app_output_tag_view"
             " WHERE pre_vertex_label = ?"
-            "   AND post_vertex_label = ?"
-            " LIMIT 1", (label, receiver_label))
+            "   AND post_vertex_label LIKE ?"
+            " LIMIT 1", (label, str(receiver_label) + "%"))
         row = self._cursor.fetchone()
         if row is None:
             return (None, None, None, None, None)
@@ -126,8 +126,8 @@ class DatabaseReader(object):
         self._cursor.execute(
             "SELECT * FROM machine_output_tag_view"
             " WHERE pre_vertex_label = ?"
-            "   AND post_vertex_label = ?"
-            " LIMIT 1", (label, receiver_label))
+            "   AND post_vertex_label LIKE ?"
+            " LIMIT 1", (label, str(receiver_label) + "%"))
         row = self._cursor.fetchone()
         if row is None:
             return (None, None, None, None, None)
@@ -157,8 +157,8 @@ class DatabaseReader(object):
         self._cursor.execute(
             "SELECT * FROM machine_edge_key_view"
             " WHERE pre_vertex_label = ?"
-            "   AND post_vertex_label = ?"
-            " LIMIT 1", (label, receiver_label))
+            "   AND post_vertex_label LIKE ?"
+            " LIMIT 1", (label, str(receiver_label) + "%"))
         row = self._cursor.fetchone()
         if row is None:
             return (None, None)
