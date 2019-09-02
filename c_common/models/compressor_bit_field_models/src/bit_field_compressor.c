@@ -19,10 +19,10 @@
 #include <debug.h>
 #include <bit_field.h>
 #include <sdp_no_scp.h>
-#include "common/platform.h"
 #include "common/routing_table.h"
 #include "common/sdp_formats.h"
 #include "common/constants.h"
+#include "common/platform.h"
 
 #include "common-typedefs.h"
 #include "compressor_includes/aliases.h"
@@ -449,9 +449,6 @@ void initialise(void) {
 
 //! \brief the main entrance.
 void c_main(void) {
-    log_debug("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
-
-
     // set up params
     initialise();
 

@@ -98,15 +98,6 @@ static inline int locate_and_add_bit_fields(
                 sorted_bit_fields->processor_ids[*sorted_bf_fill_loc] = proc;
                 *sorted_bf_fill_loc += 1;
 
-                log_debug(
-                    "dumping into sorted at index %d proc %d, for key %d and "
-                    "has redundant packet count of %d",
-                    *sorted_bf_fill_loc - 1, proc,
-                    coverage_e->bit_field_addresses[p_index]->key,
-                    detect_redundant_packet_count(
-                        *coverage_e->bit_field_addresses[p_index],
-                        region_addresses));
-
                 // delete (aka set to null, to bypass lots of data moves and
                 // ensure the next time we know not to add this one)
                 coverage_e->bit_field_addresses[p_index] = NULL;
@@ -183,15 +174,6 @@ void add_left_overs(
 
                 sorted_bit_fields->bit_fields[*sorted_bf_fill_loc] =
                     coverage[i]->bit_field_addresses[bf_index];
-
-                log_debug(
-                    "dumping into sorted at index %d proc %d, for key %d and "
-                    "has redundant packet count of %d",
-                    *sorted_bf_fill_loc, coverage[i]->processor_ids[bf_index],
-                    coverage[i]->bit_field_addresses[bf_index]->key,
-                    detect_redundant_packet_count(
-                        *coverage[i]->bit_field_addresses[bf_index],
-                        region_addresses));
 
                 sorted_bit_fields->processor_ids[*sorted_bf_fill_loc] =
                     coverage[i]->processor_ids[bf_index];
@@ -284,17 +266,6 @@ static inline void add_bit_fields_based_on_impact(
 
         //print_proc_by_coverage(
         //    region_addresses->n_pairs, proc_cov_by_bit_field);
-
-        // print for sanity
-        for (int r_packet_index = 0;
-                r_packet_index < proc_cov_by_bit_field[
-                    worst_core_id]->length_of_list;
-                r_packet_index ++){
-            log_debug(
-                "order of redundant packet count at index %d is %d",
-                proc_cov_by_bit_field[worst_core_id]->redundant_packets[
-                    r_packet_index]);
-        }
 
         //print_coverage_for_sanity_purposes(
         //    n_unique_redundant_packet_counts, coverage);

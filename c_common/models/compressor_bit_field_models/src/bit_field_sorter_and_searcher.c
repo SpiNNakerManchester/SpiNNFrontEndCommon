@@ -1173,13 +1173,6 @@ void start_compression_process(uint unused0, uint unused1) {
         log_debug(
             "address for index %d is %x",
             s_bf_i, sorted_bit_fields->bit_fields[s_bf_i]->data);
-        log_debug(
-            "for address in index %d, it targets processor %d with key %d "
-            "and the redundant packet count is %d",
-            s_bf_i, sorted_bit_fields->processor_ids[s_bf_i],
-            sorted_bit_fields->bit_fields[s_bf_i]->key,
-            detect_redundant_packet_count(
-                *sorted_bit_fields->bit_fields[s_bf_i], region_addresses));
     }
 
     log_info("starting the binary search");

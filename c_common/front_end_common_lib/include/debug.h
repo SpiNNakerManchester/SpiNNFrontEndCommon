@@ -67,6 +67,7 @@
 
 #include "spin-print.h"
 #include <assert.h>
+#include <stdint.h>
 
 static inline uint32_t float_to_int(float f) {
     union {
