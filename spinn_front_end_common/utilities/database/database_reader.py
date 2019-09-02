@@ -213,31 +213,25 @@ class DatabaseReader(object):
         :rtype: tuple(int, int, int)
         """
         self._cursor.execute(
-            "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
-            " JOIN Machine_Vertices AS vertex"
-            " ON vertex.vertex_id = placement.vertex_id"
-            " WHERE vertex.label = ? LIMIT 1", (label, ))
+            "SELECT x, y, p FROM machine_vertex_placement"
+            " WHERE vertex_label = ? LIMIT 1", (label, ))
         row = self._cursor.fetchone()
         if row is None:
             return (None, None, None)
-        return (int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
+        return (int(row["x"]), int(row["y"]), int(row["p"]))
 
     def get_placements(self, label):
         """ Get the placements of an application vertex with a given label
 
         :param label: The label of the vertex
-        :type label:str
+        :type label: str
         :return: A list of x, y, p coordinates of the vertices
         :rtype: list(tuple(int, int, int))
         """
         self._cursor.execute(
-            "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
-            " JOIN graph_mapper_vertex AS mapper"
-            "   ON placement.vertex_id = mapper.machine_vertex_id"
-            " JOIN Application_vertices AS vertex"
-            "   ON mapper.application_vertex_id = vertex.vertex_id"
-            " WHERE vertex.vertex_label = ?", (label, ))
-        return [(int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
+            "SELECT x, y, p FROM application_vertex_placements"
+            " WHERE vertex_label = ?", (label, ))
+        return [(int(row["x"]), int(row["y"]), int(row["p"]))
                 for row in self._cursor.fetchall()]
 
     def get_ip_address(self, x, y):
