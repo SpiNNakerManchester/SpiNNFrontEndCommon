@@ -37,20 +37,27 @@
 
 // the position and human readable terms for each element from the region
 // containing the timing details.
-typedef enum region_elements{
-    APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD,
-    SIMULATION_CONTROL_SDP_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
-} region_elements;
+struct simulation_config {
+    uint32_t application_magic_number;
+    uint32_t timer_period;
+    uint32_t control_sdp_port;
+    uint32_t num_timing_detail_words;
+};
 
 //! elements that are always grabbed for provenance if possible when requested
-typedef enum provenance_data_elements{
-    TRANSMISSION_EVENT_OVERFLOW, CALLBACK_QUEUE_OVERLOADED,
-    DMA_QUEUE_OVERLOADED, TIMER_TIC_HAS_OVERRUN,
-    MAX_NUMBER_OF_TIMER_TIC_OVERRUN, PROVENANCE_DATA_ELEMENTS
-} provenance_data_elements;
+struct simulation_provenance {
+    uint32_t transmission_event_overflow;
+    uint32_t callback_queue_overloads;
+    uint32_t dma_queue_overloads;
+    uint32_t timer_tic_has_overrun;
+    uint32_t max_num_timer_tic_overrun;
+    uint32_t provenance_data_elements[];
+};
 
-typedef enum simulation_commands{
-    CMD_STOP = 6, CMD_RUNTIME = 7, PROVENANCE_DATA_GATHERING = 8,
+typedef enum simulation_commands {
+    CMD_STOP = 6,
+    CMD_RUNTIME = 7,
+    PROVENANCE_DATA_GATHERING = 8,
     IOBUF_CLEAR = 9
 } simulation_commands;
 
@@ -58,11 +65,11 @@ typedef enum simulation_commands{
 typedef void (*prov_callback_t)(address_t);
 
 //! the definition of the callback used by pause and resume
-typedef void (*resume_callback_t)();
+typedef void (*resume_callback_t)(void);
 
 //! the definition of the callback used by pause and resume when exit command
 //! is sent and models want to do cleaning up
-typedef void (*exit_callback_t)();
+typedef void (*exit_callback_t)(void);
 
 //! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
@@ -124,14 +131,14 @@ void simulation_handle_pause_resume(resume_callback_t resume_function);
 
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
-void simulation_exit();
+void simulation_exit(void);
 
 //! \brief Starts the simulation running, returning when it is complete,
-void simulation_run();
+void simulation_run(void);
 
 //! \brief Indicates that all data has been written and the core is going
 //!        idle, so any data can now be read
-void simulation_ready_to_read();
+void simulation_ready_to_read(void);
 
 //! \brief Registers an additional SDP callback on a given SDP port.  This is
 //!        required when using simulation_register_sdp_callback, as this will
@@ -140,7 +147,7 @@ void simulation_ready_to_read();
 //! \param[in] sdp_callback The callback to call when a packet is received
 //! \return true if successful, false otherwise
 bool simulation_sdp_callback_on(
-    uint sdp_port, callback_t sdp_callback);
+        uint sdp_port, callback_t sdp_callback);
 
 //! \brief disables SDP callbacks on the given port
 //| \param[in] sdp_port The SDP port to disable callbacks for

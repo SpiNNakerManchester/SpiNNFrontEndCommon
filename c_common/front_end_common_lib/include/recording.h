@@ -32,7 +32,7 @@
 #define RECORDING_DMA_COMPLETE_TAG_ID 15
 
 //! \brief Callback for recording completion.
-typedef void (*recording_complete_callback_t) ();
+typedef void (*recording_complete_callback_t)(void);
 
 typedef struct {
     uint16_t eieio_header_command;
@@ -73,7 +73,7 @@ typedef struct {
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_record(
-    uint8_t channel, void *data, uint32_t size_bytes);
+        uint8_t channel, void *data, uint32_t size_bytes);
 
 //! \brief records some data into a specific recording channel, calling a
 //!        callback function once complete
@@ -84,12 +84,12 @@ bool recording_record(
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_record_and_notify(
-    uint8_t channel, void *data, uint32_t size_bytes,
-    recording_complete_callback_t callback);
+        uint8_t channel, void *data, uint32_t size_bytes,
+        recording_complete_callback_t callback);
 
 //! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0
-void recording_finalise();
+void recording_finalise(void);
 
 //! \brief initialises the recording of data
 //! \param[in] recording_data_address The start of the data about the recording
@@ -116,7 +116,6 @@ void recording_finalise();
 //!
 //!                // size of each region to be recorded
 //!                uint32_t size_of_region[n_regions];
-//!
 //!            }
 //! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
@@ -127,7 +126,7 @@ bool recording_initialize(
         uint32_t *words_read);
 
 //! \brief resets recording to the state just after initialisation
-void recording_reset();
+void recording_reset(void);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0
