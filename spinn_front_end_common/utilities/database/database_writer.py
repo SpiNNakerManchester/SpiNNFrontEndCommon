@@ -152,7 +152,8 @@ class DatabaseWriter(object):
     def __insert_app_vertex(self, vertex, max_atoms, is_recording):
         v_id = self.__insert(
             "INSERT INTO Application_vertices("
-            "  vertex_label, vertex_class, no_atoms, max_atom_constrant, recorded) "
+            "  vertex_label, vertex_class, no_atoms, max_atom_constrant,"
+            "  recorded) "
             "VALUES(?, ?, ?, ?, ?)",
             str(vertex.label), vertex.__class__.__name__,
             int(vertex.n_atoms), int(max_atoms), int(is_recording))
