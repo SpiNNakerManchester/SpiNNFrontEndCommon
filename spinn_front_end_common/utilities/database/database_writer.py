@@ -74,7 +74,7 @@ class DatabaseWriter(object):
 
     def __enter__(self):
         self._connection = sqlite3.connect(self._database_path)
-        self.create_schema()
+        self.__create_schema()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
@@ -108,7 +108,7 @@ class DatabaseWriter(object):
                              str(map(type, args)))
             raise
 
-    def create_schema(self):
+    def __create_schema(self):
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
         with self._connection, open(init_sql_path) as f:
             sql = f.read()

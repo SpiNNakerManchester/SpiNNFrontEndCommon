@@ -301,3 +301,14 @@ FROM Placements
         ON Placements.vertex_id = graph_mapper_vertex.machine_vertex_id
     JOIN Application_vertices
         ON graph_mapper_vertex.application_vertex_id = Application_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS chip_eth_info AS SELECT
+    chip.chip_x AS x,
+    chip.chip_y AS y,
+    eth_chip.chip_x AS eth_x,
+    eth_chip.chip_y AS eth_y,
+    eth_chip.ip_address AS eth_ip_address
+FROM Machine_chip AS chip
+    JOIN Machine_chip AS eth_chip
+        ON  chip.nearest_ethernet_x = eth_chip.chip_x
+        AND chip.nearest_ethernet_y = eth_chip.chip_y;
