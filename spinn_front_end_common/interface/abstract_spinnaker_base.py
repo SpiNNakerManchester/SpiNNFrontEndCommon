@@ -235,9 +235,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_dsg_algorithm",
 
         #
-        "_none_labelled_vertex_count",
-
-        #
         "_none_labelled_edge_count",
 
         #
@@ -346,7 +343,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         "_last_except_hook",
 
-        "_vertices_or_edges_added"
+        "_vertices_or_edges_added",
+
+        # Set of all seen vertext labels
+        "_vertext_labels"
     ]
 
     def __init__(
@@ -443,7 +443,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_algorithm = "GraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
-        self._none_labelled_vertex_count = 0
         self._none_labelled_edge_count = 0
 
         # database objects
@@ -499,6 +498,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
+        self._vertext_labels = set()
 
     def set_n_boards_required(self, n_boards_required):
         """
@@ -2268,17 +2268,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_algorithm = new_dsg_algorithm
 
     @property
-    def none_labelled_vertex_count(self):
-        """ The number of times vertices have not been labelled.
-        """
-        return self._none_labelled_vertex_count
-
-    def increment_none_labelled_vertex_count(self):
-        """ Increment the number of new vertices which have not been labelled.
-        """
-        self._none_labelled_vertex_count += 1
-
-    @property
     def none_labelled_edge_count(self):
         """ The number of times edges have not been labelled.
         """
@@ -2311,25 +2300,29 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def add_application_vertex(self, vertex_to_add):
+    def add_application_vertex(self, vertex, prefix="_vertex"):
         """
-        :param vertex_to_add: the vertex to add to the graph
+        :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         if (self._original_machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        self._original_application_graph.add_vertex(vertex_to_add)
+        self._original_application_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
-    def add_machine_vertex(self, vertex):
+    def add_machine_vertex(self, vertex, prefix="_vertex"):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
         if self._original_application_graph.n_vertices > 0:
