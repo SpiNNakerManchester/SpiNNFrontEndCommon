@@ -120,6 +120,6 @@ class DatabaseInterface(object):
             p.update()
             if app_graph is not None and create_mapping:
                 w.create_atom_to_event_id_mapping(
-                    app_graph=app_graph, machine_graph=machine_graph,
+                    application_graph=app_graph, machine_graph=machine_graph,
                     routing_infos=routing_infos)
             p.update()

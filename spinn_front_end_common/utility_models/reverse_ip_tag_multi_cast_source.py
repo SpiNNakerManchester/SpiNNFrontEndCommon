@@ -144,7 +144,7 @@ class ReverseIpTagMultiCastSource(
         self._is_recording = False
 
         # Keep the vertices for resuming runs
-        self._machine_vertices = list()
+        self._my_machine_vertices = list()
 
     @property
     @overrides(ApplicationVertex.n_atoms)
@@ -177,7 +177,7 @@ class ReverseIpTagMultiCastSource(
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
-        for (vertex_slice, vertex) in self._machine_vertices:
+        for (vertex_slice, vertex) in self._my_machine_vertices:
             send_buffer_times_to_set = self._send_buffer_times
             # pylint: disable=len-as-condition
             if (self._send_buffer_times is not None and
@@ -231,7 +231,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_partition_id=self._send_buffer_partition_id,
             reserve_reverse_ip_tag=self._reserve_reverse_ip_tag)
         vertex.enable_recording(self._is_recording)
-        self._machine_vertices.append((vertex_slice, vertex))
+        self._my_machine_vertices.append((vertex_slice, vertex))
         return vertex
 
     def __repr__(self):
