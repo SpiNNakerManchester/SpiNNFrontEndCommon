@@ -78,14 +78,29 @@ static inline uint32_t float_to_int(float f) {
     return dat.i;
 }
 
-static inline uint64_t double_to_int64(double d) {
+typedef struct {
+    uint32_t lower;
+    uint32_t upper;
+} upper_lower;
+
+static inline uint32_t double_to_lower(double d) {
     union {
         double d;
-        uint64_t i;
+        upper_lower ints;
     } dat;
 
     dat.d = d;
-    return dat.i;
+    return dat.ints.lower;
+}
+
+static inline uint32_t double_to_upper(double d) {
+    union {
+        double d;
+        upper_lower ints;
+    } dat;
+
+    dat.d = d;
+    return dat.ints.upper;
 }
 
 //! \brief This macro prints a debug message if level is less than or equal
