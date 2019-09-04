@@ -78,6 +78,16 @@ static inline uint32_t float_to_int(float f) {
     return dat.i;
 }
 
+static inline uint64_t double_to_int64(double d) {
+    union {
+        double d;
+        uint64_t i;
+    } dat;
+
+    dat.d = d;
+    return dat.i;
+}
+
 //! \brief This macro prints a debug message if level is less than or equal
 //!        to the LOG_LEVEL
 //! \param[in] level The level of the messsage
