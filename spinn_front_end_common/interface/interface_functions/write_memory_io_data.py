@@ -215,7 +215,8 @@ class WriteMemoryIOData(object):
             start_address = 0
             filename = os.path.join(
                 self._data_folder, "{}_data_{}_{}_{}_{}.dat".format(
-                    self._hostname, placement.x, placement.y, placement.p, tag))
+                    self._hostname, placement.x, placement.y, placement.p,
+                    tag))
             with FileIO(filename, 0, size) as io:
                 vertex.write_data_to_memory_io(io, tag)
         base_address_map[placement.location] = \
