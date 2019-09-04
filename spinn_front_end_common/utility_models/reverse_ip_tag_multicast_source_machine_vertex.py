@@ -176,7 +176,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             label, constraints, app_vertex, vertex_slice)
 
         self._reverse_iptags = None
-        self._n_keys = vertex_slice.n_keys
+        self._n_keys = vertex_slice.n_atoms
 
         # Set up for receiving live packets
         if receive_port is not None or reserve_reverse_ip_tag:
@@ -221,7 +221,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
-            self._install_virtual_key(vertex_slice.n_keys)
+            self._install_virtual_key(vertex_slice.n_atoms)
 
         self._n_vertices += 1
 
