@@ -2337,6 +2337,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def get_generated_output(self, name_of_variable):
         if name_of_variable in self._last_run_outputs:
             return self._last_run_outputs[name_of_variable]
+        if name_of_variable in self._mapping_outputs:
+            return self._mapping_outputs[name_of_variable]
+        if name_of_variable in self._load_outputs:
+            return self._load_outputs[name_of_variable]
+        if name_of_variable in self._machine_outputs:
+            return self._machine_outputs[name_of_variable]
         return None
 
     def __repr__(self):
