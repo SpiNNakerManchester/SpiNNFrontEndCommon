@@ -20,6 +20,7 @@ from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
+from pacman.exceptions import PacmanConfigurationException
 
 
 class _HBPJobController(MachineAllocationController):
@@ -108,19 +109,24 @@ class HBPAllocator(object):
     """
 
     def __call__(
-            self, hbp_server_url, total_run_time, n_chips):
+            self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
+
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request
-        :param n_chips: The number of chips required
+        :param n_chips: The number of chips required.
+            Only used if n_boards is None
+        :param n_boards: The number of boards required
+        :raises PacmanConfigurationException:
+            If neither n_chips or n_baords provided
         """
 
         url = hbp_server_url
         if url.endswith("/"):
             url = url[:-1]
 
-        machine = self._get_machine(url, n_chips, total_run_time)
+        machine = self._get_machine(url, n_chips, n_boards, total_run_time)
         hbp_job_controller = _HBPJobController(url, machine["machineName"])
 
         bmp_details = None
@@ -132,8 +138,16 @@ class HBPAllocator(object):
             bmp_details, False, False, None, None,
             hbp_job_controller)
 
-    def _get_machine(self, url, n_chips, total_run_time):
-        get_machine_request = requests.get(
-            url, params={"nChips": n_chips, "runTime": total_run_time})
+    def _get_machine(self, url, n_chips, n_boards, total_run_time):
+        if n_boards:
+            get_machine_request = requests.get(
+                url, params={"nBoards": n_boards, "runTime": total_run_time})
+        elif n_chips:
+            get_machine_request = requests.get(
+                url, params={"nChips": n_chips, "runTime": total_run_time})
+        else:
+            raise PacmanConfigurationException(
+                "At least one of n_chips or n_boards must be provided")
+
         get_machine_request.raise_for_status()
         return get_machine_request.json()

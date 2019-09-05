@@ -18,8 +18,7 @@ from pacman.model.graphs.machine import MachineGraph, MachineEdge
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_tables import MulticastRoutingTables, \
     UnCompressedMulticastRoutingTable
-from pacman.operations.fixed_route_router.fixed_route_router import (
-    RoutingMachineVertex)
+from pacman.model.graphs.machine import MachineVertex
 from pacman.operations.router_algorithms import BasicDijkstraRouting
 from spinn_machine import Machine, MulticastRoutingEntry
 from spinn_machine import virtual_submachine
@@ -182,3 +181,9 @@ class DataInMulticastRoutingGenerator(object):
         return router(
             placements=fake_placements, machine=fake_machine,
             machine_graph=fake_graph, use_progress_bar=False)
+
+
+class RoutingMachineVertex(MachineVertex):
+    @property
+    def resources_required(self):
+        return None

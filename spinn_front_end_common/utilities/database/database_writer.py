@@ -26,6 +26,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
+DB_NAME = "input_output_database.db"
+INIT_SQL = "db.sql"
 
 
 def _extract_int(x):
@@ -42,14 +44,8 @@ class DatabaseWriter(object):
         # boolean flag for when the database writer has finished
         "_done",
 
-        # the directory of where the database is to be written
-        "_database_directory",
-
         # the path of the database
         "_database_path",
-
-        # the path of the initialisation SQL
-        "_init_sql_path",
 
         # the identifier for the SpiNNaker machine
         "_machine_id",
@@ -63,11 +59,7 @@ class DatabaseWriter(object):
 
     def __init__(self, database_directory):
         self._done = False
-        self._database_directory = database_directory
-        self._database_path = os.path.join(
-            self._database_directory, "input_output_database.db")
-        self._init_sql_path = os.path.join(
-            os.path.dirname(__file__), "db.sql")
+        self._database_path = os.path.join(database_directory, DB_NAME)
         self._connection = None
         self._machine_to_id = dict()
         self._vertex_to_id = dict()
@@ -82,7 +74,7 @@ class DatabaseWriter(object):
 
     def __enter__(self):
         self._connection = sqlite3.connect(self._database_path)
-        self.create_schema()
+        self.__create_schema()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
@@ -116,8 +108,9 @@ class DatabaseWriter(object):
                              str(map(type, args)))
             raise
 
-    def create_schema(self):
-        with self._connection, open(self._init_sql_path) as f:
+    def __create_schema(self):
+        init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
+        with self._connection, open(init_sql_path) as f:
             sql = f.read()
             self._connection.executescript(sql)
 
@@ -159,21 +152,22 @@ class DatabaseWriter(object):
     def __insert_app_vertex(self, vertex, max_atoms, is_recording):
         v_id = self.__insert(
             "INSERT INTO Application_vertices("
-            "  vertex_label, no_atoms, max_atom_constrant, recorded) "
-            "VALUES(?, ?, ?, ?)",
-            str(vertex.label), int(vertex.n_atoms), int(max_atoms),
-            int(is_recording))
+            "  vertex_label, vertex_class, no_atoms, max_atom_constrant,"
+            "  recorded) "
+            "VALUES(?, ?, ?, ?, ?)",
+            str(vertex.label), vertex.__class__.__name__,
+            int(vertex.n_atoms), int(max_atoms), int(is_recording))
         self._vertex_to_id[vertex] = v_id
         return v_id
 
     def __insert_app_edge(self, edge):
         e_id = self.__insert(
             "INSERT INTO Application_edges ("
-            "  pre_vertex, post_vertex, edge_label) "
-            "VALUES(?, ?, ?)",
+            "  pre_vertex, post_vertex, edge_label, edge_class) "
+            "VALUES(?, ?, ?, ?)",
             int(self._vertex_to_id[edge.pre_vertex]),
             int(self._vertex_to_id[edge.post_vertex]),
-            str(edge.label))
+            str(edge.label), edge.__class__.__name__)
         self._edge_to_id[edge] = e_id
         return e_id
 
@@ -196,9 +190,10 @@ class DatabaseWriter(object):
     def __insert_machine_vertex(self, vertex, cpu_used, sdram_used, dtcm_used):
         v_id = self.__insert(
             "INSERT INTO Machine_vertices ("
-            "  label, cpu_used, sdram_used, dtcm_used) "
-            "VALUES(?, ?, ?, ?)",
-            str(vertex.label), _extract_int(cpu_used.get_value()),
+            "  label, class, cpu_used, sdram_used, dtcm_used) "
+            "VALUES(?, ?, ?, ?, ?)",
+            str(vertex.label), vertex.__class__.__name__,
+            _extract_int(cpu_used.get_value()),
             _extract_int(sdram_used),
             _extract_int(dtcm_used))
         self._vertex_to_id[vertex] = v_id
@@ -207,11 +202,11 @@ class DatabaseWriter(object):
     def __insert_machine_edge(self, edge):
         e_id = self.__insert(
             "INSERT INTO Machine_edges ("
-            "  pre_vertex, post_vertex, label) "
-            "VALUES(?, ?, ?)",
+            "  pre_vertex, post_vertex, label, class) "
+            "VALUES(?, ?, ?, ?)",
             int(self._vertex_to_id[edge.pre_vertex]),
             int(self._vertex_to_id[edge.post_vertex]),
-            str(edge.label))
+            str(edge.label), edge.__class__.__name__)
         self._edge_to_id[edge] = e_id
         return e_id
 

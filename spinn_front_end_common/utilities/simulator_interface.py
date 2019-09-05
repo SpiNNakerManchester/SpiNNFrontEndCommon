@@ -48,10 +48,6 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
-    def increment_none_labelled_vertex_count(self):
-        pass
-
-    @abstractproperty
     def machine(self):
         pass
 
@@ -65,10 +61,6 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def no_machine_time_steps(self):
-        pass
-
-    @abstractproperty
-    def none_labelled_vertex_count(self):
         pass
 
     @abstractproperty

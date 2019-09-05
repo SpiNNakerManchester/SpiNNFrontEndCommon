@@ -13,8 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DatabaseInterface(object):
@@ -52,6 +56,8 @@ class DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database(machine_graph)
 
         if self.needs_database:
+            logger.info("creating live event connection database in {}",
+                        self._writer.database_path)
             self._write_to_db(
                 machine, time_scale_factor, default_machine_time_step,
                 runtime, application_graph, machine_graph, data_n_timesteps,
@@ -78,15 +84,14 @@ class DatabaseInterface(object):
             graph_mapper, placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
         """
-
         :param machine:
         :param time_scale_factor:
-        :param machine_time_step:
+        :param default_machine_time_step:
         :param runtime:
         :param application_graph:
         :param machine_graph:
-        :param data_n_timesteps: The number of timesteps for which data space\
-            will been reserved
+        :param data_n_timesteps: \
+            The number of timesteps for which data space will been reserved
         :param graph_mapper:
         :param placements:
         :param routing_infos:
@@ -96,7 +101,8 @@ class DatabaseInterface(object):
         :return:
         """
         # pylint: disable=too-many-arguments
-        with self._writer as w, ProgressBar(9, "Creating database") as p:
+        with self._writer as w, ProgressBar(
+                9, "Creating graph description database") as p:
             w.add_system_params(
                 time_scale_factor, default_machine_time_step, runtime)
             p.update()
