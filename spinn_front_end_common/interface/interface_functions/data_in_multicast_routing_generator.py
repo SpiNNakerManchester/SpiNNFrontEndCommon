@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from six import iteritems
+from pacman.exceptions import (
+    PacmanAlreadyExistsException, PacmanConfigurationException,
+    PacmanRoutingException)
 from pacman.model.graphs.machine import MachineGraph, MachineEdge
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_tables import (
@@ -37,7 +40,7 @@ class DataInMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
     extra monitor cores.
     """
-    __slots__ = ["_monitors", "_real_machine", "_real_placements"]
+    __slots__ = ["_monitors", "_real_machine", "_real_placements","_routing_tables"]
 
     def __call__(self, machine, extra_monitor_cores, placements):
         # pylint: disable=attribute-defined-outside-init
@@ -51,7 +54,13 @@ class DataInMulticastRoutingGenerator(object):
 
         # create routing table holder
         routing_tables = MulticastRoutingTables()
+        self._routing_tables = MulticastRoutingTables()
         key_to_destination_map = dict()
+
+        for ethernet_chip in machine.ethernet_connected_chips:
+            tree = self._generate_routing_tree(ethernet_chip)
+            self._add_routing_entries(
+                ethernet_chip, tree, key_to_destination_map)
 
         for ethernet_chip in progress.over(machine.ethernet_connected_chips):
             fake_graph, fake_placements, fake_machine, key_to_dest_map = \
@@ -67,6 +76,81 @@ class DataInMulticastRoutingGenerator(object):
             self._generate_routing_tables(
                 routing_tables, routing_tables_by_partition, ethernet_chip)
         return routing_tables, key_to_destination_map
+
+    def _generate_ket_to_destination_map(self, machine):
+        key_to_destination_map = dict()
+        for ethernet_chip in machine.ethernet_connected_chips:
+            eth_x = ethernet_chip.x
+            eth_y = ethernet_chip.y
+            counter = KEY_START_VALUE
+            for chip_xy in self._machine.get_existing_xys_by_ethernet(
+                    eth_x, eth_y):
+                key_to_destination_map[chip_xy] = counter
+                counter += N_KEYS_PER_PARTITION_ID
+
+    def _generate_routing_tree(self, ethernet_chip):
+        eth_x = ethernet_chip.x
+        eth_y = ethernet_chip.y
+        tree = dict()
+        to_reach = set(
+            self._real_machine.get_existing_xys_by_ethernet(eth_x, eth_y))
+        reached = set()
+        reached.add((eth_x, eth_y))
+        to_reach.remove((eth_x, eth_y))
+        found = set()
+        found.add((eth_x, eth_y))
+        while len(to_reach) > 0:
+            just_reached = found
+            found = set()
+            for x, y in just_reached:
+                # Check links starting with the most direct from 0,0
+                for link_id in [1, 0, 2, 5, 3, 4]:
+                    # Get protential destination
+                    destination = self._real_machine.xy_over_link(x, y, link_id)
+                    # If it is useful
+                    if destination in to_reach:
+                        # check it actually exits
+                        if self._real_machine.is_link_at(x, y, link_id):
+                            tree[destination] = (x, y, link_id)
+                            to_reach.remove(destination)
+                            found.add(destination)
+                            # build entry and add to table and add to tables
+                            key = (x, y)
+            if len(found) == 0:
+                raise PacmanRoutingException(
+                    "Unable to do data in routing on {}.".format(
+                        ethernet_chip.ip_address))
+        return tree
+        for destination, (x, y, link) in iteritems(tree):
+            print (destination, x, y, link)
+            while (x, y) in tree:
+                x, y, link = tree[(x, y)]
+                print (destination, x, y, link)
+
+    def _add_routing_entry(self, x, y, key, processor_id=None, link_id=None):
+
+
+    def _add_routing_entries(
+        self, ethernet_chip, tree, key_to_destination_map):
+        for ethernet_chip in self._real_machine.ethernet_connected_chips:
+            eth_x = ethernet_chip.x
+            eth_y = ethernet_chip.y
+            counter = KEY_START_VALUE
+            for (x, y) in self._machine.get_existing_xys_by_ethernet(
+                    eth_x, eth_y):
+                key_to_destination_map[x, y] = counter
+                counter += N_KEYS_PER_PARTITION_ID
+                placement = self._real_placements.get_placement_of_vertex(
+                    self._monitors[x, y])
+                entry = MulticastRoutingEntry(
+                    routing_entry_key=counter, mask=ROUTING_MASK,
+                    processor_ids=[placement.p], link_ids=[],
+                    defaultable=False)
+                multicast_routing_table.add_multicast_routing_entry(entry)
+                while (x, y) in tree:
+                    x, y, link = tree[(x, y)]
+                    print (destination, x, y, link)
+
 
     def _generate_routing_tables(
             self, routing_tables, routing_tables_by_partition, ethernet_chip):
