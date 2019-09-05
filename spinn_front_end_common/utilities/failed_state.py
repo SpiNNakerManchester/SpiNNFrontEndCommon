@@ -37,10 +37,6 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    def graph_mapper(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
     def has_ran(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 

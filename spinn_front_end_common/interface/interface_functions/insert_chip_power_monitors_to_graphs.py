@@ -77,7 +77,7 @@ class InsertChipPowerMonitorsToGraphs(object):
             constraints=[constraint])
         # add vert to graph
         machine_graph.add_vertex(vertex)
-        # update graph mapper
+        # update graph mapping
         app_vertex.remember_associated_machine_vertex(vertex)
 
     @staticmethod

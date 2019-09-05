@@ -15,6 +15,7 @@
 
 from pacman.executor import injection_decorator
 
+# pylint: disable=global-statement
 _failed_state = None
 _simulator = None
 

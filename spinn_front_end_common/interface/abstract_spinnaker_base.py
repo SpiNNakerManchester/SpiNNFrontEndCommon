@@ -144,9 +144,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # represent cores.
         "_original_machine_graph",
 
-        # the mapping interface between application and machine graphs.
-        "_graph_mapper",
-
         # The holder for where machine graph vertices are placed.
         "_placements",
 
@@ -402,7 +399,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             ApplicationGraph(label=self._graph_label)
         self._original_machine_graph = MachineGraph(label=self._graph_label)
 
-        self._graph_mapper = None
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
@@ -820,7 +816,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._application_graph.n_vertices:
                 self._machine_graph = MachineGraph(self._graph_label)
                 self._application_graph.forget_machine_graph()
-                self._graph_mapper = None
 
             # Reset the machine if the graph has changed
             if not self._use_virtual_board and self._n_calls_to_run > 1:
@@ -1413,9 +1408,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if self._application_graph.n_vertices and self._graph_mapper is None:
+        if self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif self._machine_graph.n_vertices > 0:
+        elif self._machine_graph.n_vertices:
             inputs['MemoryMachineGraph'] = self._machine_graph
         elif self._config.getboolean(
                 "Mode", "violate_no_vertex_in_graphs_restriction"):
@@ -2225,10 +2220,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._txrx
 
     @property
-    def graph_mapper(self):
-        return self._graph_mapper
-
-    @property
     def tags(self):
         return self._tags
 
@@ -2296,8 +2287,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
         """
-        if (self._original_machine_graph.n_vertices > 0 and
-                self._graph_mapper is None):
+        if self._original_machine_graph.n_vertices:
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")

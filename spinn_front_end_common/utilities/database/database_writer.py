@@ -217,7 +217,7 @@ class DatabaseWriter(object):
             "VALUES(?, ?)",
             int(self._vertex_to_id[vertex]), int(self._edge_to_id[edge]))
 
-    def __insert_graph_mapper_vertex(
+    def __insert_graph_mapping_for_vertex(
             self, app_vertex, machine_vertex, vertex_slice):
         if app_vertex is None:
             return None
@@ -230,7 +230,7 @@ class DatabaseWriter(object):
             int(self._vertex_to_id[machine_vertex]),
             int(vertex_slice.lo_atom), int(vertex_slice.hi_atom))
 
-    def __insert_graph_mapper_edge(self, app_edge, machine_edge):
+    def __insert_graph_mapping_for_edge(self, app_edge, machine_edge):
         if app_edge is None:
             return None
         return self.__insert(
@@ -392,11 +392,11 @@ class DatabaseWriter(object):
 
             if application_graph is not None:
                 for machine_vertex in machine_graph.vertices:
-                    self.__insert_graph_mapper_vertex(
+                    self.__insert_graph_mapping_for_vertex(
                         machine_vertex.app_vertex, machine_vertex,
                         machine_vertex.vertex_slice)
                 for edge in machine_graph.edges:
-                    self.__insert_graph_mapper_edge(edge.app_edge, edge)
+                    self.__insert_graph_mapping_for_edge(edge.app_edge, edge)
 
     def add_placements(self, placements):
         """ Adds the placements objects into the database
