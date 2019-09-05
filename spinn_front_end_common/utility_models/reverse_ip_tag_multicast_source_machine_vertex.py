@@ -633,15 +633,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def is_recording(self):
         return self._is_recording > 0
 
-    @inject("RunUntilTimeSteps")
+    @inject("RunTime")
     @inject_items({
         "first_machine_time_step_map": "FirstMachineTimeStepMap"
     })
     def update_buffer(
-            self, run_until_timesteps, first_machine_time_step_map):
+            self, run_time, first_machine_time_step_map):
         if self._virtual_key is not None:
             self._fill_send_buffer(
-                first_machine_time_step_map[self], run_until_timesteps)
+                first_machine_time_step_map[self], run_time)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):

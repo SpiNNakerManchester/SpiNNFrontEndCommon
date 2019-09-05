@@ -1390,6 +1390,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # runtime full runtime from pynn
         inputs["RunTime"] = run_time
+        inputs["FirstMachineTimeStepMap"] = self._current_run_timesteps_map
 
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
