@@ -558,20 +558,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
-        "first_machine_time_step": "FirstMachineTimeStep",
         "data_n_time_steps": "DataNTimeSteps",
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "local_time_step_map", "time_scale_factor", "machine_graph",
-            "routing_info", "first_machine_time_step",
-            "data_n_time_steps"
+            "routing_info", "data_n_time_steps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             local_time_step_map, time_scale_factor, machine_graph,
-            routing_info, first_machine_time_step, data_n_time_steps):
+            routing_info, data_n_time_steps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
 
@@ -637,13 +635,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @inject("RunUntilTimeSteps")
     @inject_items({
-        "first_machine_time_step": "FirstMachineTimeStep"
+        "first_machine_time_step_map": "FirstMachineTimeStepMap"
     })
     def update_buffer(
-            self, run_until_timesteps, first_machine_time_step):
+            self, run_until_timesteps, first_machine_time_step_map):
         if self._virtual_key is not None:
             self._fill_send_buffer(
-                first_machine_time_step, run_until_timesteps)
+                first_machine_time_step_map[self], run_until_timesteps)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
