@@ -283,7 +283,7 @@ static inline bool recording_write_memory(
                 return false;
             }
 
-            log_debug("Copying first %d bytes to final space of %u", final_space);
+            log_debug("Copying first %d bytes to final space of %u", length, final_space);
 
             recording_write(channel, data, write_pointer, final_space,
                     buffer_region, NULL);
