@@ -101,7 +101,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Execute the spec
         targets = ExecutableTargets()
         targets.place_binary("text.aplx", Placement(None, 0, 0, 0),
-                              ExecutableType.USES_SIMULATION_INTERFACE)
+                             ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, False, targets,
             report_folder=tempdir)
