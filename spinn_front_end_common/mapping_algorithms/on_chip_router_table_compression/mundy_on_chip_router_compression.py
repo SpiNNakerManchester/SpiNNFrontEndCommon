@@ -195,12 +195,10 @@ class MundyOnChipRouterCompression(object):
             the executable targets that represent all cores/chips which have\
             active routing tables
         """
-
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in routing_tables:
-
-            # get the first none monitor core
+            # get the first non-monitor core
             chip = machine.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
 
@@ -210,8 +208,8 @@ class MundyOnChipRouterCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(_BINARY_PATH, core_subsets,
-                                       ExecutableType.RUNNING)
+        executable_targets.add_subsets(
+            _BINARY_PATH, core_subsets, ExecutableType.RUNNING)
 
         txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets

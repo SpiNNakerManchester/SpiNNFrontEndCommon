@@ -34,11 +34,8 @@ class ExecutableTargets(SuperExecTargets):
         if executable_type is not None:
             self._binary_type_map[executable_type].add(binary)
 
-    @overrides(SuperExecTargets.add_processor, extend_defaults=True,
-               additional_arguments={"executable_type"})
-    def add_processor(self, binary, chip_x, chip_y, chip_p,
-                      executable_type=None):
-        SuperExecTargets.add_processor(self, binary, chip_x, chip_y, chip_p)
+    def place_binary(self, binary, placement, executable_type=None):
+        self.add_processor(binary, placement.x, placement.y, placement.p)
         if executable_type is not None:
             self._binary_type_map[executable_type].add(binary)
 

@@ -30,8 +30,7 @@ class GraphBinaryGatherer(object):
         self._exe_finder = None
         self._exe_targets = None
 
-    def __call__(
-            self, placements, graph, executable_finder):
+    def __call__(self, placements, graph, executable_finder):
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
@@ -46,7 +45,7 @@ class GraphBinaryGatherer(object):
         # If we've got junk input, ignore it
         if vertex is None:
             return
-        # if the vertex cannot generate a DSG, ignore it
+        # if the vertex cannot be executed, ignore it
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             return
 
@@ -59,5 +58,4 @@ class GraphBinaryGatherer(object):
         if binary_path is None:
             raise ExecutableNotFoundException(binary_name)
 
-        self._exe_targets.add_processor(
-            binary_path, placement.x, placement.y, placement.p, exec_type)
+        self._exe_targets.place_binary(binary_path, placement, exec_type)
