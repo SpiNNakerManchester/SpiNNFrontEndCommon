@@ -21,11 +21,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 N_KEYS_PER_PARTITION_ID = 4
 KEY_START_VALUE = 4
-FAKE_ETHERNET_CHIP_X = 0
-FAKE_ETHERNET_CHIP_Y = 0
 ROUTING_MASK = 0xFFFFFFFC
-MAX_CHIP_X = Machine.MAX_CHIP_X_ID_ON_ONE_BOARD
-MAX_CHIP_Y = Machine.MAX_CHIP_Y_ID_ON_ONE_BOARD
 
 
 class DataInMulticastRoutingGenerator(object):
@@ -47,13 +43,20 @@ class DataInMulticastRoutingGenerator(object):
             machine.ethernet_connected_chips,
             "Generating routing tables for data in system processes")
 
-        for ethernet_chip in machine.ethernet_connected_chips:
+        for ethernet_chip in progress.over(machine.ethernet_connected_chips):
             tree = self._generate_routing_tree(ethernet_chip)
             self._add_routing_entries(ethernet_chip, tree)
 
-        return  self._routing_tables, self._key_to_destination_map
+        return self._routing_tables, self._key_to_destination_map
 
     def _generate_routing_tree(self, ethernet_chip):
+        """
+        Generates a map for each chip to over which link it gets its data.
+
+        :param ethernet_chip:
+        :return: Map of chip.x, chip.y tp (source.x, source.y, source.link)
+        :rtype: dict(int.int) = (int, int, int)
+        """
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
         tree = dict()
@@ -76,11 +79,10 @@ class DataInMulticastRoutingGenerator(object):
                     if destination in to_reach:
                         # check it actually exits
                         if self._machine.is_link_at(x, y, link_id):
+                            # Add to tree and record chip reachable
                             tree[destination] = (x, y, link_id)
                             to_reach.remove(destination)
                             found.add(destination)
-                            # build entry and add to table and add to tables
-                            key = (x, y)
             if len(found) == 0:
                 raise PacmanRoutingException(
                     "Unable to do data in routing on {}.".format(
@@ -88,6 +90,15 @@ class DataInMulticastRoutingGenerator(object):
         return tree
 
     def _add_routing_entry(self, x, y, key, processor_id=None, link_id=None):
+        """
+        Adds a routing entry on this chip. Creating the table if needed
+
+        :param x: chip.x
+        :param y: chip.y
+        :param key: The key to use
+        :param processor_id: placement.p of the monitor vertex if applicable
+        :param link_id: If of the link out if applicable
+        """
         table = self._routing_tables.get_routing_table_for_chip(x, y)
         if table is None:
             table = MulticastRoutingTable(x, y)
@@ -106,6 +117,18 @@ class DataInMulticastRoutingGenerator(object):
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(self, ethernet_chip, tree):
+        """
+        Adds the routing entires based on the tree.
+
+        For every chip with this ethernet:
+            - A key is generated (and saved) for this chip.
+            - A local route to the monitor core is added.
+            - The tree is walked adding a route on each source to get here
+
+        :param ethernet_chip:
+        :param tree:
+        :return:
+        """
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
         key = KEY_START_VALUE
@@ -119,5 +142,3 @@ class DataInMulticastRoutingGenerator(object):
                 x, y, link = tree[(x, y)]
                 self._add_routing_entry(x, y, key, link_id=link)
             key += N_KEYS_PER_PARTITION_ID
-
-
