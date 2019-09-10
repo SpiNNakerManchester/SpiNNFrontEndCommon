@@ -1531,10 +1531,6 @@
                 <param_type>NotificationInterface</param_type>
             </parameter>
             <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_types</param_name>
                 <param_type>ExecutableTypes</param_type>
             </parameter>
@@ -1573,7 +1569,6 @@
             <param_name>send_start_notification</param_name>
             <param_name>send_stop_notification</param_name>
             <param_name>notification_interface</param_name>
-            <param_name>executable_targets</param_name>
             <param_name>executable_types</param_name>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
