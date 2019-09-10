@@ -16,7 +16,7 @@
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
     MulticastRoutingTables, MulticastRoutingTable)
-from spinn_machine import Machine, MulticastRoutingEntry
+from spinn_machine import MulticastRoutingEntry
 from spinn_utilities.progress_bar import ProgressBar
 
 N_KEYS_PER_PARTITION_ID = 4
