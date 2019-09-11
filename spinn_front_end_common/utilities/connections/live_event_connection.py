@@ -49,6 +49,9 @@ _MAX_FULL_KEYS_PER_PACKET = 63
 # The maximum number of 16-bit keys that will fit in a packet
 _MAX_HALF_KEYS_PER_PACKET = 127
 
+# The maximum number of 32-bit keys with payloads that will fit in a packet
+_MAX_FULL_KEYS_PAYLOADS_PER_PACKET = 31
+
 _TWO_SKIP = struct.Struct("<2x")
 
 
@@ -467,8 +470,8 @@ class LiveEventConnection(DatabaseConnection):
         max_keys = _MAX_HALF_KEYS_PER_PACKET
         msg_type = EIEIOType.KEY_16_BIT
         if send_full_keys:
-            max_keys = _MAX_FULL_KEYS_PER_PACKET
             msg_type = EIEIOType.KEY_32_BIT
+            max_keys = _MAX_FULL_KEYS_PER_PACKET
 
         pos = 0
         x, y, p, ip_address = self.__send_address_details[label]
@@ -482,6 +485,47 @@ class LiveEventConnection(DatabaseConnection):
                 message.add_key(key)
                 pos += 1
                 events_in_packet += 1
+
+            self.__sender_connection.send_to(
+                self.__get_sdp_data(message, x, y, p),
+                (ip_address, SCP_SCAMP_PORT))
+
+    def send_event_with_payload(self, label, atom_id, payload):
+        """ Send an event with a payload from a single atom
+
+        :param label: \
+            The label of the vertex from which the event will originate
+        :type label: str
+        :param atom_id: The ID of the atom sending the event
+        :type atom_id: int
+        :param payload: The payload to send
+        :type payload: int
+        """
+        self.send_events_with_payloads(label, [(atom_id, payload)])
+
+    def send_events_with_payloads(self, label, atom_ids_and_payloads):
+        """ Send a number of events with payloads
+
+        :param label: \
+            The label of the vertex from which the events will originate
+        :type label: str
+        :param atom_ids_and_payloads:\
+            array-like of tuples of atom IDs sending events with their payloads
+        :type atom_ids_and_payloads: list((int, int))
+        """
+        msg_type = EIEIOType.KEY_PAYLOAD_32_BIT
+        max_keys = _MAX_FULL_KEYS_PAYLOADS_PER_PACKET
+        pos = 0
+        x, y, p, ip_address = self.__send_address_details[label]
+        while pos < len(atom_ids_and_payloads):
+            message = EIEIODataMessage.create(msg_type)
+            events = 0
+            while pos < len(atom_ids_and_payloads) and events < max_keys:
+                key, payload = atom_ids_and_payloads[pos]
+                key = self._atom_id_to_key[label][key]
+                message.add_key_and_payload(key, payload)
+                pos += 1
+                events += 1
 
             self.__sender_connection.send_to(
                 self.__get_sdp_data(message, x, y, p),
