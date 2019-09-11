@@ -72,7 +72,8 @@ class LocateExecutableStartType(object):
                         binary_to_start_type[binary_path] = (
                             placement_binary_start_type)
 
-            # only got apps with no binary, such as external devices. return no app
+            # only got apps with no binary, such as external devices.
+            # return no app
             if not binary_start_types:
                 return [ExecutableType.NO_APPLICATION], {}
 
