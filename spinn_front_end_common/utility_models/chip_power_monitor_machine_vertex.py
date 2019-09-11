@@ -31,7 +31,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -43,9 +43,9 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
-RECORDING_SIZE_PER_ENTRY = 18 * 4
+RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
-CONFIG_SIZE_IN_BYTES = 8
+CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
 @supports_injection

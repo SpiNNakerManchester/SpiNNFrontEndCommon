@@ -33,7 +33,8 @@ from spinn_front_end_common.utilities.utility_objs.\
         ClearQueueProcess, LoadApplicationMCRoutesProcess,
         LoadSystemMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES)
+    SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
+    BYTES_PER_WORD)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
@@ -48,11 +49,11 @@ _DSG_REGIONS = Enum(
            ('DATA_OUT_CONFIG', 1),
            ("DATA_IN_CONFIG", 2)])
 
-_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 4 * 4
-_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
+_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
+_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
-_CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 12
-_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 * 4) + 4
+_CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
+_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
 # SDRAM requirement for containing router table entries
@@ -60,7 +61,7 @@ _BIT_SHIFT_TO_MOVE_APP_ID = 24
 # 4 for a key, 4 for mask,
 # 4 for word alignment for 18 cores and 6 links
 # (24 bits, for word aligning)
-_SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * 4
+_SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * BYTES_PER_WORD
 
 _KEY_OFFSETS = Enum(
     value="EXTRA_MONITOR_KEY_OFFSETS_TO_COMMANDS",

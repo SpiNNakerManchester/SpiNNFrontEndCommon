@@ -32,7 +32,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 
 _ONE_SHORT = struct.Struct("<H")
 _TWO_BYTES = struct.Struct("<BB")
@@ -52,8 +52,8 @@ class LivePacketGatherMachineVertex(
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
     N_ADDITIONAL_PROVENANCE_ITEMS = 2
-    _CONFIG_SIZE = 48
-    _PROVENANCE_REGION_SIZE = 8
+    _CONFIG_SIZE = 12 * BYTES_PER_WORD
+    _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
     def __init__(
             self, label, use_prefix=False, key_prefix=None, prefix_type=None,

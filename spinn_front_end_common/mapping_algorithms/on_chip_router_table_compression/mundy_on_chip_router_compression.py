@@ -27,6 +27,7 @@ from spinn_front_end_common.mapping_algorithms import (
     on_chip_router_table_compression)
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
@@ -42,8 +43,8 @@ class MundyOnChipRouterCompression(object):
     """ Compressor that uses a on chip router compressor
     """
 
-    SIZE_OF_A_SDRAM_ENTRY = 4 * 4
-    SURPLUS_DATA_ENTRIES = 3 * 4
+    SIZE_OF_A_SDRAM_ENTRY = 4 * BYTES_PER_WORD
+    SURPLUS_DATA_ENTRIES = 3 * BYTES_PER_WORD
     TIME_EXPECTED_TO_RUN = 1000
     OVER_RUN_THRESHOLD_BEFORE_ERROR = 1000
 
@@ -129,7 +130,8 @@ class MundyOnChipRouterCompression(object):
     @staticmethod
     def __read_user_0(txrx, x, y, p):
         addr = txrx.get_user_0_register_address_from_core(p)
-        return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
+        return struct.unpack("<I", txrx.read_memory(
+            x, y, addr, BYTES_PER_WORD))[0]
 
     def _check_for_success(
             self, executable_targets, txrx, provenance_file_path,

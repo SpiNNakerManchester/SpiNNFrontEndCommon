@@ -14,7 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import struct
-from spinn_front_end_common.utilities.constants import BUFFERING_OPERATIONS
+from spinn_front_end_common.utilities.constants import (
+    BUFFERING_OPERATIONS, BYTES_PER_WORD)
 
 _CHANNEL_BUFFER_PATTERN = struct.Struct("<IIIIIBBBx")
 
@@ -57,7 +58,7 @@ class ChannelBufferState(object):
     # 4 for _start_address, 4 for _current_write, 4 for current_dma_write,
     # 4 for _current_read, 4 for _end_address, 1 for _region_id,
     # 1 for _missing_info, 1 for _last_buffer_operation,
-    ChannelBufferStateSize = 24
+    ChannelBufferStateSize = 6 * BYTES_PER_WORD
 
     def __init__(
             self, start_address, current_write, current_dma_write,
