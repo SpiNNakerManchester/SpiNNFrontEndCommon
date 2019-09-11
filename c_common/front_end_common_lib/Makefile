@@ -59,7 +59,7 @@ $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(SPINN_DIRS)/lib/logs.dict
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(SPINN_DIRS)/lib/logs.dict True
 
 $(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD)
 	$(CC) $(CFLAGS) -o $@ $<
