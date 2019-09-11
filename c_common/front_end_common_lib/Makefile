@@ -46,9 +46,6 @@ APP = libspinn_frontend_common
 LIBS = $(APP).a
 INSTALL_LIBS = $(LIBS:%=$(SPINN_LIB_DIR)/%)
 
-# Log Dictionary file
-LOG_DICT_FILE = $(SPINN_LIB_DIR)/$(APP).dict
-
 # Ensure $(INSTALL) is defined, even on MinGW
 INSTALL ?= install
 
@@ -62,12 +59,9 @@ $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(SPINN_DIRS)/lib/logs.dict
 
-$(LOG_DICT_FILE): $(RAW_DIR)
-	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE)
-
-$(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(LOG_DICT_FILE)
+$(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD)
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(SPINN_COMMON_BUILD):
@@ -98,7 +92,7 @@ clean:
 install-clean:
 	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(SPINN_LIB_DIR)/*.dict $(SPINN_LIB_DIR)/*.ranges
 
-.PRECIOUS: $(MODIFIED_DIR)%.c $(LOG_DICT_FILE) $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
+.PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
 .PHONY: clean install install-libraries install-headers install-makefiles install-clean
 

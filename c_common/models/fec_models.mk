@@ -19,4 +19,4 @@ APP_OUTPUT_DIR := $(abspath $(CURRENT_DIR)../../spinn_front_end_common/common_mo
 
 include $(CURRENT_DIR)../front_end_common_lib/local.mk
 
-.PRECIOUS: $(MODIFIED_DIR)%.c $(LOG_DICT_FILE)
+.PRECIOUS: $(MODIFIED_DIR)%.c
