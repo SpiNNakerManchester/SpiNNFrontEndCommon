@@ -31,17 +31,17 @@ WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
-# The log dict is the same every time so can be static
-if 'SPINN_DIRS' in os.environ:
-    _log_dict_path = os.path.join(os.environ['SPINN_DIRS'], "lib")
-else:
-    _log_dict_path = None
-
 
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
     """
+
+    # The log dict is the same every time so can be static
+    if 'SPINN_DIRS' in os.environ:
+        _log_dict_path = os.path.join(os.environ['SPINN_DIRS'], "lib")
+    else:
+        _log_dict_path = None
 
     __slots__ = [
         # Template for the file names to be used where writing the results
@@ -55,11 +55,11 @@ class ChipIOBufExtractor(object):
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
-        if _log_dict_path is None:
+        if self._log_dict_path is None:
             logger.warning("No dict file specified")
             self._replacer = NoReplace()
         else:
-            self._replacer = Replacer(_log_dict_path)
+            self._replacer = Replacer(self._log_dict_path)
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
@@ -189,16 +189,17 @@ class ChipIOBufExtractor(object):
         :raises: PacmanConfigurationException if neither the default nor this
             dict file found.
         """
-        if (_log_dict_path is not None
-                and os.path.exists(_log_dict_path)):
+        if (ChipIOBufExtractor._log_dict_path is not None
+                and os.path.exists(ChipIOBufExtractor._log_dict_path)):
             return
-        if os.path.exists(alternative):
+        if os.path.isfile(alternative):
             ChipIOBufExtractor._log_dict_path = alternative
             return
         raise PacmanConfigurationException(
-            "No log dict file found. "
+            "No log dict file found at {}. "
             "Please ensure your Environment variables are set correctly "
-            "and do a full system make")
+            "and do a full system make".format(alternative))
+
 
 class NoReplace(object):
     def replace(self, line):
