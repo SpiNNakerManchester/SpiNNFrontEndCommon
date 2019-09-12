@@ -23,6 +23,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
+from pacman.exceptions import PacmanConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -30,18 +31,35 @@ WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
+# The log dict is the same every time so can be static
+if 'SPINN_DIRS' in os.environ:
+    _log_dict_path = os.path.join(os.environ['SPINN_DIRS'], "lib")
+else:
+    _log_dict_path = None
+
 
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
     """
 
-    __slots__ = ["_filename_template", "_recovery_mode"]
+    __slots__ = [
+        # Template for the file names to be used where writing the results
+        "_filename_template",
+        # Flag to say this is after an an exception so don't throw new ones
+        "_recovery_mode",
+        # Class to replace the short messages to long ones
+        "_replacer"]
 
     def __init__(self, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
+        if _log_dict_path is None:
+            logger.warning("No dict file specified")
+            self._replacer = NoReplace()
+        else:
+            self._replacer = Replacer(_log_dict_path)
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
@@ -111,7 +129,6 @@ class ChipIOBufExtractor(object):
     def _run_for_core_subsets(
             self, core_subsets, binary, transceiver, provenance_file_path,
             error_entries, warn_entries):
-        replacer = Replacer(binary)
 
         # extract iobuf
         if self._recovery_mode:
@@ -131,7 +148,7 @@ class ChipIOBufExtractor(object):
             # write iobuf to file and call out errors and warnings.
             with open(file_name, mode) as f:
                 for line in iobuf.iobuf.split("\n"):
-                    replaced = replacer.replace(line)
+                    replaced = self._replacer.replace(line)
                     f.write(replaced)
                     f.write("\n")
                     self.__add_value_if_match(
@@ -161,3 +178,28 @@ class ChipIOBufExtractor(object):
             entries.append("{}, {}, {}: {} ({})".format(
                 place.x, place.y, place.p, match.group(ENTRY_TEXT),
                 match.group(ENTRY_FILE)))
+
+    @staticmethod
+    def add_alternative_log_dict_path(alternative):
+        """
+        Sets the new log dict path ONLY if the default one is not found.
+
+        :param alternative: Full path to the alternative log dict
+
+        :raises: PacmanConfigurationException if neither the default nor this
+            dict file found.
+        """
+        if (_log_dict_path is not None
+                and os.path.exists(_log_dict_path)):
+            return
+        if os.path.exists(alternative):
+            ChipIOBufExtractor._log_dict_path = alternative
+            return
+        raise PacmanConfigurationException(
+            "No log dict file found. "
+            "Please ensure your Environment variables are set correctly "
+            "and do a full system make")
+
+class NoReplace(object):
+    def replace(self, line):
+        return line
