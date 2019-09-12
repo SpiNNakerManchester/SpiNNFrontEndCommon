@@ -470,8 +470,8 @@ class LiveEventConnection(DatabaseConnection):
         max_keys = _MAX_HALF_KEYS_PER_PACKET
         msg_type = EIEIOType.KEY_16_BIT
         if send_full_keys:
-            msg_type = EIEIOType.KEY_32_BIT
             max_keys = _MAX_FULL_KEYS_PER_PACKET
+            msg_type = EIEIOType.KEY_32_BIT
 
         pos = 0
         x, y, p, ip_address = self.__send_address_details[label]
