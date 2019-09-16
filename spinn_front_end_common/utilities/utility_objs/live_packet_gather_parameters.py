@@ -32,7 +32,7 @@ class LivePacketGatherParameters(object):
             key_prefix, prefix_type, message_type, right_shift,
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
             payload_right_shift, number_of_packets_sent_per_time_step,
-            partition_id):
+            partition_id, label):
         # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
         self._hostname = hostname
@@ -51,6 +51,7 @@ class LivePacketGatherParameters(object):
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
         self._partition_id = partition_id
+        self._label = label
 
     @property
     def port(self):
@@ -116,6 +117,10 @@ class LivePacketGatherParameters(object):
     def partition_id(self):
         return self._partition_id
 
+    @property
+    def label(self):
+        return self._label
+
     def __eq__(self, other):
         return (self._port == other.port and
                 self._hostname == other.hostname and
@@ -134,7 +139,8 @@ class LivePacketGatherParameters(object):
                 self._payload_right_shift == other.payload_right_shift and
                 self._number_of_packets_sent_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
-                self._partition_id == other.partition_id)
+                self._partition_id == other.partition_id and
+                self._label == other.label)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -146,5 +152,6 @@ class LivePacketGatherParameters(object):
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
-            self._number_of_packets_sent_per_time_step, self._partition_id)
+            self._number_of_packets_sent_per_time_step, self._partition_id,
+            self._label)
         return hash(data)
