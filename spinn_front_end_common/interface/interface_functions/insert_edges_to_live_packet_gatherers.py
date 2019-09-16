@@ -68,29 +68,29 @@ class InsertEdgesToLivePacketGatherers(object):
         if app_graph is not None:
             # flag for ensuring we don't add the edge to the app
             # graph many times
-            app_graph_edge = None
+            app_graph_edges = None
 
             # iterate through the associated machine vertices
             machine_vertices = mapper.get_machine_vertices(vertex)
             for machine_vertex in machine_vertices:
                 # add a edge between the closest LPG and the vertex
-                machine_edge, machine_lpg = self._process_m_vertex(
+                machine_edges, machine_lpg = self._process_m_vertex(
                     machine_vertex, m_lpgs, machine, placements,
-                    m_graph, lpg_params.partition_id)
+                    m_graph, lpg_params.partition_ids)
 
                 # update the app graph and graph mapper
-                app_graph_edge = self._update_app_graph_and_mapper(
+                app_graph_edges = self._update_app_graph_and_mapper(
                     app_graph, mapper, machine_lpg, vertex,
-                    lpg_params.partition_id, machine_edge, app_graph_edge)
+                    lpg_params.partition_ids, machine_edges, app_graph_edges)
         else:
             # add a edge between the closest LPG and the vertex
             self._process_m_vertex(
                 vertex, m_lpgs, machine, placements,
-                m_graph, lpg_params.partition_id)
+                m_graph, lpg_params.partition_ids)
 
     def _process_m_vertex(
             self, machine_vertex, m_lpgs, machine,
-            placements, machine_graph, partition_id):
+            placements, machine_graph, partition_ids):
         """ Locates and places an edge for a machine vertex.
 
         :param machine_vertex: the machine vertex that needs an edge to a LPG
@@ -110,16 +110,19 @@ class InsertEdgesToLivePacketGatherers(object):
             machine_vertex, m_lpgs, machine, placements)
 
         # add edge for the machine graph
-        machine_edge = MachineEdge(machine_vertex, machine_lpg)
-        machine_graph.add_edge(machine_edge, partition_id)
+        machine_edges = dict()
+        for partition_id in partition_ids:
+            machine_edge = MachineEdge(machine_vertex, machine_lpg)
+            machine_graph.add_edge(machine_edge, partition_id)
+            machine_edges[partition_id] = machine_edge
 
         # return the machine edge
-        return machine_edge, machine_lpg
+        return machine_edges, machine_lpg
 
     @staticmethod
     def _update_app_graph_and_mapper(
             application_graph, graph_mapper, machine_lpg, vertex,
-            partition_id, machine_edge, app_graph_edge):
+            partition_ids, machine_edges, app_graph_edges):
         """ Handles changes to the application graph and graph mapper.
 
         :param application_graph: the application graph
@@ -136,15 +139,20 @@ class InsertEdgesToLivePacketGatherers(object):
         lpg_app_vertex = graph_mapper.get_application_vertex(machine_lpg)
 
         # if not built the app edge, add the app edge now
-        if app_graph_edge is None:
-            app_graph_edge = ApplicationEdge(vertex, lpg_app_vertex)
-            application_graph.add_edge(app_graph_edge, partition_id)
+        if app_graph_edges is None:
+            app_graph_edges = dict()
+            for partition_id in partition_ids:
+                app_graph_edge = ApplicationEdge(vertex, lpg_app_vertex)
+                application_graph.add_edge(app_graph_edge, partition_id)
+                app_graph_edges[partition_id] = app_graph_edge
 
         # add mapping between the app edge and the machine edge
-        graph_mapper.add_edge_mapping(machine_edge, app_graph_edge)
+        for partition_id in partition_ids:
+            graph_mapper.add_edge_mapping(
+                machine_edges[partition_id], app_graph_edges[partition_id])
 
         # return the app edge for reuse as needed
-        return app_graph_edge
+        return app_graph_edges
 
     @staticmethod
     def _find_closest_live_packet_gatherer(
