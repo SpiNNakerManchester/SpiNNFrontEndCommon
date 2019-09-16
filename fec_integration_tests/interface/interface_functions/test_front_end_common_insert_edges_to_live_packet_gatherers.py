@@ -59,12 +59,13 @@ class TestInsertLPGEdges(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
@@ -77,6 +78,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             extended.update({'label': 'test'})
+            del extended['board_address']
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
             placements.add_placement(
@@ -147,12 +149,13 @@ class TestInsertLPGEdges(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
@@ -167,6 +170,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             extended.update({'label': "test"})
+            del extended['board_address']
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
             placements.add_placement(
@@ -178,11 +182,12 @@ class TestInsertLPGEdges(unittest.TestCase):
             index += 1
             extended = dict(default_params)
             extended['board_address'] = chip.ip_address
-            extended.update({'partition_id': "EVENTS"})
+            extended.update({'partition_ids': ["EVENTS"]})
             default_params_holder2 = LivePacketGatherParameters(**extended)
 
             extended = dict(default_params)
             extended.update({'label': "test"})
+            del extended['board_address']
             vertex = LivePacketGatherMachineVertex(**extended)
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2
             placements.add_placement(Placement(
@@ -265,12 +270,13 @@ class TestInsertLPGEdges(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
@@ -280,7 +286,9 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         # add LPG's (1 for each Ethernet connected chip
         for chip in machine.ethernet_connected_chips:
-            vertex = LivePacketGather(**default_params)
+            new_params = dict(default_params)
+            del new_params['board_address']
+            vertex = LivePacketGather(**new_params)
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(

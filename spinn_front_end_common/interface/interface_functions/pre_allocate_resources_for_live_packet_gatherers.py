@@ -76,13 +76,15 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         core_reqs = 0
 
         for lpg_params in lpg_parameters:
-            sdram_reqs += lpg_sdram
-            core_reqs += 1
-            iptags.append(SpecificBoardTagResource(
-                board=chip.ip_address,
-                ip_address=lpg_params.hostname, port=lpg_params.port,
-                strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
-                traffic_identifier=LPG.TRAFFIC_IDENTIFIER))
+            if (lpg_params.board_address is None or
+                    lpg_params.board_address == chip.ip_address):
+                sdram_reqs += lpg_sdram
+                core_reqs += 1
+                iptags.append(SpecificBoardTagResource(
+                    board=chip.ip_address,
+                    ip_address=lpg_params.hostname, port=lpg_params.port,
+                    strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
+                    traffic_identifier=LPG.TRAFFIC_IDENTIFIER))
 
         if sdram_reqs:
             sdrams.append(SpecificChipSDRAMResource(

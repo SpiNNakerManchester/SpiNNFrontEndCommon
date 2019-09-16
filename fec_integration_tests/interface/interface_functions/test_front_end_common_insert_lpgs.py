@@ -50,12 +50,13 @@ class TestInsertLPGs(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
@@ -104,12 +105,13 @@ class TestInsertLPGs(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
@@ -164,12 +166,13 @@ class TestInsertLPGs(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
@@ -218,12 +221,13 @@ class TestInsertLPGs(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
         extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
+        extended.update({'partition_ids': ["EVENTS"]})
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 

@@ -54,9 +54,11 @@ class InsertLivePacketGatherersToGraphs(object):
         # for every Ethernet connected chip, add the gatherers required
         for chip in progress.over(machine.ethernet_connected_chips):
             for params in live_packet_gatherer_parameters:
-                lpg_params_to_vertices[params][chip.x, chip.y] = \
-                    self._add_lpg_vertex(application_graph, graph_mapper,
-                                         machine_graph, chip, params)
+                if (params.board_address is None or
+                        params.board_address == chip.ip_address):
+                    lpg_params_to_vertices[params][chip.x, chip.y] = \
+                        self._add_lpg_vertex(application_graph, graph_mapper,
+                                             machine_graph, chip, params)
 
         return lpg_params_to_vertices
 

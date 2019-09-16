@@ -20,7 +20,7 @@ class LivePacketGatherParameters(object):
     """
 
     __slots__ = [
-        '_port', '_hostname', "_tag", "_strip_sdp",
+        '_port', '_hostname', "_tag", "_board_address", "_strip_sdp",
         "_use_prefix", "_key_prefix", "_prefix_type", "_message_type",
         "_right_shift", "_payload_as_time_stamps", "_use_payload_prefix",
         "_payload_prefix",  "_payload_right_shift",
@@ -28,7 +28,7 @@ class LivePacketGatherParameters(object):
     ]
 
     def __init__(
-            self, port, hostname, tag, strip_sdp, use_prefix,
+            self, port, hostname, tag, board_address, strip_sdp, use_prefix,
             key_prefix, prefix_type, message_type, right_shift,
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
             payload_right_shift, number_of_packets_sent_per_time_step,
@@ -37,6 +37,7 @@ class LivePacketGatherParameters(object):
         self._port = port
         self._hostname = hostname
         self._tag = tag
+        self._board_address = board_address
         self._strip_sdp = strip_sdp
         self._use_prefix = use_prefix
         self._key_prefix = key_prefix
@@ -63,6 +64,10 @@ class LivePacketGatherParameters(object):
     @property
     def tag(self):
         return self._tag
+
+    @property
+    def board_address(self):
+        return self._board_address
 
     @property
     def strip_sdp(self):
@@ -120,6 +125,7 @@ class LivePacketGatherParameters(object):
         return (self._port == other.port and
                 self._hostname == other.hostname and
                 self._tag == other.tag and
+                self._board_address == other.board_address and
                 self._strip_sdp == other.strip_sdp and
                 self._use_prefix == other.use_prefix and
                 self._key_prefix == other.key_prefix and
@@ -140,7 +146,7 @@ class LivePacketGatherParameters(object):
 
     def __hash__(self):
         data = (
-            self._port, self._tag, self._strip_sdp,
+            self._port, self._tag, self._board_address, self._strip_sdp,
             self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
