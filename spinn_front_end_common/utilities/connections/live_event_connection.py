@@ -169,7 +169,8 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__init_callbacks[label].append(init_callback)
 
-    def add_receive_callback(self, label, live_event_callback):
+    def add_receive_callback(self, label, live_event_callback,
+                             translate_key=True):
         """ Add a callback for the reception of live events from a vertex
 
         :param label: The label of the vertex to be notified about. Must be\
@@ -180,11 +181,14 @@ class LiveEventConnection(DatabaseConnection):
             the simulation timestep when the event occurred, and an\
             array-like of atom IDs.
         :type live_event_callback: function(str, int, list(int)) -> None
+        :param translate_key: True if the key is to be converted to an atom\
+            ID, False if the key should stay a key
         """
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}".format(
             live_event_callback, label))
-        self.__live_event_callbacks[label_id].append(live_event_callback)
+        self.__live_event_callbacks[label_id].append(
+            (live_event_callback, translate_key))
 
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
@@ -399,6 +403,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def __handle_time_packet(self, packet):
         key_times_labels = OrderedDict()
+        atoms_times_labels = OrderedDict()
         while packet.is_next_element:
             element = packet.next_element
             time = element.payload
@@ -407,17 +412,24 @@ class LiveEventConnection(DatabaseConnection):
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 if time not in key_times_labels:
                     key_times_labels[time] = dict()
+                    atoms_times_labels[time] = dict()
                 if label_id not in key_times_labels[time]:
                     key_times_labels[time][label_id] = list()
-                key_times_labels[time][label_id].append(atom_id)
+                    atoms_times_labels[time][label_id] = list()
+                key_times_labels[time][label_id].append(key)
+                atoms_times_labels[time][label_id].append(atom_id)
             else:
                 self.__handle_unknown_key(key)
 
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
                 label = self.__receive_labels[label_id]
-                for callback in self.__live_event_callbacks[label_id]:
-                    callback(label, time, key_times_labels[time][label_id])
+                for callback, use_key in self.__live_event_callbacks[label_id]:
+                    if use_key:
+                        callback(label, time, key_times_labels[time][label_id])
+                    else:
+                        callback(label, time,
+                                 atoms_times_labels[time][label_id])
 
     def __handle_no_time_packet(self, packet):
         while packet.is_next_element:
@@ -425,12 +437,19 @@ class LiveEventConnection(DatabaseConnection):
             key = element.key
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
-                for callback in self.__live_event_callbacks[label_id]:
+                for callback, use_key in self.__live_event_callbacks[label_id]:
                     if isinstance(element, KeyPayloadDataElement):
-                        callback(self.__receive_labels[label_id], atom_id,
-                                 element.payload)
+                        if use_key:
+                            callback(self.__receive_labels[label_id], key,
+                                     element.payload)
+                        else:
+                            callback(self.__receive_labels[label_id], atom_id,
+                                     element.payload)
                     else:
-                        callback(self.__receive_labels[label_id], atom_id)
+                        if use_key:
+                            callback(self.__receive_labels[label_id], key)
+                        else:
+                            callback(self.__receive_labels[label_id], atom_id)
             else:
                 self.__handle_unknown_key(key)
 
