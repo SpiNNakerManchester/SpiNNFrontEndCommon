@@ -64,9 +64,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_ids': ["EVENTS"]})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = dict()
@@ -108,7 +106,9 @@ class TestInsertLPGEdges(unittest.TestCase):
         for x, y, eth_x, eth_y in positions:
             vertex = SimpleMachineVertex(resources=ResourceContainer())
             graph.add_vertex(vertex)
-            live_packet_gatherers[default_params_holder].append(vertex)
+            partition_ids = ["EVENTS"]
+            live_packet_gatherers[default_params_holder].append(
+                (vertex, partition_ids))
             verts_expected[eth_x, eth_y].append(vertex)
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
@@ -154,9 +154,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_ids': ["EVENTS"]})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = defaultdict(dict)
@@ -182,7 +180,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             index += 1
             extended = dict(default_params)
             extended['board_address'] = chip.ip_address
-            extended.update({'partition_ids': ["EVENTS"]})
             default_params_holder2 = LivePacketGatherParameters(**extended)
 
             extended = dict(default_params)
@@ -222,7 +219,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for x, y, eth_x, eth_y, eth_p, params in positions:
             vertex = SimpleMachineVertex(resources=ResourceContainer())
             graph.add_vertex(vertex)
-            live_packet_gatherers[params].append(vertex)
+            live_packet_gatherers[params].append((vertex, ["EVENTS"]))
             verts_expected[eth_x, eth_y, eth_p].append(vertex)
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
@@ -275,9 +272,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_ids': ["EVENTS"]})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = defaultdict(dict)
@@ -334,7 +329,9 @@ class TestInsertLPGEdges(unittest.TestCase):
             graph.add_vertex(mac_vertex)
             app_graph_mapper.add_vertex_mapping(
                 mac_vertex, vertex_slice, vertex)
-            live_packet_gatherers[default_params_holder].append(vertex)
+            partition_ids = ["EVENTS"]
+            live_packet_gatherers[default_params_holder].append(
+                (vertex, partition_ids))
             verts_expected[eth_x, eth_y].append(mac_vertex)
             placements.add_placement(
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
