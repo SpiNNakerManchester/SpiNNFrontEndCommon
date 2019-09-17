@@ -24,15 +24,14 @@ class LivePacketGatherParameters(object):
         "_use_prefix", "_key_prefix", "_prefix_type", "_message_type",
         "_right_shift", "_payload_as_time_stamps", "_use_payload_prefix",
         "_payload_prefix",  "_payload_right_shift",
-        "_number_of_packets_sent_per_time_step", "_label", "_partition_ids"
+        "_number_of_packets_sent_per_time_step", "_label"
     ]
 
     def __init__(
             self, port, hostname, tag, board_address, strip_sdp, use_prefix,
             key_prefix, prefix_type, message_type, right_shift,
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
-            payload_right_shift, number_of_packets_sent_per_time_step,
-            partition_ids, label):
+            payload_right_shift, number_of_packets_sent_per_time_step, label):
         # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
         self._hostname = hostname
@@ -50,7 +49,6 @@ class LivePacketGatherParameters(object):
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
-        self._partition_ids = partition_ids
         self._label = label
 
     @property
@@ -112,10 +110,6 @@ class LivePacketGatherParameters(object):
     @property
     def number_of_packets_sent_per_time_step(self):
         return self._number_of_packets_sent_per_time_step
-
-    @property
-    def partition_ids(self):
-        return self._partition_ids
 
     @property
     def label(self):

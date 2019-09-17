@@ -50,15 +50,15 @@ class InsertEdgesToLivePacketGatherers(object):
 
         for lpg_params in progress.over(live_packet_gatherer_parameters):
             # locate vertices needed to be connected to a LPG with these params
-            for vertex in live_packet_gatherer_parameters[lpg_params]:
+            for vertex, p_ids in live_packet_gatherer_parameters[lpg_params]:
                 self._connect_lpg_vertex(
                     application_graph, graph_mapper, machine,
                     placements, machine_graph, vertex,
-                    live_packet_gatherers_to_vertex_mapping, lpg_params)
+                    live_packet_gatherers_to_vertex_mapping, lpg_params, p_ids)
 
     def _connect_lpg_vertex(
             self, app_graph, mapper, machine, placements, m_graph, vertex,
-            lpg_to_vertex, lpg_params):
+            lpg_to_vertex, lpg_params, partition_ids):
         # pylint: disable=too-many-arguments
 
         # Find all Live Gatherer machine vertices
@@ -76,17 +76,17 @@ class InsertEdgesToLivePacketGatherers(object):
                 # add a edge between the closest LPG and the vertex
                 machine_edges, machine_lpg = self._process_m_vertex(
                     machine_vertex, m_lpgs, machine, placements,
-                    m_graph, lpg_params.partition_ids)
+                    m_graph, partition_ids)
 
                 # update the app graph and graph mapper
                 app_graph_edges = self._update_app_graph_and_mapper(
                     app_graph, mapper, machine_lpg, vertex,
-                    lpg_params.partition_ids, machine_edges, app_graph_edges)
+                    partition_ids, machine_edges, app_graph_edges)
         else:
             # add a edge between the closest LPG and the vertex
             self._process_m_vertex(
                 vertex, m_lpgs, machine, placements,
-                m_graph, lpg_params.partition_ids)
+                m_graph, partition_ids)
 
     def _process_m_vertex(
             self, machine_vertex, m_lpgs, machine,
