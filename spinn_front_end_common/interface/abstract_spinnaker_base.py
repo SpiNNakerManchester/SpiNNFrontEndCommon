@@ -466,7 +466,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
-        self._current_run_timesteps_map = defaultdict(int)
+        self._current_run_timesteps_map = None
         self._default_current_run_time = 0
         self._no_sync_changes = 0
         self._max_run_time_steps = None
@@ -1660,7 +1660,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
 
-        inputs["FirstMachineTimeStepMap"] = self._current_run_timesteps_map
         inputs["DataNTimeSteps"] = self._max_run_time_steps
 
         # Run the data generation algorithms
@@ -1882,7 +1881,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTime"] = run_time
-        inputs["FirstMachineTimeStepMap"] = self._current_run_timesteps_map
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 

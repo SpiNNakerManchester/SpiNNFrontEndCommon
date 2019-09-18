@@ -34,6 +34,10 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def send_buffers(self):
         pass
 
+    @abstractmethod
+    def update_buffer(self, run_time, first_machine_time_step_map):
+        pass
+
     @send_buffers.setter
     @abstractmethod
     def send_buffers(self, value):

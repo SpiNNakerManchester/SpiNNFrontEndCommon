@@ -329,7 +329,7 @@ class BufferManager(object):
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
 
-    def load_initial_buffers(self):
+    def load_initial_buffers(self, run_time, first_machine_time_step_map):
         """ Load the initial buffers for the senders using memory writes.
         """
         total_data = 0
@@ -340,6 +340,7 @@ class BufferManager(object):
         progress = ProgressBar(total_data, "Loading buffers")
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
+                vertex.update_buffer(run_time, first_machine_time_step_map)
                 self._send_initial_messages(vertex, region, progress)
         progress.end()
 

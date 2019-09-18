@@ -56,7 +56,11 @@ class ChipRuntimeUpdater(object):
                     machine_time_step)
 
                 # where we should be at now
-                this_core_current_point = current_timestep_map[vertex]
+                if vertex in current_timestep_map:
+                    (this_core_current_point, _) = (
+                        current_timestep_map[vertex])
+                else:
+                    this_core_current_point = 0
 
                 # the next point to stop at
                 next_point = int(
@@ -66,7 +70,9 @@ class ChipRuntimeUpdater(object):
                     core_subset.x, core_subset.y, processor_id)
 
                 # update the new current time step
-                current_timestep_map[vertex] += next_point
+                current_timestep_map[vertex] = (
+                    this_core_current_point, next_point)
+
         return subsets_with_same_data
 
     @staticmethod
@@ -119,6 +125,10 @@ class ChipRuntimeUpdater(object):
                 CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
                 CPUState.FINISHED}))
         ready_progress.update(1)
+
+        # sort out first run setup
+        if current_timestep_map is None:
+            current_timestep_map = dict()
 
         if run_time is None:
             self._set_off_infinite_run(txrx, core_subsets)
