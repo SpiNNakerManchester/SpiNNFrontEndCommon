@@ -343,7 +343,8 @@ class LiveEventConnection(DatabaseConnection):
             try:
                 connection.send_to(data, (board_address, SCP_SCAMP_PORT))
                 response_data = connection.receive(1.0)
-                request.get_scp_response().read_bytestring(response_data, 2)
+                request.get_scp_response().read_bytestring(
+                    response_data, _TWO_SKIP.size)
                 sent = True
             except SpinnmanTimeoutException:
                 if not tries_to_go:

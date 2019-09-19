@@ -18,6 +18,8 @@ from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 
 # conversion from words to bytes
 BYTES_PER_WORD = 4
+BYTES_PER_SHORT = 2
+BYTES_PER_KB = 1024
 
 LIVE_GATHERER_CORE_APPLICATION_ID = 0xAC0
 COMMAND_SENDER_CORE_APPLICATION_ID = 0xAC6
@@ -25,18 +27,18 @@ SPIKE_INJECTOR_CORE_APPLICATION_ID = 0xAC9
 
 BITS_PER_WORD = 32.0
 SDRAM_BASE_ADDR = 0x70000000
-MAX_SAFE_BINARY_SIZE = 32 * 1024
-MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
+MAX_SAFE_BINARY_SIZE = 32 * BYTES_PER_KB
+MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
 # converts between micro and milli seconds
 MICRO_TO_MILLISECOND_CONVERSION = 1000
 
 # max size expected to be used by the reverse ip_tag multicast source
 # during buffered operations
-MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
+MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * BYTES_PER_KB
 
 # The default size of a recording buffer before receive request is sent
-DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * 1024
+DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * BYTES_PER_KB
 
 # The number of bytes used by SARK per memory allocation
 SARK_PER_MALLOC_SDRAM_USAGE = 2 * BYTES_PER_WORD

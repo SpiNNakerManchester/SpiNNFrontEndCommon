@@ -49,7 +49,8 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
+    BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -162,7 +163,7 @@ def ceildiv(dividend, divisor):
 
 # SDRAM requirement for storing missing SDP packets seq nums
 SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
-    120.0 * 1024 * 1024,
+    120.0 * 1024 * BYTES_PER_KB,
     WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
 
 
@@ -538,7 +539,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         time_took_ms = float(time_diff.microseconds +
                              time_diff.total_seconds() * 1000000)
-        megabits = (data_size * 8.0) / (1024.0 * 1024.0)
+        megabits = (data_size * 8.0) / (1024 * BYTES_PER_KB)
         if time_took_ms == 0:
             mbs = "unknown, below threshold"
         else:
