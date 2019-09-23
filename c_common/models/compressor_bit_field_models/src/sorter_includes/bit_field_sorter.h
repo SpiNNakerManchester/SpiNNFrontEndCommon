@@ -49,13 +49,12 @@ uint32_t detect_redundant_packet_count(
 //! \param[out] sorted_bit_fields: the pointer to where sorted bitfields are
 //! \param[in] sorted_bf_fill_loc: the location in the sorted bit fields
 //! currently filling in
-//! \param[in] region_addresses: the sdram where all regions are
 //! \return the new covered level
 static inline int locate_and_add_bit_fields(
         _coverage_t** coverage, int coverage_index,
         int *cores_to_add_for, int cores_to_add_length, int diff,
         int covered, sorted_bit_fields_t* sorted_bit_fields,
-        int *sorted_bf_fill_loc, region_addresses_t *region_addresses){
+        int *sorted_bf_fill_loc){
 
     log_debug(
         "going to look for %d cores with a diff of %d",
@@ -159,12 +158,11 @@ void print_coverage_procs_for_sanity_purposes(
 //!  are
 //! \param[in] coverage: the coverage struct (pointer to a list of them).
 //! \param[in] sorted_bf_fill_loc: the current position in the sorted
-//! \param[in] region_addresses: the sdram of all the regions.
 //! bitfields for filling in.
 void add_left_overs(
         sorted_bit_fields_t* sorted_bit_fields,
         int n_unique_redundant_packet_counts, _coverage_t** coverage,
-        int *sorted_bf_fill_loc, region_addresses_t *region_addresses) {
+        int *sorted_bf_fill_loc) {
 
     // iterate through the coverage and add any that are left over.
     for (int i = 0; i < n_unique_redundant_packet_counts; i++) {
@@ -209,13 +207,11 @@ void print_proc_by_coverage(
 //! \param[in] n_unique_redundant_packet_counts: the count of how many unique
 //!      redundant packet counts there are.
 //! \param[in] sorted_bit_fields:  the pointer to the sorted bitfield struct
-//! \param[in] region_addresses: the sdram of all the regions.
 //! \return None
 static inline void add_bit_fields_based_on_impact(
         _coverage_t **coverage, _proc_cov_by_bitfield_t **proc_cov_by_bit_field,
         int n_pairs, int n_unique_redundant_packet_counts,
-        sorted_bit_fields_t* sorted_bit_fields,
-        region_addresses_t *region_addresses) {
+        sorted_bit_fields_t* sorted_bit_fields) {
 
     // print all coverage for sanity purposes
     print_coverage_for_sanity_purposes(
@@ -255,7 +251,6 @@ static inline void add_bit_fields_based_on_impact(
             proc_cov_by_bit_field[worst_core_id + 1]->length_of_list);
         int diff = proc_cov_by_bit_field[worst_core_id]->length_of_list -
              proc_cov_by_bit_field[worst_core_id + 1]->length_of_list;
-        //log_info("diff is %d", diff);
 
         // sort by bubble sort so that the most redundant packet count
         // addresses are at the front
@@ -263,12 +258,6 @@ static inline void add_bit_fields_based_on_impact(
             proc_cov_by_bit_field,
             proc_cov_by_bit_field[worst_core_id]->length_of_list,
             worst_core_id);
-
-        //print_proc_by_coverage(
-        //    region_addresses->n_pairs, proc_cov_by_bit_field);
-
-        //print_coverage_for_sanity_purposes(
-        //    n_unique_redundant_packet_counts, coverage);
 
         // cycle through the list of a cores redundant packet counts and locate
         // the bitfields which match up
@@ -288,18 +277,10 @@ static inline void add_bit_fields_based_on_impact(
                 if (coverage[i]->n_redundant_packets == x_redundant_packets) {
                     covered = locate_and_add_bit_fields(
                         coverage, i, cores_to_add_for, cores_to_add_length,
-                        diff, covered, sorted_bit_fields, &sorted_bf_fill_loc,
-                        region_addresses);
+                        diff, covered, sorted_bit_fields, &sorted_bf_fill_loc);
                     log_debug("filled sorted to %d", sorted_bf_fill_loc);
                 }
             }
-
-            // print all coverage for sanity purposes
-            //print_coverage_for_sanity_purposes(
-            //    n_unique_redundant_packet_counts, coverage);
-            //print_coverage_procs_for_sanity_purposes(
-            //    n_unique_redundant_packet_counts, coverage);
-            log_debug("next cycle of moving to sorted");
         }
     }
 
@@ -312,8 +293,7 @@ static inline void add_bit_fields_based_on_impact(
         coverage, n_unique_redundant_packet_counts);
     add_left_overs(
         sorted_bit_fields, n_unique_redundant_packet_counts, coverage,
-        &sorted_bf_fill_loc, region_addresses);
-    //log_info("filled sorted to %d", sorted_bf_fill_loc);
+        &sorted_bf_fill_loc);
 }
 
 //! \brief creates a struct that defines which bitfields are based on which
@@ -557,39 +537,6 @@ static _coverage_t** create_coverage_by_redundant_packet(
     return coverage;
 }
 
-
-//! \brief no sorting, just plonking into list sorted bitfield list.
-//! \param[in] region_addresses: the sdram that stores data addresses
-//! \param[in] sorted_bit_fields: the sorted bitfields struct pointer
-//! \param[in] bit_field_by_processor: the map of processor to bitfields.
-/*
-void just_add_to_list(
-        region_addresses_t *region_addresses,
-        sorted_bit_fields_t* sorted_bit_fields,
-        bit_field_by_processor_t* bit_field_by_processor){
-    use(bit_field_by_processor);
-
-    int pos_in_sorted = 0;
-    int n_regions = region_addresses->n_pairs;
-    log_info("n regions is %d", n_regions);
-    for (int r_id = 0; r_id < n_regions; r_id++){
-        filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
-        int core_n_bit_fields = filter_region->n_filters;
-        log_info("n bitfields in region %d is %d", r_id, core_n_bit_fields);
-
-        for (int bf_id = 0; bf_id < core_n_bit_fields; bf_id++){
-            sorted_bit_fields->bit_fields[pos_in_sorted] =
-                &filter_region->filters[bf_id];
-            sorted_bit_fields->processor_ids[pos_in_sorted] =
-                region_addresses->pairs[r_id].processor;
-            //print_bit_field_struct(&filter_region->filters[bf_id]);
-
-            pos_in_sorted += 1;
-        }
-    }
-}*/
-
-
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
 //! \param[in] n_bf_addresses: the number of bitfields to sort
 //! \param[in] region_addresses: the addresses where the data is
@@ -623,15 +570,6 @@ sorted_bit_fields_t* bit_field_sorter_sort(
         return NULL;
     }
 
-    // NOTE: THis is if you want to debug / need surplus itcm. as this will
-    //put the fields in the list, but without any sorting at all.
-    //log_info("just adding");
-    //just_add_to_list(
-    //    region_addresses, sorted_bit_fields, bit_field_by_processor);
-    //log_info("fin just adding");
-    //return sorted_bit_fields;
-
-
     // populate the bitfield by coverage
     _proc_cov_by_bitfield_t** proc_cov_by_bf = create_coverage_by_bit_field(
         region_addresses);
@@ -661,7 +599,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
     // processing
     add_bit_fields_based_on_impact(
         coverage, proc_cov_by_bf, n_pairs_of_addresses,
-        n_unique_redundant_packets, sorted_bit_fields, region_addresses);
+        n_unique_redundant_packets, sorted_bit_fields);
 
     // free the data holders we don't care about now that we've got our
     // sorted bitfields list
