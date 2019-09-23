@@ -24,62 +24,65 @@ class LocateExecutableStartType(object):
 
     def __call__(
             self, graph, placements, executable_finder, graph_mapper=None):
-        try:
-            if not graph.vertices:
-                return [ExecutableType.NO_APPLICATION], {}
+        if not graph.vertices:
+            return [ExecutableType.NO_APPLICATION], {}
 
-            binary_start_types = dict()
-            binary_to_start_type = dict()
+        binary_start_types = dict()
+        binary_to_start_type = dict()
 
-            progress = ProgressBar(
-                graph.n_vertices, "Finding executable start types")
-            for vertex in progress.over(graph.vertices):
-                # try to locate binary type, but possible it doesn't have one
-                placement_binary_start_type = None
-                binary_name = None
-                if isinstance(vertex, AbstractHasAssociatedBinary):
-                    placement_binary_start_type = vertex.get_binary_start_type()
-                    binary_name = vertex.get_binary_file_name()
+        progress = ProgressBar(
+            graph.n_vertices, "Finding executable start types")
+        for vertex in progress.over(graph.vertices):
+            # try to locate binary type, but possible it doesn't have one
+            placement_binary_start_type = None
+            binary_name = None
+            if isinstance(vertex, AbstractHasAssociatedBinary):
+                placement_binary_start_type = (
+                    vertex.get_binary_start_type())
+                binary_name = vertex.get_binary_file_name()
+            elif graph_mapper is not None:
+                associated_vertex = (
+                    graph_mapper.get_application_vertex(vertex))
+                if isinstance(
+                        associated_vertex, AbstractHasAssociatedBinary):
+                    placement_binary_start_type = \
+                        associated_vertex.get_binary_start_type()
+                    binary_name = associated_vertex.get_binary_file_name()
+
+            # check for vertices with no associated binary, if so, ignore
+            if placement_binary_start_type is not None:
+                # update core subset with location of the vertex on the
+                # machine
+                if placement_binary_start_type not in binary_start_types:
+                    binary_start_types[placement_binary_start_type] = \
+                        CoreSubsets()
+
+                if isinstance(vertex, MachineVertex):
+                    self._add_vertex_to_subset(
+                        vertex, placements,
+                        binary_start_types[placement_binary_start_type])
                 elif graph_mapper is not None:
-                    associated_vertex = graph_mapper.get_application_vertex(vertex)
-                    if isinstance(associated_vertex, AbstractHasAssociatedBinary):
-                        placement_binary_start_type = \
-                            associated_vertex.get_binary_start_type()
-                        binary_name = associated_vertex.get_binary_file_name()
-
-                # check for vertices with no associated binary, if so, ignore
-                if placement_binary_start_type is not None:
-                    # update core subset with location of the vertex on the machine
-                    if placement_binary_start_type not in binary_start_types:
-                        binary_start_types[placement_binary_start_type] = \
-                            CoreSubsets()
-
-                    if isinstance(vertex, MachineVertex):
+                    machine_verts = graph_mapper.get_machine_vertices(
+                        vertex)
+                    for machine_vertex in machine_verts:
                         self._add_vertex_to_subset(
-                            vertex, placements,
-                            binary_start_types[placement_binary_start_type])
-                    elif graph_mapper is not None:
-                        machine_verts = graph_mapper.get_machine_vertices(vertex)
-                        for machine_vertex in machine_verts:
-                            self._add_vertex_to_subset(
-                                machine_vertex, placements,
-                                binary_start_types[placement_binary_start_type])
+                            machine_vertex, placements,
+                            binary_start_types[
+                                placement_binary_start_type])
 
-                    # add to the binary to start type map
-                    if binary_name is not None:
-                        binary_path = executable_finder.get_executable_path(
-                            binary_name)
-                        binary_to_start_type[binary_path] = (
-                            placement_binary_start_type)
+                # add to the binary to start type map
+                if binary_name is not None:
+                    binary_path = executable_finder.get_executable_path(
+                        binary_name)
+                    binary_to_start_type[binary_path] = (
+                        placement_binary_start_type)
 
-            # only got apps with no binary, such as external devices.
-            # return no app
-            if not binary_start_types:
-                return [ExecutableType.NO_APPLICATION], {}
+        # only got apps with no binary, such as external devices.
+        # return no app
+        if not binary_start_types:
+            return [ExecutableType.NO_APPLICATION], {}
 
-            return binary_start_types, binary_to_start_type
-        except Exception as e:
-            print (e)
+        return binary_start_types, binary_to_start_type
 
     @staticmethod
     def _add_vertex_to_subset(machine_vertex, placements, core_subsets):

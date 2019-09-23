@@ -33,12 +33,12 @@ class ChipRuntimeUpdater(object):
     def _determine_true_core_subsets(
             core_subsets, placements, local_machine_time_step_map, run_time,
             current_timestep_map):
-        """ determine correct set of core subsets for correct runtimes
-        
+        """ determine correct set of core subsets for correct run times
+
         :param core_subsets: total core subsets of simulation interface
         :param placements: placements
         :param local_machine_time_step_map: map of vertex to local machine \
-        time step 
+        time step
         :param run_time: the runtime for this step
         :param current_timestep_map: the map of vertex to current timestep map
         :return: a dict of (
@@ -78,10 +78,10 @@ class ChipRuntimeUpdater(object):
     @staticmethod
     def _set_off_infinite_run(txrx, core_subsets):
         """ sets off a infinite run chip update
-        
+
         :param txrx: spinnman instance
         :param core_subsets: the cores which run the simulation interface
-        :rtype: None 
+        :rtype: None
         """
         # TODO: Expose the connection selector in SpiNNMan
         process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
@@ -92,11 +92,11 @@ class ChipRuntimeUpdater(object):
     @staticmethod
     def _set_off_next_step(same_data, txrx):
         """ set off another step stage
-        
+
         :param same_data: the maps of current time step and the next point \
         with cores
         :param txrx: spinnman instance
-        :rtype: None 
+        :rtype: None
         """
         for (this_core_current_point, next_point) in same_data.keys():
             process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
