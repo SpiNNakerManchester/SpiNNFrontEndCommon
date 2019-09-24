@@ -60,10 +60,6 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
-    def no_machine_time_steps(self):
-        pass
-
-    @abstractproperty
     def placements(self):
         pass
 
@@ -75,7 +71,7 @@ class SimulatorInterface(object):
     def time_scale_factor(self):
         pass
 
-    @abstractproperty
+    @abstractmethod
     def run(self, run_time):
         pass
 

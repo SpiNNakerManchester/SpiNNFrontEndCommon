@@ -276,9 +276,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_max_run_time_steps",
 
         #
-        "_no_machine_time_steps",
-
-        #
         "_default_machine_time_step",
 
         # The lowest values auto pause resume may use as steps
@@ -470,7 +467,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._default_current_run_time = 0
         self._no_sync_changes = 0
         self._max_run_time_steps = None
-        self._no_machine_time_steps = None
         self._minimum_auto_time_steps = self._config.getint(
                 "Buffers", "minimum_auto_time_steps")
 
@@ -935,10 +931,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 i += 1
 
         # Indicate that the signal handler needs to act
-        if isinstance(threading.current_thread(), threading._MainThread):
-            self._raise_keyboard_interrupt = False
-            self._last_except_hook = sys.excepthook
-            sys.excepthook = self.exception_handler
+        #if isinstance(threading.current_thread(), threading._MainThread):
+        #    self._raise_keyboard_interrupt = False
+        #    self._last_except_hook = sys.excepthook
+        #    sys.excepthook = self.exception_handler
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
@@ -1429,7 +1425,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # runtime full runtime from pynn
         inputs["RunTime"] = run_time
-        inputs["FirstMachineTimeStepMap"] = self._current_run_timesteps_map
 
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
@@ -1819,6 +1814,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._last_run_outputs = executor.get_items()
             self._last_run_tokens = executor.get_completed_tokens()
             self._no_sync_changes = executor.get_item("NoSyncChanges")
+            self._current_run_timesteps_map = (
+                executor.get_item("FirstMachineTimeStepMap"))
             self._has_reset_last = False
             self._has_ran = True
 
@@ -1881,6 +1878,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTime"] = run_time
+        inputs["FirstMachineTimeStepMap"] = self._current_run_timesteps_map
+
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
@@ -2142,7 +2141,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # reset the current count of how many milliseconds the application
         # has ran for over multiple calls to run
         for vertex in self._current_run_timesteps_map:
-            self._current_run_timesteps_map[vertex] = 0
+            self._current_run_timesteps_map[vertex] = (0, 0)
 
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
@@ -2246,8 +2245,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._get_machine()
 
     @property
-    def no_machine_time_steps(self):
-        return self._no_machine_time_steps
+    def current_run_timesteps_map(self):
+        return self._current_run_timesteps_map
 
     @property
     def timescale_factor(self):

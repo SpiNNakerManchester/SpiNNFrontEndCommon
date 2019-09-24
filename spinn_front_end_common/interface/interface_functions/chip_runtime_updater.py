@@ -57,14 +57,14 @@ class ChipRuntimeUpdater(object):
 
                 # where we should be at now
                 if vertex in current_timestep_map:
-                    (this_core_current_point, _) = (
+                    (_, this_core_current_point) = (
                         current_timestep_map[vertex])
                 else:
                     this_core_current_point = 0
 
                 # the next point to stop at
                 next_point = int(
-                    this_core_current_point + next_n_machine_time_steps)
+                    this_core_current_point + (next_n_machine_time_steps))
                 subsets_with_same_data[
                     (this_core_current_point, next_point)].add_processor(
                     core_subset.x, core_subset.y, processor_id)
