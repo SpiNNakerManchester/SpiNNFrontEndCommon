@@ -350,7 +350,7 @@ static inline void cancel_timeout(void) {
 
 static inline void set_message_length(const void *end) {
     my_msg.length = ((const uint8_t *) end) - &my_msg.flags;
-    if (my_msg.length > 272) {
+    if (my_msg.length > 280) {
         log_error("bad message length %u", my_msg.length);
     }
 }
@@ -362,7 +362,7 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
     //!   function; it counts the number of running calls to this function.
     //!   Access to this variable is only allowed when you have disabled
     //!   interrupts!
-    static uint access_lock = 0;
+    static volatile uint access_lock = 0;
 
     uint sr;
     sr = spin1_irq_disable();
