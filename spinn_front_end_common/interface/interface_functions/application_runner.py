@@ -67,13 +67,13 @@ class ApplicationRunner(object):
             send_start_notification, send_stop_notification)
 
         return self.run_application(
-            buffer_manager, notifier, executable_targets, executable_types,
+            buffer_manager, notifier, executable_types,
             app_id, txrx, runtime, time_scale_factor, no_sync_changes,
             time_threshold, run_until_complete)
 
     # The actual runner
     def run_application(
-            self, buffer_manager, notifier, executable_targets,
+            self, buffer_manager, notifier,
             executable_types, app_id, txrx, runtime, time_scale_factor,
             no_sync_changes, time_threshold, run_until_complete):
         # pylint: disable=too-many-arguments

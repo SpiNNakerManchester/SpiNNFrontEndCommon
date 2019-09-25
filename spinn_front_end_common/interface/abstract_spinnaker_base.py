@@ -1676,6 +1676,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean("Reports", "write_memory_map_report") and
             graph_changed
         )
+        inputs["NoSyncChanges"] = self._no_sync_changes
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
