@@ -15,6 +15,9 @@
 
 import os
 import logging
+
+from spinn_front_end_common.utilities.constants import \
+    MICRO_TO_MILLISECOND_CONVERSION
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 
@@ -36,7 +39,8 @@ class ProfileDataGatherer(object):
         :param machine_time_step: machine time step in ms
         """
         # pylint: disable=too-many-arguments
-        machine_time_step_ms = float(machine_time_step) / 1000.0
+        machine_time_step_ms = (
+            float(machine_time_step) / MICRO_TO_MILLISECOND_CONVERSION)
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
@@ -79,6 +83,6 @@ class ProfileDataGatherer(object):
                             profile_data.get_n_calls(tag),
                             profile_data.get_mean_ms(tag),
                             profile_data.get_mean_n_calls_per_ts(
-                                tag, run_time_ms, machine_time_step_ms),
+                                tag, machine_time_step_ms),
                             profile_data.get_mean_ms_per_ts(
-                                tag, run_time_ms, machine_time_step_ms)))
+                                tag, machine_time_step_ms)))

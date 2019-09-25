@@ -106,7 +106,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph.add_vertices([vertex_1, vertex_2])
 
         gatherer = LocateExecutableStartType()
-        results = gatherer.__call__(graph, placements=placements)
+        results = gatherer.__call__(
+            graph, placements=placements)
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)

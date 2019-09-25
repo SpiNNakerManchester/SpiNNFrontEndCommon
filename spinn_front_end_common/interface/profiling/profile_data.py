@@ -157,7 +157,7 @@ class ProfileData(object):
         """
         return self._tags[tag][_DURATION].size
 
-    def get_mean_n_calls_per_ts(self, tag, run_time_ms, machine_time_step_ms):
+    def get_mean_n_calls_per_ts(self, tag, machine_time_step_ms):
         """ Get the mean number of times the given tag was recorded per\
             timestep
 
@@ -166,8 +166,6 @@ class ProfileData(object):
         :param machine_time_step_ms:\
             The time step of the simulation in microseconds
         :type machine_time_step_ms: int
-        :param run_time_ms: The run time of the simulation in milliseconds
-        :type run_time_ms: float
         :rtype: float
         """
         n_points = math.ceil(
@@ -177,7 +175,7 @@ class ProfileData(object):
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
-    def get_mean_ms_per_ts(self, tag, run_time_ms, machine_time_step_ms):
+    def get_mean_ms_per_ts(self, tag, machine_time_step_ms):
         """ Get the mean time in milliseconds spent on operations with the\
             given tag per timestep
 
@@ -186,8 +184,6 @@ class ProfileData(object):
         :param machine_time_step_ms:\
             The time step of the simulation in microseconds
         :type machine_time_step_ms: int
-        :param run_time_ms: The run time of the simulation in milliseconds
-        :type run_time_ms: float
         :rtype: float
         """
         n_points = math.ceil(
