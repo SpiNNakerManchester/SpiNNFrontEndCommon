@@ -28,7 +28,7 @@ import sys
 import time
 import threading
 from threading import Condition
-from six import iteritems, iterkeys, reraise
+from six import iteritems, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
@@ -38,6 +38,8 @@ from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
+from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinnman.model.cpu_infos import CPUInfos
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
@@ -107,6 +109,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # the number of chips required for this simulation to run, mainly tied
         # to the spalloc system
         "_n_chips_required",
+
+        # the number of boards required for this simulation to run, mainly tied
+        # to the spalloc system
+        "_n_boards_required",
 
         # The IP-address of the SpiNNaker machine
         "_hostname",
@@ -229,9 +235,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_dsg_algorithm",
 
         #
-        "_none_labelled_vertex_count",
-
-        #
         "_none_labelled_edge_count",
 
         #
@@ -340,13 +343,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         "_last_except_hook",
 
-        "_vertices_or_edges_added"
+        "_vertices_or_edges_added",
+
+        # Set of all seen vertext labels
+        "_vertext_labels"
     ]
 
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None, default_config_paths=None,
+            n_chips_required=None, n_boards_required=None,
+            default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         # pylint: disable=too-many-arguments
         ConfigHandler.__init__(
@@ -366,7 +373,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Will search these locations for binaries: {}",
             self._executable_finder.binary_paths)
 
-        self._n_chips_required = n_chips_required
+        if n_chips_required is None or n_boards_required is None:
+            self._n_chips_required = n_chips_required
+            self._n_boards_required = n_boards_required
+        else:
+            raise ConfigurationException(
+                "Please use at most one of n_chips_required or "
+                "n_boards_required")
         self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
@@ -430,7 +443,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_algorithm = "GraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
-        self._none_labelled_vertex_count = 0
         self._none_labelled_edge_count = 0
 
         # database objects
@@ -486,6 +498,29 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
+        self._vertext_labels = set()
+
+    def set_n_boards_required(self, n_boards_required):
+        """
+        Sets the machine requirements.
+
+        Warning: This method should not be called after the machine
+        requirements have be computed based on the graph.
+
+        :param n_boards_required: The number of boards required
+        :raises: ConfigurationException
+            If any machine requirements have already been set
+        """
+        # Catch the unchanged case including leaving it None
+        if n_boards_required == self._n_boards_required:
+            return
+        if self._n_boards_required is not None:
+            raise ConfigurationException(
+                "Illegal attempt to change previously set value.")
+        if self._n_chips_required is not None:
+            raise ConfigurationException(
+                "Clash with n_chips_required.")
+        self._n_boards_required = n_boards_required
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -528,12 +563,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(msg)
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
-
-    def set_n_chips_required(self, n_chips_required):
-        if self.has_ran:
-            msg = "Setting n_chips_required is not supported after run"
-            raise ConfigurationException(msg)
-        self._n_chips_required = n_chips_required
 
     def add_extraction_timing(self, timing):
         ms = convert_time_diff_to_total_milliseconds(timing)
@@ -692,7 +721,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         self._run(run_time)
 
-    def _build_graphs_for_usege(self):
+    def _build_graphs_for_usage(self):
         # sort out app graph
         self._application_graph = ApplicationGraph(
             label=self._original_application_graph.label)
@@ -784,7 +813,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
-            self._build_graphs_for_usege()
+            self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
@@ -794,7 +823,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._graph_mapper = None
 
             # Reset the machine if the graph has changed
-            if not self._use_virtual_board:
+            if not self._use_virtual_board and self._n_calls_to_run > 1:
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
@@ -1210,14 +1239,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Machine", "spalloc_user")
                 inputs["SpallocMachine"] = self._read_config(
                     "Machine", "spalloc_machine")
-                if self._n_chips_required is None:
+                if self._n_chips_required is None and \
+                        self._n_boards_required is None:
                     algorithms.append("SpallocMaxMachineGenerator")
                     need_virtual_board = True
 
             # if using HBP server system
             if self._remote_spinnaker_url is not None:
                 inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-                if self._n_chips_required is None:
+                if self._n_chips_required is None and \
+                        self._n_boards_required is None:
                     algorithms.append("HBPMaxMachineGenerator")
                     need_virtual_board = True
 
@@ -1271,7 +1302,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
                 # If we are using an allocation server but have been told how
                 # many chips to use, just use that as an input
-                inputs["NChipsRequired"] = self._n_chips_required
+                if self._n_chips_required:
+                    inputs["NChipsRequired"] = self._n_chips_required
+                if self._n_boards_required:
+                    inputs["NBoardsRequired"] = self._n_boards_required
 
             if self._spalloc_server is not None:
                 algorithms.append("SpallocAllocator")
@@ -1315,6 +1349,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 raise ConfigurationException(
                     "Failure to detect machine of with {} chips as requested. "
                     "Only found {}".format(self._n_chips_required,
+                                           self._machine))
+        if self._n_boards_required:
+            if len(self._machine.ethernet_connected_chips) \
+                    < self._n_boards_required:
+                raise ConfigurationException(
+                    "Failure to detect machine with {} boards as requested. "
+                    "Only found {}".format(self._n_boards_required,
                                            self._machine))
 
         return self._machine
@@ -1425,22 +1466,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             (self._config.getboolean("Machine", "enable_reinjection") and
              self._config.getboolean(
                  "Machine", "enable_advanced_monitor_support"))
-
-        # add paths for each file based version
-        inputs["FileCoreAllocationsFilePath"] = os.path.join(
-            self._json_folder, "core_allocations.json")
-        inputs["FileSDRAMAllocationsFilePath"] = os.path.join(
-            self._json_folder, "sdram_allocations.json")
-        inputs["FileMachineFilePath"] = os.path.join(
-            self._json_folder, "machine.json")
-        inputs["FileMachineGraphFilePath"] = os.path.join(
-            self._json_folder, "machine_graph.json")
-        inputs["FilePlacementFilePath"] = os.path.join(
-            self._json_folder, "placements.json")
-        inputs["FileRoutingPathsFilePath"] = os.path.join(
-            self._json_folder, "routing_paths.json")
-        inputs["FileConstraintsFilePath"] = os.path.join(
-            self._json_folder, "constraints.json")
 
         algorithms = list()
 
@@ -1871,7 +1896,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("ChipRuntimeUpdater")
 
         # Add the database writer in case it is needed
-        algorithms.append("DatabaseInterface")
+        if not self._has_ran or graph_changed:
+            algorithms.append("DatabaseInterface")
+        else:
+            inputs["DatabaseFilePath"] = self._last_run_outputs[
+                "DatabaseFilePath"]
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
@@ -1947,8 +1976,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
+        real_exception = exception
         if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
             logger.error(exception.exception, exc_info=exc_info)
+            real_exception = exception.exception
         else:
             logger.error(exception, exc_info=exc_info)
 
@@ -1975,20 +2006,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             logger.exception("Error reading router provenance")
 
         # Find the cores that are not in an expected state
-        unsuccessful_cores = self._txrx.get_cores_not_in_state(
-            executable_targets.all_core_subsets,
-            {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED})
+        unsuccessful_cores = CPUInfos()
+        if isinstance(real_exception, SpiNNManCoresNotInStateException):
+            unsuccessful_cores = real_exception.failed_core_states()
 
         # If there are no cores in a bad state, find those not yet in
         # their finished state
-        unsuccessful_core_subset = CoreSubsets()
         if not unsuccessful_cores:
             for executable_type in self._executable_types:
-                unsuccessful_cores = self._txrx.get_cores_not_in_state(
+                failed_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for x, y, p in iterkeys(unsuccessful_cores):
-                    unsuccessful_core_subset.add_processor(x, y, p)
+                for (x, y, p), core_info in failed_cores:
+                    unsuccessful_cores.add_processor(x, y, p, core_info)
 
         # Print the details of error cores
         for (x, y, p), core_info in iteritems(unsuccessful_cores):
@@ -2257,17 +2287,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_algorithm = new_dsg_algorithm
 
     @property
-    def none_labelled_vertex_count(self):
-        """ The number of times vertices have not been labelled.
-        """
-        return self._none_labelled_vertex_count
-
-    def increment_none_labelled_vertex_count(self):
-        """ Increment the number of new vertices which have not been labelled.
-        """
-        self._none_labelled_vertex_count += 1
-
-    @property
     def none_labelled_edge_count(self):
         """ The number of times edges have not been labelled.
         """
@@ -2300,25 +2319,29 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def add_application_vertex(self, vertex_to_add):
+    def add_application_vertex(self, vertex, prefix="_vertex"):
         """
-        :param vertex_to_add: the vertex to add to the graph
+        :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         if (self._original_machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        self._original_application_graph.add_vertex(vertex_to_add)
+        self._original_application_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
-    def add_machine_vertex(self, vertex):
+    def add_machine_vertex(self, vertex, prefix="_vertex"):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
         if self._original_application_graph.n_vertices > 0:

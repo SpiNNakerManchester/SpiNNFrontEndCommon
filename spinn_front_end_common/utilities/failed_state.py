@@ -45,10 +45,6 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    def increment_none_labelled_vertex_count(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
     def machine(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
@@ -58,10 +54,6 @@ class FailedState(SimulatorInterface):
 
     @property
     def no_machine_time_steps(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
-    def none_labelled_vertex_count(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property

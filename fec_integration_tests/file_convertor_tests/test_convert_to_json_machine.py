@@ -81,10 +81,9 @@ class TestConvertJson(unittest.TestCase):
 
         self.json_compare(filename, "spinn4.json")
 
-        # Create a machione with Exception
+        # Create a machine with Exception
         chip = machine.get_chip_at(1, 1)
         chip._sdram._size = chip._sdram._size - 100
-        chip._router._clock_speed = chip._router._clock_speed - 100
         chip._router._n_available_multicast_entries -= 10
         chip._virtual = not chip._virtual
         chip = machine.get_chip_at(1, 2)

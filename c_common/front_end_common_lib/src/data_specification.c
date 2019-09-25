@@ -20,16 +20,18 @@
 #include <sark.h>
 #include <debug.h>
 
-// A magic number that identifies the start of an executed data specification
-#define DATA_SPECIFICATION_MAGIC_NUMBER  0xAD130AD6
-// The version of the spec we support; only one was ever supported
-#define DATA_SPECIFICATION_VERSION       0x00010000
-
-// The mask to apply to the version number to get the minor version
-#define VERSION_MASK    0xFFFF
-
-// The amount of shift to apply to the version number to get the major version
-#define VERSION_SHIFT   16
+enum {
+    //! A magic number that identifies the start of an executed data
+    //! specification
+    DATA_SPECIFICATION_MAGIC_NUMBER = 0xAD130AD6,
+    //! The version of the spec we support; only one was ever supported
+    DATA_SPECIFICATION_VERSION = 0x00010000,
+    //! The mask to apply to the version number to get the minor version
+    VERSION_MASK = 0xFFFF,
+    //! The amount of shift to apply to the version number to get the major
+    //! version
+    VERSION_SHIFT = 16
+};
 
 //! \brief Locates the start address for a core in SDRAM. This value is
 //!        loaded into the user0 register of the core during the tool chain

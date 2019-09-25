@@ -40,7 +40,7 @@ typedef struct data_specification_metadata_t {
 //! \brief Gets the location of the data for this core using the user0 entry
 //!        of the SARK VCPU structure
 //! \return The address of the generated data
-data_specification_metadata_t *data_specification_get_data_address();
+data_specification_metadata_t *data_specification_get_data_address(void);
 
 //! \brief Reads the header from the address given and checks if the parameters
 //! are of the correct values

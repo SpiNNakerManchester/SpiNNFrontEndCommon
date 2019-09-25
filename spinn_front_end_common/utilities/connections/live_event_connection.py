@@ -58,20 +58,20 @@ class LiveEventConnection(DatabaseConnection):
     """
     __slots__ = [
         "_atom_id_to_key",
-        "_init_callbacks",
-        "_key_to_atom_id_and_label",
-        "_live_event_callbacks",
-        "_live_packet_gather_label",
-        "_machine_vertices",
-        "_pause_stop_callbacks",
-        "_receive_labels",
-        "_receiver_connection",
-        "_receiver_listener",
-        "_send_address_details",
-        "_send_labels",
-        "_sender_connection",
-        "_start_resume_callbacks",
-        "_error_keys"]
+        "__error_keys",
+        "__init_callbacks",
+        "__key_to_atom_id_and_label",
+        "__live_event_callbacks",
+        "__live_packet_gather_label",
+        "__machine_vertices",
+        "__pause_stop_callbacks",
+        "__receive_labels",
+        "__receiver_connection",
+        "__receiver_listener",
+        "__send_address_details",
+        "__send_labels",
+        "__sender_connection",
+        "__start_resume_callbacks"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT,
@@ -95,60 +95,61 @@ class LiveEventConnection(DatabaseConnection):
         """
         # pylint: disable=too-many-arguments
         super(LiveEventConnection, self).__init__(
-            self._start_resume_callback, self._stop_pause_callback,
+            self.__do_start_resume, self.__do_stop_pause,
             local_host=local_host, local_port=local_port)
 
-        self.add_database_callback(self._read_database_callback)
+        self.add_database_callback(self.__read_database_callback)
 
-        self._live_packet_gather_label = live_packet_gather_label
-        self._receive_labels = (
+        self.__live_packet_gather_label = live_packet_gather_label
+        self.__receive_labels = (
             list(receive_labels) if receive_labels is not None else None)
-        self._send_labels = (
+        self.__send_labels = (
             list(send_labels) if send_labels is not None else None)
-        self._machine_vertices = machine_vertices
-        self._sender_connection = None
-        self._send_address_details = dict()
+        self.__machine_vertices = machine_vertices
+        self.__sender_connection = None
+        self.__send_address_details = dict()
+        # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key = dict()
-        self._key_to_atom_id_and_label = dict()
-        self._live_event_callbacks = list()
-        self._start_resume_callbacks = dict()
-        self._pause_stop_callbacks = dict()
-        self._init_callbacks = dict()
+        self.__key_to_atom_id_and_label = dict()
+        self.__live_event_callbacks = list()
+        self.__start_resume_callbacks = dict()
+        self.__pause_stop_callbacks = dict()
+        self.__init_callbacks = dict()
         if receive_labels is not None:
             for label in receive_labels:
-                self._live_event_callbacks.append(list())
-                self._start_resume_callbacks[label] = list()
-                self._pause_stop_callbacks[label] = list()
-                self._init_callbacks[label] = list()
+                self.__live_event_callbacks.append(list())
+                self.__start_resume_callbacks[label] = list()
+                self.__pause_stop_callbacks[label] = list()
+                self.__init_callbacks[label] = list()
         if send_labels is not None:
             for label in send_labels:
-                self._start_resume_callbacks[label] = list()
-                self._pause_stop_callbacks[label] = list()
-                self._init_callbacks[label] = list()
-        self._receiver_listener = None
-        self._receiver_connection = None
-        self._error_keys = set()
+                self.__start_resume_callbacks[label] = list()
+                self.__pause_stop_callbacks[label] = list()
+                self.__init_callbacks[label] = list()
+        self.__receiver_listener = None
+        self.__receiver_connection = None
+        self.__error_keys = set()
 
     def add_send_label(self, label):
-        if self._send_labels is None:
-            self._send_labels = list()
-        if label not in self._send_labels:
-            self._send_labels.append(label)
-        if label not in self._start_resume_callbacks:
-            self._start_resume_callbacks[label] = list()
-            self._pause_stop_callbacks[label] = list()
-            self._init_callbacks[label] = list()
+        if self.__send_labels is None:
+            self.__send_labels = list()
+        if label not in self.__send_labels:
+            self.__send_labels.append(label)
+        if label not in self.__start_resume_callbacks:
+            self.__start_resume_callbacks[label] = list()
+            self.__pause_stop_callbacks[label] = list()
+            self.__init_callbacks[label] = list()
 
     def add_receive_label(self, label):
-        if self._receive_labels is None:
-            self._receive_labels = list()
-        if label not in self._receive_labels:
-            self._receive_labels.append(label)
-            self._live_event_callbacks.append(list())
-        if label not in self._start_resume_callbacks:
-            self._start_resume_callbacks[label] = list()
-            self._pause_stop_callbacks[label] = list()
-            self._init_callbacks[label] = list()
+        if self.__receive_labels is None:
+            self.__receive_labels = list()
+        if label not in self.__receive_labels:
+            self.__receive_labels.append(label)
+            self.__live_event_callbacks.append(list())
+        if label not in self.__start_resume_callbacks:
+            self.__start_resume_callbacks[label] = list()
+            self.__pause_stop_callbacks[label] = list()
+            self.__init_callbacks[label] = list()
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
@@ -163,7 +164,7 @@ class LiveEventConnection(DatabaseConnection):
             milliseconds
         :type init_callback: function(str, int, float, float) -> None
         """
-        self._init_callbacks[label].append(init_callback)
+        self.__init_callbacks[label].append(init_callback)
 
     def add_receive_callback(self, label, live_event_callback):
         """ Add a callback for the reception of live events from a vertex
@@ -177,10 +178,10 @@ class LiveEventConnection(DatabaseConnection):
             array-like of atom IDs.
         :type live_event_callback: function(str, int, list(int)) -> None
         """
-        label_id = self._receive_labels.index(label)
+        label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}".format(
             live_event_callback, label))
-        self._live_event_callbacks[label_id].append(live_event_callback)
+        self.__live_event_callbacks[label_id].append(live_event_callback)
 
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
@@ -202,7 +203,7 @@ class LiveEventConnection(DatabaseConnection):
         self.add_start_resume_callback(label, start_callback)
 
     def add_start_resume_callback(self, label, start_resume_callback):
-        self._start_resume_callbacks[label].append(start_resume_callback)
+        self.__start_resume_callbacks[label].append(start_resume_callback)
 
     def add_pause_stop_callback(self, label, pause_stop_callback):
         """ Add a callback for the pause and stop state of the simulation
@@ -217,10 +218,10 @@ class LiveEventConnection(DatabaseConnection):
             :py:class:`SpynnakerLiveEventConnection`) -> None
         :rtype: None
         """
-        self._pause_stop_callbacks[label].append(pause_stop_callback)
+        self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
-    def _read_database_callback(self, db_reader):
-        self._handle_possible_rerun_state()
+    def __read_database_callback(self, db_reader):
+        self.__handle_possible_rerun_state()
 
         vertex_sizes = OrderedDict()
         run_time_ms = db_reader.get_configuration_parameter_value(
@@ -228,24 +229,24 @@ class LiveEventConnection(DatabaseConnection):
         machine_timestep_ms = db_reader.get_configuration_parameter_value(
             "machine_time_step") / 1000.0
 
-        if self._send_labels is not None:
-            self._init_sender(db_reader, vertex_sizes)
+        if self.__send_labels is not None:
+            self.__init_sender(db_reader, vertex_sizes)
 
-        if self._receive_labels is not None:
-            self._init_receivers(db_reader, vertex_sizes)
+        if self.__receive_labels is not None:
+            self.__init_receivers(db_reader, vertex_sizes)
 
         for label, vertex_size in iteritems(vertex_sizes):
-            for init_callback in self._init_callbacks[label]:
+            for init_callback in self.__init_callbacks[label]:
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
-    def _init_sender(self, db, vertex_sizes):
-        if self._sender_connection is None:
-            self._sender_connection = UDPConnection()
-        for label in self._send_labels:
-            self._send_address_details[label] = self.__get_live_input_details(
+    def __init_sender(self, db, vertex_sizes):
+        if self.__sender_connection is None:
+            self.__sender_connection = UDPConnection()
+        for label in self.__send_labels:
+            self.__send_address_details[label] = self.__get_live_input_details(
                 db, label)
-            if self._machine_vertices:
+            if self.__machine_vertices:
                 key, _ = db.get_machine_live_input_key(label)
                 self._atom_id_to_key[label] = {0: key}
                 vertex_sizes[label] = 1
@@ -254,50 +255,50 @@ class LiveEventConnection(DatabaseConnection):
                     label)
                 vertex_sizes[label] = len(self._atom_id_to_key[label])
 
-    def _init_receivers(self, db, vertex_sizes):
+    def __init_receivers(self, db, vertex_sizes):
         # Set up a single connection for receive
-        if self._receiver_connection is None:
-            self._receiver_connection = EIEIOConnection()
+        if self.__receiver_connection is None:
+            self.__receiver_connection = EIEIOConnection()
         receivers = set()
-        for label_id, label in enumerate(self._receive_labels):
+        for label_id, label in enumerate(self.__receive_labels):
             _, port, board_address, tag = self.__get_live_output_details(
                 db, label)
 
             # Update the tag if not already done
             if (board_address, port, tag) not in receivers:
                 self.__update_tag(
-                    self._receiver_connection, board_address, tag)
+                    self.__receiver_connection, board_address, tag)
                 receivers.add((board_address, port, tag))
                 send_port_trigger_message(
-                    self._receiver_connection, board_address)
+                    self.__receiver_connection, board_address)
 
             logger.info(
                 "Listening for traffic from {} on {}:{}",
-                label, self._receiver_connection.local_ip_address,
-                self._receiver_connection.local_port)
+                label, self.__receiver_connection.local_ip_address,
+                self.__receiver_connection.local_port)
 
-            if self._machine_vertices:
+            if self.__machine_vertices:
                 key, _ = db.get_machine_live_output_key(
-                    label, self._live_packet_gather_label)
-                self._key_to_atom_id_and_label[key] = (0, label_id)
+                    label, self.__live_packet_gather_label)
+                self.__key_to_atom_id_and_label[key] = (0, label_id)
                 vertex_sizes[label] = 1
             else:
                 key_to_atom_id = db.get_key_to_atom_id_mapping(label)
                 for key, atom_id in iteritems(key_to_atom_id):
-                    self._key_to_atom_id_and_label[key] = (atom_id, label_id)
+                    self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
                 vertex_sizes[label] = len(key_to_atom_id)
 
         # Last of all, set up the listener for packets
         # NOTE: Has to be done last as otherwise will receive SCP messages
         # sent above!
-        if self._receiver_listener is None:
-            self._receiver_listener = ConnectionListener(
-                self._receiver_connection)
-            self._receiver_listener.add_callback(self._receive_packet_callback)
-            self._receiver_listener.start()
+        if self.__receiver_listener is None:
+            self.__receiver_listener = ConnectionListener(
+                self.__receiver_connection)
+            self.__receiver_listener.add_callback(self.__do_receive_packet)
+            self.__receiver_listener.start()
 
     def __get_live_input_details(self, db_reader, send_label):
-        if self._machine_vertices:
+        if self.__machine_vertices:
             x, y, p = db_reader.get_placement(send_label)
         else:
             x, y, p = db_reader.get_placements(send_label)[0]
@@ -306,14 +307,22 @@ class LiveEventConnection(DatabaseConnection):
         return x, y, p, ip_address
 
     def __get_live_output_details(self, db_reader, receive_label):
-        if self._machine_vertices:
+        if self.__machine_vertices:
             host, port, strip_sdp, board_address, tag = \
                 db_reader.get_machine_live_output_details(
-                    receive_label, self._live_packet_gather_label)
+                    receive_label, self.__live_packet_gather_label)
+            if host is None:
+                raise Exception(
+                    "no live output tag found for {} in machine graph".
+                    format(receive_label))
         else:
             host, port, strip_sdp, board_address, tag = \
                 db_reader.get_live_output_details(
-                    receive_label, self._live_packet_gather_label)
+                    receive_label, self.__live_packet_gather_label)
+            if host is None:
+                raise Exception(
+                    "no live output tag found for {} in app graph".format(
+                        receive_label))
         if not strip_sdp:
             raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
@@ -345,17 +354,17 @@ class LiveEventConnection(DatabaseConnection):
                 tries_to_go -= 1
         logger.debug("Done updating tag for {}".format(board_address))
 
-    def _handle_possible_rerun_state(self):
+    def __handle_possible_rerun_state(self):
         # reset from possible previous calls
-        if self._sender_connection is not None:
-            self._sender_connection.close()
-            self._sender_connection = None
-        if self._receiver_listener is not None:
-            self._receiver_listener.close()
-            self._receiver_listener = None
-        if self._receiver_connection is not None:
-            self._receiver_connection.close()
-            self._receiver_connection = None
+        if self.__sender_connection is not None:
+            self.__sender_connection.close()
+            self.__sender_connection = None
+        if self.__receiver_listener is not None:
+            self.__receiver_listener.close()
+            self.__receiver_listener = None
+        if self.__receiver_connection is not None:
+            self.__receiver_connection.close()
+            self.__receiver_connection = None
 
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
@@ -364,17 +373,18 @@ class LiveEventConnection(DatabaseConnection):
                 kind, self._local_port, self._local_ip_address))
         thread.start()
 
-    def _start_resume_callback(self):
-        for label, callbacks in iteritems(self._start_resume_callbacks):
+    def __do_start_resume(self):
+        for label, callbacks in iteritems(self.__start_resume_callbacks):
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
 
-    def _stop_pause_callback(self):
-        for label, callbacks in iteritems(self._pause_stop_callbacks):
+    def __do_stop_pause(self):
+        for label, callbacks in iteritems(self.__pause_stop_callbacks):
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
-    def _receive_packet_callback(self, packet):
+    def __do_receive_packet(self, packet):
+        # pylint: disable=broad-except
         logger.debug("Received packet")
         try:
             if packet.eieio_header.is_time:
@@ -390,8 +400,8 @@ class LiveEventConnection(DatabaseConnection):
             element = packet.next_element
             time = element.payload
             key = element.key
-            if key in self._key_to_atom_id_and_label:
-                atom_id, label_id = self._key_to_atom_id_and_label[key]
+            if key in self.__key_to_atom_id_and_label:
+                atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 if time not in key_times_labels:
                     key_times_labels[time] = dict()
                 if label_id not in key_times_labels[time]:
@@ -402,28 +412,28 @@ class LiveEventConnection(DatabaseConnection):
 
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
-                label = self._receive_labels[label_id]
-                for callback in self._live_event_callbacks[label_id]:
+                label = self.__receive_labels[label_id]
+                for callback in self.__live_event_callbacks[label_id]:
                     callback(label, time, key_times_labels[time][label_id])
 
     def __handle_no_time_packet(self, packet):
         while packet.is_next_element:
             element = packet.next_element
             key = element.key
-            if key in self._key_to_atom_id_and_label:
-                atom_id, label_id = self._key_to_atom_id_and_label[key]
-                for callback in self._live_event_callbacks[label_id]:
+            if key in self.__key_to_atom_id_and_label:
+                atom_id, label_id = self.__key_to_atom_id_and_label[key]
+                for callback in self.__live_event_callbacks[label_id]:
                     if isinstance(element, KeyPayloadDataElement):
-                        callback(self._receive_labels[label_id], atom_id,
+                        callback(self.__receive_labels[label_id], atom_id,
                                  element.payload)
                     else:
-                        callback(self._receive_labels[label_id], atom_id)
+                        callback(self.__receive_labels[label_id], atom_id)
             else:
                 self.__handle_unknown_key(key)
 
     def __handle_unknown_key(self, key):
-        if key not in self._error_keys:
-            self._error_keys.add(key)
+        if key not in self.__error_keys:
+            self.__error_keys.add(key)
             logger.warning("Received unexpected key {}".format(key))
 
     def send_event(self, label, atom_id, send_full_keys=False):
@@ -461,7 +471,7 @@ class LiveEventConnection(DatabaseConnection):
             msg_type = EIEIOType.KEY_32_BIT
 
         pos = 0
-        x, y, p, ip_address = self._send_address_details[label]
+        x, y, p, ip_address = self.__send_address_details[label]
         while pos < len(atom_ids):
             message = EIEIODataMessage.create(msg_type)
             events_in_packet = 0
@@ -473,16 +483,31 @@ class LiveEventConnection(DatabaseConnection):
                 pos += 1
                 events_in_packet += 1
 
-            self._sender_connection.send_to(
-                self._get_sdp_data(message, x, y, p),
+            self.__sender_connection.send_to(
+                self.__get_sdp_data(message, x, y, p),
                 (ip_address, SCP_SCAMP_PORT))
 
+    def send_eieio_message(self, message, label):
+        """ Send an EIEIO message (using one-way the live input) to the \
+            vertex with the given label.
+
+        :param message: The EIEIO message to send
+        :param label: The label of the receiver machine vertex
+        """
+        target = self.__send_address_details[label]
+        if target is None:
+            return
+        x, y, p, ip_address = target
+        self.__sender_connection.send_to(
+            self.__get_sdp_data(message, x, y, p),
+            (ip_address, SCP_SCAMP_PORT))
+
     def close(self):
-        self._handle_possible_rerun_state()
-        DatabaseConnection.close(self)
+        self.__handle_possible_rerun_state()
+        super(LiveEventConnection, self).close()
 
     @staticmethod
-    def _get_sdp_data(message, x, y, p):
+    def __get_sdp_data(message, x, y, p):
         # Create an SDP message - no reply so source is unimportant
         # SDP port can be anything except 0 as the target doesn't care
         sdp_message = SDPMessage(

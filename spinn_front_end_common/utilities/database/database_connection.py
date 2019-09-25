@@ -37,10 +37,10 @@ class DatabaseConnection(UDPConnection):
     """
 
     __slots__ = [
-        "_database_callback_functions",
-        "_pause_and_stop_callback_function",
-        "_running",
-        "_start_resume_callback_function"]
+        "__database_callbacks",
+        "__pause_and_stop_callback",
+        "__running",
+        "__start_resume_callback"]
 
     def __init__(self, start_resume_callback_function=None,
                  stop_pause_callback_function=None, local_host=None,
@@ -62,11 +62,11 @@ class DatabaseConnection(UDPConnection):
             local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
-            self.local_ip_address, self.local_port), target=self.run)
-        self._database_callback_functions = list()
-        self._start_resume_callback_function = start_resume_callback_function
-        self._pause_and_stop_callback_function = stop_pause_callback_function
-        self._running = False
+            self.local_ip_address, self.local_port), target=self.__run)
+        self.__database_callbacks = list()
+        self.__start_resume_callback = start_resume_callback_function
+        self.__pause_and_stop_callback = stop_pause_callback_function
+        self.__running = False
         thread.daemon = True
         thread.start()
 
@@ -83,83 +83,87 @@ class DatabaseConnection(UDPConnection):
             -> None
         :raises SpinnmanIOException: If anything goes wrong
         """
-        self._database_callback_functions.append(database_callback_function)
+        self.__database_callbacks.append(database_callback_function)
 
-    def run(self):
-        self._running = True
+    def __run(self):
+        # pylint: disable=broad-except
+        self.__running = True
         logger.info(
             "{}:{} Waiting for message to indicate that the database is "
             "ready", self.local_ip_address, self.local_port)
         try:
-            while self._running:
-                data, address = self._retrieve_database_address()
-                if data is not None:
-                    self._process_message(address, data)
+            while self.__running:
+                try:
+                    data, address = self.receive_with_address(timeout=3)
+                except SpinnmanTimeoutException:
+                    continue
+                self.__read_db(address, data)
+
+                # Wait for the start of the simulation
+                if self.__start_resume_callback is not None:
+                    self.__start_resume()
+
+                # Wait for the end of the simulation
+                if self.__pause_and_stop_callback is not None:
+                    self.__pause_stop()
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
             raise_from(SpinnmanIOException(str(e)), e)
         finally:
-            self._running = False
+            self.__running = False
 
-    def _process_message(self, address, data):
+    def __read_db(self, address, data):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
         if len(data) > 2:
-            database_path = data[2:].decode()
+            database_path = data[2:].decode('utf-8')
+            logger.info("database is at {}", database_path)
 
             # Call the callback
-            database_reader = DatabaseReader(database_path)
-            for database_callback in self._database_callback_functions:
-                database_callback(database_reader)
-            database_reader.close()
+            with DatabaseReader(database_path) as db_reader:
+                for db_callback in self.__database_callbacks:
+                    db_callback(db_reader)
         else:
             logger.warning("Database path was empty - assuming no database")
 
         # Send the response
         logger.info("Notifying the toolchain that the database has been read")
-        self._send_command(1, address)
+        self._send_command(CMDS.DATABASE_CONFIRMATION, address)
 
-        # Wait for the start of the simulation
-        if self._start_resume_callback_function is not None:
-            logger.info(
-                "Waiting for message to indicate that the simulation has "
-                "started or resumed")
-            command_code = self._receive_command()
-            if command_code != CMDS.START_RESUME_NOTIFICATION.value:
-                raise SpinnmanInvalidPacketException(
-                    "command_code",
-                    "expected a start/resume command code now, and did not "
-                    "receive it")
-            # Call the callback
-            self._start_resume_callback_function()
+    def __start_resume(self):
+        logger.info(
+            "Waiting for message to indicate that the simulation has "
+            "started or resumed")
+        command_code = self._receive_command()
+        if command_code != CMDS.START_RESUME_NOTIFICATION.value:
+            raise SpinnmanInvalidPacketException(
+                "command_code",
+                "expected a start/resume command code now, and did not "
+                "receive it")
+        # Call the callback
+        self.__start_resume_callback()
 
-        if self._pause_and_stop_callback_function is not None:
-            logger.info(
-                "Waiting for message to indicate that the simulation has "
-                "stopped or paused")
-            command_code = self._receive_command()
-            if command_code != CMDS.STOP_PAUSE_NOTIFICATION.value:
-                raise SpinnmanInvalidPacketException(
-                    "command_code",
-                    "expected a pause/stop command code now, and did not "
-                    "receive it")
-            # Call the callback
-            self._pause_and_stop_callback_function()
+    def __pause_stop(self):
+        logger.info(
+            "Waiting for message to indicate that the simulation has "
+            "stopped or paused")
+        command_code = self._receive_command()
+        if command_code != CMDS.STOP_PAUSE_NOTIFICATION.value:
+            raise SpinnmanInvalidPacketException(
+                "command_code",
+                "expected a pause/stop command code now, and did not "
+                "receive it")
+        # Call the callback
+        self.__pause_and_stop_callback()
 
     def _send_command(self, command, address):
-        self.send_to(EIEIOCommandHeader(command).bytestring, address)
+        self.send_to(EIEIOCommandHeader(command.value).bytestring, address)
 
     def _receive_command(self):
         return EIEIOCommandHeader.from_bytestring(self.receive(), 0).command
 
-    def _retrieve_database_address(self):
-        try:
-            return self.receive_with_address(timeout=3)
-        except SpinnmanTimeoutException:
-            return None, None
-
     def close(self):
-        self._running = False
+        self.__running = False
         UDPConnection.close(self)

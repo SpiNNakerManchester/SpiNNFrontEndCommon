@@ -26,6 +26,9 @@ SDRAM_BASE_ADDR = 0x70000000
 MAX_SAFE_BINARY_SIZE = 32 * 1024
 MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
 
+# converts between micro and milli seconds
+MICRO_TO_MILLISECOND_CONVERSION = 1000
+
 # max size expected to be used by the reverse ip_tag multicast source
 # during buffered operations
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
