@@ -292,6 +292,7 @@ static inline void add_bit_fields_based_on_impact(
                 r_packet_index ++){
             log_debug(
                 "order of redundant packet count at index %d is %d",
+                r_packet_index,
                 proc_cov_by_bit_field[worst_core_id]->redundant_packets[
                     r_packet_index]);
         }
