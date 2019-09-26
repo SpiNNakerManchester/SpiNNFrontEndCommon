@@ -1603,6 +1603,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         java_properties)
             inputs["JavaCaller"] = self._java_caller
 
+            # add the sdram allocator to ensure the sdram is allocated before
+            #  dsg on a real machine
+            algorithms.append("SDRAMOutgoingPartitionAllocator")
+
         # Execute the mapping algorithms
         executor = self._run_algorithms(
             inputs, algorithms, outputs, tokens, [], "mapping",
