@@ -238,15 +238,15 @@ static inline update_frequency(index){
             routes_frequency[i] += 1;
             return;
         }
-        routes[routes_count] = route;
-        routes_frequency[routes_count] = 1;
-        routes_count += 1;
-        if (routes_count >= 1023) {
-            log_error("1024 Unigue routes compression IMPOSSIBLE");
-            // set the failed flag and exit
-            sark.vcpu->user0 = 1;
-            spin1_exit(0);
-        }
+    }
+    routes[routes_count] = route;
+    routes_frequency[routes_count] = 1;
+    routes_count += 1;
+    if (routes_count >= 1023) {
+        log_error("1024 Unigue routes compression IMPOSSIBLE");
+        // set the failed flag and exit
+        sark.vcpu->user0 = 1;
+        spin1_exit(0);
     }
 }
 
@@ -260,7 +260,18 @@ static inline void simple_minimise(uint32_t target_length){
     for (int index = 0; index < table_size; index++) {
         update_frequency(index);
     }
+
+    log_info("before sort %u", routes_count);
+    for (int i = 0; i < routes_count; i++) {
+        log_debug("%u", routes[i]);
+    }
+
     quicksort_route(0, routes_count);
+
+    log_info("after sort %u", routes_count);
+    for (int i = 0; i < routes_count; i++) {
+        log_debug("%u", routes[i]);
+    }
 
     log_info("do quicksort_table by route %u", table_size);
     quicksort_table(0, table_size);

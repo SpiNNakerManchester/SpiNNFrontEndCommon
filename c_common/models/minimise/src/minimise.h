@@ -38,7 +38,7 @@
  *
  *     typedef struct
  *     {
- *       uint32_t key;
+ *       uint32_t keymask;
  *       uint32_t mask;
  *       uint32_t route;   // Routing direction
  *       uint32_t source;  // Source of packets arriving at this entry
@@ -85,10 +85,13 @@ static inline void copy_entry(int new_index, int old_index){
 }
 
 static inline void swap_entries(int a, int b){
-    log_info("swap %u %u", a, b);
+    log_debug("swap %u %u", a, b);
     entry_t temp = *routing_table_sdram_stores_get_entry(a);
+    log_debug("before %u %u %u %u", temp.keymask.key, temp.keymask.mask, temp.route, temp.source);
     put_entry(routing_table_sdram_stores_get_entry(b), a);
     put_entry(&temp, b);
+    entry_t temp2 = *routing_table_sdram_stores_get_entry(b);
+    log_debug("before %u %u %u %u", temp2.keymask.key, temp2.keymask.mask, temp2.route, temp2.source);
 }
 
 //! \brief prints the header object for debug purposes
@@ -204,7 +207,7 @@ void compress_start() {
                 //Opps we need the defaults back before trying compression
                 log_debug("free the tables entries");
                 FREE(table->entries);
-                read_table(header);
+               read_table(header);
             }
         }
     }
@@ -231,7 +234,6 @@ void compress_start() {
     if (load_routing_table(header->app_id)) {
         cleanup_and_exit(header);
     } else {
-
         // Otherwise give up and exit with an error
         log_error(
             "Failed to minimise routing table to fit %u entries. "
@@ -245,7 +247,7 @@ void compress_start() {
         // set the failed flag and exit
         sark.vcpu->user0 = 1;
         spin1_exit(0);
-    }
+    //}
 }
 
 #endif //__MINIMISE_H__
