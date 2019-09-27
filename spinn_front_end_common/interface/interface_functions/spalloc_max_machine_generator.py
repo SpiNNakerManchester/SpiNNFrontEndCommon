@@ -27,7 +27,7 @@ class SpallocMaxMachineGenerator(object):
 
     def __call__(
             self, spalloc_server, spalloc_port=22244, spalloc_machine=None,
-            max_sdram_size=None, max_core_id=None):
+            max_sdram_size=None):
         with ProtocolClient(spalloc_server, spalloc_port) as client:
             machines = client.list_machines()
             # Close the context immediately; don't want to keep this particular
@@ -51,15 +51,15 @@ class SpallocMaxMachineGenerator(object):
             raise Exception(
                 "The spalloc server appears to have no compatible machines")
 
-        if max_core_id is None:
-            max_core_id = Machine.MAX_CORES_PER_CHIP
+        # TODO add a reduce factor
+        n_cpus_per_chip = Machine.MAX_CORES_PER_CHIP
 
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
         return virtual_machine(
             width=max_width, height=max_height, with_wrap_arounds=None,
             version=None, sdram_per_chip=max_sdram_size,
-            n_cpus_per_chip=max_core_id, validate=False)
+            n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
     @staticmethod
     def _filter(machines, target_name):
