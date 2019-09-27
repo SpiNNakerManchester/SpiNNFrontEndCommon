@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
+from pacman.model.partitioner_interfaces.splitter_by_atoms import \
+    SplitterByAtoms
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
@@ -23,7 +25,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
 
 class DataSpeedUpPacketGather(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary):
+        AbstractHasAssociatedBinary, SplitterByAtoms):
     __slots__ = ["_machine_vertex"]
 
     def __init__(
@@ -47,11 +49,11 @@ class DataSpeedUpPacketGather(
     def get_binary_file_name(self):
         return self._machine_vertex.get_binary_file_name()
 
-    @overrides(ApplicationVertex.get_resources_used_by_atoms)
+    @overrides(SplitterByAtoms.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return self._machine_vertex.resources_required
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @overrides(SplitterByAtoms.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
         return self._machine_vertex
