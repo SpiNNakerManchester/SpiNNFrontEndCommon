@@ -1162,11 +1162,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
-        inputs["MaxCoreID"] = self._read_config_int(
-            "Machine", "core_limit")
-        # Because it is max id and not n_cores we need to add 1
-        if inputs["MaxCoreID"]:
-            inputs["MaxCoreID"] += 1
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
         inputs["MachineTimeStep"] = self._machine_time_step
