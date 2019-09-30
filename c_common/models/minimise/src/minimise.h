@@ -249,7 +249,7 @@ void compress_start() {
         // set the failed flag and exit
         sark.vcpu->user0 = 1;
         spin1_exit(0);
-    //}
+    }
 }
 
 #endif //__MINIMISE_H__
