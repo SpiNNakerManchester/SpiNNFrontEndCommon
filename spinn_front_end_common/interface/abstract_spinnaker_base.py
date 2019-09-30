@@ -522,6 +522,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Clash with n_chips_required.")
         self._n_boards_required = n_boards_required
 
+    @property
+    def executable_finder(self):
+        return self._executable_finder
+
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
             msg = "Changing mapping inputs is not supported after run"
@@ -842,6 +846,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
+        provide_injectables(self._mapping_outputs)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -853,6 +858,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
             self._max_run_time_steps = self._deduce_data_n_timesteps()
+        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -1441,6 +1447,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
+        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
+        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
@@ -1882,8 +1890,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if not self._has_ran or graph_changed:
             algorithms.append("DatabaseInterface")
         else:
-            inputs["DatabaseFilePath"] = self._last_run_outputs[
-                "DatabaseFilePath"]
+            inputs["DatabaseFilePath"] = (
+                self._last_run_outputs["DatabaseFilePath"])
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
@@ -1998,8 +2006,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 failed_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for (x, y, p), core_info in failed_cores:
-                    unsuccessful_cores.add_processor(x, y, p, core_info)
+                for (x, y, p) in failed_cores:
+                    unsuccessful_cores.add_processor(
+                        x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
         for (x, y, p), core_info in iteritems(unsuccessful_cores):
@@ -2066,7 +2075,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         try:
             errors, warnings = iobuf(
                 self._txrx, executable_targets, self._executable_finder,
-                self._provenance_file_path,
+                self._app_provenance_file_path,
+                self._system_provenance_file_path,
+                self._mapping_outputs["BinaryToExecutableType"],
                 self._config.get("Reports", "extract_iobuf_from_cores"),
                 self._config.get("Reports", "extract_iobuf_from_binary_types")
             )
@@ -2294,6 +2305,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def get_generated_output(self, name_of_variable):
         if name_of_variable in self._last_run_outputs:
             return self._last_run_outputs[name_of_variable]
+        if name_of_variable in self._mapping_outputs:
+            return self._mapping_outputs[name_of_variable]
+        if name_of_variable in self._load_outputs:
+            return self._load_outputs[name_of_variable]
+        if name_of_variable in self._machine_outputs:
+            return self._machine_outputs[name_of_variable]
         return None
 
     def __repr__(self):
@@ -2588,7 +2605,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
-            provenance_file_path=self._provenance_file_path)
+            app_provenance_file_path=self._app_provenance_file_path,
+            system_provenance_file_path=self._system_provenance_file_path,
+            binary_executable_types=(
+                self._mapping_outputs["BinaryToExecutableType"]))
 
     @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
