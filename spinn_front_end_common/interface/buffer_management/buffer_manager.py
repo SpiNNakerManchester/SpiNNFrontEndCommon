@@ -654,15 +654,12 @@ class BufferManager(object):
             return byte_array, missing
 
     def _retreive_by_placement(self, placement, recording_region_id):
-        """ Get the data for a vertex; must be locked first.
+        """ Retrieve the data for a vertex; must be locked first.
 
         :param placement: the placement to get the data from
         :type placement: :py:class:`~pacman.model.placements.Placement`
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
-        :return: object which will contain the data
-        :rtype:\
-            :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
         """
         recording_data_address = \
             placement.vertex.get_recording_region_base_address(
