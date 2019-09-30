@@ -37,8 +37,8 @@ class HBPMaxMachineGenerator(object):
 
         max_machine = self._max_machine_request(hbp_server_url, total_run_time)
 
-        n_cpus_per_chip = Machine.MAX_CORES_PER_CHIP - \
-                          max_machine_core_reduction
+        n_cpus_per_chip = (Machine.MAX_CORES_PER_CHIP -
+                           max_machine_core_reduction)
 
         # Return the width and height and assume that it has wrap arounds
         return virtual_machine(
