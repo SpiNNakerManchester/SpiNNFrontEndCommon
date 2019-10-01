@@ -149,10 +149,10 @@ class SqlLiteDatabase(AbstractDatabase):
             region_id = self._get_region_id(cursor, x, y, p, region)
             existing_len = 0
             for row in cursor.execute(
-                    "SELECT LEN(content) AS leng FROM region "
+                    "SELECT length(content) AS len FROM region "
                     + "WHERE region_id = ? LIMIT 1",
                     (region_id, )):
-                existing_len = row["leng"]
+                existing_len = row["len"]
             if chunk_len + existing_len < SQLITE_BLOB_LIMIT:
                 cursor.execute(
                     "UPDATE region SET content = content || ?, "
@@ -169,12 +169,12 @@ class SqlLiteDatabase(AbstractDatabase):
                 existing_len = 0
                 extra_id = None
                 for row in cursor.execute(
-                        "SELECT LEN(content), extra_id AS leng "
+                        "SELECT length(content), extra_id AS len "
                         + "FROM region_extra "
                         + "WHERE region_id = ? "
                         + "ORDER BY extra_id DESC LIMIT 1",
                         (region_id, )):
-                    existing_len = row["leng"]
+                    existing_len = row["len"]
                     extra_id = row["extra_id"]
                 if 0 < existing_len and (
                         existing_len + chunk_len < SQLITE_BLOB_LIMIT):
