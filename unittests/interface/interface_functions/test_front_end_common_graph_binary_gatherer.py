@@ -77,7 +77,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         targets = gatherer.__call__(
             placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
-        start_type = gatherer.__call__(
+        start_type, binary_map = gatherer.__call__(
             graph, placements, _TestExecutableFinder())
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
@@ -107,7 +107,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph.add_vertices([vertex_1, vertex_2])
 
         gatherer = LocateExecutableStartType()
-        results = gatherer.__call__(
+        results, binary_map = gatherer.__call__(
             graph, placements=placements,
             executable_finder=_TestExecutableFinder())
         self.assertIn(ExecutableType.RUNNING, results)
