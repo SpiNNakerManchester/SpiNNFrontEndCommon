@@ -142,22 +142,23 @@ class SqlLiteDatabase(AbstractDatabase):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
-        l = len(data)
+        chunk_len = len(data)
+        datablob = sqlite3.Binary(data)
         with self._db:
             cursor = self._db.cursor()
             region_id = self._get_region_id(cursor, x, y, p, region)
-            l2 = 0
+            existing_len = 0
             for row in cursor.execute(
                     "SELECT LEN(content) AS leng FROM region "
                     + "WHERE region_id = ? LIMIT 1",
                     (region_id, )):
-                l2 = row["leng"]
-            if l + l2 < SQLITE_BLOB_LIMIT:
+                existing_len = row["leng"]
+            if chunk_len + existing_len < SQLITE_BLOB_LIMIT:
                 cursor.execute(
                     "UPDATE region SET content = content || ?, "
                     + "fetches = fetches + 1, append_time = ?"
                     + "WHERE region_id = ? ",
-                    (sqlite3.Binary(data), _timestamp(), region_id))
+                    (datablob, _timestamp(), region_id))
             else:
                 cursor.execute(
                     "UPDATE region SET "
@@ -165,7 +166,7 @@ class SqlLiteDatabase(AbstractDatabase):
                     + "WHERE region_id = ? ",
                     (_timestamp(), region_id))
                 assert cursor.rowcount == 1
-                l2 = 0
+                existing_len = 0
                 extra_id = None
                 for row in cursor.execute(
                         "SELECT LEN(content), extra_id AS leng "
@@ -173,18 +174,19 @@ class SqlLiteDatabase(AbstractDatabase):
                         + "WHERE region_id = ? "
                         + "ORDER BY extra_id DESC LIMIT 1",
                         (region_id, )):
-                    l2 = row["leng"]
+                    existing_len = row["leng"]
                     extra_id = row["extra_id"]
-                if 0 < l2 and l2 + l < SQLITE_BLOB_LIMIT:
+                if 0 < existing_len and (
+                        existing_len + chunk_len < SQLITE_BLOB_LIMIT):
                     cursor.execute(
                         "UPDATE region_extra SET "
                         + "content = content || ? WHERE extra_id = ?",
-                        (sqlite3.Binary(data), extra_id))
+                        (datablob, extra_id))
                 else:
                     cursor.execute(
                         "INSERT INTO region_extra(region_id, content) "
                         + "VALUES (?, ?)",
-                        (region_id, sqlite3.Binary(data)))
+                        (region_id, datablob))
             assert cursor.rowcount == 1
 
     @overrides(AbstractDatabase.get_region_data)
