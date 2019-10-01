@@ -21,7 +21,8 @@ from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
-from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
+from spinn_front_end_common.utilities.utility_objs import ExecutableTargets, \
+    ExecutableType
 
 
 class _PretendTransceiver(object):
@@ -79,6 +80,10 @@ executable_targets.add_subsets(baraplx, core_subsets)
 core_subsets = CoreSubsets([CoreSubset(0, 0, [3])])
 alphaaplx = mock_aplx("alpha")
 executable_targets.add_subsets(alphaaplx, core_subsets)
+
+types = {fooaplx: ExecutableType.USES_SIMULATION_INTERFACE,
+         baraplx: ExecutableType.USES_SIMULATION_INTERFACE,
+         alphaaplx: ExecutableType.USES_SIMULATION_INTERFACE}
 
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):

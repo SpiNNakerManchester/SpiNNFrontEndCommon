@@ -52,11 +52,11 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
-    def machine_time_step(self):
+    def default_machine_time_step(self):
         pass
 
     @abstractproperty
-    def no_machine_time_steps(self):
+    def local_timer_period_map(self):
         pass
 
     @abstractproperty
@@ -71,7 +71,7 @@ class SimulatorInterface(object):
     def time_scale_factor(self):
         pass
 
-    @abstractproperty
+    @abstractmethod
     def run(self, run_time):
         pass
 

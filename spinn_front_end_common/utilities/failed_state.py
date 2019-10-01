@@ -49,7 +49,11 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    def machine_time_step(self):
+    def default_machine_time_step(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
+
+    @property
+    def local_timer_period_map(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property

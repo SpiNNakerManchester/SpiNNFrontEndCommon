@@ -16,6 +16,11 @@
 from .machine_allocation_controller import MachineAllocationController
 from .machine_data_specable_vertex import MachineDataSpecableVertex
 from .provides_key_to_atom_mapping_impl import ProvidesKeyToAtomMappingImpl
+from .machine_supports_auto_pause_and_resume import (
+    MachineSupportsAutoPauseAndResume)
+from .application_supports_auto_pause_and_resume import (
+    ApplicationSupportsAutoPauseAndResume)
 
 __all__ = ["MachineAllocationController", "MachineDataSpecableVertex",
-           "ProvidesKeyToAtomMappingImpl"]
+           "ProvidesKeyToAtomMappingImpl", "MachineSupportsAutoPauseAndResume",
+           "ApplicationSupportsAutoPauseAndResume"]

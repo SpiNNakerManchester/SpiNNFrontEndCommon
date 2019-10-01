@@ -16,6 +16,9 @@
 """
 main interface for the SpiNNaker tools
 """
+from spinn_front_end_common.utilities.constants import \
+    MICRO_TO_MILLISECOND_CONVERSION
+
 try:
     from collections.abc import defaultdict
 except ImportError:
@@ -259,7 +262,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_has_reset_last",
 
         #
-        "_current_run_timesteps",
+        "_current_run_timesteps_map",
+
+        #
+        "_default_current_run_time",
 
         #
         "_no_sync_changes",
@@ -268,10 +274,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_max_run_time_steps",
 
         #
-        "_no_machine_time_steps",
-
-        #
-        "_machine_time_step",
+        "_default_machine_time_step",
 
         # The lowest values auto pause resume may use as steps
         "_minimum_auto_time_steps",
@@ -458,14 +461,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
-        self._current_run_timesteps = 0
+        self._current_run_timesteps_map = None
+        self._default_current_run_time = 0
         self._no_sync_changes = 0
         self._max_run_time_steps = None
-        self._no_machine_time_steps = None
         self._minimum_auto_time_steps = self._config.getint(
                 "Buffers", "minimum_auto_time_steps")
 
-        self._machine_time_step = None
+        self._default_machine_time_step = None
         self._time_scale_factor = None
 
         self._app_id = self._read_config_int("Machine", "app_id")
@@ -521,6 +524,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Clash with n_chips_required.")
         self._n_boards_required = n_boards_required
+
+    @property
+    def executable_finder(self):
+        return self._executable_finder
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -604,10 +611,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     REPORT_DISABLE_OPTS = frozenset([
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
-    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
+    def set_up_timings(
+            self, default_machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
 
-        :param machine_time_step:\
+        :param default_machine_time_step:\
             An explicitly specified time step for the machine.  If None,\
             the value is read from the config
         :param time_scale_factor:\
@@ -616,16 +624,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
 
         # set up timings
-        if machine_time_step is None:
-            self._machine_time_step = \
+        if default_machine_time_step is None:
+            self._default_machine_time_step = \
                 self._config.getint("Machine", "machine_time_step")
         else:
-            self._machine_time_step = machine_time_step
+            self._default_machine_time_step = default_machine_time_step
 
-        if self._machine_time_step <= 0:
+        if self._default_machine_time_step <= 0:
             raise ConfigurationException(
                 "invalid machine_time_step {}: must greater than zero".format(
-                    self._machine_time_step))
+                    self._default_machine_time_step))
 
         if time_scale_factor is None:
             self._time_scale_factor = self._read_config_int(
@@ -778,13 +786,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         total_run_time = None
         if run_time is not None:
             n_machine_time_steps = int(
-                (run_time * 1000.0) / self._machine_time_step)
-            total_run_timesteps = (
-                self._current_run_timesteps + n_machine_time_steps)
+                (run_time * MICRO_TO_MILLISECOND_CONVERSION) /
+                self._default_machine_time_step)
+            total_run_time_steps = (
+                self._default_current_run_time + n_machine_time_steps)
             total_run_time = (
-                total_run_timesteps *
-                (float(self._machine_time_step) / 1000.0) *
-                self._time_scale_factor)
+                total_run_time_steps *
+                (float(self._default_machine_time_step) /
+                 MICRO_TO_MILLISECOND_CONVERSION) * self._time_scale_factor)
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
@@ -839,7 +848,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
-            self._do_mapping(run_time, n_machine_time_steps, total_run_time)
+            self._do_mapping(run_time)
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -875,17 +884,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            steps = self._generate_steps(
-                n_machine_time_steps, self._max_run_time_steps)
+            steps = self._generate_steps(n_machine_time_steps)
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
         if not self._has_ran or graph_changed or data_changed:
-            self._do_data_generation(self._max_run_time_steps)
+            self._do_data_generation()
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load(graph_changed)
+                self._do_load(graph_changed, data_changed)
 
         # Run for each of the given steps
         if run_time is not None:
@@ -901,6 +909,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Buffers", "use_auto_pause_and_resume") or
                 not is_per_timestep_sdram):
             logger.info("Running forever")
+            self._default_current_run_time = None
             self._do_run(None, graph_changed, run_until_complete)
             logger.info("Waiting for stop request")
             with self._state_condition:
@@ -1007,36 +1016,35 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
 
+        # determine if the max time steps is a full multiple of lowest common
+        #  denominator. If not, floor it to one.
+        lowest_common_denominator = (
+            self._mapping_outputs["LowestCommonDenominatorTimePeriod"])
+
+        if max_time_steps % lowest_common_denominator != 0:
+            max_time_steps = (
+                math.floor(max_time_steps / lowest_common_denominator) *
+                lowest_common_denominator)
+
         return max_time_steps
 
-    @staticmethod
-    def _generate_steps(n_steps, n_steps_per_segment):
+    def _generate_steps(self, n_steps):
         """ Generates the list of "timer" runs. These are usually in terms of\
             time steps, but need not be.
 
         :param n_steps: the total runtime in machine time steps
         :type n_steps: int
-        :param n_steps_per_segment: the minimum allowed per chunk
-        :type n_steps_per_segment: int
         :return: list of time steps
         """
-        if (n_steps == 0):
+        if n_steps == 0:
             return [0]
-        n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
-        left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
-        steps = [int(n_steps_per_segment)] * n_full_iterations
+        n_full_iterations = int(math.floor(n_steps / self._max_run_time_steps))
+        left_over_steps = (
+            n_steps - n_full_iterations * self._max_run_time_steps)
+        steps = [int(self._max_run_time_steps)] * n_full_iterations
         if left_over_steps:
             steps.append(int(left_over_steps))
         return steps
-
-    def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
-        if next_run_timesteps is not None:
-            total_timesteps = next_run_timesteps + self._current_run_timesteps
-            self._no_machine_time_steps = total_timesteps
-            return total_timesteps
-
-        self._no_machine_time_steps = None
-        return None
 
     def _run_algorithms(
             self, inputs, algorithms, outputs, tokens, required_tokens,
@@ -1125,7 +1133,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean(
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
 
-        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
+        if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
@@ -1167,7 +1175,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
-        inputs["MachineTimeStep"] = self._machine_time_step
+        inputs["DefaultMachineTimeStep"] = self._default_machine_time_step
         inputs["TimeScaleFactor"] = self._time_scale_factor
 
         # Set up common machine details
@@ -1399,7 +1407,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
 
-    def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
+    def _do_mapping(self, run_time):
 
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
@@ -1411,8 +1419,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
+        # runtime full runtime from pynn
         inputs["RunTime"] = run_time
-        inputs["TotalRunTime"] = total_run_time
 
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
@@ -1443,7 +1451,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self._time_scale_factor
-        inputs["MachineTimeStep"] = self._machine_time_step
+        inputs["MachineTimeStep"] = self._default_machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
@@ -1462,6 +1470,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Reports", "write_data_speed_up_reports")
 
         algorithms = list()
+        algorithms.append("AutoPauseAndResumeSafety")
 
         if self._live_packet_recorder_params:
             algorithms.append(
@@ -1552,6 +1561,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # only add the partitioner if there isn't already a machine graph
         algorithms.append("MallocBasedChipIDAllocator")
+
+        # allows better support of multiple time steps
+        algorithms.append("BuildsAutoPauseResumeTimePeriodMap")
+
+        # get algorithms for converting to correct machine setup
         if (self._application_graph.n_vertices and
                 not self._machine_graph.n_vertices):
             full = self._config.get(
@@ -1630,7 +1644,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
 
-    def _do_data_generation(self, n_machine_time_steps):
+    def _do_data_generation(self):
 
         # set up timing
         data_gen_timer = Timer()
@@ -1639,10 +1653,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        inputs["RunUntilTimeSteps"] = n_machine_time_steps
 
-        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
-        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["DataNTimeSteps"] = self._max_run_time_steps
 
         # Run the data generation algorithms
@@ -1657,7 +1668,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
 
-    def _do_load(self, graph_changed):
+    def _do_load(self, graph_changed, data_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1671,6 +1682,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean("Reports", "write_memory_map_report") and
             graph_changed
         )
+        inputs["NoSyncChanges"] = self._no_sync_changes
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1743,20 +1755,23 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         executor = self._run_algorithms(
             inputs, algorithms, [], tokens, required_tokens, "loading",
             optional_algorithms)
+        self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._load_outputs = executor.get_items()
         self._load_tokens = executor.get_completed_tokens()
 
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
 
-    def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
+    def _do_run(self, step, graph_changed, run_until_complete):
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
 
         run_complete = False
-        executor, self._current_run_timesteps = self._create_execute_workflow(
-            n_machine_time_steps, graph_changed, run_until_complete)
+        executor = self._create_execute_workflow(
+            step, graph_changed, run_until_complete)
+        self._default_current_run_time += step
+
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -1765,7 +1780,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # write provenance to file if necessary
             if (self._config.getboolean(
                     "Reports", "write_provenance_data") and
-                    n_machine_time_steps is not None):
+                    self._max_run_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
                 prov_items.extend(self._pacman_provenance.data_items)
                 self._pacman_provenance.clear()
@@ -1776,6 +1791,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._last_run_outputs = executor.get_items()
             self._last_run_tokens = executor.get_completed_tokens()
             self._no_sync_changes = executor.get_item("NoSyncChanges")
+            self._current_run_timesteps_map = (
+                executor.get_item("FirstMachineTimeStepMap"))
             self._has_reset_last = False
             self._has_ran = True
 
@@ -1820,13 +1837,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*e_inf)
 
     def _create_execute_workflow(
-            self, n_machine_time_steps, graph_changed, run_until_complete):
-        # calculate number of machine time steps
-        run_until_timesteps = self._calculate_number_of_machine_time_steps(
-            n_machine_time_steps)
+            self, step, graph_changed, run_until_complete):
         run_time = None
-        if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self._machine_time_step / 1000.0
+        if self._max_run_time_steps is not None:
+            run_time = (
+                step * self._default_machine_time_step /
+                MICRO_TO_MILLISECOND_CONVERSION)
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1838,16 +1854,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
-        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
-        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        inputs["FirstMachineTimeStepMap"] = self._current_run_timesteps_map
+
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
         inputs["ExtractIobufFromCores"] = self._config.get(
             "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+        inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
@@ -1882,8 +1897,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if not self._has_ran or graph_changed:
             algorithms.append("DatabaseInterface")
         else:
-            inputs["DatabaseFilePath"] = self._last_run_outputs[
-                "DatabaseFilePath"]
+            inputs["DatabaseFilePath"] = (
+                self._last_run_outputs["DatabaseFilePath"])
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
@@ -1905,7 +1920,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
         if (not self._use_virtual_board and
-                (run_until_complete or n_machine_time_steps is not None)):
+                (run_until_complete or self._max_run_time_steps is not None)):
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
@@ -1920,13 +1935,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
                 not self._use_virtual_board and
-                n_machine_time_steps is not None):
+                self._max_run_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
         if (self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board and
-                n_machine_time_steps is not None):
+                self._max_run_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
@@ -1943,7 +1958,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path,
-            provenance_name="Execution"), run_until_timesteps
+            provenance_name="Execution")
 
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
@@ -2097,7 +2112,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # reset the current count of how many milliseconds the application
         # has ran for over multiple calls to run
-        self._current_run_timesteps = 0
+        for vertex in self._current_run_timesteps_map:
+            self._current_run_timesteps_map[vertex] = (0, 0)
 
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
@@ -2181,8 +2197,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._has_ran
 
     @property
-    def machine_time_step(self):
-        return self._machine_time_step
+    def default_machine_time_step(self):
+        return self._default_machine_time_step
+
+    @property
+    def local_timer_period_map(self):
+        return self._mapping_outputs["MachineTimeStepMap"]
 
     @property
     def time_scale_factor(self):
@@ -2197,8 +2217,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._get_machine()
 
     @property
-    def no_machine_time_steps(self):
-        return self._no_machine_time_steps
+    def current_run_timesteps_map(self):
+        return self._current_run_timesteps_map
 
     @property
     def timescale_factor(self):
@@ -2286,14 +2306,22 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def get_current_time(self):
         if self._has_ran:
+
             return (
-                float(self._current_run_timesteps) *
-                (self._machine_time_step / 1000.0))
+                float(self._default_current_run_time) *
+                (self._default_machine_time_step /
+                 MICRO_TO_MILLISECOND_CONVERSION))
         return 0.0
 
     def get_generated_output(self, name_of_variable):
         if name_of_variable in self._last_run_outputs:
             return self._last_run_outputs[name_of_variable]
+        if name_of_variable in self._mapping_outputs:
+            return self._mapping_outputs[name_of_variable]
+        if name_of_variable in self._load_outputs:
+            return self._load_outputs[name_of_variable]
+        if name_of_variable in self._machine_outputs:
+            return self._machine_outputs[name_of_variable]
         return None
 
     def __repr__(self):
@@ -2455,7 +2483,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         exc_info = None
 
         # If we have run forever, stop the binaries
-        if (self._has_ran and self._current_run_timesteps is None and
+        if (self._has_ran and self._default_current_run_time is None and
                 not self._use_virtual_board):
             executor = self._create_stop_workflow()
             run_complete = False
@@ -2571,11 +2599,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._report_default_directory,
                 self._read_config_int("Machine", "version"),
                 self._spalloc_server, self._remote_spinnaker_url,
-                self._time_scale_factor, self._machine_time_step,
-                pacman_provenance, router_provenance, self._machine_graph,
-                self._current_run_timesteps, self._buffer_manager,
-                self._mapping_time, self._load_time, self._execute_time,
-                self._dsg_time, self._extraction_time,
+                self._time_scale_factor, pacman_provenance, router_provenance,
+                self._machine_graph, self._default_current_run_time,
+                self._buffer_manager, self._mapping_time, self._load_time,
+                self._execute_time, self._dsg_time, self._extraction_time,
                 self._machine_allocation_controller)
 
     def _extract_iobufs(self):

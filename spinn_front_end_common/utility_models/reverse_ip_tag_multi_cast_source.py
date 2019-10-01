@@ -161,8 +161,9 @@ class ReverseIpTagMultiCastSource(
         sim = globals_variables.get_simulator()
         container = ResourceContainer(
             sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                send_buffer_times, self._is_recording, sim.machine_time_step,
-                self._receive_rate, self._n_atoms),
+                send_buffer_times, self._is_recording,
+                sim.default_machine_time_step, self._receive_rate,
+                self._n_atoms),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(

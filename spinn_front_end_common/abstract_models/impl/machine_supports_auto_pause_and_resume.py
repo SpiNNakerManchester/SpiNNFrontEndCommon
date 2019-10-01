@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2019-2020 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,8 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# You can remove this file once there are other, real tests
+from spinn_front_end_common.abstract_models.\
+    abstract_machine_supports_auto_pause_and_resume import \
+    AbstractMachineSupportsAutoPauseAndResume
+from spinn_utilities.overrides import overrides
 
 
-def test_this_file_to_support_CI_only():
-    assert 1+1 == 2
+class MachineSupportsAutoPauseAndResume(
+        AbstractMachineSupportsAutoPauseAndResume):
+
+    @overrides(AbstractMachineSupportsAutoPauseAndResume.my_local_time_period)
+    def my_local_time_period(self, simulator_time_step):
+        return simulator_time_step

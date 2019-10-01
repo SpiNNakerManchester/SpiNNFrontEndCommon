@@ -38,10 +38,10 @@ class Close_Once(object):
 
 class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
-    def __init__(self, machine_time_step=None, time_scale_factor=None):
+    def __init__(self, default_machine_time_step=None, time_scale_factor=None):
         super(MainInterfaceTimingImpl, self).__init__(
             config_handler.CONFIG_FILE, ExecutableFinder())
-        self.set_up_timings(machine_time_step, time_scale_factor)
+        self.set_up_timings(default_machine_time_step, time_scale_factor)
 
 
 class TestSpinnakerMainInterface(unittest.TestCase):
@@ -75,12 +75,12 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
         # Test defaults
         interface = MainInterfaceTimingImpl()
-        assert interface.machine_time_step == 1000
+        assert interface.default_machine_time_step == 1000
         assert interface.timescale_factor is None
 
         # Test specified
         interface = MainInterfaceTimingImpl(200, 10)
-        assert interface.machine_time_step == 200
+        assert interface.default_machine_time_step == 200
         assert interface.timescale_factor == 10
 
 

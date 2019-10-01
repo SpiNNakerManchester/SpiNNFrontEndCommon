@@ -16,6 +16,8 @@
 import os
 import logging
 import struct
+
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
@@ -291,8 +293,7 @@ def determine_flow_states(executable_types, no_sync_changes):
 def convert_vertices_to_core_subset(vertices, placements):
     """ Converts vertices into core subsets.
 
-    :param extra_monitor_cores_to_set:\
-        the vertices to convert to core subsets
+    :param vertices: the vertices to convert to core subsets
     :param placements: the placements object
     :return: the CoreSubSets of the vertices
     """
@@ -301,6 +302,19 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def find_executable_start_type(machine_vertex, graph_mapper=None):
+    has_binary = isinstance(machine_vertex, AbstractHasAssociatedBinary)
+
+    if not has_binary:
+        return None
+    elif graph_mapper is not None:
+        app_vertex = graph_mapper.get_application_vertex(machine_vertex)
+        if isinstance(app_vertex, AbstractHasAssociatedBinary):
+            return app_vertex.get_binary_start_type()
+    else:
+        return machine_vertex.get_binary_start_type()
 
 
 def _emergency_state_check(txrx, app_id):

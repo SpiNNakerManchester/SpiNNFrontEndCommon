@@ -329,7 +329,7 @@ class BufferManager(object):
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
 
-    def load_initial_buffers(self):
+    def load_initial_buffers(self, run_time, first_machine_time_step_map):
         """ Load the initial buffers for the senders using memory writes.
         """
         total_data = 0
@@ -340,6 +340,7 @@ class BufferManager(object):
         progress = ProgressBar(total_data, "Loading buffers")
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
+                vertex.update_buffer(run_time, first_machine_time_step_map)
                 self._send_initial_messages(vertex, region, progress)
         progress.end()
 
@@ -654,12 +655,15 @@ class BufferManager(object):
             return byte_array, missing
 
     def _retreive_by_placement(self, placement, recording_region_id):
-        """ Retrieve the data for a vertex; must be locked first.
+        """ Get the data for a vertex; must be locked first.
 
         :param placement: the placement to get the data from
         :type placement: :py:class:`~pacman.model.placements.Placement`
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
+        :return: object which will contain the data
+        :rtype:\
+            :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
         """
         recording_data_address = \
             placement.vertex.get_recording_region_base_address(

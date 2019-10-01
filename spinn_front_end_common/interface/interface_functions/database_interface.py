@@ -44,9 +44,10 @@ class DatabaseInterface(object):
     def __call__(
             self, machine_graph, user_create_database, tags,
             runtime, machine, data_n_timesteps, time_scale_factor,
-            machine_time_step, placements, routing_infos, router_tables,
-            database_directory, create_atom_to_event_id_mapping=False,
-            application_graph=None, graph_mapper=None):
+            default_machine_time_step, placements, routing_infos,
+            router_tables, database_directory,
+            create_atom_to_event_id_mapping=False, application_graph=None,
+            graph_mapper=None):
         # pylint: disable=too-many-arguments
 
         self._writer = DatabaseWriter(database_directory)
@@ -57,11 +58,11 @@ class DatabaseInterface(object):
         if self.needs_database:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(machine, time_scale_factor, machine_time_step,
-                              runtime, application_graph, machine_graph,
-                              data_n_timesteps, graph_mapper, placements,
-                              routing_infos, router_tables, tags,
-                              create_atom_to_event_id_mapping)
+            self._write_to_db(
+                machine, time_scale_factor, default_machine_time_step,
+                runtime, application_graph, machine_graph, data_n_timesteps,
+                graph_mapper, placements, routing_infos, router_tables, tags,
+                create_atom_to_event_id_mapping)
 
         return self, self.database_file_path
 
@@ -78,14 +79,14 @@ class DatabaseInterface(object):
         return None
 
     def _write_to_db(
-            self, machine, time_scale_factor, machine_time_step,
+            self, machine, time_scale_factor, default_machine_time_step,
             runtime, application_graph, machine_graph, data_n_timesteps,
             graph_mapper, placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
         """
         :param machine:
         :param time_scale_factor:
-        :param machine_time_step:
+        :param default_machine_time_step:
         :param runtime:
         :param application_graph:
         :param machine_graph:
@@ -100,10 +101,10 @@ class DatabaseInterface(object):
         :return:
         """
         # pylint: disable=too-many-arguments
-
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(time_scale_factor, machine_time_step, runtime)
+            w.add_system_params(
+                time_scale_factor, default_machine_time_step, runtime)
             p.update()
             w.add_machine_objects(machine)
             p.update()

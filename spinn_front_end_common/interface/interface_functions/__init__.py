@@ -68,6 +68,9 @@ from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
 from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
+from .auto_pause_and_resume_safety import AutoPauseAndResumeSafety
+from .builds_auto_pause_resume_time_period_map import (
+    BuildsAutoPauseResumeTimePeriodMap)
 
 __all__ = [
     "ApplicationFinisher",
@@ -96,4 +99,5 @@ __all__ = [
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder", "VirtualMachineGenerator"]
+    "TDMAAgendaBuilder", "VirtualMachineGenerator", "AutoPauseAndResumeSafety",
+    "BuildsAutoPauseResumeTimePeriodMap"]

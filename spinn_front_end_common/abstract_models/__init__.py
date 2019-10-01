@@ -38,6 +38,10 @@ from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
 from .abstract_uses_memory_io import AbstractUsesMemoryIO
 from .abstract_can_reset import AbstractCanReset
+from .abstract_application_supports_auto_pause_and_resume import (
+    AbstractApplicationSupportsAutoPauseAndResume)
+from .abstract_machine_supports_auto_pause_and_resume import (
+    AbstractMachineSupportsAutoPauseAndResume)
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
@@ -50,4 +54,6 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices",
-           "AbstractUsesMemoryIO", "AbstractCanReset"]
+           "AbstractUsesMemoryIO", "AbstractCanReset",
+           "AbstractApplicationSupportsAutoPauseAndResume",
+           "AbstractMachineSupportsAutoPauseAndResume"]

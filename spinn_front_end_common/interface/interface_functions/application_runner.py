@@ -57,7 +57,7 @@ class ApplicationRunner(object):
             send_start_notification, notification_interface,
             executable_targets, executable_types, app_id, txrx, runtime,
             time_scale_factor, no_sync_changes, time_threshold,
-            run_until_complete=False):
+            first_machine_time_step_map, run_until_complete=False):
         # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
 
@@ -69,13 +69,14 @@ class ApplicationRunner(object):
         return self.run_application(
             buffer_manager, notifier, executable_targets, executable_types,
             app_id, txrx, runtime, time_scale_factor, no_sync_changes,
-            time_threshold, run_until_complete)
+            time_threshold, run_until_complete, first_machine_time_step_map)
 
     # The actual runner
     def run_application(
             self, buffer_manager, notifier, executable_targets,
             executable_types, app_id, txrx, runtime, time_scale_factor,
-            no_sync_changes, time_threshold, run_until_complete):
+            no_sync_changes, time_threshold, run_until_complete,
+            first_machine_time_step_map):
         # pylint: disable=too-many-arguments
 
         # wait for all cores to be ready
@@ -86,7 +87,8 @@ class ApplicationRunner(object):
         buffer_manager.resume()
 
         # every thing is in sync0 so load the initial buffers
-        buffer_manager.load_initial_buffers()
+        buffer_manager.load_initial_buffers(
+            runtime, first_machine_time_step_map)
 
         # wait till external app is ready for us to start if required
         notifier.wait_for_confirmation()

@@ -70,10 +70,9 @@ class EnergyReport(object):
     def __call__(
             self, placements, machine, report_default_directory, version,
             spalloc_server, remote_spinnaker_url, time_scale_factor,
-            machine_time_step, pacman_provenance, router_provenance,
-            machine_graph, runtime, buffer_manager, mapping_time, load_time,
-            execute_time, dsg_time, extraction_time,
-            machine_allocation_controller=None):
+            pacman_provenance, router_provenance, machine_graph, runtime,
+            buffer_manager, mapping_time, load_time, execute_time, dsg_time,
+            extraction_time, machine_allocation_controller=None):
         """
         :param placements: the placements
         :param machine: the machine
@@ -82,7 +81,6 @@ class EnergyReport(object):
         :param spalloc_server: spalloc server IP
         :param remote_spinnaker_url: remote SpiNNaker URL
         :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
         :param pacman_provenance: the PACMAN provenance
         :param router_provenance: the router provenance
         :param machine_graph: the machine graph

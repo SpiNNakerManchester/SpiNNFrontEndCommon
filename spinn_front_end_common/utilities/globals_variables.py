@@ -66,3 +66,20 @@ def set_failed_state(new_failed_state):
         _failed_state = new_failed_state
     elif type(new_failed_state) != type(_failed_state):
         raise ValueError("You may only setup/init one type of simulator")
+
+
+def get_generated_output(output):
+    global _simulator, _failed_state, _cached_simulator
+    if _simulator is not None:
+        return _simulator.get_generated_output(output)
+    elif _failed_state is not None:
+        if _cached_simulator is not None:
+            return _cached_simulator.get_generated_output(output)
+        else:
+            raise ValueError(
+                "You need to have ran a simulator before asking for its "
+                "generated output, and the simulator needs to be cached "
+                "before you can request outputs.")
+    else:
+        raise ValueError(
+            "There should be some sort of simulator set. Why am i here?!")
