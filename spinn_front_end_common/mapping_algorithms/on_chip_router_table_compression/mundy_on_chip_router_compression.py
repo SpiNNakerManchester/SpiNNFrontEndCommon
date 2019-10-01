@@ -49,7 +49,7 @@ class MundyOnChipRouterCompression(object):
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
-            provenance_file_path, compress_only_when_needed=True,
+            system_prov_folder, compress_only_when_needed=True,
             compress_as_much_as_possible=False):
         """
         :param routing_tables: the memory routing tables to be compressed
@@ -57,7 +57,7 @@ class MundyOnChipRouterCompression(object):
         :type transceiver: :py:class:`~spinnman.Transceiver`
         :param machine: the SpiNNaker machine representation
         :param app_id: the application ID used by the main application
-        :param provenance_file_path: the path to where to write the data
+        :param system_prov_folder: the path to where to write the data
         :return: flag stating routing compression and loading has been done
         """
         # pylint: disable=too-many-arguments
@@ -93,13 +93,13 @@ class MundyOnChipRouterCompression(object):
             # get the debug data
             if not succeeded:
                 self._handle_failure(
-                    executable_targets, transceiver, provenance_file_path,
+                    executable_targets, transceiver, system_prov_folder,
                     compressor_app_id)
 
         # Check if any cores have not completed successfully
         self._check_for_success(
             executable_targets, transceiver,
-            provenance_file_path, compressor_app_id)
+            system_prov_folder, compressor_app_id)
 
         # update progress bar
         progress.update()
@@ -132,7 +132,7 @@ class MundyOnChipRouterCompression(object):
         return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
 
     def _check_for_success(
-            self, executable_targets, txrx, provenance_file_path,
+            self, executable_targets, txrx, system_prov_path,
             compressor_app_id):
         """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
@@ -152,7 +152,7 @@ class MundyOnChipRouterCompression(object):
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self._handle_failure(
-                        executable_targets, txrx, provenance_file_path,
+                        executable_targets, txrx, system_prov_path,
                         compressor_app_id)
 
                     raise SpinnFrontEndException(
@@ -161,7 +161,7 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def _handle_failure(
-            executable_targets, txrx, provenance_file_path, compressor_app_id):
+            executable_targets, txrx, system_prov_path, compressor_app_id):
         """
         :param executable_targets:
         :param txrx: the spinnman interface
@@ -173,7 +173,8 @@ class MundyOnChipRouterCompression(object):
         iobuf_extractor = ChipIOBufExtractor()
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets, executable_finder, provenance_file_path)
+            txrx, executable_targets, executable_finder,
+            None, system_prov_path, {_BINARY_PATH: ExecutableType.SYSTEM})
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
