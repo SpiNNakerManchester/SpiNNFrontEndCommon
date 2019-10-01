@@ -86,4 +86,4 @@ def test_router_compressor_on_error():
     with pytest.raises(SpinnFrontEndException):
         compressor(
             routing_tables, transceiver, machine, app_id=17,
-            provenance_file_path="")
+            system_prov_folder="")
