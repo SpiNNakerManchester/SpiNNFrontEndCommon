@@ -26,6 +26,12 @@ if sys.version_info < (3,):
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
+# Maximum bytes in one blob (or string)
+SQLITE_BLOB_LIMIT = 1000 * 1000 * 1000
+
+
+def _timestamp():
+    return int(time.time() * SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
 class SqlLiteDatabase(AbstractDatabase):
@@ -75,13 +81,22 @@ class SqlLiteDatabase(AbstractDatabase):
     @staticmethod
     def _read_contents(cursor, x, y, p, region):
         for row in cursor.execute(
-                "SELECT content FROM region_view "
+                "SELECT region_id, content, have_extra FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
-                + "AND local_region_index = ?",
+                + "AND local_region_index = ? LIMIT 1",
                 (x, y, p, region)):
-            data = row["content"]
-            return memoryview(data)
-        return b""
+            r_id, data, extra = (
+                row["region_id"], row["content"], row["have_extra"])
+            break
+        else:
+            return b""
+        if extra:
+            for row in cursor.execute(
+                    "SELECT content FROM region_extra "
+                    + "WHERE region_id = ? ORDER BY extra_id",
+                    (r_id, )):
+                data += row["content"]
+        return memoryview(data)
 
     @staticmethod
     def _get_core_id(cursor, x, y, p):
@@ -127,16 +142,49 @@ class SqlLiteDatabase(AbstractDatabase):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
+        l = len(data)
         with self._db:
             cursor = self._db.cursor()
             region_id = self._get_region_id(cursor, x, y, p, region)
-            cursor.execute(
-                "UPDATE region SET content = content || ?, "
-                + "fetches = fetches + 1, append_time = ?"
-                + "WHERE region_id = ? ",
-                (sqlite3.Binary(data),
-                 int(time.time() * SECONDS_TO_MICRO_SECONDS_CONVERSION),
-                 region_id))
+            l2 = 0
+            for row in cursor.execute(
+                    "SELECT LEN(content) AS leng FROM region "
+                    + "WHERE region_id = ? LIMIT 1",
+                    (region_id, )):
+                l2 = row["leng"]
+            if l + l2 < SQLITE_BLOB_LIMIT:
+                cursor.execute(
+                    "UPDATE region SET content = content || ?, "
+                    + "fetches = fetches + 1, append_time = ?"
+                    + "WHERE region_id = ? ",
+                    (sqlite3.Binary(data), _timestamp(), region_id))
+            else:
+                cursor.execute(
+                    "UPDATE region SET "
+                    + "fetches = fetches + 1, append_time = ?, have_extra = 1 "
+                    + "WHERE region_id = ? ",
+                    (_timestamp(), region_id))
+                assert cursor.rowcount == 1
+                l2 = 0
+                extra_id = None
+                for row in cursor.execute(
+                        "SELECT LEN(content), extra_id AS leng "
+                        + "FROM region_extra "
+                        + "WHERE region_id = ? "
+                        + "ORDER BY extra_id DESC LIMIT 1",
+                        (region_id, )):
+                    l2 = row["leng"]
+                    extra_id = row["extra_id"]
+                if 0 < l2 and l2 + l < SQLITE_BLOB_LIMIT:
+                    cursor.execute(
+                        "UPDATE region_extra SET "
+                        + "content = content || ? WHERE extra_id = ?",
+                        (sqlite3.Binary(data), extra_id))
+                else:
+                    cursor.execute(
+                        "INSERT INTO region_extra(region_id, content) "
+                        + "VALUES (?, ?)",
+                        (region_id, sqlite3.Binary(data)))
             assert cursor.rowcount == 1
 
     @overrides(AbstractDatabase.get_region_data)
