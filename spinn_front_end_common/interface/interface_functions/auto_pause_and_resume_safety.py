@@ -27,7 +27,7 @@ class AutoPauseAndResumeSafety(object):
     def _locate_lowest_common_multiple(time_periods):
         """ code swiped from \
         https://www.geeksforgeeks.org/lcm-of-given-array-elements/
-        
+
         :param time_periods: the list of time periods to find LCM of.
         :return: the LCM of these numbers
         """
