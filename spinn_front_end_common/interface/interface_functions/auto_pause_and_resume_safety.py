@@ -40,7 +40,6 @@ class AutoPauseAndResumeSafety(object):
 
         # determine the lowest common denominator.
         lowest_common_multiple = numpy.lcm.reduce(list(time_periods))
-        print("{}".format(lowest_common_multiple))
 
         # only check combination to runtime if we're not running forever
         if runtime is None:
