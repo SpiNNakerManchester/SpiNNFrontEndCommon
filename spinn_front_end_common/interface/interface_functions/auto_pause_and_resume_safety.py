@@ -23,6 +23,19 @@ import math
 
 class AutoPauseAndResumeSafety(object):
 
+    @staticmethod
+    def _locate_lowest_common_multiple(time_periods):
+        """ code swiped from \
+        https://www.geeksforgeeks.org/lcm-of-given-array-elements/
+        
+        :param time_periods: the list of time periods to find LCM of.
+        :return: the LCM of these numbers
+        """
+        lcm = time_periods[0]
+        for i in time_periods[1:]:
+            lcm = int(lcm * i / math.gcd(lcm, i))
+        return lcm
+
     def __call__(
             self, machine_graph, time_scale_factor, machine_time_period_map,
             runtime):
@@ -39,7 +52,11 @@ class AutoPauseAndResumeSafety(object):
             time_periods.add(machine_time_period_map[vertex])
 
         # determine the lowest common denominator.
-        lowest_common_multiple = numpy.lcm.reduce(list(time_periods))
+        try:
+            lowest_common_multiple = numpy.lcm.reduce(list(time_periods))
+        except TypeError:  # if the numpy fails, try the slow way
+            lowest_common_multiple = self._locate_lowest_common_multiple(
+                list(time_periods))
 
         # only check combination to runtime if we're not running forever
         if runtime is None:
