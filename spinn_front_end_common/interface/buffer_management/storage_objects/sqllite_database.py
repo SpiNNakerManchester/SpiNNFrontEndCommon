@@ -138,7 +138,7 @@ class SqlLiteDatabase(AbstractDatabase):
         :type p: int
         :param region: Region containing the data to be stored
         :type region: int
-        :param data: data to be stored
+        :param data: data to be stored, assumed to be shorter than 1GB
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
@@ -147,17 +147,11 @@ class SqlLiteDatabase(AbstractDatabase):
         with self._db:
             cursor = self._db.cursor()
             region_id = self._get_region_id(cursor, x, y, p, region)
-            existing_len = 0
-            for row in cursor.execute(
-                    "SELECT length(content) AS len FROM region "
-                    + "WHERE region_id = ? LIMIT 1",
-                    (region_id, )):
-                existing_len = row["len"]
-            if chunk_len + existing_len < SQLITE_BLOB_LIMIT:
+            if self._get_use_main_table(cursor, region_id, chunk_len):
                 cursor.execute(
                     "UPDATE region SET content = content || ?, "
-                    + "fetches = fetches + 1, append_time = ?"
-                    + "WHERE region_id = ? ",
+                    + "fetches = fetches + 1, append_time = ? "
+                    + "WHERE region_id = ?",
                     (datablob, _timestamp(), region_id))
             else:
                 cursor.execute(
@@ -166,18 +160,8 @@ class SqlLiteDatabase(AbstractDatabase):
                     + "WHERE region_id = ? ",
                     (_timestamp(), region_id))
                 assert cursor.rowcount == 1
-                existing_len = 0
-                extra_id = None
-                for row in cursor.execute(
-                        "SELECT length(content), extra_id AS len "
-                        + "FROM region_extra "
-                        + "WHERE region_id = ? "
-                        + "ORDER BY extra_id DESC LIMIT 1",
-                        (region_id, )):
-                    existing_len = row["len"]
-                    extra_id = row["extra_id"]
-                if 0 < existing_len and (
-                        existing_len + chunk_len < SQLITE_BLOB_LIMIT):
+                extra_id = self._get_extra_row_id(cursor, region_id, chunk_len)
+                if extra_id is not None:
                     cursor.execute(
                         "UPDATE region_extra SET "
                         + "content = content || ? WHERE extra_id = ?",
@@ -188,6 +172,32 @@ class SqlLiteDatabase(AbstractDatabase):
                         + "VALUES (?, ?)",
                         (region_id, datablob))
             assert cursor.rowcount == 1
+
+    def _get_use_main_table(self, cursor, region_id, chunk_len):
+        existing_len = 0
+        have_extra = False
+        for row in cursor.execute(
+                "SELECT length(content) AS len, have_extra FROM region "
+                + "WHERE region_id = ? LIMIT 1",
+                (region_id, )):
+            existing_len = row["len"]
+            have_extra = row["have_extra"]
+            if chunk_len + existing_len < SQLITE_BLOB_LIMIT and not have_extra:
+                return True
+            break
+        return False
+
+    def _get_extra_row_id(self, cursor, region_id, chunk_len):
+        for row in cursor.execute(
+                "SELECT length(content), extra_id AS len "
+                + "FROM region_extra "
+                + "WHERE region_id = ? "
+                + "ORDER BY extra_id DESC LIMIT 1",
+                (region_id, )):
+            if row["len"] + chunk_len < SQLITE_BLOB_LIMIT:
+                return row["extra_id"]
+            break
+        return None
 
     @overrides(AbstractDatabase.get_region_data)
     def get_region_data(self, x, y, p, region):
