@@ -189,7 +189,7 @@ class SqlLiteDatabase(AbstractDatabase):
 
     def _get_extra_row_id(self, cursor, region_id, chunk_len):
         for row in cursor.execute(
-                "SELECT length(content), extra_id AS len "
+                "SELECT length(content) AS len, extra_id "
                 + "FROM region_extra "
                 + "WHERE region_id = ? "
                 + "ORDER BY extra_id DESC LIMIT 1",
