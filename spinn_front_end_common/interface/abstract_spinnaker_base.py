@@ -2202,7 +2202,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def local_timer_period_map(self):
-        return self._mapping_outputs["MachineTimeStepMap"]
+        if self._has_ran:
+            return self._mapping_outputs["MachineTimeStepMap"]
+        else:
+            return None
 
     @property
     def time_scale_factor(self):
