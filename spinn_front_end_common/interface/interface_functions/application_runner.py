@@ -15,6 +15,9 @@
 
 import logging
 import time
+
+from spinn_front_end_common.utilities.constants import \
+    MILLISECOND_TO_SECOND_CONVERSION
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -131,7 +134,9 @@ class ApplicationRunner(object):
                   runtime, time_scale_factor, time_threshold):
         # pylint: disable=too-many-arguments
         if not run_until_complete:
-            time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
+            time_to_wait = (
+                runtime * time_scale_factor /
+                MILLISECOND_TO_SECOND_CONVERSION + 0.1)
             logger.info(
                 "Application started; waiting {}s for it to stop",
                 time_to_wait)
