@@ -1047,7 +1047,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             return [0]
         n_full_iterations = int(math.floor(n_steps / self._max_run_time_steps))
         left_over_steps = (
-            n_steps - n_full_iterations * self._max_run_time_steps)
+            n_steps - (n_full_iterations * self._max_run_time_steps))
         steps = [int(self._max_run_time_steps)] * n_full_iterations
         if left_over_steps:
             steps.append(int(left_over_steps))
