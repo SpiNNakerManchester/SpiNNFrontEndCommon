@@ -461,7 +461,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
-        self._current_run_timesteps_map = None
+        self._current_run_timesteps_map = dict()
         self._default_current_run_time = 0
         self._no_sync_changes = 0
         self._max_run_time_steps = None

@@ -456,7 +456,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Reserve send buffer region if required
         if self._send_buffer_times is not None:
-            self._send_buffer_size = (
+            self._send_buffer_size = int(
                 self.send_buffer_sdram_per_timestep(
                     self._send_buffer_times, self._n_keys) *
                 n_machine_time_steps)
