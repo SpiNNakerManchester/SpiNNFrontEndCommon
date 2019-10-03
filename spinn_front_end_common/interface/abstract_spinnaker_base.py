@@ -1777,7 +1777,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         run_complete = False
         executor = self._create_execute_workflow(
             step, graph_changed, run_until_complete)
-        self._default_current_run_time += step
+
+        if step is not None and self._default_current_run_time is not None:
+            self._default_current_run_time += step
 
         try:
             executor.execute_mapping()
