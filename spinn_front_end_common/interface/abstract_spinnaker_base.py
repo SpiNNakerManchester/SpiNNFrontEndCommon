@@ -46,6 +46,8 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
+from pacman.executor.injection_decorator import provide_injectables, \
+    clear_injectables
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
@@ -851,6 +853,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_mapping(run_time)
 
         # Check if anything has per-timestep SDRAM usage
+        provide_injectables(self._mapping_outputs)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -862,6 +865,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
             self._max_run_time_steps = self._deduce_data_n_timesteps()
+        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -1021,10 +1025,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         lowest_common_denominator = (
             self._mapping_outputs["LowestCommonDenominatorTimePeriod"])
 
-        if max_time_steps % lowest_common_denominator != 0:
-            max_time_steps = (
-                math.floor(max_time_steps / lowest_common_denominator) *
-                lowest_common_denominator)
+        if ((max_time_steps * MICRO_TO_MILLISECOND_CONVERSION) %
+                lowest_common_denominator != 0):
+            max_time_steps = ((
+                math.floor(
+                    (max_time_steps * MICRO_TO_MILLISECOND_CONVERSION) /
+                    lowest_common_denominator) * lowest_common_denominator) /
+                MICRO_TO_MILLISECOND_CONVERSION)
 
         return max_time_steps
 
