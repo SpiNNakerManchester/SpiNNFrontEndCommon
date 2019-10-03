@@ -1846,7 +1846,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _create_execute_workflow(
             self, step, graph_changed, run_until_complete):
         run_time = None
-        if self._max_run_time_steps is not None:
+        if self._max_run_time_steps is not None and step is not None:
             run_time = (
                 step * self._default_machine_time_step /
                 MICRO_TO_MILLISECOND_CONVERSION)
