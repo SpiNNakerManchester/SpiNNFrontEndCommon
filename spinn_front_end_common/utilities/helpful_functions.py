@@ -17,7 +17,6 @@ import os
 import logging
 import struct
 
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
