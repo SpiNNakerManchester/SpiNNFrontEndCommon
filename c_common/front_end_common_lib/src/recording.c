@@ -50,7 +50,7 @@ typedef struct recording_channel_t {
     buffered_operations last_buffer_operation;
 } recording_channel_t;
 
-struct recording_data_t {
+typedef struct recording_data_t {
     uint32_t n_regions;
     uint32_t tag;
     uint32_t tag_destination;
