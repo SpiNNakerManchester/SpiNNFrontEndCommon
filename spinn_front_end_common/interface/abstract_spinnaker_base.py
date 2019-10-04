@@ -2211,7 +2211,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def local_timer_period_map(self):
-        if self._has_ran:
+        if "MachineTimeStepMap" in self._mapping_outputs:
             return self._mapping_outputs["MachineTimeStepMap"]
         else:
             return None
