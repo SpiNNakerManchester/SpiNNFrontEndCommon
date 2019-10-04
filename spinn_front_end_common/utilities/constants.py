@@ -21,7 +21,7 @@ COMMAND_SENDER_CORE_APPLICATION_ID = 0xAC6
 SPIKE_INJECTOR_CORE_APPLICATION_ID = 0xAC9
 
 BITS_PER_WORD = 32.0
-BYTES_PER_WORS = 4
+BYTES_PER_WORDS = 4
 SDRAM_BASE_ADDR = 0x70000000
 MAX_SAFE_BINARY_SIZE = 32 * 1024
 MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
@@ -44,9 +44,6 @@ SARK_PER_MALLOC_SDRAM_USAGE = 8
 # This is the amount required by the pointer table plus a SARK allocation
 DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = (
     APP_PTR_TABLE_BYTE_SIZE + SARK_PER_MALLOC_SDRAM_USAGE)
-
-# conversion from words to bytes
-WORD_TO_BYTE_MULTIPLIER = 4
 
 # The number of words used by the simulation interface
 # 4 for machine_time_step,
