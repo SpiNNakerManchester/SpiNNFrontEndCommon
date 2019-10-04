@@ -2124,6 +2124,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         for vertex in self._current_run_timesteps_map:
             self._current_run_timesteps_map[vertex] = (0, 0)
 
+        # sets the default curent runtime to 0 as needed for neo
+        self._default_current_run_time = 0
+
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
