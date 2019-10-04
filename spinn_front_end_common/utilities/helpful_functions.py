@@ -304,19 +304,6 @@ def convert_vertices_to_core_subset(vertices, placements):
     return core_subsets
 
 
-def find_executable_start_type(machine_vertex, graph_mapper=None):
-    has_binary = isinstance(machine_vertex, AbstractHasAssociatedBinary)
-
-    if not has_binary:
-        return None
-    elif graph_mapper is not None:
-        app_vertex = graph_mapper.get_application_vertex(machine_vertex)
-        if isinstance(app_vertex, AbstractHasAssociatedBinary):
-            return app_vertex.get_binary_start_type()
-    else:
-        return machine_vertex.get_binary_start_type()
-
-
 def _emergency_state_check(txrx, app_id):
     # pylint: disable=broad-except
     try:
