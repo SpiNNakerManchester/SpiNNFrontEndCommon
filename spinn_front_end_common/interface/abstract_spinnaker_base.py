@@ -1458,7 +1458,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self._time_scale_factor
-        inputs["MachineTimeStep"] = self._default_machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
