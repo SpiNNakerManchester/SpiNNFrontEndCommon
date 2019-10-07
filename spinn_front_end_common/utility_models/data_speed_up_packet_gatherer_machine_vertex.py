@@ -195,6 +195,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_placement",
         # provenance holder
         "_provenance_data_items",
+        # Count of the runs for provenance data
+        "_run",
         "_remote_tag",
         # path to the data out report
         "_out_report_path",
@@ -279,6 +281,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
+        self._run = 0
         self._placement = None
         self._app_id = None
 
@@ -431,6 +434,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
     def get_local_provenance_data(self):
+        self._run += 1
         prov_items = list()
         significant_losses = defaultdict(list)
         for (placement, memory_address, length_in_bytes) in \
@@ -445,8 +449,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 chip_name = "chip{}:{}".format(placement.x, placement.y)
                 last_name = "Memory_address:{}:Length_in_bytes:{}"\
                     .format(memory_address, length_in_bytes)
-                iteration_name = "iteration{}".format(
-                    times_extracted_the_same_thing)
+                if times_extracted_the_same_thing == 0:
+                    iteration_name = "run{}".format(
+                        self._run)
+                else:
+                    iteration_name = "run{}iteration{}".format(
+                        self._run, times_extracted_the_same_thing)
                 prov_items.append(ProvenanceDataItem(
                     [top_level_name, "extraction_time", chip_name, last_name,
                      iteration_name],
@@ -475,6 +483,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 [top_level_name, "serious_lost_seq_num_count", chip_name],
                 n_times, report=True, message=_MAJOR_LOSS_MESSAGE.format(
                     chip, n_times)))
+        self._provenance_data_items = defaultdict(list)
         return prov_items
 
     @staticmethod
@@ -565,12 +574,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 raise Exception(
                     "when using a file, you can only have a offset of 0")
 
-            reader = FileDataReader(data)
-            if n_bytes is None:
-                n_bytes = os.stat(data).st_size
-                data = reader.readall()
-            else:
+            with FileDataReader(data) as reader:
+                # n_bytes=None already means 'read everything'
                 data = reader.read(n_bytes)
+            # Number of bytes to write is now length of buffer we have
+            n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
         transceiver = get_simulator().transceiver

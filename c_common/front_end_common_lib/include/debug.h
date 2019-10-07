@@ -65,8 +65,44 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
+#include <stdint.h>
 #include "spin-print.h"
 #include <assert.h>
+
+static inline uint32_t float_to_int(float f) {
+    union {
+        float f;
+        uint32_t i;
+    } dat;
+
+    dat.f = f;
+    return dat.i;
+}
+
+typedef struct {
+    uint32_t lower;
+    uint32_t upper;
+} upper_lower;
+
+static inline uint32_t double_to_lower(double d) {
+    union {
+        double d;
+        upper_lower ints;
+    } dat;
+
+    dat.d = d;
+    return dat.ints.lower;
+}
+
+static inline uint32_t double_to_upper(double d) {
+    union {
+        double d;
+        upper_lower ints;
+    } dat;
+
+    dat.d = d;
+    return dat.ints.upper;
+}
 
 //! \brief This macro prints a debug message if level is less than or equal
 //!        to the LOG_LEVEL

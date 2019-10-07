@@ -415,7 +415,7 @@ static inline bool add_eieio_packet_to_sdram(
             }
 
             log_debug("Copying first %d bytes to final space of %d",
-                    final_space);
+                    length, final_space);
             spin1_memcpy(write_pointer, msg_ptr, final_space);
             write_pointer = buffer_region;
             msg_ptr += final_space;
