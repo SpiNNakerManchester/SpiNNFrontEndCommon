@@ -35,7 +35,9 @@ def _timestamp():
 
 
 class SqlLiteDatabase(AbstractDatabase):
-    """ Specific implementation of the Database for SqlLite
+    """ Specific implementation of the Database for SQLite 3.
+
+    NOT THREAD SAFE ON THE SAME DB. Threads can access different DBs just fine.
     """
 
     __slots__ = [
@@ -50,7 +52,6 @@ class SqlLiteDatabase(AbstractDatabase):
         :type database_file: str
         """
         self._db = sqlite3.connect(database_file)
-        self._db.text_factory = memoryview
         self.__init_db()
 
     def __del__(self):
@@ -68,8 +69,8 @@ class SqlLiteDatabase(AbstractDatabase):
             cursor = self._db.cursor()
             cursor.execute(
                 "UPDATE region "
-                + "SET content = ?, fetches = 0, append_time = NULL",
-                (sqlite3.Binary(b"")))
+                + "SET content = CAST('' AS BLOB), fetches = 0, "
+                + "append_time = NULL")
 
     def __init_db(self):
         """ Set up the database if required. """
@@ -78,8 +79,8 @@ class SqlLiteDatabase(AbstractDatabase):
             sql = f.read()
         self._db.executescript(sql)
 
-    @staticmethod
-    def _read_contents(cursor, x, y, p, region):
+    def __read_contents(self, cursor, x, y, p, region):
+        self._db.text_factory = bytearray
         for row in cursor.execute(
                 "SELECT region_id, content, have_extra FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
@@ -89,17 +90,18 @@ class SqlLiteDatabase(AbstractDatabase):
                 row["region_id"], row["content"], row["have_extra"])
             break
         else:
-            return b""
+            return memoryview(b"")
         if extra:
+            self._db.text_factory = memoryview
             for row in cursor.execute(
                     "SELECT content FROM region_extra "
-                    + "WHERE region_id = ? ORDER BY extra_id",
+                    + "WHERE region_id = ? ORDER BY extra_id ASC",
                     (r_id, )):
                 data += row["content"]
         return memoryview(data)
 
     @staticmethod
-    def _get_core_id(cursor, x, y, p):
+    def __get_core_id(cursor, x, y, p):
         for row in cursor.execute(
                 "SELECT core_id FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? ",
@@ -110,25 +112,25 @@ class SqlLiteDatabase(AbstractDatabase):
             (x, y, p))
         return cursor.lastrowid
 
-    def _get_region_id(self, cursor, x, y, p, region):
+    def __get_region_id(self, cursor, x, y, p, region):
         for row in cursor.execute(
                 "SELECT region_id FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
                 + "AND local_region_index = ?",
                 (x, y, p, region)):
             return row["region_id"]
-        core_id = self._get_core_id(cursor, x, y, p)
+        core_id = self.__get_core_id(cursor, x, y, p)
         cursor.execute(
             "INSERT INTO region(core_id, local_region_index, content, "
             + "fetches) "
-            + "VALUES(?, ?, ?, 0)",
-            (core_id, region, sqlite3.Binary(b"")))
+            + "VALUES(?, ?, CAST('' AS BLOB), 0)",
+            (core_id, region))
         return cursor.lastrowid
 
     @overrides(AbstractDatabase.store_data_in_region_buffer)
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
-            specific chip, core and region
+            specific chip, core and region.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -142,66 +144,42 @@ class SqlLiteDatabase(AbstractDatabase):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
-        chunk_len = len(data)
         datablob = sqlite3.Binary(data)
         with self._db:
             cursor = self._db.cursor()
-            region_id = self._get_region_id(cursor, x, y, p, region)
-            if self._get_use_main_table(cursor, region_id, chunk_len):
+            region_id = self.__get_region_id(cursor, x, y, p, region)
+            if self.__use_main_table(cursor, region_id):
                 cursor.execute(
-                    "UPDATE region SET content = content || ?, "
+                    "UPDATE region SET content = CAST(? AS BLOB), "
                     + "fetches = fetches + 1, append_time = ? "
                     + "WHERE region_id = ?",
                     (datablob, _timestamp(), region_id))
             else:
                 cursor.execute(
                     "UPDATE region SET "
-                    + "fetches = fetches + 1, append_time = ?, have_extra = 1 "
-                    + "WHERE region_id = ? ",
+                    + "fetches = fetches + 1, append_time = ? "
+                    + "WHERE region_id = ?",
                     (_timestamp(), region_id))
                 assert cursor.rowcount == 1
-                extra_id = self._get_extra_row_id(cursor, region_id, chunk_len)
-                if extra_id is not None:
-                    cursor.execute(
-                        "UPDATE region_extra SET "
-                        + "content = content || ? WHERE extra_id = ?",
-                        (datablob, extra_id))
-                else:
-                    cursor.execute(
-                        "INSERT INTO region_extra(region_id, content) "
-                        + "VALUES (?, ?)",
-                        (region_id, datablob))
+                cursor.execute(
+                    "INSERT INTO region_extra(region_id, content) "
+                    + "VALUES (?, CAST(? AS BLOB))",
+                    (region_id, datablob))
             assert cursor.rowcount == 1
 
-    def _get_use_main_table(self, cursor, region_id, chunk_len):
-        existing_len = 0
-        have_extra = False
+    def __use_main_table(self, cursor, region_id):
         for row in cursor.execute(
-                "SELECT length(content) AS len, have_extra FROM region "
-                + "WHERE region_id = ? LIMIT 1",
+                "SELECT COUNT(*) AS existing FROM region "
+                + "WHERE region_id = ? AND fetches = 0",
                 (region_id, )):
-            existing_len = row["len"]
-            have_extra = row["have_extra"]
-            if chunk_len + existing_len < SQLITE_BLOB_LIMIT and not have_extra:
-                return True
-            break
+            existing = row["existing"]
+            return existing == 1
         return False
-
-    def _get_extra_row_id(self, cursor, region_id, chunk_len):
-        for row in cursor.execute(
-                "SELECT length(content) AS len, extra_id "
-                + "FROM region_extra "
-                + "WHERE region_id = ? "
-                + "ORDER BY extra_id DESC LIMIT 1",
-                (region_id, )):
-            if row["len"] + chunk_len < SQLITE_BLOB_LIMIT:
-                return row["extra_id"]
-            break
-        return None
 
     @overrides(AbstractDatabase.get_region_data)
     def get_region_data(self, x, y, p, region):
         """ Get the data stored for a given region of a given core
+
         :param x: x coordinate of the chip
         :type x: int
         :param y: y coordinate of the chip
@@ -218,7 +196,7 @@ class SqlLiteDatabase(AbstractDatabase):
         if self._db is not None:
             with self._db:
                 c = self._db.cursor()
-                data = self._read_contents(c, x, y, p, region)
+                data = self.__read_contents(c, x, y, p, region)
                 # TODO missing data
         else:
             data = self._data[x, y, p, region].read_all()
