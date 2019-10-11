@@ -37,15 +37,14 @@ class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
         AbstractProvidesOutgoingPartitionConstraints):
-
     # Regions for populations
-    DATA_REGIONS = Enum(
-        value="DATA_REGIONS",
-        names=[('SYSTEM_REGION', 0),
-               ('COMMANDS_WITH_ARBITRARY_TIMES', 1),
-               ('COMMANDS_AT_START_RESUME', 2),
-               ('COMMANDS_AT_STOP_PAUSE', 3),
-               ('PROVENANCE_REGION', 4)])
+    class DATA_REGIONS(Enum):
+        SYSTEM_REGION = 0
+        COMMANDS_WITH_ARBITRARY_TIMES = 1
+        COMMANDS_AT_START_RESUME = 2
+        COMMANDS_AT_STOP_PAUSE = 3
+        PROVENANCE_REGION = 4
+
 
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
     _COMMAND_WITH_PAYLOAD_SIZE = 20

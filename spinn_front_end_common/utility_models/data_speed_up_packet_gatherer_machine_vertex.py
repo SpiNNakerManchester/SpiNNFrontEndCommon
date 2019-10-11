@@ -119,30 +119,31 @@ BYTES_IN_FULL_PACKET_WITHOUT_ADDRESS = (
 # x, y, key (all ints) for possible 48 chips,
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * WORD_SIZE
 
-# DSG data regions
-_DATA_REGIONS = Enum(
-    value="DATA_REGIONS",
-    names=[('SYSTEM', 0),
-           ('CONFIG', 1),
-           ('CHIP_TO_KEY_SPACE', 2)])
 
-# command IDs for the SDP packets for data out
-DATA_OUT_COMMANDS = Enum(
-    value="DATA_OUT_COMMANDS", names=[
-        ("START_SENDING", 100),
-        ("START_MISSING_SEQ", 1000),
-        ("MISSING_SEQ", 1001),
-        ("CLEAR", 2000)])
+class _DATA_REGIONS(Enum):
+    """DSG data regions"""
+    SYSTEM = 0
+    CONFIG = 1
+    CHIP_TO_KEY_SPACE = 2
 
-# command IDs for the SDP packets for data in
-DATA_IN_COMMANDS = Enum(
-    value="DATA_IN_COMMANDS", names=[
-        ("SEND_DATA_TO_LOCATION", 200),
-        ("SEND_SEQ_DATA", 2000),
-        ("SEND_DONE", 2002),
-        ("RECEIVE_FIRST_MISSING_SEQ", 2003),
-        ("RECEIVE_MISSING_SEQ_DATA", 2004),
-        ("RECEIVE_FINISHED", 2005)])
+
+class DATA_OUT_COMMANDS(Enum):
+    """command IDs for the SDP packets for data out"""
+    START_SENDING = 100
+    START_MISSING_SEQ = 1000
+    MISSING_SEQ = 1001
+    CLEAR = 2000
+
+
+class DATA_IN_COMMANDS(Enum):
+    """command IDs for the SDP packets for data in"""
+    SEND_DATA_TO_LOCATION = 200
+    SEND_SEQ_DATA = 2000
+    SEND_DONE = 2002
+    RECEIVE_FIRST_MISSING_SEQ = 2003
+    RECEIVE_MISSING_SEQ_DATA = 2004
+    RECEIVE_FINISHED = 2005
+
 
 # precompiled structures
 _ONE_WORD = struct.Struct("<I")

@@ -42,12 +42,11 @@ class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
+    class _LIVE_DATA_GATHER_REGIONS(Enum):
+        SYSTEM = 0
+        CONFIG = 1
+        PROVENANCE = 2
 
-    _LIVE_DATA_GATHER_REGIONS = Enum(
-        value="LIVE_DATA_GATHER_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1),
-               ('PROVENANCE', 2)])
 
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 

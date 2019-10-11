@@ -57,12 +57,13 @@ class ChipPowerMonitorMachineVertex(
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
+
     # data regions
-    CHIP_POWER_MONITOR_REGIONS = Enum(
-        value="CHIP_POWER_MONITOR_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1),
-               ('RECORDING', 2)])
+    class CHIP_POWER_MONITOR_REGIONS(Enum):
+        SYSTEM = 0
+        CONFIG = 1
+        RECORDING = 2
+
 
     # default magic numbers
     SAMPLE_RECORDING_REGION = 0
