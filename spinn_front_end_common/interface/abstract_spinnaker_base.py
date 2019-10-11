@@ -1452,10 +1452,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ExecutableFinder"] = self._executable_finder
         inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
-        inputs["SendStartNotifications"] = self._config.getboolean(
-            "Database", "send_start_notification")
-        inputs["SendStopNotifications"] = self._config.getboolean(
-            "Database", "send_stop_notification")
+        inputs["SendStartNotifications"] = True
+        inputs["SendStopNotifications"] = True
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
 

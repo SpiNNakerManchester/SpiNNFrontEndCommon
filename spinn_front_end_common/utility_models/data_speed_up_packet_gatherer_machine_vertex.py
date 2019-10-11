@@ -577,7 +577,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             with FileDataReader(data) as reader:
                 # n_bytes=None already means 'read everything'
-                data = reader.read(n_bytes)
+                data = reader.read(n_bytes)  # pylint: disable=no-member
             # Number of bytes to write is now length of buffer we have
             n_bytes = len(data)
         elif n_bytes is None:
