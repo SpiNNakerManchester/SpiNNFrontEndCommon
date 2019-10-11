@@ -45,7 +45,6 @@ class CommandSenderMachineVertex(
         COMMANDS_AT_STOP_PAUSE = 3
         PROVENANCE_REGION = 4
 
-
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
     _COMMAND_WITH_PAYLOAD_SIZE = 20
 

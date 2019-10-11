@@ -47,7 +47,6 @@ class LivePacketGatherMachineVertex(
         CONFIG = 1
         PROVENANCE = 2
 
-
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
     N_ADDITIONAL_PROVENANCE_ITEMS = 2

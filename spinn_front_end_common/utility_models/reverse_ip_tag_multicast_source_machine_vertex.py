@@ -85,14 +85,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         SEND_BUFFER = 3
         PROVENANCE_REGION = 4
 
-
     class _PROVENANCE_ITEMS(Enum):
         N_RECEIVED_PACKETS = 0
         N_SENT_PACKETS = 1
         INCORRECT_KEYS = 2
         INCORRECT_PACKETS = 3
         LATE_PACKETS = 4
-
 
     # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
