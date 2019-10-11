@@ -48,7 +48,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def get_regions(self):
         """ Return the regions which has buffers to send
         """
-        return self.send_buffers.keys()
+        return self.send_buffers.keys()  # pylint: disable=no-member
 
     def is_next_timestamp(self, region):
         """ Check if there are more time stamps which need transmitting

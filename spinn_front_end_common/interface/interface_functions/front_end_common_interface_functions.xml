@@ -1894,10 +1894,6 @@
                 <param_type>ProvenanceFilePath</param_type>
             </parameter>
             <parameter>
-                <param_name>run_time_ms</param_name>
-                <param_type>RunTime</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_time_step</param_name>
                 <param_type>MachineTimeStep</param_type>
             </parameter>
@@ -1906,7 +1902,6 @@
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
             <param_name>provenance_file_path</param_name>
-            <param_name>run_time_ms</param_name>
             <param_name>machine_time_step</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
