@@ -25,7 +25,7 @@ import struct
 import sys
 from enum import Enum
 from six.moves import xrange
-from six import reraise
+from six import reraise, PY2
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -609,17 +609,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             original_data = bytes(data[offset:n_bytes + offset])
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
-            if original_data != verified_data:
-                log.error("VARIANCE: chip:{},{} address:{} len:{}",
-                          x, y, base_address, n_bytes)
-                log.error("original:{}", original_data.hex())
-                log.error("verified:{}", verified_data.hex())
-                i = 0
-                for (a, b) in zip(original_data, verified_data):
-                    if a != b:
-                        break
-                    i += 1
-                raise Exception("damn at " + str(i))
+            if PY2:
+                self.__verify_sent_data_py2(
+                    original_data, verified_data, x, y, base_address, n_bytes)
+            else:
+                self.__verify_sent_data_py3(
+                    original_data, verified_data, x, y, base_address, n_bytes)
 
         # write report
         if self._write_data_speed_up_reports:
@@ -627,6 +622,38 @@ class DataSpeedUpPacketGatherMachineVertex(
                 x=x, y=y, time_diff=end - start,
                 data_size=n_bytes, address_written_to=base_address,
                 missing_seq_nums=self._missing_seq_nums_data_in)
+
+    @staticmethod
+    def __verify_sent_data_py2(
+            original_data, verified_data, x, y, base_address, n_bytes):
+        if original_data != verified_data:
+            log.error("VARIANCE: chip:{},{} address:{} len:{}",
+                      x, y, base_address, n_bytes)
+            log.error("original:{}", "".join(
+                "%02X" % ord(x) for x in original_data))
+            log.error("verified:{}", "".join(
+                "%02X" % ord(x) for x in verified_data))
+            i = 0
+            for (a, b) in zip(original_data, verified_data):
+                if a != b:
+                    break
+                i += 1
+            raise Exception("damn at " + str(i))
+
+    @staticmethod
+    def __verify_sent_data_py3(
+            original_data, verified_data, x, y, base_address, n_bytes):
+        if original_data != verified_data:
+            log.error("VARIANCE: chip:{},{} address:{} len:{}",
+                      x, y, base_address, n_bytes)
+            log.error("original:{}", original_data.hex())
+            log.error("verified:{}", verified_data.hex())
+            i = 0
+            for (a, b) in zip(original_data, verified_data):
+                if a != b:
+                    break
+                i += 1
+            raise Exception("damn at " + str(i))
 
     @staticmethod
     def _worse_via_scp(n_bytes):
