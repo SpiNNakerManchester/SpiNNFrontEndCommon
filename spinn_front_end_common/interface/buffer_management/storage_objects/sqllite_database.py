@@ -22,6 +22,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
 from spinn_utilities.overrides import overrides
 
 if sys.version_info < (3,):
+    # pylint: disable=redefined-builtin, undefined-variable
     memoryview = buffer  # noqa
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
@@ -152,14 +153,10 @@ class SqlLiteDatabase(AbstractDatabase):
         :type region: int
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
+        :rtype: (memoryview, bool)
         """
-        missing = None
-        if self._db is not None:
-            with self._db:
-                c = self._db.cursor()
-                data = self._read_contents(c, x, y, p, region)
-                # TODO missing data
-        else:
-            data = self._data[x, y, p, region].read_all()
-        return data, missing
+        with self._db:
+            c = self._db.cursor()
+            data = self._read_contents(c, x, y, p, region)
+            # TODO missing data
+        return data, False

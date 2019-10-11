@@ -282,9 +282,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         #
         "_app_id",
 
-        # If not None path to append pacman exutor provenance info to
-        "_pacman_executor_provenance_path",
-
         #
         "_do_timings",
 
@@ -764,7 +761,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._state = Simulator_State.IN_RUN
 
-        self._adjust_config(run_time)
+        self._adjust_config(
+            run_time, self.DEBUG_ENABLE_OPTS, self.REPORT_DISABLE_OPTS)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):

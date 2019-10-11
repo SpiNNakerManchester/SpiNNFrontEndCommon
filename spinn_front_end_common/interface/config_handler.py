@@ -66,6 +66,9 @@ class ConfigHandler(object):
 
         #
         "_use_virtual_board",
+
+        # If not None, path to append pacman executor provenance info to
+        "_pacman_executor_provenance_path",
     ]
 
     def __init__(self, configfile, default_config_paths, validation_cfg):
@@ -91,17 +94,19 @@ class ConfigHandler(object):
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
 
-    def _adjust_config(self, runtime):
+    def _adjust_config(self, runtime, debug_enable_opts, report_disable_opts):
         """ Adjust and checks config based on runtime and mode
 
         :param runtime:
         :type runtime: int or bool
+        :type debug_enable_opts: frozenset(str)
+        :type report_disable_opts: frozenset(str)
         :raises ConfigurationException
         """
         if self._config.get("Mode", "mode") == "Debug":
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
+                if option in debug_enable_opts or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "True")
@@ -112,7 +117,7 @@ class ConfigHandler(object):
         elif not self._config.getboolean("Reports", "reportsEnabled"):
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
+                if option in report_disable_opts or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "False")
