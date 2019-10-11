@@ -30,6 +30,7 @@ class DsWriteInfo(MutableMapping):
         :type database:
             py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
         """
+        # pylint: disable=super-init-not-called
         self._db = database
 
     def __getitem__(self, core):
