@@ -82,7 +82,8 @@ class SqlLiteDatabase(AbstractDatabase):
                 (x, y, p, region)):
             data = row["content"]
             return memoryview(data)
-        return b""
+        raise LookupError("no record for region ({},{},{}:{})".format(
+            x, y, p, region))
 
     @staticmethod
     def _get_core_id(cursor, x, y, p):
@@ -155,8 +156,11 @@ class SqlLiteDatabase(AbstractDatabase):
             simulation, and a flag indicating if any data was missing
         :rtype: (memoryview, bool)
         """
-        with self._db:
-            c = self._db.cursor()
-            data = self._read_contents(c, x, y, p, region)
-            # TODO missing data
-        return data, False
+        try:
+            with self._db:
+                c = self._db.cursor()
+                data = self._read_contents(c, x, y, p, region)
+                # TODO missing data
+                return data, False
+        except LookupError:
+            return memoryview(b''), True

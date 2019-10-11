@@ -346,7 +346,7 @@ class BufferedReceivingData(object):
         self._end_buffering_sequence_no = dict()
 
     # ToDo Being changed in later PR so currently broken
-    def clear(self, x, y, p, region_id):
+    def clear(self, x, y, p, region_id):  # pylint: disable=unused-argument
         """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
