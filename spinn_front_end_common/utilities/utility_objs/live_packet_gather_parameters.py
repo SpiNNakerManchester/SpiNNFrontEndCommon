@@ -28,11 +28,11 @@ class LivePacketGatherParameters(object):
     ]
 
     def __init__(
-            self, port, hostname, tag, board_address, strip_sdp, use_prefix,
+            self, port, hostname, tag, strip_sdp, use_prefix,
             key_prefix, prefix_type, message_type, right_shift,
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
             payload_right_shift, number_of_packets_sent_per_time_step,
-            partition_id):
+            partition_id, board_address=None):
         # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
         self._hostname = hostname

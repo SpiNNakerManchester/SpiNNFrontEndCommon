@@ -152,7 +152,7 @@ class CommandSenderMachineVertex(
         additional_arguments={"machine_time_step", "time_scale_factor"})
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
             self.get_n_command_bytes(self._commands_at_start_resume)
