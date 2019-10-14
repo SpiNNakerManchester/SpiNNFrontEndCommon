@@ -16,10 +16,7 @@
 """
 main interface for the SpiNNaker tools
 """
-try:
-    from collections.abc import defaultdict
-except ImportError:
-    from collections import defaultdict
+from collections import defaultdict
 import logging
 import math
 import os

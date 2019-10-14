@@ -15,10 +15,7 @@
 
 import logging
 import os
-try:
-    from collections.abc import defaultdict
-except ImportError:
-    from collections import defaultdict
+from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from .sqllite_database import SqlLiteDatabase
 
