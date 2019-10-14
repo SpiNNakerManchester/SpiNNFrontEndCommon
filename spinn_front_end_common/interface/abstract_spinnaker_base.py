@@ -2300,7 +2300,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def add_application_vertex(self, vertex, prefix="_vertex"):
+    def add_application_vertex(self, vertex):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
