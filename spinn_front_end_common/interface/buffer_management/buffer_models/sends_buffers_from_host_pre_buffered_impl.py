@@ -35,7 +35,6 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """
         :rtype: dict
         """
-        pass
 
     @send_buffers.setter
     @abstractmethod
