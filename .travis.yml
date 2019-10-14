@@ -65,8 +65,8 @@ before_script:
 
 script:
   # Python
-  - py.test unittests --cov spinn_front_end_common
-  - py.test fec_integration_tests --cov spinn_front_end_common --cov-append
+  - py.test --cov-report= unittests --cov spinn_front_end_common
+  - py.test --cov-report= fec_integration_tests --cov spinn_front_end_common --cov-append
   - flake8 spinn_front_end_common
   - flake8 unittests integration_tests
   - ( pylint --output-format=colorized --disable=R,C spinn_front_end_common; exit $(($? & 35)) )
