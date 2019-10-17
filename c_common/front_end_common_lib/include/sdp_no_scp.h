@@ -18,11 +18,13 @@
 #ifndef _SDP_NO_SCP_H_
 #define _SDP_NO_SCP_H_
 
-//! items per SDP packet for sending
-#define ITEMS_PER_DATA_PACKET 68
+enum {
+    //! How many multicast packets are to be received per SDP packet
+    ITEMS_PER_DATA_PACKET = 68,
 
-//! extra length adjustment for the SDP header
-#define LENGTH_OF_SDP_HEADER 8
+    //! extra length adjustment for the SDP header
+    LENGTH_OF_SDP_HEADER = 8
+};
 
 //! struct for a SDP message with pure data, no SCP header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)

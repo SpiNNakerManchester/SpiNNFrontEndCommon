@@ -60,8 +60,6 @@ enum sdp_port_commands {
 #define COMMAND_ID 0
 
 enum {
-    //! How many multicast packets are to be received per SDP packet
-    ITEMS_PER_DATA_PACKET = 68,
     //! offset with just command and seq in bytes
     SEND_SEQ_DATA_HEADER_WORDS = 2,
     //! offset with command, x, y, address in bytes
