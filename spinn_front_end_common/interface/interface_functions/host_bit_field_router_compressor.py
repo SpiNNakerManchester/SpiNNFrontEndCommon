@@ -27,8 +27,7 @@ from pacman.exceptions import \
 from pacman.model.routing_tables import MulticastRoutingTables, \
     UnCompressedMulticastRoutingTable
 from pacman.operations.algorithm_reports.reports import format_route
-from pacman.operations.router_compressors.mundys_router_compressor. \
-    routing_table_condenser import MundyRouterCompressor
+from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.mundys_router_compressor \
     import ordered_covering as rigs_compressor
 from spinn_front_end_common.abstract_models import \
@@ -641,7 +640,7 @@ class HostBasedBitFieldRouterCompressor(object):
             self._best_bit_fields_by_processor = []
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
-                "host bitfield router compressor cant compress the "
+                "host bitfield router compressor can't compress the "
                 "uncompressed routing tables, regardless of bitfield merging. "
                 "System is fundamentally flawed here")
 
@@ -715,21 +714,14 @@ class HostBasedBitFieldRouterCompressor(object):
         # convert to rig format
         entries = list()
         for router_table in router_tables:
-            entries.extend(MundyRouterCompressor.convert_to_mundy_format(
-                router_table))
+            for router_entry in router_table.multicast_routing_entries:
+                # Add the new entry
+                entries.append(Entry.from_MulticastRoutingEntry(router_entry))
 
         # compress the router entries using rigs compressor
-        compressed_router_table_entries = rigs_compressor.minimise(
+        return rigs_compressor.minimise(
             entries, target_length, time_to_try_for_each_iteration,
             use_timer_cut_off)
-
-        # convert back to pacman model
-        compressed_pacman_table = \
-            MundyRouterCompressor.convert_to_pacman_router_table(
-                compressed_router_table_entries, chip_x, chip_y,
-                self._MAX_SUPPORTED_LENGTH)
-
-        return compressed_pacman_table
 
     def _remove_merged_bitfields_from_cores(
             self, bit_fields_merged, chip_x, chip_y, transceiver,
