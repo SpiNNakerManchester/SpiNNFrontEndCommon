@@ -17,7 +17,6 @@ import os
 import sqlite3
 import time
 import sys
-from _pytest.nodes import Item
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import AbstractDatabase
 from spinn_utilities.overrides import overrides
