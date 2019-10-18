@@ -75,7 +75,6 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             extended.update({'label': 'test'})
-            del extended['board_address']
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
             placements.add_placement(
@@ -166,7 +165,6 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             extended.update({'label': "test"})
-            del extended['board_address']
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
             placements.add_placement(
@@ -279,7 +277,6 @@ class TestInsertLPGEdges(unittest.TestCase):
         # add LPG's (1 for each Ethernet connected chip
         for chip in machine.ethernet_connected_chips:
             new_params = dict(default_params)
-            del new_params['board_address']
             vertex = LivePacketGather(**new_params)
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
