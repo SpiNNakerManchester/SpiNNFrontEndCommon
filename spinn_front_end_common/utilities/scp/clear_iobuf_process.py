@@ -25,7 +25,7 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
         super(ClearIOBUFProcess, self).__init__(connection_selector)
         self._progress = None
 
-    def receive_response(self, response):  # @UnusedVariable
+    def receive_response(self, _response):
         if self._progress is not None:
             self._progress.update()
 

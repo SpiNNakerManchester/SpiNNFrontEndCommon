@@ -32,6 +32,7 @@ class DataSpecificationTargets(MutableMapping):
         :type machine: :py:class:`spinn_machine.Machine`
         :param report_folder:
         """
+        # pylint: disable=super-init-not-called
         # real DB would write to report_folder
         self._db = DsSqlliteDatabase(machine, report_folder, init)
         # Clear any current data specs
