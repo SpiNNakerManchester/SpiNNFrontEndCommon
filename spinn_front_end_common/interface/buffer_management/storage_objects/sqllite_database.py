@@ -17,6 +17,7 @@ import os
 import sqlite3
 import time
 import sys
+from _pytest.nodes import Item
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import AbstractDatabase
 from spinn_utilities.overrides import overrides
@@ -69,18 +70,19 @@ class SqlLiteDatabase(AbstractDatabase):
             cursor = self._db.cursor()
             cursor.execute(
                 "UPDATE region "
-                + "SET content = CAST('' AS BLOB), fetches = 0, "
-                + "append_time = NULL")
+                + "SET content = CAST('' AS BLOB), content_len = 0, "
+                + "fetches = 0, append_time = NULL")
+            cursor.execute("DELETE FROM region_extra")
 
     def __init_db(self):
         """ Set up the database if required. """
         self._db.row_factory = sqlite3.Row
+        self._db.text_factory = memoryview
         with open(DDL_FILE) as f:
             sql = f.read()
         self._db.executescript(sql)
 
     def __read_contents(self, cursor, x, y, p, region):
-        self._db.text_factory = bytearray
         for row in cursor.execute(
                 "SELECT region_id, content, have_extra FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
@@ -92,12 +94,25 @@ class SqlLiteDatabase(AbstractDatabase):
         else:
             return memoryview(b"")
         if extra:
-            self._db.text_factory = memoryview
+            c_buffer = None
+            for row in cursor.execute(
+                    "SELECT r.content_len + ("
+                    + "    SELECT SUM(x.content_len) "
+                    + "    FROM region_extra AS x "
+                    + "    WHERE x.region_id = r.region_id"
+                    + ") AS len FROM region AS r WHERE region_id = ? LIMIT 1",
+                    (r_id, )):
+                c_buffer = bytearray(row["len"])
+                c_buffer[:len(data)] = data
+            idx = len(data)
             for row in cursor.execute(
                     "SELECT content FROM region_extra "
                     + "WHERE region_id = ? ORDER BY extra_id ASC",
                     (r_id, )):
-                data += row["content"]
+                item = row["content"]
+                c_buffer[idx:idx + len(item)] = item
+                idx += len(item)
+            data  = c_buffer
         return memoryview(data)
 
     @staticmethod
@@ -122,8 +137,8 @@ class SqlLiteDatabase(AbstractDatabase):
         core_id = self.__get_core_id(cursor, x, y, p)
         cursor.execute(
             "INSERT INTO region(core_id, local_region_index, content, "
-            + "fetches) "
-            + "VALUES(?, ?, CAST('' AS BLOB), 0)",
+            + "content_len, fetches) "
+            + "VALUES(?, ?, CAST('' AS BLOB), 0, 0)",
             (core_id, region))
         return cursor.lastrowid
 
@@ -151,9 +166,9 @@ class SqlLiteDatabase(AbstractDatabase):
             if self.__use_main_table(cursor, region_id):
                 cursor.execute(
                     "UPDATE region SET content = CAST(? AS BLOB), "
-                    + "fetches = fetches + 1, append_time = ? "
-                    + "WHERE region_id = ?",
-                    (datablob, _timestamp(), region_id))
+                    + "content_len = ?, fetches = fetches + 1, "
+                    + "append_time = ? WHERE region_id = ?",
+                    (datablob, len(data), _timestamp(), region_id))
             else:
                 cursor.execute(
                     "UPDATE region SET "
@@ -162,9 +177,9 @@ class SqlLiteDatabase(AbstractDatabase):
                     (_timestamp(), region_id))
                 assert cursor.rowcount == 1
                 cursor.execute(
-                    "INSERT INTO region_extra(region_id, content) "
-                    + "VALUES (?, CAST(? AS BLOB))",
-                    (region_id, datablob))
+                    "INSERT INTO region_extra(region_id, content, content_len)"
+                    + " VALUES (?, CAST(? AS BLOB), ?)",
+                    (region_id, datablob, len(data)))
             assert cursor.rowcount == 1
 
     def __use_main_table(self, cursor, region_id):

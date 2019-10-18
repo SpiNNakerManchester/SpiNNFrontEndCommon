@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS region(
 	local_region_index INTEGER NOT NULL,
 	address INTEGER,
 	content BLOB NOT NULL DEFAULT '',
+	content_len INTEGER DEFAULT 0,
 	fetches INTEGER NOT NULL DEFAULT 0,
 	append_time INTEGER);
 -- Every recording region has a unique vertex and index
@@ -51,14 +52,17 @@ CREATE TABLE IF NOT EXISTS region_extra(
 	extra_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
 	region_id INTEGER NOT NULL
 		REFERENCES region(region_id) ON DELETE RESTRICT,
-	content BLOB NOT NULL DEFAULT '');
+	content BLOB NOT NULL DEFAULT '',
+	content_len INTEGER DEFAULT 0);
 
 CREATE VIEW IF NOT EXISTS region_view AS
 	SELECT core_id, region_id, x, y, processor, local_region_index, address,
-		content, fetches, append_time, (fetches > 1) AS have_extra
+		content, content_len, fetches, append_time,
+		(fetches > 1) AS have_extra
 FROM core NATURAL JOIN region;
 
 CREATE VIEW IF NOT EXISTS extra_view AS
     SELECT core_id, region_id, extra_id, x, y, processor, local_region_index,
-    	address, append_time, region_extra.content AS content
+    	address, append_time, region_extra.content AS content,
+    	region_extra.content_len AS content_len
 FROM core NATURAL JOIN region NATURAL JOIN region_extra;
