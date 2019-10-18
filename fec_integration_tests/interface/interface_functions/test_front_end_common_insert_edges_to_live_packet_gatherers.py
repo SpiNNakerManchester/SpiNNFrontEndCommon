@@ -180,7 +180,6 @@ class TestInsertLPGEdges(unittest.TestCase):
 
             extended = dict(default_params)
             extended.update({'label': "test"})
-            del extended['board_address']
             vertex = LivePacketGatherMachineVertex(**extended)
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2
             placements.add_placement(Placement(
