@@ -58,7 +58,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None,
             'label': "Test"}
 
@@ -148,7 +147,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None,
             'label': "Test"}
 
@@ -266,7 +264,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None,
             'label': "Test"}
 

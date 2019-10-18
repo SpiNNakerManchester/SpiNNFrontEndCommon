@@ -66,44 +66,40 @@ MAX_DATABASE_PATH_LENGTH = 50000
 # size of the on-chip DSE data structure required in bytes
 DSE_DATA_STRUCT_SIZE = 16
 
-SDP_RUNNING_MESSAGE_CODES = Enum(
-    value="SDP_RUNNING_MESSAGE_ID_CODES",
-    names=[
-        ("SDP_STOP_ID_CODE", 6),
-        ("SDP_NEW_RUNTIME_ID_CODE", 7),
-        ("SDP_UPDATE_PROVENCE_REGION_AND_EXIT", 8),
-        ("SDP_CLEAR_IOBUF_CODE", 9)])
+
+class SDP_RUNNING_MESSAGE_CODES(Enum):
+    SDP_STOP_ID_CODE = 6
+    SDP_NEW_RUNTIME_ID_CODE = 7
+    SDP_UPDATE_PROVENCE_REGION_AND_EXIT = 8
+    SDP_CLEAR_IOBUF_CODE = 9
 
 
-# SDP port handling output buffering data streaming
-SDP_PORTS = Enum(
-    value="SDP_PORTS",
-    names=[
-        # command port for the buffered in functionality
-        ("INPUT_BUFFERING_SDP_PORT", 1),
-        # command port for the buffered out functionality
-        ("OUTPUT_BUFFERING_SDP_PORT", 2),
-        # command port for resetting runtime etc
-        ("RUNNING_COMMAND_SDP_PORT", 3),
-        # extra monitor core reinjection functionality
-        ("EXTRA_MONITOR_CORE_REINJECTION", 4),
-        # extra monitor core data transfer functionality
-        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5),
-        # extra monitor core data in speed up functionality
-        ("EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP", 6)])
+class SDP_PORTS(Enum):
+    """SDP port handling output buffering data streaming"""
+
+    # command port for the buffered in functionality
+    INPUT_BUFFERING_SDP_PORT = 1
+    # command port for the buffered out functionality
+    OUTPUT_BUFFERING_SDP_PORT = 2
+    # command port for resetting runtime etc
+    RUNNING_COMMAND_SDP_PORT = 3
+    # extra monitor core reinjection functionality
+    EXTRA_MONITOR_CORE_REINJECTION = 4
+    # extra monitor core data transfer functionality
+    EXTRA_MONITOR_CORE_DATA_SPEED_UP = 5
+    # extra monitor core data in speed up functionality
+    EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP = 6
+
 
 # output buffering operations
-# a listing of what SpiNNaker specific EIEIO commands there are.
-BUFFERING_OPERATIONS = Enum(
-    value="BUFFERING_OPERATIONS",
-    names=[
+class BUFFERING_OPERATIONS(Enum):
+    """A listing of what SpiNNaker specific EIEIO commands there are."""
 
-        # Database handshake with external program
-        ("BUFFER_READ", 0),
+    # Database handshake with external program
+    BUFFER_READ = 0
+    # Host confirming data being read form SpiNNaker memory
+    BUFFER_WRITE = 1
 
-        # Host confirming data being read form SpiNNaker memory
-        ("BUFFER_WRITE", 1)]
-)
 
 # partition IDs preallocated to functionality
 PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"

@@ -42,12 +42,10 @@ class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
-
-    _LIVE_DATA_GATHER_REGIONS = Enum(
-        value="LIVE_DATA_GATHER_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1),
-               ('PROVENANCE', 2)])
+    class REGIONS(Enum):
+        SYSTEM = 0
+        CONFIG = 1
+        PROVENANCE = 2
 
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
@@ -94,7 +92,7 @@ class LivePacketGatherMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value
+        return self.REGIONS.PROVENANCE.value
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -190,15 +188,11 @@ class LivePacketGatherMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=(
-                LivePacketGatherMachineVertex.
-                _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
+            region=self.REGIONS.SYSTEM.value,
             size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
-            region=(
-                LivePacketGatherMachineVertex.
-                _LIVE_DATA_GATHER_REGIONS.CONFIG.value),
+            region=self.REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')
         self.reserve_provenance_data_region(spec)
 
@@ -213,10 +207,7 @@ class LivePacketGatherMachineVertex(
         :raise DataSpecificationException: \
             when something goes wrong with the DSG generation
         """
-        spec.switch_write_focus(
-            region=(
-                LivePacketGatherMachineVertex.
-                _LIVE_DATA_GATHER_REGIONS.CONFIG.value))
+        spec.switch_write_focus(region=self.REGIONS.CONFIG.value)
 
         # has prefix
         if self._use_prefix:
@@ -276,9 +267,7 @@ class LivePacketGatherMachineVertex(
         """ Write basic info to the system region
         """
         # Write this to the system region (to be picked up by the simulation):
-        spec.switch_write_focus(
-            region=(LivePacketGatherMachineVertex.
-                    _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
+        spec.switch_write_focus(region=self.REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
