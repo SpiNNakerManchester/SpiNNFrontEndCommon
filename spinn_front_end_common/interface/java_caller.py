@@ -323,7 +323,7 @@ class JavaCaller(object):
             self._java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
         if not os.path.exists(f):
-            logger.warn("no Java build in file {}; failure expected", f)
+            logger.warning("no Java build in file {}; failure expected", f)
         return f
 
     def _run_java(self, *args):

@@ -24,23 +24,20 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class _NotificationWrapper(object):
-    def __init__(self, notification_interface, wait_on_confirmation,
-                 send_stop_notification, send_start_notification):
+    def __init__(self, notification_interface, wait_on_confirmation):
         self._notifier = notification_interface
         self._wait = wait_on_confirmation and self._notifier is not None
-        self._start = send_start_notification and self._notifier is not None
-        self._stop = send_stop_notification and self._notifier is not None
 
     def wait_for_confirmation(self):
         if self._wait:
             self._notifier.wait_for_confirmation()
 
     def send_start_resume_notification(self):
-        if self._start:
+        if self._notifier is not None:
             self._notifier.send_start_resume_notification()
 
     def send_stop_pause_notification(self):
-        if self._stop:
+        if self._notifier is not None:
             self._notifier.send_stop_pause_notification()
 
 
@@ -53,8 +50,7 @@ class ApplicationRunner(object):
 
     # Wraps up as a PACMAN algorithm
     def __call__(
-            self, buffer_manager, wait_on_confirmation, send_stop_notification,
-            send_start_notification, notification_interface,
+            self, buffer_manager, wait_on_confirmation, notification_interface,
             executable_targets, executable_types, app_id, txrx, runtime,
             time_scale_factor, no_sync_changes, time_threshold,
             run_until_complete=False):
@@ -63,8 +59,7 @@ class ApplicationRunner(object):
 
         # Simplify the notifications
         notifier = _NotificationWrapper(
-            notification_interface, wait_on_confirmation,
-            send_start_notification, send_stop_notification)
+            notification_interface, wait_on_confirmation)
 
         return self.run_application(
             buffer_manager, notifier, executable_targets, executable_types,
@@ -76,7 +71,7 @@ class ApplicationRunner(object):
             self, buffer_manager, notifier, executable_targets,
             executable_types, app_id, txrx, runtime, time_scale_factor,
             no_sync_changes, time_threshold, run_until_complete):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, unused-argument
 
         # wait for all cores to be ready
         self._wait_for_start(txrx, app_id, executable_types)

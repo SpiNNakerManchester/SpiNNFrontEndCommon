@@ -54,7 +54,6 @@ class MachineAllocationController(AbstractMachineAllocationController):
     def _teardown(self):
         """ Perform any extra teardown that the thread requires. Does not\
             need to be overridden if no action is desired."""
-        pass
 
     def __manage_allocation(self):
         machine_still_allocated = True

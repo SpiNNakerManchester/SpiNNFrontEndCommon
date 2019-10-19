@@ -26,13 +26,12 @@ class ProfileDataGatherer(object):
 
     def __call__(
             self, transceiver, placements, provenance_file_path,
-            run_time_ms, machine_time_step):
+            machine_time_step):
         """
         :param transceiver: the SpiNNMan interface object
         :param placements: The placements of the vertices
         :param has_ran: token that states that the simulation has ran
         :param provenance_file_path: The location to store the profile data
-        :param run_time_ms: runtime in ms
         :param machine_time_step: machine time step in ms
         """
         # pylint: disable=too-many-arguments
@@ -48,13 +47,12 @@ class ProfileDataGatherer(object):
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
                 if profile_data.tags:
-                    self._write(placement, profile_data, run_time_ms,
-                                machine_time_step_ms, provenance_file_path)
+                    self._write(placement, profile_data, machine_time_step_ms,
+                                provenance_file_path)
 
-    def _write(self, p, profile_data, run_time_ms,
-               machine_time_step_ms, directory):
+    def _write(self, p, profile_data, machine_time_step_ms, directory):
         # pylint: disable=too-many-arguments
-        max_tag_len = max([len(tag) for tag in profile_data.tags])
+        max_tag_len = max(len(tag) for tag in profile_data.tags)
 
         # write data
         file_name = os.path.join(
@@ -79,6 +77,6 @@ class ProfileDataGatherer(object):
                             profile_data.get_n_calls(tag),
                             profile_data.get_mean_ms(tag),
                             profile_data.get_mean_n_calls_per_ts(
-                                tag, run_time_ms, machine_time_step_ms),
+                                tag, machine_time_step_ms),
                             profile_data.get_mean_ms_per_ts(
-                                tag, run_time_ms, machine_time_step_ms)))
+                                tag, machine_time_step_ms)))
