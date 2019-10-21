@@ -113,7 +113,7 @@ class SqlLiteDatabase(AbstractDatabase):
                 item = row["content"]
                 c_buffer[idx:idx + len(item)] = item
                 idx += len(item)
-            data  = c_buffer
+            data = c_buffer
         return memoryview(data)
 
     @staticmethod
