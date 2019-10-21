@@ -63,7 +63,7 @@ class VirtualMachineGenerator(object):
                     down_cores is not None or down_links is not None):
                 logger.warning("As json_path specified all other virtual "
                                "machine settings ignored.")
-            machine = json_machine(json_path)
+            machine = json_machine.machine_from_json(json_path)
 
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links()

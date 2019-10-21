@@ -49,7 +49,6 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm
@@ -67,10 +66,7 @@ class TestInsertLPGs(unittest.TestCase):
             graph_mapper=None)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
+        locs = [(0, 0), (4, 8), (8, 4)]
         for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
@@ -103,7 +99,6 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm
@@ -163,7 +158,6 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm
@@ -217,7 +211,6 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm
