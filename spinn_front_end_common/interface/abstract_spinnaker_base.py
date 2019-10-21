@@ -1123,8 +1123,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "max_sdram_allowed_per_chip")
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
-        inputs["MachineTimeStep"] = self._machine_time_step
-        inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MaxMachineCoreReduction"] = self._read_config_int(
             "Machine", "max_machine_core_reduction")
         inputs["MachineTimeStep"] = self.machine_time_step
