@@ -67,7 +67,7 @@ class SimulatorInterface(object):
     def time_scale_factor(self):
         pass
 
-    @abstractproperty
+    @abstractmethod
     def run(self, run_time):
         pass
 

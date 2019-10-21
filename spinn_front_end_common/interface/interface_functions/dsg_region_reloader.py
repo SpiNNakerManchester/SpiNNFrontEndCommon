@@ -124,7 +124,7 @@ class DSGRegionReloader(object):
             data_spec_executor.execute()
         try:
             os.remove(spec_file)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # Ignore the deletion of files as non-critical
             pass
 

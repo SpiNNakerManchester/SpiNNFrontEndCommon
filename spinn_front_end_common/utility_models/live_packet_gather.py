@@ -102,8 +102,7 @@ class LivePacketGather(
             self._payload_prefix, self._payload_right_shift,
             self._number_of_packets_sent_per_time_step,
             hostname=self._ip_address, port=self._port,
-            strip_sdp=self._strip_sdp, board_address=self._board_address,
-            constraints=constraints)
+            strip_sdp=self._strip_sdp, constraints=constraints)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

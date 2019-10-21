@@ -111,7 +111,6 @@ class InsertLivePacketGatherersToGraphs(object):
             hostname=params.hostname,
             port=params.port,
             tag=params.tag,
-            board_address=params.board_address,
             strip_sdp=params.strip_sdp,
             use_prefix=params.use_prefix,
             key_prefix=params.key_prefix,

@@ -65,4 +65,3 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         :param time_step_factor:
         """
         # pylint: disable=too-many-arguments
-        pass

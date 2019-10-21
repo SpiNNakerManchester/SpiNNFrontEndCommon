@@ -25,7 +25,7 @@ import struct
 import sys
 from enum import Enum
 from six.moves import xrange
-from six import reraise
+from six import reraise, PY2
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -119,30 +119,31 @@ BYTES_IN_FULL_PACKET_WITHOUT_ADDRESS = (
 # x, y, key (all ints) for possible 48 chips,
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * WORD_SIZE
 
-# DSG data regions
-_DATA_REGIONS = Enum(
-    value="DATA_REGIONS",
-    names=[('SYSTEM', 0),
-           ('CONFIG', 1),
-           ('CHIP_TO_KEY_SPACE', 2)])
 
-# command IDs for the SDP packets for data out
-DATA_OUT_COMMANDS = Enum(
-    value="DATA_OUT_COMMANDS", names=[
-        ("START_SENDING", 100),
-        ("START_MISSING_SEQ", 1000),
-        ("MISSING_SEQ", 1001),
-        ("CLEAR", 2000)])
+class _DATA_REGIONS(Enum):
+    """DSG data regions"""
+    SYSTEM = 0
+    CONFIG = 1
+    CHIP_TO_KEY_SPACE = 2
 
-# command IDs for the SDP packets for data in
-DATA_IN_COMMANDS = Enum(
-    value="DATA_IN_COMMANDS", names=[
-        ("SEND_DATA_TO_LOCATION", 200),
-        ("SEND_SEQ_DATA", 2000),
-        ("SEND_DONE", 2002),
-        ("RECEIVE_FIRST_MISSING_SEQ", 2003),
-        ("RECEIVE_MISSING_SEQ_DATA", 2004),
-        ("RECEIVE_FINISHED", 2005)])
+
+class DATA_OUT_COMMANDS(Enum):
+    """command IDs for the SDP packets for data out"""
+    START_SENDING = 100
+    START_MISSING_SEQ = 1000
+    MISSING_SEQ = 1001
+    CLEAR = 2000
+
+
+class DATA_IN_COMMANDS(Enum):
+    """command IDs for the SDP packets for data in"""
+    SEND_DATA_TO_LOCATION = 200
+    SEND_SEQ_DATA = 2000
+    SEND_DONE = 2002
+    RECEIVE_FIRST_MISSING_SEQ = 2003
+    RECEIVE_MISSING_SEQ_DATA = 2004
+    RECEIVE_FINISHED = 2005
+
 
 # precompiled structures
 _ONE_WORD = struct.Struct("<I")
@@ -195,6 +196,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_placement",
         # provenance holder
         "_provenance_data_items",
+        # Count of the runs for provenance data
+        "_run",
         "_remote_tag",
         # path to the data out report
         "_out_report_path",
@@ -280,6 +283,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
+        self._run = 0
         self._placement = None
         self._app_id = None
 
@@ -432,6 +436,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
     def get_local_provenance_data(self):
+        self._run += 1
         prov_items = list()
         significant_losses = defaultdict(list)
         for (placement, memory_address, length_in_bytes) in \
@@ -446,8 +451,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 chip_name = "chip{}:{}".format(placement.x, placement.y)
                 last_name = "Memory_address:{}:Length_in_bytes:{}"\
                     .format(memory_address, length_in_bytes)
-                iteration_name = "iteration{}".format(
-                    times_extracted_the_same_thing)
+                if times_extracted_the_same_thing == 0:
+                    iteration_name = "run{}".format(
+                        self._run)
+                else:
+                    iteration_name = "run{}iteration{}".format(
+                        self._run, times_extracted_the_same_thing)
                 prov_items.append(ProvenanceDataItem(
                     [top_level_name, "extraction_time", chip_name, last_name,
                      iteration_name],
@@ -476,6 +485,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 [top_level_name, "serious_lost_seq_num_count", chip_name],
                 n_times, report=True, message=_MAJOR_LOSS_MESSAGE.format(
                     chip, n_times)))
+        self._provenance_data_items = defaultdict(list)
         return prov_items
 
     @staticmethod
@@ -566,12 +576,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 raise Exception(
                     "when using a file, you can only have a offset of 0")
 
-            reader = FileDataReader(data)
-            if n_bytes is None:
-                n_bytes = os.stat(data).st_size
-                data = reader.readall()
-            else:
-                data = reader.read(n_bytes)
+            with FileDataReader(data) as reader:
+                # n_bytes=None already means 'read everything'
+                data = reader.read(n_bytes)  # pylint: disable=no-member
+            # Number of bytes to write is now length of buffer we have
+            n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
         transceiver = get_simulator().transceiver
@@ -601,17 +610,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             original_data = bytes(data[offset:n_bytes + offset])
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
-            if original_data != verified_data:
-                log.error("VARIANCE: chip:{},{} address:{} len:{}",
-                          x, y, base_address, n_bytes)
-                log.error("original:{}", original_data.hex())
-                log.error("verified:{}", verified_data.hex())
-                i = 0
-                for (a, b) in zip(original_data, verified_data):
-                    if a != b:
-                        break
-                    i += 1
-                raise Exception("damn at " + str(i))
+            if PY2:
+                self.__verify_sent_data_py2(
+                    original_data, verified_data, x, y, base_address, n_bytes)
+            else:
+                self.__verify_sent_data_py3(
+                    original_data, verified_data, x, y, base_address, n_bytes)
 
         # write report
         if self._write_data_speed_up_reports:
@@ -619,6 +623,38 @@ class DataSpeedUpPacketGatherMachineVertex(
                 x=x, y=y, time_diff=end - start,
                 data_size=n_bytes, address_written_to=base_address,
                 missing_seq_nums=self._missing_seq_nums_data_in)
+
+    @staticmethod
+    def __verify_sent_data_py2(
+            original_data, verified_data, x, y, base_address, n_bytes):
+        if original_data != verified_data:
+            log.error("VARIANCE: chip:{},{} address:{} len:{}",
+                      x, y, base_address, n_bytes)
+            log.error("original:{}", "".join(
+                "%02X" % ord(x) for x in original_data))
+            log.error("verified:{}", "".join(
+                "%02X" % ord(x) for x in verified_data))
+            i = 0
+            for (a, b) in zip(original_data, verified_data):
+                if a != b:
+                    break
+                i += 1
+            raise Exception("damn at " + str(i))
+
+    @staticmethod
+    def __verify_sent_data_py3(
+            original_data, verified_data, x, y, base_address, n_bytes):
+        if original_data != verified_data:
+            log.error("VARIANCE: chip:{},{} address:{} len:{}",
+                      x, y, base_address, n_bytes)
+            log.error("original:{}", original_data.hex())
+            log.error("verified:{}", verified_data.hex())
+            i = 0
+            for (a, b) in zip(original_data, verified_data):
+                if a != b:
+                    break
+                i += 1
+            raise Exception("damn at " + str(i))
 
     @staticmethod
     def _worse_via_scp(n_bytes):

@@ -58,7 +58,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm
@@ -148,7 +147,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm
@@ -183,7 +181,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             index += 1
             extended = dict(default_params)
             extended['board_address'] = chip.ip_address
-            extended.update({'partition_id': "EVENTS"})
+            extended['partition_id'] = "EVENTS"
             default_params_holder2 = LivePacketGatherParameters(**extended)
 
             extended = dict(default_params)
@@ -270,7 +268,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
             'tag': None}
 
         # data stores needed by algorithm

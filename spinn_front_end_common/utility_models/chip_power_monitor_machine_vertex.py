@@ -57,15 +57,14 @@ class ChipPowerMonitorMachineVertex(
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
-    # data regions
-    CHIP_POWER_MONITOR_REGIONS = Enum(
-        value="CHIP_POWER_MONITOR_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1),
-               ('RECORDING', 2)])
+    class REGIONS(Enum):
+        # data regions
+        SYSTEM = 0
+        CONFIG = 1
+        RECORDING = 2
 
-    # default magic numbers
-    SAMPLE_RECORDING_REGION = 0
+    # which channel in the recording region has the recorded samples
+    SAMPLE_RECORDING_CHANNEL = 0
 
     def __init__(
             self, label, constraints, app_vertex, vertex_slice,
@@ -140,7 +139,7 @@ class ChipPowerMonitorMachineVertex(
     def binary_file_name():
         """ Return the string binary file name
 
-        :return: basestring
+        :rtype: str
         """
         return BINARY_FILE_NAME
 
@@ -187,8 +186,7 @@ class ChipPowerMonitorMachineVertex(
         :param spec: spec object
         :rtype: None
         """
-        spec.switch_write_focus(
-            region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value)
+        spec.switch_write_focus(region=self.REGIONS.CONFIG.value)
         spec.write_value(self._n_samples_per_recording,
                          data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
@@ -204,13 +202,11 @@ class ChipPowerMonitorMachineVertex(
         :rtype: None
         """
         # pylint: disable=too-many-arguments
-        spec.switch_write_focus(
-            region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value)
+        spec.switch_write_focus(region=self.REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
-        spec.switch_write_focus(
-            region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value)
+        spec.switch_write_focus(region=self.REGIONS.RECORDING.value)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor) * n_machine_time_steps]
@@ -227,14 +223,14 @@ class ChipPowerMonitorMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value,
+            region=self.REGIONS.SYSTEM.value,
             size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
-            region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,
+            region=self.REGIONS.CONFIG.value,
             size=CONFIG_SIZE_IN_BYTES, label='config')
         spec.reserve_memory_region(
-            region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value,
+            region=self.REGIONS.RECORDING.value,
             size=recording_utilities.get_recording_header_size(1),
             label="Recording")
 
@@ -253,7 +249,7 @@ class ChipPowerMonitorMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
         return locate_memory_region_for_placement(
-            placement, self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value, txrx)
+            placement, self.REGIONS.RECORDING.value, txrx)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
@@ -284,7 +280,7 @@ class ChipPowerMonitorMachineVertex(
         # for buffering output info is taken form the buffer manager
         # get raw data as a byte array
         record_raw, data_missing = buffer_manager.get_data_by_placement(
-            placement, self.SAMPLE_RECORDING_REGION)
+            placement, self.SAMPLE_RECORDING_CHANNEL)
         if data_missing:
             logger.warning(
                 "Chip Power monitor has lost data on chip({}, {})",

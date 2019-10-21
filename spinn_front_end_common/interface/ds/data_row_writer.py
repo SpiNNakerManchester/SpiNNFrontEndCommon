@@ -41,12 +41,6 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
         assert self._closed is False
         self._data += data
 
-    @overrides(AbstractDataWriter.tell)
-    def tell(self):
-        raise NotImplementedError(
-            "https://github.com/SpiNNakerManchester/SpiNNStorageHandlers/"
-            "issues/26")
-
     @overrides(AbstractContextManager.close, extend_doc=False)
     def close(self):
         """ Closes the writer if not already closed.

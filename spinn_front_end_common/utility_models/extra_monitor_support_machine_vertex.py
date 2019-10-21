@@ -42,12 +42,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 log = FormatAdapter(logging.getLogger(__name__))
 
-_DSG_REGIONS = Enum(
-    value="EXTRA_MONITOR_DSG_REGIONS",
-    names=[('REINJECT_CONFIG', 0),
-           ('DATA_OUT_CONFIG', 1),
-           ("DATA_IN_CONFIG", 2)])
-
 _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 4 * 4
 _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
@@ -62,11 +56,17 @@ _BIT_SHIFT_TO_MOVE_APP_ID = 24
 # (24 bits, for word aligning)
 _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * 4
 
-_KEY_OFFSETS = Enum(
-    value="EXTRA_MONITOR_KEY_OFFSETS_TO_COMMANDS",
-    names=[("ADDRESS_KEY_OFFSET", 0),
-           ("DATA_KEY_OFFSET", 1),
-           ("BOUNDARY_KEY_OFFSET", 2)])
+
+class _DSG_REGIONS(Enum):
+    REINJECT_CONFIG = 0
+    DATA_OUT_CONFIG = 1
+    DATA_IN_CONFIG = 2
+
+
+class _KEY_OFFSETS(Enum):
+    ADDRESS_KEY_OFFSET = 0
+    DATA_KEY_OFFSET = 1
+    BOUNDARY_KEY_OFFSET = 2
 
 
 class ExtraMonitorSupportMachineVertex(

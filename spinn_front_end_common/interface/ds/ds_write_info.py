@@ -30,6 +30,7 @@ class DsWriteInfo(MutableMapping):
         :type database:
             py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
         """
+        # pylint: disable=super-init-not-called
         self._db = database
 
     def __getitem__(self, core):
@@ -73,11 +74,11 @@ class DsWriteInfo(MutableMapping):
 
     def clear_write_info(self):
         """
-        Clears the info for all cores
+        Clears the info for all cores,
         """
         self._db.clear_write_info()
 
-    def __delitem__(self):
+    def __delitem__(self, key):
         raise NotImplementedError("Delete not supported")
 
     def keys(self):
@@ -87,7 +88,7 @@ class DsWriteInfo(MutableMapping):
         As the more typical call is iteritems this makes use of that
         :return:
         """
-        for key, value in self._db.info_iteritems():
+        for key, _value in self._db.info_iteritems():
             yield key
 
     __iter__ = keys
