@@ -17,10 +17,7 @@ import logging
 import struct
 import sys
 from threading import Thread
-try:
-    from collections.abc import OrderedDict
-except ImportError:
-    from collections import OrderedDict
+from collections import OrderedDict
 from six import iterkeys, iteritems, reraise
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
