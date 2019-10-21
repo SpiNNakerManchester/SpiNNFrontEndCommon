@@ -55,7 +55,7 @@ before_install:
 install:
   # These things ought to be enough
   - pip install -r requirements-test.txt
-  - pip install python-coveralls 'coverage>=4.4'
+  - pip install pylint python-coveralls 'coverage>=4.4'
   - python ./setup.py install
 
 before_script:
@@ -65,10 +65,11 @@ before_script:
 
 script:
   # Python
-  - py.test unittests --cov spinn_front_end_common
-  - py.test fec_integration_tests --cov spinn_front_end_common --cov-append
+  - py.test --cov-report= unittests --cov spinn_front_end_common
+  - py.test --cov-report= fec_integration_tests --cov spinn_front_end_common --cov-append
   - flake8 spinn_front_end_common
   - flake8 unittests integration_tests
+  - ( pylint --output-format=colorized --disable=R,C spinn_front_end_common; exit $(($? & 35)) )
   # XML
   - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh
   # C  # Vera before make to avoid vera seeing modified stuff
