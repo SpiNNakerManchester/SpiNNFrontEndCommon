@@ -331,8 +331,9 @@ def _emergency_state_check(txrx, app_id):
                         infos.add_processor(chip.x, chip.y, p, info)
                 except Exception:
                     errors.append((chip.x, chip.y, p))
-        logger.warn(txrx.get_core_status_string(infos))
-        logger.warn("Could not read information from cores {}".format(errors))
+        logger.warning(txrx.get_core_status_string(infos))
+        logger.warning("Could not read information from cores {}".format(
+            errors))
 
 
 # TRICKY POINT: Have to delay the import to here because of import circularity
