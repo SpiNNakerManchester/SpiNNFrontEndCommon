@@ -554,17 +554,20 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._extraction_time += ms
 
     def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from):
+            self, live_packet_gatherer_params, vertex_to_record_from,
+            partition_ids):
         """ Adds params for a new LPG if needed, or adds to the tracker for\
             same params.
 
         :param live_packet_gatherer_params: params to look for a LPG
         :param vertex_to_record_from: \
             the vertex that needs to send to a given LPG
+        :param partition_ids: \
+            the IDs of the partitions to connect from the vertex
         :rtype: None
         """
         self._live_packet_recorder_params[live_packet_gatherer_params].append(
-            vertex_to_record_from)
+            (vertex_to_record_from, partition_ids))
 
         # verify that the vertices being added are of one vertex type.
         if self._live_packet_recorders_associated_vertex_type is None:
