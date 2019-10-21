@@ -282,9 +282,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         #
         "_app_id",
 
-        # If not None path to append pacman exutor provenance info to
-        "_pacman_executor_provenance_path",
-
         #
         "_do_timings",
 
@@ -589,13 +586,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             else:
                 self._live_packet_recorders_associated_vertex_type = \
                     MachineVertex
-        else:
-            if not isinstance(
-                    vertex_to_record_from,
-                    self._live_packet_recorders_associated_vertex_type):
-                raise ConfigurationException(
-                    "Only one type of graph can be used during live output. "
-                    "Please fix and try again")
+        elif not isinstance(
+                vertex_to_record_from,
+                self._live_packet_recorders_associated_vertex_type):
+            raise ConfigurationException(
+                "Only one type of graph can be used during live output. "
+                "Please fix and try again")
 
     # options names are all lower without _ inside config
     DEBUG_ENABLE_OPTS = frozenset([
@@ -764,7 +760,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._state = Simulator_State.IN_RUN
 
-        self._adjust_config(run_time)
+        self._adjust_config(
+            run_time, self.DEBUG_ENABLE_OPTS, self.REPORT_DISABLE_OPTS)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):
@@ -839,7 +836,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
-            self._do_mapping(run_time, n_machine_time_steps, total_run_time)
+            self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -1020,7 +1017,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :type n_steps_per_segment: int
         :return: list of time steps
         """
-        if (n_steps == 0):
+        if n_steps == 0:
             return [0]
         n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
         left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
@@ -1399,7 +1396,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
 
-    def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
+    def _do_mapping(self, run_time, total_run_time):
 
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
@@ -1454,10 +1451,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ExecutableFinder"] = self._executable_finder
         inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
-        inputs["SendStartNotifications"] = self._config.getboolean(
-            "Database", "send_start_notification")
-        inputs["SendStopNotifications"] = self._config.getboolean(
-            "Database", "send_stop_notification")
+        inputs["SendStartNotifications"] = True
+        inputs["SendStopNotifications"] = True
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
 
@@ -2247,14 +2242,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
-
         """
         return self._buffer_manager
 
     @property
     def dsg_algorithm(self):
         """ The DSG algorithm used by the tools
-
         """
         return self._dsg_algorithm
 
@@ -2297,14 +2290,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return None
 
     def __repr__(self):
-        return "general front end instance for machine {}"\
-            .format(self._hostname)
+        return "general front end instance for machine {}".format(
+            self._hostname)
 
     def add_application_vertex(self, vertex, prefix="_vertex"):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
-        :raises: ConfigurationException when both graphs contain vertices
+        :raises ConfigurationException: when both graphs contain vertices
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
         """
@@ -2320,7 +2313,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         :param vertex: the vertex to add to the graph
         :rtype: None
-        :raises: ConfigurationException when both graphs contain vertices
+        :raises ConfigurationException: when both graphs contain vertices
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
         """
