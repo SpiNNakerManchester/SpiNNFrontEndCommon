@@ -36,13 +36,14 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_sending_region import get_n_bytes
+    .buffered_sending_region import (
+        get_n_bytes)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
@@ -78,28 +79,26 @@ class ReverseIPTagMulticastSourceMachineVertex(
         converted in to multicast packets
     """
 
-    _REGIONS = Enum(
-        value="_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIGURATION', 1),
-               ('RECORDING', 2),
-               ('SEND_BUFFER', 3),
-               ('PROVENANCE_REGION', 4)])
+    class _REGIONS(Enum):
+        SYSTEM = 0
+        CONFIGURATION = 1
+        RECORDING = 2
+        SEND_BUFFER = 3
+        PROVENANCE_REGION = 4
 
-    _PROVENANCE_ITEMS = Enum(
-        value="_PROVENANCE_ITEMS",
-        names=[("N_RECEIVED_PACKETS", 0),
-               ("N_SENT_PACKETS", 1),
-               ("INCORRECT_KEYS", 2),
-               ("INCORRECT_PACKETS", 3),
-               ("LATE_PACKETS", 4)])
+    class _PROVENANCE_ITEMS(Enum):
+        N_RECEIVED_PACKETS = 0
+        N_SENT_PACKETS = 1
+        INCORRECT_KEYS = 2
+        INCORRECT_PACKETS = 3
+        LATE_PACKETS = 4
 
-    # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
+    # 13 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
     #          9. send buffer flag before notify, 10. tag,
     #          11. tag destination (y, x), 12. receive SDP port,
     #          13. timer offset)
-    _CONFIGURATION_REGION_SIZE = 13 * 4
+    _CONFIGURATION_REGION_SIZE = 13 * BYTES_PER_WORD
 
     # Counts to do timer offsets
     _n_vertices = 0

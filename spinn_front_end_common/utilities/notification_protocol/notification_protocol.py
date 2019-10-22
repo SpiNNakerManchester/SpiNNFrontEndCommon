@@ -73,7 +73,7 @@ class NotificationProtocol(object):
         for c in self._data_base_message_connections:
             try:
                 c.send_eieio_message(eieio_command_message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to send start/resume notification to external "
                     "application on {}:{} about the simulation ***",
@@ -91,7 +91,7 @@ class NotificationProtocol(object):
         for c in self._data_base_message_connections:
             try:
                 c.send_eieio_message(eieio_command_message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to send stop/pause notification to external "
                     "application on {}:{} about the simulation ***",
@@ -120,7 +120,7 @@ class NotificationProtocol(object):
         # noinspection PyBroadException
         try:
             self._do_read_notify(database_path)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
@@ -146,7 +146,7 @@ class NotificationProtocol(object):
         for c in self._data_base_message_connections:
             try:
                 c.send_eieio_message(message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to notify external application on {}:{} "
                     "about the database ***",
@@ -160,7 +160,7 @@ class NotificationProtocol(object):
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to receive notification from external "
                     "application on {}:{} about the database ***",

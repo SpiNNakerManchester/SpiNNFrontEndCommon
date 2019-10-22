@@ -28,7 +28,7 @@ class VirtualMachineGenerator(object):
 
     def __call__(
             self, width=None, height=None, virtual_has_wrap_arounds=None,
-            version=None, n_cpus_per_chip=Machine.MAX_CORES_PER_CHIP,
+            version=None,
             with_monitors=True, down_chips=None, down_cores=None,
             down_links=None, max_sdram_size=None,
             router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES,
@@ -39,7 +39,6 @@ class VirtualMachineGenerator(object):
         :param virtual_has_wrap_arounds: \
             True if the machine should be created with wrap_arounds
         :param version: The version of board to create
-        :param n_cpus_per_chip: The number of cores to put on each chip
         :param with_monitors: If true, CPU 0 will be marked as a monitor
         :param down_chips: The set of chips that should be considered broken
         :param down_cores: The set of cores that should be considered broken
@@ -52,7 +51,7 @@ class VirtualMachineGenerator(object):
             machine = virtual_machine(
                 width=width, height=height,
                 with_wrap_arounds=virtual_has_wrap_arounds,
-                version=version, n_cpus_per_chip=n_cpus_per_chip,
+                version=version, n_cpus_per_chip=Machine.MAX_CORES_PER_CHIP,
                 with_monitors=with_monitors, down_chips=down_chips,
                 down_cores=down_cores, down_links=down_links,
                 sdram_per_chip=max_sdram_size,
@@ -64,7 +63,7 @@ class VirtualMachineGenerator(object):
                     down_cores is not None or down_links is not None):
                 logger.warning("As json_path specified all other virtual "
                                "machine settings ignored.")
-            machine = json_machine(json_path)
+            machine = json_machine.machine_from_json(json_path)
 
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links()

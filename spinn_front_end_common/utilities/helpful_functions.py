@@ -19,12 +19,13 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
+from spinnman.model.cpu_infos import CPUInfos
 from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableTargets, ExecutableType)
 from .globals_variables import get_simulator
-from spinnman.model.cpu_infos import CPUInfos
+from .constants import BYTES_PER_WORD
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -86,7 +87,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
 
     # Get the actual address of the region
     region_address = transceiver.read_memory(
-        placement.x, placement.y, region_offset, 4)
+        placement.x, placement.y, region_offset, BYTES_PER_WORD)
     return _ONE_WORD.unpack_from(region_address)[0]
 
 
@@ -330,8 +331,9 @@ def _emergency_state_check(txrx, app_id):
                         infos.add_processor(chip.x, chip.y, p, info)
                 except Exception:
                     errors.append((chip.x, chip.y, p))
-        logger.warn(txrx.get_core_status_string(infos))
-        logger.warn("Could not read information from cores {}".format(errors))
+        logger.warning(txrx.get_core_status_string(infos))
+        logger.warning("Could not read information from cores {}".format(
+            errors))
 
 
 # TRICKY POINT: Have to delay the import to here because of import circularity
