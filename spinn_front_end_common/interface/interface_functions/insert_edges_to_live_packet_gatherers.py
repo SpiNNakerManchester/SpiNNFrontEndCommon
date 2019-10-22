@@ -14,7 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.application import ApplicationEdge
+from pacman.model.graphs.application import ApplicationEdge, \
+    ApplicationOutgoingEdgePartition
 from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -138,6 +139,10 @@ class InsertEdgesToLivePacketGatherers(object):
         # if not built the app edge, add the app edge now
         if app_graph_edge is None:
             app_graph_edge = ApplicationEdge(vertex, lpg_app_vertex)
+            app_outgoing_partition = ApplicationOutgoingEdgePartition(
+                partition_id, vertex)
+            application_graph.add_outgoing_edge_partition(
+                app_outgoing_partition)
             application_graph.add_edge(app_graph_edge, partition_id)
 
         # add mapping between the app edge and the machine edge

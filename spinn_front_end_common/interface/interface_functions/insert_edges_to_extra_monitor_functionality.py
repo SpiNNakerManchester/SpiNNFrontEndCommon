@@ -14,8 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.graphs.machine import MachineEdge
+from pacman.model.graphs.application import ApplicationEdge, \
+    ApplicationOutgoingEdgePartition
+from pacman.model.graphs.machine import MachineEdge, \
+    MachineOutgoingEdgePartition
 from spinn_front_end_common.utilities.constants import (
     PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 from spinn_front_end_common.utility_models import (
@@ -96,6 +98,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             machine_edge = MachineEdge(
                 vertex, data_gatherer_vertex,
                 traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+            machine_partition = MachineOutgoingEdgePartition(
+                PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP, vertex)
+            machine_graph.add_outgoing_edge_partition(machine_partition)
             machine_graph.add_edge(
                 machine_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
@@ -110,6 +115,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                     app_edge = ApplicationEdge(
                         app_source, app_dest,
                         traffic_type=DataSpeedUp.TRAFFIC_TYPE)
+                    app_partition = ApplicationOutgoingEdgePartition(
+                        PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP, app_source)
+                    application_graph.add_outgoing_edge_partition(
+                        app_partition)
                     application_graph.add_edge(
                         app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
                     graph_mapper.add_edge_mapping(machine_edge, app_edge)

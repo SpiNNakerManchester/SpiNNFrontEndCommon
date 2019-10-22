@@ -16,6 +16,8 @@
 """
 main interface for the SpiNNaker tools
 """
+from pacman.executor.injection_decorator import provide_injectables
+
 try:
     from collections.abc import defaultdict
 except ImportError:
@@ -46,9 +48,12 @@ from spalloc import __version__ as spalloc_version
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
+from pacman.executor.injection_decorator import (
+    clear_injectables, provide_injectables)
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationEdge, ApplicationVertex)
+    ApplicationGraph, ApplicationEdge, ApplicationVertex,
+    ApplicationOutgoingEdgePartition)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import (PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
@@ -729,6 +734,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._application_graph.add_vertex(vertex)
         for outgoing_partition in \
                 self._original_application_graph.outgoing_edge_partitions:
+            new_app_partition = outgoing_partition.clone_for_graph_move()
+            self._application_graph.add_outgoing_edge_partition(
+                new_app_partition)
             for edge in outgoing_partition.edges:
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
@@ -738,9 +746,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             label=self._original_machine_graph.label)
         for vertex in self._original_machine_graph.vertices:
             self._machine_graph.add_vertex(vertex)
+        print (self._original_machine_graph.outgoing_edge_partitions)
         for outgoing_partition in \
                 self._original_machine_graph.outgoing_edge_partitions:
-            self._machine_graph.add_outgoing_edge_partition(outgoing_partition)
+            new_outgoing_partition = outgoing_partition.clone_for_graph_move()
+            self._machine_graph.add_outgoing_edge_partition(
+                new_outgoing_partition)
             for edge in outgoing_partition.edges:
                 self._machine_graph.add_edge(
                     edge, outgoing_partition.identifier)
@@ -842,6 +853,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
+        provide_injectables(self._mapping_outputs)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -853,6 +865,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
             self._max_run_time_steps = self._deduce_data_n_timesteps()
+        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -977,6 +990,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         dependant_edge = ApplicationEdge(
                             pre_vertex=vertex,
                             post_vertex=dependant_vertex)
+                        outgoing_partition = ApplicationOutgoingEdgePartition(
+                            edge_identifier, vertex)
+                        self._application_graph.add_outgoing_edge_partition(
+                            outgoing_partition)
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
@@ -2335,6 +2352,47 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 " graphs")
         self._original_machine_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
+
+    def add_application_outgoing_partition(
+            self, application_outgoing_partition):
+        """ adds a outgoing partition to the application graph
+
+        :param application_outgoing_partition: the partition
+        :rtype: None
+        """
+        self._original_application_graph.add_outgoing_edge_partition(
+            application_outgoing_partition)
+
+    def application_partition_exists(self, pre_vertex, identifier):
+        """returns bool stating if a application partition exists within the
+        application graph
+
+        :param pre_vertex: pre vertex
+        :param identifier: partition identifier
+        :return: bool stating if the partition exists.
+        """
+        return self._original_application_graph.outgoing_partition_exists(
+            pre_vertex, identifier)
+
+    def add_machine_outgoing_partition(self, machine_outgoing_partition):
+        """ adds a outgoing partition to the machine graph
+
+        :param machine_outgoing_partition: the partition
+        :rtype: None
+        """
+        self._original_machine_graph.add_outgoing_edge_partition(
+            machine_outgoing_partition)
+
+    def machine_partition_exists(self, pre_vertex, identifier):
+        """returns bool stating if a machine partition exists within the
+        machine graph
+
+        :param pre_vertex: pre vertex
+        :param identifier: partition identifier
+        :return: bool stating if the partition exists.
+        """
+        return self._original_machine_graph.outgoing_partition_exists(
+            pre_vertex, identifier)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """

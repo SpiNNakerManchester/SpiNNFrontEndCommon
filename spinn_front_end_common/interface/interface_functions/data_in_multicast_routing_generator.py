@@ -14,7 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from six import iteritems
-from pacman.model.graphs.machine import MachineGraph, MachineEdge
+from pacman.model.graphs.machine import MachineGraph, MachineEdge, \
+    MachineOutgoingEdgePartition
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_tables import (
     MulticastRoutingTables, MulticastRoutingTable)
@@ -153,6 +154,9 @@ class DataInMulticastRoutingGenerator(object):
         for vertex in fake_graph.vertices:
             if vertex == vertex_source:
                 continue
+            fake_graph.add_outgoing_edge_partition(
+                MachineOutgoingEdgePartition(
+                    pre_vertex=vertex_source, identifier=counter))
             fake_graph.add_edge(
                 MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
                 counter)
