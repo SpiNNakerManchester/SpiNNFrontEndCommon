@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .channel_buffer_state import ChannelBufferState
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 class EndBufferingState(object):
@@ -57,9 +58,9 @@ class EndBufferingState(object):
 
     @staticmethod
     def size_of_region(n_regions_to_record):
-        size_of_header = 8 + 4 * n_regions_to_record
+        size_of_header = BYTES_PER_WORD * (2 + n_regions_to_record)
 
         # add size needed for the data region addresses
-        size_of_header += 4 * n_regions_to_record
+        size_of_header += BYTES_PER_WORD * n_regions_to_record
         size_of_channel_state = ChannelBufferState.size_of_channel_state()
         return size_of_header + n_regions_to_record * size_of_channel_state

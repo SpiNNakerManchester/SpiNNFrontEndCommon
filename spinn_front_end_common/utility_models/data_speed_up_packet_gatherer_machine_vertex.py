@@ -46,7 +46,8 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
+    BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -66,14 +67,11 @@ _MAJOR_LOSS_MESSAGE = (
     "of this occurring.")
 _MAJOR_LOSS_THRESHOLD = 100
 
-# Size of a SpiNNaker word
-WORD_SIZE = 4
-
 # number of items used up by the retransmit code for its header
 SDP_RETRANSMISSION_HEADER_SIZE = 2
 
 # size of config region in bytes
-CONFIG_SIZE = 4 * WORD_SIZE
+CONFIG_SIZE = 4 * BYTES_PER_WORD
 
 # items of data a SDP packet can hold when SCP header removed
 WORDS_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -93,28 +91,28 @@ THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES = 300
 # (command, base_address, x&y, max_seq_number)
 WORDS_FOR_COMMAND_AND_ADDRESS_HEADER = 4
 BYTES_FOR_COMMAND_AND_ADDRESS_HEADER = (
-    WORDS_FOR_COMMAND_AND_ADDRESS_HEADER * WORD_SIZE)
+    WORDS_FOR_COMMAND_AND_ADDRESS_HEADER * BYTES_PER_WORD)
 
 # offset where data starts after a command id and seq number
 WORDS_FOR_COMMAND_AND_SEQ_HEADER = 2
 BYTES_FOR_COMMAND_AND_SEQ_HEADER = (
-    WORDS_FOR_COMMAND_AND_SEQ_HEADER * WORD_SIZE)
+    WORDS_FOR_COMMAND_AND_SEQ_HEADER * BYTES_PER_WORD)
 
 # size for data to store when first packet with command and address
 WORDS_IN_FULL_PACKET_WITH_ADDRESS = (
     WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_AND_ADDRESS_HEADER)
 BYTES_IN_FULL_PACKET_WITH_ADDRESS = (
-    WORDS_IN_FULL_PACKET_WITH_ADDRESS * WORD_SIZE)
+    WORDS_IN_FULL_PACKET_WITH_ADDRESS * BYTES_PER_WORD)
 
 # size for data in to store when not first packet
 WORDS_IN_FULL_PACKET_WITHOUT_ADDRESS = (
     WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_AND_SEQ_HEADER)
 BYTES_IN_FULL_PACKET_WITHOUT_ADDRESS = (
-    WORDS_IN_FULL_PACKET_WITHOUT_ADDRESS * WORD_SIZE)
+    WORDS_IN_FULL_PACKET_WITHOUT_ADDRESS * BYTES_PER_WORD)
 
 # size of data in key space
 # x, y, key (all ints) for possible 48 chips,
-SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * WORD_SIZE
+SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * BYTES_PER_WORD
 
 
 class _DATA_REGIONS(Enum):
@@ -163,8 +161,8 @@ def ceildiv(dividend, divisor):
 
 # SDRAM requirement for storing missing SDP packets seq nums
 SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
-    120.0 * 1024 * 1024,
-    WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_SIZE)
+    120.0 * 1024 * BYTES_PER_KB,
+    WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
 
 
 class DataSpeedUpPacketGatherMachineVertex(
@@ -539,7 +537,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         time_took_ms = float(time_diff.microseconds +
                              time_diff.total_seconds() * 1000000)
-        megabits = (data_size * 8.0) / (1024.0 * 1024.0)
+        megabits = (data_size * 8.0) / (1024 * BYTES_PER_KB)
         if time_took_ms == 0:
             mbs = "unknown, below threshold"
         else:
@@ -691,7 +689,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         dest_x, dest_y = machine.get_local_xy(chip)
 
         # send first packet to lpg, stating where to send it to
-        data = bytearray(WORDS_PER_FULL_PACKET * WORD_SIZE)
+        data = bytearray(WORDS_PER_FULL_PACKET * BYTES_PER_WORD)
 
         _FOUR_WORDS.pack_into(
             data, 0, DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value,
@@ -762,7 +760,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         # find how many elements are in this packet
-        n_elements = (len(data) - position) // WORD_SIZE
+        n_elements = (len(data) - position) // BYTES_PER_WORD
 
         # store missing
         self._missing_seq_nums_data_in[-1].extend(struct.unpack_from(
@@ -787,7 +785,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         position = 0
         command_id = _ONE_WORD.unpack_from(data, 0)[0]
-        position += WORD_SIZE
+        position += BYTES_PER_WORD
         log.debug("received packet with id {}", command_id)
 
         # process first missing
@@ -796,7 +794,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             # find total missing
             self._total_expected_missing_seq_packets += \
                 _ONE_WORD.unpack_from(data, position)[0]
-            position += WORD_SIZE
+            position += BYTES_PER_WORD
             self._have_received_missing_seq_count_packet = True
 
             # write missing seq nums and retransmit if needed
@@ -1264,15 +1262,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # build data holder accordingly
                 data = bytearray(
-                    (size_of_data_left_to_transmit + 2) * WORD_SIZE)
+                    (size_of_data_left_to_transmit + 2) * BYTES_PER_WORD)
 
                 # pack flag and n packets
                 _ONE_WORD.pack_into(
                     data, offset, DATA_OUT_COMMANDS.START_MISSING_SEQ.value)
-                _ONE_WORD.pack_into(data, WORD_SIZE, n_packets)
+                _ONE_WORD.pack_into(data, BYTES_PER_WORD, n_packets)
 
                 # update state
-                offset += 2 * WORD_SIZE
+                offset += 2 * BYTES_PER_WORD
                 length_left_in_packet -= 2
                 first = False
 
@@ -1284,12 +1282,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # build data holder accordingly
                 data = bytearray(
-                    (size_of_data_left_to_transmit + 1) * WORD_SIZE)
+                    (size_of_data_left_to_transmit + 1) * BYTES_PER_WORD)
 
                 # pack flag
                 _ONE_WORD.pack_into(
                     data, offset, DATA_OUT_COMMANDS.MISSING_SEQ.value)
-                offset += 1 * WORD_SIZE
+                offset += BYTES_PER_WORD
                 length_left_in_packet -= 1
 
             # fill data field
@@ -1344,10 +1342,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         offset = self._calculate_offset(seq_num)
 
         # write data
-        true_data_length = offset + length_of_data - WORD_SIZE
-        if not is_end_of_stream or length_of_data != WORD_SIZE:
+        true_data_length = offset + length_of_data - BYTES_PER_WORD
+        if not is_end_of_stream or length_of_data != BYTES_PER_WORD:
             self._write_into_view(
-                offset, true_data_length, data, WORD_SIZE,
+                offset, true_data_length, data, BYTES_PER_WORD,
                 length_of_data, seq_num, length_of_data, False)
 
         # add seq num to list
@@ -1365,7 +1363,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seq_nums, finished
 
     def _calculate_offset(self, seq_num):
-        return seq_num * WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_SIZE
+        return (seq_num * WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
+                BYTES_PER_WORD)
 
     def _write_into_view(
             self, view_start_position, view_end_position,
@@ -1415,7 +1414,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         return ceildiv(
             len(self._output),
-            WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_SIZE)
+            WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD)
 
     @staticmethod
     def _print_missing(seq_nums):
@@ -1434,7 +1433,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         reread_data = struct.unpack("<{}I".format(
-            ceildiv(len(data), WORD_SIZE)), data)
+            ceildiv(len(data), BYTES_PER_WORD)), data)
         log.info("converted data back into readable form is {}", reread_data)
 
     @staticmethod

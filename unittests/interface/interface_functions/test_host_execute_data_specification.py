@@ -24,6 +24,7 @@ from spinn_front_end_common.interface.interface_functions import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableTargets, ExecutableType)
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 class _MockCPUInfo(object):
@@ -109,7 +110,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # (0 and 2), and only the data written should be uploaded
         # The space between regions should be as allocated regardless of
         # how much data is written
-        header_and_table_size = (MAX_MEM_REGIONS + 2) * 4
+        header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
         regions = transceiver.regions_written
         self.assertEqual(len(regions), 4)
 
