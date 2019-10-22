@@ -62,7 +62,16 @@ def has_simulator():
 def set_failed_state(new_failed_state):
     # pylint: disable=unidiomatic-typecheck
     global _failed_state
+    a = _failed_state
+    b = new_failed_state
     if _failed_state is None:
         _failed_state = new_failed_state
-    elif type(new_failed_state) != type(_failed_state):
+    elif type(new_failed_state) == type(_failed_state):
+        pass  # Already same typ
+    elif isinstance(new_failed_state, type(_failed_state)):
+        pass  # keep super class
+        # TODO merge SpynnakerFailedState and Spynnaker8FailedState
+    elif isinstance(_failed_state, type(new_failed_state)):
+        _failed_state = new_failed_state  # use super class
+    else:
         raise ValueError("You may only setup/init one type of simulator")
