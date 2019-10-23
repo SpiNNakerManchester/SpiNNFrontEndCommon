@@ -50,7 +50,8 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationEdge, ApplicationVertex,
     ApplicationOutgoingEdgePartition)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import (PreAllocatedResourceContainer)
+from pacman.model.resources import (PreAllocatedResourceContainer,
+                                    ConstantSDRAM)
 from pacman import __version__ as pacman_version
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
@@ -821,7 +822,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps()
+            self._max_run_time_steps = self._deduce_data_n_timesteps(
+                self._machine_graph)
         clear_injectables()
 
         # Work out an array of timesteps to perform
@@ -954,10 +956,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_data_n_timesteps(self):
+    def _deduce_data_n_timesteps(self, machine_graph):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
+
 
         :return: max time a simulation can run.
         """
@@ -971,6 +974,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 usage_by_chip[placement.x, placement.y] += sdram_required
             else:
                 usage_by_chip[placement.x, placement.y] = sdram_required
+
+            # add costed costs
+            costed_partitions = (
+                machine_graph.get_costed_edge_partitions_starting_at_vertex(
+                    placement.vertex))
+            for partition in costed_partitions:
+                usage_by_chip[placement.x, placement.y] = ConstantSDRAM(
+                    partition.total_sdram_requirements())
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
