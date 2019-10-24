@@ -114,6 +114,12 @@ class InsertEdgesToLivePacketGatherers(object):
         machine_edges = dict()
         for partition_id in partition_ids:
             machine_edge = MachineEdge(machine_vertex, machine_lpg)
+            if (not machine_graph.outgoing_partition_exists(
+                    machine_vertex, partition_id)):
+                app_outgoing_partition = ApplicationOutgoingEdgePartition(
+                    partition_id, machine_vertex)
+                machine_graph.add_outgoing_edge_partition(
+                    app_outgoing_partition)
             machine_graph.add_edge(machine_edge, partition_id)
             machine_edges[partition_id] = machine_edge
 
@@ -144,10 +150,12 @@ class InsertEdgesToLivePacketGatherers(object):
             app_graph_edges = dict()
             for partition_id in partition_ids:
                 app_graph_edge = ApplicationEdge(vertex, lpg_app_vertex)
-                app_outgoing_partition = ApplicationOutgoingEdgePartition(
-                    partition_id, vertex)
-                application_graph.add_outgoing_edge_partition(
-                    app_outgoing_partition)
+                if (not application_graph.outgoing_partition_exists(
+                        vertex, partition_id)):
+                    app_outgoing_partition = ApplicationOutgoingEdgePartition(
+                        partition_id, vertex)
+                    application_graph.add_outgoing_edge_partition(
+                        app_outgoing_partition)
                 application_graph.add_edge(app_graph_edge, partition_id)
                 app_graph_edges[partition_id] = app_graph_edge
 
