@@ -1121,11 +1121,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
-        inputs["MaxCoreID"] = self._read_config_int(
-            "Machine", "core_limit")
-
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
+        inputs["MaxMachineCoreReduction"] = self._read_config_int(
+            "Machine", "max_machine_core_reduction")
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
 
@@ -1171,8 +1170,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["ScampConnectionData"] = None
             inputs["RouterTableEntriesPerRouter"] = \
                 self._read_config_int("Machine", "RouterTableEntriesPerRouter")
-            if inputs["MaxCoreID"] is None:
-                inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             algorithms.append("VirtualMachineGenerator")
 
@@ -1226,8 +1223,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         "A allocated machine has been requested but there are "
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
-
-            inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             do_partitioning = False
             if need_virtual_board:

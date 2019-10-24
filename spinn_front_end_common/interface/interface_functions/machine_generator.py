@@ -30,7 +30,7 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            max_sdram_size=None, max_core_id=None, repair_machine=False,
+            max_sdram_size=None, repair_machine=False,
             ignore_bad_ethernets=True):
         """
         :param hostname: the hostname or IP address of the SpiNNaker machine
@@ -86,7 +86,7 @@ class MachineGenerator(object):
             ignore_cores=downed_cores, ignored_links=downed_links,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            max_sdram_size=max_sdram_size, max_core_id=max_core_id,
+            max_sdram_size=max_sdram_size,
             repair_machine=repair_machine,
             ignore_bad_ethernets=ignore_bad_ethernets)
 
