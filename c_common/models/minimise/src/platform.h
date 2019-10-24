@@ -34,7 +34,8 @@ static inline void * safe_malloc(uint bytes)
 }
 
 static inline void safe_xfree(void *ptr){
-  if (ptr >= DTCM_BASE && ptr <= DTCM_TOP) {
+  uint ptr_int = (uint) ptr;
+  if (ptr_int >= DTCM_BASE && ptr_int <= DTCM_TOP) {
       sark_xfree(sark.heap, ptr, 0);
   } else {
       sark_xfree(sv->sdram_heap, ptr, ALLOC_LOCK);

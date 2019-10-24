@@ -202,7 +202,7 @@ void compress_start() {
         } else {
             // Otherwise remove default routes.
             log_debug("remove default routes from minimiser");
-            remove_default_routes_minimise(&table);
+            remove_default_routes_minimise(table);
             if (load_routing_table(header->app_id)){
                 cleanup_and_exit(header);
             } else {
