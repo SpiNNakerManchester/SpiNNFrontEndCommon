@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from collections import defaultdict
 
-from pacman.model.graphs.abstract_sdram_partition import AbstractSDRAMPartition
+from pacman.model.graphs.machine import AbstractSDRAMPartition
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.progress_bar import ProgressBar
 
