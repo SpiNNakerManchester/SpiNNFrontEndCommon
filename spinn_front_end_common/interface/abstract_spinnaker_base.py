@@ -967,6 +967,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Go through the placements and find how much SDRAM is used
         # on each chip
         usage_by_chip = dict()
+        seen_partitions = set()
 
         for placement in self._placements.placements:
             sdram_required = placement.vertex.resources_required.sdram
@@ -980,8 +981,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 machine_graph.get_costed_edge_partitions_starting_at_vertex(
                     placement.vertex))
             for partition in costed_partitions:
-                usage_by_chip[placement.x, placement.y] = ConstantSDRAM(
-                    partition.total_sdram_requirements())
+                if partition not in seen_partitions:
+                    usage_by_chip[placement.x, placement.y] = ConstantSDRAM(
+                        partition.total_sdram_requirements())
+                    seen_partitions.add(partition)
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
