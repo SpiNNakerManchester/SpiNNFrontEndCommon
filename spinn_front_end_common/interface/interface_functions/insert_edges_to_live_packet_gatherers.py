@@ -16,7 +16,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge, \
     ApplicationOutgoingEdgePartition
-from pacman.model.graphs.machine import MachineEdge
+from pacman.model.graphs.machine import MachineEdge, \
+    MachineOutgoingEdgePartition
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
@@ -116,7 +117,7 @@ class InsertEdgesToLivePacketGatherers(object):
             machine_edge = MachineEdge(machine_vertex, machine_lpg)
             if (not machine_graph.outgoing_partition_exists(
                     machine_vertex, partition_id)):
-                app_outgoing_partition = ApplicationOutgoingEdgePartition(
+                app_outgoing_partition = MachineOutgoingEdgePartition(
                     partition_id, machine_vertex)
                 machine_graph.add_outgoing_edge_partition(
                     app_outgoing_partition)

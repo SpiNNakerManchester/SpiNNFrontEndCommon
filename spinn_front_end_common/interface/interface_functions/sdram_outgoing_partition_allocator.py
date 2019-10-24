@@ -21,17 +21,12 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class SDRAMOutgoingPartitionAllocator(object):
 
-    N_SEMAPHORE_TAGS_PER_CHIP = 31
-
     def __call__(self, machine_graph, transceiver, placements, app_id):
 
         progress_bar = ProgressBar(
-            total_number_of_things_to_do=len(
-                machine_graph.vertices) * 2,
+            total_number_of_things_to_do=len(machine_graph.vertices),
             string_describing_what_being_progressed=(
                 "Allocating SDRAM for SDRAM outgoing egde partitions"))
-
-        chip_based_partitions = defaultdict(list)
 
         for machine_vertex in machine_graph.vertices:
             partitions = (
@@ -64,24 +59,5 @@ class SDRAMOutgoingPartitionAllocator(object):
                     outgoing_edge_partition.sdram_base_address = (
                         sdram_base_address)
 
-                    # add to chip tracker
-                    if outgoing_edge_partition.needs_semaphore:
-                        chip_based_partitions[
-                            (placement.x, placement.y)].append(
-                                outgoing_edge_partition)
-
-            progress_bar.update()
-
-        for (chip_x, chip_y) in chip_based_partitions:
-            # check doable
-            if (len(chip_based_partitions[(chip_x, chip_y)]) >
-                    self.N_SEMAPHORE_TAGS_PER_CHIP):
-                raise SpinnFrontEndException(
-                    "not enough semaphores to allocate for this setup")
-
-            # update
-            for semaphore_id, partition in enumerate(
-                    chip_based_partitions[(chip_x, chip_y)]):
-                partition.semaphore_id = semaphore_id
             progress_bar.update()
         progress_bar.end()
