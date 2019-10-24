@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from collections import defaultdict
 
 from pacman.model.graphs.machine import AbstractSDRAMPartition
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
