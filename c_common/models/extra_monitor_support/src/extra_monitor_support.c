@@ -1434,7 +1434,6 @@ static inline sdp_msg_t *get_message_from_mailbox(void) {
     if (msg != NULL) {
         sark_msg_cpy(msg, shm_msg);
     }
-    sark_shmsg_free(shm_msg);
     sark.vcpu->mbox_ap_cmd = SHM_IDLE;
     return msg;
 }
