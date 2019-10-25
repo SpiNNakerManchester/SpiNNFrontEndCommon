@@ -18,7 +18,8 @@ BUILD_DIRS = live_packet_gather \
 	         data_speed_up_packet_gatherer \
 	         extra_monitor_support \
 	         command_sender_multicast_source \
-	         reverse_iptag_multicast_source
+	         reverse_iptag_multicast_source \
+	         minimise
 
 all: $(BUILD_DIRS)
 	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done

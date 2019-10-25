@@ -43,9 +43,8 @@ class CommandSender(
             start_resume_commands, pause_stop_commands, timed_commands,
             vertex_to_send_to)
 
-    def generate_data_specification(
-            self, spec, placement):
-        # pylint: disable=too-many-arguments, arguments-differ
+    def generate_data_specification(self, spec, placement):
+        # pylint: disable=no-value-for-parameter, arguments-differ
         self._machine_vertex.generate_data_specification(spec, placement)
 
     @overrides(ApplicationVertex.create_machine_vertex)

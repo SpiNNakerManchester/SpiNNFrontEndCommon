@@ -121,14 +121,13 @@ class DSGRegionReloader(object):
         vertex.regenerate_data_specification(spec, placement)
 
         # execute the spec
-        spec_reader = FileDataReader(spec_file)
-        data_spec_executor = DataSpecificationExecutor(
-            spec_reader, SDRAM.max_sdram_found)
-        data_spec_executor.execute()
+        with FileDataReader(spec_file) as spec_reader:
+            data_spec_executor = DataSpecificationExecutor(
+                spec_reader, SDRAM.max_sdram_found)
+            data_spec_executor.execute()
         try:
-            spec_reader.close()
             os.remove(spec_file)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # Ignore the deletion of files as non-critical
             pass
 

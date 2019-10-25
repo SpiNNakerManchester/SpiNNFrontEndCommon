@@ -64,7 +64,7 @@ class Test(unittest.TestCase):
 
         # Should be 0.1ms per time step of "Test" tag (as 2 timesteps of 1ms)
         self.assertEqual(
-            profile_data.get_mean_ms_per_ts("Test",  1.0), 0.1)
+            profile_data.get_mean_ms_per_ts("Test", 1.0), 0.1)
 
         # Should be 0.3ms on average between "Test2" start tag and end as
         # 2 and both the same difference between start and end

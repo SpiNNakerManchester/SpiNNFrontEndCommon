@@ -179,37 +179,43 @@ class EnergyReport(object):
         kilowatt_hours = total_joules / EnergyReport.JOULES_TO_KILOWATT_HOURS
 
         # write summary data
+        f.write("Summary energy file\n-------------------\n\n")
         f.write(
-            "Summary energy file\n\n"
-            "Energy used by chips during runtime is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used by FPGAs is {} Joules over the entire time the "
-            "machine was booted is {} milliseconds \n"
-            "Energy used by FPGAs is {} Joules over the runtime period is "
-            "{} milliseconds \n"
+            "Energy used by chips during runtime is {} Joules (over {} "
+            "milliseconds)\n".format(active_chip_cost, runtime_total_ms))
+        f.write(
+            "Energy used by FPGAs is {} Joules (over the entire time the "
+            "machine was booted {} milliseconds)\n".format(
+                fpga_cost_total, total_booted_time))
+        f.write(
+            "Energy used by FPGAs is {} Joules (over the runtime period of "
+            "{} milliseconds)\n".format(
+                fpga_cost_runtime, runtime_total_ms))
+        f.write(
             "Energy used by outside router / cooling during the runtime "
-            "period is {} Joules\n"
-            "Energy used by packet transmissions is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the mapping process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used by the data generation process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the loading process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the data extraction process is {} Joules over "
-            "{} milliseconds\n"
-            "Total energy used by the simulation over {} milliseconds is: \n"
-            "     {} Joules or \n"
-            "     {} estimated average Watts or \n"
+            "period is {} Joules\n".format(router_cooling_runtime_cost))
+        f.write(
+            "Energy used by packet transmissions is {} Joules (over {} "
+            "milliseconds)\n".format(packet_cost, total_time))
+        f.write(
+            "Energy used during the mapping process is {} Joules (over {} "
+            "milliseconds)\n".format(mapping_cost, mapping_time))
+        f.write(
+            "Energy used by the data generation process is {} Joules (over {} "
+            "milliseconds)\n".format(dsg_cost, dsg_time))
+        f.write(
+            "Energy used during the loading process is {} Joules (over {} "
+            "milliseconds)\n".format(load_time_cost, load_time))
+        f.write(
+            "Energy used during the data extraction process is {} Joules "
+            "(over {} milliseconds\n".format(
+                data_extraction_cost, extraction_time))
+        f.write(
+            "Total energy used by the simulation over {} milliseconds is:\n"
+            "     {} Joules, or\n"
+            "     {} estimated average Watts, or\n"
             "     {} kWh\n".format(
-                active_chip_cost, runtime_total_ms, fpga_cost_total,
-                total_booted_time, fpga_cost_runtime,
-                runtime_total_ms, router_cooling_runtime_cost,
-                packet_cost, total_time, mapping_cost, mapping_time, dsg_cost,
-                dsg_time, load_time_cost, load_time, data_extraction_cost,
-                extraction_time, total_time, total_joules, total_watts,
-                kilowatt_hours))
+                total_time, total_joules, total_watts, kilowatt_hours))
 
     def _write_detailed_report(
             self, placements, machine, version, spalloc_server,

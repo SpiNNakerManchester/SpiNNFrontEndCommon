@@ -32,6 +32,7 @@ _DURATION = 1
 class ProfileData(object):
     """ A container for profile data
     """
+    # pylint: disable=assignment-from-no-return
 
     START_TIME = _START_TIME
     DURATION = _DURATION
