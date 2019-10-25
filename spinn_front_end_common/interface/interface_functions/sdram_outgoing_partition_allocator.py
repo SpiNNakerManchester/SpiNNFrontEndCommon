@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pacman.model.graphs.machine import AbstractSDRAMPartition
+from pacman.model.graphs.machine import AbstractSDRAMPartition, \
+    SourceSegmentedSDRAMMachinePartition
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -36,9 +37,16 @@ class SDRAMOutgoingPartitionAllocator(object):
                 # check right type of costed partition
                 if isinstance(outgoing_edge_partition, AbstractSDRAMPartition):
 
-                    # get placement
-                    placement = placements.get_placement_of_vertex(
-                        outgoing_edge_partition.pre_vertex)
+                    # get placement, ones where the src is multiple,
+                    # you need to ask for the first pre vertex
+                    if isinstance(
+                            outgoing_edge_partition,
+                            SourceSegmentedSDRAMMachinePartition):
+                        placement = placements.get_placement_of_vertex(
+                            next(iter(outgoing_edge_partition.pre_vertices)))
+                    else:
+                        placement = placements.get_placement_of_vertex(
+                            outgoing_edge_partition.pre_vertex)
 
                     # total sdram
                     total_sdram = (
