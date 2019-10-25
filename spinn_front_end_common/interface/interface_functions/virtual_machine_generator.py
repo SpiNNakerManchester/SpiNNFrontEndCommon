@@ -51,7 +51,7 @@ class VirtualMachineGenerator(object):
             machine = virtual_machine(
                 width=width, height=height,
                 with_wrap_arounds=virtual_has_wrap_arounds,
-                version=version, n_cpus_per_chip=Machine.MAX_CORES_PER_CHIP,
+                version=version, n_cpus_per_chip=Machine.max_cores_per_chip(),
                 with_monitors=with_monitors, down_chips=down_chips,
                 down_cores=down_cores, down_links=down_links,
                 sdram_per_chip=max_sdram_size,

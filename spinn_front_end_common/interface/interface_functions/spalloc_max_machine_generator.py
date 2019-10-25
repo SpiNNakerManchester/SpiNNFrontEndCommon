@@ -61,7 +61,7 @@ class SpallocMaxMachineGenerator(object):
             raise Exception(
                 "The spalloc server appears to have no compatible machines")
 
-        n_cpus_per_chip = (Machine.MAX_CORES_PER_CHIP -
+        n_cpus_per_chip = (Machine.max_cores_per_chip() -
                            max_machine_core_reduction)
 
         # Return the width and height, and make no assumption about wrap-
