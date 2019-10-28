@@ -17,6 +17,7 @@
 
 #include <spin1_api.h>
 #include <debug.h>
+#include <common-typedefs.h>
 #include "platform.h"
 #include "unordered_remove_default_routes.h"
 #include "minimise.h"
@@ -102,7 +103,7 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b){
     if (route_a == route_b) {
         return 0;
     }
-    for (int i = 0; i < routes_count; i++) {
+    for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route_a){
             return 1;
         }
@@ -114,6 +115,8 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b){
     // set the failed flag and exit
     sark.vcpu->user0 = 1;
     spin1_exit(0);
+
+    return 0;
 }
 
 static void quicksort_table(int low, int high){
@@ -200,7 +203,7 @@ static void quicksort_route(int low, int high){
 
     if (low < high - 1) {
         // pick low entry for the pivot
-        int pivot = routes_frequency[low];
+        uint pivot = routes_frequency[low];
         //Start at low + 1 as entry low is the pivot
         check = low + 1;
         // If we find any less than swap with the first pivot
@@ -231,9 +234,9 @@ static void quicksort_route(int low, int high){
     }
 }
 
-static inline update_frequency(index){
+static inline void update_frequency(int index){
     uint32_t route = routing_table_sdram_stores_get_entry(index)->route;
-    for (int i = 0; i < routes_count; i++) {
+    for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route) {
             routes_frequency[i] += 1;
             return;
@@ -251,6 +254,7 @@ static inline update_frequency(index){
 }
 
 static inline void simple_minimise(uint32_t target_length){
+	use(target_length);
     int left, right;
 
     int table_size = Routing_table_sdram_get_n_entries();
@@ -262,14 +266,14 @@ static inline void simple_minimise(uint32_t target_length){
     }
 
     log_info("before sort %u", routes_count);
-    for (int i = 0; i < routes_count; i++) {
+    for (uint i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
     quicksort_route(0, routes_count);
 
     log_info("after sort %u", routes_count);
-    for (int i = 0; i < routes_count; i++) {
+    for (uint i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
