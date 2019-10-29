@@ -38,7 +38,9 @@ def _timestamp():
 class SqlLiteDatabase(AbstractDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
-    NOT THREAD SAFE ON THE SAME DB. Threads can access different DBs just fine.
+    .. note::
+        NOT THREAD SAFE ON THE SAME DB. \
+        Threads can access different DBs just fine.
     """
 
     __slots__ = [
@@ -206,7 +208,7 @@ class SqlLiteDatabase(AbstractDatabase):
         :type region: int
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (memoryview, bool)
+        :rtype: tuple(memoryview, bool)
         """
         try:
             with self._db:

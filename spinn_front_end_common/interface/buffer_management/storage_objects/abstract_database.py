@@ -23,32 +23,31 @@ class AbstractDatabase(object):
     """
     This API separates the required database calls from the implementation.
 
-    Methods here are designed for the convenience of the caller not the
-        database.
+    Methods here are designed for the convenience of the caller not the\
+    database.
 
-    There should only ever be a single Database Object in use at any time.
-        In the case of application_graph_changed the first should closed and
-        a new one created.
+    There should only ever be a single Database Object in use at any time.\
+    In the case of application_graph_changed the first should closed and\
+    a new one created.
 
-    Do not assume that just because 2 database objects where opened with the
-        same parameters (for example sqllite file)
-        that they hold the same data.
-        In fact the second init is allowed to delete any previous data.
+    Do not assume that just because 2 database objects where opened with the\
+    same parameters (for example SQLite file)\
+    that they hold the same data. \
+    In fact the second init is allowed to delete any previous data.
 
-    While not recommended implementation objects are allowed to hold data in
-        memory, with the exception of data required by the java which must be
-        in the database once commit is called.
+    While not recommended implementation objects are allowed to hold data in \
+    memory, with the exception of data required by the java which must be \
+    in the database once commit is called.
     """
 
     __slots__ = ()
 
     @abstractmethod
     def close(self):
-        """
-            Signals that the database can be closed and will not be reused.
+        """ Signals that the database can be closed and will not be reused.
 
-            Once this is called any other method in this API is allowed to
-                raise any kind of exception.
+        Once this is called any other method in this API is allowed to\
+        raise any kind of exception.
         """
 
     @abstractmethod
@@ -82,14 +81,16 @@ class AbstractDatabase(object):
         :type region: int
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
+        :rtype: tuple(bytearray, bool)
         """
 
     @abstractmethod
     def clear(self):
         """ Clears the data for all regions.
 
-        Warning: This method will be removed when the database moves to
+        .. note::
+            This method will be removed when the database moves to
             keeping data after reset.
+
         :rtype: None
         """

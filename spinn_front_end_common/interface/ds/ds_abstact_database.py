@@ -21,7 +21,7 @@ from spinn_utilities.abstract_base import (
 @add_metaclass(AbstractBase)
 class DsAbstractDatabase(object):
     """
-    Class which minics the actions of a the databse but only uses two dicts.
+    Class which mimics the actions of a the database but only uses two dicts.
 
     Not currently used but would be faster if Python only and relatively small
 
@@ -31,10 +31,11 @@ class DsAbstractDatabase(object):
 
     @abstractmethod
     def close(self):
-        """
-            Signals that the database can be closed and will not be reused.
-            Once this is called any other method in this API is allowed to
-                raise any kind of exception.
+        """ Signals that the database can be closed and will not be reused.
+
+        .. note::
+            Once this is called any other method in this API is allowed to\
+            raise any kind of exception.
         """
 
     @abstractmethod
@@ -45,10 +46,12 @@ class DsAbstractDatabase(object):
     @abstractmethod
     def save_ds(self, core_x, core_y, core_p, ds):
         """
-
         :param core_x: x of the core ds applies to
+        :type core_x: int
         :param core_y: y of the core ds applies to
+        :type core_y: int
         :param p: p of the core ds applies to
+        :type p: int
         :param ds: the data spec as byte code nbby
         :type ds: bytearray
         """
@@ -56,47 +59,50 @@ class DsAbstractDatabase(object):
     @abstractmethod
     def get_ds(self, x, y, p):
         """
-        Retrieves the data spec as byte code for this core
+        Retrieves the data spec as byte code for this core.
+
         :param x: core x
+        :type x: int
         :param y: core y
+        :type y: int
         :param p: core p
+        :type p: int
         :return: data spec as byte code
         """
 
     @abstractmethod
     def ds_iteritems(self):
-        """
-        Yields the keys and values  for the DS data
+        """ Yields the keys and values for the DS data
 
         :return Yields the (x, y, p) and saved ds pairs
-        :rtype: ((int, int, int),  bytearray)
+        :rtype: iterable(tuple(tuple(int, int, int), bytearray))
         """
 
     @abstractmethod
     def ds_n_cores(self):
-        """
-        Returns the number for cores there is a ds saved for
+        """ Returns the number for cores there is a ds saved for
 
         :rtype: int
         """
 
     @abstractmethod
     def ds_set_app_id(self, app_id):
-        """
-        Sets the same app_id for all rows that have ds content
+        """ Sets the same app_id for all rows that have ds content
 
         :param app_id: value to set
-        :rtype app_id: int
+        :type app_id: int
         """
 
     @abstractmethod
     def ds_get_app_id(self, x, y, p):
-        """
-        Gets the app_id set for this core
+        """ Gets the app_id set for this core
 
         :param x: core x
+        :type x: int
         :param y: core y
+        :type y: int
         :param p: core p
+        :type p: int
         :rtype: int
         """
 
@@ -106,28 +112,34 @@ class DsAbstractDatabase(object):
         Flags a list of processors as running system binaries.
 
         :param core_list: list of (core x, core y, core p)
+        :type core_list: iterable(tuple(int,int,int))
         """
 
     @abstractmethod
     def get_write_info(self, x, y, p):
-        """
-        Gets the provenance returned by the Data Spec executor
+        """ Gets the provenance returned by the Data Spec executor
 
         :param x: core x
+        :type x: int
         :param y: core y
+        :type y: int
         :param p: core p
-        :rtype: DataWritten
+        :type p: int
+        :rtype: ~spinn_front_end_common.utilities.utility_objs.DataWritten
         """
 
     @abstractmethod
     def set_write_info(self, x, y, p, info):
-        """
-        Gets the provenance returned by the Data Spec executor
+        """ Sets the provenance returned by the Data Spec executor.
 
         :param x: core x
+        :type x: int
         :param y: core y
+        :type y: int
         :param p: core p
+        :type p: int
         :param info: DataWritten
+        :type info: ~spinn_front_end_common.utilities.utility_objs.DataWritten
         """
 
     @abstractmethod
@@ -138,8 +150,8 @@ class DsAbstractDatabase(object):
 
     @abstractmethod
     def info_n_cores(self):
-        """
-        Returns the number for cores there is a info saved for
+        """ Returns the number for cores there is a info saved for.
+
         :rtype: int
         """
 
@@ -150,5 +162,5 @@ class DsAbstractDatabase(object):
         transaction may be held while this iterator is processing.
 
         :return Yields the (x, y, p) and DataWritten
-        :rtype: ((int, int, int),  dict)
+        :rtype: iterable(tuple(tuple(int, int, int), dict))
         """

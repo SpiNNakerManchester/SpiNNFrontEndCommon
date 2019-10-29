@@ -86,7 +86,7 @@ class JavaCaller(object):
             Must start with -D
             For example -Dlogging.level=DEBUG
         :type java_properties: str
-        :raise ConfigurationException if simple parameter checking fails.
+        :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
         self._report_folder = None
