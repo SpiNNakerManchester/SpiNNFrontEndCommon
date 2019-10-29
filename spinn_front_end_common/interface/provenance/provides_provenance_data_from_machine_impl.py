@@ -21,6 +21,7 @@ from data_specification.utility_calls import get_region_base_address_offset
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -75,7 +76,7 @@ class ProvidesProvenanceDataFromMachineImpl(
     def get_provenance_data_size(n_additional_data_items):
         return (
             (ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES
-             + n_additional_data_items) * 4)
+             + n_additional_data_items) * BYTES_PER_WORD)
 
     def _get_provenance_region_address(self, transceiver, placement):
 
@@ -87,7 +88,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         base_address_offset = get_region_base_address_offset(
             app_data_base_address, self._provenance_region_id)
         base_address = transceiver.read_memory(
-            placement.x, placement.y, base_address_offset, 4)
+            placement.x, placement.y, base_address_offset, BYTES_PER_WORD)
         return _ONE_WORD.unpack(base_address)[0]
 
     def _read_provenance_data(self, transceiver, placement):

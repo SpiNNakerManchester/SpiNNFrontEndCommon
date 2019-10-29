@@ -17,13 +17,13 @@ import struct
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     import ChannelBufferState
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS)
+    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, BYTES_PER_WORD)
 
 # The offset of the last sequence number field in bytes
-_LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6
+_LAST_SEQUENCE_NUMBER_OFFSET = BYTES_PER_WORD * 6
 
 # The offset of the memory addresses in bytes
-_FIRST_REGION_ADDRESS_OFFSET = 4 * 7
+_FIRST_REGION_ADDRESS_OFFSET = BYTES_PER_WORD * 7
 
 # the number of data elements inside the recording region before
 # recording regions sizes are stored.
@@ -44,7 +44,7 @@ def get_recording_header_size(n_recorded_regions):
 
     # See recording.h/recording_initialise for data included in the header
     return (_RECORDING_ELEMENTS_BEFORE_REGION_SIZES +
-            (2 * n_recorded_regions)) * 4
+            (2 * n_recorded_regions)) * BYTES_PER_WORD
 
 
 def get_recording_data_constant_size(n_recorded_regions):
@@ -140,7 +140,7 @@ def get_last_sequence_number(placement, transceiver, recording_data_address):
     """
     data = transceiver.read_memory(
         placement.x, placement.y,
-        recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, 4)
+        recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, BYTES_PER_WORD)
     return _ONE_WORD.unpack_from(data)[0]
 
 
@@ -156,6 +156,6 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
     """
     data = transceiver.read_memory(
         placement.x, placement.y,
-        recording_data_address + _FIRST_REGION_ADDRESS_OFFSET + (region * 4),
-        4)
+        recording_data_address + _FIRST_REGION_ADDRESS_OFFSET +
+        (region * BYTES_PER_WORD), BYTES_PER_WORD)
     return _ONE_WORD.unpack_from(data)[0]

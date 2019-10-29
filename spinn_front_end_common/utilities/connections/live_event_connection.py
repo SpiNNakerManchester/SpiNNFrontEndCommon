@@ -17,10 +17,7 @@ import logging
 import struct
 import sys
 from threading import Thread
-try:
-    from collections.abc import OrderedDict
-except ImportError:
-    from collections import OrderedDict
+from collections import OrderedDict
 from six import iterkeys, iteritems, reraise
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
@@ -48,6 +45,9 @@ _MAX_FULL_KEYS_PER_PACKET = 63
 
 # The maximum number of 16-bit keys that will fit in a packet
 _MAX_HALF_KEYS_PER_PACKET = 127
+
+# The maximum number of 32-bit keys with payloads that will fit in a packet
+_MAX_FULL_KEYS_PAYLOADS_PER_PACKET = 31
 
 _TWO_SKIP = struct.Struct("<2x")
 
@@ -166,7 +166,8 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__init_callbacks[label].append(init_callback)
 
-    def add_receive_callback(self, label, live_event_callback):
+    def add_receive_callback(self, label, live_event_callback,
+                             translate_key=True):
         """ Add a callback for the reception of live events from a vertex
 
         :param label: The label of the vertex to be notified about. Must be\
@@ -177,11 +178,14 @@ class LiveEventConnection(DatabaseConnection):
             the simulation timestep when the event occurred, and an\
             array-like of atom IDs.
         :type live_event_callback: function(str, int, list(int)) -> None
+        :param translate_key: True if the key is to be converted to an atom\
+            ID, False if the key should stay a key
         """
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}".format(
             live_event_callback, label))
-        self.__live_event_callbacks[label_id].append(live_event_callback)
+        self.__live_event_callbacks[label_id].append(
+            (live_event_callback, translate_key))
 
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
@@ -343,7 +347,8 @@ class LiveEventConnection(DatabaseConnection):
             try:
                 connection.send_to(data, (board_address, SCP_SCAMP_PORT))
                 response_data = connection.receive(1.0)
-                request.get_scp_response().read_bytestring(response_data, 2)
+                request.get_scp_response().read_bytestring(
+                    response_data, _TWO_SKIP.size)
                 sent = True
             except SpinnmanTimeoutException:
                 if not tries_to_go:
@@ -396,6 +401,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def __handle_time_packet(self, packet):
         key_times_labels = OrderedDict()
+        atoms_times_labels = OrderedDict()
         while packet.is_next_element:
             element = packet.next_element
             time = element.payload
@@ -404,17 +410,23 @@ class LiveEventConnection(DatabaseConnection):
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 if time not in key_times_labels:
                     key_times_labels[time] = dict()
+                    atoms_times_labels[time] = dict()
                 if label_id not in key_times_labels[time]:
                     key_times_labels[time][label_id] = list()
-                key_times_labels[time][label_id].append(atom_id)
+                    atoms_times_labels[time][label_id] = list()
+                key_times_labels[time][label_id].append(key)
+                atoms_times_labels[time][label_id].append(atom_id)
             else:
                 self.__handle_unknown_key(key)
 
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
                 label = self.__receive_labels[label_id]
-                for callback in self.__live_event_callbacks[label_id]:
-                    callback(label, time, key_times_labels[time][label_id])
+                for c_back, use_atom in self.__live_event_callbacks[label_id]:
+                    if use_atom:
+                        c_back(label, time, atoms_times_labels[time][label_id])
+                    else:
+                        c_back(label, time, key_times_labels[time][label_id])
 
     def __handle_no_time_packet(self, packet):
         while packet.is_next_element:
@@ -422,12 +434,18 @@ class LiveEventConnection(DatabaseConnection):
             key = element.key
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
-                for callback in self.__live_event_callbacks[label_id]:
+                label = self.__receive_labels[label_id]
+                for c_back, use_atom in self.__live_event_callbacks[label_id]:
                     if isinstance(element, KeyPayloadDataElement):
-                        callback(self.__receive_labels[label_id], atom_id,
-                                 element.payload)
+                        if use_atom:
+                            c_back(label, atom_id, element.payload)
+                        else:
+                            c_back(label, key, element.payload)
                     else:
-                        callback(self.__receive_labels[label_id], atom_id)
+                        if use_atom:
+                            c_back(label, atom_id)
+                        else:
+                            c_back(label, key)
             else:
                 self.__handle_unknown_key(key)
 
@@ -482,6 +500,47 @@ class LiveEventConnection(DatabaseConnection):
                 message.add_key(key)
                 pos += 1
                 events_in_packet += 1
+
+            self.__sender_connection.send_to(
+                self.__get_sdp_data(message, x, y, p),
+                (ip_address, SCP_SCAMP_PORT))
+
+    def send_event_with_payload(self, label, atom_id, payload):
+        """ Send an event with a payload from a single atom
+
+        :param label: \
+            The label of the vertex from which the event will originate
+        :type label: str
+        :param atom_id: The ID of the atom sending the event
+        :type atom_id: int
+        :param payload: The payload to send
+        :type payload: int
+        """
+        self.send_events_with_payloads(label, [(atom_id, payload)])
+
+    def send_events_with_payloads(self, label, atom_ids_and_payloads):
+        """ Send a number of events with payloads
+
+        :param label: \
+            The label of the vertex from which the events will originate
+        :type label: str
+        :param atom_ids_and_payloads:\
+            array-like of tuples of atom IDs sending events with their payloads
+        :type atom_ids_and_payloads: list((int, int))
+        """
+        msg_type = EIEIOType.KEY_PAYLOAD_32_BIT
+        max_keys = _MAX_FULL_KEYS_PAYLOADS_PER_PACKET
+        pos = 0
+        x, y, p, ip_address = self.__send_address_details[label]
+        while pos < len(atom_ids_and_payloads):
+            message = EIEIODataMessage.create(msg_type)
+            events = 0
+            while pos < len(atom_ids_and_payloads) and events < max_keys:
+                key, payload = atom_ids_and_payloads[pos]
+                key = self._atom_id_to_key[label][key]
+                message.add_key_and_payload(key, payload)
+                pos += 1
+                events += 1
 
             self.__sender_connection.send_to(
                 self.__get_sdp_data(message, x, y, p),

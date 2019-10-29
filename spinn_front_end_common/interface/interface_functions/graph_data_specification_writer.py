@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    from collections.abc import defaultdict
-except ImportError:
-    from collections import defaultdict
+from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification import DataSpecificationGenerator
 from data_specification.utility_calls import get_report_writer

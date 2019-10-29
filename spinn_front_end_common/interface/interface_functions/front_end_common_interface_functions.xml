@@ -1046,10 +1046,6 @@
                 <param_type>MaxSDRAMSize</param_type>
             </parameter>
             <parameter>
-                <param_name>max_core_id</param_name>
-                <param_type>MaxCoreID</param_type>
-            </parameter>
-            <parameter>
                 <param_name>repair_machine</param_name>
                 <param_type>RepairMachine</param_type>
             </parameter>
@@ -1073,9 +1069,6 @@
             <param_name>repair_machine</param_name>
              <param_name>ignore_bad_ethernets</param_name>
         </required_inputs>
-        <optional_inputs>
-                <param_name>max_core_id</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
             <param_type>MemoryTransceiver</param_type>
@@ -1211,10 +1204,6 @@
                 <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
-                <param_name>n_cpus_per_chip</param_name>
-                <param_type>MaxCoreID</param_type>
-            </parameter>
-            <parameter>
                 <param_name>with_monitors</param_name>
                 <param_type>VirtualChipsHaveMonitor</param_type>
             </parameter>
@@ -1248,7 +1237,6 @@
             <param_name>height</param_name>
             <param_name>virtual_has_wrap_arounds</param_name>
             <param_name>version</param_name>
-            <param_name>n_cpus_per_chip</param_name>
             <param_name>with_monitors</param_name>
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
@@ -2073,8 +2061,8 @@
                 <param_type>MaxSDRAMSize</param_type>
             </parameter>
             <parameter>
-                <param_name>max_core_id</param_name>
-                <param_type>MaxCoreID</param_type>
+                <param_name>max_machine_core_reduction</param_name>
+                <param_type>MaxMachineCoreReduction</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -2084,7 +2072,7 @@
             <param_name>spalloc_port</param_name>
             <param_name>spalloc_machine</param_name>
             <param_name>max_sdram_size</param_name>
-            <param_name>max_core_id</param_name>
+            <param_name>max_machine_core_reduction</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryVirtualMachine</param_type>
@@ -2102,11 +2090,18 @@
                 <param_name>total_run_time</param_name>
                 <param_type>TotalRunTime</param_type>
             </parameter>
+            <parameter>
+                <param_name>max_machine_core_reduction</param_name>
+                <param_type>MaxMachineCoreReduction</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hbp_server_url</param_name>
             <param_name>total_run_time</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>max_machine_core_reduction</param_name>
+        </optional_inputs>
         <outputs>
             <param_type>MemoryVirtualMachine</param_type>
         </outputs>

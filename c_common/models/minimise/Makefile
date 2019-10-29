@@ -13,17 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BUILD_DIRS = compressor_bit_field_models \
-	         live_packet_gather \
-	         chip_power_monitor \
-	         data_speed_up_packet_gatherer \
-	         extra_monitor_support \
-	         command_sender_multicast_source \
-	         reverse_iptag_multicast_source \
-	         minimise
+APP = simple_minimise
+SOURCES = simple_minimise.c
 
-all: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
-
-clean: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d clean || exit $$?; done
+include ../fec_models.mk

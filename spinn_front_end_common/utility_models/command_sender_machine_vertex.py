@@ -29,7 +29,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -46,13 +46,13 @@ class CommandSenderMachineVertex(
         PROVENANCE_REGION = 4
 
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
-    _COMMAND_WITH_PAYLOAD_SIZE = 20
+    _COMMAND_WITH_PAYLOAD_SIZE = 5 * BYTES_PER_WORD
 
     # 4 for the time stamp
-    _COMMAND_TIMESTAMP_SIZE = 4
+    _COMMAND_TIMESTAMP_SIZE = BYTES_PER_WORD
 
     # 4 for the int to represent the number of commands
-    _N_COMMANDS_SIZE = 4
+    _N_COMMANDS_SIZE = BYTES_PER_WORD
 
     # bool for if the command has a payload (true = 1)
     _HAS_PAYLOAD = 1
