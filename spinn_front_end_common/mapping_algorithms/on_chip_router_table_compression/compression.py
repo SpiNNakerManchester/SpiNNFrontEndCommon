@@ -277,11 +277,11 @@ class Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                Compression.make_source_hack(entry))
+                Compression.make_source_hack(entry=entry))
         return bytearray(data)
 
     @staticmethod
-    def make_source_hack(self, entry):
+    def make_source_hack(entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
 
