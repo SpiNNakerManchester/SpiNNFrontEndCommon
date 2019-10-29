@@ -101,7 +101,7 @@ class DataInMulticastRoutingGenerator(object):
         """
         table = self._routing_tables.get_routing_table_for_chip(x, y)
         if table is None:
-            table = MulticastRoutingTable(x, y)
+            table = UnCompressedMulticastRoutingTable(x, y)
             self._routing_tables.add_routing_table(table)
         if processor_id is None:
             processor_ids = []

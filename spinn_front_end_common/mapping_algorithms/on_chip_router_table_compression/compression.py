@@ -58,7 +58,7 @@ def mundy_on_chip_router_compression(
     """
     # pylint: disable=too-many-arguments
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = _Compression(
+    compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
@@ -96,14 +96,14 @@ def pair_compression(
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_minimise.aplx")
-    compression = _Compression(
+    compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
     compression._compress()
 
 
-class _Compression(object):
+class Compression(object):
     """ Compressor that uses a on chip router compressor
     """
 
@@ -277,10 +277,11 @@ class _Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                self._make_source_hack(entry))
+                Compression.make_source_hack(entry))
         return bytearray(data)
 
-    def _make_source_hack(self, entry):
+    @staticmethod
+    def make_source_hack(self, entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
 

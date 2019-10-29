@@ -27,8 +27,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_bit_field_router_compressor import \
     HostBasedBitFieldRouterCompressor
 from spinn_front_end_common.mapping_algorithms. \
-    on_chip_router_table_compression.mundy_on_chip_router_compression import \
-    MundyOnChipRouterCompression
+    on_chip_router_table_compression.compression import Compression
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
     ExecutableType
@@ -699,7 +698,7 @@ class MachineBitFieldRouterCompressor(object):
             data += self._FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                MundyOnChipRouterCompression.make_source_hack(entry))
+                Compression.make_source_hack(entry))
         return bytearray(data)
 
     @staticmethod

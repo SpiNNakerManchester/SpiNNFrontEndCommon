@@ -86,7 +86,7 @@ class InsertEdgesToLivePacketGatherers(object):
                 # update the app graph and graph mapper
                 app_graph_edges = self._update_app_graph_and_mapper(
                     app_graph, mapper, machine_lpg, vertex,
-                    parition_ids, machine_edges, app_graph_edges,
+                    partition_ids, machine_edges, app_graph_edges,
                     n_keys_map, m_graph)
         else:
             # add a edge between the closest LPG and the vertex
@@ -134,7 +134,8 @@ class InsertEdgesToLivePacketGatherers(object):
     @staticmethod
     def _update_app_graph_and_mapper(
             application_graph, graph_mapper, machine_lpg, vertex,
-            partition_ids, machine_edges, app_graph_edges, n_keys_map, m_graph):
+            partition_ids, machine_edges, app_graph_edges, n_keys_map,
+            m_graph):
         """ Handles changes to the application graph and graph mapper.
 
         :param application_graph: the application graph
@@ -167,7 +168,7 @@ class InsertEdgesToLivePacketGatherers(object):
                 machine_edges[partition_id], app_graph_edges[partition_id])
 
         if n_keys_map is not None:
-            partition = m_graph.get_outgoing_partition_for_edge(machine_edge)
+            partition = m_graph.get_outgoing_partition_for_edge(machine_edges)
             EdgeToNKeysMapper.process_application_partition(
                 partition, n_keys_map, graph_mapper)
 
