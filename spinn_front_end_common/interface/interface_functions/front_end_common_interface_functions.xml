@@ -925,10 +925,6 @@
                 <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
-                <param_name>with_monitors</param_name>
-                <param_type>VirtualChipsHaveMonitor</param_type>
-            </parameter>
-            <parameter>
                 <param_name>down_chips</param_name>
                 <param_type>DownedChipsDetails</param_type>
             </parameter>
@@ -958,7 +954,6 @@
             <param_name>height</param_name>
             <param_name>virtual_has_wrap_arounds</param_name>
             <param_name>version</param_name>
-            <param_name>with_monitors</param_name>
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
             <param_name>down_links</param_name>

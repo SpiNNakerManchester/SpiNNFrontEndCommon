@@ -28,8 +28,7 @@ class VirtualMachineGenerator(object):
 
     def __call__(
             self, width=None, height=None, virtual_has_wrap_arounds=None,
-            version=None,
-            with_monitors=True, down_chips=None, down_cores=None,
+            version=None, down_chips=None, down_cores=None,
             down_links=None, max_sdram_size=None,
             router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES,
             json_path=None):
@@ -52,9 +51,8 @@ class VirtualMachineGenerator(object):
                 width=width, height=height,
                 with_wrap_arounds=virtual_has_wrap_arounds,
                 version=version, n_cpus_per_chip=Machine.max_cores_per_chip(),
-                with_monitors=with_monitors, down_chips=down_chips,
-                down_cores=down_cores, down_links=down_links,
-                sdram_per_chip=max_sdram_size,
+                down_chips=down_chips, down_cores=down_cores,
+                down_links=down_links, sdram_per_chip=max_sdram_size,
                 router_entries_per_chip=router_entries_per_chip, validate=True)
         else:
             if (height is not None or width is not None or
