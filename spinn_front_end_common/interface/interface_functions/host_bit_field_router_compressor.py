@@ -834,7 +834,8 @@ class HostBasedBitFieldRouterCompressor(object):
             "The uncompressed routing table had {} entries, the compressed "
             "one with {} integrated bitfields has {} entries. \n\n".format(
                 router_table.number_of_entries,
-                self._best_routing_table.number_of_entries,
+                # Note: _best_routing_table is a list(), router_table is not
+                len(self._best_routing_table),
                 n_bit_fields_merged))
 
         report_out.write(
@@ -863,7 +864,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
         entry_count = 0
         n_defaultable = 0
-        for entry in self._best_routing_table.multicast_routing_entries:
+        # Note: _best_routing_table is a list(), router_table is not
+        for entry in self._best_routing_table:
             index = entry_count & self._LOWER_16_BITS
             entry_str = line_format.format(index, format_route(entry))
             entry_count += 1
