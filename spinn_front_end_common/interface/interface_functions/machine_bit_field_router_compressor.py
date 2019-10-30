@@ -408,10 +408,7 @@ class MachineBitFieldRouterCompressor(object):
                 host_chips.append((core_subset.x, core_subset.y))
         cores = txrx.get_cores_in_state(
             executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
-        for subset in cores:
-            for p in subset.processor_ids:
-                logger.info(
-                    "failed on core {}:{}:{}".format(subset.x, subset.y, p))
+        logger.info("failed on cores {}".format(cores.values()))
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
