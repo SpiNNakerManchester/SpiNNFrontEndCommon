@@ -167,10 +167,11 @@ class InsertEdgesToLivePacketGatherers(object):
             graph_mapper.add_edge_mapping(
                 machine_edges[partition_id], app_graph_edges[partition_id])
 
-        if n_keys_map is not None:
-            partition = m_graph.get_outgoing_partition_for_edge(machine_edges)
-            EdgeToNKeysMapper.process_application_partition(
-                partition, n_keys_map, graph_mapper)
+            if n_keys_map is not None:
+                partition = m_graph.get_outgoing_partition_for_edge(
+                    machine_edges[partition_id])
+                EdgeToNKeysMapper.process_application_partition(
+                    partition, n_keys_map, graph_mapper)
 
         # return the app edge for reuse as needed
         return app_graph_edges
