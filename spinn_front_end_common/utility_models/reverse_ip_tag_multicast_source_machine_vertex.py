@@ -660,12 +660,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             placement, self._REGIONS.RECORDING.value, txrx)
 
     @property
+    @overrides(SendsBuffersFromHostPreBufferedImpl.send_buffers)
     def send_buffers(self):
         return self._send_buffers
-
-    @send_buffers.setter
-    def send_buffers(self, value):
-        self._send_buffers = value
 
     def get_region_buffer_size(self, region):
         if region == self._REGIONS.SEND_BUFFER.value:

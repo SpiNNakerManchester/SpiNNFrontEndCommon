@@ -69,7 +69,9 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     :param profile_region: DSG region to get profiling data out of SDRAM
     :param tag_labels: labels for the profiling data
     :param txrx: SpiNNMan transceiver
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param placement: placement
+    :type placement: ~pacman.model.placements.Placement
     :return: \
         :py:class:`~spinn_front_end_common.interface.profiling.ProfileData`
     """

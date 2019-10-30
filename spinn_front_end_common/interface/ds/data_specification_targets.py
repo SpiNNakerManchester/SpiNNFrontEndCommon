@@ -29,8 +29,9 @@ class DataSpecificationTargets(MutableMapping):
     def __init__(self, machine, report_folder, init=None, clear=True):
         """
         :param machine:
-        :type machine: :py:class:`spinn_machine.Machine`
+        :type machine: ~spinn_machine.Machine
         :param report_folder:
+        :type report_folder: str
         """
         # pylint: disable=super-init-not-called
         # real DB would write to report_folder
@@ -43,9 +44,9 @@ class DataSpecificationTargets(MutableMapping):
         """
         Implements the mapping __getitem__ as long as core is the right type.
 
-        :param core:triple of (x, y, p)
-        :type core: (int, int, int)
-        :rtype: dict() with the keys
+        :param core: triple of (x, y, p)
+        :type core: tuple(int, int, int)
+        :rtype: dict(); has the keys
             'start_address', 'memory_used' and 'memory_written'
         """
         (x, y, p) = core
@@ -59,12 +60,11 @@ class DataSpecificationTargets(MutableMapping):
         raise NotImplementedError("Delete not supported")
 
     def keys(self):
-        """
-        Yields the keys.
+        """ Yields the keys.
 
         As the more typical call is iteritems this makes use of that
 
-        :return:
+        :rtype: iterable(tuple(int,int,int))
         """
         for key, _value in self._db.ds_iteritems():
             yield key
@@ -97,8 +97,7 @@ class DataSpecificationTargets(MutableMapping):
     def get_database(self):
         """ Expose the database so it can be shared
 
-        :rtype:
-            py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
+        :rtype: ~spinn_front_end_common.interface.ds.DsAbstractDatabase
         """
         return self._db
 

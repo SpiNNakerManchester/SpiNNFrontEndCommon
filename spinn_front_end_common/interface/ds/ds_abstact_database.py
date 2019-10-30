@@ -20,12 +20,8 @@ from spinn_utilities.abstract_base import (
 
 @add_metaclass(AbstractBase)
 class DsAbstractDatabase(object):
-    """
-    Class which mimics the actions of a the database but only uses two dicts.
-
-    Not currently used but would be faster if Python only and relatively small
-
-    Kept in case needed or for possible testing.
+    """ Interface supported by all database implementations that store data \
+        specifications.
     """
     __slots__ = []
 
@@ -52,14 +48,13 @@ class DsAbstractDatabase(object):
         :type core_y: int
         :param p: p of the core ds applies to
         :type p: int
-        :param ds: the data spec as byte code nbby
+        :param ds: the data spec as byte code
         :type ds: bytearray
         """
 
     @abstractmethod
     def get_ds(self, x, y, p):
-        """
-        Retrieves the data spec as byte code for this core.
+        """ Retrieves the data spec as byte code for this core.
 
         :param x: core x
         :type x: int
@@ -68,13 +63,14 @@ class DsAbstractDatabase(object):
         :param p: core p
         :type p: int
         :return: data spec as byte code
+        :rtype: bytearray
         """
 
     @abstractmethod
     def ds_iteritems(self):
         """ Yields the keys and values for the DS data
 
-        :return Yields the (x, y, p) and saved ds pairs
+        :return: Yields the (x, y, p) and saved ds pairs
         :rtype: iterable(tuple(tuple(int, int, int), bytearray))
         """
 
@@ -161,6 +157,7 @@ class DsAbstractDatabase(object):
         Yields the keys and values for the Info data. Note that a DB \
         transaction may be held while this iterator is processing.
 
-        :return Yields the (x, y, p) and DataWritten
-        :rtype: iterable(tuple(tuple(int, int, int), dict))
+        :return: Yields the (x, y, p) and DataWritten
+        :rtype: iterable(tuple(tuple(int, int, int),\
+            ~spinn_front_end_common.utilities.utility_objs.DataWritten))
         """

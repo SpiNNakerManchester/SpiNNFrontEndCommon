@@ -51,21 +51,16 @@ extensions = [
     'sphinx.ext.intersphinx'
 ]
 
-intersphinx_mapping = {'spinn_machine':
-                       ('http://spinnmachine.readthedocs.org/en/latest/',
-                           None),
-                       'spinn_storage_handlers':
-                           ('http://spinnmachine.readthedocs.io/en/latest/',
-                            None),
-                       'spinnman':
-                           ('http://spinnman.readthedocs.io/en/latest/',
-                            None),
-                       'pacman': ('http://pacman.readthedocs.io/en/latest/',
-                                  None),
-                       'data_specification':
-                           ('http://dataspecification.readthedocs.io'
-                            '/en/latest/', None),
-                       }
+intersphinx_mapping = {
+    'spinn_machine': (
+        'https://spinnmachine.readthedocs.io/en/latest/', None),
+    'spinnman': (
+        'https://spinnman.readthedocs.io/en/latest/', None),
+    'pacman': (
+        'https://pacman.readthedocs.io/en/latest/', None),
+    'data_specification': (
+        'https://dataspecification.readthedocs.io/en/latest/', None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -373,4 +368,9 @@ for f in os.listdir("."):
     if (os.path.isfile(f) and f.endswith(
             ".rst") and f != "index.rst" and f != "modules.rst"):
         os.remove(f)
-apidoc.main([None, '-o', ".", "../../spinn_front_end_common"])
+apidoc.main([None, '-o', ".", "../../spinn_front_end_common",
+             "../../spinn_front_end_common/interface/buffer_management/r*.py",
+             "../../spinn_front_end_common/interface/buffer_management/buffer_manager.py",
+             "../../spinn_front_end_common/interface/buffer_management/*/[a-z]*.py",
+             "../../spinn_front_end_common/interface/[dps]*/[a-z]*.py",
+             ])

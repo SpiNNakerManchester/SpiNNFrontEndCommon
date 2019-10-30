@@ -59,6 +59,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     """ Writes the given address into the user_0 register of the given core.
 
     :param txrx: The transceiver.
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param x: Chip coordinate.
     :param y: Chip coordinate.
     :param p: Core ID on chip.
@@ -154,7 +155,7 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     :param executable_targets: the executable targets object
     :param binary: the binary to flood fill
     :param txrx: spinnman instance
-    :type txrx: :py:class:`~spinnman.Tranceiver`
+    :type txrx: :py:class:`~spinnman.Transceiver`
     :param app_id: the app id to load it on
     :return: the number of cores it was loaded onto
     """
@@ -353,6 +354,7 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param txrx: The transceiver.
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param app_id: The ID of the application.
     :param vertex: The vertex to retrieve the IOBUF from if it is suspected\
         as being dead
@@ -376,6 +378,7 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param txrx: The transceiver.
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param app_id: The ID of the application.
     :param executable_targets: The what/where mapping
     """

@@ -52,8 +52,8 @@ class AbstractDatabase(object):
 
     @abstractmethod
     def store_data_in_region_buffer(self, x, y, p, region, data):
-        """ Store some information in the correspondent buffer class for a\
-            specific chip, core and region
+        """ Store some information in the corresponding buffer for a\
+            specific chip, core and recording region.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -64,6 +64,10 @@ class AbstractDatabase(object):
         :param region: Region containing the data to be stored
         :type region: int
         :param data: data to be stored
+
+            .. note::
+                Implementations may assume this to be shorter than 1GB
+
         :type data: bytearray
         """
 
@@ -79,9 +83,14 @@ class AbstractDatabase(object):
         :type p: int
         :param region: Region containing the data
         :type region: int
-        :return: an array contained all the data received during the\
+        :return: a buffer containing all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: tuple(bytearray, bool)
+
+            .. note::
+                Implementations should not assume that the total buffer is \
+                necessarily shorter than 1GB.
+
+        :rtype: tuple(memoryview, bool)
         """
 
     @abstractmethod

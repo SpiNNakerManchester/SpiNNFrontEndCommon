@@ -15,8 +15,7 @@
 
 import logging
 from six import add_metaclass
-from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod, abstractproperty)
+from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
 logger = logging.getLogger(__name__)
@@ -24,30 +23,31 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(AbstractBase)
 class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
-    """ Implementation of :py:class:`AbstractSendsBuffersFromHost`\
-        which uses an existing set of buffers for the details
+    """ Implementation of \
+        :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost`\
+        which uses an existing set of buffers for the details.
     """
+    # pylint: disable=unsubscriptable-object, no-member
 
     __slots__ = ()
 
     @abstractproperty
     def send_buffers(self):
         """
-        :rtype: dict
+        :rtype: \
+            dict(int,~spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion)
         """
 
-    @send_buffers.setter
-    @abstractmethod
-    def send_buffers(self, value):
-        pass
-
     def buffering_input(self):
+        """
+        :rtype: bool
+        """
         return self.send_buffers is not None
 
     def get_regions(self):
         """ Return the regions which has buffers to send
         """
-        return self.send_buffers.keys()  # pylint: disable=no-member
+        return self.send_buffers.keys()
 
     def is_next_timestamp(self, region):
         """ Check if there are more time stamps which need transmitting
