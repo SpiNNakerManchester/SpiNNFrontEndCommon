@@ -25,7 +25,7 @@ from pacman.exceptions import \
     PacmanAlgorithmFailedToGenerateOutputsException, \
     PacmanElementAllocationException, MinimisationFailedError
 from pacman.model.routing_tables import MulticastRoutingTables, \
-    UnCompressedMulticastRoutingTable
+    UnCompressedMulticastRoutingTable, CompressedMulticastRoutingTable
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.mundys_router_compressor \
@@ -325,9 +325,16 @@ class HostBasedBitFieldRouterCompressor(object):
             router_table, sorted_bit_fields, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map)
 
-        # add final to compressed tables
-        compressed_pacman_router_tables.add_routing_table(
-            self._best_routing_table)
+        # add final to compressed tables:
+        # self._best_routing_table is a list of entries
+        best_router_table = CompressedMulticastRoutingTable(
+            router_table.x, router_table.y)
+
+        for entry in self._best_routing_table:
+            best_router_table.add_multicast_routing_entry(
+                entry.to_MulticastRoutingEntry())
+
+        compressed_pacman_router_tables.add_routing_table(best_router_table)
 
         # remove bitfields from cores that have been merged into the
         # router table
@@ -867,7 +874,8 @@ class HostBasedBitFieldRouterCompressor(object):
         # Note: _best_routing_table is a list(), router_table is not
         for entry in self._best_routing_table:
             index = entry_count & self._LOWER_16_BITS
-            entry_str = line_format.format(index, format_route(entry))
+            entry_str = line_format.format(index, format_route(
+                entry.to_MulticastRoutingEntry()))
             entry_count += 1
             if entry.defaultable:
                 n_defaultable += 1
