@@ -130,7 +130,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine_lpg: the machine LPG
         :param vertex: the application vertex to link to
         :param partition_id: the partition ID to put the edge on
-        :return the application edge for this vertex and LPG
+        :return: the application edge for this vertex and LPG
         :rtype: ApplicationEdge
         """
         # pylint: disable=too-many-arguments

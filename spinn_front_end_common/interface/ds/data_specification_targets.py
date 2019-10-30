@@ -105,7 +105,7 @@ class DataSpecificationTargets(MutableMapping):
         """ Sets the same app_id for all rows that have DS content
 
         :param app_id: value to set
-        :rtype app_id: int
+        :type app_id: int
         """
         self._db.ds_set_app_id(app_id)
 
