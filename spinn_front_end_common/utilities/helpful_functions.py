@@ -130,8 +130,16 @@ def sort_out_downed_chips_cores_links(
     ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
         for downed_chip in downed_chips.split(":"):
-            x, y = downed_chip.split(",")
-            ignored_chips.add((int(x), int(y)))
+            parts = downed_chip.split(",")
+            if len(parts) == 2:
+                x, y = parts
+                ignored_chips.add((int(x), int(y)))
+            elif len(parts) == 3:
+                x, y, ipaddress = parts
+                ignored_chips.add((int(x), int(y), ipaddress))
+            else:
+                raise ConfigurationException(
+                    "Unexpected downed_chips: {}".format(downed_chips))
 
     ignored_cores = set()
     if downed_cores is not None and downed_cores != "None":
@@ -139,20 +147,29 @@ def sort_out_downed_chips_cores_links(
             parts = downed_core.split(",")
             if len(parts) == 3:
                 x, y, processor_id = parts
-                ignored_cores.add((int(x), int(y), int(processor_id), None))
+                ignored_cores.add((int(x), int(y), int(processor_id)))
             elif len(parts) == 4:
                 x, y, processor_id, ipaddress = parts
                 ignored_cores.add(
                     (int(x), int(y), int(processor_id), ipaddress))
             else:
                 raise ConfigurationException(
-                    "Unexpected down_cores: {}".format(downed_cores))
+                    "Unexpected downed_cores: {}".format(downed_cores))
 
     ignored_links = set()
     if downed_links is not None and downed_links != "None":
         for downed_link in downed_links.split(":"):
-            x, y, link_id = downed_link.split(",")
-            ignored_links.add((int(x), int(y), int(link_id)))
+            parts = downed_link.split(",")
+            if len(parts) == 3:
+                x, y, link_id = parts
+                ignored_links.add((int(x), int(y), int(link_id)))
+            elif len(parts) == 4:
+                x, y, link_id, ipaddress = parts
+                ignored_links.add((int(x), int(y), int(link_id), ipaddress))
+            else:
+                raise ConfigurationException(
+                    "Unexpected downed_linkss: {}".format(downed_links))
+
     return ignored_chips, ignored_cores, ignored_links
 
 
