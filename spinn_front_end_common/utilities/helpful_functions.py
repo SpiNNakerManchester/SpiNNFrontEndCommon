@@ -136,8 +136,17 @@ def sort_out_downed_chips_cores_links(
     ignored_cores = set()
     if downed_cores is not None and downed_cores != "None":
         for downed_core in downed_cores.split(":"):
-            x, y, processor_id = downed_core.split(",")
-            ignored_cores.add((int(x), int(y), int(processor_id)))
+            parts = downed_core.split(",")
+            if len(parts) == 3:
+                x, y, processor_id = parts
+                ignored_cores.add((int(x), int(y), int(processor_id), None))
+            elif len(parts) == 4:
+                x, y, processor_id, ipaddress = parts
+                ignored_cores.add(
+                    (int(x), int(y), int(processor_id), ipaddress))
+            else:
+                raise ConfigurationException(
+                    "Unexpected down_cores: {}".format(downed_cores))
 
     ignored_links = set()
     if downed_links is not None and downed_links != "None":
