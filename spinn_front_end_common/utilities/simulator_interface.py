@@ -25,15 +25,22 @@ class SimulatorInterface(object):
 
     @abstractmethod
     def add_socket_address(self, socket_address):
-        pass
+        """ Add the address of a socket used in the run notification protocol.
+
+        :param socket_address: The address of the socket
+        :type socket_address: ~spinn_utilities.socket_address.SocketAddress
+        :rtype: None
+        """
 
     @abstractproperty
     def buffer_manager(self):
-        pass
+        """ The buffer manager being used for loading/extracting buffers
+        """
 
     @abstractproperty
     def config(self):
-        pass
+        """ Provides access to the configuration for front end interfaces.
+        """
 
     @abstractproperty
     def graph_mapper(self):
@@ -41,15 +48,22 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def has_ran(self):
-        pass
+        """ Whether the simulation has executed anything at all.
+
+        :rtype: bool
+        """
 
     @abstractmethod
     def verify_not_running(self):
-        pass
+        """ Verify that the simulator is in a state where it can start running.
+        """
 
     @abstractproperty
     def machine(self):
-        pass
+        """ The python machine description object.
+
+        :rtype: ~spinn_machine.Machine
+        """
 
     @abstractproperty
     def machine_time_step(self):
@@ -57,11 +71,17 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def no_machine_time_steps(self):
-        pass
+        """ The number of machine time steps.
+
+        :rtype: int
+        """
 
     @abstractproperty
     def placements(self):
-        pass
+        """ Where machine vertices are placed on the machine.
+
+        :rtype: ~pacman.model.placements.Placements
+        """
 
     @abstractproperty
     def tags(self):
@@ -73,15 +93,22 @@ class SimulatorInterface(object):
 
     @abstractmethod
     def run(self, run_time):
-        pass
+        """ Run a simulation for a fixed amount of time
+
+        :param run_time: the run duration in milliseconds.
+        """
 
     @abstractmethod
     def stop(self):
-        pass
+        """ End running of the simulation.
+        """
 
     @abstractproperty
     def transceiver(self):
-        pass
+        """ How to talk to the machine.
+
+        :rtype: ~spinnman.Transceiver
+        """
 
     @abstractproperty
     def use_virtual_board(self):

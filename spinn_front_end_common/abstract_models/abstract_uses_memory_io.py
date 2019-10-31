@@ -35,7 +35,7 @@ class AbstractUsesMemoryIO(object):
         """ Write the data to the given memory object
 
         :param memory: The memory to write to
-        :type memory: :py:class:`~spinnman.utilities.io.memory_io.MemoryIO`
+        :type memory: ~spinnman.utilities.io.MemoryIO
         :param tag: The tag given to the allocated memory
         :type tag: int
         """

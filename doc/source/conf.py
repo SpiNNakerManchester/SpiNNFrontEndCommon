@@ -369,8 +369,16 @@ for f in os.listdir("."):
             ".rst") and f != "index.rst" and f != "modules.rst"):
         os.remove(f)
 apidoc.main([None, '-o', ".", "../../spinn_front_end_common",
+             "../../spinn_front_end_common/abstract_models/impl/[a-z]*.py",
+             "../../spinn_front_end_common/abstract_models/a*.py",
              "../../spinn_front_end_common/interface/buffer_management/r*.py",
              "../../spinn_front_end_common/interface/buffer_management/buffer_manager.py",
              "../../spinn_front_end_common/interface/buffer_management/*/[a-z]*.py",
-             "../../spinn_front_end_common/interface/[dps]*/[a-z]*.py",
+             "../../spinn_front_end_common/interface/[dips]*/[a-z]*.py",
+             "../../spinn_front_end_common/utilities/[a-z]*/[a-df-z]*.py",
+             "../../spinn_front_end_common/utilities/fa*.py",
+             "../../spinn_front_end_common/utilities/si*.py",
+             "../../spinn_front_end_common/utilities/math_constants.py",
+             "../../spinn_front_end_common/utilities/utility_objs/exe*.py",
+             "../../spinn_front_end_common/utilities/utility_objs/ext*/[a-z]*.py"
              ])

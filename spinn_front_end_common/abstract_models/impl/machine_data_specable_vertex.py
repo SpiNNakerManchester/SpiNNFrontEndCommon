@@ -23,6 +23,8 @@ from spinn_front_end_common.abstract_models import (
 
 @supports_injection
 class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
+    """ Support for a vertex that simplifies generating a data specification.
+    """
     __slots__ = ()
 
     @inject_items({
@@ -41,6 +43,13 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
             machine_time_step, time_scale_factor):
+        """
+        :param machine_graph: (Injected)
+        :param routing_info: (Injected)
+        :param tags: (Injected)
+        :param machine_time_step: (Injected)
+        :param time_scale_factor: (Injected)
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
@@ -58,6 +67,7 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
             :py:class:`~data_specification.DataSpecificationGenerator`
         :param placement: Where this node is on the SpiNNaker machine.
         :param machine_graph: The graph containing this node.
+        :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
         :param routing_info:
         :param iptags:
         :param reverse_iptags:
