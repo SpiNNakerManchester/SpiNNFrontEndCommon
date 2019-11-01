@@ -45,7 +45,9 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
             machine_time_step, time_scale_factor):
         """
         :param machine_graph: (Injected)
+        :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
         :param routing_info: (Injected)
+        :type routing_info: ~pacman.model.routing_info.RoutingInfo
         :param tags: (Injected)
         :param machine_time_step: (Injected)
         :param time_scale_factor: (Injected)
@@ -63,15 +65,22 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
             reverse_iptags, machine_time_step, time_scale_factor):
         """
         :param spec: The data specification to write into.
-        :type spec:\
-            :py:class:`~data_specification.DataSpecificationGenerator`
+        :type spec: ~data_specification.DataSpecificationGenerator
         :param placement: Where this node is on the SpiNNaker machine.
+        :type placement: ~pacman.model.placements.Placement
         :param machine_graph: The graph containing this node.
         :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
-        :param routing_info:
-        :param iptags:
-        :param reverse_iptags:
-        :param machine_time_step:
-        :param time_step_factor:
+        :param routing_info: The routing info.
+        :type routing_info: ~pacman.model.routing_info.RoutingInfo
+        :param iptags: The (forward) IP tags for the vertex, if any
+        :type iptags: iterable(~spinn_machine.tags.IPTag) or None
+        :param reverse_iptags: The reverse IP tags for the vertex, if any
+        :type reverse_iptags: \
+            iterable(~spinn_machine.tags.ReverseIPTag) or None
+        :param machine_time_step: The machine time step
+        :type machine_time_step: int
+        :param time_scale_factor: The time step scaling factor
+        :type time_scale_factor: int
+        :rtype: None
         """
         # pylint: disable=too-many-arguments

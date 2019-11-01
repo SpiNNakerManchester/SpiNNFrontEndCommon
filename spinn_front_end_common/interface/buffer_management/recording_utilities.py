@@ -142,7 +142,7 @@ def get_last_sequence_number(placement, transceiver, recording_data_address):
     :param placement: The placement from which to read the sequence number
     :type placement: ~pacman.model.placements.Placement
     :param transceiver: The transceiver to use to read the sequence number
-    :type transceiver: ~spinnman.Transceiver
+    :type transceiver: ~spinnman.transceiver.Transceiver
     :param recording_data_address:\
         The address of the recording data from which to read the number
     :type recording_data_address: int
@@ -160,7 +160,7 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
     :param placement: The placement from which to read the pointer
     :type placement: ~pacman.model.placements.Placement
     :param transceiver: The transceiver to use to read the pointer
-    :type transceiver: ~spinnman.Transceiver
+    :type transceiver: ~spinnman.transceiver.Transceiver
     :param recording_data_address:\
         The address of the recording data from which to read the pointer
     :type recording_data_address: int

@@ -131,7 +131,7 @@ class BufferManager(object):
         :type tags: ~pacman.model.tags.Tags
         :param transceiver: \
             The transceiver to use for sending and receiving information
-        :type transceiver: ~spinnman.Transceiver
+        :type transceiver: ~spinnman.transceiver.Transceiver
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
         :type packet_gather_cores_to_ethernet_connection_map: \

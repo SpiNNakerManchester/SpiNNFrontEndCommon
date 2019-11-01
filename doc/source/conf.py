@@ -380,5 +380,6 @@ apidoc.main([None, '-o', ".", "../../spinn_front_end_common",
              "../../spinn_front_end_common/utilities/si*.py",
              "../../spinn_front_end_common/utilities/math_constants.py",
              "../../spinn_front_end_common/utilities/utility_objs/exe*.py",
-             "../../spinn_front_end_common/utilities/utility_objs/ext*/[a-z]*.py"
+             "../../spinn_front_end_common/utilities/utility_objs/ext*/[a-z]*.py",
+             "../../spinn_front_end_common/utility_models/[a-z]*.py"
              ])

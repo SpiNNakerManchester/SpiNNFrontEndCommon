@@ -31,6 +31,7 @@ class AbstractRewritesDataSpecification(object):
             have changed and need to be reloaded
 
         :param spec: Where to write the regenerated spec
+        :type spec: ~data_specification.DataSpecificationGenerator
         :param placement: Where are we regenerating for?
         :type placement: ~pacman.model.placements.Placement
         """

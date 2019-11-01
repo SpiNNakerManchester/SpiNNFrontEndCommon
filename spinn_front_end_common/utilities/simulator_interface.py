@@ -107,7 +107,7 @@ class SimulatorInterface(object):
     def transceiver(self):
         """ How to talk to the machine.
 
-        :rtype: ~spinnman.Transceiver
+        :rtype: ~spinnman.transceiver.Transceiver
         """
 
     @abstractproperty

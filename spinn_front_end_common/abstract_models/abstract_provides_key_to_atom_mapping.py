@@ -30,8 +30,9 @@ class AbstractProvidesKeyToAtomMapping(object):
         """ Returns a list of atom to key mapping.
 
         :param routing_info: the routing info object to consider
+        :type routing_info: ~pacman.model.routing_info.RoutingInfo
         :param partition: the routing partition to handle.
         :type partition: ~pacman.model.graphs.AbstractOutgoingEdgePartition
         :return: a iterable of tuples of atom IDs to keys.
-        :rtype: iterable(tuple)
+        :rtype: iterable(tuple(int,int))
         """

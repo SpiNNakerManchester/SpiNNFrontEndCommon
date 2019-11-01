@@ -64,7 +64,7 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param data_format: the format to read memory (see `struct.pack`)
     :type data_format: str
     :param transceiver: the SpinnMan interface
-    :type transceiver: ~spinnman.Transceiver
+    :type transceiver: ~spinnman.transceiver.Transceiver
     """
     # pylint: disable=too-many-arguments
 
@@ -76,7 +76,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     """ Writes the given address into the user_0 register of the given core.
 
     :param txrx: The transceiver.
-    :type txrx: ~spinnman.Transceiver
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param x: Chip coordinate.
     :type x: int
     :param y: Chip coordinate.
@@ -96,9 +96,9 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :param region: the region to locate the base address of
     :type region: int
     :param placement: the placement object to get the region address of
-    :type placement: :py:class:`~pacman.model.placements.Placement`
+    :type placement: ~pacman.model.placements.Placement
     :param transceiver: the python interface to the SpiNNaker machine
-    :type transceiver: :py:class:`~spinnman.Transceiver`
+    :type transceiver: ~spinnman.transceiver.Transceiver
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
@@ -179,7 +179,7 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     :param binary: the (name of the) binary to flood fill
     :type binary: str
     :param txrx: spinnman instance
-    :type txrx: :py:class:`~spinnman.Transceiver`
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param app_id: the app id to load it on
     :type app_id: int
     :return: the number of cores it was loaded onto
@@ -346,9 +346,8 @@ def determine_flow_states(executable_types, no_sync_changes):
 def convert_vertices_to_core_subset(vertices, placements):
     """ Converts vertices into core subsets.
 
-    :param extra_monitor_cores_to_set:\
-        the vertices to convert to core subsets
-    :type extra_monitor_cores_to_set: iterable(MachineVertex)
+    :param vertices: the vertices to convert to core subsets
+    :type vertices: iterable(MachineVertex)
     :param placements: the placements object
     :type placements: ~pacman.model.placements.Placements
     :return: the CoreSubSets of the vertices
@@ -410,7 +409,7 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param txrx: The transceiver.
-    :type txrx: ~spinnman.Transceiver
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param app_id: The ID of the application.
     :type app_id: int
     :param vertex: The vertex to retrieve the IOBUF from if it is suspected\
@@ -435,7 +434,7 @@ def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param txrx: The transceiver.
-    :type txrx: ~spinnman.Transceiver
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param app_id: The ID of the application.
     :type app_id: int
     :param executable_targets: The what/where mapping

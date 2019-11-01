@@ -212,7 +212,7 @@ class JavaCaller(object):
         :param placements: The Placements Object
         :type placements: ~pacman.model.placements.Placements
         :param transceiver: The Transceiver
-        :type transceiver: ~spinnman.Transceiver
+        :type transceiver: ~spinnman.transceiver.Transceiver
         """
         path = os.path.join(self._json_folder, "java_placements.json")
         self._recording = False
