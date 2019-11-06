@@ -1050,34 +1050,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         algorithms = list()
         outputs = list()
 
-        # Add the version information to the provenance data at the start
-        version_provenance = list()
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_utilities_version"], spinn_utils_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_machine_version"], spinn_machine_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinn_storage_handlers_version"],
-            spinn_storage_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spalloc_version"], spalloc_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "spinnman_version"], spinnman_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "pacman_version"], pacman_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "data_specification_version"], data_spec_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "front_end_common_version"], fec_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "numpy_version"], numpy_version))
-        version_provenance.append(ProvenanceDataItem(
-            ["version_data", "scipy_version"], scipy_version))
-        if self._front_end_versions is not None:
-            for name, value in self._front_end_versions:
-                version_provenance.append(ProvenanceDataItem(
-                    names=["version_data", name], value=value))
-        inputs["ProvenanceItems"] = version_provenance
+        inputs["ProvenanceItems"] = self._create_version_provenance()
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
         inputs["DisableAdvancedMonitorUsageForDataIn"] = \
@@ -1313,6 +1286,36 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                                            self._machine))
 
         return self._machine
+
+    def _create_version_provenance(self):
+        # Add the version information to the provenance data at the start
+        version_provenance = list()
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_utilities_version"], spinn_utils_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_machine_version"], spinn_machine_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_storage_handlers_version"],
+            spinn_storage_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spalloc_version"], spalloc_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinnman_version"], spinnman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "pacman_version"], pacman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "data_specification_version"], data_spec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "front_end_common_version"], fec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "numpy_version"], numpy_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "scipy_version"], scipy_version))
+        if self._front_end_versions is not None:
+            for name, value in self._front_end_versions:
+                version_provenance.append(ProvenanceDataItem(
+                    names=["version_data", name], value=value))
+        return version_provenance
 
     def _handle_machine_common_config(self, inputs):
         """ Adds common parts of the machine configuration
