@@ -314,6 +314,8 @@ def find_executable_start_type(machine_vertex, graph_mapper=None):
         app_vertex = graph_mapper.get_application_vertex(machine_vertex)
         if isinstance(app_vertex, AbstractHasAssociatedBinary):
             return app_vertex.get_binary_start_type()
+        else:
+            return None
     else:
         return machine_vertex.get_binary_start_type()
 
