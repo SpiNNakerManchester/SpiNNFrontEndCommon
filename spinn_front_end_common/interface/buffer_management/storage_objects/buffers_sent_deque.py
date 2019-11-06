@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    from collections.abc import deque
-except ImportError:
-    from collections import deque
+from collections import deque
 from threading import Lock
 import logging
 from spinn_utilities.log import FormatAdapter

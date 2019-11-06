@@ -49,14 +49,12 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
@@ -67,10 +65,7 @@ class TestInsertLPGs(unittest.TestCase):
             graph_mapper=None)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
+        locs = [(0, 0), (4, 8), (8, 4)]
         for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
@@ -103,14 +98,12 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
@@ -163,19 +156,18 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
+            extended = dict(default_params)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -217,19 +209,18 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
+            extended = dict(default_params)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()

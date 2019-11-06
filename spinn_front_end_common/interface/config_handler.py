@@ -21,6 +21,7 @@ import shutil
 import time
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     read_config, read_config_boolean, read_config_int)
 
@@ -72,6 +73,9 @@ class ConfigHandler(object):
 
         #
         "_use_virtual_board",
+
+        # If not None, path to append pacman executor provenance info to
+        "_pacman_executor_provenance_path",
     ]
 
     def __init__(self, configfile, default_config_paths, validation_cfg):
@@ -97,17 +101,19 @@ class ConfigHandler(object):
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
 
-    def _adjust_config(self, runtime):
+    def _adjust_config(self, runtime, debug_enable_opts, report_disable_opts):
         """ Adjust and checks config based on runtime and mode
 
         :param runtime:
         :type runtime: int or bool
+        :type debug_enable_opts: frozenset(str)
+        :type report_disable_opts: frozenset(str)
         :raises ConfigurationException
         """
         if self._config.get("Mode", "mode") == "Debug":
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
+                if option in debug_enable_opts or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "True")
@@ -118,7 +124,7 @@ class ConfigHandler(object):
         elif not self._config.getboolean("Reports", "reportsEnabled"):
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
+                if option in report_disable_opts or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "False")
@@ -379,6 +385,45 @@ class ConfigHandler(object):
 
     def _read_config_boolean(self, section, item):
         return read_config_boolean(self._config, section, item)
+
+    @property
+    def machine_time_step(self):
+        return self._read_config_int("Machine", "machine_time_step")
+
+    @machine_time_step.setter
+    def machine_time_step(self, new_value):
+        self._config.set("Machine", "machine_time_step", new_value)
+
+    @property
+    def time_scale_factor(self):
+        return self._read_config_int("Machine", "time_scale_factor")
+
+    @time_scale_factor.setter
+    def time_scale_factor(self, new_value):
+        self._config.set("Machine", "time_scale_factor", new_value)
+
+    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
+        """ Set up timings of the machine
+
+        :param machine_time_step:\
+            An explicitly specified time step for the machine.  If None,\
+            the value is read from the config
+        :param time_scale_factor:\
+            An explicitly specified time scale factor for the simulation.\
+            If None, the value is read from the config
+        """
+
+        # set up timings
+        if machine_time_step is not None:
+            self.machine_time_step = machine_time_step
+
+        if self.machine_time_step <= 0:
+            raise ConfigurationException(
+                "invalid machine_time_step {}: must greater than zero".format(
+                    self.machine_time_step))
+
+        if time_scale_factor is not None:
+            self.time_scale_factor = time_scale_factor
 
     @staticmethod
     def _make_dirs(path):

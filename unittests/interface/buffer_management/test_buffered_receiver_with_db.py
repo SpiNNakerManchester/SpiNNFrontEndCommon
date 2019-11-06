@@ -36,7 +36,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
             # TODO missing
             # data, missing = brd.get_region_data(0, 0, 0, 0)
-            # self.assertIsNotNone(missing, "data should be 'missing'")
+            # self.assertTrue(missing, "data should be 'missing'")
             # self.assertEqual(data, b"")
 
             brd.store_data_in_region_buffer(0, 0, 0, 0, b"abc")
@@ -44,7 +44,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             brd.store_end_buffering_state(0, 0, 0, 0, "LOLWUT")
             data, missing = brd.get_region_data(0, 0, 0, 0)
 
-            self.assertIsNone(missing, "data shouldn't be 'missing'")
+            self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abcdef")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")

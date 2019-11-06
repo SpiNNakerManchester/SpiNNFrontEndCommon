@@ -48,14 +48,12 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # run  pre allocator
@@ -109,18 +107,17 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
         for chip in machine.ethernet_connected_chips:
+            extended = dict(default_params)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -130,12 +127,8 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine)
 
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-
         # verify sdram
+        locs = [(0, 0), (4, 8), (8, 4)]
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
@@ -144,15 +137,11 @@ class TestLPGPreAllocateRes(unittest.TestCase):
                 LivePacketGatherMachineVertex.get_sdram_usage() * 2)
         self.assertEqual(len(locs), 0)
 
-        locs = dict()
-        locs[(0, 0)] = 0
-        locs[(4, 8)] = 0
-        locs[(8, 4)] = 0
-
         # verify cores
+        locs = {(0, 0): 0, (4, 8): 0, (8, 4): 0}
         cores = pre_res.core_resources
         for core in cores:
-            locs[(core.chip.x, core.chip.y)] += core.n_cores
+            locs[core.chip.x, core.chip.y] += core.n_cores
 
         for (x, y) in [(0, 0), (4, 8), (8, 4)]:
             self.assertEqual(locs[x, y], 2)
@@ -177,14 +166,12 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'board_address': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # create pre res

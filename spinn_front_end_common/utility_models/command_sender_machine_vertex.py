@@ -29,7 +29,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -37,24 +37,22 @@ class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
         AbstractProvidesOutgoingPartitionConstraints):
-
     # Regions for populations
-    DATA_REGIONS = Enum(
-        value="DATA_REGIONS",
-        names=[('SYSTEM_REGION', 0),
-               ('COMMANDS_WITH_ARBITRARY_TIMES', 1),
-               ('COMMANDS_AT_START_RESUME', 2),
-               ('COMMANDS_AT_STOP_PAUSE', 3),
-               ('PROVENANCE_REGION', 4)])
+    class DATA_REGIONS(Enum):
+        SYSTEM_REGION = 0
+        COMMANDS_WITH_ARBITRARY_TIMES = 1
+        COMMANDS_AT_START_RESUME = 2
+        COMMANDS_AT_STOP_PAUSE = 3
+        PROVENANCE_REGION = 4
 
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
-    _COMMAND_WITH_PAYLOAD_SIZE = 20
+    _COMMAND_WITH_PAYLOAD_SIZE = 5 * BYTES_PER_WORD
 
     # 4 for the time stamp
-    _COMMAND_TIMESTAMP_SIZE = 4
+    _COMMAND_TIMESTAMP_SIZE = BYTES_PER_WORD
 
     # 4 for the int to represent the number of commands
-    _N_COMMANDS_SIZE = 4
+    _N_COMMANDS_SIZE = BYTES_PER_WORD
 
     # bool for if the command has a payload (true = 1)
     _HAS_PAYLOAD = 1
@@ -147,18 +145,14 @@ class CommandSenderMachineVertex(
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
-        "n_machine_time_steps": "RunTimeMachineTimeSteps"
+        "time_scale_factor": "TimeScaleFactor"
         })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "n_machine_time_steps"
-        })
+        additional_arguments={"machine_time_step", "time_scale_factor"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):  # @UnusedVariable
-        # pylint: disable=too-many-arguments
+            self, spec, placement, machine_time_step, time_scale_factor):
+        # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
             self.get_n_command_bytes(self._commands_at_start_resume)
