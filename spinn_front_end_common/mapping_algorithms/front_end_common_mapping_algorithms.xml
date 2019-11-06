@@ -39,7 +39,7 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>system_prov_folder</param_name>
+                <param_name>system_provenance_folder</param_name>
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
@@ -48,7 +48,7 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
-            <param_name>system_prov_folder</param_name>
+            <param_name>system_provenance_folder</param_name>
         </required_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>

@@ -43,7 +43,7 @@ def mundy_on_chip_router_compression(
     :param transceiver: the spinnman interface
     :param machine: the SpiNNaker machine representation
     :param app_id: the application ID used by the main application
-    :param provenance_file_path: the path to where to write the data
+    :param system_provenance_folder: the path to where to write the data
     :param compress_as_much_as_possible:\
         If False, the compressor will only reduce the table until it fits\
         in the router space, otherwise it will try to reduce until it\
