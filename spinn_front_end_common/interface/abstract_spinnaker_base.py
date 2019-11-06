@@ -509,10 +509,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Clash with n_chips_required.")
         self._n_boards_required = n_boards_required
 
-    @property
-    def executable_finder(self):
-        return self._executable_finder
-
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
             msg = "Changing mapping inputs is not supported after run"
