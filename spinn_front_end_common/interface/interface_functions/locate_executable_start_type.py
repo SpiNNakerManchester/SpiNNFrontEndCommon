@@ -37,14 +37,12 @@ class LocateExecutableStartType(object):
             placement_binary_start_type = None
             binary_name = None
             if isinstance(vertex, AbstractHasAssociatedBinary):
-                placement_binary_start_type = (
-                    vertex.get_binary_start_type())
+                placement_binary_start_type = vertex.get_binary_start_type()
                 binary_name = vertex.get_binary_file_name()
             elif graph_mapper is not None:
                 associated_vertex = (
                     graph_mapper.get_application_vertex(vertex))
-                if isinstance(
-                        associated_vertex, AbstractHasAssociatedBinary):
+                if isinstance(associated_vertex, AbstractHasAssociatedBinary):
                     placement_binary_start_type = \
                         associated_vertex.get_binary_start_type()
                     binary_name = associated_vertex.get_binary_file_name()
