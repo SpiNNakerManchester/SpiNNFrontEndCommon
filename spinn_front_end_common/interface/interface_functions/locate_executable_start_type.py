@@ -59,8 +59,7 @@ class LocateExecutableStartType(object):
                         vertex, placements,
                         binary_start_types[placement_binary_start_type])
                 elif graph_mapper is not None:
-                    machine_verts = graph_mapper.get_machine_vertices(
-                        vertex)
+                    machine_verts = graph_mapper.get_machine_vertices(vertex)
                     for machine_vertex in machine_verts:
                         self._add_vertex_to_subset(
                             machine_vertex, placements,
