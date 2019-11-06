@@ -67,8 +67,7 @@ class LocateExecutableStartType(object):
                     for machine_vertex in machine_verts:
                         self._add_vertex_to_subset(
                             machine_vertex, placements,
-                            binary_start_types[
-                                placement_binary_start_type])
+                            binary_start_types[placement_binary_start_type])
 
                 # add to the binary to start type map
                 if binary_name is not None:
