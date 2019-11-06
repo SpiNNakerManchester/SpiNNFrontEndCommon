@@ -49,8 +49,7 @@ class LocateExecutableStartType(object):
 
             # check for vertices with no associated binary, if so, ignore
             if placement_binary_start_type is not None:
-                # update core subset with location of the vertex on the
-                # machine
+                # update core subset with location of the vertex on the machine
                 if placement_binary_start_type not in binary_start_types:
                     binary_start_types[placement_binary_start_type] = \
                         CoreSubsets()
