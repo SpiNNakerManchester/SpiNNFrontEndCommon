@@ -607,23 +607,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "spalloc_server")
             self._remote_spinnaker_url = self._read_config(
                 "Machine", "remote_spinnaker_url")
-        if (self._hostname is None and self._spalloc_server is None and
-                self._remote_spinnaker_url is None and
-                not self._use_virtual_board):
-            raise Exception(
-                "A SpiNNaker machine must be specified your configuration"
-                " file")
-
         n_items_specified = sum([
             1 if item is not None else 0
             for item in [
                 self._hostname, self._spalloc_server,
-                self._remote_spinnaker_url]])
+                self._remote_spinnaker_url, self._use_virtual_board]])
 
-        if (n_items_specified > 1 or
-                (n_items_specified == 1 and self._use_virtual_board)):
+        if (n_items_specified != 1):
             raise Exception(
-                "Only one of machineName, spalloc_server, "
+                "Exactly one of machineName, spalloc_server, "
                 "remote_spinnaker_url and virtual_board should be specified "
                 "in your configuration files")
 
@@ -1046,9 +1038,211 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._machine is not None:
             return self._machine
 
+        # If we are using a directly connected machine, add the details to get
+        # the machine and transceiver
+        if self._hostname is not None:
+            self._machine_by_hostname(n_machine_time_steps, total_run_time)
+
+        if self._use_virtual_board:
+            self._machine_by_virtual(n_machine_time_steps, total_run_time)
+
+        if (self._spalloc_server is not None or
+                self._remote_spinnaker_url is not None):
+            self._machine_by_remote(n_machine_time_steps, total_run_time)
+
+        if self._app_id is None:
+            if self._txrx is None:
+                self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
+            else:
+                self._app_id = self._txrx.app_id_tracker.get_new_id()
+
+        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
+
+        if self._n_chips_required:
+            if self._machine.n_chips < self._n_chips_required:
+                raise ConfigurationException(
+                    "Failure to detect machine of with {} chips as requested. "
+                    "Only found {}".format(self._n_chips_required,
+                                           self._machine))
+        if self._n_boards_required:
+            if len(self._machine.ethernet_connected_chips) \
+                    < self._n_boards_required:
+                raise ConfigurationException(
+                    "Failure to detect machine with {} boards as requested. "
+                    "Only found {}".format(self._n_boards_required,
+                                           self._machine))
+
+        return self._machine
+
+    def _machine_by_hostname(self, n_machine_time_steps, total_run_time):
+        inputs, algorithms = self._get_machine_common(
+            n_machine_time_steps, total_run_time)
+        outputs = list()
+        inputs["IPAddress"] = self._hostname
+        inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
+        inputs["AutoDetectBMPFlag"] = self._config.getboolean(
+            "Machine", "auto_detect_bmp")
+        inputs["ScampConnectionData"] = self._read_config(
+            "Machine", "scamp_connections_data")
+
+        algorithms.append("MachineGenerator")
+
+        outputs.append("MemoryMachine")
+        outputs.append("MemoryTransceiver")
+
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, [], [], "machine_generation")
+        self._machine = executor.get_item("MemoryMachine")
+        self._txrx = executor.get_item("MemoryTransceiver")
+        self._machine_outputs = executor.get_items()
+        self._machine_tokens = executor.get_completed_tokens()
+
+    def _machine_by_virtual(self, n_machine_time_steps, total_run_time):
+        inputs, algorithms = self._get_machine_common(
+            n_machine_time_steps, total_run_time)
+        outputs = list()
+
+        inputs["IPAddress"] = "virtual"
+        inputs["NumberOfBoards"] = self._read_config_int(
+            "Machine", "number_of_boards")
+        inputs["MachineWidth"] = self._read_config_int(
+            "Machine", "width")
+        inputs["MachineHeight"] = self._read_config_int(
+            "Machine", "height")
+        inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
+            "Machine", "requires_wrap_arounds")
+        inputs["MachineJsonPath"] = self._read_config(
+            "Machine", "json_path")
+        inputs["BMPDetails"] = None
+        inputs["AutoDetectBMPFlag"] = False
+        inputs["ScampConnectionData"] = None
+        inputs["RouterTableEntriesPerRouter"] = \
+            self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+
+        algorithms.append("VirtualMachineGenerator")
+
+        outputs.append("MemoryMachine")
+
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, [], [], "machine_generation")
+        self._machine_outputs = executor.get_items()
+        self._machine_tokens = executor.get_completed_tokens()
+        self._machine = executor.get_item("MemoryMachine")
+
+    def _machine_by_remote(self, n_machine_time_steps, total_run_time):
+        inputs, algorithms = self._get_machine_common(
+            n_machine_time_steps, total_run_time)
+        outputs = list()
+
+        need_virtual_board = False
+
+        # if using spalloc system
+        if self._spalloc_server is not None:
+            inputs["SpallocServer"] = self._spalloc_server
+            inputs["SpallocPort"] = self._read_config_int(
+                "Machine", "spalloc_port")
+            inputs["SpallocUser"] = self._read_config(
+                "Machine", "spalloc_user")
+            inputs["SpallocMachine"] = self._read_config(
+                "Machine", "spalloc_machine")
+            if self._n_chips_required is None and \
+                    self._n_boards_required is None:
+                algorithms.append("SpallocMaxMachineGenerator")
+                need_virtual_board = True
+
+        # if using HBP server system
+        if self._remote_spinnaker_url is not None:
+            inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
+            if self._n_chips_required is None and \
+                    self._n_boards_required is None:
+                algorithms.append("HBPMaxMachineGenerator")
+                need_virtual_board = True
+
+        if (self._application_graph is not None and
+                self._application_graph.n_vertices == 0 and
+                self._machine_graph is not None and
+                self._machine_graph.n_vertices == 0 and
+                need_virtual_board):
+            if self._config.getboolean(
+                    "Mode", "violate_no_vertex_in_graphs_restriction"):
+                logger.warning(
+                    "you graph has no vertices in it, but you have "
+                    "requested that we still execute.")
+            else:
+                raise ConfigurationException(
+                    "A allocated machine has been requested but there are "
+                    "no vertices to work out the size of the machine "
+                    "required and n_chips_required has not been set")
+
+        do_partitioning = False
+        if need_virtual_board:
+
+            # If we are using an allocation server, and we need a virtual
+            # board, we need to use the virtual board to get the number of
+            # chips to be allocated either by partitioning, or by measuring
+            # the graph
+
+            # if the end user has requested violating the no vertex check,
+            # add the app graph and let the rest work out.
+            if (self._application_graph.n_vertices != 0 or (
+                    self._config.getboolean(
+                        "Mode",
+                        "violate_no_vertex_in_graphs_restriction") and
+                    self._machine_graph.n_vertices == 0)):
+                inputs["MemoryApplicationGraph"] = self._application_graph
+                algorithms.extend(self._config.get(
+                    "Mapping",
+                    "application_to_machine_graph_algorithms").split(","))
+                outputs.append("MemoryMachineGraph")
+                outputs.append("MemoryGraphMapper")
+                do_partitioning = True
+
+            # only add machine graph is it has vertices. as the check for
+            # no vertices in both graphs is checked above.
+            elif self._machine_graph.n_vertices != 0:
+                inputs["MemoryMachineGraph"] = self._machine_graph
+                algorithms.append("GraphMeasurer")
+        else:
+
+            # If we are using an allocation server but have been told how
+            # many chips to use, just use that as an input
+            if self._n_chips_required:
+                inputs["NChipsRequired"] = self._n_chips_required
+            if self._n_boards_required:
+                inputs["NBoardsRequired"] = self._n_boards_required
+
+        if self._spalloc_server is not None:
+            algorithms.append("SpallocAllocator")
+        elif self._remote_spinnaker_url is not None:
+            algorithms.append("HBPAllocator")
+
+        algorithms.append("MachineGenerator")
+
+        outputs.append("MemoryMachine")
+        outputs.append("IPAddress")
+        outputs.append("MemoryTransceiver")
+        outputs.append("MachineAllocationController")
+
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, [], [], "machine_generation")
+
+        self._machine_outputs = executor.get_items()
+        self._machine_tokens = executor.get_completed_tokens()
+        self._machine = executor.get_item("MemoryMachine")
+        self._ip_address = executor.get_item("IPAddress")
+        self._txrx = executor.get_item("MemoryTransceiver")
+        self._machine_allocation_controller = executor.get_item(
+            "MachineAllocationController")
+
+        if do_partitioning:
+            self._machine_graph = executor.get_item(
+                "MemoryMachineGraph")
+            self._graph_mapper = executor.get_item(
+                "MemoryGraphMapper")
+
+    def _get_machine_common(self, n_machine_time_steps, total_run_time):
         inputs = dict(self._extra_inputs)
         algorithms = list()
-        outputs = list()
 
         inputs["ProvenanceItems"] = self._create_version_provenance()
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
@@ -1061,6 +1255,35 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
+
+        # add max SDRAM size and n_cores which we're going to allow
+        # (debug purposes)
+        inputs["MaxSDRAMSize"] = self._read_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
+        # Set the total run time
+        inputs["TotalRunTime"] = total_run_time
+        inputs["MaxMachineCoreReduction"] = self._read_config_int(
+            "Machine", "max_machine_core_reduction")
+        inputs["MachineTimeStep"] = self.machine_time_step
+        inputs["TimeScaleFactor"] = self.time_scale_factor
+
+        down_chips, down_cores, down_links = sort_out_downed_chips_cores_links(
+            self._config.get("Machine", "down_chips"),
+            self._config.get("Machine", "down_cores"),
+            self._config.get("Machine", "down_links"))
+        inputs["DownedChipsDetails"] = down_chips
+        inputs["DownedCoresDetails"] = down_cores
+        inputs["DownedLinksDetails"] = down_links
+        inputs["BoardVersion"] = self._read_config_int(
+            "Machine", "version")
+        inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
+            "Machine", "reset_machine_on_startup")
+        inputs["BootPortNum"] = self._read_config_int(
+            "Machine", "boot_connection_port_num")
+        inputs["RepairMachine"] = self._config.getboolean(
+            "Machine", "repair_machine")
+        inputs["IgnoreBadEthernets"] = self._config.getboolean(
+            "Machine", "ignore_bad_ethernets")
 
         # add algorithms for handling LPG placement and edge insertion
         if self._live_packet_recorder_params:
@@ -1090,202 +1313,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
-        # add max SDRAM size and n_cores which we're going to allow
-        # (debug purposes)
-        inputs["MaxSDRAMSize"] = self._read_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
-        # Set the total run time
-        inputs["TotalRunTime"] = total_run_time
-        inputs["MaxMachineCoreReduction"] = self._read_config_int(
-            "Machine", "max_machine_core_reduction")
-        inputs["MachineTimeStep"] = self.machine_time_step
-        inputs["TimeScaleFactor"] = self.time_scale_factor
-
-        # Set up common machine details
-        self._handle_machine_common_config(inputs)
-
-        # If we are using a directly connected machine, add the details to get
-        # the machine and transceiver
-        if self._hostname is not None:
-            inputs["IPAddress"] = self._hostname
-            inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            inputs["AutoDetectBMPFlag"] = self._config.getboolean(
-                "Machine", "auto_detect_bmp")
-            inputs["ScampConnectionData"] = self._read_config(
-                "Machine", "scamp_connections_data")
-
-            algorithms.append("MachineGenerator")
-
-            outputs.append("MemoryMachine")
-            outputs.append("MemoryTransceiver")
-
-            executor = self._run_algorithms(
-                inputs, algorithms, outputs, [], [], "machine_generation")
-            self._machine = executor.get_item("MemoryMachine")
-            self._txrx = executor.get_item("MemoryTransceiver")
-            self._machine_outputs = executor.get_items()
-            self._machine_tokens = executor.get_completed_tokens()
-
-        if self._use_virtual_board:
-            inputs["IPAddress"] = "virtual"
-            inputs["NumberOfBoards"] = self._read_config_int(
-                "Machine", "number_of_boards")
-            inputs["MachineWidth"] = self._read_config_int(
-                "Machine", "width")
-            inputs["MachineHeight"] = self._read_config_int(
-                "Machine", "height")
-            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
-                "Machine", "requires_wrap_arounds")
-            inputs["MachineJsonPath"] = self._read_config(
-                "Machine", "json_path")
-            inputs["BMPDetails"] = None
-            inputs["AutoDetectBMPFlag"] = False
-            inputs["ScampConnectionData"] = None
-            inputs["RouterTableEntriesPerRouter"] = \
-                self._read_config_int("Machine", "RouterTableEntriesPerRouter")
-
-            algorithms.append("VirtualMachineGenerator")
-
-            outputs.append("MemoryMachine")
-
-            executor = self._run_algorithms(
-                inputs, algorithms, outputs, [], [], "machine_generation")
-            self._machine_outputs = executor.get_items()
-            self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryMachine")
-
-        if (self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None):
-
-            need_virtual_board = False
-
-            # if using spalloc system
-            if self._spalloc_server is not None:
-                inputs["SpallocServer"] = self._spalloc_server
-                inputs["SpallocPort"] = self._read_config_int(
-                    "Machine", "spalloc_port")
-                inputs["SpallocUser"] = self._read_config(
-                    "Machine", "spalloc_user")
-                inputs["SpallocMachine"] = self._read_config(
-                    "Machine", "spalloc_machine")
-                if self._n_chips_required is None and \
-                        self._n_boards_required is None:
-                    algorithms.append("SpallocMaxMachineGenerator")
-                    need_virtual_board = True
-
-            # if using HBP server system
-            if self._remote_spinnaker_url is not None:
-                inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-                if self._n_chips_required is None and \
-                        self._n_boards_required is None:
-                    algorithms.append("HBPMaxMachineGenerator")
-                    need_virtual_board = True
-
-            if (self._application_graph is not None and
-                    self._application_graph.n_vertices == 0 and
-                    self._machine_graph is not None and
-                    self._machine_graph.n_vertices == 0 and
-                    need_virtual_board):
-                if self._config.getboolean(
-                        "Mode", "violate_no_vertex_in_graphs_restriction"):
-                    logger.warning(
-                        "you graph has no vertices in it, but you have "
-                        "requested that we still execute.")
-                else:
-                    raise ConfigurationException(
-                        "A allocated machine has been requested but there are "
-                        "no vertices to work out the size of the machine "
-                        "required and n_chips_required has not been set")
-
-            do_partitioning = False
-            if need_virtual_board:
-
-                # If we are using an allocation server, and we need a virtual
-                # board, we need to use the virtual board to get the number of
-                # chips to be allocated either by partitioning, or by measuring
-                # the graph
-
-                # if the end user has requested violating the no vertex check,
-                # add the app graph and let the rest work out.
-                if (self._application_graph.n_vertices != 0 or (
-                        self._config.getboolean(
-                            "Mode",
-                            "violate_no_vertex_in_graphs_restriction") and
-                        self._machine_graph.n_vertices == 0)):
-                    inputs["MemoryApplicationGraph"] = self._application_graph
-                    algorithms.extend(self._config.get(
-                        "Mapping",
-                        "application_to_machine_graph_algorithms").split(","))
-                    outputs.append("MemoryMachineGraph")
-                    outputs.append("MemoryGraphMapper")
-                    do_partitioning = True
-
-                # only add machine graph is it has vertices. as the check for
-                # no vertices in both graphs is checked above.
-                elif self._machine_graph.n_vertices != 0:
-                    inputs["MemoryMachineGraph"] = self._machine_graph
-                    algorithms.append("GraphMeasurer")
-            else:
-
-                # If we are using an allocation server but have been told how
-                # many chips to use, just use that as an input
-                if self._n_chips_required:
-                    inputs["NChipsRequired"] = self._n_chips_required
-                if self._n_boards_required:
-                    inputs["NBoardsRequired"] = self._n_boards_required
-
-            if self._spalloc_server is not None:
-                algorithms.append("SpallocAllocator")
-            elif self._remote_spinnaker_url is not None:
-                algorithms.append("HBPAllocator")
-
-            algorithms.append("MachineGenerator")
-
-            outputs.append("MemoryMachine")
-            outputs.append("IPAddress")
-            outputs.append("MemoryTransceiver")
-            outputs.append("MachineAllocationController")
-
-            executor = self._run_algorithms(
-                inputs, algorithms, outputs, [], [], "machine_generation")
-
-            self._machine_outputs = executor.get_items()
-            self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryMachine")
-            self._ip_address = executor.get_item("IPAddress")
-            self._txrx = executor.get_item("MemoryTransceiver")
-            self._machine_allocation_controller = executor.get_item(
-                "MachineAllocationController")
-
-            if do_partitioning:
-                self._machine_graph = executor.get_item(
-                    "MemoryMachineGraph")
-                self._graph_mapper = executor.get_item(
-                    "MemoryGraphMapper")
-
-        if self._app_id is None:
-            if self._txrx is None:
-                self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
-            else:
-                self._app_id = self._txrx.app_id_tracker.get_new_id()
-
-        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
-
-        if self._n_chips_required:
-            if self._machine.n_chips < self._n_chips_required:
-                raise ConfigurationException(
-                    "Failure to detect machine of with {} chips as requested. "
-                    "Only found {}".format(self._n_chips_required,
-                                           self._machine))
-        if self._n_boards_required:
-            if len(self._machine.ethernet_connected_chips) \
-                    < self._n_boards_required:
-                raise ConfigurationException(
-                    "Failure to detect machine with {} boards as requested. "
-                    "Only found {}".format(self._n_boards_required,
-                                           self._machine))
-
-        return self._machine
+        return inputs, algorithms
 
     def _create_version_provenance(self):
         # Add the version information to the provenance data at the start
@@ -1316,30 +1344,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 version_provenance.append(ProvenanceDataItem(
                     names=["version_data", name], value=value))
         return version_provenance
-
-    def _handle_machine_common_config(self, inputs):
-        """ Adds common parts of the machine configuration
-
-        :param inputs: the input dict
-        :rtype: None
-        """
-        down_chips, down_cores, down_links = sort_out_downed_chips_cores_links(
-            self._config.get("Machine", "down_chips"),
-            self._config.get("Machine", "down_cores"),
-            self._config.get("Machine", "down_links"))
-        inputs["DownedChipsDetails"] = down_chips
-        inputs["DownedCoresDetails"] = down_cores
-        inputs["DownedLinksDetails"] = down_links
-        inputs["BoardVersion"] = self._read_config_int(
-            "Machine", "version")
-        inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
-            "Machine", "reset_machine_on_startup")
-        inputs["BootPortNum"] = self._read_config_int(
-            "Machine", "boot_connection_port_num")
-        inputs["RepairMachine"] = self._config.getboolean(
-            "Machine", "repair_machine")
-        inputs["IgnoreBadEthernets"] = self._config.getboolean(
-            "Machine", "ignore_bad_ethernets")
 
     def generate_file_machine(self):
         inputs = {
