@@ -1164,11 +1164,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         elif (self._machine_graph is not None and
                 self._machine_graph.n_vertices > 0):
             pass
-        elif not need_virtual_board and self._config.getboolean(
+        elif self._config.getboolean(
                 "Mode", "violate_no_vertex_in_graphs_restriction"):
             logger.warning(
                 "you graph has no vertices in it, but you have "
                 "requested that we still execute.")
+            if need_virtual_board:
+                self._n_boards_required = 1
+                need_virtual_board = False
         else:
             raise ConfigurationException(
                 "A allocated machine has been requested but there are "
