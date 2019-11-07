@@ -608,7 +608,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._remote_spinnaker_url = self._read_config(
                 "Machine", "remote_spinnaker_url")
         n_items_specified = sum([
-            1 if item is not None else 0
+            1 if item else 0
             for item in [
                 self._hostname, self._spalloc_server,
                 self._remote_spinnaker_url, self._use_virtual_board]])
@@ -1159,20 +1159,22 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 need_virtual_board = True
 
         if (self._application_graph is not None and
-                self._application_graph.n_vertices == 0 and
-                self._machine_graph is not None and
-                self._machine_graph.n_vertices == 0 and
-                need_virtual_board):
-            if self._config.getboolean(
-                    "Mode", "violate_no_vertex_in_graphs_restriction"):
-                logger.warning(
-                    "you graph has no vertices in it, but you have "
-                    "requested that we still execute.")
-            else:
-                raise ConfigurationException(
-                    "A allocated machine has been requested but there are "
-                    "no vertices to work out the size of the machine "
-                    "required and n_chips_required has not been set")
+                self._application_graph.n_vertices > 0):
+            pass
+        elif (self._machine_graph is not None and
+                self._machine_graph.n_vertices > 0):
+            pass
+        elif not need_virtual_board and self._config.getboolean(
+                "Mode", "violate_no_vertex_in_graphs_restriction"):
+            logger.warning(
+                "you graph has no vertices in it, but you have "
+                "requested that we still execute.")
+        else:
+            raise ConfigurationException(
+                "A allocated machine has been requested but there are "
+                "no vertices to work out the size of the machine "
+                "required and neither n_boards_required or "
+                "n_chips_required has not been set")
 
         do_partitioning = False
         if need_virtual_board:
