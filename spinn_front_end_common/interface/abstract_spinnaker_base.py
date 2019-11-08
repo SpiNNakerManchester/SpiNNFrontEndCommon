@@ -1224,8 +1224,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         else:
             # No way to decided size so default to one board
             logger.warning(
-                "you graph has no vertices in it, but you have "
-                "requested that we still execute.")
+                "Your graph has no vertices in it. "
+                "Will default to a machine with 1 board.")
             inputs["NBoardsRequired"] = 1
             return False
 
@@ -1383,18 +1383,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
-        elif self._config.getboolean(
-                "Mode", "violate_no_vertex_in_graphs_restriction"):
+        else:
             logger.warning(
                 "you graph has no vertices in it, but you have requested that"
                 " we still execute.")
             inputs["MemoryApplicationGraph"] = self._application_graph
             inputs["MemoryGraphMapper"] = GraphMapper()
             inputs['MemoryMachineGraph'] = self._machine_graph
-        else:
-            raise ConfigurationException(
-                "There needs to be a graph which contains at least one vertex"
-                " for the tool chain to map anything.")
 
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
