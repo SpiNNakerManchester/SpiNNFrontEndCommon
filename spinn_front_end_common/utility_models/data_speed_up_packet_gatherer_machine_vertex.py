@@ -114,12 +114,14 @@ BYTES_IN_FULL_PACKET_WITHOUT_ADDRESS = (
 # x, y, key (all ints) for possible 48 chips,
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * BYTES_PER_WORD
 
+# flag for saying missing all SEQ numbers
+FLAG_FOR_MISSING_ALL_SEQUENCES = 0xFFFFFFFF
+
 
 class _DATA_REGIONS(Enum):
     """DSG data regions"""
-    SYSTEM = 0
-    CONFIG = 1
-    CHIP_TO_KEY_SPACE = 2
+    CONFIG = 0
+    CHIP_TO_KEY_SPACE = 1
 
 
 class DATA_OUT_COMMANDS(Enum):
@@ -311,8 +313,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def static_resources_required():
         return ResourceContainer(
             sdram=ConstantSDRAM(
-                SYSTEM_BYTES_REQUIREMENT + CONFIG_SIZE +
-                SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
+                CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
                 SIZE_DATA_IN_CHIP_TO_KEY_SPACE),
             iptags=[IPtagResource(
                 port=DataSpeedUpPacketGatherMachineVertex._TAG_INITIAL_PORT,
@@ -352,11 +353,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Create the data regions for hello world
         self._reserve_memory_regions(spec)
-
-        # write data for the simulation data item
-        spec.switch_write_focus(_DATA_REGIONS.SYSTEM.value)
-        spec.write_array(simulation_utilities.get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
         # the keys for the special cases
         if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
@@ -411,10 +407,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param system_size: size of system region
         :rtype: None
         """
-        spec.reserve_memory_region(
-            region=_DATA_REGIONS.SYSTEM.value,
-            size=SIMULATION_N_BYTES,
-            label='systemInfo')
         spec.reserve_memory_region(
             region=_DATA_REGIONS.CONFIG.value,
             size=CONFIG_SIZE,
@@ -676,6 +668,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param destination_chip_y: chip y
         :param start_address: start address in sdram to write data to
         :param data_to_write: the data to write
+        :param start_address: the base sdram address
         :rtype: None
         """
         # how many packets after first one we need to send
@@ -711,7 +704,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         log.debug("sent initial {} bytes", BYTES_IN_FULL_PACKET_WITH_ADDRESS)
 
         # send initial attempt at sending all the data
-        self._send_all_data_based_packets(number_of_packets, data_to_write)
+        self._send_all_data_based_packets(
+            number_of_packets, data_to_write, start_address, dest_x, dest_y)
 
         # verify completed
         received_confirmation = False
@@ -725,7 +719,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # check which message type we have received
                 received_confirmation = self._outgoing_process_packet(
-                    data, data_to_write)
+                    data, data_to_write, number_of_packets, start_address,
+                    dest_x, dest_y)
 
             except SpinnmanTimeoutException:  # if time out, keep trying
                 # if the timeout has not occurred x times, keep trying
@@ -749,14 +744,22 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # if we have not received confirmation of finish, try to
                 # retransmit missing seq nums
                 if not received_confirmation:
-                    self._outgoing_retransmit_missing_seq_nums(data_to_write)
+                    self._outgoing_retransmit_missing_seq_nums(
+                        data_to_write, start_address, destination_chip_x,
+                        destination_chip_y)
 
-    def _read_in_missing_seq_nums(self, data, data_to_write, position):
+    def _read_in_missing_seq_nums(
+            self, data, data_to_write, position, number_of_packets,
+            start_address, dest_x, dest_y):
         """ handles a missing seq num packet from spinnaker
 
         :param data: the data to translate into missing seq nums
         :param data_to_write: the data to write
         :param position: the position in the data to write.
+        :param number_of_packets: the number of packets expected to send
+        :param start_address: the base sdram address
+        :param dest_x: the destination chip x coord.
+        :param dest_y: the destination chip y coord.
         :rtype: None
         """
         # find how many elements are in this packet
@@ -766,20 +769,34 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._missing_seq_nums_data_in[-1].extend(struct.unpack_from(
             "<{}I".format(n_elements), data, position))
 
+        if (self._missing_seq_nums_data_in[-1][-1] ==
+                self.FLAG_FOR_MISSING_ALL_SEQUENCES):
+            del self._missing_seq_nums_data_in[-1][-1]
+            for seq_num in range(0, number_of_packets):
+                self._missing_seq_nums_data_in[-1].append(seq_num)
+
         # determine if last element is end flag
         if self._missing_seq_nums_data_in[-1][-1] == \
                 self.MISSING_SEQ_NUMS_END_FLAG:
             del self._missing_seq_nums_data_in[-1][-1]
-            self._outgoing_retransmit_missing_seq_nums(data_to_write)
+            self._outgoing_retransmit_missing_seq_nums(
+                data_to_write, start_address, dest_x, dest_y)
         if (self._total_expected_missing_seq_packets == 0 and
                 self._have_received_missing_seq_count_packet):
-            self._outgoing_retransmit_missing_seq_nums(data_to_write)
+            self._outgoing_retransmit_missing_seq_nums(
+                data_to_write, start_address, dest_x, dest_y)
 
-    def _outgoing_process_packet(self, data, data_to_write):
+    def _outgoing_process_packet(
+            self, data, data_to_write, number_of_packets, start_address,
+            dest_x, dest_y):
         """ processes a packet from SpiNNaker
 
         :param data: the packet data
         :param data_to_write: the data to write to spinnaker
+        :param number_of_packets: the number of packets expected to send
+                :param start_address: the base sdram address
+        :param dest_x: the destination chip x coord.
+        :param dest_y: the destination chip y coord.
         :return: if the packet contains a confirmation of complete
         :rtype: bool
         """
@@ -798,23 +815,31 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._have_received_missing_seq_count_packet = True
 
             # write missing seq nums and retransmit if needed
-            self._read_in_missing_seq_nums(data, data_to_write, position)
+            self._read_in_missing_seq_nums(
+                data, data_to_write, position, number_of_packets,
+                start_address, dest_x, dest_y)
 
         # process missing seq packets
         if command_id == DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA.value:
             # write missing seq nums and retransmit if needed
             self._total_expected_missing_seq_packets -= 1
 
-            self._read_in_missing_seq_nums(data, data_to_write, position)
+            self._read_in_missing_seq_nums(
+                data, data_to_write, position, number_of_packets,
+                start_address, dest_x, dest_y)
 
         # process the confirmation of all data received
         return command_id == DATA_IN_COMMANDS.RECEIVE_FINISHED.value
 
-    def _outgoing_retransmit_missing_seq_nums(self, data_to_write):
+    def _outgoing_retransmit_missing_seq_nums(
+            self, data_to_write, start_address, dest_x, dest_y):
         """ Transmits back into SpiNNaker the missing data based off missing\
             sequence numbers
 
         :param data_to_write: the data to write.
+        :param start_address: the base sdram address
+        :param dest_x: the destination chip x coord.
+        :param dest_y: the destination chip y coord.
         :rtype: None
         """
         for missing_seq_num in self._missing_seq_nums_data_in[-1]:
@@ -826,7 +851,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._missing_seq_nums_data_in.append(list())
         self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
-        self._send_end_flag()
+        self._send_end_flag(start_address, dest_x, dest_y)
 
     def _calculate_position_from_seq_number(self, seq_num):
         """ Calculates where in the raw data to start reading from, given a\
@@ -891,14 +916,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         # return message for sending, and the length in data sent
         return message, packet_data_length
 
-    def _send_end_flag(self):
+    def _send_end_flag(self, start_address, dest_x, dest_y, number_of_packets):
         # send end flag as separate message
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
-            _ONE_WORD.pack(DATA_IN_COMMANDS.SEND_DONE.value)))
+            _FOUR_WORDS.pack(
+                DATA_IN_COMMANDS.SEND_DONE.value, start_address,
+                (dest_x << 16) | dest_y, number_of_packets)))
 
     def _send_all_data_based_packets(
-            self, number_of_packets, data_to_write):
+            self, number_of_packets, data_to_write, start_address, dest_x,
+            dest_y):
         """ Send all the data as one block
 
         :param number_of_packets: the number of packets expected to send
@@ -924,7 +952,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # check for end flag
             if position_in_data == total_data_length:
-                self._send_end_flag()
+                self._send_end_flag(
+                    start_address, dest_x, dest_y, number_of_packets)
                 log.debug("sent end flag")
 
     @staticmethod

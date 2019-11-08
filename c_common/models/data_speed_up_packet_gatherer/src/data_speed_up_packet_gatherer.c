@@ -58,6 +58,9 @@ enum sdp_port_commands {
 // location of command IDs in SDP message
 #define COMMAND_ID 0
 
+// flag when all seq numbers are missing
+#define ALL_MISSING_FLAG 0xFFFFFFFF
+
 enum {
     //! How many multicast packets are to be received per SDP packet
     ITEMS_PER_DATA_PACKET = 68,
@@ -139,11 +142,6 @@ typedef union sdp_msg_out_payload_t {
     } more;
 } sdp_msg_out_payload_t;
 
-//! control value, which says how many timer ticks to run for before exiting
-static uint32_t simulation_ticks = 0;
-static uint32_t infinite_run = 0;
-static uint32_t timer = 0;
-
 //! the key that causes sequence number to be processed
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
@@ -162,7 +160,6 @@ static sdp_msg_pure_data my_msg;
 
 //! human readable definitions of each region in SDRAM
 enum {
-    SYSTEM_REGION,
     CONFIG,
     CHIP_TO_KEY
 };
@@ -180,7 +177,6 @@ enum {
     MC_PACKET = -1,
     SDP = 0,
     DMA = 0,
-    TIMER = 1
 };
 
 // Note that these addresses are *board-local* chip addresses.
@@ -195,11 +191,6 @@ static bool alloc_in_sdram = false;
 static uint total_received_seq_nums = 0;
 static uint last_seen_seq_num = 0;
 static uint start_sdram_address = 0;
-
-// Timeout control
-static uint time, wait_until;
-#define TIMER_INTERVAL 1000
-#define TIMEOUT 33
 
 //! Human readable definitions of the offsets for multicast key elements.
 //! These act as commands sent to the target extra monitor core.
@@ -339,15 +330,6 @@ static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
                     * sizeof(uint);
 }
 
-static inline void schedule_timeout(void) {
-    wait_until = time + TIMEOUT;
-    log_debug("scheduled timeout for %u (now %u)", wait_until, time);
-}
-
-static inline void cancel_timeout(void) {
-    wait_until = 0;
-}
-
 static inline void set_message_length(const void *end) {
     my_msg.length = ((const uint8_t *) end) - &my_msg.flags;
     if (my_msg.length > 272) {
@@ -355,27 +337,59 @@ static inline void set_message_length(const void *end) {
     }
 }
 
+//! \brief handles reading the address, chips and max packets from a
+//! sdp message
+static void process_address_data(
+        const receive_data_to_location_msg_t *receive_data_cmd) {
+    uint prev_x = chip_x, prev_y = chip_y;
+
+    // update sdram and tracker as now have the sdram and size
+    chip_x = receive_data_cmd->chip_x;
+    chip_y = receive_data_cmd->chip_y;
+
+    if (prev_x != chip_x || prev_y != chip_y) {
+        log_info("Changed stream target chip to %d,%d", chip_x, chip_y);
+    }
+
+    log_info("Writing %u packets to 0x%08x",
+             receive_data_cmd->max_seq_num, receive_data_cmd->address);
+
+    // store where the sdram started, for out-of-order UDP packets.
+    start_sdram_address = (uint) receive_data_cmd->address;
+
+    // allocate location for holding the seq numbers
+    create_sequence_number_bitfield(receive_data_cmd->max_seq_num);
+    total_received_seq_nums = 0;
+
+    // set start of last seq number
+    last_seen_seq_num = 0;
+}
+
 //! \brief searches through received seq nums and transmits missing ones back
 //! to host for retransmission
-static void process_missing_seq_nums_and_request_retransmission(void) {
+static void process_missing_seq_nums_and_request_retransmission(
+        const sdp_msg_pure_data *msg) {
     //! \brief Used to guard access to the received_seq_nums_store from this
     //!   function; it counts the number of running calls to this function.
     //!   Access to this variable is only allowed when you have disabled
     //!   interrupts!
-    static uint access_lock = 0;
 
-    uint sr;
-    sr = spin1_irq_disable();
-    if (++access_lock > 1) {
-        access_lock--;
-        spin1_mode_restore(sr);
-        return;
-    } else if (received_seq_nums_store == NULL) {
-        access_lock--;
-        spin1_mode_restore(sr);
+    // never received the first message, handle appropriately
+    if (received_seq_nums_store == NULL) {
+        const receive_data_to_location_msg_t *receive_data_cmd =
+            (receive_data_to_location_msg_t *) msg->data;
+        process_address_data(receive_data_cmd);
+
+        // send response
+        sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
+        payload->command = SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD;
+        payload->first.n_packets = 1;
+        uint *data_ptr = payload->first.data ;
+        *(data_ptr++) = ALL_MISSING_FLAG;
+        set_message_length(data_ptr);
+        send_sdp_message();
         return;
     }
-    spin1_mode_restore(sr);
 
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
 
@@ -383,9 +397,6 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
     // have we finished
     if (total_received_seq_nums == max_seq_num) {
         free_sequence_number_bitfield();
-        sr = spin1_irq_disable();
-        access_lock--;
-        spin1_mode_restore(sr);
 
         // send boundary key, so that monitor knows everything in the previous
         // stream is done
@@ -419,10 +430,6 @@ static void process_missing_seq_nums_and_request_retransmission(void) {
         }
     }
 
-    sr = spin1_irq_disable();
-    access_lock--;
-    spin1_mode_restore(sr);
-
     // send final message if required
     if (data_ptr > data_start) {
         set_message_length(data_ptr);
@@ -455,24 +462,7 @@ static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
             (receive_data_to_location_msg_t *) msg->data;
 
     // translate elements to variables
-    uint prev_x = chip_x, prev_y = chip_y;
-    chip_x = receive_data_cmd->chip_x;
-    chip_y = receive_data_cmd->chip_y;
-    if (prev_x != chip_x || prev_y != chip_y) {
-        log_info("Changed stream target chip to %d,%d", chip_x, chip_y);
-    }
-    log_info("Writing %u packets to 0x%08x",
-            receive_data_cmd->max_seq_num, receive_data_cmd->address);
-
-    // allocate location for holding the seq numbers
-    create_sequence_number_bitfield(receive_data_cmd->max_seq_num);
-    total_received_seq_nums = 0;
-
-    // set start of last seq number
-    last_seen_seq_num = 0;
-    // store where the sdram started, for out-of-order UDP packets.
-    start_sdram_address = (uint) receive_data_cmd->address;
-
+    process_address_data(receive_data_cmd);
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
     sanity_check_write((uint) receive_data_cmd->address, n_elements);
     if (chip_x == 0 && chip_y == 0) {
@@ -520,16 +510,6 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     }
 }
 
-static void check_for_timeout(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-    if (wait_until != 0 && ++time > wait_until) {
-        log_info("Timed out; checking for missing anyway");
-        cancel_timeout();
-        process_missing_seq_nums_and_request_retransmission();
-    }
-}
-
 //! \brief processes sdp messages
 //! \param[in] mailbox: the sdp message
 //! \param[in] port: the port associated with this sdp message
@@ -544,28 +524,18 @@ static void data_in_receive_sdp_data(uint mailbox, uint port) {
     // check for separate commands
     switch (command) {
     case SDP_SEND_DATA_TO_LOCATION_CMD:
-        // Stop timeouts while doing synchronous message processing
-        cancel_timeout();
         receive_data_to_location(msg);
-        // Schedule a timeout for if all subsequent messages go missing
-        schedule_timeout();
         break;
     case SDP_SEND_SEQ_DATA_CMD:
-        // Stop timeouts while doing synchronous message processing
-        cancel_timeout();
         receive_seq_data(msg);
-        // Schedule a timeout for if all subsequent messages go missing
-        schedule_timeout();
         break;
     case SDP_SEND_MISSING_SEQ_NUMS_BACK_TO_HOST_CMD:
         log_debug("Checking for missing");
-        cancel_timeout();
-        process_missing_seq_nums_and_request_retransmission();
+        process_missing_seq_nums_and_request_retransmission(msg);
         break;
     case SDP_LAST_DATA_IN_CMD:
         log_debug("Received final flag");
-        cancel_timeout();
-        process_missing_seq_nums_and_request_retransmission();
+        process_missing_seq_nums_and_request_retransmission(msg);
         break;
     default:
         log_error("Failed to recognise command id %u", command);
@@ -640,15 +610,6 @@ static void initialise(void) {
         rt_error(RTE_SWERR);
     }
 
-    // Get the timing details and set up the simulation interface
-    uint32_t dummy;
-    if (!simulation_initialise(
-            data_specification_get_region(SYSTEM_REGION, ds_regions),
-            APPLICATION_NAME_HASH, &dummy, &simulation_ticks,
-            &infinite_run, &timer, SDP, DMA)) {
-        rt_error(RTE_SWERR);
-    }
-
     log_info("Initialising data out");
 
     data_out_config_t *config = (data_out_config_t *)
@@ -684,13 +645,6 @@ static void initialise(void) {
     }
 
     spin1_callback_on(SDP_PACKET_RX, data_in_receive_sdp_data, SDP);
-
-    // Set up the timeout system
-    time = 0;
-    wait_until = 0;
-    spin1_set_timer_tick(TIMER_INTERVAL);
-    spin1_callback_on(TIMER_TICK, check_for_timeout, TIMER);
-    log_info("receive timeout is %dus", TIMER_INTERVAL * TIMEOUT);
 }
 
 
