@@ -1385,8 +1385,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
             logger.warning(
-                "you graph has no vertices in it, but you have requested that"
-                " we still execute.")
+                "Your graph has no vertices in it.")
             inputs["MemoryApplicationGraph"] = self._application_graph
             inputs["MemoryGraphMapper"] = GraphMapper()
             inputs['MemoryMachineGraph'] = self._machine_graph
