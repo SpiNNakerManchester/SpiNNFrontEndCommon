@@ -614,10 +614,23 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._remote_spinnaker_url, self._use_virtual_board]])
 
         if (n_items_specified != 1):
+            if (n_items_specified == 0):
+                raise Exception(
+                    "None of  machineName, spalloc_server, "
+                    "remote_spinnaker_url or virtual_board specified in your "
+                    "configuration files")
+            found = dict()
+            if self._hostname:
+                found["hostname"] = self._hostname
+            if self._spalloc_server:
+                found["spalloc_server"] = self._spalloc_server
+            if self._remote_spinnaker_url:
+                found["remote_spinnaker_url"] = self._remote_spinnaker_url
+            if self._use_virtual_board
+                found["use_virtual_board"] = self._use_virtual_board
             raise Exception(
-                "Exactly one of machineName, spalloc_server, "
-                "remote_spinnaker_url and virtual_board should be specified "
-                "in your configuration files")
+                "Conficliting values {} found your configuration files"
+                "".format(found))
 
         if self._spalloc_server is not None:
             if self._read_config("Machine", "spalloc_user") is None:
