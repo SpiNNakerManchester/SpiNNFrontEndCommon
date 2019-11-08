@@ -1043,11 +1043,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._hostname is not None:
             self._machine_by_hostname(n_machine_time_steps, total_run_time)
 
-        if self._use_virtual_board:
+        elif self._use_virtual_board:
             self._machine_by_virtual(n_machine_time_steps, total_run_time)
-
-        if (self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None):
+        else:
+            # must be remote due to set_up_machine_specifics()
             self._machine_by_remote(n_machine_time_steps, total_run_time)
 
         if self._app_id is None:
@@ -1130,11 +1129,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine = executor.get_item("MemoryMachine")
 
     def _machine_by_remote(self, n_machine_time_steps, total_run_time):
+        """
+        Gets a machine when we know one of self._spalloc_server or\
+            self._remote_spinnaker_url is defined
+        """
         inputs, algorithms = self._get_machine_common(
             n_machine_time_steps, total_run_time)
         outputs = list()
 
-        need_virtual_board = False
+        do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
 
         # if using spalloc system
         if self._spalloc_server is not None:
@@ -1145,76 +1148,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "spalloc_user")
             inputs["SpallocMachine"] = self._read_config(
                 "Machine", "spalloc_machine")
-            if self._n_chips_required is None and \
-                    self._n_boards_required is None:
-                algorithms.append("SpallocMaxMachineGenerator")
-                need_virtual_board = True
-
-        # if using HBP server system
-        if self._remote_spinnaker_url is not None:
+        else:
+            # must be using HBP server system
             inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-            if self._n_chips_required is None and \
-                    self._n_boards_required is None:
-                algorithms.append("HBPMaxMachineGenerator")
-                need_virtual_board = True
-
-        if (self._application_graph is not None and
-                self._application_graph.n_vertices > 0):
-            pass
-        elif (self._machine_graph is not None and
-                self._machine_graph.n_vertices > 0):
-            pass
-        elif self._config.getboolean(
-                "Mode", "violate_no_vertex_in_graphs_restriction"):
-            logger.warning(
-                "you graph has no vertices in it, but you have "
-                "requested that we still execute.")
-            if need_virtual_board:
-                self._n_boards_required = 1
-                need_virtual_board = False
-        else:
-            raise ConfigurationException(
-                "A allocated machine has been requested but there are "
-                "no vertices to work out the size of the machine "
-                "required and neither n_boards_required or "
-                "n_chips_required has not been set")
-
-        do_partitioning = False
-        if need_virtual_board:
-
-            # If we are using an allocation server, and we need a virtual
-            # board, we need to use the virtual board to get the number of
-            # chips to be allocated either by partitioning, or by measuring
-            # the graph
-
-            # if the end user has requested violating the no vertex check,
-            # add the app graph and let the rest work out.
-            if (self._application_graph.n_vertices != 0 or (
-                    self._config.getboolean(
-                        "Mode",
-                        "violate_no_vertex_in_graphs_restriction") and
-                    self._machine_graph.n_vertices == 0)):
-                inputs["MemoryApplicationGraph"] = self._application_graph
-                algorithms.extend(self._config.get(
-                    "Mapping",
-                    "application_to_machine_graph_algorithms").split(","))
-                outputs.append("MemoryMachineGraph")
-                outputs.append("MemoryGraphMapper")
-                do_partitioning = True
-
-            # only add machine graph is it has vertices. as the check for
-            # no vertices in both graphs is checked above.
-            elif self._machine_graph.n_vertices != 0:
-                inputs["MemoryMachineGraph"] = self._machine_graph
-                algorithms.append("GraphMeasurer")
-        else:
-
-            # If we are using an allocation server but have been told how
-            # many chips to use, just use that as an input
-            if self._n_chips_required:
-                inputs["NChipsRequired"] = self._n_chips_required
-            if self._n_boards_required:
-                inputs["NBoardsRequired"] = self._n_boards_required
 
         if self._spalloc_server is not None:
             algorithms.append("SpallocAllocator")
@@ -1244,6 +1180,62 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "MemoryMachineGraph")
             self._graph_mapper = executor.get_item(
                 "MemoryGraphMapper")
+
+    def _machine_by_size(self, inputs, algorithms, outputs):
+        """
+        Checks if we can get a remote machine by size of if we have to use a\
+        virtual machine to get the size
+
+        Adds the requires info to inputs, algorithms, outputs
+
+        :param inputs: Data to go into executor
+        :param algorithms: Algorithms to execute
+        :param outputs: Data needed after execution
+        :return: True if and only if the required steps included partitioning
+        """
+        # If we are using an allocation server but have been told how
+        # many chips to use, just use that as an input
+        if self._n_chips_required:
+            inputs["NChipsRequired"] = self._n_chips_required
+            return False
+        if self._n_boards_required:
+            inputs["NBoardsRequired"] = self._n_boards_required
+            return False
+
+        # only add machine graph is it has vertices.
+        if (self._machine_graph is not None and
+                self._machine_graph.n_vertices != 0):
+            inputs["MemoryMachineGraph"] = self._machine_graph
+            algorithms.append("GraphMeasurer")
+            do_partitioning = False
+        # If we are using an allocation server, and we need a virtual
+        # board, we need to use the virtual board to get the number of
+        # chips to be allocated either by partitioning, or by measuring
+        # the graph
+        elif (self._application_graph is not None and
+                self._application_graph.n_vertices > 0):
+            inputs["MemoryApplicationGraph"] = self._application_graph
+            algorithms.extend(self._config.get(
+                "Mapping",
+                "application_to_machine_graph_algorithms").split(","))
+            outputs.append("MemoryMachineGraph")
+            outputs.append("MemoryGraphMapper")
+            do_partitioning = True
+        else:
+            # No way to decided size so default to one board
+            logger.warning(
+                "you graph has no vertices in it, but you have "
+                "requested that we still execute.")
+            inputs["NBoardsRequired"] = 1
+            return False
+
+        # Ok we do need a virtual machine
+        if self._spalloc_server is not None:
+            algorithms.append("SpallocMaxMachineGenerator")
+        else:
+            algorithms.append("HBPMaxMachineGenerator")
+
+        return do_partitioning
 
     def _get_machine_common(self, n_machine_time_steps, total_run_time):
         inputs = dict(self._extra_inputs)
