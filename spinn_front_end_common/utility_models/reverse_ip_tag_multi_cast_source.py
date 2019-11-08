@@ -136,7 +136,7 @@ class ReverseIpTagMultiCastSource(
 
         # Store the send buffering details
         self._send_buffer_times = self._validate_send_buffer_times(
-            n_keys, send_buffer_times)
+            send_buffer_times)
         self._send_buffer_partition_id = send_buffer_partition_id
 
         # Store the buffering details
@@ -148,15 +148,15 @@ class ReverseIpTagMultiCastSource(
         # Keep the vertices for resuming runs
         self._machine_vertices = list()
 
-    def _validate_send_buffer_times(self, n_keys, send_buffer_times):
+    def _validate_send_buffer_times(self, send_buffer_times):
         if send_buffer_times is None:
-            return
+            return None
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
-            if len(send_buffer_times) != n_keys:
+            if len(send_buffer_times) != self._n_atoms:
                 raise ConfigurationException(
                     "The array or arrays of times {} does not have the "
                     "expected length of {}".format(
-                        send_buffer_times, n_keys))
+                        send_buffer_times, self._n_atoms))
         return send_buffer_times
 
     @property
