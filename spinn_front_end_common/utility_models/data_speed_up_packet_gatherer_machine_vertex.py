@@ -270,7 +270,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
         self._missing_seq_nums_data_in = list()
-        self._missing_seq_nums_data_in.append(OrderedSet())
+        self._missing_seq_nums_data_in.append(list())
 
         # Create a connection to be used
         self._x = x
@@ -583,7 +583,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data=data, offset=offset, is_filename=False, cpu=cpu)
             # record when finished
             end = datetime.datetime.now()
-            self._missing_seq_nums_data_in = [OrderedSet()]
+            self._missing_seq_nums_data_in = [[]]
         else:
             log.debug("sending {} bytes to {},{} via Data In protocol",
                       n_bytes, x, y)
@@ -768,23 +768,19 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_elements = (len(data) - position) // BYTES_PER_WORD
 
         # store missing
-        missing_seqs = struct.unpack_from(
-            "<{}I".format(n_elements), data, position)
+        self._missing_seq_nums_data_in[-1].extend(struct.unpack_from(
+            "<{}I".format(n_elements), data, position))
 
-        # add to the set. (set to ignore duplicates)
-        for missing_seq in missing_seqs:
-            self._missing_seq_nums_data_in[-1].add(missing_seq)
-
-        if (self._missing_seq_nums_data_in[-1].peek() ==
+        if (self._missing_seq_nums_data_in[-1][-1] ==
                 self.FLAG_FOR_MISSING_ALL_SEQUENCES):
-            self._missing_seq_nums_data_in[-1].pop(last=True)
+            self._missing_seq_nums_data_in[-1][-1]
             for seq_num in range(0, number_of_packets):
-                self._missing_seq_nums_data_in[-1].add(seq_num)
+                self._missing_seq_nums_data_in[-1].append(seq_num)
 
         # determine if last element is end flag
-        if self._missing_seq_nums_data_in[-1].peek() == \
+        if self._missing_seq_nums_data_in[-1][-1] == \
                 self.MISSING_SEQ_NUMS_END_FLAG:
-            self._missing_seq_nums_data_in[-1].pop(last=True)
+            self._missing_seq_nums_data_in[-1][-1]
             self._outgoing_retransmit_missing_seq_nums(
                 data_to_write, start_address, dest_x, dest_y,
                 number_of_packets)
@@ -858,7 +854,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 DATA_IN_COMMANDS.SEND_SEQ_DATA.value, None)
             self.__throttled_send(message)
 
-        self._missing_seq_nums_data_in.append(OrderedSet())
+        self._missing_seq_nums_data_in.append(list())
         self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
         self._send_end_flag(start_address, dest_x, dest_y, number_of_packets)

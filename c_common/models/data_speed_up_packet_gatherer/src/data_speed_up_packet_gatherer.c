@@ -59,7 +59,7 @@ enum sdp_port_commands {
 #define COMMAND_ID 0
 
 // flag when all seq numbers are missing
-#define ALL_MISSING_FLAG 0xFFFFFFFF
+#define ALL_MISSING_FLAG 0xFFFFFFFE
 
 enum {
     //! How many multicast packets are to be received per SDP packet
