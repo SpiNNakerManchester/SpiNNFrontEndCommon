@@ -607,30 +607,26 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "spalloc_server")
             self._remote_spinnaker_url = self._read_config(
                 "Machine", "remote_spinnaker_url")
+
+        if (self._hostname is None and self._spalloc_server is None and
+                self._remote_spinnaker_url is None and
+                not self._use_virtual_board):
+            raise Exception(
+                "A SpiNNaker machine must be specified your configuration"
+                " file")
+
         n_items_specified = sum([
-            1 if item else 0
+            1 if item is not None else 0
             for item in [
                 self._hostname, self._spalloc_server,
-                self._remote_spinnaker_url, self._use_virtual_board]])
+                self._remote_spinnaker_url]])
 
-        if (n_items_specified != 1):
-            if (n_items_specified == 0):
-                raise Exception(
-                    "None of  machineName, spalloc_server, "
-                    "remote_spinnaker_url or virtual_board specified in your "
-                    "configuration files")
-            found = dict()
-            if self._hostname:
-                found["hostname"] = self._hostname
-            if self._spalloc_server:
-                found["spalloc_server"] = self._spalloc_server
-            if self._remote_spinnaker_url:
-                found["remote_spinnaker_url"] = self._remote_spinnaker_url
-            if self._use_virtual_board
-                found["use_virtual_board"] = self._use_virtual_board
+        if (n_items_specified > 1 or
+                (n_items_specified == 1 and self._use_virtual_board)):
             raise Exception(
-                "Conficliting values {} found your configuration files"
-                "".format(found))
+                "Only one of machineName, spalloc_server, "
+                "remote_spinnaker_url and virtual_board should be specified "
+                "in your configuration files")
 
         if self._spalloc_server is not None:
             if self._read_config("Machine", "spalloc_user") is None:
