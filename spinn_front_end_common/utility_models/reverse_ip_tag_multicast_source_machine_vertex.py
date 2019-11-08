@@ -177,7 +177,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer = None
         self._send_buffer_partition_id = send_buffer_partition_id
         self._send_buffer_size = 0
-        if send_buffer_times is None:
+        n_buffer_times = 0
+        if send_buffer_times is not None:
+            for i in send_buffer_times:
+                if hasattr(i, "__len__"):
+                    n_buffer_times += len(i)
+                else:
+                    # assuming this must be a single integer
+                    n_buffer_times += 1
+        if n_buffer_times == 0:
             self._send_buffer_times = None
             self._send_buffers = None
         else:
