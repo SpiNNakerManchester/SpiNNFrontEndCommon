@@ -23,6 +23,8 @@ import sys
 from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
+
+from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -113,9 +115,6 @@ BYTES_IN_FULL_PACKET_WITHOUT_ADDRESS = (
 # size of data in key space
 # x, y, key (all ints) for possible 48 chips,
 SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * BYTES_PER_WORD
-
-# flag for saying missing all SEQ numbers
-FLAG_FOR_MISSING_ALL_SEQUENCES = 0xFFFFFFFF
 
 
 class _DATA_REGIONS(Enum):
@@ -238,6 +237,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     # end flag for missing seq nums
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
+    # flag for saying missing all SEQ numbers
+    FLAG_FOR_MISSING_ALL_SEQUENCES = 0xFFFFFFFE
+
     _ADDRESS_PACKET_BYTE_FORMAT = struct.Struct(
         "<{}B".format(BYTES_IN_FULL_PACKET_WITH_ADDRESS))
 
@@ -268,7 +270,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
         self._missing_seq_nums_data_in = list()
-        self._missing_seq_nums_data_in.append(list())
+        self._missing_seq_nums_data_in.append(OrderedSet())
 
         # Create a connection to be used
         self._x = x
@@ -581,7 +583,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data=data, offset=offset, is_filename=False, cpu=cpu)
             # record when finished
             end = datetime.datetime.now()
-            self._missing_seq_nums_data_in = [[]]
+            self._missing_seq_nums_data_in = [OrderedSet()]
         else:
             log.debug("sending {} bytes to {},{} via Data In protocol",
                       n_bytes, x, y)
@@ -746,7 +748,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if not received_confirmation:
                     self._outgoing_retransmit_missing_seq_nums(
                         data_to_write, start_address, destination_chip_x,
-                        destination_chip_y)
+                        destination_chip_y, number_of_packets)
 
     def _read_in_missing_seq_nums(
             self, data, data_to_write, position, number_of_packets,
@@ -766,25 +768,31 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_elements = (len(data) - position) // BYTES_PER_WORD
 
         # store missing
-        self._missing_seq_nums_data_in[-1].extend(struct.unpack_from(
-            "<{}I".format(n_elements), data, position))
+        missing_seqs = struct.unpack_from(
+            "<{}I".format(n_elements), data, position)
 
-        if (self._missing_seq_nums_data_in[-1][-1] ==
+        # add to the set. (set to ignore duplicates)
+        for missing_seq in missing_seqs:
+            self._missing_seq_nums_data_in[-1].add(missing_seq)
+
+        if (self._missing_seq_nums_data_in[-1].peek() ==
                 self.FLAG_FOR_MISSING_ALL_SEQUENCES):
-            del self._missing_seq_nums_data_in[-1][-1]
+            self._missing_seq_nums_data_in[-1].pop(last=True)
             for seq_num in range(0, number_of_packets):
-                self._missing_seq_nums_data_in[-1].append(seq_num)
+                self._missing_seq_nums_data_in[-1].add(seq_num)
 
         # determine if last element is end flag
-        if self._missing_seq_nums_data_in[-1][-1] == \
+        if self._missing_seq_nums_data_in[-1].peek() == \
                 self.MISSING_SEQ_NUMS_END_FLAG:
-            del self._missing_seq_nums_data_in[-1][-1]
+            self._missing_seq_nums_data_in[-1].pop(last=True)
             self._outgoing_retransmit_missing_seq_nums(
-                data_to_write, start_address, dest_x, dest_y)
+                data_to_write, start_address, dest_x, dest_y,
+                number_of_packets)
         if (self._total_expected_missing_seq_packets == 0 and
                 self._have_received_missing_seq_count_packet):
             self._outgoing_retransmit_missing_seq_nums(
-                data_to_write, start_address, dest_x, dest_y)
+                data_to_write, start_address, dest_x, dest_y,
+                number_of_packets)
 
     def _outgoing_process_packet(
             self, data, data_to_write, number_of_packets, start_address,
@@ -809,8 +817,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         if command_id == DATA_IN_COMMANDS.RECEIVE_FIRST_MISSING_SEQ.value:
 
             # find total missing
-            self._total_expected_missing_seq_packets += \
-                _ONE_WORD.unpack_from(data, position)[0]
+            self._total_expected_missing_seq_packets += _ONE_WORD.unpack_from(
+                data, position)[0]
             position += BYTES_PER_WORD
             self._have_received_missing_seq_count_packet = True
 
@@ -832,7 +840,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return command_id == DATA_IN_COMMANDS.RECEIVE_FINISHED.value
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write, start_address, dest_x, dest_y):
+            self, data_to_write, start_address, dest_x, dest_y,
+            number_of_packets):
         """ Transmits back into SpiNNaker the missing data based off missing\
             sequence numbers
 
@@ -840,6 +849,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param start_address: the base sdram address
         :param dest_x: the destination chip x coord.
         :param dest_y: the destination chip y coord.
+        :param number_of_packets: n packets expected
         :rtype: None
         """
         for missing_seq_num in self._missing_seq_nums_data_in[-1]:
@@ -848,10 +858,10 @@ class DataSpeedUpPacketGatherMachineVertex(
                 DATA_IN_COMMANDS.SEND_SEQ_DATA.value, None)
             self.__throttled_send(message)
 
-        self._missing_seq_nums_data_in.append(list())
+        self._missing_seq_nums_data_in.append(OrderedSet())
         self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
-        self._send_end_flag(start_address, dest_x, dest_y)
+        self._send_end_flag(start_address, dest_x, dest_y, number_of_packets)
 
     def _calculate_position_from_seq_number(self, seq_num):
         """ Calculates where in the raw data to start reading from, given a\
