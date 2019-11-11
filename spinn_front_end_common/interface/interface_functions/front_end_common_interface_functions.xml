@@ -917,10 +917,6 @@
                 <param_type>MachineHeight</param_type>
             </parameter>
             <parameter>
-                <param_name>virtual_has_wrap_arounds</param_name>
-                <param_type>MachineHasWrapAroundsFlag</param_type>
-            </parameter>
-            <parameter>
                 <param_name>version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
