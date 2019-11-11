@@ -1319,7 +1319,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: None
         """
 
-        inputs["DownedChipsDetails"] = down_chips = IgnoreChip.parse_string(
+        inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
             self._config.get("Machine", "down_chips"))
         inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
             self._config.get("Machine", "down_cores"))
