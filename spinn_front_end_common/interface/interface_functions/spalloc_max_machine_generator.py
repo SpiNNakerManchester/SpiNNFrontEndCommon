@@ -67,8 +67,7 @@ class SpallocMaxMachineGenerator(object):
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
         return virtual_machine(
-            width=max_width, height=max_height, with_wrap_arounds=None,
-            version=None, sdram_per_chip=max_sdram_size,
+            width=max_width, height=max_height, sdram_per_chip=max_sdram_size,
             n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
     @staticmethod
