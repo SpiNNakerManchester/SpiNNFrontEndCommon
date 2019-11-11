@@ -384,7 +384,7 @@ static void process_missing_seq_nums_and_request_retransmission(
         sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
         payload->command = SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD;
         payload->first.n_packets = 1;
-        uint *data_ptr = payload->first.data ;
+        uint *data_ptr = payload->first.data;
         *(data_ptr++) = ALL_MISSING_FLAG;
         set_message_length(data_ptr);
         send_sdp_message();

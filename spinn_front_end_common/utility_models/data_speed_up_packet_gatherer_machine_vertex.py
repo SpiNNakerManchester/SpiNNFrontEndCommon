@@ -24,7 +24,6 @@ from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
 
-from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -48,10 +47,8 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
-    BYTES_PER_KB)
+    SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.interface.simulation import simulation_utilities
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
