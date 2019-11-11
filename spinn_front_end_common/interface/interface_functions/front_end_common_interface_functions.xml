@@ -945,10 +945,11 @@
                 <param_type>MachineJsonPath</param_type>
             </parameter>
         </input_definitions>
-        <optional_inputs>
+        <required_inputs>
             <param_name>width</param_name>
             <param_name>height</param_name>
-            <param_name>virtual_has_wrap_arounds</param_name>
+        </required_inputs>
+        <optional_inputs>
             <param_name>version</param_name>
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
