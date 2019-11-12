@@ -352,9 +352,9 @@ class ConfigHandler(object):
             self._make_dirs(self._provenance_file_path)
 
     def write_finished_file(self):
-        # write a finished file that allows file removal to only remove folders
-        # that are finished
-
+        """ Write a finished file that allows file removal to only remove \
+            folders that are finished.
+        """
         app_file_name = os.path.join(self._app_data_top_simulation_folder,
                                      FINISHED_FILENAME)
         with open(app_file_name, "w") as f:

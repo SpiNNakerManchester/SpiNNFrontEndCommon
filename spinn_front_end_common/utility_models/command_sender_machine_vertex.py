@@ -67,6 +67,13 @@ class CommandSenderMachineVertex(
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
     def __init__(self, label, constraints):
+        """
+        :param label: The label of this vertex
+        :type label: str
+        :param constraints: Any initial constraints to this vertex
+        :type constraints: \
+            iterable(~pacman.model.constraints.AbstractConstraint)
+        """
         super(CommandSenderMachineVertex, self).__init__(label, constraints)
 
         self._timed_commands = list()
@@ -94,6 +101,7 @@ class CommandSenderMachineVertex(
         :type timed_commands: \
             iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
         :param vertex_to_send_to: The vertex these commands are to be sent to
+        :type vertex_to_send_to: AbstractVertex
         """
 
         # container for keys for partition mapping (remove duplicates)
@@ -198,7 +206,6 @@ class CommandSenderMachineVertex(
         spec.end_specification()
 
     def _write_basic_commands(self, commands, spec):
-
         # number of commands
         spec.write_value(len(commands))
 
@@ -207,7 +214,6 @@ class CommandSenderMachineVertex(
             self._write_command(command, spec)
 
     def _write_timed_commands(self, timed_commands, spec):
-
         spec.write_value(len(timed_commands))
 
         # write commands
@@ -231,6 +237,7 @@ class CommandSenderMachineVertex(
             spec, time_command_size, start_command_size, end_command_size,
             vertex):
         """ Reserve SDRAM space for memory areas:
+
         1. Area for information on what data to record
         2. Area for start commands
         3. Area for end commands
@@ -279,10 +286,6 @@ class CommandSenderMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """
-        Return a string representation of the models binary
-
-        """
         return self.BINARY_FILE_NAME
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)

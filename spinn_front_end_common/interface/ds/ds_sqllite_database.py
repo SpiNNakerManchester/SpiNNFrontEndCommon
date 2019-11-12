@@ -146,7 +146,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         """ Sets the same app_id for all rows that have DS content
 
         :param app_id: value to set
-        :rtype app_id: int
+        :type app_id: int
         """
         with self._db:
             self._db.execute(
