@@ -60,16 +60,16 @@ class MachineGenerator(object):
             machine is discovered.
         :type repair_machine: bool
         :param ignore_bad_ethernets: Flag to say that ip_address information
-            on none ethernet chips should be ignored.
+            on non-ethernet chips should be ignored.
             None_ethernet chips are defined here as ones that do not report
             themselves their nearest ethernet.
-            The bad ipaddress is always logged
-            If True the ipaddress is ignored
-            If False the chip with the bad ipaddress is removed.
+            The bad IP address is always logged.
+            If True, the IP address is ignored.
+            If False, the chip with the bad IP address is removed.
         :type ignore_bad_ethernets: bool
         :return: Connection details and Transceiver
-        :rtype: tuple(:py:class:`~spinnman.Transceiver`,\
-            :py:class:`~spinn_machine.Machine`)
+        :rtype: tuple(~spinnman.transceiver.Transceiver, \
+            ~spinn_machine.Machine)
         """
         # pylint: disable=too-many-arguments
 

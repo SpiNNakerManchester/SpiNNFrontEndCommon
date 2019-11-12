@@ -16,8 +16,9 @@
 from .data_specification_targets import DataSpecificationTargets
 from .data_row_reader import DataRowReader
 from .data_row_writer import DataRowWriter
+from .ds_abstact_database import DsAbstractDatabase
 
 __all__ = [
     "DataRowReader",
     "DataRowWriter",
-    "DataSpecificationTargets"]
+    "DataSpecificationTargets", "DsAbstractDatabase"]

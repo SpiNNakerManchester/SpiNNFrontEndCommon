@@ -122,7 +122,7 @@ class HostExecuteDataSpecification(object):
             If None pure python is used.
         :type java_caller: \
             :py:class:`spinn_front_end_common.interface.java_caller.JavaCaller`
-        :param processor_to_app_data_base_address: The write info which is a
+        :param processor_to_app_data_base_address: The write info which is a\
             dict of cores to a dict of
                 'start_address', 'memory_used', 'memory_written'
         :return: map of of cores to a dict of \
@@ -150,7 +150,7 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
+            :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :return: map of of cores to a dict of \
             'start_address', 'memory_used', 'memory_written'
         :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
@@ -185,7 +185,7 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
+            :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
         :return: dict of cores to a dict of\
             'start_address', 'memory_used', 'memory_written
         """
@@ -345,18 +345,19 @@ class HostExecuteDataSpecification(object):
         """ Execute the data specs for all system targets.
 
         :param machine: the python representation of the spinnaker machine
-        :type machine: :py:class:`~spinn_machine.Machine`
+        :type machine: ~spinn_machine.Machine
         :param transceiver: the spinnman instance
-        :type transceiver: :py:class:`~spinnman.Transceiver`
+        :type transceiver: ~spinnman.transceiver.Transceiver
         :param app_id: the application ID of the simulation
         :type app_id: int
         :param dsg_targets: map of placement to file path
         :type dsg_targets: dict(tuple(int,int,int),str)
         :param executable_targets: \
             the map between binaries and locations and executable types
-        :type executable_targets: ?
+        :type executable_targets: ExecutableTargets
         :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten)
+        :rtype: dict(tuple(int,int,int),\
+            ~spinn_front_end_common.utilities.utility_objs.DataWritten)
         """
         # pylint: disable=too-many-arguments
 
@@ -376,10 +377,10 @@ class HostExecuteDataSpecification(object):
 
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
+            ~spinn_front_end_common.interface.ds.DataSpecificationTargets
         :return: map of cores to \
             :py:class:`~spinn_front_end_common.utilities.utility_objs.DataWritten`
-        :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
+        :rtype: ~spinn_front_end_common.interface.ds.DsWriteInfo
         """
 
         # create a progress bar for end users

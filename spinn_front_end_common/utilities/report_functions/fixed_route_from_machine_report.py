@@ -45,7 +45,9 @@ class FixedRouteFromMachineReport(object):
 
         :param f: Where we are writing
         :param txrx: The spinnman transceiver instance
-        :param machine: The spinnmanchine instance
+        :type txrx: ~spinnman.transceiver.Transceiver
+        :param machine: The spinn_machine machine instance
+        :type txrx: ~spinn_machine.Machine
         :param app_id: Which application is running on the machine
         :rtype: None
         """

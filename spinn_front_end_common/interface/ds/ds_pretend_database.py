@@ -27,7 +27,7 @@ class DsPretendDatabase(DsAbstractDatabase):
         self._info_temp = dict()
         self._app_id = None
 
-    @overrides(DsAbstractDatabase.close)
+    @overrides(DsAbstractDatabase.close, extend_doc=False)
     def close(self):
         """ Close the database.
         """
