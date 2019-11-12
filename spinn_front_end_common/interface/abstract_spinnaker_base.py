@@ -1406,7 +1406,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "ignore_bad_ethernets")
 
     def generate_file_machine(self):
-        """ Dead code? """
+        """ Generates a machine JSON file
+        """
         inputs = {
             "MemoryMachine": self.machine,
             "FileMachineFilePath": os.path.join(
