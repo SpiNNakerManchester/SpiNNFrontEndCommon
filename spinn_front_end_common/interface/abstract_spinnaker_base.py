@@ -1194,7 +1194,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "max_machine_core_reduction")
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
-
+        inputs['ReportFolder'] = self._report_default_directory
         # Set up common machine details
         self._handle_machine_common_config(inputs)
 
