@@ -66,6 +66,8 @@ class VirtualMachineGenerator(object):
                     assert width == 8
                 logger.warning("For virtual Machines version is deprecated."
                                "use width=8, height=8 instead")
+            else:
+                raise Exception("Unknown version {}".format(version))
 
         if json_path is None:
             # pylint: disable=too-many-arguments
