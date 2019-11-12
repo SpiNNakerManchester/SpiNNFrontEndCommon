@@ -27,8 +27,11 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(AbstractBase)
 class MachineAllocationController(AbstractMachineAllocationController):
+    """ How to manage the allocation of a machine so that it gets cleaned up\
+        neatly when the script dies.
+    """
     __slots__ = [
-        # boolean flag for telling this thread when the system has ended
+        #: boolean flag for telling this thread when the system has ended
         "_exited"
     ]
 

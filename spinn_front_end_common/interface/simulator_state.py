@@ -19,11 +19,17 @@ from enum import Enum
 class Simulator_State(Enum):
     """ Different states the Simulator could be in.
     """
+    #: init called
     INIT = (0, "init called")
+    #: inside run method
     IN_RUN = (1, "inside run method")
+    #: finished run method, but running forever
     RUN_FOREVER = (2, "finish run method but running forever")
+    #: run ended shutdown not called
     FINISHED = (3, "run ended shutdown not called")
+    #: shutdown called
     SHUTDOWN = (4, "shutdown called")
+    #: stop requested in middle of run forever
     STOP_REQUESTED = (5, "stop requested in middle of run forever")
 
     def __new__(cls, value, doc=""):
