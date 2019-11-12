@@ -29,6 +29,7 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities import globals_variables
 
@@ -143,7 +144,8 @@ class ReverseIpTagMultiCastSource(
                 self.add_constraint(BoardConstraint(board_address))
 
         # Store the send buffering details
-        self._send_buffer_times = send_buffer_times
+        self._send_buffer_times = self._validate_send_buffer_times(
+            send_buffer_times)
         self._send_buffer_partition_id = send_buffer_partition_id
 
         # Store the buffering details
@@ -154,6 +156,17 @@ class ReverseIpTagMultiCastSource(
 
         # Keep the vertices for resuming runs
         self._machine_vertices = list()
+
+    def _validate_send_buffer_times(self, send_buffer_times):
+        if send_buffer_times is None:
+            return None
+        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+            if len(send_buffer_times) != self._n_atoms:
+                raise ConfigurationException(
+                    "The array or arrays of times {} does not have the "
+                    "expected length of {}".format(
+                        send_buffer_times, self._n_atoms))
+        return send_buffer_times
 
     @property
     @overrides(ApplicationVertex.n_atoms)
