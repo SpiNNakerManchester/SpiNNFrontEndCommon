@@ -91,13 +91,13 @@ THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES = 300
 
 # offset where data in starts on commands
-# (command, base_address, x&y, max_seq_number)
-WORDS_FOR_COMMAND_AND_ADDRESS_HEADER = 4
+# (command, transaction_id, seq num)
+WORDS_FOR_COMMAND_AND_ADDRESS_HEADER = 3
 BYTES_FOR_COMMAND_AND_ADDRESS_HEADER = (
     WORDS_FOR_COMMAND_AND_ADDRESS_HEADER * BYTES_PER_WORD)
 
-# offset where data in starts in reception
-WORDS_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER = 3
+# offset where data in starts in reception (command, transaction id)
+WORDS_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER = 2
 BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER = (
     WORDS_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER * BYTES_PER_WORD)
 
@@ -140,6 +140,7 @@ _ONE_WORD = struct.Struct("<I")
 _TWO_WORDS = struct.Struct("<II")
 _THREE_WORDS = struct.Struct("<III")
 _FOUR_WORDS = struct.Struct("<IIII")
+_FIVE_WORDS = struct.Struct("<IIIII")
 
 # Set to true to check that the data is correct after it has been sent in.
 # This is expensive, and only works in Python 3.5 or later.
@@ -170,6 +171,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_y",
         # word with x and y
         "_coord_word",
+        # transaction id
+        "_transaction_id",
         # app id
         "_app_id",
         # socket
@@ -263,6 +266,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = None
         self._max_seq_num = None
         self._output = None
+        self._transaction_id = 0
 
         # store of the extra monitors to location. helpful in data in
         self._extra_monitors_by_chip = extra_monitors_by_chip
@@ -680,6 +684,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         chip = machine.get_chip_at(destination_chip_x, destination_chip_y)
         dest_x, dest_y = machine.get_local_xy(chip)
         self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
+        self._transaction_id += 1
 
         # send first message
         self._connection = SCAMPConnection(
@@ -688,8 +693,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_location(start_address)
 
         # send initial attempt at sending all the data
-        self._send_all_data_based_packets(
-            data_to_write, start_address, dest_x, dest_y)
+        self._send_all_data_based_packets(data_to_write)
 
         # verify completed
         received_confirmation = False
@@ -703,7 +707,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # check which message type we have received
                 received_confirmation = self._outgoing_process_packet(
-                    data, data_to_write, start_address, dest_x, dest_y)
+                    data, data_to_write, start_address)
 
             except SpinnmanTimeoutException:  # if time out, keep trying
                 # if the timeout has not occurred x times, keep trying
@@ -728,20 +732,16 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # retransmit missing seq nums
                 if not received_confirmation:
                     self._outgoing_retransmit_missing_seq_nums(
-                        data_to_write, start_address, destination_chip_x,
-                        destination_chip_y)
+                        data_to_write, start_address)
 
     def _read_in_missing_seq_nums(
-            self, data, data_to_write, position, start_address, dest_x,
-            dest_y):
+            self, data, data_to_write, position, start_address):
         """ handles a missing seq num packet from spinnaker
 
         :param data: the data to translate into missing seq nums
         :param data_to_write: the data to write
         :param position: the position in the data to write.
         :param start_address: the base sdram address
-        :param dest_x: the destination chip x coord.
-        :param dest_y: the destination chip y coord.
         :rtype: None
         """
         # find how many elements are in this packet
@@ -768,46 +768,40 @@ class DataSpeedUpPacketGatherMachineVertex(
         # determine if ready to send missing seq nums
         if seen_last or seen_all:
             self._outgoing_retransmit_missing_seq_nums(
-                data_to_write, start_address, dest_x, dest_y)
+                data_to_write, start_address)
 
-    def _outgoing_process_packet(
-            self, data, data_to_write, start_address, dest_x, dest_y):
+    def _outgoing_process_packet(self, data, data_to_write, start_address):
         """ processes a packet from SpiNNaker
 
         :param data: the packet data
         :param data_to_write: the data to write to spinnaker
-        :param dest_x: the destination chip x coord.
-        :param dest_y: the destination chip y coord.
         :return: if the packet contains a confirmation of complete
         :rtype: bool
         """
         position = 0
-        (command_id, sdram_address, coords) = (
-            _THREE_WORDS.unpack_from(data, 0)[0])
+        (command_id, transaction_id) = (_TWO_WORDS.unpack_from(data, 0)[0])
         position += BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER
         log.debug("received packet with id {}", command_id)
 
         # ignore any packet with wrong identifier
-        if sdram_address == start_address and coords == self._coord_word:
+        if transaction_id != self._transaction_id:
             return False
 
         # process missing seq packets
         if command_id == DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA.value:
             self._read_in_missing_seq_nums(
-                data, data_to_write, position, start_address, dest_x, dest_y)
+                data, data_to_write, position, start_address)
 
         # process the confirmation of all data received
         return command_id == DATA_IN_COMMANDS.RECEIVE_FINISHED.value
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write, start_address, dest_x, dest_y):
+            self, data_to_write, start_address):
         """ Transmits back into SpiNNaker the missing data based off missing\
             sequence numbers
 
         :param data_to_write: the data to write.
         :param start_address: the base sdram address
-        :param dest_x: the destination chip x coord.
-        :param dest_y: the destination chip y coord.
         :rtype: None
         """
 
@@ -821,13 +815,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         for missing_seq_num in missing_seqs_as_list:
             message, _length = self._calculate_data_in_data_from_seq_number(
                 data_to_write, missing_seq_num,
-                DATA_IN_COMMANDS.SEND_SEQ_DATA.value, None, start_address,
-                dest_x, dest_y)
+                DATA_IN_COMMANDS.SEND_SEQ_DATA.value, None)
             self.__throttled_send(message)
 
         # update states
         self._missing_seq_nums_data_in.append(set())
-        self._send_end_flag(start_address)
+        self._send_end_flag()
 
     @staticmethod
     def _calculate_position_from_seq_number(seq_num):
@@ -841,8 +834,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return BYTES_IN_FULL_PACKET_WITH_ADDRESS * seq_num
 
     def _calculate_data_in_data_from_seq_number(
-            self, data_to_write, seq_num, command_id, position, start_address,
-            dest_x, dest_y):
+            self, data_to_write, seq_num, command_id, position):
         """ Determine the data needed to be sent to the SpiNNaker machine\
             given a sequence number
 
@@ -850,9 +842,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param seq_num: the seq num to get the data for
         :param position: the position in the data to write to spinnaker
         :type position: int or None
-        :param start_address: sdram start address
-        :param dest_y: destination chip y coordinate
-        :param dest_x: destination chip x coordinate
         :return: SDP message and how much data has been written
         :rtype: SDP message
         """
@@ -877,9 +866,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # create struct
         packet_data = bytearray(packet_length)
-        _FOUR_WORDS.pack_into(
-            packet_data, 0, command_id, start_address,
-            (dest_x << DEST_X_SHIFT) | dest_y, seq_num)
+        _THREE_WORDS.pack_into(
+            packet_data, 0, command_id, self._transaction_id, seq_num)
         struct.pack_into(
             "<{}B".format(packet_data_length), packet_data,
             BYTES_FOR_COMMAND_AND_ADDRESS_HEADER,
@@ -904,31 +892,25 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
-            _FOUR_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value, start_address,
-                self._coord_word, self._max_seq_num)))
+            _FIVE_WORDS.pack(
+                DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value,
+                self._transaction_id, start_address, self._coord_word,
+                self._max_seq_num)))
 
-    def _send_end_flag(self, start_address):
+    def _send_end_flag(self):
         """  send end flag as separate message
-
-        :param start_address: sdram start address
         :rtype: None
         """
 
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
-            _FOUR_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_DONE.value, start_address,
-                self._coord_word, self._max_seq_num)))
+            _TWO_WORDS.pack(
+                DATA_IN_COMMANDS.SEND_DONE.value, self._transaction_id)))
 
-    def _send_all_data_based_packets(
-            self, data_to_write, start_address, dest_x, dest_y):
+    def _send_all_data_based_packets(self, data_to_write):
         """ Send all the data as one block
 
         :param data_to_write: the data to send
-        :param dest_x: x local coord
-        :param dest_y: y local coord
-        :param start_address: sdram start address
         :rtype: None
         """
         # where in the data we are currently up to
@@ -940,8 +922,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             message, length_to_send = \
                 self._calculate_data_in_data_from_seq_number(
                     data_to_write, seq_num,
-                    DATA_IN_COMMANDS.SEND_SEQ_DATA.value, position_in_data,
-                    start_address, dest_x, dest_y)
+                    DATA_IN_COMMANDS.SEND_SEQ_DATA.value, position_in_data)
             position_in_data += length_to_send
 
             # send the message
@@ -950,7 +931,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # check for end flag
             if position_in_data == total_data_length:
-                self._send_end_flag(start_address)
+                self._send_end_flag()
                 log.debug("sent end flag")
 
     @staticmethod
