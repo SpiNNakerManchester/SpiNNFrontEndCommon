@@ -685,7 +685,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._connection = SCAMPConnection(
             chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
         self.__reprogram_tag(self._connection)
-        self._send_location(start_address, dest_x, dest_y)
+        self._send_location(start_address)
 
         # send initial attempt at sending all the data
         self._send_all_data_based_packets(
@@ -815,7 +815,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         missing_seqs_as_list.sort()
 
         # send location message
-        self._send_location(start_address, dest_x, dest_y)
+        self._send_location(start_address)
 
         # send seq data
         for missing_seq_num in missing_seqs_as_list:
@@ -827,7 +827,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # update states
         self._missing_seq_nums_data_in.append(set())
-        self._send_end_flag(start_address, dest_x, dest_y)
+        self._send_end_flag(start_address)
 
     @staticmethod
     def _calculate_position_from_seq_number(seq_num):
@@ -896,16 +896,25 @@ class DataSpeedUpPacketGatherMachineVertex(
         # return message for sending, and the length in data sent
         return message, packet_data_length
 
-    def _send_location(self, start_address, dest_x, dest_y):
-        # send location as separate message
+    def _send_location(self, start_address):
+        """ send location as separate message
+
+        :param start_address: sdram location
+        :rtype: None
+        """
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
             _FOUR_WORDS.pack(
                 DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value, start_address,
                 self._coord_word, self._max_seq_num)))
 
-    def _send_end_flag(self, start_address, dest_x, dest_y):
-        # send end flag as separate message
+    def _send_end_flag(self, start_address):
+        """  send end flag as separate message
+
+        :param start_address: sdram start address
+        :rtype: None
+        """
+
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
             _FOUR_WORDS.pack(
@@ -917,6 +926,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         """ Send all the data as one block
 
         :param data_to_write: the data to send
+        :param dest_x: x local coord
+        :param dest_y: y local coord
+        :param start_address: sdram start address
         :rtype: None
         """
         # where in the data we are currently up to
@@ -938,7 +950,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # check for end flag
             if position_in_data == total_data_length:
-                self._send_end_flag(start_address, dest_x, dest_y)
+                self._send_end_flag(start_address)
                 log.debug("sent end flag")
 
     @staticmethod
