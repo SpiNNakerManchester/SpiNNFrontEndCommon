@@ -2080,8 +2080,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # Extract any written provenance data
             try:
-                extracter = PlacementsProvenanceGatherer()
-                prov_items.extend(extracter(self._txrx, placements))
+                extractor = PlacementsProvenanceGatherer()
+                prov_items.extend(extractor(self._txrx, placements))
             except Exception:
                 logger.exception("Could not read provenance")
 
