@@ -652,7 +652,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.switch_write_focus(self._REGIONS.RECORDING.value)
         recording_size = 0
         if self._is_recording:
-            per_timestep = self._recording_sdram_per_timestep(
+            per_timestep = self.recording_sdram_per_timestep(
                 machine_time_step, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
             recording_size = per_timestep * data_n_time_steps
@@ -704,16 +704,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     })
     def update_buffer(
             self, first_machine_time_step, run_until_timesteps):
-        """ Updates the buffers on specification of the first machine timestep.
-            Note: This is called by injection.
-
-        :param first_machine_time_step:\
-            The first machine time step in the simulation
-        :type first_machine_time_step: int
-        :param run_until_timesteps:\
-            The last machine time step in the simulation
-        :type run_until_timesteps: int
-        """
         if self._virtual_key is not None:
             self._fill_send_buffer(
                 first_machine_time_step, run_until_timesteps)
@@ -730,9 +720,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             placement, self._REGIONS.RECORDING.value, txrx)
 
     @property
-    @overrides(SendsBuffersFromHostPreBufferedImpl.send_buffers)
     def send_buffers(self):
         return self._send_buffers
+
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
 
     def get_region_buffer_size(self, region):
         if region == self._REGIONS.SEND_BUFFER.value:

@@ -50,13 +50,12 @@ def get_not_running_simulator():
 
 
 def set_simulator(new_simulator):
-    global _simulator, _failed_state, _cached_simulator
     """ Set the current simulator object.
 
     :param new_simulator: The simulator to set.
     :type new_simulator: SimulatorInterface
     """
-    global _simulator, _failed_state
+    global _simulator, _failed_state, _cached_simulator
     if _failed_state is None:
         raise ValueError("Unexpected call to set_simulator before "
                          "set_failed_state")
@@ -65,11 +64,9 @@ def set_simulator(new_simulator):
 
 
 def unset_simulator(to_cache_simulator=None):
-    global _simulator, _cached_simulator
-def unset_simulator():
     """ Destroy the current simulator.
     """
-    global _simulator
+    global _simulator, _cached_simulator
     _simulator = None
     _cached_simulator = to_cache_simulator
 
