@@ -1788,8 +1788,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             run_complete = True
 
             # write provenance to file if necessary
-            if (self._config.getboolean(
-                    "Reports", "write_provenance_data") and
+            if (self._config.getboolean("Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
                 prov_items = list()
                 prov_items.extend(self._version_provenance)
@@ -2507,7 +2506,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._do_energy_report()
 
                 # write provenance to file if necessary
-                if self._config.getboolean("Reports", "writeProvenanceData"):
+                if self._config.getboolean("Reports", "write_provenance_data"):
                     prov_items = list()
                     prov_items.extend(self._version_provenance)
                     prov_items.extend(self._pacman_provenance.data_items)
