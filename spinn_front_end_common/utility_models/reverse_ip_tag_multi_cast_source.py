@@ -29,6 +29,7 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities import globals_variables
 
@@ -67,45 +68,54 @@ class ReverseIpTagMultiCastSource(
             reserve_reverse_ip_tag=False):
         """
         :param n_keys: The number of keys to be sent via this multicast source
+        :type n_keys: int
         :param label: The label of this vertex
+        :type label: str
         :param constraints: Any initial constraints to this vertex
+        :type constraints: \
+            iterable(~pacman.model.constraints.AbstractConstraint)
+        :param max_atoms_per_core:
+        :type max_atoms_per_core: int
         :param board_address: The IP address of the board on which to place\
             this vertex if receiving data, either buffered or live (by\
             default, any board is chosen)
+        :type board_address: str or None
         :param receive_port: The port on the board that will listen for\
             incoming event packets (default is to disable this feature; set a\
             value to enable it)
+        :type receive_port: int or None
         :param receive_sdp_port: The SDP port to listen on for incoming event\
             packets (defaults to 1)
+        :type receive_sdp_port: int
         :param receive_tag: The IP tag to use for receiving live events\
             (uses any by default)
+        :type receive_tag: IPTag
         :param receive_rate: The estimated rate of packets that will be sent\
             by this source
+        :type receive_rate: float
         :param virtual_key: The base multicast key to send received events\
             with (assigned automatically by default)
+        :type virtual_key: int
         :param prefix: The prefix to "or" with generated multicast keys\
             (default is no prefix)
+        :type prefix: int
         :param prefix_type: Whether the prefix should apply to the upper or\
             lower half of the multicast keys (default is upper half)
+        :type prefix_type: ~spinnman.messages.eieio.EIEIOPrefix
         :param check_keys: True if the keys of received events should be\
             verified before sending (default False)
+        :type check_keys: bool
         :param send_buffer_times: An array of arrays of times at which keys\
             should be sent (one array for each key, default disabled)
+        :type send_buffer_times: \
+            numpy.ndarray(numpy.ndarray(numpy.int32)) or \
+            list(numpy.ndarray(numpy.int32)) or None
         :param send_buffer_partition_id: The ID of the partition containing\
             the edges down which the events are to be sent
-        :param send_buffer_max_space: The maximum amount of space to use of\
-            the SDRAM on the machine (default is 1MB)
-        :param send_buffer_space_before_notify: The amount of space free in\
-            the sending buffer before the machine will ask the host for more\
-            data (default setting is optimised for most cases)
-        :param buffer_notification_ip_address: The IP address of the host\
-            that will send new buffers (must be specified if a send buffer is\
-            specified or if recording will be used)
-        :param buffer_notification_port: The port that the host that will\
-            send new buffers is listening on (must be specified if a send\
-            buffer is specified, or if recording will be used)
-        :param buffer_notification_tag: The IP tag to use to notify the\
-            host about space in the buffer (default is to use any tag)
+        :type send_buffer_partition_id: str or None
+        :param reserve_reverse_ip_tag: \
+            Extra flag for input without a reserved port
+        :type reserve_reverse_ip_tag: bool
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIpTagMultiCastSource, self).__init__(
@@ -134,7 +144,8 @@ class ReverseIpTagMultiCastSource(
                 self.add_constraint(BoardConstraint(board_address))
 
         # Store the send buffering details
-        self._send_buffer_times = send_buffer_times
+        self._send_buffer_times = self._validate_send_buffer_times(
+            send_buffer_times)
         self._send_buffer_partition_id = send_buffer_partition_id
 
         # Store the buffering details
@@ -145,6 +156,17 @@ class ReverseIpTagMultiCastSource(
 
         # Keep the vertices for resuming runs
         self._machine_vertices = list()
+
+    def _validate_send_buffer_times(self, send_buffer_times):
+        if send_buffer_times is None:
+            return None
+        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+            if len(send_buffer_times) != self._n_atoms:
+                raise ConfigurationException(
+                    "The array or arrays of times {} does not have the "
+                    "expected length of {}".format(
+                        send_buffer_times, self._n_atoms))
+        return send_buffer_times
 
     @property
     @overrides(ApplicationVertex.n_atoms)
@@ -172,6 +194,8 @@ class ReverseIpTagMultiCastSource(
 
     @property
     def send_buffer_times(self):
+        """ When messages will be sent.
+        """
         return self._send_buffer_times
 
     @send_buffer_times.setter
@@ -204,6 +228,7 @@ class ReverseIpTagMultiCastSource(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(spec, placement)
 

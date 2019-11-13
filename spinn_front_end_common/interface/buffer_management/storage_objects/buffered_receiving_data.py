@@ -19,7 +19,7 @@ from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from .sqllite_database import SqlLiteDatabase
 
-DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+#: Name of the database in the data folder
 DB_FILE_NAME = "buffer.sqlite3"
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -34,28 +34,28 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # the AbstractDatabase holding the data to store
+        #: the AbstractDatabase holding the data to store
         "_db",
 
-        # the path to the database
+        #: the path to the database
         "_db_file",
 
-        # dict of booleans indicating if a region on a core has been flushed
+        #: dict of booleans indicating if a region on a core has been flushed
         "_is_flushed",
 
-        # dict of last sequence number received by core
+        #: dict of last sequence number received by core
         "_sequence_no",
 
-        # dict of last packet received by core
+        #: dict of last packet received by core
         "_last_packet_received",
 
-        # dict of last packet sent by core
+        #: dict of last packet sent by core
         "_last_packet_sent",
 
-        # dict of end buffer sequence number
+        #: dict of end buffer sequence number
         "_end_buffering_sequence_no",
 
-        # dict of end state by core
+        #: dict of end state by core
         "_end_buffering_state"
     ]
 
@@ -84,7 +84,7 @@ class BufferedReceivingData(object):
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
-            specific chip, core and region
+            specific chip, core and region.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -101,7 +101,7 @@ class BufferedReceivingData(object):
         self._db.store_data_in_region_buffer(x, y, p, region, data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
-        """ Check if the data region has been flushed
+        """ Check if the data region has been flushed.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -118,7 +118,7 @@ class BufferedReceivingData(object):
 
     def flushing_data_from_region(self, x, y, p, region, data):
         """ Store flushed data from a region of a core on a chip, and mark it\
-            as being flushed
+            as being flushed.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -137,7 +137,7 @@ class BufferedReceivingData(object):
 
     def store_last_received_packet_from_core(self, x, y, p, packet):
         """ Store the most recent packet received from SpiNNaker for a given\
-            core
+            core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -152,7 +152,7 @@ class BufferedReceivingData(object):
         self._last_packet_received[x, y, p] = packet
 
     def last_received_packet_from_core(self, x, y, p):
-        """ Get the last packet received for a given core
+        """ Get the last packet received for a given core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -167,7 +167,7 @@ class BufferedReceivingData(object):
         return self._last_packet_received[x, y, p]
 
     def store_last_sent_packet_to_core(self, x, y, p, packet):
-        """ Store the last packet sent to the given core
+        """ Store the last packet sent to the given core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -182,7 +182,7 @@ class BufferedReceivingData(object):
         self._last_packet_sent[x, y, p] = packet
 
     def last_sent_packet_to_core(self, x, y, p):
-        """ Retrieve the last packet sent to a core
+        """ Retrieve the last packet sent to a core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -197,7 +197,7 @@ class BufferedReceivingData(object):
         return self._last_packet_sent[x, y, p]
 
     def last_sequence_no_for_core(self, x, y, p):
-        """ Get the last sequence number for a core
+        """ Get the last sequence number for a core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -211,7 +211,7 @@ class BufferedReceivingData(object):
         return self._sequence_no[x, y, p]
 
     def update_sequence_no_for_core(self, x, y, p, sequence_no):
-        """ Set the last sequence number used
+        """ Set the last sequence number used.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -226,7 +226,7 @@ class BufferedReceivingData(object):
         self._sequence_no[x, y, p] = sequence_no
 
     def get_region_data(self, x, y, p, region):
-        """ Get the data stored for a given region of a given core
+        """ Get the data stored for a given region of a given core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -238,20 +238,19 @@ class BufferedReceivingData(object):
         :type region: int
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
+        :rtype: tuple(memoryview, bool)
         """
         return self._db.get_region_data(x, y, p, region)
 
     def get_region_data_pointer(self, x, y, p, region):
-        """
-        It is no longer possible to get access to the data pointer.
+        """ It is no longer possible to get access to the data pointer.
 
         Use get_region_data to get the data and missing flag directly.
         """
         raise NotImplementedError("Use get_region_data instead!.")
 
     def store_end_buffering_state(self, x, y, p, region, state):
-        """ Store the end state of buffering
+        """ Store the end state of buffering.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -265,7 +264,7 @@ class BufferedReceivingData(object):
         self._end_buffering_state[x, y, p, region] = state
 
     def is_end_buffering_state_recovered(self, x, y, p, region):
-        """ Determine if the end state has been stored
+        """ Determine if the end state has been stored.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -278,7 +277,7 @@ class BufferedReceivingData(object):
         return (x, y, p, region) in self._end_buffering_state
 
     def get_end_buffering_state(self, x, y, p, region):
-        """ Get the end state of the buffering
+        """ Get the end state of the buffering.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -291,7 +290,7 @@ class BufferedReceivingData(object):
         return self._end_buffering_state[x, y, p, region]
 
     def store_end_buffering_sequence_number(self, x, y, p, sequence):
-        """ Store the last sequence number sent by the core
+        """ Store the last sequence number sent by the core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -305,7 +304,7 @@ class BufferedReceivingData(object):
         self._end_buffering_sequence_no[x, y, p] = sequence
 
     def is_end_buffering_sequence_number_stored(self, x, y, p):
-        """ Determine if the last sequence number has been retrieved
+        """ Determine if the last sequence number has been retrieved.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -319,7 +318,7 @@ class BufferedReceivingData(object):
         return (x, y, p) in self._end_buffering_sequence_no
 
     def get_end_buffering_sequence_number(self, x, y, p):
-        """ Get the last sequence number sent by the core
+        """ Get the last sequence number sent by the core.
 
         :param x: x coordinate of the chip
         :type x: int
@@ -333,7 +332,7 @@ class BufferedReceivingData(object):
         return self._end_buffering_sequence_no[x, y, p]
 
     def resume(self):
-        """ Resets states so that it can behave in a resumed mode
+        """ Resets states so that it can behave in a resumed mode.
         """
         self._end_buffering_state = dict()
         self._is_flushed = defaultdict(lambda: False)
