@@ -22,14 +22,18 @@ class GraphProvenanceGatherer(object):
     __slots__ = []
 
     def __call__(
-            self, machine_graph, application_graph=None):
+            self, machine_graph, application_graph=None,
+            provenance_data_objects=None):
         """
         :param machine_graph: The machine graph to inspect
         :param application_graph: The optional application graph
         :param provenance_data_objects: Any existing objects to append to
         """
 
-        prov_items = list()
+        if provenance_data_objects is not None:
+            prov_items = provenance_data_objects
+        else:
+            prov_items = list()
 
         progress = ProgressBar(
             machine_graph.n_vertices +

@@ -51,7 +51,8 @@ class RouterProvenanceGatherer(object):
 
     def __call__(
             self, transceiver, machine, router_tables,
-            extra_monitor_vertices=None, placements=None):
+            provenance_data_objects=None, extra_monitor_vertices=None,
+            placements=None):
         """
         :param transceiver: the SpiNNMan interface object
         :type transceiver: ~spinnman.transceiver.Transceiver
@@ -75,7 +76,10 @@ class RouterProvenanceGatherer(object):
         self._machine = machine
         self._placements = placements
 
-        prov_items = list()
+        if provenance_data_objects is not None:
+            prov_items = provenance_data_objects
+        else:
+            prov_items = list()
 
         prov_items.extend(self._write_router_provenance_data(
             router_tables, extra_monitor_vertices))

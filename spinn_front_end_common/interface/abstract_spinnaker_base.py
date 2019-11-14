@@ -333,8 +333,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         "_vertices_or_edges_added",
 
-        # Version provenance
-        "_version_provenance"
+        # Set of all seen vertext labels
+        "_vertext_labels"
     ]
 
     def __init__(
@@ -444,7 +444,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_run_tokens = None
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
-        self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
         # extra algorithms and inputs for runs, should disappear in future
@@ -511,6 +510,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
+        self._vertext_labels = set()
 
     def set_n_boards_required(self, n_boards_required):
         """
@@ -1144,7 +1144,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             for name, value in self._front_end_versions:
                 version_provenance.append(ProvenanceDataItem(
                     names=["version_data", name], value=value))
-        self._version_provenance = version_provenance
+        inputs["ProvenanceItems"] = version_provenance
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
         inputs["DisableAdvancedMonitorUsageForDataIn"] = \
@@ -1784,18 +1784,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             run_complete = True
 
             # write provenance to file if necessary
-            if (self._config.getboolean("Reports", "write_provenance_data") and
+            if (self._config.getboolean(
+                    "Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
-                prov_items = list()
-                prov_items.extend(self._version_provenance)
+                prov_items = executor.get_item("ProvenanceItems")
                 prov_items.extend(self._pacman_provenance.data_items)
-                prov_items.extend(executor.get_item("GraphProvenanceItems"))
-                prov_items.extend(
-                    executor.get_item("PlacementsProvenanceItems"))
-                prov_items.extend(
-                    executor.get_item("RouterProvenanceItems"))
                 self._pacman_provenance.clear()
-                self._version_provenance = list()
                 self._write_provenance(prov_items)
                 self._all_provenance_items.append(prov_items)
 
@@ -1957,6 +1951,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
+            outputs.append("ProvenanceItems")
 
         # Decide what needs done
         required_tokens = []
@@ -2004,11 +1999,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 extra_monitor_vertices = self._last_run_outputs[
                     "MemoryExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            prov_items.extend(router_provenance(
+            prov_items = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements))
+                placements=self._placements)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2077,8 +2072,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # Extract any written provenance data
             try:
-                extractor = PlacementsProvenanceGatherer()
-                prov_items.extend(extractor(self._txrx, placements))
+                extracter = PlacementsProvenanceGatherer()
+                extracter(self._txrx, placements, prov_items)
             except Exception:
                 logger.exception("Could not read provenance")
 
@@ -2504,22 +2499,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._pacman_provenance.extract_provenance(executor)
                 run_complete = True
 
-                if self._config.getboolean("Reports", "write_energy_report"):
-                    self._do_energy_report()
-
                 # write provenance to file if necessary
-                if self._config.getboolean("Reports", "write_provenance_data"):
-                    prov_items = list()
-                    prov_items.extend(self._version_provenance)
+                if self._config.getboolean("Reports", "writeProvenanceData"):
+                    prov_items = executor.get_item("ProvenanceItems")
                     prov_items.extend(self._pacman_provenance.data_items)
-                    prov_items.extend(
-                        executor.get_item("GraphProvenanceItems"))
-                    prov_items.extend(
-                        executor.get_item("PlacementsProvenanceItems"))
-                    prov_items.extend(
-                        executor.get_item("RouterProvenanceItems"))
                     self._pacman_provenance.clear()
-                    self._version_provenance = list()
                     self._write_provenance(prov_items)
                     self._all_provenance_items.append(prov_items)
             except Exception as e:
@@ -2537,6 +2521,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     logger.exception(
                         "Error when attempting to recover from error")
 
+        if self._config.getboolean("Reports", "write_energy_report"):
+            self._do_energy_report()
+
         # handle iobuf extraction if never extracted it yet but requested to
         if self._config.getboolean("Reports", "extract_iobuf"):
             self._extract_iobufs()
@@ -2550,9 +2537,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if len(self._all_provenance_items) > 1:
                 message = "Provenance from run {}".format(i)
             self._check_provenance(provenance_items, message)
-
-            # Reset provenance
-            self._all_provenance_items = list()
 
         self.write_finished_file()
 
@@ -2583,6 +2567,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
+            outputs.append("ProvenanceItems")
 
         # Assemble how to run the algorithms
         return PACMANAlgorithmExecutor(
@@ -2602,8 +2587,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # acquire provenance items
         if self._last_run_outputs is not None:
-            pacman_provenance = self._pacman_provenance.data_items
-            router_provenance = self._last_run_outputs["RouterProvenanceItems"]
+            prov_items = self._last_run_outputs["ProvenanceItems"]
+            pacman_provenance = list()
+            router_provenance = list()
+
+            # group them by name type
+            grouped_items = sorted(
+                prov_items, key=lambda item: item.names[0])
+            for element in grouped_items:
+                if element.names[0] == 'pacman':
+                    pacman_provenance.append(element)
+                if element.names[0] == 'router_provenance':
+                    router_provenance.append(element)
 
             # run energy report
             energy_report(
