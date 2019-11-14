@@ -1794,13 +1794,20 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if (self._config.getboolean("Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
                 prov_items = list()
-                prov_items.extend(self._version_provenance)
-                prov_items.extend(self._pacman_provenance.data_items)
-                prov_items.extend(executor.get_item("GraphProvenanceItems"))
-                prov_items.extend(
-                    executor.get_item("PlacementsProvenanceItems"))
-                prov_items.extend(
-                    executor.get_item("RouterProvenanceItems"))
+                if self._version_provenance is not None:
+                    prov_items.extend(self._version_provenance)
+                if self._pacman_provenance is not None:
+                    if self._pacman_provenance.data_items is not None:
+                        prov_items.extend(self._pacman_provenance.data_items)
+                prov_item = executor.get_item("GraphProvenanceItems")
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
+                prov_item = executor.get_item("PlacementsProvenanceItems")
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
+                prov_item = executor.get_item("RouterProvenanceItems")
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
                 self._pacman_provenance.clear()
                 self._version_provenance = list()
                 self._write_provenance(prov_items)
@@ -2011,11 +2018,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 extra_monitor_vertices = self._last_run_outputs[
                     "MemoryExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            prov_items.extend(router_provenance(
+            prov_item = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements))
+                placements=self._placements)
+            if prov_item is not None:
+                prov_items.extend(prov_item)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2085,12 +2094,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Extract any written provenance data
             try:
                 extractor = PlacementsProvenanceGatherer()
-                prov_items.extend(extractor(self._txrx, placements))
+                prov_item = extractor(self._txrx, placements)
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
             except Exception:
                 logger.exception("Could not read provenance")
 
         # Finish getting the provenance
-        prov_items.extend(self._pacman_provenance.data_items)
+        if self._pacman_provenance is not None:
+            if self._pacman_provenance.data_items is not None:
+                prov_items.extend(self._pacman_provenance.data_items)
         self._pacman_provenance.clear()
         self._write_provenance(prov_items)
         self._all_provenance_items.append(prov_items)
@@ -2517,14 +2530,21 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 # write provenance to file if necessary
                 if self._config.getboolean("Reports", "write_provenance_data"):
                     prov_items = list()
-                    prov_items.extend(self._version_provenance)
-                    prov_items.extend(self._pacman_provenance.data_items)
-                    prov_items.extend(
-                        executor.get_item("GraphProvenanceItems"))
-                    prov_items.extend(
-                        executor.get_item("PlacementsProvenanceItems"))
-                    prov_items.extend(
-                        executor.get_item("RouterProvenanceItems"))
+                    if self._version_provenance is not None:
+                        prov_items.extend(self._version_provenance)
+                    if self._pacman_provenance is not None:
+                        if self._pacman_provenance.data_items is not None:
+                            prov_items.extend(
+                                self._pacman_provenance.data_items)
+                    prov_item = executor.get_item("GraphProvenanceItems")
+                    if prov_item is not None:
+                        prov_items.extend(prov_item)
+                    prov_item = executor.get_item("PlacementsProvenanceItems")
+                    if prov_item is not None:
+                        prov_items.extend(prov_item)
+                    prov_item = executor.get_item("RouterProvenanceItems")
+                    if prov_item is not None:
+                        prov_items.extend(prov_item)
                     self._pacman_provenance.clear()
                     self._version_provenance = list()
                     self._write_provenance(prov_items)
