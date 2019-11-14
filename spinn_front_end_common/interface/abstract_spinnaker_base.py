@@ -333,9 +333,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         "_vertices_or_edges_added",
 
-        # Set of all seen vertext labels
-        "_vertext_labels",
-
         # Version provenance
         "_version_provenance"
     ]
@@ -514,7 +511,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
-        self._vertext_labels = set()
 
     def set_n_boards_required(self, n_boards_required):
         """
