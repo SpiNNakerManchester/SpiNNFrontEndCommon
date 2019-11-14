@@ -2532,7 +2532,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     prov_item = executor.get_item("GraphProvenanceItems")
                     if prov_item is not None:
                         prov_items.extend(prov_item)
-                    prov_item =executor.get_item("PlacementsProvenanceItems")
+                    prov_item = executor.get_item("PlacementsProvenanceItems")
                     if prov_item is not None:
                         prov_items.extend(prov_item)
                     prov_item = executor.get_item("RouterProvenanceItems")
