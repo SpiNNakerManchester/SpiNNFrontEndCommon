@@ -1788,7 +1788,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
-                prov_items.extend(self._pacman_provenance.data_items)
+                if self._pacman_provenance.data_items is not None:
+                    prov_items.extend(self._pacman_provenance.data_items)
                 self._pacman_provenance.clear()
                 self._write_provenance(prov_items)
                 self._all_provenance_items.append(prov_items)
@@ -2077,7 +2078,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 logger.exception("Could not read provenance")
 
         # Finish getting the provenance
-        prov_items.extend(self._pacman_provenance.data_items)
+        if self._pacman_provenance.data_items is not None:
+            prov_items.extend(self._pacman_provenance.data_items)
         self._pacman_provenance.clear()
         self._write_provenance(prov_items)
         self._all_provenance_items.append(prov_items)
@@ -2496,7 +2498,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 # write provenance to file if necessary
                 if self._config.getboolean("Reports", "writeProvenanceData"):
                     prov_items = executor.get_item("ProvenanceItems")
-                    prov_items.extend(self._pacman_provenance.data_items)
+                    if self._pacman_provenance.data_items is not None:
+                        prov_items.extend(self._pacman_provenance.data_items)
                     self._pacman_provenance.clear()
                     self._write_provenance(prov_items)
                     self._all_provenance_items.append(prov_items)
