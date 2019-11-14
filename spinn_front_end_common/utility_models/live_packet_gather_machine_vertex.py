@@ -23,6 +23,7 @@ from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
     ResourceContainer)
 from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesProvenanceDataFromMachine,
     ProvidesProvenanceDataFromMachineImpl)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
@@ -42,14 +43,15 @@ class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
-    class REGIONS(Enum):
+    class _REGIONS(Enum):
         SYSTEM = 0
         CONFIG = 1
         PROVENANCE = 2
 
+    #: Used to identify tags involved with the live packet gatherer.
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
-    N_ADDITIONAL_PROVENANCE_ITEMS = 2
+    _N_ADDITIONAL_PROVENANCE_ITEMS = 2
     _CONFIG_SIZE = 12 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
@@ -92,12 +94,12 @@ class LivePacketGatherMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self.REGIONS.PROVENANCE.value
+        return self._REGIONS.PROVENANCE.value
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
     def _n_additional_data_items(self):
-        return self.N_ADDITIONAL_PROVENANCE_ITEMS
+        return self._N_ADDITIONAL_PROVENANCE_ITEMS
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -109,14 +111,9 @@ class LivePacketGatherMachineVertex(
     def is_in_injection_mode(self):
         return True
 
-    @overrides(ProvidesProvenanceDataFromMachineImpl.
+    @overrides(AbstractProvidesProvenanceDataFromMachine.
                get_provenance_data_from_machine)
     def get_provenance_data_from_machine(self, transceiver, placement):
-        """ Get provenance from the machine
-
-        :param transceiver: spinnman interface to the machine
-        :param placement: the location of this vertex on the machine
-        """
         provenance_data = self._read_provenance_data(transceiver, placement)
         provenance_items = self._read_basic_provenance_items(
             provenance_data, placement)
@@ -188,11 +185,11 @@ class LivePacketGatherMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self.REGIONS.SYSTEM.value,
+            region=self._REGIONS.SYSTEM.value,
             size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
-            region=self.REGIONS.CONFIG.value,
+            region=self._REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')
         self.reserve_provenance_data_region(spec)
 
@@ -200,14 +197,13 @@ class LivePacketGatherMachineVertex(
         """ Write the configuration region to the spec
 
         :param spec: the spec object for the DSG
-        :type spec: \
-            :py:class:`spinn_storage_handlers.FileDataWriter`
+        :type spec: ~data_specification.DataSpecificationGenerator
         :param iptags: The set of IP tags assigned to the object
-        :type iptags: iterable(:py:class:`spinn_machine.tags.IPTag`)
+        :type iptags: iterable(~spinn_machine.tags.IPTag)
         :raise DataSpecificationException: \
             when something goes wrong with the DSG generation
         """
-        spec.switch_write_focus(region=self.REGIONS.CONFIG.value)
+        spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
 
         # has prefix
         if self._use_prefix:
@@ -267,7 +263,7 @@ class LivePacketGatherMachineVertex(
         """ Write basic info to the system region
         """
         # Write this to the system region (to be picked up by the simulation):
-        spec.switch_write_focus(region=self.REGIONS.SYSTEM.value)
+        spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
@@ -283,12 +279,14 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_sdram_usage():
         """ Get the SDRAM used by this vertex
+
+        :rtype: int
         """
         return (
             SYSTEM_BYTES_REQUIREMENT +
             LivePacketGatherMachineVertex._CONFIG_SIZE +
             LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex.N_ADDITIONAL_PROVENANCE_ITEMS))
+                LivePacketGatherMachineVertex._N_ADDITIONAL_PROVENANCE_ITEMS))
 
     @staticmethod
     def get_dtcm_usage():

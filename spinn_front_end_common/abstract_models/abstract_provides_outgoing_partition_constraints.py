@@ -30,7 +30,7 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
             this vertex.
 
         :param partition: An edge that comes out of this vertex
+        :type partition: ~pacman.model.graphs.AbstractOutgoingEdgePartition
         :return: A list of constraints
-        :rtype: \
-            list(:py:class:`~pacman.model.constraints.AbstractConstraint`)
+        :rtype: list(~pacman.model.constraints.AbstractConstraint)
         """
