@@ -33,6 +33,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
+from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -59,8 +60,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_time_diff_to_total_milliseconds,
-    sort_out_downed_chips_cores_links)
+    convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import EnergyReport
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
@@ -1194,7 +1194,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "max_machine_core_reduction")
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
-
+        inputs['ReportFolder'] = self._report_default_directory
         # Set up common machine details
         self._handle_machine_common_config(inputs)
 
@@ -1228,8 +1228,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
-            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
-                "Machine", "requires_wrap_arounds")
             inputs["MachineJsonPath"] = self._read_config(
                 "Machine", "json_path")
             inputs["BMPDetails"] = None
@@ -1387,13 +1385,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param inputs: the input dict
         :rtype: None
         """
-        down_chips, down_cores, down_links = sort_out_downed_chips_cores_links(
-            self._config.get("Machine", "down_chips"),
-            self._config.get("Machine", "down_cores"),
+
+        inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
+            self._config.get("Machine", "down_chips"))
+        inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
+            self._config.get("Machine", "down_cores"))
+        inputs["DownedLinksDetails"] = IgnoreLink.parse_string(
             self._config.get("Machine", "down_links"))
-        inputs["DownedChipsDetails"] = down_chips
-        inputs["DownedCoresDetails"] = down_cores
-        inputs["DownedLinksDetails"] = down_links
         inputs["BoardVersion"] = self._read_config_int(
             "Machine", "version")
         inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(

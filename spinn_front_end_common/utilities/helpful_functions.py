@@ -131,47 +131,6 @@ def convert_string_into_chip_and_core_subset(cores):
     return ignored_cores
 
 
-def sort_out_downed_chips_cores_links(
-        downed_chips, downed_cores, downed_links):
-    """ Translate the down cores and down chips string into a form that \
-        spinnman can understand
-
-    :param downed_cores:\
-        string representing down cores formatted as x,y,p[:x,y,p]*
-    :type downed_cores: str or None
-    :param downed_chips:\
-        string representing down chips formatted as x,y[:x,y]*
-    :type downed_chips: str or None
-    :param downed_links:\
-        string representing down links formatted as x,y,link[:x,y,link]*
-    :return:\
-        a tuple of (\
-            set of (x, y) of down chips, \
-            set of (x, y, p) of down cores, \
-            set of ((x, y), link ID) of down links)
-    :rtype: tuple(set(tuple(int, int)), set(tuple(int, int, int)),\
-        set(tuple(tuple(int, int), int)))
-    """
-    ignored_chips = set()
-    if downed_chips is not None and downed_chips != "None":
-        for downed_chip in downed_chips.split(":"):
-            x, y = downed_chip.split(",")
-            ignored_chips.add((int(x), int(y)))
-
-    ignored_cores = set()
-    if downed_cores is not None and downed_cores != "None":
-        for downed_core in downed_cores.split(":"):
-            x, y, processor_id = downed_core.split(",")
-            ignored_cores.add((int(x), int(y), int(processor_id)))
-
-    ignored_links = set()
-    if downed_links is not None and downed_links != "None":
-        for downed_link in downed_links.split(":"):
-            x, y, link_id = downed_link.split(",")
-            ignored_links.add((int(x), int(y), int(link_id)))
-    return ignored_chips, ignored_cores, ignored_links
-
-
 def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     """ flood fills a binary to spinnaker on a given app_id \
     given the executable targets and binary.

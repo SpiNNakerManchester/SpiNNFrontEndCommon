@@ -37,13 +37,12 @@ class HBPMaxMachineGenerator(object):
 
         max_machine = self._max_machine_request(hbp_server_url, total_run_time)
 
-        n_cpus_per_chip = (Machine.MAX_CORES_PER_CHIP -
+        n_cpus_per_chip = (Machine.max_cores_per_chip() -
                            max_machine_core_reduction)
 
         # Return the width and height and assume that it has wrap arounds
         return virtual_machine(
             width=max_machine["width"], height=max_machine["height"],
-            with_wrap_arounds=None, version=None,
             n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
     def _max_machine_request(self, url, total_run_time):

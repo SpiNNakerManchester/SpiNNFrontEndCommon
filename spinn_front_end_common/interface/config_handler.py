@@ -21,6 +21,7 @@ import shutil
 import time
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import Machine
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     read_config, read_config_boolean, read_config_int)
@@ -92,6 +93,11 @@ class ConfigHandler(object):
         # set up machine targeted data
         self._use_virtual_board = self._config.getboolean(
             "Machine", "virtual_board")
+
+        # Pass max_machine_cores to Machine so if effects everything!
+        max_machine_core = self._read_config_int("Machine", "max_machine_core")
+        if max_machine_core is not None:
+            Machine.set_max_cores_per_chip(max_machine_core)
 
         self._app_data_runtime_folder = None
         self._app_data_top_simulation_folder = None

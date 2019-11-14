@@ -73,7 +73,7 @@ def test_router_compressor_on_error():
     routing_tables = MulticastRoutingTables(
         [MulticastRoutingTable(0, 0)])
     transceiver = MockTransceiverError()
-    machine = virtual_machine(version=5)
+    machine = virtual_machine(width=8, height=8)
     mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id=17,
         system_provenance_folder="")
