@@ -2321,15 +2321,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: The value (of arbitrary type), or None if the variable is \
             not found.
         """
-        if name_of_variable in self._last_run_outputs:
-            return self._last_run_outputs[name_of_variable]
-        if name_of_variable in self._mapping_outputs:
-            return self._mapping_outputs[name_of_variable]
-        if name_of_variable in self._load_outputs:
-            return self._load_outputs[name_of_variable]
-        if name_of_variable in self._machine_outputs:
-            return self._machine_outputs[name_of_variable]
-        return None
+        if self._has_ran:
+            if name_of_variable in self._last_run_outputs:
+                return self._last_run_outputs[name_of_variable]
+            return None
+        raise ConfigurationException(
+            "Cannot call this function until after a simulation has ran.")
 
     def __repr__(self):
         return "general front end instance for machine {}".format(
