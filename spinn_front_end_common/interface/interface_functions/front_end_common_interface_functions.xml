@@ -1065,6 +1065,10 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
+            </parameter>
+            <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
                 <param_type>MemoryApplicationGraph</param_type>
@@ -1073,12 +1077,14 @@
         <required_inputs>
             <param_name>graph</param_name>
             <param_name>placements</param_name>
+            <param_name>executable_finder</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ExecutableTypes</param_type>
+            <param_type>BinaryToExecutableType</param_type>
         </outputs>
     </algorithm>
     <algorithm name="BufferManagerCreator">
@@ -1166,10 +1172,6 @@
                 <param_type>NotificationInterface</param_type>
             </parameter>
             <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_types</param_name>
                 <param_type>ExecutableTypes</param_type>
             </parameter>
@@ -1206,7 +1208,6 @@
             <param_name>buffer_manager</param_name>
             <param_name>wait_on_confirmation</param_name>
             <param_name>notification_interface</param_name>
-            <param_name>executable_targets</param_name>
             <param_name>executable_types</param_name>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
@@ -1338,7 +1339,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_data_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1356,7 +1357,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_data_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1607,8 +1608,12 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_name>app_provenance_file_path</param_name>
+                <param_type>AppProvenanceFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>system_provenance_file_path</param_name>
+                <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>from_cores</param_name>
@@ -1618,12 +1623,18 @@
                 <param_name>binary_types</param_name>
                 <param_type>ExtractIobufFromBinaryTypes</param_type>
             </parameter>
+            <parameter>
+                <param_name>binary_executable_types</param_name>
+                <param_type>BinaryToExecutableType</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_targets</param_name>
             <param_name>executable_finder</param_name>
-            <param_name>provenance_file_path</param_name>
+            <param_name>app_provenance_file_path</param_name>
+            <param_name>system_provenance_file_path</param_name>
+            <param_name>binary_executable_types</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
@@ -1886,7 +1897,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_time_step</param_name>

@@ -76,4 +76,4 @@ def test_router_compressor_on_error():
     machine = virtual_machine(version=5)
     mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id=17,
-        provenance_file_path="")
+        system_provenance_folder="")

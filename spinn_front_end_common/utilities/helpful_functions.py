@@ -16,6 +16,8 @@
 import os
 import logging
 import struct
+
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
@@ -347,7 +349,6 @@ def convert_vertices_to_core_subset(vertices, placements):
     """ Converts vertices into core subsets.
 
     :param vertices: the vertices to convert to core subsets
-    :type vertices: iterable(MachineVertex)
     :param placements: the placements object
     :type placements: ~pacman.model.placements.Placements
     :return: the CoreSubSets of the vertices
@@ -358,6 +359,16 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def find_executable_start_type(machine_vertex, graph_mapper=None):
+    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
+        return machine_vertex.get_binary_start_type()
+    if graph_mapper is not None:
+        app_vertex = graph_mapper.get_application_vertex(machine_vertex)
+        if isinstance(app_vertex, AbstractHasAssociatedBinary):
+            return app_vertex.get_binary_start_type()
+    return None
 
 
 def _emergency_state_check(txrx, app_id):
@@ -401,7 +412,8 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     extractor = ChipIOBufExtractor(
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor(txrx, executable_targets, sim._executable_finder,
-              sim._provenance_file_path)
+              sim._app_provenance_file_path, sim._system_provenance_file_path,
+              sim._mapping_outputs["BinaryToExecutableType"])
 
 
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
