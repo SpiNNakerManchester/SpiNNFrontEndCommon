@@ -34,7 +34,7 @@ _SDRAM_TAG = 1
 
 def mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id,
-        provenance_file_path, compress_only_when_needed=True,
+        system_provenance_folder, compress_only_when_needed=True,
         compress_as_much_as_possible=False):
     """
     Load routing tables and compress then using Mundy's algorithm
@@ -43,7 +43,7 @@ def mundy_on_chip_router_compression(
     :param transceiver: the spinnman interface
     :param machine: the SpiNNaker machine representation
     :param app_id: the application ID used by the main application
-    :param provenance_file_path: the path to where to write the data
+    :param system_provenance_folder: the path to where to write the data
     :param compress_as_much_as_possible:\
         If False, the compressor will only reduce the table until it fits\
         in the router space, otherwise it will try to reduce until it\
@@ -60,7 +60,7 @@ def mundy_on_chip_router_compression(
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
     compression = _Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        compress_only_when_needed, machine, provenance_file_path,
+        compress_only_when_needed, machine, system_provenance_folder,
         routing_tables, transceiver)
     compression._compress()
 

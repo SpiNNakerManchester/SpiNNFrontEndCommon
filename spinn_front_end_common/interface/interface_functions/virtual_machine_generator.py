@@ -27,17 +27,14 @@ class VirtualMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, width=None, height=None, virtual_has_wrap_arounds=None,
-            version=None,
-            with_monitors=True, down_chips=None, down_cores=None,
-            down_links=None, max_sdram_size=None,
+            self, width=None, height=None, version=None,
+            down_chips=None, down_cores=None, down_links=None,
+            max_sdram_size=None,
             router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES,
             json_path=None):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
-        :param virtual_has_wrap_arounds: \
-            True if the machine should be created with wrap_arounds
         :param version: The version of board to create
         :param with_monitors: If true, CPU 0 will be marked as a monitor
         :param down_chips: The set of chips that should be considered broken
@@ -45,20 +42,43 @@ class VirtualMachineGenerator(object):
         :param down_links: The set of links that should be considered broken
         :param max_sdram_size: The SDRAM that should be given to each chip
         """
+        # For backward compatibily support version in csf files for now
+        if version is not None:
+            if version in [2, 3]:
+                if height is None:
+                    height = 2
+                else:
+                    assert height == 2
+                if width is None:
+                    width = 2
+                else:
+                    assert width == 2
+                logger.warning("For virtual Machines version is deprecated."
+                               "use width=2, height=2 instead")
+            elif version in [4, 5]:
+                if height is None:
+                    height = 8
+                else:
+                    assert height == 8
+                if width is None:
+                    width = 8
+                else:
+                    assert width == 8
+                logger.warning("For virtual Machines version is deprecated."
+                               "use width=8, height=8 instead")
+            else:
+                raise Exception("Unknown version {}".format(version))
 
         if json_path is None:
             # pylint: disable=too-many-arguments
             machine = virtual_machine(
                 width=width, height=height,
-                with_wrap_arounds=virtual_has_wrap_arounds,
-                version=version, n_cpus_per_chip=Machine.MAX_CORES_PER_CHIP,
-                with_monitors=with_monitors, down_chips=down_chips,
-                down_cores=down_cores, down_links=down_links,
-                sdram_per_chip=max_sdram_size,
+                n_cpus_per_chip=Machine.max_cores_per_chip(),
+                down_chips=down_chips, down_cores=down_cores,
+                down_links=down_links, sdram_per_chip=max_sdram_size,
                 router_entries_per_chip=router_entries_per_chip, validate=True)
         else:
             if (height is not None or width is not None or
-                    virtual_has_wrap_arounds is not None or
                     version is not None or down_chips is not None or
                     down_cores is not None or down_links is not None):
                 logger.warning("As json_path specified all other virtual "

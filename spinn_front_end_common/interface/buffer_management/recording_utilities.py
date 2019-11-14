@@ -40,6 +40,7 @@ def get_recording_header_size(n_recorded_regions):
     """ Get the size of the data to be written for the recording header
 
     :param n_recorded_regions: The number of regions to be recorded
+    :type n_recorded_regions: int
     """
 
     # See recording.h/recording_initialise for data included in the header
@@ -51,6 +52,7 @@ def get_recording_data_constant_size(n_recorded_regions):
     """ Get the size of the recorded data to be reserved that doesn't
 
     :param n_recorded_regions: The number of regions to be recorded
+    :type n_recorded_regions: int
     :rtype: int
     """
     return (
@@ -72,12 +74,17 @@ def get_recording_header_array(
     :param recorded_region_sizes:\
         A list of sizes of each region to be recorded.\
         A size of 0 is acceptable.
+    :type recorded_region_sizes: list(int)
     :param time_between_triggers:\
         The minimum time between requesting reads of any region
+    :type time_between_triggers: int
     :param buffer_size_before_request:\
         The amount of buffer to fill before a read request is sent
+    :type buffer_size_before_request: int
     :param ip_tags: A list of IP tags to extract the buffer tag from
+    :type ip_tags: list(~spinn_machine.tags.AbstractTag)
     :param buffering_tag: The tag to use for buffering requests
+    :type buffering_tag: ~spinn_machine.tags.AbstractTag
     :return: An array of values to be written as the header
     :rtype: list(int)
     """
@@ -133,9 +140,12 @@ def get_last_sequence_number(placement, transceiver, recording_data_address):
     """ Read the last sequence number from the data
 
     :param placement: The placement from which to read the sequence number
+    :type placement: ~pacman.model.placements.Placement
     :param transceiver: The transceiver to use to read the sequence number
+    :type transceiver: ~spinnman.transceiver.Transceiver
     :param recording_data_address:\
         The address of the recording data from which to read the number
+    :type recording_data_address: int
     :rtype: int
     """
     data = transceiver.read_memory(
@@ -148,10 +158,14 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
     """ Get a pointer to a recording region
 
     :param placement: The placement from which to read the pointer
+    :type placement: ~pacman.model.placements.Placement
     :param transceiver: The transceiver to use to read the pointer
+    :type transceiver: ~spinnman.transceiver.Transceiver
     :param recording_data_address:\
         The address of the recording data from which to read the pointer
+    :type recording_data_address: int
     :param region: The index of the region to get the pointer of
+    :type region: int
     :rtype: int
     """
     data = transceiver.read_memory(
