@@ -652,7 +652,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.switch_write_focus(self._REGIONS.RECORDING.value)
         recording_size = 0
         if self._is_recording:
-            per_timestep = self.recording_sdram_per_timestep(
+            per_timestep = self._recording_sdram_per_timestep(
                 machine_time_step, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
             recording_size = per_timestep * data_n_time_steps
