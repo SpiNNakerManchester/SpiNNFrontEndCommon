@@ -70,6 +70,9 @@ _MAJOR_LOSS_MESSAGE = (
     "of this occurring.")
 _MAJOR_LOSS_THRESHOLD = 100
 
+# cap for stopping wrap arounds
+TRANSACTION_ID_CAP = 0xFFFFFFFF
+
 # number of items used up by the retransmit code for its header
 SDP_RETRANSMISSION_HEADER_SIZE = 2
 
@@ -130,9 +133,9 @@ class DATA_IN_COMMANDS(Enum):
     """command IDs for the SDP packets for data in"""
     SEND_DATA_TO_LOCATION = 200
     SEND_SEQ_DATA = 2000
-    SEND_DONE = 2002
-    RECEIVE_MISSING_SEQ_DATA = 2003
-    RECEIVE_FINISHED = 2004
+    SEND_TELL = 2001
+    RECEIVE_MISSING_SEQ_DATA = 2002
+    RECEIVE_FINISHED = 2003
 
 
 # precompiled structures
@@ -684,7 +687,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         chip = machine.get_chip_at(destination_chip_x, destination_chip_y)
         dest_x, dest_y = machine.get_local_xy(chip)
         self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
-        self._transaction_id += 1
+        self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
         # send first message
         self._connection = SCAMPConnection(
@@ -779,7 +782,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: bool
         """
         position = 0
-        (command_id, transaction_id) = (_TWO_WORDS.unpack_from(data, 0)[0])
+        (command_id, transaction_id) = (_TWO_WORDS.unpack_from(data, 0))
         position += BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER
         log.debug("received packet with id {}", command_id)
 
@@ -820,7 +823,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # update states
         self._missing_seq_nums_data_in.append(set())
-        self._send_end_flag()
+        self._send_tell_flag()
 
     @staticmethod
     def _calculate_position_from_seq_number(seq_num):
@@ -874,7 +877,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             *data_to_write[position:position+packet_data_length])
 
         # debug
-        # self._print_out_packet_data(packet_data)
+        self._print_out_packet_data(packet_data)
 
         # build sdp packet
         message = self.__make_sdp_message(
@@ -897,7 +900,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self._transaction_id, start_address, self._coord_word,
                 self._max_seq_num)))
 
-    def _send_end_flag(self):
+    def _send_tell_flag(self):
         """  send end flag as separate message
         :rtype: None
         """
@@ -905,7 +908,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
             _TWO_WORDS.pack(
-                DATA_IN_COMMANDS.SEND_DONE.value, self._transaction_id)))
+                DATA_IN_COMMANDS.SEND_TELL.value, self._transaction_id)))
 
     def _send_all_data_based_packets(self, data_to_write):
         """ Send all the data as one block
@@ -931,7 +934,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # check for end flag
             if position_in_data == total_data_length:
-                self._send_end_flag()
+                self._send_tell_flag()
                 log.debug("sent end flag")
 
     @staticmethod

@@ -44,12 +44,11 @@ enum sdp_port_commands {
     // received
     SDP_SEND_DATA_TO_LOCATION_CMD = 200,
     SDP_SEND_SEQ_DATA_CMD = 2000,
-    SDP_SEND_MISSING_SEQ_NUMS_BACK_TO_HOST_CMD = 2001,
-    SDP_LAST_DATA_IN_CMD = 2002,
+    SDP_TELL_MISSING_BACK_TO_HOST = 2001,
     // sent
-    SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD = 2003,
-    SDP_SEND_MISSING_SEQ_DATA_IN_CMD = 2004,
-    SDP_SEND_FINISHED_DATA_IN_CMD = 2005
+  //  SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD = 200,
+    SDP_SEND_MISSING_SEQ_DATA_IN_CMD = 2002,
+    SDP_SEND_FINISHED_DATA_IN_CMD = 2003
 };
 
 // threshold for sdram vs dtcm missing seq store.
@@ -57,17 +56,23 @@ enum sdp_port_commands {
 
 // location of command IDs in SDP message
 #define COMMAND_ID 0
+#define TRANSACTION_ID 1
 
 // flag when all seq numbers are missing
 #define ALL_MISSING_FLAG 0xFFFFFFFE
 
+// flag for cap on transaction id
+#define TRANSACTION_CAP 0xFFFFFFF
+
 enum {
     //! How many multicast packets are to be received per SDP packet
     ITEMS_PER_DATA_PACKET = 68,
-    //! offset with just command and seq in bytes
-    SEND_SEQ_DATA_HEADER_WORDS = 2,
-    //! offset with command, x, y, address in bytes
-    SEND_DATA_LOCATION_HEADER_WORDS = 4
+    //! offset with just command transaction id and seq in bytes
+    SEND_SEQ_DATA_HEADER_WORDS = 3,
+    //! offset with just command, transaction id
+    SEND_MISSING_SEQ_HEADER_WORDS = 2,
+    //! offset with command, transaction id, address in bytes, [x, y], max seq,
+    SEND_DATA_LOCATION_HEADER_WORDS = 5
 };
 
 enum {
@@ -79,12 +84,10 @@ enum {
     //! defined from calculation:
     DATA_IN_NORMAL_PACKET_WORDS =
             ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS,
-    //! size of payload for a packet describing the first batch of missing
-    //! inbound seqs
-    ITEMS_PER_FIRST_MISSING_PACKET = ITEMS_PER_DATA_PACKET - 2,
-    //! size of payload for a packet describing the further batches of missing
-    //! inbound seqs
-    ITEMS_PER_MORE_MISSING_PACKET = ITEMS_PER_DATA_PACKET - 1
+    //! size of payload for a packet describing the batch of missing inbound
+    //! seqs
+    ITEMS_PER_MISSING_PACKET =
+        ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
 };
 
 //-----------------------------------------------------------------------------
@@ -115,31 +118,25 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
 //! meaning of payload in first data in SDP packet
 typedef struct receive_data_to_location_msg_t {
     uint command;
+    uint transaction_id;
     address_t address;
     ushort chip_y;
     ushort chip_x;
     uint max_seq_num;
-    uint data[];
 } receive_data_to_location_msg_t;
 
 //! meaning of payload in subsequent data in SDP packets
 typedef struct receive_seq_data_msg_t {
     uint command;
+    uint transaction_id;
     uint seq_num;
     uint data[];
 } receive_seq_data_msg_t;
 
-typedef union sdp_msg_out_payload_t {
+typedef struct sdp_msg_out_payload_t {
     uint command;
-    struct {
-        uint command;
-        uint n_packets;
-        uint data[ITEMS_PER_FIRST_MISSING_PACKET];
-    } first;
-    struct {
-        uint command;
-        uint data[ITEMS_PER_MORE_MISSING_PACKET];
-    } more;
+    uint transaction_id;
+    uint data[ITEMS_PER_MISSING_PACKET];
 } sdp_msg_out_payload_t;
 
 //! the key that causes sequence number to be processed
@@ -150,6 +147,7 @@ static uint32_t end_flag_key = 0;
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
 static uint32_t max_seq_num = 0;
+static uint32_t transaction_id = 0;
 
 //! data holders for the SDP packet
 static uint32_t data[ITEMS_PER_DATA_PACKET];
@@ -262,6 +260,7 @@ static void process_sdp_message_into_mc_messages(
 
     // send mc messages containing rest of sdp data
     for (uint data_index = 0; data_index < n_elements; data_index++) {
+        log_info("data is %d", data[data_index]);
         send_mc_message(DATA_KEY_OFFSET, data[data_index]);
     }
 }
@@ -303,19 +302,6 @@ static inline void free_sequence_number_bitfield(void) {
     max_seq_num = 0;
 }
 
-//! \brief determines how many packets will be needed to describe missing seqs.
-static inline uint data_in_n_missing_seq_packets(void) {
-    uint received = count_bit_field(received_seq_nums_store, size_of_bitfield);
-    uint missing_seq_count = max_seq_num - received;
-    if (missing_seq_count < ITEMS_PER_FIRST_MISSING_PACKET) {
-        return 0;
-    }
-    missing_seq_count -= ITEMS_PER_FIRST_MISSING_PACKET;
-    const uint denom = ITEMS_PER_MORE_MISSING_PACKET;
-    uint num = missing_seq_count / denom, rem = missing_seq_count % denom;
-    return num + (rem > 0 ? 1 : 0);
-}
-
 //! \brief calculates the new sdram location for a given seq num
 //! \param[in] seq_num: the seq num to figure offset for
 //! \return the new sdram location.
@@ -341,6 +327,34 @@ static inline void set_message_length(const void *end) {
 //! sdp message
 static void process_address_data(
         const receive_data_to_location_msg_t *receive_data_cmd) {
+
+    // if received when doing a stream. ignore as either clone or oddness
+    if (received_seq_nums_store != NULL){
+        log_error(
+            "received a location message with transaction id %d when already "
+            "processing a stream", receive_data_cmd->transaction_id);
+        return;
+    }
+
+    // updater transaction id if it hits the cap
+    if (((transaction_id + 1) & TRANSACTION_CAP) == 0) {
+        transaction_id = 0;
+    }
+
+    // if transaction id is not as expected. ignore it as its from the past.
+    // and worthless
+    if (receive_data_cmd->transaction_id != transaction_id + 1) {
+        log_error(
+            "received a location message with transaction id %d which was "
+            "below what i expect, as mine is %d",
+            receive_data_cmd->transaction_id, transaction_id);
+        return;
+    }
+
+    //extract transaction id and update
+    transaction_id = receive_data_cmd->transaction_id;
+
+    // track changes
     uint prev_x = chip_x, prev_y = chip_y;
 
     // update sdram and tracker as now have the sdram and size
@@ -365,6 +379,19 @@ static void process_address_data(
     last_seen_seq_num = 0;
 }
 
+//! \brief sends the finished request
+static void send_finished_response(void){
+    // send boundary key, so that monitor knows everything in the previous
+    // stream is done
+    sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
+    send_mc_message(BOUNDARY_KEY_OFFSET, 0);
+    payload->command = SDP_SEND_FINISHED_DATA_IN_CMD;
+    my_msg.length = (
+        sizeof(sdp_hdr_t) + sizeof(int) * SEND_MISSING_SEQ_HEADER_WORDS);
+    send_sdp_message();
+    log_info("Sent end flag");
+}
+
 //! \brief searches through received seq nums and transmits missing ones back
 //! to host for retransmission
 static void process_missing_seq_nums_and_request_retransmission(
@@ -374,48 +401,51 @@ static void process_missing_seq_nums_and_request_retransmission(
     //!   Access to this variable is only allowed when you have disabled
     //!   interrupts!
 
-    // never received the first message, handle appropriately
-    if (received_seq_nums_store == NULL) {
-        const receive_data_to_location_msg_t *receive_data_cmd =
-            (receive_data_to_location_msg_t *) msg->data;
-        process_address_data(receive_data_cmd);
-
-        // send response
-        sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
-        payload->command = SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD;
-        payload->first.n_packets = 1;
-        uint *data_ptr = payload->first.data;
-        *(data_ptr++) = ALL_MISSING_FLAG;
-        set_message_length(data_ptr);
-        send_sdp_message();
+    // verify in right state
+    uint this_message_transaction_id = msg->data[TRANSACTION_ID];
+    if (received_seq_nums_store == NULL &&
+            this_message_transaction_id != transaction_id) {
+        log_error(
+            "received missing seq numbers before a location with a "
+            "transaction id which is stale.");
         return;
+    }
+    if (received_seq_nums_store == NULL &&
+            this_message_transaction_id  == transaction_id) {
+        log_info("received tell request when already sent finish. resending");
+        send_finished_response();
     }
 
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
+    payload->transaction_id = transaction_id;
 
     // check that missing seq transmission is actually needed, or
     // have we finished
     if (total_received_seq_nums == max_seq_num) {
         free_sequence_number_bitfield();
-
-        // send boundary key, so that monitor knows everything in the previous
-        // stream is done
-        send_mc_message(BOUNDARY_KEY_OFFSET, 0);
-        payload->command = SDP_SEND_FINISHED_DATA_IN_CMD;
-        my_msg.length = sizeof(sdp_hdr_t) + sizeof(int);
-        send_sdp_message();
-        log_info("Sent end flag");
+        send_finished_response();
         return;
     }
 
     // sending missing seq nums
     log_info("Looking for %d missing packets",
             ((int) max_seq_num) - ((int) total_received_seq_nums));
+    payload->command = SDP_SEND_MISSING_SEQ_DATA_IN_CMD;
     const uint *data_start, *end_of_buffer = (uint *) (payload + 1);
     uint *data_ptr;
-    payload->first.command = SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD;
-    payload->first.n_packets = data_in_n_missing_seq_packets();
-    data_start = data_ptr = payload->first.data;
+
+    // handle case of all missing
+    if (total_received_seq_nums == 0) {
+        // send response
+        uint *data_ptr = payload->data;
+        *(data_ptr++) = ALL_MISSING_FLAG;
+        set_message_length(data_ptr);
+        send_sdp_message();
+        return;
+    }
+
+    // handle a random number of missing seqs
+    data_start = data_ptr = payload->data;
     for (uint bit = 1; bit <= max_seq_num; bit++) {
         if (bit_field_test(received_seq_nums_store, bit)) {
             continue;
@@ -425,8 +455,7 @@ static void process_missing_seq_nums_and_request_retransmission(
         if (data_ptr >= end_of_buffer) {
             set_message_length(data_ptr);
             send_sdp_message();
-            payload->more.command = SDP_SEND_MISSING_SEQ_DATA_IN_CMD;
-            data_start = data_ptr = payload->more.data;
+            data_start = data_ptr = payload->data;
         }
     }
 
@@ -457,30 +486,22 @@ static inline void copy_data(
     }
 }
 
-static inline void receive_data_to_location(const sdp_msg_pure_data *msg) {
-    const receive_data_to_location_msg_t *receive_data_cmd =
-            (receive_data_to_location_msg_t *) msg->data;
-
-    // translate elements to variables
-    process_address_data(receive_data_cmd);
-    uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
-    sanity_check_write((uint) receive_data_cmd->address, n_elements);
-    if (chip_x == 0 && chip_y == 0) {
-        // directly write the data to where it belongs
-        copy_data(receive_data_cmd->address, receive_data_cmd->data, n_elements);
-    } else {
-        // send start key, so that monitor knows everything in the previous stream is done
-        send_mc_message(BOUNDARY_KEY_OFFSET, 0);
-        // send mc messages for first packet; the data lasts to the end of the
-        // message
-        process_sdp_message_into_mc_messages(
-                receive_data_cmd->data, n_elements, true, start_sdram_address);
-    }
-}
-
 static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
+    // cast to the receive seq data
     const receive_seq_data_msg_t *receive_data_cmd =
             (receive_seq_data_msg_t *) msg->data;
+
+    // check for bad states
+    if (received_seq_nums_store == NULL) {
+        log_error("received data before being given a location");
+        return;
+    }
+    if (receive_data_cmd->transaction_id != transaction_id) {
+        log_error("received data from a different transaction");
+        return;
+    }
+
+    // all good, process data
     uint seq = receive_data_cmd->seq_num;
     log_debug("Sequence data, seq:%u", seq);
     if (seq > max_seq_num) {
@@ -498,10 +519,15 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     last_seen_seq_num = seq;
 
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
+    log_info("n elements is %d", n_elements);
     sanity_check_write(this_sdram_address, n_elements);
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
-        copy_data((address_t) this_sdram_address, receive_data_cmd->data, n_elements);
+        for (uint data_index = 0; data_index < n_elements; data_index++) {
+            log_info("data is %u", receive_data_cmd->data[data_index]);
+        }
+        copy_data(
+            (address_t) this_sdram_address, receive_data_cmd->data, n_elements);
     } else {
         // transmit data to chip; the data lasts to the end of the message
         process_sdp_message_into_mc_messages(
@@ -524,17 +550,14 @@ static void data_in_receive_sdp_data(uint mailbox, uint port) {
     // check for separate commands
     switch (command) {
     case SDP_SEND_DATA_TO_LOCATION_CMD:
-        receive_data_to_location(msg);
+        // translate elements to variables
+        process_address_data((receive_data_to_location_msg_t *) msg->data);
         break;
     case SDP_SEND_SEQ_DATA_CMD:
         receive_seq_data(msg);
         break;
-    case SDP_SEND_MISSING_SEQ_NUMS_BACK_TO_HOST_CMD:
+    case SDP_TELL_MISSING_BACK_TO_HOST:
         log_debug("Checking for missing");
-        process_missing_seq_nums_and_request_retransmission(msg);
-        break;
-    case SDP_LAST_DATA_IN_CMD:
-        log_debug("Received final flag");
         process_missing_seq_nums_and_request_retransmission(msg);
         break;
     default:
