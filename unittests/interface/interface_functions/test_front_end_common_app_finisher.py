@@ -62,8 +62,6 @@ class _MockTransceiver(object):
         self.sdp_send_count += 1
 
 
-@unittest.skip(
-    "https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/381")
 def test_app_finisher():
     finisher = ApplicationFinisher()
     core_subsets = CoreSubsets()
