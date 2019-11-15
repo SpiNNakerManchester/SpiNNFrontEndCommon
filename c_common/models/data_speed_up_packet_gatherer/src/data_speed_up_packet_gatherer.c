@@ -524,7 +524,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
         for (uint data_index = 0; data_index < n_elements; data_index++) {
-            log_info("data is %u", receive_data_cmd->data[data_index]);
+            log_info("data is %x", receive_data_cmd->data[data_index]);
         }
         copy_data(
             (address_t) this_sdram_address, receive_data_cmd->data, n_elements);

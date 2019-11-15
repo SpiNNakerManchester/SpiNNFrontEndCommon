@@ -28,9 +28,16 @@ class AbstractVertexWithEdgeToDependentVertices(object):
     @abstractmethod
     def dependent_vertices(self):
         """ Return the vertices which this vertex depends upon
+
+        :rtype: iterable(~pacman.model.graphs.application.ApplicationVertex)
         """
 
     @abstractmethod
     def edge_partition_identifiers_for_dependent_vertex(self, vertex):
-        """ Return the dependent edge identifiers for this vertex
+        """ Return the dependent edge identifiers for a particular dependent\
+            vertex.
+
+        :param vertex:
+        :type vertex: ~pacman.model.graphs.application.ApplicationVertex
+        :rtype: iterable(str)
         """

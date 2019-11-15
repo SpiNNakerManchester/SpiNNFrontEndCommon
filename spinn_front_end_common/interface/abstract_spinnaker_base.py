@@ -33,6 +33,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_machine import CoreSubsets
 from spinn_machine import __version__ as spinn_machine_version
+from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -59,8 +60,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_time_diff_to_total_milliseconds,
-    sort_out_downed_chips_cores_links)
+    convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import EnergyReport
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
@@ -83,10 +83,10 @@ except ImportError:
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-# Number of cores to be used when using a Virtual Machine and not specified
+#: Number of cores to be used when using a Virtual Machine and not specified
 DEFAULT_N_VIRTUAL_CORES = 16
 
-# The minimum time a board is kept in the off state in seconds
+#: The minimum time a board is kept in the off state, in seconds
 MINIMUM_OFF_STATE_TIME = 20
 
 # 0-15 are reserved for system use (per lplana)
@@ -343,6 +343,33 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             n_chips_required=None, n_boards_required=None,
             default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
+        """
+        :param configfile: What the configuration file is called
+        :type configfile: str
+        :param executable_finder: How to find APLX files to deploy to SpiNNaker
+        :type executable_finder: \
+            ~spinn_utilities.executable_finder.ExecutableFinder
+        :param graph_label: A label for the overall application graph
+        :type graph_label: str
+        :param database_socket_addresses: How to talk to notification databases
+        :type database_socket_addresses: \
+            iterable(~spinn_utilities.socket_address.SocketAddress)
+        :param extra_algorithm_xml_paths: \
+            Where to load definitions of extra algorithms from
+        :type extra_algorithm_xml_paths: iterable(str)
+        :param n_chips_required: \
+            Overrides the number of chips to allocate from spalloc
+        :type n_chips_required: int
+        :param n_boards_required: \
+            Overrides the number of boards to allocate from spalloc
+        :type n_boards_required: int
+        :param default_config_paths: Directories to load configurations from
+        :type default_config_paths: list(str)
+        :param validation_cfg: How to validate configuration files
+        :type validation_cfg: str
+        :param front_end_versions: information about what software is in use
+        :type front_end_versions: list(tuple(str,str))
+        """
         # pylint: disable=too-many-arguments
         ConfigHandler.__init__(
             self, configfile, default_config_paths, validation_cfg)
@@ -508,48 +535,86 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._n_boards_required = n_boards_required
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
+        """ Supply extra inputs to the mapping algorithms. Mappings are from\
+            known names (the logical type names) to the values to bind to them.
+
+        :param extra_inputs: The additional inputs to provide
+        :type extra_inputs: dict(str,any)
+        """
         if self.has_ran:
-            msg = "Changing mapping inputs is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing mapping inputs is not supported after run")
         if extra_mapping_inputs is not None:
             self._extra_mapping_inputs.update(extra_mapping_inputs)
 
     def update_extra_inputs(self, extra_inputs):
+        """ Supply extra inputs to the runtime algorithms. Mappings are from\
+            known names (the logical type names) to the values to bind to them.
+
+        :param extra_inputs: The additional inputs to provide
+        :type extra_inputs: dict(str,any)
+        """
         if self.has_ran:
-            msg = "Changing inputs is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing inputs is not supported after run")
         if extra_inputs is not None:
             self._extra_inputs.update(extra_inputs)
 
     def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
+        """ Add custom mapping algorithms to the end of the sequence of \
+            mapping algorithms to be run.
+
+        :param extra_mapping_algorithms: Algorithms to add
+        :type extra_mapping_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_mapping_algorithms is not None:
             self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
 
     def prepend_extra_pre_run_algorithms(self, extra_pre_run_algorithms):
+        """ Add custom pre-execution algorithms to the front of the sequence \
+            of algorithms to be run.
+
+        :param extra_pre_run_algorithms: Algorithms to add
+        :type extra_pre_run_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_pre_run_algorithms is not None:
             self._extra_pre_run_algorithms[0:0] = extra_pre_run_algorithms
 
     def extend_extra_post_run_algorithms(self, extra_post_run_algorithms):
+        """ Add custom post-execution algorithms to the sequence of \
+            such algorithms to be run.
+
+        :param extra_post_run_algorithms: Algorithms to add
+        :type extra_post_run_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
 
     def extend_extra_load_algorithms(self, extra_load_algorithms):
+        """ Add custom data-loading algorithms to the sequence of \
+            such algorithms to be run.
+
+        :param extra_load_algorithms: Algorithms to add
+        :type extra_load_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
 
     def add_extraction_timing(self, timing):
+        """ Record the time taken for doing data extraction.
+        """
         ms = convert_time_diff_to_total_milliseconds(timing)
         self._extraction_time += ms
 
@@ -585,16 +650,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Please fix and try again")
 
     # options names are all lower without _ inside config
-    DEBUG_ENABLE_OPTS = frozenset([
+    _DEBUG_ENABLE_OPTS = frozenset([
         "reportsenabled",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-    REPORT_DISABLE_OPTS = frozenset([
+    _REPORT_DISABLE_OPTS = frozenset([
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
         :param hostname: machine name
+        :type hostname: str
         :rtype: None
         """
         if hostname is not None:
@@ -632,7 +698,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
 
-    def signal_handler(self, _signal, _frame):
+    def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
 
         :param _signal: the signal received (ignored)
@@ -661,17 +727,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def verify_not_running(self):
         if self._state in [Simulator_State.IN_RUN,
                            Simulator_State.RUN_FOREVER]:
-            msg = "Illegal call while a simulation is already running"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Illegal call while a simulation is already running")
         if self._state in [Simulator_State.SHUTDOWN]:
-            msg = "Illegal call after simulation is shutdown"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Illegal call after simulation is shutdown")
 
     def run_until_complete(self):
         """ Run a simulation until it completes
         """
         self._run(None, run_until_complete=True)
 
+    @overrides(SimulatorInterface.run)
     def run(self, run_time):
         """ Run a simulation for a fixed amount of time
 
@@ -723,11 +790,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state = Simulator_State.IN_RUN
 
         self._adjust_config(
-            run_time, self.DEBUG_ENABLE_OPTS, self.REPORT_DISABLE_OPTS)
+            run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):
-            signal.signal(signal.SIGINT, self.signal_handler)
+            signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
             sys.excepthook = self._last_except_hook
 
@@ -1127,7 +1194,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "max_machine_core_reduction")
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
-
+        inputs['ReportFolder'] = self._report_default_directory
         # Set up common machine details
         self._handle_machine_common_config(inputs)
 
@@ -1161,8 +1228,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
-            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
-                "Machine", "requires_wrap_arounds")
             inputs["MachineJsonPath"] = self._read_config(
                 "Machine", "json_path")
             inputs["BMPDetails"] = None
@@ -1320,13 +1385,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param inputs: the input dict
         :rtype: None
         """
-        down_chips, down_cores, down_links = sort_out_downed_chips_cores_links(
-            self._config.get("Machine", "down_chips"),
-            self._config.get("Machine", "down_cores"),
+
+        inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
+            self._config.get("Machine", "down_chips"))
+        inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
+            self._config.get("Machine", "down_cores"))
+        inputs["DownedLinksDetails"] = IgnoreLink.parse_string(
             self._config.get("Machine", "down_links"))
-        inputs["DownedChipsDetails"] = down_chips
-        inputs["DownedCoresDetails"] = down_cores
-        inputs["DownedLinksDetails"] = down_links
         inputs["BoardVersion"] = self._read_config_int(
             "Machine", "version")
         inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
@@ -1339,6 +1404,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "ignore_bad_ethernets")
 
     def generate_file_machine(self):
+        """ Generates a machine JSON file
+        """
         inputs = {
             "MemoryMachine": self.machine,
             "FileMachineFilePath": os.path.join(
@@ -1395,6 +1462,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
+        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
+        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
         inputs["MachineTimeStep"] = self.machine_time_step
@@ -1834,8 +1903,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if not self._has_ran or graph_changed:
             algorithms.append("DatabaseInterface")
         else:
-            inputs["DatabaseFilePath"] = self._last_run_outputs[
-                "DatabaseFilePath"]
+            inputs["DatabaseFilePath"] = (
+                self._last_run_outputs["DatabaseFilePath"])
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
@@ -1950,8 +2019,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 failed_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for (x, y, p), core_info in failed_cores:
-                    unsuccessful_cores.add_processor(x, y, p, core_info)
+                for (x, y, p) in failed_cores:
+                    unsuccessful_cores.add_processor(
+                        x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
         for (x, y, p), core_info in iteritems(unsuccessful_cores):
@@ -2018,7 +2088,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         try:
             errors, warnings = iobuf(
                 self._txrx, executable_targets, self._executable_finder,
-                self._provenance_file_path,
+                self._app_provenance_file_path,
+                self._system_provenance_file_path,
+                self._mapping_outputs["BinaryToExecutableType"],
                 self._config.get("Reports", "extract_iobuf_from_cores"),
                 self._config.get("Reports", "extract_iobuf_from_binary_types")
             )
@@ -2129,18 +2201,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return changed, data_changed
 
     @property
+    @overrides(SimulatorInterface.has_ran)
     def has_ran(self):
         return self._has_ran
 
     @property
+    @overrides(SimulatorInterface.machine)
     def machine(self):
-        """ The python machine object
-
-        :rtype: :py:class:`spinn_machine.Machine`
-        """
         return self._get_machine()
 
     @property
+    @overrides(SimulatorInterface.no_machine_time_steps)
     def no_machine_time_steps(self):
         return self._no_machine_time_steps
 
@@ -2162,6 +2233,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def application_graph(self):
+        """ The application graph used to derive the runtime machine \
+            configuration.
+        """
         return self._application_graph
 
     @property
@@ -2177,6 +2251,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._placements
 
     @property
+    @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
         return self._txrx
 
@@ -2189,9 +2264,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._tags
 
     @property
+    @overrides(SimulatorInterface.buffer_manager)
     def buffer_manager(self):
-        """ The buffer manager being used for loading/extracting buffers
-        """
         return self._buffer_manager
 
     @property
@@ -2227,6 +2301,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._use_virtual_board
 
     def get_current_time(self):
+        """ Get the current simulation time.
+
+        :rtype: float
+        """
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
@@ -2234,9 +2312,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return 0.0
 
     def get_generated_output(self, name_of_variable):
-        if name_of_variable in self._last_run_outputs:
-            return self._last_run_outputs[name_of_variable]
-        return None
+        """ Get the value of an inter-algorithm variable.
+
+        :param name_of_variable: The variable to retrieve
+        :type name_of_variable: str
+        :return: The value (of arbitrary type), or None if the variable is \
+            not found.
+        """
+        if self._has_ran:
+            if name_of_variable in self._last_run_outputs:
+                return self._last_run_outputs[name_of_variable]
+            return None
+        raise ConfigurationException(
+            "Cannot call this function until after a simulation has ran.")
 
     def __repr__(self):
         return "general front end instance for machine {}".format(
@@ -2245,6 +2333,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def add_application_vertex(self, vertex):
         """
         :param vertex: the vertex to add to the graph
+        :type: ApplicationVertex
         :rtype: None
         :raises ConfigurationException: when both graphs contain vertices
         :raises PacmanConfigurationException:
@@ -2261,6 +2350,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def add_machine_vertex(self, vertex):
         """
         :param vertex: the vertex to add to the graph
+        :type: MachineVertex
         :rtype: None
         :raises ConfigurationException: when both graphs contain vertices
         :raises PacmanConfigurationException:
@@ -2277,11 +2367,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
         :param edge_to_add:
+        :type: ApplicationEdge
         :param partition_identifier: \
             the partition identifier for the outgoing edge partition
+        :type partition_identifier: str
         :rtype: None
         """
-
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
         self._vertices_or_edges_added = True
@@ -2289,8 +2380,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def add_machine_edge(self, edge, partition_id):
         """
         :param edge: the edge to add to the graph
+        :type: MachineEdge
         :param partition_id: \
             the partition identifier for the outgoing edge partition
+        :type partition_id: str
         :rtype: None
         """
         self._original_machine_graph.add_edge(edge, partition_id)
@@ -2530,12 +2623,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
-            provenance_file_path=self._provenance_file_path)
+            app_provenance_file_path=self._app_provenance_file_path,
+            system_provenance_file_path=self._system_provenance_file_path,
+            binary_executable_types=(
+                self._mapping_outputs["BinaryToExecutableType"]))
 
     @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
         """
-        :param socket_address:
+        :param socket_address: The address of the database socket
+        :type socket_address: ~spinn_utilities.socket_address.SocketAddress
         :rtype: None
         """
         self._database_socket_addresses.add(socket_address)
@@ -2627,9 +2724,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._has_reset_last
 
     @property
+    @overrides(SimulatorInterface.config)
     def config(self):
-        """ Provides access to the configuration for front end interfaces.
-        """
         return self._config
 
     @property
@@ -2640,7 +2736,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: number of available cores
         :rtype: int
         """
-
         # get machine if not got already
         if self._machine is None:
             self._get_machine()
@@ -2660,6 +2755,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return cores
 
     def stop_run(self):
+        """ Request that the current infinite run stop.
+
+        .. note::
+            This will need to be called from another thread as the infinite \
+            run call is blocking.
+        """
         if self._state is not Simulator_State.IN_RUN:
             return
         with self._state_condition:

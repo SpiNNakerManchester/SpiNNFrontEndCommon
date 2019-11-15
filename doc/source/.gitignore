@@ -16,3 +16,4 @@
 *.rst
 !index.rst
 !modules.rst
+_build

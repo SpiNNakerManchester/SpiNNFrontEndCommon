@@ -31,9 +31,10 @@ class AbstractMachineAllocationController(object):
 
         :param new_total_run_time: The total run time that is now required\
             starting from when the machine was first allocated
+        :type new_total_run_time: float
         """
 
     @abstractmethod
     def close(self):
-        """ Indicate that the use of the machine is complete
+        """ Indicate that the use of the machine is complete.
         """

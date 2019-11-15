@@ -207,6 +207,18 @@ class LiveEventConnection(DatabaseConnection):
         self.add_start_resume_callback(label, start_callback)
 
     def add_start_resume_callback(self, label, start_resume_callback):
+        """ Add a callback for the start and resume state of the simulation
+
+        :param label: the label of the function to be sent
+        :type label: str
+        :param start_resume_callback: A function to be called when the start\
+            or resume message has been received. This function should take \
+            the label of the referenced vertex, and an instance of this \
+            class, which can be used to send events.
+        :type start_resume_callback: function(str, \
+            :py:class:`SpynnakerLiveEventConnection`) -> None
+        :rtype: None
+        """
         self.__start_resume_callbacks[label].append(start_resume_callback)
 
     def add_pause_stop_callback(self, label, pause_stop_callback):

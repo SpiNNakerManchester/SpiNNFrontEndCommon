@@ -23,14 +23,16 @@ logger = logging.getLogger(__name__)
 @add_metaclass(AbstractBase)
 class AbstractSendsBuffersFromHost(object):
     """ Interface to an object that sends buffers of keys to be\
-        transmitted at given timestamps in the simulation
+        transmitted at given timestamps in the simulation.
     """
 
     __slots__ = ()
 
     @abstractmethod
     def buffering_input(self):
-        """ Return True if the input of this vertex is to be buffered
+        """ Return True if the input of this vertex is to be buffered.
+
+        :rtype: bool
         """
 
     @abstractmethod
