@@ -2524,9 +2524,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._pacman_provenance.extract_provenance(executor)
                 run_complete = True
 
-                if self._config.getboolean("Reports", "write_energy_report"):
-                    self._do_energy_report()
-
                 # write provenance to file if necessary
                 if self._config.getboolean("Reports", "write_provenance_data"):
                     prov_items = list()
@@ -2564,9 +2561,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     logger.exception(
                         "Error when attempting to recover from error")
 
-        # handle iobuf extraction if never extracted it yet but requested to
-        if self._config.getboolean("Reports", "extract_iobuf"):
-            self._extract_iobufs()
+        if not self._use_virtual_board:
+            if self._config.getboolean("Reports", "write_energy_report"):
+                self._do_energy_report()
+
+            # handle iobuf extraction
+            if self._config.getboolean("Reports", "extract_iobuf"):
+                self._extract_iobufs()
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
