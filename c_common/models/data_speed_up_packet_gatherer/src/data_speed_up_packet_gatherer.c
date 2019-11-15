@@ -76,10 +76,6 @@ enum {
 };
 
 enum {
-    //! size of data stored in packet with command and address
-    //! defined from calculation:
-    DATA_IN_ADDRESS_PACKET_WORDS =
-            ITEMS_PER_DATA_PACKET - SEND_DATA_LOCATION_HEADER_WORDS,
     //! size of data stored in packet with command and seq
     //! defined from calculation:
     DATA_IN_NORMAL_PACKET_WORDS =
@@ -306,14 +302,8 @@ static inline void free_sequence_number_bitfield(void) {
 //! \param[in] seq_num: the seq num to figure offset for
 //! \return the new sdram location.
 static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
-    if (seq_num == 0) {
-        return start_sdram_address;
-    }
-
-    return start_sdram_address
-            + (DATA_IN_ADDRESS_PACKET_WORDS
-                    + DATA_IN_NORMAL_PACKET_WORDS * (seq_num - 1))
-                    * sizeof(uint);
+    return (start_sdram_address
+            + (DATA_IN_NORMAL_PACKET_WORDS * seq_num  * sizeof(uint)));
 }
 
 static inline void set_message_length(const void *end) {

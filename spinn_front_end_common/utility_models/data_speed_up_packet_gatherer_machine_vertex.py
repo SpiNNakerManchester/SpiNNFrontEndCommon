@@ -146,7 +146,7 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 
 # Set to true to check that the data is correct after it has been sent in.
 # This is expensive, and only works in Python 3.5 or later.
-VERIFY_SENT_DATA = True
+VERIFY_SENT_DATA = False
 
 
 def ceildiv(dividend, divisor):
@@ -697,7 +697,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if a != b:
                     break
 
-            raise Exception("damn at " + str(index))
+            raise Exception(
+                "damn at " + str(index) + " which is word " + str(index / 4))
 
     @staticmethod
     def _worse_via_scp(n_bytes):
@@ -1527,7 +1528,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         reread_data = struct.unpack("<{}B".format(len(data)), data)
         output = ""
         position2 = position
-        log.info("size of data is %d", (len(data) / 4) - 3)
+        log.info("size of data is {}".format( (len(data) / 4) - 3))
         for index, reread_data_element in enumerate(reread_data):
             if index >= 12:
                 output += "{}:{},".format(position2, reread_data_element)
