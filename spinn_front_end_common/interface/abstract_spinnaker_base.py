@@ -2623,28 +2623,31 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_name="stopping")
 
     def _do_energy_report(self):
-        if self._buffer_manager is None:
+        if self._buffer_manager is None or self._last_run_outputs is None:
             return
+
         # create energy report
         energy_report = EnergyReport()
 
         # acquire provenance items
-        if self._last_run_outputs is not None:
-            pacman_provenance = self._pacman_provenance.data_items
-            router_provenance = self._last_run_outputs["RouterProvenanceItems"]
+        router_provenance = self._last_run_outputs.get(
+            "RouterProvenanceItems", None)
+        if router_provenance is None:
+            return
+        pacman_provenance = self._pacman_provenance.data_items
 
-            # run energy report
-            energy_report(
-                self._placements, self._machine,
-                self._report_default_directory,
-                self._read_config_int("Machine", "version"),
-                self._spalloc_server, self._remote_spinnaker_url,
-                self.time_scale_factor, self.machine_time_step,
-                pacman_provenance, router_provenance, self._machine_graph,
-                self._current_run_timesteps, self._buffer_manager,
-                self._mapping_time, self._load_time, self._execute_time,
-                self._dsg_time, self._extraction_time,
-                self._machine_allocation_controller)
+        # run energy report
+        energy_report(
+            self._placements, self._machine,
+            self._report_default_directory,
+            self._read_config_int("Machine", "version"),
+            self._spalloc_server, self._remote_spinnaker_url,
+            self.time_scale_factor, self.machine_time_step,
+            pacman_provenance, router_provenance, self._machine_graph,
+            self._current_run_timesteps, self._buffer_manager,
+            self._mapping_time, self._load_time, self._execute_time,
+            self._dsg_time, self._extraction_time,
+            self._machine_allocation_controller)
 
     def _extract_iobufs(self):
         if self._config.getboolean("Reports", "extract_iobuf_during_run"):
