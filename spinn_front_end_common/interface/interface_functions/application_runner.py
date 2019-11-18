@@ -51,9 +51,8 @@ class ApplicationRunner(object):
     # Wraps up as a PACMAN algorithm
     def __call__(
             self, buffer_manager, wait_on_confirmation, notification_interface,
-            executable_targets, executable_types, app_id, txrx, runtime,
-            time_scale_factor, no_sync_changes, time_threshold,
-            run_until_complete=False):
+            executable_types, app_id, txrx, runtime, time_scale_factor,
+            no_sync_changes, time_threshold, run_until_complete=False):
         # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
 
@@ -62,16 +61,16 @@ class ApplicationRunner(object):
             notification_interface, wait_on_confirmation)
 
         return self.run_application(
-            buffer_manager, notifier, executable_types,
-            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
-            time_threshold, run_until_complete)
+            buffer_manager, notifier, executable_types, app_id, txrx, runtime,
+            time_scale_factor, no_sync_changes, time_threshold,
+            run_until_complete)
 
     # The actual runner
     def run_application(
-            self, buffer_manager, notifier,
-            executable_types, app_id, txrx, runtime, time_scale_factor,
-            no_sync_changes, time_threshold, run_until_complete):
-        # pylint: disable=too-many-arguments, unused-argument
+            self, buffer_manager, notifier, executable_types, app_id, txrx,
+            runtime, time_scale_factor, no_sync_changes, time_threshold,
+            run_until_complete):
+        # pylint: disable=too-many-arguments
 
         # wait for all cores to be ready
         self._wait_for_start(txrx, app_id, executable_types)

@@ -38,7 +38,7 @@ class TestInsertLPGEdges(unittest.TestCase):
     """
 
     def test_local_verts_go_to_local_lpgs(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -126,7 +126,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
     def test_local_verts_when_multiple_lpgs_are_local(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -239,7 +239,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                         edge.pre_vertex, verts_expected[chip.x, chip.y, p])
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()
