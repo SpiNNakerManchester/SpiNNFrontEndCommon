@@ -94,9 +94,9 @@ THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES = 300
 
 #: offset where data in starts on commands
 #: (command, transaction_id, seq num)
-WORDS_FOR_COMMAND_AND_ADDRESS_HEADER = 3
+WORDS_FOR_COMMAND_AND_KEY = 3
 BYTES_FOR_COMMAND_AND_ADDRESS_HEADER = (
-    WORDS_FOR_COMMAND_AND_ADDRESS_HEADER * BYTES_PER_WORD)
+    WORDS_FOR_COMMAND_AND_KEY * BYTES_PER_WORD)
 
 #: offset where data in starts in reception (command, transaction id)
 WORDS_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER = 2
@@ -104,10 +104,10 @@ BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER = (
     WORDS_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER * BYTES_PER_WORD)
 
 #: size for data to store when first packet with command and address
-WORDS_IN_FULL_PACKET_WITH_ADDRESS = (
-    WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_AND_ADDRESS_HEADER)
-BYTES_IN_FULL_PACKET_WITH_ADDRESS = (
-    WORDS_IN_FULL_PACKET_WITH_ADDRESS * BYTES_PER_WORD)
+WORDS_IN_FULL_PACKET_WITH_KEY = (
+    WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_AND_KEY)
+BYTES_IN_FULL_PACKET_WITH_KEY = (
+    WORDS_IN_FULL_PACKET_WITH_KEY * BYTES_PER_WORD)
 
 #: size of data in key space
 #: x, y, key (all ints) for possible 48 chips,
@@ -246,7 +246,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     FLAG_FOR_MISSING_ALL_SEQUENCES = 0xFFFFFFFE
 
     _ADDRESS_PACKET_BYTE_FORMAT = struct.Struct(
-        "<{}B".format(BYTES_IN_FULL_PACKET_WITH_ADDRESS))
+        "<{}B".format(BYTES_IN_FULL_PACKET_WITH_KEY))
 
     # Router timeouts, in mantissa,exponent form. See datasheet for details
     _LONG_TIMEOUT = (14, 14)
@@ -731,7 +731,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # how many packets after first one we need to send
         self._max_seq_num = ceildiv(
-            len(data_to_write), BYTES_IN_FULL_PACKET_WITH_ADDRESS)
+            len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
 
         # determine board chip IDs, as the LPG does not know machine scope IDs
         machine = transceiver.get_machine_details()
@@ -885,7 +885,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: the position in the byte data
         :rtype: int
         """
-        return BYTES_IN_FULL_PACKET_WITH_ADDRESS * seq_num
+        return BYTES_IN_FULL_PACKET_WITH_KEY * seq_num
 
     def _calculate_data_in_data_from_seq_number(
             self, data_to_write, seq_num, command_id, position):
@@ -901,7 +901,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
 
         # check for last packet
-        packet_data_length = BYTES_IN_FULL_PACKET_WITH_ADDRESS
+        packet_data_length = BYTES_IN_FULL_PACKET_WITH_KEY
 
         # determine position in data if not given
         if position is None:
