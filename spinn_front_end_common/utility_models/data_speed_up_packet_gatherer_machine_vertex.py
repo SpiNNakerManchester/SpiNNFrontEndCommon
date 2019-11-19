@@ -811,7 +811,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # add missing seqs accordingly
         seen_last = False
         seen_all = False
-        if missing_seqs[-1] == self.MISSING_SEQ_NUMS_END_FLAG:
+        if missing_seqs[-1] == self._MISSING_SEQ_NUMS_END_FLAG:
             del missing_seqs[-1]
             seen_last = True
         if missing_seqs[-1] == self.FLAG_FOR_MISSING_ALL_SEQUENCES:
