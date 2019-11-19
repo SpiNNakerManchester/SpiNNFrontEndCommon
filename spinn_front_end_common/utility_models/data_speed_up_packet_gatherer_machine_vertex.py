@@ -699,8 +699,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if a != b:
                     break
 
-            raise Exception(
-                "damn at " + str(index))
+                raise Exception(
+                    "damn at " + str(index))
 
     @staticmethod
     def _worse_via_scp(n_bytes):
