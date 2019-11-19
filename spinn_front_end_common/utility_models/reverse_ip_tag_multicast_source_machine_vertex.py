@@ -704,6 +704,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
     })
     def update_buffer(
             self, first_machine_time_step, run_until_timesteps):
+        """ Updates the buffers on specification of the first machine timestep.
+            Note: This is called by injection.
+
+        :param first_machine_time_step:\
+            The first machine time step in the simulation
+        :type first_machine_time_step: int
+        :param run_until_timesteps:\
+            The last machine time step in the simulation
+        :type run_until_timesteps: int
+        """
         if self._virtual_key is not None:
             self._fill_send_buffer(
                 first_machine_time_step, run_until_timesteps)
