@@ -1530,7 +1530,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         reread_data = struct.unpack("<{}B".format(len(data)), data)
         output = ""
         position2 = position
-        log.info("size of data is {}".format( (len(data) / 4) - 3))
+        log.info("size of data is {}".format((len(data) / 4) - 3))
         for index, reread_data_element in enumerate(reread_data):
             if index >= 12:
                 output += "{}:{},".format(position2, reread_data_element)
