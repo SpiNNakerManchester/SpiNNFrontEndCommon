@@ -641,8 +641,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             end = datetime.datetime.now()
             self._missing_seq_nums_data_in = [set()]
         else:
-            log.info("sending {} bytes to {},{} via Data In protocol",
-                      n_bytes, x, y)
+            log.info(
+                "sending {} bytes to {},{} via Data In protocol",
+                n_bytes, x, y)
             # start time recording
             start = datetime.datetime.now()
             # send data
@@ -693,12 +694,13 @@ class DataSpeedUpPacketGatherMachineVertex(
                       x, y, base_address, n_bytes)
             log.error("original:{}", original_data.hex())
             log.error("verified:{}", verified_data.hex())
-            for (index, (a, b)) in enumerate(zip(original_data, verified_data)):
+            for (index, (a, b)) in enumerate(
+                    zip(original_data, verified_data)):
                 if a != b:
                     break
 
             raise Exception(
-                "damn at " + str(index) + " which is word " + str(index / 4))
+                "damn at " + str(index))
 
     @staticmethod
     def _worse_via_scp(n_bytes):
