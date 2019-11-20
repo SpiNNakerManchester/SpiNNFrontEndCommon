@@ -336,8 +336,8 @@ static void process_address_data(
     if (receive_data_cmd->transaction_id != transaction_id + 1) {
         log_error(
             "received a location message with transaction id %d which was "
-            "below what i expect, as mine is %d",
-            receive_data_cmd->transaction_id, transaction_id);
+            "not what i expect, as mine is %d",
+            receive_data_cmd->transaction_id, transaction_id + 1);
         return;
     }
 

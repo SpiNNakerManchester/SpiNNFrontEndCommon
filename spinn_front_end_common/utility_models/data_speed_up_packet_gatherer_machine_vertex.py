@@ -930,7 +930,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             *data_to_write[position:position+packet_data_length])
 
         # debug
-        self._print_out_packet_data(packet_data, position)
+        #self._print_out_packet_data(packet_data, position)
 
         # build sdp packet
         message = self.__make_sdp_message(
@@ -952,7 +952,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value,
                 self._transaction_id, start_address, self._coord_word,
                 self._max_seq_num)))
-        log.info(
+        log.debug(
             "start address for transaction {} is {}".format(
                 self._transaction_id, start_address))
 
@@ -1518,7 +1518,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         for seq_num in sorted(seq_nums):
-            log.info("from list I'm missing sequence num {}", seq_num)
+            log.debug("from list I'm missing sequence num {}", seq_num)
 
     @staticmethod
     def _print_out_packet_data(data, position):
@@ -1530,12 +1530,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         reread_data = struct.unpack("<{}B".format(len(data)), data)
         output = ""
         position2 = position
-        log.info("size of data is {}".format((len(data) / 4) - 3))
+        log.debug("size of data is {}".format((len(data) / 4) - 3))
         for index, reread_data_element in enumerate(reread_data):
             if index >= 12:
                 output += "{}:{},".format(position2, reread_data_element)
                 position2 += 1
-        log.info("converted data back into readable form is {}", output)
+        log.debug("converted data back into readable form is {}", output)
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
@@ -1558,8 +1558,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param n_packets: how many packets to fire.
         :rtype: None
         """
-        log.info("send SDP packet with missing sequence numbers: {} of {}",
-                 packet_count + 1, n_packets)
+        log.debug("send SDP packet with missing sequence numbers: {} of {}",
+                  packet_count + 1, n_packets)
 
 
 class _StreamingContextManager(object):
