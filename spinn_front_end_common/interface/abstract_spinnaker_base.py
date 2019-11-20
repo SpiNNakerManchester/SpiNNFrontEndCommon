@@ -1105,7 +1105,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                self.write_finished_file()
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
@@ -2582,10 +2581,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Reset provenance
             self._all_provenance_items = list()
 
-        self.write_finished_file()
-
         if exc_info is not None:
             reraise(*exc_info)
+        else:
+            self.write_finished_file()
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
