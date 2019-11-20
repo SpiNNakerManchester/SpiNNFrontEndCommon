@@ -21,7 +21,8 @@ from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
-from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
+from spinn_front_end_common.utilities.utility_objs import ExecutableTargets, \
+    ExecutableType
 
 
 class _PretendTransceiver(object):
@@ -80,6 +81,10 @@ core_subsets = CoreSubsets([CoreSubset(0, 0, [3])])
 alphaaplx = mock_aplx("alpha")
 executable_targets.add_subsets(alphaaplx, core_subsets)
 
+types = {fooaplx: ExecutableType.USES_SIMULATION_INTERFACE,
+         baraplx: ExecutableType.USES_SIMULATION_INTERFACE,
+         alphaaplx: ExecutableType.USES_SIMULATION_INTERFACE}
+
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
@@ -90,7 +95,8 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
-            executable_finder=None, provenance_file_path=folder)
+            executable_finder=None, app_provenance_file_path=folder,
+            system_provenance_file_path=None, binary_executable_types=types)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
@@ -128,7 +134,8 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
-            executable_finder=None, provenance_file_path=folder,
+            executable_finder=None, app_provenance_file_path=folder,
+            system_provenance_file_path=None, binary_executable_types=types,
             from_cores="0,0,2:0,0,3")
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
@@ -164,8 +171,10 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
-            executable_finder=executableFinder, provenance_file_path=folder,
-            from_cores=None, binary_types=fooaplx + "," + alphaaplx)
+            executable_finder=executableFinder,
+            app_provenance_file_path=folder, system_provenance_file_path=None,
+            binary_executable_types=types, from_cores=None,
+            binary_types=fooaplx + "," + alphaaplx)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
@@ -197,8 +206,10 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
-            executable_finder=executableFinder, provenance_file_path=folder,
-            from_cores="0,0,2:1,1,1", binary_types=fooaplx + "," + alphaaplx)
+            executable_finder=executableFinder,
+            app_provenance_file_path=folder, system_provenance_file_path=None,
+            binary_executable_types=types, from_cores="0,0,2:1,1,1",
+            binary_types=fooaplx + "," + alphaaplx)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))

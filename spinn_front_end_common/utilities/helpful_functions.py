@@ -16,6 +16,8 @@
 import os
 import logging
 import struct
+
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
@@ -127,47 +129,6 @@ def convert_string_into_chip_and_core_subset(cores):
             x, y, processor_id = downed_core.split(",")
             ignored_cores.add_processor(int(x), int(y), int(processor_id))
     return ignored_cores
-
-
-def sort_out_downed_chips_cores_links(
-        downed_chips, downed_cores, downed_links):
-    """ Translate the down cores and down chips string into a form that \
-        spinnman can understand
-
-    :param downed_cores:\
-        string representing down cores formatted as x,y,p[:x,y,p]*
-    :type downed_cores: str or None
-    :param downed_chips:\
-        string representing down chips formatted as x,y[:x,y]*
-    :type downed_chips: str or None
-    :param downed_links:\
-        string representing down links formatted as x,y,link[:x,y,link]*
-    :return:\
-        a tuple of (\
-            set of (x, y) of down chips, \
-            set of (x, y, p) of down cores, \
-            set of ((x, y), link ID) of down links)
-    :rtype: tuple(set(tuple(int, int)), set(tuple(int, int, int)),\
-        set(tuple(tuple(int, int), int)))
-    """
-    ignored_chips = set()
-    if downed_chips is not None and downed_chips != "None":
-        for downed_chip in downed_chips.split(":"):
-            x, y = downed_chip.split(",")
-            ignored_chips.add((int(x), int(y)))
-
-    ignored_cores = set()
-    if downed_cores is not None and downed_cores != "None":
-        for downed_core in downed_cores.split(":"):
-            x, y, processor_id = downed_core.split(",")
-            ignored_cores.add((int(x), int(y), int(processor_id)))
-
-    ignored_links = set()
-    if downed_links is not None and downed_links != "None":
-        for downed_link in downed_links.split(":"):
-            x, y, link_id = downed_link.split(",")
-            ignored_links.add((int(x), int(y), int(link_id)))
-    return ignored_chips, ignored_cores, ignored_links
 
 
 def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
@@ -347,7 +308,6 @@ def convert_vertices_to_core_subset(vertices, placements):
     """ Converts vertices into core subsets.
 
     :param vertices: the vertices to convert to core subsets
-    :type vertices: iterable(MachineVertex)
     :param placements: the placements object
     :type placements: ~pacman.model.placements.Placements
     :return: the CoreSubSets of the vertices
@@ -358,6 +318,16 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def find_executable_start_type(machine_vertex, graph_mapper=None):
+    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
+        return machine_vertex.get_binary_start_type()
+    if graph_mapper is not None:
+        app_vertex = graph_mapper.get_application_vertex(machine_vertex)
+        if isinstance(app_vertex, AbstractHasAssociatedBinary):
+            return app_vertex.get_binary_start_type()
+    return None
 
 
 def _emergency_state_check(txrx, app_id):
@@ -401,7 +371,8 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     extractor = ChipIOBufExtractor(
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor(txrx, executable_targets, sim._executable_finder,
-              sim._provenance_file_path)
+              sim._app_provenance_file_path, sim._system_provenance_file_path,
+              sim._mapping_outputs["BinaryToExecutableType"])
 
 
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
