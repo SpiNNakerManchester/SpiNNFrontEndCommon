@@ -930,7 +930,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             *data_to_write[position:position+packet_data_length])
 
         # debug
-        #self._print_out_packet_data(packet_data, position)
+        # self._print_out_packet_data(packet_data, position)
 
         # build sdp packet
         message = self.__make_sdp_message(
