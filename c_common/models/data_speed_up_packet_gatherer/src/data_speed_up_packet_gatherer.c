@@ -355,7 +355,7 @@ static void process_address_data(
         log_info("Changed stream target chip to %d,%d", chip_x, chip_y);
     }
 
-    log_info("Writing %u packets to 0x%08x",
+    log_debug("Writing %u packets to 0x%08x",
              receive_data_cmd->max_seq_num, receive_data_cmd->address);
 
     // store where the sdram started, for out-of-order UDP packets.
@@ -509,12 +509,12 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     last_seen_seq_num = seq;
 
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
-    log_info("n elements is %d", n_elements);
+    log_debug("n elements is %d", n_elements);
     sanity_check_write(this_sdram_address, n_elements);
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
         for (uint data_index = 0; data_index < n_elements; data_index++) {
-            log_info("data is %x", receive_data_cmd->data[data_index]);
+            log_debug("data is %x", receive_data_cmd->data[data_index]);
         }
         copy_data(
             (address_t) this_sdram_address, receive_data_cmd->data, n_elements);
