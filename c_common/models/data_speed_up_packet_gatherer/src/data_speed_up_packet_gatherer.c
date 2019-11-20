@@ -411,7 +411,7 @@ static void process_missing_seq_nums_and_request_retransmission(
 
     // check that missing seq transmission is actually needed, or
     // have we finished
-    if (total_received_seq_nums == max_seq_num) {
+    if (total_received_seq_nums == max_seq_num + 1) {
         free_sequence_number_bitfield();
         send_finished_response();
         return;
