@@ -31,6 +31,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 APP_DIRNAME = 'application_generated_data_files'
 CONFIG_FILE = "spinnaker.cfg"
 FINISHED_FILENAME = "finished"
+ERRORED_FILENAME = "errored"
 REPORTS_DIRNAME = "reports"
 TIMESTAMP_FILENAME = "time_stamp"
 
@@ -188,7 +189,8 @@ class ConfigHandler(object):
             self._make_dirs(child)
         return child
 
-    def _remove_excess_folders(self, max_kept, starting_directory):
+    def _remove_excess_folders(
+            self, max_kept, starting_directory, remove_errored_folders):
         try:
             files_in_report_folder = os.listdir(starting_directory)
 
@@ -209,6 +211,9 @@ class ConfigHandler(object):
                     finished_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
                         FINISHED_FILENAME)
+                    errored_flag = os.path.join(os.path.join(
+                        starting_directory, current_oldest_file),
+                        ERRORED_FILENAME)
                     if os.path.exists(finished_flag):
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
@@ -369,10 +374,8 @@ class ConfigHandler(object):
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
 
-    def write_finished_file(self):
-        """ Write a finished file that allows file removal to only remove \
-            folders that are finished.
-        """
+
+    def __write_named_file(self, file_name):
         app_file_name = os.path.join(self._app_data_top_simulation_folder,
                                      FINISHED_FILENAME)
         with open(app_file_name, "w") as f:
@@ -382,6 +385,21 @@ class ConfigHandler(object):
                                      FINISHED_FILENAME)
         with open(app_file_name, "w") as f:
             f.writelines("finished")
+
+    def write_finished_file(self):
+        """ Write a finished file that allows file removal to only remove \
+            folders that are finished.
+            :rtype: None
+        """
+        self.__write_named_file(FINISHED_FILENAME)
+
+    def write_errored_file(self):
+        """ Writes a errored file that allows file removal to only remove \
+            folders that are errored if requested to do so
+        :rtype:
+        """
+        self.__write_named_file(ERRORED_FILENAME)
+
 
     def _read_config(self, section, item):
         return read_config(self._config, section, item)
