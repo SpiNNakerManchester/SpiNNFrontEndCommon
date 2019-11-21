@@ -227,6 +227,25 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
                     (x, y, p, ethernet_id, start, used, written))
 
+    @overrides(DsAbstractDatabase.set_size_info)
+    def set_size_info(self, x, y, p, memory_used):
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute(
+                "UPDATE core SET "
+                "memory_used = ? "
+                "WHERE x = ? AND y = ? AND processor = ? ",
+                (memory_used, x, y, p))
+            if cursor.rowcount == 0:
+                chip = self._machine.get_chip_at(x, y)
+                ethernet_id = self.__get_ethernet(
+                    chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+                cursor.execute(
+                    "INSERT INTO core(x, y, processor, ethernet_id, "
+                    + "memory_used) "
+                    + "VALUES(?, ?, ?, ?, ?) ",
+                    (x, y, p, ethernet_id, memory_used))
+
     @overrides(DsAbstractDatabase.clear_write_info)
     def clear_write_info(self):
         with self._db:

@@ -139,6 +139,21 @@ class DsAbstractDatabase(object):
         """
 
     @abstractmethod
+    def set_size_info(self, x, y, p, memory_used):
+        """ sets the provenance gathered before Data Spec executor.
+
+        :param x: core x
+        :type x: int
+        :param y: core y
+        :type y: int
+        :param p: core p
+        :type p: int
+        :param memory_used: memory used
+        :type memory_used: int
+        :return:
+        """
+
+    @abstractmethod
     def clear_write_info(self):
         """
         Clears the provenance for all rows

@@ -33,20 +33,20 @@ class TestDsWriteInfo(unittest.TestCase):
         asDict = DsWriteInfo(dst.get_database())
         c1 = (0, 0, 0)
         foo = DataWritten(123, 12, 23)
-        asDict[c1] = foo
+        asDict.set_info(*c1, foo)
         check[c1] = foo
-        self.assertEqual(foo, asDict[c1])
+        self.assertEqual(foo, asDict.get_info(*c1))
 
         c2 = (1, 1, 3)
         bar = DataWritten(456, 45, 56)
-        asDict[c2] = bar
+        asDict.set_info(*c2, bar)
         check[c2] = bar
-        self.assertEqual(bar, asDict[c2])
+        self.assertEqual(bar, asDict.get_info(*c2))
 
         self.assertEqual(2, len(asDict))
 
         for key in asDict:
-            self.assertEqual(check[key], asDict[key])
+            self.assertEqual(check[key], asDict.get_info(*key))
 
         for key, value in iteritems(asDict):
             self.assertEqual(check[key], value)

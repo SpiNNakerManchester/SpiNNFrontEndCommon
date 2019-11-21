@@ -951,7 +951,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             _FIVE_WORDS.pack(
                 DATA_IN_COMMANDS.SEND_DATA_TO_LOCATION.value,
                 self._transaction_id, start_address, self._coord_word,
-                self._max_seq_num)))
+                self._max_seq_num - 1)))
         log.debug(
             "start address for transaction {} is {}".format(
                 self._transaction_id, start_address))
