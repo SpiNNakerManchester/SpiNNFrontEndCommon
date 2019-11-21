@@ -407,7 +407,6 @@ class HostExecuteDataSpecification(object):
                 self.__malloc_and_user_0(core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(sys_targets)):
-            base_address = base_addresses[core]
             self._write_info_map[core] = self.__python_execute(
                 core, reader, self._txrx.write_memory, base_addresses[core],
                 region_sizes[core])
