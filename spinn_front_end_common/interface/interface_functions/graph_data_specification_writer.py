@@ -140,6 +140,12 @@ class GraphDataSpecificationWriter(object):
             # Check the memory usage
             self._region_sizes[pl.x, pl.y, pl.p] = (
                 APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+            # extracts the int from the numpy data type generated
+            if not isinstance(self._region_sizes[pl.x, pl.y, pl.p], int):
+                self._region_sizes[pl.x, pl.y, pl.p] =\
+                    self._region_sizes[pl.x, pl.y, pl.p].item()
+
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
             if (self._sdram_usage[pl.x, pl.y] <=

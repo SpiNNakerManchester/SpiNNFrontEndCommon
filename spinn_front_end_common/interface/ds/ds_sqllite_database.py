@@ -244,7 +244,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "memory_used) "
                     + "VALUES(?, ?, ?, ?, ?) ",
-                    (x, y, p, ethernet_id, memory_used))
+                    (x, y, p, ethernet_id, int(memory_used)))
 
     @overrides(DsAbstractDatabase.clear_write_info)
     def clear_write_info(self):
