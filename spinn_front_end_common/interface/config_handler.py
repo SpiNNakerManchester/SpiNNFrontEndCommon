@@ -411,7 +411,6 @@ class ConfigHandler(object):
         """
         self.__write_named_file(ERRORED_FILENAME)
 
-
     def _read_config(self, section, item):
         return read_config(self._config, section, item)
 
