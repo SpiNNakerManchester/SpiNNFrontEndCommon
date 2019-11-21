@@ -386,17 +386,16 @@ class ConfigHandler(object):
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
 
-
     def __write_named_file(self, file_name):
-        app_file_name = os.path.join(self._app_data_top_simulation_folder,
-                                     FINISHED_FILENAME)
+        app_file_name = os.path.join(
+            self._app_data_top_simulation_folder, file_name)
         with open(app_file_name, "w") as f:
-            f.writelines("finished")
+            f.writelines("file_name")
 
-        app_file_name = os.path.join(self._report_simulation_top_directory,
-                                     FINISHED_FILENAME)
+        app_file_name = os.path.join(
+            self._report_simulation_top_directory, file_name)
         with open(app_file_name, "w") as f:
-            f.writelines("finished")
+            f.writelines("file_name")
 
     def write_finished_file(self):
         """ Write a finished file that allows file removal to only remove \
