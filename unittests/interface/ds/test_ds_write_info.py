@@ -39,7 +39,7 @@ class TestDsWriteInfo(unittest.TestCase):
 
         c2 = (1, 1, 3)
         bar = DataWritten(456, 45, 56)
-        asDict.set_info(*c2, bar)
+        asDict.set_info(*c2, info=bar)
         check[c2] = bar
         self.assertEqual(bar, asDict.get_info(*c2))
 
