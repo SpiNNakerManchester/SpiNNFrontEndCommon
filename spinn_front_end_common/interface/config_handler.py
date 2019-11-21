@@ -221,6 +221,14 @@ class ConfigHandler(object):
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
                         files_removed += 1
+                    elif finished_flag_exists and errored_flag_exists:
+                        if remove_errored_folders:
+                            shutil.rmtree(os.path.join(
+                                starting_directory, current_oldest_file),
+                                ignore_errors=True)
+                            files_removed += 1
+                        else:
+                            files_not_closed += 1
                     else:
                         files_not_closed += 1
                     if files_removed + files_not_closed >= num_files_to_remove:
@@ -263,7 +271,8 @@ class ConfigHandler(object):
         if os.listdir(report_default_directory):
             self._remove_excess_folders(
                 self._config.getint("Reports", "max_reports_kept"),
-                report_default_directory)
+                report_default_directory,
+                self._config.get_bool("Reports", "remove_errored_folders"))
 
         # determine the time slot for later while also making the report folder
         if self._this_run_time_string is None:
@@ -320,7 +329,8 @@ class ConfigHandler(object):
         # remove folders that are old and above the limit
         self._remove_excess_folders(
             self._config.getint("Reports", "max_application_binaries_kept"),
-            application_generated_data_file_folder)
+            application_generated_data_file_folder,
+            self._config.get_bool("Reports", "remove_errored_folders"))
 
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(
