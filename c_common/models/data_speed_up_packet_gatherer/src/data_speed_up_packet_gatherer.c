@@ -142,7 +142,7 @@ static uint32_t end_flag_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
-static uint32_t max_seq_num = 0;
+static uint32_t max_seq_num = 0xFFFFFFFF;
 static uint32_t transaction_id = 0;
 
 //! data holders for the SDP packet
@@ -295,7 +295,7 @@ static inline void free_sequence_number_bitfield(void) {
         sark_free(received_seq_nums_store);
     }
     received_seq_nums_store = NULL;
-    max_seq_num = 0;
+    max_seq_num = 0xFFFFFFFF;
 }
 
 //! \brief calculates the new sdram location for a given seq num

@@ -88,10 +88,6 @@ SEQUENCE_NUMBER_SIZE_IN_ITEMS = 1
 WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM = \
     WORDS_PER_FULL_PACKET - SEQUENCE_NUMBER_SIZE_IN_ITEMS
 
-# points where SDP beats data speed up due to overheads
-THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
-THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES = 300
-
 #: offset where data in starts on commands
 #: (command, transaction_id, seq num)
 WORDS_FOR_COMMAND_AND_KEY = 3
@@ -630,27 +626,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         transceiver = get_simulator().transceiver
 
         # if not worth using extra monitors, send via SCP
-        if not self._worse_via_scp(n_bytes):
-            # start time recording
-            start = datetime.datetime.now()
-            # write the data
-            transceiver.write_memory(
-                x=x, y=y, base_address=base_address, n_bytes=n_bytes,
-                data=data, offset=offset, is_filename=False, cpu=cpu)
-            # record when finished
-            end = datetime.datetime.now()
-            self._missing_seq_nums_data_in = [set()]
-        else:
-            log.info(
-                "sending {} bytes to {},{} via Data In protocol",
-                n_bytes, x, y)
-            # start time recording
-            start = datetime.datetime.now()
-            # send data
-            self._send_data_via_extra_monitors(
-                transceiver, x, y, base_address, data[offset:n_bytes + offset])
-            # end time recording
-            end = datetime.datetime.now()
+        log.info(
+            "sending {} bytes to {},{} via Data In protocol",
+            n_bytes, x, y)
+        # start time recording
+        start = datetime.datetime.now()
+        # send data
+        self._send_data_via_extra_monitors(
+            transceiver, x, y, base_address, data[offset:n_bytes + offset])
+        # end time recording
+        end = datetime.datetime.now()
+
         if VERIFY_SENT_DATA:
             original_data = bytes(data[offset:n_bytes + offset])
             verified_data = bytes(transceiver.read_memory(
@@ -701,11 +687,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 raise Exception(
                     "damn at " + str(index))
-
-    @staticmethod
-    def _worse_via_scp(n_bytes):
-        return (n_bytes is None or
-                n_bytes >= THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES)
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):
@@ -1181,15 +1162,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             return data
 
         transceiver = get_simulator().transceiver
-        if (length_in_bytes <
-                THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES):
-            data = transceiver.read_memory(
-                placement.x, placement.y, memory_address, length_in_bytes)
-            end = float(time.time())
-            self._provenance_data_items[
-                placement, memory_address,
-                length_in_bytes].append((end - start, [0]))
-            return data
 
         # Update the IP Tag to work through a NAT firewall
         connection = SCAMPConnection(

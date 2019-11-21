@@ -283,7 +283,7 @@ class HostExecuteDataSpecification(object):
                 core, reader,
                 self.__select_writer(x, y)
                 if use_monitors else self._txrx.write_memory,
-                base_addresses[core], region_sizes)
+                base_addresses[core], region_sizes[core])
 
         if use_monitors:
             self.__reset_router_timeouts(receiver)
@@ -407,10 +407,10 @@ class HostExecuteDataSpecification(object):
                 self.__malloc_and_user_0(core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(sys_targets)):
-            (base_address, size_allocated) = base_addresses[core]
+            base_address = base_addresses[core]
             self._write_info_map[core] = self.__python_execute(
                 core, reader, self._txrx.write_memory, base_addresses[core],
-                size_allocated)
+                region_sizes[core])
 
         return self._write_info_map
 
