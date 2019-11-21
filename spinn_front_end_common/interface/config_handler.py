@@ -214,7 +214,9 @@ class ConfigHandler(object):
                     errored_flag = os.path.join(os.path.join(
                         starting_directory, current_oldest_file),
                         ERRORED_FILENAME)
-                    if os.path.exists(finished_flag):
+                    finished_flag_exists = os.path.exists(finished_flag)
+                    errored_flag_exists = os.path.exists(errored_flag)
+                    if finished_flag_exists and not errored_flag_exists:
                         shutil.rmtree(os.path.join(
                             starting_directory, current_oldest_file),
                             ignore_errors=True)
