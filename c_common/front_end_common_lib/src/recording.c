@@ -58,7 +58,6 @@ typedef struct recording_data_t {
     uint32_t buffer_size_before_request;
     uint32_t time_between_triggers;
     uint32_t last_sequence_number;
-    recording_channel_t *region_pointers[0];
 } recording_data_t;
 
 //---------------------------------------
@@ -544,16 +543,26 @@ static void recording_dma_finished(uint unused, uint tag) {
 }
 
 bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags,
-        uint32_t *words_read) {
-    struct recording_data_t *recording_data =
-            (struct recording_data_t *) recording_data_address;
+        void **recording_data_address, uint32_t *recording_flags) {
+    // Get the data and number of recording regions
+    struct recording_data_t *recording_data = *recording_data_address;
+    n_recording_regions = recording_data->n_regions;
+
+    // Recording channel pointers are after the recording data (initially NULL)
+    recording_channel_t **sdram_region_ptrs =
+            (recording_channel_t **) &recording_data[1];
+
+    // Sizes are after the channel pointers
+    uint32_t *sdram_region_sizes =
+            (uint32_t *) &sdram_region_ptrs[n_recording_regions];
+
+    // Update the pointer to after the data
+    *recording_data_address = &sdram_region_sizes[n_recording_regions];
 
     // build DMA address circular queue
     dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 4);
 
     // Read in the parameters
-    n_recording_regions = recording_data->n_regions;
     uint8_t buffering_output_tag = recording_data->tag;
     uint32_t buffering_destination = recording_data->tag_destination;
     sdp_port = recording_data->sdp_port;
@@ -592,8 +601,7 @@ bool recording_initialize(
      * An extra sizeof(recording_channel_t) bytes are reserved per channel
      * to store the data after recording */
     for (uint32_t counter = 0; counter < n_recording_regions; counter++) {
-        uint32_t size = (uint32_t)
-                recording_data->region_pointers[n_recording_regions + counter];
+        uint32_t size = sdram_region_sizes[counter];
         if (size > 0) {
             region_sizes[counter] = size;
             region_addresses[counter] = sark_xalloc(
@@ -604,12 +612,11 @@ bool recording_initialize(
                         counter, size);
                 return false;
             }
-            recording_data->region_pointers[counter] =
-                region_addresses[counter];
+            sdram_region_ptrs[counter] = region_addresses[counter];
             log_info("recording address is %x", region_addresses[counter]);
             *recording_flags = (*recording_flags | (1 << counter));
         } else {
-            recording_data->region_pointers[counter] = 0;
+            sdram_region_ptrs[counter] = NULL;
             region_addresses[counter] = 0;
             region_sizes[counter] = 0;
         }
@@ -641,11 +648,6 @@ bool recording_initialize(
     // register DMA transfer done callback
     simulation_dma_transfer_done_callback_on(
             RECORDING_DMA_COMPLETE_TAG_ID, recording_dma_finished);
-
-    // update word tracker for anything else
-    *words_read += (
-        (sizeof(recording_data_t) / WORD_TO_BYTE_CONVERSION) +
-        (N_WORDS_USED_OUTSIDE_STRUCT_PER_REGION * n_recording_regions));
 
     return true;
 }
