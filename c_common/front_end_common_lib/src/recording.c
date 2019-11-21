@@ -545,7 +545,7 @@ static void recording_dma_finished(uint unused, uint tag) {
 bool recording_initialize(
         void **recording_data_address, uint32_t *recording_flags) {
     // Get the data and number of recording regions
-    struct recording_data_t *recording_data = *recording_data_address;
+    recording_data_t *recording_data = *recording_data_address;
     n_recording_regions = recording_data->n_regions;
 
     // Recording channel pointers are after the recording data (initially NULL)
