@@ -353,7 +353,9 @@ static void process_address_data(
     chip_y = receive_data_cmd->chip_y;
 
     if (prev_x != chip_x || prev_y != chip_y) {
-        log_info("Changed stream target chip to %d,%d", chip_x, chip_y);
+        log_info(
+            "Changed stream target chip to %d,%d for transaction id %d",
+            chip_x, chip_y, transaction_id);
     }
 
     log_debug("Writing %u packets to 0x%08x",
