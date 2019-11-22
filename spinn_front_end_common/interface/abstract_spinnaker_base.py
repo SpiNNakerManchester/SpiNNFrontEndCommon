@@ -2586,9 +2586,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.write_finished_file()
 
         if exc_info is not None:
-            reraise(*exc_info)
-        else:
             self.write_errored_file()
+            reraise(*exc_info)
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
