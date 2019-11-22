@@ -256,7 +256,7 @@ static void process_sdp_message_into_mc_messages(
 
     // send mc messages containing rest of sdp data
     for (uint data_index = 0; data_index < n_elements; data_index++) {
-        log_info("data is %d", data[data_index]);
+        log_debug("data is %d", data[data_index]);
         send_mc_message(DATA_KEY_OFFSET, data[data_index]);
     }
 }
@@ -322,7 +322,8 @@ static void process_address_data(
     if (received_seq_nums_store != NULL){
         log_error(
             "received a location message with transaction id %d when already "
-            "processing a stream", receive_data_cmd->transaction_id);
+            "processing a stream with transaction id %d",
+            receive_data_cmd->transaction_id, transaction_id);
         return;
     }
 
