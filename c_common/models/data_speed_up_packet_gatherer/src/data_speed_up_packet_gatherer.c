@@ -404,6 +404,7 @@ static void process_missing_seq_nums_and_request_retransmission(
             this_message_transaction_id  == transaction_id) {
         log_info("received tell request when already sent finish. resending");
         send_finished_response();
+        return;
     }
 
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
@@ -413,6 +414,7 @@ static void process_missing_seq_nums_and_request_retransmission(
     // have we finished
     if (total_received_seq_nums == max_seq_num + 1) {
         free_sequence_number_bitfield();
+        total_received_seq_nums = 0;
         send_finished_response();
         return;
     }
