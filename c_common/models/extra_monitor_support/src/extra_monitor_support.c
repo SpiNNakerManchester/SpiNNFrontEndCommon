@@ -651,7 +651,7 @@ static void reinjection_read_packet_types(reinject_config_t *config) {
 
 //! \brief Set the router wait1 timeout.
 static inline int reinjection_set_timeout(sdp_msg_t *msg) {
-    io_printf(IO_BUF, "setting router timeouts");
+    io_printf(IO_BUF, "setting router timeouts\n");
     if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
         msg->cmd_rc = RC_ARG;
         return 0;
