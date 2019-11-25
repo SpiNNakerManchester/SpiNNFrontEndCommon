@@ -72,7 +72,9 @@ enum {
     //! offset with just command, transaction id
     SEND_MISSING_SEQ_HEADER_WORDS = 2,
     //! offset with command, transaction id, address in bytes, [x, y], max seq,
-    SEND_DATA_LOCATION_HEADER_WORDS = 5
+    SEND_DATA_LOCATION_HEADER_WORDS = 5,
+    //! absolute maximum size of a SDP message
+    ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES = 280
 };
 
 enum {
@@ -308,7 +310,7 @@ static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
 
 static inline void set_message_length(const void *end) {
     my_msg.length = ((const uint8_t *) end) - &my_msg.flags;
-    if (my_msg.length > 272) {
+    if (my_msg.length > ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES) {
         log_error("bad message length %u", my_msg.length);
     }
 }
@@ -358,8 +360,9 @@ static void process_address_data(
             chip_x, chip_y, transaction_id);
     }
 
-    log_debug("Writing %u packets to 0x%08x",
-             receive_data_cmd->max_seq_num, receive_data_cmd->address);
+    log_info("Writing %u packets to 0x%08x for transaction id %d",
+             receive_data_cmd->max_seq_num + 1, receive_data_cmd->address,
+             transaction_id);
 
     // store where the sdram started, for out-of-order UDP packets.
     start_sdram_address = (uint) receive_data_cmd->address;
@@ -424,15 +427,16 @@ static void process_missing_seq_nums_and_request_retransmission(
 
     // sending missing seq nums
     log_info("Looking for %d missing packets",
-            ((int) max_seq_num) - ((int) total_received_seq_nums));
+            ((int) max_seq_num + 1) - ((int) total_received_seq_nums));
     payload->command = SDP_SEND_MISSING_SEQ_DATA_IN_CMD;
-    const uint *data_start, *end_of_buffer = (uint *) (payload + 1);
-    uint *data_ptr;
+    const uint *data_start = payload->data;
+    const uint *end_of_buffer = (uint *) (payload + 1);
+    uint *data_ptr = payload->data;
 
     // handle case of all missing
     if (total_received_seq_nums == 0) {
         // send response
-        uint *data_ptr = payload->data;
+        data_ptr = payload->data;
         *(data_ptr++) = ALL_MISSING_FLAG;
         set_message_length(data_ptr);
         send_sdp_message();
@@ -440,8 +444,7 @@ static void process_missing_seq_nums_and_request_retransmission(
     }
 
     // handle a random number of missing seqs
-    data_start = data_ptr = payload->data;
-    for (uint bit = 1; bit <= max_seq_num; bit++) {
+    for (uint bit = 0; bit <= max_seq_num; bit++) {
         if (bit_field_test(received_seq_nums_store, bit)) {
             continue;
         }
@@ -450,7 +453,7 @@ static void process_missing_seq_nums_and_request_retransmission(
         if (data_ptr >= end_of_buffer) {
             set_message_length(data_ptr);
             send_sdp_message();
-            data_start = data_ptr = payload->data;
+            data_ptr = payload->data;
         }
     }
 
