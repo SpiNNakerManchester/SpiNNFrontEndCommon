@@ -265,19 +265,19 @@ class HostExecuteDataSpecification(object):
 
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets,
+            len(dsg_targets) * 2,
             "Executing data specifications and loading data for "
             "application vertices")
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in progress.over(iteritems(dsg_targets)):
+        for core, _ in progress.over(
+                iteritems(dsg_targets), finish_at_end=False):
             base_addresses[core] = \
                 self.__malloc_and_user_0(core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(dsg_targets)):
             x, y, p = core
-            logger.info("going for {}".format(p))
             # write information for the memory map report
             self._write_info_map[core] = self.__python_execute(
                 core, reader,
@@ -397,12 +397,14 @@ class HostExecuteDataSpecification(object):
 
         # create a progress bar for end users
         progress = ProgressBar(
-            len(sys_targets), "Executing data specifications and loading data "
-            "for system vertices")
+            len(sys_targets) * 2,
+            "Executing data specifications and loading data for "
+            "system vertices")
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in progress.over(iteritems(sys_targets)):
+        for core, _ in progress.over(
+                iteritems(sys_targets), finish_at_end=False):
             base_addresses[core] = \
                 self.__malloc_and_user_0(core, region_sizes[core])
 

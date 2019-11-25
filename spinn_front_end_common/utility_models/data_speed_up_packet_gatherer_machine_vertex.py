@@ -625,10 +625,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         transceiver = get_simulator().transceiver
 
-        # if not worth using extra monitors, send via SCP
-        log.info(
-            "sending {} bytes to {},{} via Data In protocol",
-            n_bytes, x, y)
         # start time recording
         start = datetime.datetime.now()
         # send data
@@ -770,6 +766,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if not received_confirmation:
                     self._outgoing_retransmit_missing_seq_nums(
                         data_to_write, start_address)
+        self._connection.close()
 
     def _read_in_missing_seq_nums(
             self, data, data_to_write, position, start_address):
