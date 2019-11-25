@@ -274,7 +274,6 @@ class DsSqlliteDatabase(object):
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
                     (x, y, p, ethernet_id, start, used, written))
 
-    @overrides(DsAbstractDatabase.set_size_info)
     def set_size_info(self, x, y, p, memory_used):
         with self._db:
             cursor = self._db.cursor()
@@ -293,7 +292,6 @@ class DsSqlliteDatabase(object):
                     + "VALUES(?, ?, ?, ?, ?) ",
                     (x, y, p, ethernet_id, int(memory_used)))
 
-    @overrides(DsAbstractDatabase.clear_write_info)
     def clear_write_info(self):
         """
         Clears the provenance for all rows
