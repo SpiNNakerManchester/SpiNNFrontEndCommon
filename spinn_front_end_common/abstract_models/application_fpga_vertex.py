@@ -21,6 +21,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs import AbstractFPGA, AbstractVirtual
 from pacman.model.graphs.machine import MachineFPGAVertex
 from pacman.model.resources import ResourceContainer
+from spinn_front_end_common.utilities import globals_variables
 
 
 class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
@@ -33,11 +34,19 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         "_board_address",
         "_virtual_chip_x",
         "_virtual_chip_y",
-        "_n_atoms"]
+        "_n_atoms",
+        "_timestep"]
 
     def __init__(
             self, n_atoms, fpga_id, fpga_link_id, board_address=None,
-            label=None, constraints=None, max_atoms_per_core=sys.maxsize):
+            label=None, constraints=None, max_atoms_per_core=sys.maxsize,
+            timestep=None):
+        """
+
+        :param timestep: timestep used by this vertex or None to use the\
+            machine timestep
+        :type timestep: None or int
+        """
         super(ApplicationFPGAVertex, self).__init__(
             label=label, constraints=constraints,
             max_atoms_per_core=max_atoms_per_core)
@@ -48,6 +57,11 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         self._board_address = board_address
         self._virtual_chip_x = None
         self._virtual_chip_y = None
+        if timestep is None:
+            self._timestamp = \
+                globals_variables.get_simulator().machine_time_step
+        else:
+            self._timestep = timestep
 
     @property
     @overrides(AbstractFPGA.fpga_id)
@@ -100,3 +114,8 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         vertex.set_virtual_chip_coordinates(
             self._virtual_chip_x, self._virtual_chip_y)
         return vertex
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return self._timestep
