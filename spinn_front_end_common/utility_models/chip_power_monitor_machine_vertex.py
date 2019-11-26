@@ -22,7 +22,7 @@ from pacman.executor.injection_decorator import (
     inject_items, supports_injection)
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
+    CPUCyclesPerTickResource, DTCMResource, ResourceContainer, TimeBasedSDRAM)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.interface.buffer_management import (
@@ -126,7 +126,7 @@ class ChipPowerMonitorMachineVertex(
         per_timestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
         container = ResourceContainer(
-            sdram=VariableSDRAM(with_overflow, per_timestep),
+            sdram=TimeBasedSDRAM(with_overflow, per_timestep/time_step),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         return container

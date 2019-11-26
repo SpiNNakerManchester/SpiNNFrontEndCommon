@@ -28,7 +28,7 @@ from pacman.model.constraints.key_allocator_constraints import (
 from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource,
-    ReverseIPtagResource, ResourceContainer, VariableSDRAM)
+    ReverseIPtagResource, ResourceContainer, TimeBasedSDRAM)
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -384,7 +384,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 machine_time_step, recording_enabled, receive_rate,
                 send_buffer_times, n_keys))
         static_usage += per_timestep
-        return VariableSDRAM(static_usage, per_timestep)
+        return TimeBasedSDRAM(static_usage, per_timestep/machine_time_step)
 
     @staticmethod
     def get_dtcm_usage():
