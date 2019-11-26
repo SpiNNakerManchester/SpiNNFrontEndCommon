@@ -207,7 +207,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         return provenance_data[len(self.PROVENANCE_DATA_ENTRIES):]
 
     @overrides(
-        AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine,
+        AbstractProvidesProvenanceDataFromMachine.
+        get_provenance_data_from_machine,
         extend_doc=False)
     def get_provenance_data_from_machine(self, transceiver, placement):
         """ Retrieve the provenance data.
