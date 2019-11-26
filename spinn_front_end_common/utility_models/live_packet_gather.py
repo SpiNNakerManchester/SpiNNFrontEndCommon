@@ -24,6 +24,7 @@ from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities import globals_variables
 
 
 class LivePacketGather(
@@ -135,3 +136,8 @@ class LivePacketGather(
 
         # generate spec for the machine vertex
         placement.vertex.generate_data_specification(spec, placement)
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step

@@ -30,6 +30,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities import globals_variables
 
 
 class _TestMachineVertex(MachineVertex):
@@ -88,6 +89,11 @@ class _TestApplicationVertex(
             spec.write_array(data)
         spec.end_specification()
         self._regenerate_call_count += 1
+
+    @property
+
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step
 
 
 class _MockCPUInfo(object):

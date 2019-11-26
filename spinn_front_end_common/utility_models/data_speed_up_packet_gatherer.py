@@ -17,6 +17,7 @@ from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+from spinn_front_end_common.utilities import globals_variables
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
 
@@ -91,3 +92,8 @@ class DataSpeedUpPacketGather(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return self._machine_vertex.get_binary_start_type()
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step

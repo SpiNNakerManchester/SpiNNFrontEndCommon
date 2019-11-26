@@ -261,3 +261,8 @@ class ReverseIpTagMultiCastSource(
 
     def __repr__(self):
         return self._label
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step

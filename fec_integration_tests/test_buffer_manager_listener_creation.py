@@ -24,6 +24,7 @@ from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.utilities import globals_variables
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
@@ -121,6 +122,11 @@ class _TestVertex(ApplicationVertex):
     @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return self._n_atoms
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step
 
 
 if __name__ == "__main__":

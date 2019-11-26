@@ -21,6 +21,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities import globals_variables
 
 
 class CommandSender(
@@ -103,3 +104,8 @@ class CommandSender(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step

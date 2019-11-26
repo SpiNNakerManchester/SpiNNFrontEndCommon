@@ -21,6 +21,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from pacman.model.graphs.machine import SimpleMachineVertex
+from spinn_front_end_common.utilities import globals_variables
 
 
 class SimpleTestVertex(ApplicationVertex):
@@ -94,3 +95,8 @@ class SimpleTestVertex(ApplicationVertex):
     @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return self._n_atoms
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step

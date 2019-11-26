@@ -19,6 +19,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
+from spinn_front_end_common.utilities import globals_variables
 
 
 class ChipPowerMonitor(
@@ -99,3 +100,8 @@ class ChipPowerMonitor(
         return ChipPowerMonitorMachineVertex.get_resources(
             machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step

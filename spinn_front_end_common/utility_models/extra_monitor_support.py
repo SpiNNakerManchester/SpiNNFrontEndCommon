@@ -17,6 +17,7 @@ from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+from spinn_front_end_common.utilities import globals_variables
 from .extra_monitor_support_machine_vertex import (
     ExtraMonitorSupportMachineVertex)
 
@@ -64,3 +65,8 @@ class ExtraMonitorSupport(
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(
             spec=spec, placement=placement)
+
+    @property
+    @overrides(ApplicationVertex.timestep)
+    def timestep(self):
+        return globals_variables.get_simulator().machine_time_step
