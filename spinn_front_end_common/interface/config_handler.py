@@ -394,10 +394,17 @@ class ConfigHandler(object):
 
     @property
     def machine_time_step(self):
+        """
+        Gets the machine timestep in microsecond
+        :return: machine timestep in microsecond
+        """
         return self._read_config_int("Machine", "machine_time_step")
 
     @machine_time_step.setter
     def machine_time_step(self, new_value):
+        """
+        Sets the machine time step in microsecond
+        :param new_value: machine time step in microsecond        """
         self._config.set("Machine", "machine_time_step", new_value)
 
     @property
