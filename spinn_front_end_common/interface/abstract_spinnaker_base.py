@@ -792,7 +792,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if run_time is None:
             return None, None
         machine_time_step_ms = self.machine_time_step / \
-                               MICRO_TO_MILLISECOND_CONVERSION
+            MICRO_TO_MILLISECOND_CONVERSION
         n_machine_time_steps = math.ceil(run_time / machine_time_step_ms)
         calc_run_time = n_machine_time_steps * machine_time_step_ms
 
@@ -852,7 +852,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         logger.info("Starting execution process")
 
-        n_machine_time_steps, total_run_time = self._calc_run_time( run_time)
+        n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
