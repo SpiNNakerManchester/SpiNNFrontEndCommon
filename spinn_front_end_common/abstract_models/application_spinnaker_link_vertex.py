@@ -50,7 +50,7 @@ class ApplicationSpiNNakerLinkVertex(
         self._virtual_chip_x = None
         self._virtual_chip_y = None
         if timestep is None:
-            self._timestamp = \
+            self._timestep = \
                 globals_variables.get_simulator().machine_time_step
         else:
             self._timestep = timestep
