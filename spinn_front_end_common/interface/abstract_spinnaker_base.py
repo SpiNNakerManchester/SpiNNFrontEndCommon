@@ -16,6 +16,7 @@
 """
 main interface for the SpiNNaker tools
 """
+from __future__ import division
 from collections import defaultdict
 import logging
 import math
