@@ -72,7 +72,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
             self.assertEqual(
-                sdram.sdram_usage.get_total_sdram(0),
+                sdram.sdram_usage.get_sdram_for_simtime(0),
                 LivePacketGatherMachineVertex.get_sdram_usage())
         self.assertEqual(len(locs), 0)
 
@@ -133,7 +133,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
             self.assertEqual(
-                sdram.sdram_usage.get_total_sdram(0),
+                sdram.sdram_usage.get_sdram_for_simtime(0),
                 LivePacketGatherMachineVertex.get_sdram_usage() * 2)
         self.assertEqual(len(locs), 0)
 
@@ -206,17 +206,17 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
-            if sdram.sdram_usage.get_total_sdram(0) != \
+            if sdram.sdram_usage.get_sdram_for_simtime(0) != \
                     LivePacketGatherMachineVertex.get_sdram_usage():
                 self.assertIn(sdram.chip.x, (2, 7))
                 self.assertIn(sdram.chip.y, (2, 7))
                 self.assertEqual(sdram.chip.x, sdram.chip.y)
                 if sdram.chip.x == 2 and sdram.chip.y == 2:
-                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
-                                     30000)
+                    self.assertEqual(
+                        sdram.sdram_usage.get_sdram_for_simtime(0), 30000)
                 elif sdram.chip.x == 7 and sdram.chip.y == 7:
-                    self.assertEqual(sdram.sdram_usage.get_total_sdram(0),
-                                     50000)
+                    self.assertEqual(
+                        sdram.sdram_usage.get_sdram_for_simtime(0), 50000)
         self.assertEqual(len(locs), 0)
 
         locs = list()
