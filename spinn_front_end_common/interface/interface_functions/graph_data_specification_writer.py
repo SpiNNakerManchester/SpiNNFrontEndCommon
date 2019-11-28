@@ -53,7 +53,7 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            machine, data_n_timesteps, graph_mapper=None,
+            machine, data_simtime_in_us, graph_mapper=None,
             placement_order=None):
         """
         :param placements: placements of machine graph to cores
@@ -90,7 +90,7 @@ class GraphDataSpecificationWriter(object):
         for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
             generated = self.__generate_data_spec_for_vertices(
-                placement, placement.vertex, targets, data_n_timesteps)
+                placement, placement.vertex, targets, data_simtime_in_us)
 
             if generated and isinstance(
                     placement.vertex, AbstractRewritesDataSpecification):
@@ -102,7 +102,7 @@ class GraphDataSpecificationWriter(object):
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, associated_vertex, targets, data_n_timesteps)
+                    placement, associated_vertex, targets, data_simtime_in_us)
                 if generated and isinstance(
                         associated_vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(associated_vertex)
@@ -114,11 +114,12 @@ class GraphDataSpecificationWriter(object):
         return targets
 
     def __generate_data_spec_for_vertices(
-            self, pl, vertex, targets, data_n_timesteps):
+            self, pl, vertex, targets, data_simtime_in_us):
         """
         :param pl: placement of machine graph to cores
         :param vertex: the specific vertex to write DSG for.
         :param targets: DataSpecificationTargets
+        :param data_simtime_in_us: The simtime in us for which space is saved
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         """
@@ -150,8 +151,8 @@ class GraphDataSpecificationWriter(object):
             "    {}: {} (total={}, estimated={})".format(
                 vert, self._region_sizes[vert],
                 sum(self._region_sizes[vert]),
-                vert.resources_required.sdram.get_total_sdram(
-                    data_n_timesteps))
+                vert.resources_required.get_sdram_for_simtime(
+                    data_simtime_in_us))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(

@@ -360,13 +360,13 @@ class DatabaseWriter(object):
                 self.__insert_cfg("infinite_run", "True")
                 self.__insert_cfg("runtime", -1)
 
-    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper,
+    def add_vertices(self, machine_graph, data_simtime_in_us, graph_mapper,
                      application_graph):
         """ Add the machine graph, graph mapper and application graph \
             into the database.
 
         :param machine_graph: the machine graph object
-        :param data_n_timesteps: The number of timesteps for which data space\
+        :param data_simtime_in_us: The simtime for which data space\
             will been reserved
         :param graph_mapper: the graph mapper object
         :param application_graph: the application graph object
@@ -377,7 +377,7 @@ class DatabaseWriter(object):
                 req = vertex.resources_required
                 self.__insert_machine_vertex(
                     vertex, req.cpu_cycles,
-                    req.sdram.get_total_sdram(data_n_timesteps),
+                    req.sdram.get_sdram_for_simtime(data_simtime_in_us),
                     req.dtcm.get_value())
 
             # add machine edges

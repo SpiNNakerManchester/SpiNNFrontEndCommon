@@ -43,7 +43,7 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, user_create_database, tags,
-            runtime, machine, data_n_timesteps, time_scale_factor,
+            runtime, machine, data_simtime_in_us, time_scale_factor,
             machine_time_step, placements, routing_infos, router_tables,
             database_directory, create_atom_to_event_id_mapping=False,
             application_graph=None, graph_mapper=None):
@@ -59,7 +59,7 @@ class DatabaseInterface(object):
                         self._writer.database_path)
             self._write_to_db(machine, time_scale_factor, machine_time_step,
                               runtime, application_graph, machine_graph,
-                              data_n_timesteps, graph_mapper, placements,
+                              data_simtime_in_us, graph_mapper, placements,
                               routing_infos, router_tables, tags,
                               create_atom_to_event_id_mapping)
 
@@ -79,7 +79,7 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, machine_time_step,
-            runtime, application_graph, machine_graph, data_n_timesteps,
+            runtime, application_graph, machine_graph, data_simtime_in_us,
             graph_mapper, placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
         """
@@ -89,8 +89,8 @@ class DatabaseInterface(object):
         :param runtime:
         :param application_graph:
         :param machine_graph:
-        :param data_n_timesteps: \
-            The number of timesteps for which data space will been reserved
+        :param data_simtime_in_us: \
+            The simtime in us for which data space will been reserved
         :param graph_mapper:
         :param placements:
         :param routing_infos:
@@ -110,7 +110,7 @@ class DatabaseInterface(object):
             if application_graph is not None and application_graph.n_vertices:
                 w.add_application_vertices(application_graph)
             p.update()
-            w.add_vertices(machine_graph, data_n_timesteps, graph_mapper,
+            w.add_vertices(machine_graph, data_simtime_in_us, graph_mapper,
                            application_graph)
             p.update()
             w.add_placements(placements)
