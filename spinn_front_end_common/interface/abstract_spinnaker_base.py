@@ -1001,7 +1001,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
-            if placement.vertex.resources_required.sdram.per_timestep:
+            if placement.vertex.resources_required.sdram.per_simtime_us:
                 return True
         return False
 
@@ -1072,8 +1072,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
             size = self._machine.get_chip_at(x, y).sdram.size
-            if sdram.per_timestep:
-                max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
+            if sdram.per_simtime_us:
+                max_this_chip = int(
+                    (size - sdram.fixed) //
+                    (sdram.per_simtime_us * self.machine_time_step))
                 max_time_steps = min(max_time_steps, max_this_chip)
 
         return max_time_steps
