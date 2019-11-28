@@ -53,7 +53,7 @@ class GraphMeasurer(object):
         # Iterate over vertices and allocate
         progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
 
-        resource_tracker = ResourceTracker(machine, plan_n_timesteps)
+        resource_tracker = ResourceTracker(machine, plan_n_timesteps*1000)
         for vertex in progress.over(ordered_vertices):
             resource_tracker.allocate_constrained_resources(
                 vertex.resources_required, vertex.constraints)
