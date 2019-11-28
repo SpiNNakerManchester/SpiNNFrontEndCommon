@@ -16,6 +16,7 @@
 """
 main interface for the SpiNNaker tools
 """
+from __future__ import division
 from collections import defaultdict
 import logging
 import math
@@ -791,8 +792,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         if run_time is None:
             return None, None
-        machine_time_step_ms = self.machine_time_step / \
-            MICRO_TO_MILLISECOND_CONVERSION
+        machine_time_step_ms = (
+            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
         n_machine_time_steps = math.ceil(run_time / machine_time_step_ms)
         calc_run_time = n_machine_time_steps * machine_time_step_ms
 
