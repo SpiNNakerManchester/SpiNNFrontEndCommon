@@ -91,7 +91,6 @@ class _TestApplicationVertex(
         self._regenerate_call_count += 1
 
     @property
-
     def timestep(self):
         return globals_variables.get_simulator().machine_time_step
 
