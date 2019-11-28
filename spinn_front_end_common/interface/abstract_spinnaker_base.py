@@ -1366,9 +1366,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
 
         if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
-            inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
+            inputs["MinimumSimtimeInUs"] = \
+                self._minimum_auto_time_steps * self.machine_time_step
         else:
-            inputs["PlanNTimeSteps"] = n_machine_time_steps
+            inputs["MinimumSimtimeInUs"] = \
+                n_machine_time_steps * self.machine_time_step
 
         # add max SDRAM size and n_cores which we're going to allow
         # (debug purposes)
