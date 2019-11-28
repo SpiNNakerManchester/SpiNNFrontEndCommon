@@ -143,7 +143,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_original_machine_graph",
 
         # boolean for empty graphs
-        "_empty_graphs"
+        "_empty_graphs",
 
         # the mapping interface between application and machine graphs.
         "_graph_mapper",
