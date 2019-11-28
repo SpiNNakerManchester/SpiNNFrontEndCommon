@@ -146,27 +146,27 @@ class ChipPowerMonitorMachineVertex(
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
-                   "data_n_time_steps": "DataNTimeSteps"})
+                   "data_simtime_in_us": "DataSimtimeInUs"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "machine_time_step", "time_scale_factor",
-                   "data_n_time_steps"})
+                   "data_simtime_in_us"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, data_n_time_steps):
+            machine_time_step, time_scale_factor, data_simtime_in_us):
         # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
+            spec, machine_time_step, time_scale_factor, data_simtime_in_us)
 
     def _generate_data_specification(
             self, spec, machine_time_step, time_scale_factor,
-            data_n_time_steps):
+            data_simtime_in_us):
         """ Supports the application vertex calling this directly
 
         :param spec: data spec
         :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
-        :param data_n_time_steps: timesteps to reserve data for
+        :param data_simtime_in_us: simtime in us to reserve data for
         :rtype: None
         """
         # pylint: disable=too-many-arguments
@@ -175,7 +175,7 @@ class ChipPowerMonitorMachineVertex(
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, data_n_time_steps)
+            spec, machine_time_step, time_scale_factor, data_simtime_in_us)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -194,7 +194,7 @@ class ChipPowerMonitorMachineVertex(
 
     def _write_setup_info(
             self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
+            data_simtime_in_us):
         """ Writes the system data as required.
 
         :param spec: the DSG spec writer
@@ -209,8 +209,7 @@ class ChipPowerMonitorMachineVertex(
 
         spec.switch_write_focus(region=self._REGIONS.RECORDING.value)
         recorded_region_sizes = [
-            self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor) * n_machine_time_steps]
+            self._deduce_sdram_requirements_for_simtime(data_simtime_in_us)]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
@@ -257,18 +256,18 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_region_ids(self):
         return [0]
 
-    def _deduce_sdram_requirements_per_timer_tick(
-            self, machine_time_step, time_scale_factor):
+    def _deduce_sdram_requirements_for_simtime(
+            self, data_simtime_in_us, time_scale_factor):
         """ Deduce SDRAM usage per timer tick
 
-        :param machine_time_step: the machine time step
+        :param data_simtime_in_us: simtime in us to reserve data for
         :param time_scale_factor: the time scale factor
         :return: the SDRAM usage
         """
-        timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
-        recording_time = \
-            self._sampling_frequency * self._n_samples_per_recording
-        n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
+        actual_runtime = data_simtime_in_us * time_scale_factor
+        n_recordings_times = math.floor(
+            actual_runtime, self._sampling_frequency)
+        n_entries = n_recordings_times * self._n_samples_per_recording
         return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):

@@ -591,7 +591,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
-        "data_n_time_steps": "DataNTimeSteps",
+        "data_simtime_in_us": "DataSimtimeInUs",
         "run_until_timesteps": "RunUntilTimeSteps"
     })
     @overrides(
@@ -599,18 +599,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
         additional_arguments={
             "machine_time_step", "time_scale_factor", "machine_graph",
             "routing_info", "first_machine_time_step",
-            "data_n_time_steps", "run_until_timesteps"
+            "data_simtime_in_us", "run_until_timesteps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, data_n_time_steps, run_until_timesteps):
+            first_machine_time_step, data_simtime_in_us, run_until_timesteps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # Reserve regions
-        self._reserve_regions(spec, data_n_time_steps)
+        timestep = globals_variables.get_simulator().machine_time_step
+        n_machine_time_steps = data_simtime_in_us // timestep
+        self._reserve_regions(spec, n_machine_time_steps)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
@@ -625,7 +627,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self._recording_sdram_per_timestep(
                 machine_time_step, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * data_n_time_steps
+            recording_size = per_timestep * n_machine_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information

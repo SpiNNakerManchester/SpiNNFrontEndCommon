@@ -1716,6 +1716,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["DataNTimeSteps"] = self._max_run_time_steps
+        inputs["DataSimtimeInUs"] = \
+            self._max_run_time_steps * self.machine_time_step
 
         # Run the data generation algorithms
         outputs = []

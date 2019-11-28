@@ -69,20 +69,20 @@ class ChipPowerMonitor(
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "DataNTimeSteps"})
+                   "data_simtime_in_us": "DataSimtimeInUs"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "n_machine_time_steps"})
+            "machine_time_step", "time_scale_factor", "data_simtime_in_us"})
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
+            data_simtime_in_us):
         # pylint: disable=too-many-arguments, arguments-differ
         # pylint: disable=protected-access
 
         # generate spec for the machine vertex
         placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
+            spec, machine_time_step, time_scale_factor, data_simtime_in_us)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
