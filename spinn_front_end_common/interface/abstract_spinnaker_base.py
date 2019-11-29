@@ -145,6 +145,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # represent cores.
         "_original_machine_graph",
 
+        # boolean for empty graphs
+        "_empty_graphs",
+
         # the mapping interface between application and machine graphs.
         "_graph_mapper",
 
@@ -420,6 +423,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._original_application_graph = \
             ApplicationGraph(label=self._graph_label)
         self._original_machine_graph = MachineGraph(label=self._graph_label)
+        self._empty_graphs = False
 
         self._graph_mapper = None
         self._placements = None
@@ -1502,6 +1506,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
+            self._empty_graphs = True
             logger.warning(
                 "Your graph has no vertices in it.")
             inputs["MemoryApplicationGraph"] = self._application_graph
@@ -1943,9 +1948,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Reports", "write_sdram_usage_report_per_chip"):
             algorithms.append("SdramUsageReportPerChip")
 
-        # clear iobuf if were in multirun mode
+        # clear iobuf if we are in multirun mode
         if (self._has_ran and not graph_changed and
-                not self._use_virtual_board and
+                not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
