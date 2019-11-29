@@ -90,3 +90,26 @@ def set_failed_state(new_failed_state):
         _failed_state = new_failed_state
     elif type(new_failed_state) != type(_failed_state):
         raise ValueError("You may only setup/init one type of simulator")
+
+def us_to_timesteps(simtime_in_us):
+    """
+    Converts the simtime in us to timesteps assuming the caller is using the\
+    machine default timestep
+
+    simtime_in_us MUST be a multiple of the default machine timestep
+
+    :raises ConfigurationException: If called except between start and end
+    :raises ValueError: An Exception is raised if no simulator is active or\
+    if the simtime is not a multiple of that simulators machine timestep
+    the machine default timestep
+    :param simtime_in_us: time in us to convert to default timestep
+    :return: number of timesteps
+    """
+    timestep = get_simulator().machine_time_step
+    timesteps = simtime_in_us // timestep
+    check = timesteps * timestep
+    if check != simtime_in_us:
+        raise ValueError(
+            "{} is not a multiple of the default machine timestep {}".format(
+                simtime_in_us, timestep))
+    return timesteps
