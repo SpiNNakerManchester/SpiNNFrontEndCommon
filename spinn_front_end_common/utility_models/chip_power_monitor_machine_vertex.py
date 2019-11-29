@@ -209,7 +209,8 @@ class ChipPowerMonitorMachineVertex(
 
         spec.switch_write_focus(region=self._REGIONS.RECORDING.value)
         recorded_region_sizes = [
-            self._deduce_sdram_requirements_for_simtime(data_simtime_in_us)]
+            self._deduce_sdram_requirements_for_simtime(
+                data_simtime_in_us, time_scale_factor)]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
@@ -266,8 +267,8 @@ class ChipPowerMonitorMachineVertex(
         """
         actual_runtime = data_simtime_in_us * time_scale_factor
         n_recordings_times = math.floor(
-            actual_runtime, self._sampling_frequency)
-        n_entries = n_recordings_times * self._n_samples_per_recording
+            actual_runtime / self._sampling_frequency)
+        n_entries = n_recordings_times / self._n_samples_per_recording
         return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):
