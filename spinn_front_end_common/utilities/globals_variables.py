@@ -91,6 +91,7 @@ def set_failed_state(new_failed_state):
     elif type(new_failed_state) != type(_failed_state):
         raise ValueError("You may only setup/init one type of simulator")
 
+
 def us_to_timesteps(simtime_in_us):
     """
     Converts the simtime in us to timesteps assuming the caller is using the\
