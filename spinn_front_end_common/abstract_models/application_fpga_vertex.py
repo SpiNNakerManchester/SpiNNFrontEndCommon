@@ -116,6 +116,6 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         return vertex
 
     @property
-    @overrides(ApplicationVertex.timestep)
-    def timestep(self):
+    @overrides(ApplicationVertex.timestep_in_us)
+    def timestep_in_us(self):
         return self._timestep
