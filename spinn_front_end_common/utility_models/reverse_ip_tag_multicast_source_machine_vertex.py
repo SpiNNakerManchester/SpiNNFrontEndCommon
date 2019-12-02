@@ -609,9 +609,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
-        # Reserve regions
+        # TODO Once the Machine vertex has a link to the application vertext
+        # Swap from Global to timestep in Application vertex
         timestep = globals_variables.get_simulator().machine_time_step
         n_machine_time_steps = data_simtime_in_us // timestep
+        # Reserve regions
         self._reserve_regions(spec, n_machine_time_steps)
 
         # Write the system region
