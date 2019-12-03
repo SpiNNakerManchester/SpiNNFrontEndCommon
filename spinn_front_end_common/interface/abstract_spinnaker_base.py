@@ -28,6 +28,7 @@ import threading
 from threading import Condition
 from six import iteritems, reraise
 from numpy import __version__ as numpy_version
+from spinn_utilities.helpful_functions import lcm
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -337,7 +338,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_vertices_or_edges_added",
 
         # Version provenance
-        "_version_provenance"
+        "_version_provenance",
+
+        # Lowest Common Multiple of all timesteps in the system
+        "_lcm_timestep"
     ]
 
     def __init__(
@@ -822,6 +826,35 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             n_machine_time_steps,  machine_time_step_ms, hardware_timestep_us)
 
         return n_machine_time_steps, total_run_time
+
+    def _adjust_runtime(self, runtime):
+        """
+        Checks and if required adjusts the runtime based on the\
+        machine_timestep.
+
+        This method rounds the run up to the next timestep as discussed in\
+        https://github.com/SpiNNakerManchester/sPyNNaker/issues/149
+
+        If vertexes have different timesteps the lowest common demoninator\
+        will be used as the round up target.
+
+        :param runtime:
+        :return:
+        """
+        pass
+
+    def lcm_timestep(self):
+        timesteps = set()
+        timesteps.add(self.machine_time_step)
+        for vertex in self._original_application_graph.vertices:
+            timesteps.add(vertex.timestep_in_us)
+        self._lcm_timestep = lcm(timesteps)
+        if self._lcm_timestep != self.machine_time_step:
+            logger.warning(
+                "Multiple timestep values found! The timestep used for this "
+                "run will be {} which is the lcm of {}",
+                self._lcm_timestep,  timesteps)
+        return self._lcm_timestep
 
     def _run(self, run_time, run_until_complete=False):
         """ The main internal run function
