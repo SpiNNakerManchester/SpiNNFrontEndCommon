@@ -52,8 +52,12 @@ extensions = [
 ]
 
 intersphinx_mapping = {
+    'python': ('https://docs.python.org/3.6', None),
+    'numpy': ("https://docs.scipy.org/doc/numpy/", None),
     'spinn_machine': (
         'https://spinnmachine.readthedocs.io/en/latest/', None),
+    'spinn_storage_handlers': (
+        'https://spinnstoragehandlers.readthedocs.io/en/latest/', None),
     'spinnman': (
         'https://spinnman.readthedocs.io/en/latest/', None),
     'pacman': (
