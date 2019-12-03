@@ -794,58 +794,39 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         :param run_time: time user requested to run for in milliseconds
         :type run_time: float or None
-        :return: n_machine_time_steps as a whole int and\
-            total_run_time in milliseconds
-        :rtype: (int,float) or (None, None)
+        :return: run_time in us and
+            total_run_time in ms
+        :rtype: (int, float) or (None, None)
         """
         if run_time is None:
             return None, None
-        machine_time_step_ms = (
-            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
-        n_machine_time_steps = math.ceil(run_time / machine_time_step_ms)
-        calc_run_time = n_machine_time_steps * machine_time_step_ms
-
-        # Allow for minor float errors
-        if abs(run_time - calc_run_time) > 0.00001:
+        run_time_in_us = math.ceil(run_time * MICRO_TO_MILLISECOND_CONVERSION)
+        lcm_timestep = self.lcm_timestep()
+        n_lcm_time_steps = math.ceil(run_time_in_us / lcm_timestep)
+        calc_run_time = n_lcm_time_steps * lcm_timestep
+        if run_time != calc_run_time:
             logger.warning(
                 "Your requested runtime of {}ms "
-                "is not a multiple of the machine time step of {}ms "
+                "is not a multiple of the time step of {}ms "
                 "and has therefor been rounded up to {}ms",
-                run_time, machine_time_step_ms, calc_run_time)
+                run_time, lcm_timestep, calc_run_time)
 
         total_run_timesteps = (
-            self._current_run_timesteps + n_machine_time_steps)
+            self._current_run_timesteps + n_lcm_time_steps)
         total_run_time = (
-            total_run_timesteps * machine_time_step_ms *
+            total_run_timesteps * n_lcm_time_steps *
             self.time_scale_factor)
 
         # Convert dt into microseconds and divide by
         # realtime proportion to get hardware timestep
-        hardware_timestep_us = int(round(
-            float(self.machine_time_step) / float(self.timescale_factor)))
+        hardware_timestep_us = int(round(lcm_timestep / self.timescale_factor))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
             "using a hardware timestep of {}us",
-            n_machine_time_steps,  machine_time_step_ms, hardware_timestep_us)
+            n_lcm_time_steps, lcm_timestep, hardware_timestep_us)
 
-        return n_machine_time_steps, total_run_time
-
-    def _adjust_runtime(self, runtime):
-        """
-        Checks and if required adjusts the runtime based on the\
-        machine_timestep.
-
-        This method rounds the run up to the next timestep as discussed in\
-        https://github.com/SpiNNakerManchester/sPyNNaker/issues/149
-
-        If vertexes have different timesteps the lowest common demoninator\
-        will be used as the round up target.
-
-        :param runtime:
-        :return:
-        """
-        pass
+        return calc_run_time, total_run_time
 
     def lcm_timestep(self):
         timesteps = set()
@@ -890,7 +871,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         logger.info("Starting execution process")
 
-        n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
+        #n_machine_time_steps
+        run_time, total_run_time = self._calc_run_time(run_time)
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
@@ -944,7 +926,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._max_run_time_steps = None
 
             if self._machine is None:
-                self._get_machine(total_run_time, n_machine_time_steps)
+                self._get_machine(total_run_time, run_time)
             self._do_mapping(run_time, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -962,6 +944,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Work out an array of timesteps to perform
         steps = None
+        if run_time is not None:
+            n_machine_time_steps = run_time // self._lcm_timestep
+        else:
+            n_machine_time_steps = None
         if (not self._config.getboolean("Buffers", "use_auto_pause_and_resume")
                 or not is_per_timestep_sdram):
 
@@ -1191,20 +1177,20 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
 
-    def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+    def _get_machine(self, total_run_time=0.0, run_time=None):
         if self._machine is not None:
             return self._machine
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
-            self._machine_by_hostname(n_machine_time_steps, total_run_time)
+            self._machine_by_hostname(run_time, total_run_time)
 
         elif self._use_virtual_board:
-            self._machine_by_virtual(n_machine_time_steps, total_run_time)
+            self._machine_by_virtual(run_time, total_run_time)
         else:
             # must be remote due to set_up_machine_specifics()
-            self._machine_by_remote(n_machine_time_steps, total_run_time)
+            self._machine_by_remote(run_time, total_run_time)
 
         if self._app_id is None:
             if self._txrx is None:
@@ -1230,9 +1216,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return self._machine
 
-    def _machine_by_hostname(self, n_machine_time_steps, total_run_time):
+    def _machine_by_hostname(self, run_time, total_run_time):
         inputs, algorithms = self._get_machine_common(
-            n_machine_time_steps, total_run_time)
+            run_time, total_run_time)
         outputs = list()
         inputs["IPAddress"] = self._hostname
         inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
@@ -1253,9 +1239,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
 
-    def _machine_by_virtual(self, n_machine_time_steps, total_run_time):
+    def _machine_by_virtual(self, run_time, total_run_time):
         inputs, algorithms = self._get_machine_common(
-            n_machine_time_steps, total_run_time)
+            run_time, total_run_time)
         outputs = list()
 
         inputs["IPAddress"] = "virtual"
@@ -1283,13 +1269,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine_tokens = executor.get_completed_tokens()
         self._machine = executor.get_item("MemoryMachine")
 
-    def _machine_by_remote(self, n_machine_time_steps, total_run_time):
+    def _machine_by_remote(self, run_time, total_run_time):
         """
         Gets a machine when we know one of self._spalloc_server or\
             self._remote_spinnaker_url is defined
         """
         inputs, algorithms = self._get_machine_common(
-            n_machine_time_steps, total_run_time)
+            run_time, total_run_time)
         outputs = list()
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
@@ -1393,7 +1379,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return do_partitioning
 
-    def _get_machine_common(self, n_machine_time_steps, total_run_time):
+    def _get_machine_common(self, run_time, total_run_time):
         inputs = dict(self._extra_inputs)
         algorithms = list()
 
@@ -1406,10 +1392,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
             inputs["MinimumSimtimeInUs"] = \
-                self._minimum_auto_time_steps * self.machine_time_step
+                self._minimum_auto_time_steps * self._lcm_timestep
         else:
-            inputs["MinimumSimtimeInUs"] = \
-                n_machine_time_steps * self.machine_time_step
+            inputs["MinimumSimtimeInUs"] = run_time
 
         # add max SDRAM size and n_cores which we're going to allow
         # (debug purposes)
