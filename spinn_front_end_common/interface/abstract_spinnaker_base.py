@@ -269,7 +269,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_no_sync_changes",
 
         #
-        "_max_run_time_steps",
+        "_max_run_time_in_us",
 
         #
         "_no_machine_time_steps",
@@ -487,7 +487,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
-        self._max_run_time_steps = None
+        self._max_run_time_in_us = None
         self._no_machine_time_steps = None
         self._minimum_auto_time_steps = self._config.getint(
                 "Buffers", "minimum_auto_time_steps")
@@ -841,10 +841,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._lcm_timestep,  timesteps)
         return self._lcm_timestep
 
-    def _run(self, run_time, run_until_complete=False):
+    def _run(self, run_time_in_ms, run_until_complete=False):
         """ The main internal run function
 
-        :param run_time: the run duration in milliseconds.
+        :param run_time_in_us: the run duration in milliseconds.
         """
         self.verify_not_running()
 
@@ -861,7 +861,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state = Simulator_State.IN_RUN
 
         self._adjust_config(
-            run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
+            run_time_in_ms, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
 
         # Install the Control-C handler
         if isinstance(threading.current_thread(), threading._MainThread):
@@ -871,8 +871,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         logger.info("Starting execution process")
 
-        #n_machine_time_steps
-        run_time, total_run_time = self._calc_run_time(run_time)
+        run_time_in_us, total_run_time = self._calc_run_time(run_time_in_ms)
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
@@ -923,11 +922,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._app_id = None
                 if self._machine_allocation_controller is not None:
                     self._machine_allocation_controller.close()
-                self._max_run_time_steps = None
+                self._max_run_time_in_us = None
 
             if self._machine is None:
-                self._get_machine(total_run_time, run_time)
-            self._do_mapping(run_time, total_run_time)
+                self._get_machine(total_run_time, run_time_in_us)
+            self._do_mapping(run_time_in_us, total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -939,54 +938,47 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                                  "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
-        if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps()
+        self._check_max_runtime()
 
         # Work out an array of timesteps to perform
-        steps = None
-        if run_time is not None:
-            n_machine_time_steps = run_time // self._lcm_timestep
-        else:
-            n_machine_time_steps = None
-        if (not self._config.getboolean("Buffers", "use_auto_pause_and_resume")
-                or not is_per_timestep_sdram):
-
-            # Runs should only be in units of max_run_time_steps at most
-            if (is_per_timestep_sdram and
-                    (self._max_run_time_steps < n_machine_time_steps or
-                        n_machine_time_steps is None)):
+        if run_time_in_us is None:
+            steps = None
+        elif self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
+            if run_time_in_us > self._max_run_time_in_us:
                 self._state = Simulator_State.FINISHED
+                max_run_in_ms = (self._max_run_time_in_us /
+                                 MICRO_TO_MILLISECOND_CONVERSION)
                 raise ConfigurationException(
                     "The SDRAM required by one or more vertices is based on"
                     " the run time, so the run time is limited to"
-                    " {} time steps".format(self._max_run_time_steps))
-
-            steps = [n_machine_time_steps]
-        elif run_time is not None:
-
+                    " {} ms".format(max_run_in_ms))
+            steps = [run_time_in_us]
+        else:
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            steps = self._generate_steps(
-                n_machine_time_steps, self._max_run_time_steps)
+            steps = self._generate_steps(run_time_in_us)
+
+        #Steps changed to time_in_us
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
         if not self._has_ran or graph_changed or data_changed:
-            self._do_data_generation(self._max_run_time_steps)
+            self._do_data_generation()
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
                 self._do_load(graph_changed)
 
         # Run for each of the given steps
-        if run_time is not None:
+        if run_time_in_us is not None:
             logger.info("Running for {} steps for a total of {}ms",
-                        len(steps), run_time)
+                        len(steps),
+                        run_time_in_us / MICRO_TO_MILLISECOND_CONVERSION)
             for i, step in enumerate(steps):
                 logger.info("Run {} of {}", i + 1, len(steps))
                 self._do_run(step, graph_changed, run_until_complete)
-        elif run_time is None and run_until_complete:
+        elif run_time_in_us is None and run_until_complete:
             logger.info("Running until complete")
             self._do_run(None, graph_changed, True)
         elif (not self._config.getboolean(
@@ -1017,7 +1009,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
-        if run_time is not None:
+        if run_time_in_us is not None:
             self._state = Simulator_State.FINISHED
         else:
             self._state = Simulator_State.RUN_FOREVER
@@ -1072,13 +1064,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_data_n_timesteps(self):
-        """ Operates the auto pause and resume functionality by figuring out\
-            how many timer ticks a simulation can run before SDRAM runs out,\
-            and breaks simulation into chunks of that long.
-
-        :return: max time a simulation can run.
+    def _check_max_runtime(self):
         """
+        Sets if required the max runtime in us
+
+        This will be how long the simulation could run before SDRAM runs out,
+        rounded down to a multiple lcd_timestep
+
+        """
+        if self._max_run_time_in_us is not None:
+            return  # No need to repeat work
         # Go through the placements and find how much SDRAM is used
         # on each chip
         usage_by_chip = dict()
@@ -1092,35 +1087,35 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        max_time_steps = sys.maxsize
+        self._max_run_time_in_us = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
             size = self._machine.get_chip_at(x, y).sdram.size
             if sdram.per_simtime_us:
                 max_this_chip = int(
-                    (size - sdram.fixed) //
-                    (sdram.per_simtime_us * self.machine_time_step))
-                max_time_steps = min(max_time_steps, max_this_chip)
+                    (size - sdram.fixed) // sdram.per_simtime_us)
+                self._max_run_time_in_us = min(
+                    self._max_run_time_in_us, max_this_chip)
 
-        return max_time_steps
+        # Round down to a multiple of self._lcm_timestep
+        self._max_run_time_in_us = (self._max_run_time_in_us //
+                                    self._lcm_timestep) * self._lcm_timestep
 
-    @staticmethod
-    def _generate_steps(n_steps, n_steps_per_segment):
+    def _generate_steps(self, run_time_in_us):
         """ Generates the list of "timer" runs. These are usually in terms of\
             time steps, but need not be.
 
-        :param n_steps: the total runtime in machine time steps
-        :type n_steps: int
-        :param n_steps_per_segment: the minimum allowed per chunk
-        :type n_steps_per_segment: int
+        :param run_time_in_us: the total runtime in us
+        :type run_time_in_us: int
         :return: list of time steps
         """
-        if n_steps == 0:
+        if run_time_in_us == 0:
             return [0]
-        n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
-        left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
-        steps = [int(n_steps_per_segment)] * n_full_iterations
-        if left_over_steps:
-            steps.append(int(left_over_steps))
+        n_full_iterations = run_time_in_us // self._max_run_time_in_us
+        left_over_runtime = run_time_in_us - (
+                run_time_in_us * self._max_run_time_in_us)
+        steps = [self._max_run_time_in_us] * n_full_iterations
+        if left_over_runtime:
+            steps.append(left_over_runtime)
         return steps
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
@@ -1727,7 +1722,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
 
-    def _do_data_generation(self, n_machine_time_steps):
+    def _do_data_generation(self):
 
         # set up timing
         data_gen_timer = Timer()
@@ -1736,13 +1731,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
+        n_machine_time_steps = self._max_run_time_in_us // self._lcm_timestep
         inputs["RunUntilTimeSteps"] = n_machine_time_steps
 
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["DataNTimeSteps"] = self._max_run_time_steps
-        inputs["DataSimtimeInUs"] = \
-            self._max_run_time_steps * self.machine_time_step
+        inputs["DataNTimeSteps"] = n_machine_time_steps
+
+        inputs["DataSimtimeInUs"] = self._max_run_time_in_us
 
         # Run the data generation algorithms
         outputs = []
@@ -1848,12 +1844,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
 
-    def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
+    def _do_run(self, runtime_in_us, graph_changed, run_until_complete):
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
 
         run_complete = False
+
+        if runtime_in_us is None:
+            n_machine_time_steps = None
+        else:
+            n_machine_time_steps = runtime_in_us // self._lcm_timestep
         executor, self._current_run_timesteps = self._create_execute_workflow(
             n_machine_time_steps, graph_changed, run_until_complete)
         try:
@@ -1863,7 +1864,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # write provenance to file if necessary
             if (self._config.getboolean("Reports", "write_provenance_data") and
-                    n_machine_time_steps is not None):
+                    runtime_in_us is not None):
                 prov_items = list()
                 if self._version_provenance is not None:
                     prov_items.extend(self._version_provenance)
