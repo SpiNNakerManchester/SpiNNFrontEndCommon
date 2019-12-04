@@ -18,6 +18,7 @@
 //! imports
 #include "spin1_api.h"
 #include "common-typedefs.h"
+#include "common.h"
 #include <data_specification.h>
 #include <simulation.h>
 #include <debug.h>
@@ -46,9 +47,14 @@ enum sdp_port_commands {
     SDP_SEND_SEQ_DATA_CMD = 2000,
     SDP_TELL_MISSING_BACK_TO_HOST = 2001,
     // sent
-  //  SDP_SEND_FIRST_MISSING_SEQ_DATA_IN_CMD = 200,
     SDP_SEND_MISSING_SEQ_DATA_IN_CMD = 2002,
     SDP_SEND_FINISHED_DATA_IN_CMD = 2003
+};
+
+//! values for port numbers this core will respond to
+enum functionality_to_port_num_map {
+    REINJECTION_PORT = 4,
+    DATA_SPEED_UP_IN_PORT = 6
 };
 
 // threshold for sdram vs dtcm missing seq store.
@@ -63,6 +69,9 @@ enum sdp_port_commands {
 
 // flag for cap on transaction id
 #define TRANSACTION_CAP 0xFFFFFFF
+
+// mask needed by router timeout
+#define ROUTER_TIMEOUT_MASK 0xFF
 
 enum {
     //! How many multicast packets are to be received per SDP packet
@@ -141,6 +150,7 @@ typedef struct sdp_msg_out_payload_t {
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
+static uint32_t basic_data_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
@@ -165,6 +175,7 @@ typedef struct data_out_config_t {
     uint new_seq_key;
     uint first_data_key;
     uint end_flag_key;
+    uint basic_data_key;
     uint tag_id;
 } data_out_config_t;
 
@@ -177,6 +188,7 @@ enum {
 
 // Note that these addresses are *board-local* chip addresses.
 static uint data_in_mc_key_map[MAX_CHIP_INDEX][MAX_CHIP_INDEX] = {{0}};
+
 static uint chip_x = 0xFFFFFFF; // Not a legal chip coordinate
 static uint chip_y = 0xFFFFFFF; // Not a legal chip coordinate
 
@@ -188,16 +200,17 @@ static uint total_received_seq_nums = 0;
 static uint last_seen_seq_num = 0;
 static uint start_sdram_address = 0;
 
-//! Human readable definitions of the offsets for multicast key elements.
-//! These act as commands sent to the target extra monitor core.
+//! Human readable definitions of the offsets for data in multicast key
+//! elements. These act as commands sent to the target extra monitor core.
 typedef enum {
     WRITE_ADDR_KEY_OFFSET = 0,
     DATA_KEY_OFFSET = 1,
-    BOUNDARY_KEY_OFFSET = 2
+    BOUNDARY_KEY_OFFSET = 2,
 } key_offsets;
 
 typedef struct data_in_config_t {
-    uint32_t n_chips;
+    uint32_t n_extra_monitors;
+    uint32_t reinjector_base_key;
     struct chip_key_data_t {
         uint32_t x_coord;
         uint32_t y_coord;
@@ -537,12 +550,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
 //! \brief processes sdp messages
 //! \param[in] mailbox: the sdp message
 //! \param[in] port: the port associated with this sdp message
-static void data_in_receive_sdp_data(uint mailbox, uint port) {
-    // use as not important
-    use(port);
-
-    // convert mailbox into correct sdp format
-    sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
+static void data_in_receive_sdp_data(sdp_msg_pure_data *msg) {
     uint command = msg->data[COMMAND_ID];
 
     // check for separate commands
@@ -561,11 +569,92 @@ static void data_in_receive_sdp_data(uint mailbox, uint port) {
     default:
         log_error("Failed to recognise command id %u", command);
     }
-
-    // free the message to stop overload
-    spin1_msg_free((sdp_msg_t *) msg);
 }
 
+//! \brief sends the basic timeout command via mc to the extra monitors
+//! \param[in] timeout: the timeout to transmit
+//! \param[in] key: the mc key to use here
+//! \return the length of extra data put into the message for return
+static void send_timeout(sdp_msg_t* msg, uint32_t key){
+    if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
+        msg->cmd_rc = RC_ARG;
+        return;
+    }
+    while (spin1_send_mc_packet(key, msg->arg1, WITH_PAYLOAD) == 0) {
+        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+    }
+    msg->cmd_rc = RC_OK;
+}
+
+//! \brief sends the clear message to all extra mons on this board
+static void send_clear_message(sdp_msg_t* msg) {
+    while (spin1_send_mc_packet(
+            reinjection_clear_mc_key, 0, WITH_PAYLOAD) == 0) {
+        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+    }
+    msg->cmd_rc = RC_OK;
+}
+
+//! \brief handles the commands for the reinjector code.
+//! \param[in] msg: the message with the commands
+//! \return the length of extra data put into the message for return
+static void reinjection_sdp_command(sdp_msg_t *msg) {
+
+    // handle the key conversion
+    switch (msg->cmd_rc) {
+    case CMD_DPRI_SET_ROUTER_TIMEOUT:
+        send_timeout(msg, reinjection_timeout_mc_key);
+        log_info("sent reinjection timeout mc");
+        break;
+    case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
+        send_timeout(msg, reinjection_emergency_timeout_mc_key);
+        log_info("sent reinjection emergency timeout mc");
+        break;
+    case CMD_DPRI_CLEAR:
+        send_clear_message(msg);
+        log_info("sent reinjection clear mc");
+        break;
+    default:
+        // If we are here, the command was not recognised, so fail
+        // (ARG as the command is an argument)
+        log_error(
+            "ignoring message as dont know what to do with it when "
+            "command id is %d", msg->cmd_rc);
+        return;
+    }
+
+    // set message to correct format
+    msg->length = SDP_REPLY_HEADER_LEN;
+    reflect_sdp_message(msg, 0);
+
+    while (!spin1_send_sdp_msg(msg, SDP_TIMEOUT)) {
+        log_error("failed to send SDP message");
+        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+    }
+}
+
+//! \brief processes sdp messages
+//! \param[in] mailbox: the sdp message
+//! \param[in] port: the port associated with this sdp message
+static void receive_sdp_message(uint mailbox, uint port) {
+
+    switch (port) {
+    case REINJECTION_PORT:
+        reinjection_sdp_command((sdp_msg_t*) mailbox);
+        break;
+    case DATA_SPEED_UP_IN_PORT:
+        data_in_receive_sdp_data((sdp_msg_pure_data*) mailbox);
+        break;
+    default:
+        log_info("unexpected port %d\n", port);
+    }
+    // free the message to stop overload
+    spin1_msg_free((sdp_msg_t *) mailbox);
+
+}
+
+//! \brief sends data to the host via sdp
+//! \return void
 static void send_data(void) {
     copy_data(&my_msg.data, data, position_in_store);
     my_msg.length = sizeof(sdp_hdr_t) + position_in_store * sizeof(uint);
@@ -633,11 +722,13 @@ static void initialise(void) {
 
     log_info("Initialising data out");
 
+    // read keys from sdram
     data_out_config_t *config = (data_out_config_t *)
             data_specification_get_region(CONFIG, ds_regions);
     new_sequence_key = config->new_seq_key;
     first_data_key = config->first_data_key;
     end_flag_key = config->end_flag_key;
+    basic_data_key = config->basic_data_key;
 
     my_msg.tag = config->tag_id;    	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet
@@ -656,16 +747,22 @@ static void initialise(void) {
     data_in_config_t *chip_key_map = (data_in_config_t *)
             data_specification_get_region(CHIP_TO_KEY, ds_regions);
 
-    uint n_chips = chip_key_map->n_chips;
-    for (uint i = 0; i < n_chips; i++) {
+    // sort out bitfield for reinjection ack tracking
+    uint32_t n_extra_monitors = chip_key_map->n_extra_monitors;
+
+    // read in the keys for mc packets for data in
+    for (uint i = 0; i < n_extra_monitors; i++) {
         uint x_coord = chip_key_map->chip_to_key[i].x_coord;
         uint y_coord = chip_key_map->chip_to_key[i].y_coord;
         uint base_key = chip_key_map->chip_to_key[i].base_key;
-
         data_in_mc_key_map[x_coord][y_coord] = base_key;
     }
 
-    spin1_callback_on(SDP_PACKET_RX, data_in_receive_sdp_data, SDP);
+    // set the reinjection mc api
+    initialise_reinjection_mc_api(chip_key_map->reinjector_base_key);
+
+    // set sdp callback
+    spin1_callback_on(SDP_PACKET_RX, receive_sdp_message, SDP);
 }
 
 

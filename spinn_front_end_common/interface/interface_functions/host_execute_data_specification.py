@@ -240,11 +240,11 @@ class HostExecuteDataSpecification(object):
         return receiver
 
     def __reset_router_timeouts(self, receiver):
-        # reset router tables
-        receiver.load_application_routing_tables(
-            self._txrx, self._monitors, self._placements)
         # reset router timeouts
         receiver.unset_cores_for_data_streaming(
+            self._txrx, self._monitors, self._placements)
+        # reset router tables
+        receiver.load_application_routing_tables(
             self._txrx, self._monitors, self._placements)
 
     def __select_writer(self, x, y):

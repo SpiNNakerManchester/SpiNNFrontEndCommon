@@ -23,6 +23,11 @@ import sys
 from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
+
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes import \
+    SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess, \
+    ClearQueueProcess
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -76,7 +81,8 @@ TRANSACTION_ID_CAP = 0xFFFFFFFF
 SDP_RETRANSMISSION_HEADER_SIZE = 2
 
 #: size of config region in bytes
-CONFIG_SIZE = 4 * BYTES_PER_WORD
+#: 1.new seq key, 2.first data key, 3.end flag key, 4.base key, 5.iptag tag
+CONFIG_SIZE = 5 * BYTES_PER_WORD
 
 #: items of data a SDP packet can hold when SCP header removed
 WORDS_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -106,8 +112,9 @@ BYTES_IN_FULL_PACKET_WITH_KEY = (
     WORDS_IN_FULL_PACKET_WITH_KEY * BYTES_PER_WORD)
 
 #: size of data in key space
-#: x, y, key (all ints) for possible 48 chips,
-SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 48 + 1) * BYTES_PER_WORD
+#: x, y, key (all ints) for possible 48 chips, plus n chips to read,
+# the reinjector base key.
+SIZE_DATA_IN_CHIP_TO_KEY_SPACE = ((3 * 48) + 2) * BYTES_PER_WORD
 
 
 class _DATA_REGIONS(Enum):
@@ -209,7 +216,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     FIRST_DATA_KEY = 0xFFFFFFF7
     END_FLAG_KEY = 0xFFFFFFF6
 
-    #: to use with multicast stuff
+    #: to use with multicast stuff (reinjection acks have to be fixed route)
     BASE_MASK = 0xFFFFFFFB
     NEW_SEQ_KEY_OFFSET = 1
     FIRST_DATA_KEY_OFFSET = 2
@@ -354,6 +361,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
+        "router_timeout_key": "SystemMulticastRouterTimeoutKeys",
         "machine": "MemoryExtendedMachine",
         "app_id": "APPID"
     })
@@ -362,12 +370,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         additional_arguments={
             "machine_graph", "routing_info", "tags",
             "machine_time_step", "time_scale_factor",
-            "mc_data_chips_to_keys", "machine", "app_id"
+            "mc_data_chips_to_keys", "machine", "app_id",
+            "router_timeout_key"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
             machine_time_step, time_scale_factor, mc_data_chips_to_keys,
-            machine, app_id):
+            machine, app_id, router_timeout_key):
         """
         :param machine_graph: (injected)
         :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
@@ -385,6 +394,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type machine: ~spinn_machine.Machine
         :param app_id: (injected)
         :type app_id: int
+        :param router_timeout_key: (injected)
+        :type router_timeout_key: dict(int)
         """
         # pylint: disable=too-many-arguments, arguments-differ
 
@@ -406,10 +417,13 @@ class DataSpeedUpPacketGatherMachineVertex(
             new_seq_key = self.NEW_SEQ_KEY
             first_data_key = self.FIRST_DATA_KEY
             end_flag_key = self.END_FLAG_KEY
+            base_key = self.BASE_KEY
+
         spec.switch_write_focus(_DATA_REGIONS.CONFIG.value)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(end_flag_key)
+        spec.write_value(base_key)
 
         # locate the tag ID for our data and update with a port
         # Note: The port doesn't matter as we are going to override this later
@@ -425,6 +439,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write how many chips to read
         spec.write_value(len(chips_on_board))
+
+        # write the broad cast keys for timeouts
+        reinjection_base_key = router_timeout_key[(placement.x, placement.y)]
+        spec.write_value(reinjection_base_key)
 
         # write each chip x and y and base key
         for chip_xy in chips_on_board:
@@ -1018,14 +1036,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        lead_monitor.clear_reinjection_queue(
-            transceiver, placements, extra_monitor_cores)
+        self.clear_reinjection_queue(transceiver, placements)
 
         # set time outs
-        lead_monitor.set_router_emergency_timeout(
-            self._SHORT_TIMEOUT, transceiver, placements, extra_monitor_cores)
-        lead_monitor.set_router_time_outs(
-            self._LONG_TIMEOUT, transceiver, placements, extra_monitor_cores)
+        self.set_router_emergency_timeout(
+            self._SHORT_TIMEOUT, transceiver, placements)
+        self.set_router_time_outs(self._LONG_TIMEOUT, transceiver, placements)
 
     @staticmethod
     def load_application_routing_tables(
@@ -1061,6 +1077,50 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores[0].load_system_mc_routes(
             placements, extra_monitor_cores, transceiver)
 
+    def set_router_time_outs(self, timeout, transceiver, placements):
+        mantissa, exponent = timeout
+        core_subsets = convert_vertices_to_core_subset([self], placements)
+        process = SetRouterTimeoutProcess(
+            transceiver.scamp_connection_selector)
+        try:
+            process.set_timeout(mantissa, exponent, core_subsets)
+        except:  # noqa: E722
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise
+
+    def set_router_emergency_timeout(self, timeout, transceiver, placements):
+        mantissa, exponent = timeout
+        core_subsets = convert_vertices_to_core_subset([self], placements)
+        process = SetRouterEmergencyTimeoutProcess(
+            transceiver.scamp_connection_selector)
+        try:
+            process.set_timeout(mantissa, exponent, core_subsets)
+        except:  # noqa: E722
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise
+
+    def clear_reinjection_queue(self, transceiver, placements):
+        """ Clears the queues for reinjection
+
+        :param transceiver: the spinnMan interface
+        :type transceiver: ~spinnman.transceiver.Transceiver
+        :param placements: the placements object
+        :type placements: ~pacman.model.placements.Placements
+        """
+        core_subsets = convert_vertices_to_core_subset([self], placements)
+        process = ClearQueueProcess(transceiver.scamp_connection_selector)
+        try:
+            process.reset_counters(core_subsets)
+        except:  # noqa: E722
+            emergency_recover_state_from_failure(
+                transceiver, self._app_id, self,
+                placements.get_placement_of_vertex(self))
+            raise
+
     def unset_cores_for_data_streaming(
             self, transceiver, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
@@ -1075,24 +1135,26 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type placements: ~pacman.model.placements.Placements
         :rtype: None
         """
-        lead_monitor = extra_monitor_cores[0]
+
         # Set the routers to temporary values
-        lead_monitor.set_router_time_outs(
-            self._TEMP_TIMEOUT, transceiver, placements, extra_monitor_cores)
-        lead_monitor.set_router_emergency_timeout(
-            self._ZERO_TIMEOUT, transceiver, placements, extra_monitor_cores)
+        self.set_router_time_outs(
+            self._TEMP_TIMEOUT, transceiver, placements)
+        self.set_router_emergency_timeout(
+            self._ZERO_TIMEOUT, transceiver, placements)
 
         if self._last_status is None:
             log.warning(
                 "Cores have not been set for data extraction, so can't be"
                 " unset")
         try:
-            lead_monitor.set_router_time_outs(
-                self._last_status.router_timeout_parameters,
-                transceiver, placements, extra_monitor_cores)
-            lead_monitor.set_router_emergency_timeout(
+            self.set_router_time_outs(
+                self._last_status.router_timeout_parameters, transceiver,
+                placements)
+            self.set_router_emergency_timeout(
                 self._last_status.router_emergency_timeout_parameters,
-                transceiver, placements, extra_monitor_cores)
+                transceiver, placements)
+
+            lead_monitor = extra_monitor_cores[0]
             lead_monitor.set_reinjection_packets(
                 placements, extra_monitor_cores, transceiver,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
@@ -1545,11 +1607,17 @@ class _StreamingContextManager(object):
 
     def __enter__(self):
         for gatherer in self._gatherers:
+            gatherer.load_system_routing_tables(
+                self._txrx, self._monitors, self._placements)
+        for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming(
                 self._txrx, self._monitors, self._placements)
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:
             gatherer.unset_cores_for_data_streaming(
+                self._txrx, self._monitors, self._placements)
+        for gatherer in self._gatherers:
+            gatherer.load_application_routing_tables(
                 self._txrx, self._monitors, self._placements)
         return False

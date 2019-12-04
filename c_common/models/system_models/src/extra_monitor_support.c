@@ -19,6 +19,7 @@
 #include <sark.h>
 #include <stdbool.h>
 #include <common-typedefs.h>
+#include "common.h"
 
 extern void spin1_wfi(void);
 extern INT_HANDLER sark_int_han(void);
@@ -271,17 +272,6 @@ enum missing_seq_num_sdp_data_positions {
     START_OF_MISSING_SEQ_NUMS = 2
 };
 
-// Dropped packet re-injection internal control commands (RC of SCP message)
-enum reinjector_command_codes {
-    CMD_DPRI_SET_ROUTER_TIMEOUT = 0,
-    CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
-    CMD_DPRI_SET_PACKET_TYPES = 2,
-    CMD_DPRI_GET_STATUS = 3,
-    CMD_DPRI_RESET_COUNTERS = 4,
-    CMD_DPRI_EXIT = 5,
-    CMD_DPRI_CLEAR = 6
-};
-
 //! flag positions for packet types being reinjected
 enum reinjection_flag_positions {
     DPRI_PACKET_TYPE_MC = 1,
@@ -309,6 +299,7 @@ typedef struct reinject_config_t {
     uint point_to_point_flag;
     uint fixed_route_flag;
     uint nearest_neighbour_flag;
+    uint reinjection_base_mc_key;
 } reinject_config_t;
 
 //! values for port numbers this core will respond to
@@ -387,6 +378,7 @@ static uint data_in_address_key = 0;
 static uint data_in_data_key = 0;
 static uint data_in_boundary_key = 0;
 static address_t data_in_write_address = NULL, first_write_address = NULL;
+static int application_table_n_valid_entries = 0;
 
 // ------------------------------------------------------------------------
 // global variables for data speed up out functionality
@@ -647,31 +639,44 @@ static void reinjection_read_packet_types(reinject_config_t *config) {
     } else {
         reinject_nn = true;
     }
+
+    // set the reinjection mc api
+    initialise_reinjection_mc_api(config->reinjection_base_mc_key);
+
+}
+
+static inline void reinjection_set_timeout(uint payload) {
+    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
+            | ((payload & ROUTER_TIMEOUT_MASK) << 16);
+}
+
+static inline void reinjection_set_emergency_timeout(uint payload){
+    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
+            | ((payload & ROUTER_TIMEOUT_MASK) << 24);
 }
 
 //! \brief Set the router wait1 timeout.
-static inline int reinjection_set_timeout(sdp_msg_t *msg) {
-    io_printf(IO_BUF, "setting router timeouts\n");
+static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
+    io_printf(IO_BUF, "setting router timeouts via sdp\n");
     if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
-    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
-            | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
-
+    reinjection_set_timeout(msg->arg1);
     // set SCP command to OK , as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
 
 //! \brief Set the router wait2 timeout.
-static inline int reinjection_set_emergency_timeout(sdp_msg_t *msg) {
+static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
+    io_printf(IO_BUF, "setting router emergency timeouts via sdp\n");
     if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
-    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
-            | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
+
+    reinjection_set_emergency_timeout(msg->arg1);
 
     // set SCP command to OK , as successfully completed
     msg->cmd_rc = RC_OK;
@@ -754,7 +759,7 @@ static inline int reinjection_exit(sdp_msg_t *msg) {
     return 0;
 }
 
-static inline int reinjection_clear(sdp_msg_t *msg) {
+static void reinjection_clear(void){
     // Disable FIQ for queue access
     uint cpsr = cpu_fiq_disable();
     // Clear any stored dropped packets
@@ -764,6 +769,10 @@ static inline int reinjection_clear(sdp_msg_t *msg) {
     cpu_int_restore(cpsr);
     // and disable communications controller interrupts
     vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+}
+
+static inline int reinjection_clear_message(sdp_msg_t *msg) {
+    reinjection_clear();
     // set SCP command to OK , as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
@@ -775,9 +784,9 @@ static inline int reinjection_clear(sdp_msg_t *msg) {
 static uint reinjection_sdp_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
     case CMD_DPRI_SET_ROUTER_TIMEOUT:
-        return reinjection_set_timeout(msg);
+        return reinjection_set_timeout_sdp(msg);
     case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
-        return reinjection_set_emergency_timeout(msg);
+        return reinjection_set_emergency_timeout_sdp(msg);
     case CMD_DPRI_SET_PACKET_TYPES:
         return reinjection_set_packet_types(msg);
     case CMD_DPRI_GET_STATUS:
@@ -787,7 +796,7 @@ static uint reinjection_sdp_command(sdp_msg_t *msg) {
     case CMD_DPRI_EXIT:
         return reinjection_exit(msg);
     case CMD_DPRI_CLEAR:
-        return reinjection_clear(msg);
+        return reinjection_clear_message(msg);
     default:
         // If we are here, the command was not recognised, so fail (ARG as the
         // command is an argument)
@@ -877,11 +886,7 @@ static inline void data_in_process_data(uint data) {
 }
 
 //! \brief process a mc packet with payload
-static INT_HANDLER data_in_process_mc_payload_packet(void) {
-    // get data from comm controller
-    uint data = cc[CC_RXDATA];
-    uint key = cc[CC_RXKEY];
-
+static void data_in_process_mc_payload_packet(uint key, uint data) {
     // check if key is address or data key
     // address key means the payload is where to start writing from
     if (key == data_in_address_key) {
@@ -895,6 +900,27 @@ static INT_HANDLER data_in_process_mc_payload_packet(void) {
                 "only understand keys (%u, %u, %u)\n",
                 key, data_in_address_key, data_in_data_key, data_in_boundary_key);
     }
+}
+
+static INT_HANDLER process_mc_payload_packet(void) {
+    // get data from comm controller
+    uint data = cc[CC_RXDATA];
+    uint key = cc[CC_RXKEY];
+    io_printf(IO_BUF, "recieved key %d payload %d\n", key, data);
+
+    if (key == reinjection_timeout_mc_key) {
+        reinjection_set_timeout(data);
+        io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
+    } else if (key == reinjection_emergency_timeout_mc_key) {
+        reinjection_set_emergency_timeout(data);
+        io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
+    } else if (key == reinjection_clear_mc_key) {
+        io_printf(IO_BUF, "setting the reinjection clear by mc\n");
+        reinjection_clear();
+    } else {
+        data_in_process_mc_payload_packet(key, data);
+    }
+
     // and tell VIC we're done
     vic[VIC_VADDR] = (uint) vic;
 }
@@ -943,14 +969,23 @@ static void data_in_load_router(
 //! \brief reads in routers entries and places in application sdram location
 static void data_in_save_router(void) {
     rtr_entry_t router_entry;
-
+    application_table_n_valid_entries = 0;
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
             entry_id < N_ROUTER_ENTRIES; entry_id++, i++) {
         (void) rtr_mc_get(entry_id, &router_entry);
-        // move to sdram
-        saved_application_router_table[i].key = router_entry.key;
-        saved_application_router_table[i].mask = router_entry.mask;
-        saved_application_router_table[i].route = router_entry.route;
+
+        if (router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
+                router_entry.mask != INVALID_ROUTER_ENTRY_MASK &&
+                router_entry.route != INVALID_ROUTER_ENTRY_ROUTE){
+            // move to sdram
+            saved_application_router_table[
+                application_table_n_valid_entries].key = router_entry.key;
+            saved_application_router_table[
+                application_table_n_valid_entries].mask = router_entry.mask;
+            saved_application_router_table[
+                application_table_n_valid_entries].route = router_entry.route;
+            application_table_n_valid_entries += 1;
+        }
     }
 }
 
@@ -981,7 +1016,7 @@ static void data_in_speed_up_load_in_application_routes(void) {
     // load app router entries from sdram
     io_printf(IO_BUF, "Loading application routes\n");
     data_in_load_router(
-            saved_application_router_table, N_USABLE_ROUTER_ENTRIES);
+            saved_application_router_table, application_table_n_valid_entries);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
@@ -1415,20 +1450,6 @@ static INT_HANDLER data_out_dma_timeout(void) {
 // common code
 //-----------------------------------------------------------------------------
 
-#define SDP_REPLY_HEADER_LEN 12
-
-static inline void reflect_sdp_message(sdp_msg_t *msg, uint body_length) {
-    msg->length = SDP_REPLY_HEADER_LEN + body_length;
-    uint dest_port = msg->dest_port;
-    uint dest_addr = msg->dest_addr;
-
-    msg->dest_port = msg->srce_port;
-    msg->srce_port = dest_port;
-
-    msg->dest_addr = msg->srce_addr;
-    msg->srce_addr = dest_addr;
-}
-
 static inline sdp_msg_t *get_message_from_mailbox(void) {
     sdp_msg_t *shm_msg = (sdp_msg_t *) sark.vcpu->mbox_ap_msg;
     sdp_msg_t *msg = sark_msg_get();
@@ -1569,7 +1590,8 @@ static void data_in_initialise(void) {
     data_in_save_router();
 
     // set up mc interrupts to deal with data writing
-    set_vic_callback(MC_PAYLOAD_SLOT, CC_MC_INT, data_in_process_mc_payload_packet);
+    set_vic_callback(
+        MC_PAYLOAD_SLOT, CC_MC_INT, process_mc_payload_packet);
 }
 
 //-----------------------------------------------------------------------------

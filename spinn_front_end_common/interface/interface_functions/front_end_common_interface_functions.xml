@@ -18,9 +18,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
-    <algorithm name="DataInMulticastRoutingGenerator">
+    <algorithm name="SystemMulticastRoutingGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>DataInMulticastRoutingGenerator</python_class>
+        <python_class>SystemMulticastRoutingGenerator</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
@@ -43,6 +43,7 @@
         <outputs>
             <param_type>DataInMulticastRoutingTables</param_type>
             <param_type>DataInMulticastKeyToChipMap</param_type>
+            <param_type>SystemMulticastRouterTimeoutKeys</param_type>
         </outputs>
     </algorithm>
     <algorithm name="ProcessPartitionConstraints">
