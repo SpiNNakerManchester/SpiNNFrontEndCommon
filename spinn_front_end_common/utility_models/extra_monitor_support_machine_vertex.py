@@ -94,10 +94,12 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints, reinject_multicast=None,
+            self, timestep_in_us, constraints, reinject_multicast=None,
             reinject_point_to_point=False, reinject_nearest_neighbour=False,
             reinject_fixed_route=False):
         """
+        :param timestep_in_us: The timestep of this vertex in us
+        :type timestep_in_us: int
         :param constraints: constraints on this vertex
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
@@ -115,6 +117,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         # pylint: disable=too-many-arguments
         super(ExtraMonitorSupportMachineVertex, self).__init__(
+            timestep_in_us=timestep_in_us,
             label="SYSTEM:ExtraMonitor", constraints=constraints)
 
         if reinject_multicast is None:

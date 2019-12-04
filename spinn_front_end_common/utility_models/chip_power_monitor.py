@@ -60,6 +60,7 @@ class ChipPowerMonitor(
             vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return ChipPowerMonitorMachineVertex(
+            timestep_in_us = self.timestep_in_us,
             constraints=constraints, label=label,
             n_samples_per_recording=self._n_samples_per_recording,
             sampling_frequency=self._sampling_frequency)

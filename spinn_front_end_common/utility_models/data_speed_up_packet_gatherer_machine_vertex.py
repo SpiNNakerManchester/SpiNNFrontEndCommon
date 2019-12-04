@@ -252,7 +252,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
             report_default_directory,
-            write_data_speed_up_reports, constraints=None):
+            write_data_speed_up_reports, timestep_in_us, constraints=None):
         """
         :param x: Where this gatherer is.
         :type x: int
@@ -269,11 +269,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param write_data_speed_up_reports: \
             Whether to write low-level reports on data transfer speeds.
         :type write_data_speed_up_reports: bool
+        :param timestep_in_us: The timestep of this vertex in us
+        :type timestep_in_us: int
         :param constraints:
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
+            timestep_in_us=timestep_in_us,
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
             constraints=constraints)
 

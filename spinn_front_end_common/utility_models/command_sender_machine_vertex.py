@@ -66,15 +66,18 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    def __init__(self, label, constraints):
+    def __init__(self, timestep_in_us, label, constraints):
         """
+        :param timestep_in_us: The timestep of this vertex in us
+        :type timestep_in_us: int
         :param label: The label of this vertex
         :type label: str
         :param constraints: Any initial constraints to this vertex
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-        super(CommandSenderMachineVertex, self).__init__(label, constraints)
+        super(CommandSenderMachineVertex, self).__init__(
+            timestep_in_us, label, constraints)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()

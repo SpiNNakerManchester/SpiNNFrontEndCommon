@@ -24,6 +24,7 @@ from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
 from spinn_front_end_common.interface.interface_functions import (
     InsertEdgesToLivePacketGatherers)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (
@@ -71,6 +72,8 @@ class TestInsertLPGEdges(unittest.TestCase):
         # add LPG's (1 for each Ethernet connected chip)
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
+            extended.update(
+                {'timestep_in_us': get_simulator().machine_time_step})
             extended.update({'label': 'test'})
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
@@ -161,6 +164,8 @@ class TestInsertLPGEdges(unittest.TestCase):
         index = 1
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
+            extended.update(
+                {'timestep_in_us': get_simulator().machine_time_step})
             extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
@@ -176,6 +181,8 @@ class TestInsertLPGEdges(unittest.TestCase):
             default_params_holder2 = LivePacketGatherParameters(**extended)
 
             extended = dict(default_params)
+            extended.update(
+                {'timestep_in_us': get_simulator().machine_time_step})
             extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(**extended)
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2

@@ -19,6 +19,7 @@ from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.interface.interface_functions import (
     GraphBinaryGatherer, LocateExecutableStartType)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
@@ -26,7 +27,8 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self, binary_file_name, binary_start_type):
-        super(_TestVertexWithBinary, self).__init__()
+        super(_TestVertexWithBinary, self).__init__(
+            get_simulator().machine_time_step)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 
@@ -62,7 +64,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             "test2.aplx", ExecutableType.RUNNING)
         vertex_3 = _TestVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
-        vertex_4 = _TestVertexWithoutBinary()
+        vertex_4 = _TestVertexWithoutBinary(
+            timestep_in_us=get_simulator().machine_time_step)
 
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2, vertex_3])

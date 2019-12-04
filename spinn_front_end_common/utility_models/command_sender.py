@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
@@ -42,7 +43,8 @@ class CommandSender(
         """
 
         super(CommandSender, self).__init__(label, constraints, 1)
-        self._machine_vertex = CommandSenderMachineVertex(label, constraints)
+        self._machine_vertex = CommandSenderMachineVertex(
+            self.timestep_in_us, label, constraints)
 
     def add_commands(
             self, start_resume_commands, pause_stop_commands,

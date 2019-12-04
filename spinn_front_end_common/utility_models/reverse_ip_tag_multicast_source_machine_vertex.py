@@ -154,7 +154,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, n_keys, label, constraints=None,
+            self, n_keys, timestep_in_us, label, constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -177,7 +177,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             reserve_reverse_ip_tag=False):
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
-            label, constraints)
+            timestep_in_us, label, constraints)
 
         self._reverse_iptags = None
         self._n_keys = n_keys

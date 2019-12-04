@@ -16,6 +16,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from pacman.model.graphs.common import Slice
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGather, DataSpeedUpPacketGatherMachineVertex,
     ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
@@ -155,8 +156,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     @staticmethod
     def __new_mach_monitor(chip):
-        return ExtraMonitorSupportMachineVertex(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        return ExtraMonitorSupportMachineVertex(
+            timestep_in_us=get_simulator().machine_time_step,
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
 
     @staticmethod
     def __new_app_gatherer(

@@ -16,6 +16,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitor, ChipPowerMonitorMachineVertex)
 
@@ -54,9 +55,11 @@ class InsertChipPowerMonitorsToGraphs(object):
             sampling_frequency, n_samples_per_recording):
         # build constraint
         constraint = ChipAndCoreConstraint(chip.x, chip.y)
-
+        timestep_in_us = \
+            globals_variables.get_simulator().machine_time_step
         # build machine vert
         machine_vertex = ChipPowerMonitorMachineVertex(
+            timestep_in_us = timestep_in_us,
             label=_LABEL.format("machine", chip.x, chip.y),
             sampling_frequency=sampling_frequency,
             n_samples_per_recording=n_samples_per_recording,

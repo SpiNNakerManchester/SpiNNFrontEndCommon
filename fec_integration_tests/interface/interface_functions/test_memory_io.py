@@ -23,6 +23,7 @@ from pacman.model.placements import Placements, Placement
 from spinnman.model import HeapElement
 from spinnman.exceptions import SpinnmanInvalidParameterException
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import BYTES_PER_KB
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
@@ -115,7 +116,8 @@ class _MockTransceiver(object):
 class MyVertex(MachineVertex, AbstractUsesMemoryIO):
 
     def __init__(self):
-        super(MyVertex, self).__init__()
+        super(MyVertex, self).__init__(
+            globals_variables.get_simulator().machine_time_step)
         self._test_tag = None
         self._tag = None
 

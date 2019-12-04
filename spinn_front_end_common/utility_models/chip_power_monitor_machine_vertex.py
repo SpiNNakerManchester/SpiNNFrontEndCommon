@@ -78,10 +78,11 @@ class ChipPowerMonitorMachineVertex(
     _SAMPLE_RECORDING_CHANNEL = 0
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
+            self, timestep_in_us, label, constraints, n_samples_per_recording,
             sampling_frequency):
         super(ChipPowerMonitorMachineVertex, self).__init__(
-            label=label, constraints=constraints)
+            timestep_in_us=timestep_in_us, label=label,
+            constraints=constraints)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 

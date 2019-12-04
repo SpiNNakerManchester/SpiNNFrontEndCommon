@@ -245,6 +245,7 @@ class ReverseIpTagMultiCastSource(
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
         vertex = ReverseIPTagMulticastSourceMachineVertex(
             n_keys=vertex_slice.n_atoms,
+            timestep_in_us=self.timestep_in_us,
             label=label, constraints=constraints,
             board_address=self._board_address,
             receive_port=self._receive_port,

@@ -97,7 +97,8 @@ class LivePacketGather(
             self, vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return LivePacketGatherMachineVertex(
-            label, self._use_prefix, self._key_prefix, self._prefix_type,
+            self.timestep_in_us, label,
+            self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
