@@ -940,27 +940,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Work out the maximum run duration given all recordings
         self._check_max_runtime()
 
-        # Work out an array of timesteps to perform
-        if run_time_in_us is None:
-            steps = None
-        elif self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
-            if run_time_in_us > self._max_run_time_in_us:
-                self._state = Simulator_State.FINISHED
-                max_run_in_ms = (self._max_run_time_in_us /
-                                 MICRO_TO_MILLISECOND_CONVERSION)
-                raise ConfigurationException(
-                    "The SDRAM required by one or more vertices is based on"
-                    " the run time, so the run time is limited to"
-                    " {} ms".format(max_run_in_ms))
-            steps = [run_time_in_us]
-        else:
-            # With auto pause and resume, any time step is possible but run
-            # time more than the first will guarantee that run will be called
-            # more than once
-            steps = self._generate_steps(run_time_in_us)
-
-        #Steps changed to time_in_us
-
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
         if not self._has_ran or graph_changed or data_changed:
@@ -970,36 +949,22 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if not self._use_virtual_board:
                 self._do_load(graph_changed)
 
-        # Run for each of the given steps
-        if run_time_in_us is not None:
-            logger.info("Running for {} steps for a total of {}ms",
-                        len(steps),
-                        run_time_in_us / MICRO_TO_MILLISECOND_CONVERSION)
-            for i, step in enumerate(steps):
-                logger.info("Run {} of {}", i + 1, len(steps))
-                self._do_run(step, graph_changed, run_until_complete)
-        elif run_time_in_us is None and run_until_complete:
-            logger.info("Running until complete")
-            self._do_run(None, graph_changed, True)
-        elif (not self._config.getboolean(
-                "Buffers", "use_auto_pause_and_resume") or
-                not is_per_timestep_sdram):
-            logger.info("Running forever")
-            self._do_run(None, graph_changed, run_until_complete)
-            logger.info("Waiting for stop request")
-            with self._state_condition:
-                while self._state != Simulator_State.STOP_REQUESTED:
-                    self._state_condition.wait()
+        if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
+            if run_time_in_us is None:
+                self._run_undetermined(graph_changed, run_until_complete)
+            else:
+                self._run_single(
+                    run_time_in_us, graph_changed, run_until_complete)
         else:
-            logger.info("Running forever in steps of {}ms".format(
-                self._max_run_time_steps))
-            i = 0
-            while self._state != Simulator_State.STOP_REQUESTED:
-                logger.info("Run {}".format(i + 1))
-                self._do_run(
-                    self._max_run_time_steps, graph_changed,
-                    run_until_complete)
-                i += 1
+            if run_time_in_us is None:
+                self._run_in_loop(graph_changed, run_until_complete)
+            else:
+                if run_time_in_us <= self._max_run_time_in_us:
+                    self._run_single(
+                        run_time_in_us, graph_changed, run_until_complete)
+                else:
+                    self._run_in_steps(
+                        run_time_in_us, graph_changed, run_until_complete)
 
         # Indicate that the signal handler needs to act
         if isinstance(threading.current_thread(), threading._MainThread):
@@ -1013,6 +978,79 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._state = Simulator_State.FINISHED
         else:
             self._state = Simulator_State.RUN_FOREVER
+
+    def _run_single(self, run_time_in_us, graph_changed, run_until_complete):
+        """
+        Run without using auto pause resume
+
+        :param run_time_in_us: Total amounmt of time to run for
+        :type run_time_in_us: int
+        :param graph_changed:
+        :param run_until_complete: No use case known when it is True but..
+        :raises ConfigurationException: If the runtime is too long
+        """
+        max_run_in_ms = (self._max_run_time_in_us /
+                         MICRO_TO_MILLISECOND_CONVERSION)
+        if run_time_in_us > self._max_run_time_in_us:
+            self._state = Simulator_State.FINISHED
+            raise ConfigurationException(
+                "The SDRAM required by one or more vertices is based on"
+                " the run time, so the run time is limited to"
+                " {} ms".format(max_run_in_ms))
+        logger.info("Running for {}ms", run_time_in_us /
+                    MICRO_TO_MILLISECOND_CONVERSION)
+        self._do_run(run_time_in_us, graph_changed, run_until_complete)
+
+    def _run_undetermined(self, graph_changed, run_until_complete):
+        """
+        Run for an undetermined time without being using auto pause resume
+        """
+        if run_until_complete:
+            logger.info("Running until complete")
+            self._do_run(None, graph_changed, run_until_complete)
+        else:
+            logger.info("Running forever")
+            self._do_run(None, graph_changed, run_until_complete)
+            logger.info("Waiting for stop request")
+            with self._state_condition:
+                while self._state != Simulator_State.STOP_REQUESTED:
+                    self._state_condition.wait()
+
+    def _run_in_loop(self, graph_changed, run_until_complete):
+        """
+        Run im max auto pause loops until told to stop
+
+        :param graph_changed:
+        :param run_until_complete:
+        """
+        logger.info("Running forever in steps of {}ms".format(
+            self._max_run_time_steps))
+        i = 0
+        while self._state != Simulator_State.STOP_REQUESTED:
+            logger.info("Run {}".format(i + 1))
+            self._do_run(
+                self._max_run_time_steps, graph_changed,
+                run_until_complete)
+            i += 1
+
+    def _run_in_steps(self, run_time_in_us, graph_changed, run_until_complete):
+        """
+        Run but spilt into autom pause resume steps
+        :param run_time_in_us: Total runtime in us required over all steps
+        :param graph_changed:
+        :param run_until_complete: No use case known when it is True but..
+        """
+        n_full_iterations = run_time_in_us // self._max_run_time_in_us
+        left_over_runtime = run_time_in_us - (
+                run_time_in_us * self._max_run_time_in_us)
+        steps = [self._max_run_time_in_us] * n_full_iterations
+        if left_over_runtime:
+            steps.append(left_over_runtime)
+        logger.info("Running for {} steps for a total of {}ms", len(steps),
+                    run_time_in_us / MICRO_TO_MILLISECOND_CONVERSION)
+        for i, step in enumerate(steps):
+            logger.info("Run {} of {}", i + 1, len(steps))
+            self._do_run(step, graph_changed, run_until_complete)
 
     def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
@@ -1099,24 +1137,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Round down to a multiple of self._lcm_timestep
         self._max_run_time_in_us = (self._max_run_time_in_us //
                                     self._lcm_timestep) * self._lcm_timestep
-
-    def _generate_steps(self, run_time_in_us):
-        """ Generates the list of "timer" runs. These are usually in terms of\
-            time steps, but need not be.
-
-        :param run_time_in_us: the total runtime in us
-        :type run_time_in_us: int
-        :return: list of time steps
-        """
-        if run_time_in_us == 0:
-            return [0]
-        n_full_iterations = run_time_in_us // self._max_run_time_in_us
-        left_over_runtime = run_time_in_us - (
-                run_time_in_us * self._max_run_time_in_us)
-        steps = [self._max_run_time_in_us] * n_full_iterations
-        if left_over_runtime:
-            steps.append(left_over_runtime)
-        return steps
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         if next_run_timesteps is not None:
