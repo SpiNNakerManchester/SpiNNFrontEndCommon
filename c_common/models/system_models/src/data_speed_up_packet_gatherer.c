@@ -368,12 +368,12 @@ static void process_address_data(
     chip_y = receive_data_cmd->chip_y;
 
     if (prev_x != chip_x || prev_y != chip_y) {
-        log_info(
+        log_debug(
             "Changed stream target chip to %d,%d for transaction id %d",
             chip_x, chip_y, transaction_id);
     }
 
-    log_info("Writing %u packets to 0x%08x for transaction id %d",
+    log_debug("Writing %u packets to 0x%08x for transaction id %d",
              receive_data_cmd->max_seq_num + 1, receive_data_cmd->address,
              transaction_id);
 
@@ -398,7 +398,7 @@ static void send_finished_response(void){
     my_msg.length = (
         sizeof(sdp_hdr_t) + sizeof(int) * SEND_MISSING_SEQ_HEADER_WORDS);
     send_sdp_message();
-    log_info("Sent end flag");
+    log_debug("Sent end flag");
 }
 
 //! \brief searches through received seq nums and transmits missing ones back
@@ -421,7 +421,7 @@ static void process_missing_seq_nums_and_request_retransmission(
     }
     if (received_seq_nums_store == NULL &&
             this_message_transaction_id  == transaction_id) {
-        log_info("received tell request when already sent finish. resending");
+        log_debug("received tell request when already sent finish. resending");
         send_finished_response();
         return;
     }
@@ -439,7 +439,7 @@ static void process_missing_seq_nums_and_request_retransmission(
     }
 
     // sending missing seq nums
-    log_info("Looking for %d missing packets",
+    log_debug("Looking for %d missing packets",
             ((int) max_seq_num + 1) - ((int) total_received_seq_nums));
     payload->command = SDP_SEND_MISSING_SEQ_DATA_IN_CMD;
     const uint *data_start = payload->data;
@@ -604,15 +604,15 @@ static void reinjection_sdp_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
     case CMD_DPRI_SET_ROUTER_TIMEOUT:
         send_timeout(msg, reinjection_timeout_mc_key);
-        log_info("sent reinjection timeout mc");
+        log_debug("sent reinjection timeout mc");
         break;
     case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
         send_timeout(msg, reinjection_emergency_timeout_mc_key);
-        log_info("sent reinjection emergency timeout mc");
+        log_debug("sent reinjection emergency timeout mc");
         break;
     case CMD_DPRI_CLEAR:
         send_clear_message(msg);
-        log_info("sent reinjection clear mc");
+        log_debug("sent reinjection clear mc");
         break;
     default:
         // If we are here, the command was not recognised, so fail

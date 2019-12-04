@@ -854,12 +854,13 @@ static void data_in_clear_router(void) {
             rtr_free(entry_id, 1);
         }
     }
+    //io_printf(IO_BUF, "\n\nmax free block is %d\n\n", rtr_alloc_max());
 }
 
 static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
         uint written_words = data_in_write_address - first_write_address;
-        io_printf(IO_BUF, "Wrote %u words\n", written_words);
+        //io_printf(IO_BUF, "Wrote %u words\n", written_words);
         data_in_write_address = NULL;
     }
     first_write_address = NULL;
@@ -906,16 +907,16 @@ static INT_HANDLER process_mc_payload_packet(void) {
     // get data from comm controller
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
-    io_printf(IO_BUF, "recieved key %d payload %d\n", key, data);
+    //io_printf(IO_BUF, "recieved key %d payload %d\n", key, data);
 
     if (key == reinjection_timeout_mc_key) {
         reinjection_set_timeout(data);
-        io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
+        //io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
     } else if (key == reinjection_emergency_timeout_mc_key) {
         reinjection_set_emergency_timeout(data);
-        io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
+        //io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
     } else if (key == reinjection_clear_mc_key) {
-        io_printf(IO_BUF, "setting the reinjection clear by mc\n");
+        //io_printf(IO_BUF, "setting the reinjection clear by mc\n");
         reinjection_clear();
     } else {
         data_in_process_mc_payload_packet(key, data);
