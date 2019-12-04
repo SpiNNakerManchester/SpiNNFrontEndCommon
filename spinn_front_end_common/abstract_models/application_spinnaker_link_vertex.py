@@ -37,11 +37,11 @@ class ApplicationSpiNNakerLinkVertex(
         "_board_address",
         "_virtual_chip_x",
         "_virtual_chip_y",
-        "_timestep"]
+        "_timestep_in_us"]
 
     def __init__(
             self, n_atoms, spinnaker_link_id, board_address=None, label=None,
-            constraints=None, max_atoms_per_core=sys.maxsize, timestep=None):
+            constraints=None, max_atoms_per_core=sys.maxsize, timestep_in_us=None):
         super(ApplicationSpiNNakerLinkVertex, self).__init__(
             label=label, constraints=constraints,
             max_atoms_per_core=max_atoms_per_core)
@@ -50,11 +50,11 @@ class ApplicationSpiNNakerLinkVertex(
         self._board_address = board_address
         self._virtual_chip_x = None
         self._virtual_chip_y = None
-        if timestep is None:
-            self._timestep = \
+        if timestep_in_us is None:
+            self._timestep_in_us = \
                 globals_variables.get_simulator().machine_time_step
         else:
-            self._timestep = timestep
+            self._timestep_in_us = timestep_in_us
 
     @property
     @overrides(AbstractSpiNNakerLink.spinnaker_link_id)
@@ -97,10 +97,11 @@ class ApplicationSpiNNakerLinkVertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         vertex = MachineSpiNNakerLinkVertex(
-            self._spinnaker_link_id, self._board_address, label, constraints)
+            self._spinnaker_link_id, self._timestep_in_us,
+            self._board_address, label, constraints)
         return vertex
 
     @property
     @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
-        return self._timestep
+        return self._timestep_in_us
