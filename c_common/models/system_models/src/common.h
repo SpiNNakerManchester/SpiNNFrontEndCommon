@@ -76,5 +76,4 @@ static inline void reflect_sdp_message(sdp_msg_t *msg, uint body_length) {
     msg->srce_addr = dest_addr;
 }
 
-
 #endif  // __COMMON_H__
