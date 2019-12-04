@@ -15,6 +15,7 @@
 
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
@@ -138,6 +139,6 @@ class LivePacketGather(
         placement.vertex.generate_data_specification(spec, placement)
 
     @property
-    @overrides(ApplicationVertex.timestep_in_us)
+    @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
         return globals_variables.get_simulator().machine_time_step

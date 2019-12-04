@@ -17,6 +17,7 @@
 """
 
 from spinn_utilities.overrides import overrides
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
@@ -97,6 +98,6 @@ class SimpleTestVertex(ApplicationVertex):
         return self._n_atoms
 
     @property
-    @overrides(ApplicationVertex.timestep_in_us)
+    @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
         return globals_variables.get_simulator().machine_time_step

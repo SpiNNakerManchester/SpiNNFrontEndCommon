@@ -15,6 +15,7 @@
 
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
@@ -102,6 +103,6 @@ class ChipPowerMonitor(
             self._n_samples_per_recording, self._sampling_frequency)
 
     @property
-    @overrides(ApplicationVertex.timestep_in_us)
+    @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
         return globals_variables.get_simulator().machine_time_step

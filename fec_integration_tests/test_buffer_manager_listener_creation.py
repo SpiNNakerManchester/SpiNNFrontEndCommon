@@ -18,6 +18,7 @@ import unittest
 from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_machine.tags import IPTag
 from spinnman.transceiver import Transceiver
@@ -124,7 +125,7 @@ class _TestVertex(ApplicationVertex):
         return self._n_atoms
 
     @property
-    @overrides(ApplicationVertex.timestep_in_us)
+    @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
         return globals_variables.get_simulator().machine_time_step
 

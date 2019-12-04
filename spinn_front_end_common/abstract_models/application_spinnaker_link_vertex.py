@@ -17,6 +17,7 @@ import sys
 from spinn_utilities.overrides import overrides
 from pacman.model.constraints.placer_constraints import (
     ChipAndCoreConstraint)
+from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import ResourceContainer
 from pacman.model.graphs import (
@@ -100,6 +101,6 @@ class ApplicationSpiNNakerLinkVertex(
         return vertex
 
     @property
-    @overrides(ApplicationVertex.timestep_in_us)
+    @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
         return self._timestep

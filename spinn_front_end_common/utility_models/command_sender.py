@@ -106,6 +106,6 @@ class CommandSender(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @property
-    @overrides(ApplicationVertex.timestep_in_us)
+    @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
         return globals_variables.get_simulator().machine_time_step
