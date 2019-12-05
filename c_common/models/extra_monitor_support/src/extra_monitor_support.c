@@ -841,7 +841,8 @@ static void data_in_clear_router(void) {
         if (rtr_mc_get(entry_id, &router_entry) &&
                 router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
                 router_entry.mask != INVALID_ROUTER_ENTRY_MASK) {
-            rtr_free(entry_id, 1);
+            rtr_mc_set(entry_id, INVALID_ROUTER_ENTRY_KEY,
+                INVALID_ROUTER_ENTRY_MASK, INVALID_ROUTER_ENTRY_ROUTE);
         }
     }
 }
@@ -904,38 +905,9 @@ static INT_HANDLER data_in_process_mc_payload_packet(void) {
 static void data_in_load_router(
         router_entry_t *sdram_address, uint n_entries) {
     io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
-    if (n_entries == 0) {
-        return;
-    }
-    uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
-    if (start_entry_id == 0) {
-        io_printf(IO_BUF, "Received error with requesting %u router entries."
-                " Shutting down\n", n_entries);
-        rt_error(RTE_SWERR);
-    }
-
     for (uint idx = 0; idx < n_entries; idx++) {
-        // check for invalid entries (possible during alloc and free or
-        // just not filled in.
-        if (sdram_address[idx].key != INVALID_ROUTER_ENTRY_KEY &&
-                sdram_address[idx].mask != INVALID_ROUTER_ENTRY_MASK &&
-                sdram_address[idx].route != INVALID_ROUTER_ENTRY_ROUTE) {
-#if 0
-            // Produces quite a lot of debugging output when enabled
-            io_printf(IO_BUF,
-                    "Setting key %08x, mask %08x, route %08x for entry %u\n",
-                    sdram_address[idx].key, sdram_address[idx].mask,
-                    sdram_address[idx].route, idx + start_entry_id);
-#endif
-            // try setting the valid router entry
-            if (rtr_mc_set(idx + start_entry_id, sdram_address[idx].key,
-                    sdram_address[idx].mask, sdram_address[idx].route) != 1) {
-                io_printf(IO_BUF, "Failed to write router entry %d, "
-                        "with key %08x, mask %08x, route %08x\n",
-                        idx + start_entry_id, sdram_address[idx].key,
-                        sdram_address[idx].mask, sdram_address[idx].route);
-            }
-        }
+        rtr_mc_set(idx + N_BASIC_SYSTEM_ROUTER_ENTRIES,
+            sdram_address[idx].key, sdram_address[idx].mask, sdram_address[idx].route);
     }
 }
 
