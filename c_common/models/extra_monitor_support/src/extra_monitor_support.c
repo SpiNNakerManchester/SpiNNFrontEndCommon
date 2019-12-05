@@ -906,8 +906,15 @@ static void data_in_load_router(
         router_entry_t *sdram_address, uint n_entries) {
     io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
     for (uint idx = 0; idx < n_entries; idx++) {
-        rtr_mc_set(idx + N_BASIC_SYSTEM_ROUTER_ENTRIES,
-            sdram_address[idx].key, sdram_address[idx].mask, sdram_address[idx].route);
+        if (!rtr_mc_set(idx + N_BASIC_SYSTEM_ROUTER_ENTRIES,
+            sdram_address[idx].key, sdram_address[idx].mask,
+            sdram_address[idx].route)) {
+            io_printf(IO_BUF,
+                "Error setting router entry %u to entry %u (key=%x, mask=%x, route=%x",
+                idx, idx + N_BASIC_SYSTEM_ROUTER_ENTRIES,
+                sdram_address[idx].key, sdram_address[idx].mask,
+                sdram_address[idx].route);
+        }
     }
 }
 
