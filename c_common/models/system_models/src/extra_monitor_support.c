@@ -1003,7 +1003,7 @@ static void data_in_speed_up_load_in_system_tables(
     data_in_clear_router();
 
     // read in and load routing table entries
-    io_printf(IO_BUF, "Loading system (Fast Data In) routes\n");
+    io_printf(IO_BUF, "Loading system routes\n");
     data_in_load_router(
             items->system_router_entries, items->n_system_router_entries);
 }
@@ -1032,12 +1032,12 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
         msg->cmd_rc = RC_OK;
         break;
     case SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES:
-        io_printf(IO_BUF, "Loading application router entries into router\n");
+        io_printf(IO_BUF, "Loading application router entries command\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
         break;
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
-        io_printf(IO_BUF, "Loading system router entries into router\n");
+        io_printf(IO_BUF, "Loading system router entries command\n");
         data_in_speed_up_load_in_system_tables(
                 dsg_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
