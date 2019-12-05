@@ -913,15 +913,13 @@ static void data_in_load_router(
 
 //! \brief reads in routers entries and places in application sdram location
 static void data_in_save_router(void) {
-    rtr_entry_t router_entry;
+    rtr_entry_t *rtr_copy = sv->rtr_copy;
 
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
             entry_id < N_ROUTER_ENTRIES; entry_id++, i++) {
-        (void) rtr_mc_get(entry_id, &router_entry);
-        // move to sdram
-        saved_application_router_table[i].key = router_entry.key;
-        saved_application_router_table[i].mask = router_entry.mask;
-        saved_application_router_table[i].route = router_entry.route;
+        saved_application_router_table[i].key = rtr_copy[i].key;
+        saved_application_router_table[i].mask = rtr_copy[i].mask;
+        saved_application_router_table[i].route = rtr_copy[i].route;
     }
 }
 
