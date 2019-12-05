@@ -589,21 +589,21 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "routing_info": "MemoryRoutingInfos",
         "first_machine_time_step": "FirstMachineTimeStep",
         "data_simtime_in_us": "DataSimtimeInUs",
-        "run_until_timesteps": "RunUntilTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "time_scale_factor", "machine_graph",
-            "routing_info", "first_machine_time_step",
-            "data_simtime_in_us", "run_until_timesteps"
+            "time_scale_factor", "machine_graph", "routing_info",
+            "first_machine_time_step", "data_simtime_in_us"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, data_simtime_in_us, run_until_timesteps):
+            first_machine_time_step, data_simtime_in_us):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
+        run_until_timesteps = self.simtime_in_us_to_timesteps(
+            data_simtime_in_us)
         self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # TODO Once the Machine vertex has a link to the application vertext
