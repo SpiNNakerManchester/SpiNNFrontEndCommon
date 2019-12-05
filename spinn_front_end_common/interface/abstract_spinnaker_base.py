@@ -784,8 +784,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _calc_run_time(self, run_time):
         """
-        Calculates n_machine_time_steps and total_run_time based on run_time\
-        and machine_time_step
+        Calculates run_time and total_run_time based on run_time
+        and lcd of the time_step
 
         This method rounds the run up to the next timestep as discussed in\
         https://github.com/SpiNNakerManchester/sPyNNaker/issues/149
@@ -835,7 +835,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             timesteps.add(vertex.timestep_in_us)
         self._lcm_timestep = lcm(timesteps)
         if self._lcm_timestep != self.machine_time_step:
-            logger.warning(
+            logger.info(
                 "Multiple timestep values found! The timestep used for this "
                 "run will be {} which is the lcm of {}",
                 self._lcm_timestep,  timesteps)
@@ -1755,8 +1755,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RunUntilTimeSteps"] = n_machine_time_steps
 
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
-        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["DataNTimeSteps"] = n_machine_time_steps
 
         inputs["DataSimtimeInUs"] = self._max_run_time_in_us
 
@@ -1971,7 +1969,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
-        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
