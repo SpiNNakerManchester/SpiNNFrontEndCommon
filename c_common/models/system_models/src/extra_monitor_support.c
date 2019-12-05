@@ -911,12 +911,12 @@ static INT_HANDLER process_mc_payload_packet(void) {
 
     if (key == reinjection_timeout_mc_key) {
         reinjection_set_timeout(data);
-        //io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
+        io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
     } else if (key == reinjection_emergency_timeout_mc_key) {
         reinjection_set_emergency_timeout(data);
-        //io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
+        io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
     } else if (key == reinjection_clear_mc_key) {
-        //io_printf(IO_BUF, "setting the reinjection clear by mc\n");
+        io_printf(IO_BUF, "setting the reinjection clear by mc\n");
         reinjection_clear();
     } else {
         data_in_process_mc_payload_packet(key, data);
@@ -1082,6 +1082,7 @@ static void data_out_send_data_block(
         uint32_t current_data = data_to_transmit[current_dma_pointer][i];
 
         send_fixed_route_packet(first_packet_key, current_data);
+        io_printf(IO_BUF, "Sending data %d \n", current_data);
 
         // update key to transmit with
         first_packet_key = basic_data_key;
