@@ -860,7 +860,7 @@ static void data_in_clear_router(void) {
 static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
         uint written_words = data_in_write_address - first_write_address;
-        //io_printf(IO_BUF, "Wrote %u words\n", written_words);
+        io_printf(IO_BUF, "Wrote %u words\n", written_words);
         data_in_write_address = NULL;
     }
     first_write_address = NULL;
@@ -1326,6 +1326,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     sdp_data_out_t *message = (sdp_data_out_t *) msg->data;
     switch (message->command) {
     case SDP_CMD_START_SENDING_DATA: {
+        io_printf(IO_BUF, "data out start sdp\n");
         stop = 0;
 
         // set SDRAM position and length
