@@ -70,37 +70,32 @@ class ChipPowerMonitor(
         return ChipPowerMonitorMachineVertex.binary_file_name()
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
                    "data_simtime_in_us": "DataSimtimeInUs"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "data_simtime_in_us"})
+        additional_arguments={"time_scale_factor", "data_simtime_in_us"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            data_simtime_in_us):
+            self, spec, placement, time_scale_factor, data_simtime_in_us):
         # pylint: disable=too-many-arguments, arguments-differ
         # pylint: disable=protected-access
 
         # generate spec for the machine vertex
         placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, data_simtime_in_us)
+            spec, self.timestep_in_us, time_scale_factor, data_simtime_in_us)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ChipPowerMonitorMachineVertex.binary_start_type()
 
-    @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"})
+    @inject_items({"time_scale_factor": "TimeScaleFactor"})
     @overrides(ApplicationVertex.get_resources_used_by_atoms,
-               additional_arguments={"machine_time_step", "time_scale_factor"})
+               additional_arguments={"time_scale_factor"})
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
-            machine_time_step, time_scale_factor):
+            time_scale_factor):
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
-            machine_time_step, time_scale_factor,
+            self.timestep_in_us, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
 
     @property

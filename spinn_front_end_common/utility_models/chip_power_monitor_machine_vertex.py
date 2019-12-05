@@ -32,7 +32,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD, US_TO_MS)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -99,8 +99,7 @@ class ChipPowerMonitorMachineVertex(
     def resources_required(self):
         # pylint: disable=arguments-differ
         sim = globals_variables.get_simulator()
-        return self.get_resources(
-            sim.machine_time_step, sim.time_scale_factor,
+        return self.get_resources(self.timestep_in_us, sim.time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
 
     @staticmethod
@@ -146,26 +145,22 @@ class ChipPowerMonitorMachineVertex(
         return BINARY_FILE_NAME
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep",
                    "data_simtime_in_us": "DataSimtimeInUs"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={
-                   "machine_time_step", "time_scale_factor",
+               additional_arguments={"time_scale_factor",
                    "data_simtime_in_us"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, data_simtime_in_us):
+            time_scale_factor, data_simtime_in_us):
         # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, data_simtime_in_us)
+            spec, time_scale_factor, data_simtime_in_us)
 
     def _generate_data_specification(
-            self, spec, machine_time_step, time_scale_factor,
-            data_simtime_in_us):
+            self, spec, time_scale_factor, data_simtime_in_us):
         """ Supports the application vertex calling this directly
 
         :param spec: data spec
-        :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
         :param data_simtime_in_us: simtime in us to reserve data for
         :rtype: None
@@ -176,7 +171,7 @@ class ChipPowerMonitorMachineVertex(
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, data_simtime_in_us)
+            spec, time_scale_factor, data_simtime_in_us)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -193,20 +188,18 @@ class ChipPowerMonitorMachineVertex(
                          data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
-    def _write_setup_info(
-            self, spec, machine_time_step, time_scale_factor,
-            data_simtime_in_us):
+    def _write_setup_info(self, spec, time_scale_factor, data_simtime_in_us):
         """ Writes the system data as required.
 
         :param spec: the DSG spec writer
-        :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
         :rtype: None
         """
         # pylint: disable=too-many-arguments
         spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
+        timestep_in_ms = self.timestep_in_us / US_TO_MS
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step, time_scale_factor))
+            self.get_binary_file_name(), timestep_in_ms, time_scale_factor))
 
         spec.switch_write_focus(region=self._REGIONS.RECORDING.value)
         recorded_region_sizes = [

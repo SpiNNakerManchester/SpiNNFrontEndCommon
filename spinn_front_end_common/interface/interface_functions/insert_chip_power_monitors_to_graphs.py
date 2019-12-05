@@ -59,7 +59,7 @@ class InsertChipPowerMonitorsToGraphs(object):
             globals_variables.get_simulator().machine_time_step
         # build machine vert
         machine_vertex = ChipPowerMonitorMachineVertex(
-            timestep_in_us = timestep_in_us,
+            timestep_in_us=timestep_in_us,
             label=_LABEL.format("machine", chip.x, chip.y),
             sampling_frequency=sampling_frequency,
             n_samples_per_recording=n_samples_per_recording,
