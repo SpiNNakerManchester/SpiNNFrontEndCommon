@@ -39,7 +39,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import (
         get_n_bytes)
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
@@ -338,10 +337,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        sim = globals_variables.get_simulator()
         sdram = self.get_sdram_usage(
                 self._send_buffer_times, self._is_recording,
-                sim.machine_time_step, self._receive_rate, self._n_keys)
+                self.timestep_in_us, self._receive_rate, self._n_keys)
 
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
@@ -586,7 +584,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._n_data_specs += 1
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
@@ -597,13 +594,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "machine_graph",
+            "time_scale_factor", "machine_graph",
             "routing_info", "first_machine_time_step",
             "data_simtime_in_us", "run_until_timesteps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, machine_graph, routing_info,
+            time_scale_factor, machine_graph, routing_info,
             first_machine_time_step, data_simtime_in_us, run_until_timesteps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
@@ -611,15 +608,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # TODO Once the Machine vertex has a link to the application vertext
         # Swap from Global to timestep in Application vertex
-        timestep = globals_variables.get_simulator().machine_time_step
-        n_machine_time_steps = data_simtime_in_us // timestep
+        n_machine_time_steps = self.simtime_in_us_to_timesteps(
+            data_simtime_in_us)
         # Reserve regions
         self._reserve_regions(spec, n_machine_time_steps)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
+            self.get_binary_file_name(), self.timestep_in_us,
             time_scale_factor))
 
         # Write the additional recording information
@@ -627,14 +624,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         recording_size = 0
         if self._is_recording:
             per_timestep = self._recording_sdram_per_timestep(
-                machine_time_step, self._is_recording, self._receive_rate,
+                self.timestep_in_us, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
             recording_size = per_timestep * n_machine_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
         self._write_configuration(
-            spec, machine_time_step, time_scale_factor)
+            spec, self.timestep_in_us, time_scale_factor)
 
         # End spec
         spec.end_specification()
