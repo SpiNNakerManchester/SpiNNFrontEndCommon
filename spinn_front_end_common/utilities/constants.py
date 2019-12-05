@@ -32,6 +32,7 @@ MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
 # converts between micro and milli seconds
 MICRO_TO_MILLISECOND_CONVERSION = 1000
+US_TO_MS = 1000
 
 # max size expected to be used by the reverse ip_tag multicast source
 # during buffered operations
