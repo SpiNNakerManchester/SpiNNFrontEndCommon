@@ -28,15 +28,20 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
         if self._progress is not None:
             self._progress.update()
 
-    def update_runtime(self, current_time, run_time, infinite_run,
-                       core_subsets, n_cores):
-        self._progress = ProgressBar(n_cores, "Updating run time")
+    def update_runtime(self, current_timestep, run_until_time_in_us,
+                       infinite_run, core_subsets, placements):
+        self._progress = ProgressBar(len(core_subsets), "Updating run time")
         for core_subset in core_subsets:
+            x = core_subset.x
+            y = core_subset.y
             for processor_id in core_subset.processor_ids:
+                vertex = placements.get_vertex_on_processor(x, y, processor_id)
+                until_timestep = vertex.simtime_in_us_to_timesteps(
+                    run_until_time_in_us)
                 self._send_request(
                     SCPUpdateRuntimeRequest(
-                        core_subset.x, core_subset.y, processor_id,
-                        current_time, run_time, infinite_run,
+                        x, y, processor_id,
+                        current_timestep, until_timestep, infinite_run,
                         SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
                     callback=self.receive_response)
         self._finish()

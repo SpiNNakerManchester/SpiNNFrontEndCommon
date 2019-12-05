@@ -1500,12 +1500,16 @@
                 <param_type>ExecutableTypes</param_type>
             </parameter>
             <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>run_until_timesteps</param_name>
-                <param_type>RunUntilTimeSteps</param_type>
+                <param_name>run_until_time_in_us</param_name>
+                <param_type>RunUntilTimeInUs</param_type>
             </parameter>
             <parameter>
                 <param_name>current_timesteps</param_name>
@@ -1516,7 +1520,8 @@
             <param_name>txrx</param_name>
             <param_name>app_id</param_name>
             <param_name>executable_types</param_name>
-            <param_name>run_until_timesteps</param_name>
+            <param_name>placements</param_name>
+            <param_name>run_until_time_in_us</param_name>
             <param_name>current_timesteps</param_name>
             <token>BinariesLoaded</token>
         </required_inputs>

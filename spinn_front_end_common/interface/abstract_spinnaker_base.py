@@ -1970,6 +1970,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunUntilTimeSteps"] = run_until_timesteps
+        inputs["RunUntilTimeInUs"] = run_until_timesteps * self._lcm_timestep
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         if run_until_complete:
