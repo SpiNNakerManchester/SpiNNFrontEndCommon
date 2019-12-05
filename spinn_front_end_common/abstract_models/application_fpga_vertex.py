@@ -36,17 +36,17 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         "_virtual_chip_x",
         "_virtual_chip_y",
         "_n_atoms",
-        "_timestep"]
+        "_timestep_in_us"]
 
     def __init__(
             self, n_atoms, fpga_id, fpga_link_id, board_address=None,
             label=None, constraints=None, max_atoms_per_core=sys.maxsize,
-            timestep=None):
+            timestep_in_us=None):
         """
 
-        :param timestep: timestep used by this vertex or None to use the\
+        :param timestep_in_us: timestep used by this vertex or None to use the\
             machine timestep
-        :type timestep: None or int
+        :type timestep_in_us: None or int
         """
         super(ApplicationFPGAVertex, self).__init__(
             label=label, constraints=constraints,
@@ -58,11 +58,11 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         self._board_address = board_address
         self._virtual_chip_x = None
         self._virtual_chip_y = None
-        if timestep is None:
-            self._timestep = \
+        if timestep_in_us is None:
+            self._timestep_in_us = \
                 globals_variables.get_simulator().machine_time_step
         else:
-            self._timestep = timestep
+            self._timestep_in_us = timestep_in_us
 
     @property
     @overrides(AbstractFPGA.fpga_id)
@@ -111,7 +111,7 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
             constraints=None):
         vertex = MachineFPGAVertex(
             self._fpga_id, self._fpga_link_id, self._board_address,
-            label, constraints)
+            self._timestep_in_us, label, constraints)
         vertex.set_virtual_chip_coordinates(
             self._virtual_chip_x, self._virtual_chip_y)
         return vertex
@@ -119,4 +119,4 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
     @property
     @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
-        return self._timestep
+        return self._timestep_in_us
