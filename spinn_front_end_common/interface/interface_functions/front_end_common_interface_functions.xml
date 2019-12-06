@@ -248,17 +248,12 @@
                 <param_name>time_scale_factor</param_name>
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
-            <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>n_samples_per_recording</param_name>
             <param_name>sampling_frequency</param_name>
             <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>pre_allocated_resources</param_name>

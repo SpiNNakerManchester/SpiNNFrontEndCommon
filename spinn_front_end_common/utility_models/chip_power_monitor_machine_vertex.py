@@ -99,24 +99,22 @@ class ChipPowerMonitorMachineVertex(
     def resources_required(self):
         # pylint: disable=arguments-differ
         sim = globals_variables.get_simulator()
-        return self.get_resources(self.timestep_in_us, sim.time_scale_factor,
+        return self.get_resources(sim.time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
 
     @staticmethod
     def get_resources(
-            time_step, time_scale_factor,
-            n_samples_per_recording, sampling_frequency):
+            time_scale_factor, n_samples_per_recording, sampling_frequency):
         """ Get the resources used by this vertex
 
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        step_in_microseconds = (time_step * time_scale_factor)
-        # The number of sample per step CB believes does not have to be an int
-        samples_per_step = (step_in_microseconds / sampling_frequency)
-        recording_per_step = (samples_per_step / n_samples_per_recording)
-        max_recording_per_step = math.ceil(recording_per_step)
-        overflow_recordings = max_recording_per_step - recording_per_step
+        # The number of sample per us is clearly a faction likely < 1
+        samples_per_us = 1 / sampling_frequency / time_scale_factor
+        recording_per_us = (samples_per_us / n_samples_per_recording)
+        max_recording_per_us = math.ceil(recording_per_us) # Probably 1
+        overflow_recordings = max_recording_per_us - recording_per_us
         system = SYSTEM_BYTES_REQUIREMENT
         config = CONFIG_SIZE_IN_BYTES
         recording = recording_utilities.get_recording_header_size(1)
@@ -124,10 +122,10 @@ class ChipPowerMonitorMachineVertex(
         fixed_sdram = system + config + recording
         with_overflow = (
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
-        per_timestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
+        per_us = recording_per_us * RECORDING_SIZE_PER_ENTRY
 
         container = ResourceContainer(
-            sdram=TimeBasedSDRAM(with_overflow, per_timestep/time_step),
+            sdram=TimeBasedSDRAM(with_overflow, per_us),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         return container

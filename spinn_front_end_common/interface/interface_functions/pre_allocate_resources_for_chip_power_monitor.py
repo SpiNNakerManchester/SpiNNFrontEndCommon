@@ -25,16 +25,14 @@ class PreAllocateResourcesForChipPowerMonitor(object):
     """
 
     def __call__(
-            self, machine, n_samples_per_recording,
-            sampling_frequency, time_scale_factor, machine_time_step,
-            pre_allocated_resources=None):
+            self, machine, n_samples_per_recording, sampling_frequency,
+            time_scale_factor, pre_allocated_resources=None):
         """
         :param pre_allocated_resources: other preallocated resources
         :param machine: the SpiNNaker machine as discovered
         :param n_samples_per_recording: how many samples between record entries
         :param sampling_frequency: the frequency of sampling
         :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
         :return: preallocated resources
         """
         # pylint: disable=too-many-arguments
@@ -46,8 +44,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
         resources = ChipPowerMonitorMachineVertex.get_resources(
             n_samples_per_recording=n_samples_per_recording,
             sampling_frequency=sampling_frequency,
-            time_scale_factor=time_scale_factor,
-            time_step=machine_time_step)
+            time_scale_factor=time_scale_factor)
 
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
