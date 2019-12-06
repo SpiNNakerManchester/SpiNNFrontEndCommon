@@ -379,6 +379,7 @@ static uint data_in_data_key = 0;
 static uint data_in_boundary_key = 0;
 static address_t data_in_write_address = NULL, first_write_address = NULL;
 static int application_table_n_valid_entries = 0;
+static bool last_table_load_was_system = false;
 
 // ------------------------------------------------------------------------
 // global variables for data speed up out functionality
@@ -894,6 +895,7 @@ static void data_in_process_mc_payload_packet(uint key, uint data) {
         data_in_process_address(data);
     } else if (key == data_in_data_key) {
         data_in_process_data(data);
+        io_printf(IO_BUF, "data is %u\n", data);
     } else if (key == data_in_boundary_key) {
         data_in_process_boundary();
     } else {
@@ -1035,12 +1037,20 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
         io_printf(IO_BUF, "Loading application router entries command\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
+        last_table_load_was_system = false;
         break;
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
+        if (last_table_load_was_system) {
+            io_printf(
+                IO_BUF, "Already loaded system router. ignoring but replying");
+            msg->cmd_rc = RC_OK;
+            break;
+        }
         io_printf(IO_BUF, "Loading system router entries command\n");
         data_in_speed_up_load_in_system_tables(
                 dsg_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
+        last_table_load_was_system = true;
         break;
     default:
         io_printf(IO_BUF,

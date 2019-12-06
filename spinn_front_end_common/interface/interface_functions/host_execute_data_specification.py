@@ -232,20 +232,20 @@ class HostExecuteDataSpecification(object):
             raise
 
     def __set_router_timeouts(self):
-        receiver = next(itervalues(self._core_to_conn_map))
-        receiver.load_system_routing_tables(
-            self._txrx, self._monitors, self._placements)
-        receiver.set_cores_for_data_streaming(
-            self._txrx, self._monitors, self._placements)
-        return receiver
+        for receiver in itervalues(self._core_to_conn_map):
+            receiver.load_system_routing_tables(
+                self._txrx, self._monitors, self._placements)
+            receiver.set_cores_for_data_streaming(
+                self._txrx, self._monitors, self._placements)
 
-    def __reset_router_timeouts(self, receiver):
+    def __reset_router_timeouts(self):
         # reset router timeouts
-        receiver.unset_cores_for_data_streaming(
-            self._txrx, self._monitors, self._placements)
-        # reset router tables
-        receiver.load_application_routing_tables(
-            self._txrx, self._monitors, self._placements)
+        for receiver in itervalues(self._core_to_conn_map):
+            receiver.unset_cores_for_data_streaming(
+                self._txrx, self._monitors, self._placements)
+            # reset router tables
+            receiver.load_application_routing_tables(
+                self._txrx, self._monitors, self._placements)
 
     def __select_writer(self, x, y):
         chip = self._machine.get_chip_at(x, y)
@@ -261,7 +261,7 @@ class HostExecuteDataSpecification(object):
             dsg_targets, executable_targets)
 
         if use_monitors:
-            receiver = self.__set_router_timeouts()
+            self.__set_router_timeouts()
 
         # create a progress bar for end users
         progress = ProgressBar(
@@ -286,7 +286,7 @@ class HostExecuteDataSpecification(object):
                 base_addresses[core], region_sizes[core])
 
         if use_monitors:
-            self.__reset_router_timeouts(receiver)
+            self.__reset_router_timeouts()
         return self._write_info_map
 
     def __java_app(

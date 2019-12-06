@@ -149,7 +149,7 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 
 # Set to true to check that the data is correct after it has been sent in.
 # This is expensive, and only works in Python 3.5 or later.
-VERIFY_SENT_DATA = False
+VERIFY_SENT_DATA = True
 
 
 def ceildiv(dividend, divisor):

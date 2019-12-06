@@ -373,7 +373,7 @@ static void process_address_data(
             chip_x, chip_y, transaction_id);
     }
 
-    log_debug("Writing %u packets to 0x%08x for transaction id %d",
+    log_info("Writing %u packets to 0x%08x for transaction id %d",
              receive_data_cmd->max_seq_num + 1, receive_data_cmd->address,
              transaction_id);
 
@@ -514,7 +514,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
 
     // all good, process data
     uint seq = receive_data_cmd->seq_num;
-    log_debug("Sequence data, seq:%u", seq);
+    log_info("Sequence data, seq:%u", seq);
     if (seq > max_seq_num) {
         log_error("Bad sequence number %u when max is %u!", seq, max_seq_num);
         return;
@@ -530,7 +530,7 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     last_seen_seq_num = seq;
 
     uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
-    log_debug("n elements is %d", n_elements);
+    log_info("n elements is %d", n_elements);
     sanity_check_write(this_sdram_address, n_elements);
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
