@@ -14,10 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-try:
-    from collections.abc import defaultdict
-except ImportError:
-    from collections import defaultdict
+from collections import defaultdict
 from spinnman.transceiver import Transceiver
 from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.utility_objs import (

@@ -21,6 +21,10 @@ _simulator = None
 
 
 def get_simulator():
+    """ Get the current simulator object.
+
+    :rtype: SimulatorInterface
+    """
     global _simulator, _failed_state
     if _simulator is None:
         if _failed_state is None:
@@ -31,6 +35,10 @@ def get_simulator():
 
 
 def get_not_running_simulator():
+    """ Get the current simulator object and verify that it is not running.
+
+    :rtype: SimulatorInterface
+    """
     global _simulator, _failed_state
     if _simulator is None:
         if _failed_state is None:
@@ -42,6 +50,10 @@ def get_not_running_simulator():
 
 
 def set_simulator(new_simulator):
+    """ Set the current simulator object.
+
+    :param SimulatorInterface new_simulator: The simulator to set.
+    """
     global _simulator, _failed_state
     if _failed_state is None:
         raise ValueError("Unexpected call to set_simulator before "
@@ -50,17 +62,27 @@ def set_simulator(new_simulator):
 
 
 def unset_simulator():
+    """ Destroy the current simulator.
+    """
     global _simulator
     _simulator = None
     injection_decorator._instances = list()
 
 
 def has_simulator():
+    """ Check if a simulator is operational.
+
+    :rtype: bool
+    """
     global _simulator
     return _simulator is not None
 
 
 def set_failed_state(new_failed_state):
+    """ Install a marker to say that the simulator has failed.
+
+    :param FailedState new_failed_state: the failure marker
+    """
     # pylint: disable=unidiomatic-typecheck
     global _failed_state
     if _failed_state is None:

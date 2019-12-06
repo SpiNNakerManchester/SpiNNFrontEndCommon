@@ -35,10 +35,13 @@ class ChipPowerMonitor(
         :param label: vertex label
         :type label: str
         :param constraints: constraints for the vertex
+        :type constraints: \
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param n_samples_per_recording: \
             how many samples to take before recording to SDRAM the total
         :type n_samples_per_recording: int
         :param sampling_frequency: how many microseconds between sampling
+        :type sampling_frequency: int
         """
         super(ChipPowerMonitor, self).__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording

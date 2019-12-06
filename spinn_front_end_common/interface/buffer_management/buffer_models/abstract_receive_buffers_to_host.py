@@ -19,7 +19,7 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 @add_metaclass(AbstractBase)
 class AbstractReceiveBuffersToHost(object):
-    """ Indicates that this object can receive buffers
+    """ Indicates that this object can receive buffers.
     """
 
     __slots__ = ()
@@ -37,7 +37,10 @@ class AbstractReceiveBuffersToHost(object):
         """ Get the recording region base address
 
         :param txrx: the SpiNNMan instance
+        :type txrx: ~spinnman.transceiver.Transceiver
         :param placement:\
             the placement object of the core to find the address of
+        :type placement: ~pacman.model.placements.Placement
         :return: the base address of the recording region
+        :rtype: int
         """

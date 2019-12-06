@@ -31,7 +31,7 @@ class TestInsertLPGs(unittest.TestCase):
     """
 
     def test_that_3_lpgs_are_generated_on_3_board(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -48,13 +48,12 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
@@ -78,7 +77,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertIn(vertex, verts)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
 
@@ -96,13 +95,12 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
@@ -137,7 +135,7 @@ class TestInsertLPGs(unittest.TestCase):
         self.assertEqual(len(app_verts), 3)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -154,18 +152,18 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
+            extended = dict(default_params)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -187,7 +185,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
 
@@ -205,18 +203,18 @@ class TestInsertLPGs(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
+            extended = dict(default_params)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()

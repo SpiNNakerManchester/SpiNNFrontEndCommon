@@ -32,7 +32,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
     """
 
     def test_one_lpg_params(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
 
         default_params = {
             'use_prefix': False,
@@ -48,13 +48,12 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # run  pre allocator
@@ -92,7 +91,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_one_lpg_params_and_3_specific(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
 
         default_params = {
             'use_prefix': False,
@@ -108,17 +107,17 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
         for chip in machine.ethernet_connected_chips:
+            extended = dict(default_params)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -151,7 +150,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_added_pre_res(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
 
         default_params = {
             'use_prefix': False,
@@ -167,13 +166,12 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         # create pre res
@@ -241,7 +239,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_none(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = dict()
         # run  pre allocator
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
@@ -253,7 +251,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(len(pre_res.specific_sdram_usage), 0)
 
     def test_fail(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = dict()
         pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         self.assertRaises(

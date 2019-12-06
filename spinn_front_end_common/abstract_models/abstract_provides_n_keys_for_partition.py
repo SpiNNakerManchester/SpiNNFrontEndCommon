@@ -29,10 +29,8 @@ class AbstractProvidesNKeysForPartition(object):
     def get_n_keys_for_partition(self, partition):
         """ Get the number of keys required by the given partition of edges.
 
-        :param partition: An partition that comes out of this vertex
-        :type partition:\
-            :py:class:`~pacman.utilities.utility_objs.OutgoingPartition`
+        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+            An partition that comes out of this vertex
         :return: A list of constraints
-        :rtype: \
-            list(:py:class:`~pacman.model.constraints.AbstractConstraint`)
+        :rtype: list(~pacman.model.constraints.AbstractConstraint)
         """

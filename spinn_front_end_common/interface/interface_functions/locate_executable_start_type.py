@@ -22,47 +22,71 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class LocateExecutableStartType(object):
-    def __call__(self, graph, placements):
+    def __call__(self, graph, placements, executable_finder):
+        """
+        :param ~pacman.model.graphs.machine.MachineGraph graph:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~spinn_utilities.executable_finder.ExecutableFinder
+                executable_finder:
+        :rtype: tuple(
+            dict(ExecutableType,~spinn_machine.CoreSubsets)
+            or list(ExecutableType), dict(str,ExecutableType))
+        """
         if not graph.vertices:
-            return [ExecutableType.NO_APPLICATION]
+            return [ExecutableType.NO_APPLICATION], {}
 
         binary_start_types = dict()
+        binary_to_start_type = dict()
         progress = ProgressBar(
             graph.n_vertices, "Finding executable start types")
         for vertex in progress.over(graph.vertices):
             # try to locate binary type, but possible it doesn't have one
-            placement_binary_start_type = None
+            bin_type = None
+            bin_name = None
             if isinstance(vertex, AbstractHasAssociatedBinary):
-                placement_binary_start_type = vertex.get_binary_start_type()
+                bin_type = vertex.get_binary_start_type()
+                bin_name = vertex.get_binary_file_name()
             elif isinstance(vertex.app_vertex, AbstractHasAssociatedBinary):
-                placement_binary_start_type = \
-                    vertex.app_vertex.get_binary_start_type()
-
+                bin_type = vertex.app_vertex.get_binary_start_type()
+                bin_name = vertex.app_vertex.get_binary_file_name()
+            else:
+                continue
             # check for vertices with no associated binary, if so, ignore
-            if placement_binary_start_type is not None:
-                # update core subset with location of the vertex on the machine
-                if placement_binary_start_type not in binary_start_types:
-                    binary_start_types[placement_binary_start_type] = \
-                        CoreSubsets()
+            if bin_type is None or bin_name is None:
+                # TODO: Warn that the vertex is insane
+                continue
 
-                if isinstance(vertex, MachineVertex):
+            # update core subset with location of the vertex on the machine
+            if bin_type not in binary_start_types:
+                binary_start_types[bin_type] = CoreSubsets()
+
+            if isinstance(vertex, MachineVertex):
+                self._add_vertex_to_subset(
+                    vertex, placements, binary_start_types[bin_type])
+            elif isinstance(vertex, ApplicationVertex):
+                for machine_vertex in vertex.machine_vertices:
                     self._add_vertex_to_subset(
-                        vertex, placements,
-                        binary_start_types[placement_binary_start_type])
-                elif isinstance(vertex, ApplicationVertex):
-                    for machine_vertex in vertex.machine_vertices:
-                        self._add_vertex_to_subset(
-                            machine_vertex, placements,
-                            binary_start_types[placement_binary_start_type])
+                        machine_vertex, placements,
+                        binary_start_types[bin_type])
+
+            # add to the binary to start type map
+            binary_path = executable_finder.get_executable_path(bin_name)
+            if binary_path:
+                binary_to_start_type[binary_path] = bin_type
 
         # only got apps with no binary, such as external devices. return no app
         if not binary_start_types:
-            return [ExecutableType.NO_APPLICATION]
+            return [ExecutableType.NO_APPLICATION], {}
 
-        return binary_start_types
+        return binary_start_types, binary_to_start_type
 
     @staticmethod
     def _add_vertex_to_subset(machine_vertex, placements, core_subsets):
+        """
+        :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
+        :param ~pacman.model.placements.Placements placements:
+        :param ~spinn_machine.CoreSubsets core_subsets:
+        """
         placement = placements.get_placement_of_vertex(machine_vertex)
         core_subsets.add_processor(x=placement.x, y=placement.y,
                                    processor_id=placement.p)

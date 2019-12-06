@@ -13,10 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    from collections.abc import deque
-except ImportError:
-    from collections import deque
+from collections import deque
 from threading import Lock
 import logging
 from spinn_utilities.log import FormatAdapter
@@ -26,7 +23,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-# The total number of sequence numbers
+#: The total number of sequence numbers
 _N_SEQUENCES = 256
 
 
@@ -35,25 +32,25 @@ class BuffersSentDeque(object):
     """
 
     __slots__ = [
-        # The region being managed
+        #: The region being managed
         "_region",
 
-        # A queue of messages sent, ordered by sequence number
+        #: A queue of messages sent, ordered by sequence number
         "_buffers_sent",
 
-        # The current sequence number of the region
+        #: The current sequence number of the region
         "_sequence_number",
 
-        # A lock for the sequence number
+        #: A lock for the sequence number
         "_sequence_lock",
 
-        # The last sequence number to be received on the machine
+        #: The last sequence number to be received on the machine
         "_last_received_sequence_number",
 
-        # True if the stop message has been sent
+        #: True if the stop message has been sent
         "_sent_stop_message",
 
-        # The number of sequence numbers allowed in a single transmission
+        #: The number of sequence numbers allowed in a single transmission
         "_n_sequences_per_transmission"
     ]
 
@@ -70,43 +67,31 @@ class BuffersSentDeque(object):
         """
 
         self._region = region
-
-        # A queue of messages sent, ordered by sequence number
         self._buffers_sent = deque(maxlen=n_sequences_per_tranmission)
-
-        # The current sequence number of the region
         self._sequence_number = 0
-
-        # A lock for the sequence number
         self._sequence_lock = Lock()
-
-        # The last sequence number to be received on the machine
         self._last_received_sequence_number = _N_SEQUENCES - 1
-
-        # True if the stop message has been sent
         self._sent_stop_message = sent_stop_message
-
-        # The number of sequence numbers allowed in a single transmission
         self._n_sequences_per_transmission = n_sequences_per_tranmission
 
     @property
     def is_full(self):
         """ Determine if the number of messages sent is at the limit for the\
-            sequencing system
+            sequencing system.
 
         :rtype: bool
         """
         return len(self._buffers_sent) >= self._n_sequences_per_transmission
 
     def is_empty(self):
-        """ Determine if there are no messages
+        """ Determine if there are no messages.
 
         :rtype: int
         """
         return len(self._buffers_sent) == 0
 
     def send_stop_message(self):
-        """ Send a message to indicate the end of all the messages
+        """ Send a message to indicate the end of all the messages.
         """
         if not self._sent_stop_message:
             self._sent_stop_message = True
@@ -137,10 +122,10 @@ class BuffersSentDeque(object):
 
     @property
     def messages(self):
-        """ The messages that have been added to the set
+        """ The messages that have been added to the set.
 
         :rtype: \
-            iterable(:py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`)
+            iterable(:py:class:`spinnman.messages.eieio.command_messages.HostSendSequencedData`)
         """
         return self._buffers_sent
 
@@ -190,7 +175,7 @@ class BuffersSentDeque(object):
 
     def _remove_messages(self):
         """ Remove messages that are no longer relevant, based on the last\
-            sequence number received
+            sequence number received.
         """
         min_sequence = (self._last_received_sequence_number -
                         self._n_sequences_per_transmission)

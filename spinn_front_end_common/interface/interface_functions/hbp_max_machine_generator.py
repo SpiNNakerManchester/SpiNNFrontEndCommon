@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
+from spinn_machine import Machine
 from spinn_machine.virtual_machine import virtual_machine
 
 
@@ -24,19 +25,25 @@ class HBPMaxMachineGenerator(object):
 
     __slots__ = []
 
-    def __call__(self, hbp_server_url, total_run_time):
+    def __call__(self, hbp_server_url, total_run_time,
+                 max_machine_core_reduction=0):
         """
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request
+        :param max_machine_core_reduction: the number of cores less than
+            Machine.MAX_CORES_PER_CHIP that each chip should have
         """
 
         max_machine = self._max_machine_request(hbp_server_url, total_run_time)
 
+        n_cpus_per_chip = (Machine.max_cores_per_chip() -
+                           max_machine_core_reduction)
+
         # Return the width and height and assume that it has wrap arounds
         return virtual_machine(
             width=max_machine["width"], height=max_machine["height"],
-            with_wrap_arounds=None, version=None, validate=False)
+            n_cpus_per_chip=n_cpus_per_chip, validate=False)
 
     def _max_machine_request(self, url, total_run_time):
         if url.endswith("/"):

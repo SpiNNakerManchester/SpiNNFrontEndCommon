@@ -14,10 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-try:
-    from collections.abc import defaultdict
-except ImportError:
-    from collections import defaultdict
+from collections import defaultdict
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph
@@ -41,7 +38,7 @@ class TestInsertLPGEdges(unittest.TestCase):
     """
 
     def test_local_verts_go_to_local_lpgs(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -58,13 +55,12 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = dict()
@@ -108,7 +104,9 @@ class TestInsertLPGEdges(unittest.TestCase):
         for x, y, eth_x, eth_y in positions:
             vertex = SimpleMachineVertex(resources=ResourceContainer())
             graph.add_vertex(vertex)
-            live_packet_gatherers[default_params_holder].append(vertex)
+            partition_ids = ["EVENTS"]
+            live_packet_gatherers[default_params_holder].append(
+                (vertex, partition_ids))
             verts_expected[eth_x, eth_y].append(vertex)
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
@@ -130,7 +128,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
     def test_local_verts_when_multiple_lpgs_are_local(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -147,13 +145,12 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = defaultdict(dict)
@@ -181,7 +178,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             index += 1
             extended = dict(default_params)
             extended['board_address'] = chip.ip_address
-            extended['partition_id'] = "EVENTS"
             default_params_holder2 = LivePacketGatherParameters(**extended)
 
             extended = dict(default_params)
@@ -223,7 +219,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for x, y, eth_x, eth_y, eth_p, params in positions:
             vertex = SimpleMachineVertex(resources=ResourceContainer())
             graph.add_vertex(vertex)
-            live_packet_gatherers[params].append(vertex)
+            live_packet_gatherers[params].append((vertex, ["EVENTS"]))
             verts_expected[eth_x, eth_y, eth_p].append(vertex)
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
@@ -250,7 +246,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                         edge.pre_vertex, verts_expected[chip.x, chip.y, p])
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
 
@@ -268,13 +264,12 @@ class TestInsertLPGEdges(unittest.TestCase):
             'hostname': None,
             'port': None,
             'strip_sdp': None,
-            'tag': None}
+            'tag': None,
+            'label': "Test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
-        extended = dict(default_params)
-        extended.update({'partition_id': "EVENTS"})
-        default_params_holder = LivePacketGatherParameters(**extended)
+        default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
 
         live_packet_gatherers_to_vertex_mapping = defaultdict(dict)
@@ -283,7 +278,8 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         # add LPG's (1 for each Ethernet connected chip
         for chip in machine.ethernet_connected_chips:
-            vertex = LivePacketGather(**default_params)
+            new_params = dict(default_params)
+            vertex = LivePacketGather(**new_params)
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(
@@ -327,7 +323,9 @@ class TestInsertLPGEdges(unittest.TestCase):
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
             vertex.remember_associated_machine_vertex(mac_vertex)
-            live_packet_gatherers[default_params_holder].append(vertex)
+            partition_ids = ["EVENTS"]
+            live_packet_gatherers[default_params_holder].append(
+                (vertex, partition_ids))
             verts_expected[eth_x, eth_y].append(mac_vertex)
             placements.add_placement(
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))

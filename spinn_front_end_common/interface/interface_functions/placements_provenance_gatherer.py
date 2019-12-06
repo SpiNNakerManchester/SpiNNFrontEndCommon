@@ -24,17 +24,13 @@ logger = logging.getLogger(__name__)
 class PlacementsProvenanceGatherer(object):
     __slots__ = []
 
-    def __call__(
-            self, transceiver, placements, provenance_data_objects=None):
+    def __call__(self, transceiver, placements):
         """
         :param transceiver: the SpiNNMan interface object
         :param placements: The placements of the vertices
         """
 
-        if provenance_data_objects is not None:
-            prov_items = provenance_data_objects
-        else:
-            prov_items = list()
+        prov_items = list()
 
         progress = ProgressBar(
             placements.n_placements, "Getting provenance data")

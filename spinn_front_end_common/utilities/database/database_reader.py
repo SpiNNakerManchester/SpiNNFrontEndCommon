@@ -30,8 +30,7 @@ class DatabaseReader(object):
 
     def __init__(self, database_path):
         """
-        :param database_path: The path to the database
-        :type database_path: str
+        :param str database_path: The path to the database
         """
         self._connection = sqlite3.connect(database_path)
         self._connection.row_factory = sqlite3.Row
@@ -39,9 +38,9 @@ class DatabaseReader(object):
 
     @property
     def cursor(self):
-        """ The database cursor.  Allows custom SQL queries to be performed.
+        """ The database cursor. Allows custom SQL queries to be performed.
 
-        :rtype: :py:class:`sqlite3.Cursor`
+        :rtype: sqlite3.Cursor
         """
         return self._cursor
 
@@ -60,8 +59,7 @@ class DatabaseReader(object):
     def get_key_to_atom_id_mapping(self, label):
         """ Get a mapping of event key to atom ID for a given vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: dictionary of atom IDs indexed by event key
         :rtype: dict(int, int)
         """
@@ -73,8 +71,7 @@ class DatabaseReader(object):
     def get_atom_id_to_key_mapping(self, label):
         """ Get a mapping of atom ID to event key for a given vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: dictionary of event keys indexed by atom ID
         :rtype: dict(int, int)
         """
@@ -87,8 +84,7 @@ class DatabaseReader(object):
         """ Get the IP address, port and whether the SDP headers are to be\
             stripped from the output from a vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: tuple of (IP address, port, strip SDP)
         :rtype: tuple(str, int, bool)
         """
@@ -103,8 +99,7 @@ class DatabaseReader(object):
         """ Get the IP address and port where live input should be sent\
             for a given vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: tuple of (IP address, port)
         :rtype: tuple(str, int)
         """
@@ -118,8 +113,8 @@ class DatabaseReader(object):
         """ Get the IP address, port and whether the SDP headers are to be\
             stripped from the output from a machine vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
+        :param str receiver_label:
         :return: tuple of (IP address, port, strip SDP)
         :rtype: tuple(str, int, bool)
         """
@@ -134,8 +129,7 @@ class DatabaseReader(object):
         """ Get the IP address and port where live input should be sent\
             for a given machine vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: tuple of (IP address, port)
         :rtype: tuple(str, int)
         """
@@ -146,6 +140,11 @@ class DatabaseReader(object):
             "board_address", "port")
 
     def get_machine_live_output_key(self, label, receiver_label):
+        """
+        :param str label: The label of the vertex
+        :param str receiver_label:
+        :rtype: tuple(int,int)
+        """
         return self.__r2t(
             self.__exec_one(
                 "SELECT * FROM machine_edge_key_view"
@@ -154,6 +153,10 @@ class DatabaseReader(object):
             "key", "mask")
 
     def get_machine_live_input_key(self, label):
+        """
+        :param str label: The label of the vertex
+        :rtype: tuple(int,int)
+        """
         return self.__r2t(
             self.__exec_one(
                 "SELECT * FROM machine_edge_key_view"
@@ -163,8 +166,7 @@ class DatabaseReader(object):
     def get_n_atoms(self, label):
         """ Get the number of atoms in a given vertex
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: The number of atoms
         :rtype: int
         """
@@ -176,10 +178,9 @@ class DatabaseReader(object):
     def get_configuration_parameter_value(self, parameter_name):
         """ Get the value of a configuration parameter
 
-        :param parameter_name: The name of the parameter
-        :type parameter_name: str
+        :param str parameter_name: The name of the parameter
         :return: The value of the parameter
-        :rtype: float
+        :rtype: float or None
         """
         row = self.__exec_one(
             "SELECT value FROM configuration_parameters"
@@ -193,8 +194,7 @@ class DatabaseReader(object):
     def get_placement(self, label):
         """ Get the placement of a machine vertex with a given label
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: The x, y, p coordinates of the vertex
         :rtype: tuple(int, int, int)
         """
@@ -206,8 +206,7 @@ class DatabaseReader(object):
     def get_placements(self, label):
         """ Get the placements of an application vertex with a given label
 
-        :param label: The label of the vertex
-        :type label: str
+        :param str label: The label of the vertex
         :return: A list of x, y, p coordinates of the vertices
         :rtype: list(tuple(int, int, int))
         """
@@ -219,9 +218,10 @@ class DatabaseReader(object):
     def get_ip_address(self, x, y):
         """ Get an IP address to contact a chip
 
-        :param x: The x-coordinate of the chip
-        :param y: The y-coordinate of the chip
+        :param int x: The x-coordinate of the chip
+        :param int y: The y-coordinate of the chip
         :return: The IP address of the Ethernet to use to contact the chip
+        :rtype: str or None
         """
         row = self.__exec_one(
             "SELECT eth_ip_address FROM chip_eth_info"

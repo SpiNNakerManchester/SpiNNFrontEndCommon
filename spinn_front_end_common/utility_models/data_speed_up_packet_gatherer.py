@@ -24,12 +24,35 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
 class DataSpeedUpPacketGather(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary):
+    """ The gatherer for the data speed up protocols. Gatherers are only ever\
+        deployed on chips with an ethernet connection.
+    """
     __slots__ = ["_machine_vertex"]
 
     def __init__(
             self, x, y, ip_address, extra_monitors_by_chip,
             report_default_directory,
             write_data_speed_up_reports, constraints=None):
+        """
+        :param x: Where this gatherer is.
+        :type x: int
+        :param y: Where this gatherer is.
+        :type y: int
+        :param extra_monitors_by_chip: UNUSED
+        :type extra_monitors_by_chip: \
+            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
+        :param ip_address: \
+            How to talk directly to the chip where the gatherer is.
+        :type ip_address: str
+        :param report_default_directory: Where reporting is done.
+        :type report_default_directory: str
+        :param write_data_speed_up_reports: \
+            Whether to write low-level reports on data transfer speeds.
+        :type write_data_speed_up_reports: bool
+        :param constraints:
+        :type constraints: \
+            iterable(~pacman.model.constraints.AbstractConstraint)
+        """
         super(DataSpeedUpPacketGather, self).__init__(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)

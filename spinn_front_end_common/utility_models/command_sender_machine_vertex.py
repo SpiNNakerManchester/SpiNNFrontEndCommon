@@ -30,7 +30,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -47,13 +47,13 @@ class CommandSenderMachineVertex(
         PROVENANCE_REGION = 4
 
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
-    _COMMAND_WITH_PAYLOAD_SIZE = 20
+    _COMMAND_WITH_PAYLOAD_SIZE = 5 * BYTES_PER_WORD
 
     # 4 for the time stamp
-    _COMMAND_TIMESTAMP_SIZE = 4
+    _COMMAND_TIMESTAMP_SIZE = BYTES_PER_WORD
 
     # 4 for the int to represent the number of commands
-    _N_COMMANDS_SIZE = 4
+    _N_COMMANDS_SIZE = BYTES_PER_WORD
 
     # bool for if the command has a payload (true = 1)
     _HAS_PAYLOAD = 1
@@ -68,6 +68,13 @@ class CommandSenderMachineVertex(
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
     def __init__(self, label, constraints, app_vertex):
+        """
+        :param str label: The label of this vertex
+        :param iterable(~pacman.model.constraints.AbstractConstraint)
+                constraints:
+            Any initial constraints to this vertex
+        :param CommandSender app_vertex:
+        """
         super(CommandSenderMachineVertex, self).__init__(
             label, constraints, app_vertex, Slice(0, 0))
 
@@ -96,6 +103,7 @@ class CommandSenderMachineVertex(
         :type timed_commands: \
             iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
         :param vertex_to_send_to: The vertex these commands are to be sent to
+        :type vertex_to_send_to: AbstractVertex
         """
 
         # container for keys for partition mapping (remove duplicates)
@@ -200,7 +208,6 @@ class CommandSenderMachineVertex(
         spec.end_specification()
 
     def _write_basic_commands(self, commands, spec):
-
         # number of commands
         spec.write_value(len(commands))
 
@@ -209,7 +216,6 @@ class CommandSenderMachineVertex(
             self._write_command(command, spec)
 
     def _write_timed_commands(self, timed_commands, spec):
-
         spec.write_value(len(timed_commands))
 
         # write commands
@@ -233,6 +239,7 @@ class CommandSenderMachineVertex(
             spec, time_command_size, start_command_size, end_command_size,
             vertex):
         """ Reserve SDRAM space for memory areas:
+
         1. Area for information on what data to record
         2. Area for start commands
         3. Area for end commands
@@ -281,10 +288,6 @@ class CommandSenderMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """
-        Return a string representation of the models binary
-
-        """
         return self.BINARY_FILE_NAME
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)

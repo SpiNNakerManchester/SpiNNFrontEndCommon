@@ -30,7 +30,7 @@ class InsertEdgesToLivePacketGatherers(object):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :param placements: the placements object
-        :param live_packet_gatherers_to_vertex_mapping:\
+        :param live_packet_gatherers_to_vertex_mapping:
             the mapping of LPG parameters and the machine vertices associated\
             with it
         :param machine: the SpiNNaker machine
@@ -55,72 +55,83 @@ class InsertEdgesToLivePacketGatherers(object):
         if application_graph is None:
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
-                for vertex in live_packet_gatherer_parameters[lpg_params]:
+                for vertex, p_ids in live_packet_gatherer_parameters[
+                        lpg_params]:
                     self._connect_lpg_vertex_in_machine_graph(
-                        machine_graph, vertex, lpg_params)
+                        machine_graph, vertex, lpg_params, p_ids)
         else:
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
-                for vertex in live_packet_gatherer_parameters[lpg_params]:
+                for vertex, p_ids in live_packet_gatherer_parameters[
+                        lpg_params]:
                     self._connect_lpg_vertex_in_application_graph(
-                        application_graph, machine_graph, vertex, lpg_params)
+                        application_graph, vertex, lpg_params, p_ids)
 
     def _connect_lpg_vertex_in_application_graph(
-            self, app_graph, m_graph, app_vertex, lpg_params):
-        # pylint: disable=too-many-arguments
-
-        # Find all Live Gatherer machine vertices
-        m_lpgs = self._lpg_to_vertex[lpg_params]
+            self, app_graph, app_vertex, lpg_params, p_ids):
+        """
+        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+        :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
+        """
+        if not app_vertex.machine_vertices or not p_ids:
+            return
 
         # flag for ensuring we don't add the edge to the app
         # graph many times
-        app_edge = None
+        app_edges = dict()
 
         # iterate through the associated machine vertices
-        for machine_vertex in app_vertex.machine_vertices:
-            machine_lpg = self._find_closest_live_packet_gatherer(
-                machine_vertex, m_lpgs)
+        for m_vertex in app_vertex.machine_vertices:
+            lpg = self._find_closest_live_packet_gatherer(
+                m_vertex, lpg_params)
 
-            # locate app app_vertex for LPG
-            lpg_app_vertex = machine_lpg.app_vertex
-
-            # if not built the app edge, add the app edge now
-            if app_edge is None:
-                app_edge = ApplicationEdge(app_vertex, lpg_app_vertex)
-                app_graph.add_edge(app_edge, lpg_params.partition_id)
+            # if not yet built the app edges, add them now
+            # has to be postponed until we know the LPG
+            if not app_edges:
+                for partition_id in p_ids:
+                    app_edge = ApplicationEdge(app_vertex, lpg.app_vertex)
+                    app_graph.add_edge(app_edge, partition_id)
+                    app_edges[partition_id] = app_edge
 
             # add a edge between the closest LPG and the app_vertex
-            machine_edge = app_edge.create_machine_edge(
-                machine_vertex, machine_lpg, None)
-            m_graph.add_edge(machine_edge, lpg_params.partition_id)
-
-            # add mapping between the app edge and the machine edge
-            app_edge.remember_associated_machine_edge(machine_edge)
+            for partition_id in p_ids:
+                app_edge = app_edges[p_ids]
+                machine_edge = app_edge.create_machine_edge(
+                    m_vertex, lpg, None)
+                app_graph.machine_graph.add_edge(machine_edge, partition_id)
+                # add mapping between the app edge and the machine edge
+                app_edge.remember_associated_machine_edge(machine_edge)
 
     def _connect_lpg_vertex_in_machine_graph(
-            self, m_graph, vertex, lpg_params):
+            self, m_graph, m_vertex, lpg_params, p_ids):
+        """
+        :param ~pacman.model.graphs.machine.MachineGraph m_graph:
+        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+        """
         # Find all Live Gatherer machine vertices
-        lpg = self._find_closest_live_packet_gatherer(
-            vertex, self._lpg_to_vertex[lpg_params])
+        lpg = self._find_closest_live_packet_gatherer(m_vertex, lpg_params)
 
-        # add a edge between the closest LPG and the vertex
-        m_graph.add_edge(MachineEdge(vertex, lpg), lpg_params.partition_id)
+        # add edges between the closest LPG and the vertex
+        for partition_id in p_ids:
+            m_graph.add_edge(MachineEdge(m_vertex, lpg), partition_id)
 
-    def _find_closest_live_packet_gatherer(self, machine_vertex, machine_lpgs):
+    def _find_closest_live_packet_gatherer(self, m_vertex, lpg_params):
         """ Locates the LPG on the nearest Ethernet-connected chip to the\
             machine vertex in question, or the LPG on 0, 0 if a closer one\
             can't be found.
 
-        :param machine_vertex: the machine vertex to locate the nearest LPG to
-        :param machine_lpgs: dict of gatherers by chip placed on
+        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+            the machine vertex to locate the nearest LPG to
+        :param lpg_params: parameters to decide what LPG is to be used
         :return: the local LPG
         :raise ConfigurationException: if a local gatherer cannot be found
         """
         # locate location of vertex in machine
-        placement = self._placements.get_placement_of_vertex(machine_vertex)
+        placement = self._placements.get_placement_of_vertex(m_vertex)
         chip = self._machine.get_chip_at(placement.x, placement.y)
 
         # locate closest LPG
+        machine_lpgs = self._lpg_to_vertex[lpg_params]
         chip_key = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         if chip_key in machine_lpgs:
             return machine_lpgs[chip_key]
@@ -133,4 +144,4 @@ class InsertEdgesToLivePacketGatherers(object):
         raise ConfigurationException(
             "Cannot find a Live Packet Gatherer from {} for the vertex {}"
             " located on {}:{}".format(
-                machine_lpgs, machine_vertex, chip.x, chip.y))
+                machine_lpgs, m_vertex, chip.x, chip.y))

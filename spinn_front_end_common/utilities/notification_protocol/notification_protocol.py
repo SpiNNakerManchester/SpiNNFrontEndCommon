@@ -102,8 +102,7 @@ class NotificationProtocol(object):
         """ Sends notifications to all devices which have expressed an\
             interest in when the database has been written
 
-        :param database_path: the path to the database file
-        :rtype: None
+        :param str database_path: the path to the database file
         """
         self._wait_futures.append(self._wait_pool.submit(
             self._send_read_notification, database_path))
@@ -113,9 +112,7 @@ class NotificationProtocol(object):
             database has been written. Message also includes the path to the\
             database
 
-        :param database_path: the path to the database
-        :rtype: None
-
+        :param str database_path: the path to the database
         """
         # noinspection PyBroadException
         try:

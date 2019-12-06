@@ -21,6 +21,7 @@ from spinnman.processes.fill_process import FillDataType
 from spinnman.utilities.io import MemoryIO, FileIO
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition as SV
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
+from spinn_front_end_common.utilities.constants import BYTES_PER_KB
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as
@@ -141,7 +142,7 @@ class WriteMemoryIOData(object):
                     self._monitor_map))
         buffer_size = 256
         if self._use_monitors:
-            buffer_size = 120 * 2024 * 1024
+            buffer_size = 120 * 1024 * BYTES_PER_KB
         return write_memory_function, buffer_size
 
     @staticmethod

@@ -126,21 +126,22 @@ class BufferManager(object):
                  uses_advanced_monitors, report_folder, java_caller=None):
         """
         :param placements: The placements of the vertices
-        :type placements:\
-            :py:class:`~pacman.model.placements.Placements`
+        :type placements: ~pacman.model.placements.Placements
         :param tags: The tags assigned to the vertices
-        :type tags: :py:class:`~pacman.model.tags.Tags`
+        :type tags: ~pacman.model.tags.Tags
         :param transceiver: \
             The transceiver to use for sending and receiving information
-        :type transceiver: :py:class:`~spinnman.Transceiver`
+        :type transceiver: ~spinnman.transceiver.Transceiver
         :param packet_gather_cores_to_ethernet_connection_map:
-            mapping of cores to
-        :param report_folder: The directory for reports which includes the
+            mapping of cores to the gatherer vertex placed on them
+        :type packet_gather_cores_to_ethernet_connection_map: \
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param report_folder: The directory for reports which includes the \
             file to use as an SQL database.
         :type report_folder: str
-        :param java_caller: Support class to call Java or None to use python
+        :param java_caller: Support class to call Java, or None to use python
         :type java_caller:\
-            :py:class:`~spinn_front_end_common.interface.java_caller.JavaCaller`
+            ~spinn_front_end_common.interface.java_caller.JavaCaller
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -315,6 +316,8 @@ class BufferManager(object):
             buffers to be received from them during runtime.
 
         :param vertex: the vertex to be managed
+        :type vertex:\
+            ~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost
         """
         self._add_buffer_listeners(vertex)
 
@@ -324,7 +327,7 @@ class BufferManager(object):
 
         :param vertex: the vertex to be managed
         :type vertex:\
-            :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost`
+            ~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost
         """
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
@@ -582,6 +585,12 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_placements(self, placements, progress=None):
+        """
+        :param placements: Where to get the data from.
+        :type placements: ~pacman.model.placements.Placements
+        :param progress: How to measure/display the progress.
+        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        """
         if self._java_caller is not None:
             self._java_caller.set_placements(placements, self._transceiver)
 
@@ -635,12 +644,12 @@ class BufferManager(object):
             during the simulation from a specific region area of a core.
 
         :param placement: the placement to get the data from
-        :type placement: :py:class:`~pacman.model.placements.Placement`
+        :type placement: ~pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
+        :rtype: tuple(bytearray, bool)
         """
         # Ensure that any transfers in progress are complete first
         if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
@@ -657,7 +666,7 @@ class BufferManager(object):
         """ Retrieve the data for a vertex; must be locked first.
 
         :param placement: the placement to get the data from
-        :type placement: :py:class:`~pacman.model.placements.Placement`
+        :type placement: ~pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         """

@@ -18,12 +18,13 @@ import struct
 from .profile_data import ProfileData
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 logger = logging.getLogger(__name__)
 
-PROFILE_HEADER_SIZE_BYTES = 4
-SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 8
-BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 4
+PROFILE_HEADER_SIZE_BYTES = BYTES_PER_WORD
+SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 2 * BYTES_PER_WORD
+BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = BYTES_PER_WORD
 _ONE_WORD = struct.Struct("<I")
 
 
@@ -68,7 +69,9 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     :param profile_region: DSG region to get profiling data out of SDRAM
     :param tag_labels: labels for the profiling data
     :param txrx: SpiNNMan transceiver
+    :type txrx: ~spinnman.transceiver.Transceiver
     :param placement: placement
+    :type placement: ~pacman.model.placements.Placement
     :return: \
         :py:class:`~spinn_front_end_common.interface.profiling.ProfileData`
     """
@@ -80,7 +83,8 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
 
     # Read the profiling data size
     words_written, = _ONE_WORD.unpack_from(txrx.read_memory(
-        placement.x, placement.y, profiling_region_base_address, 4))
+        placement.x, placement.y, profiling_region_base_address,
+        BYTES_PER_WORD))
 
     # Read the profiling data
     if words_written != 0:
@@ -88,6 +92,6 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
             placement.x, placement.y,
             profiling_region_base_address +
             BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION,
-            words_written * 4))
+            words_written * BYTES_PER_WORD))
 
     return profile_data

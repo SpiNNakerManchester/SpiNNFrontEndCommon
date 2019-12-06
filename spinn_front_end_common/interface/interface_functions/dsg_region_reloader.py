@@ -34,11 +34,7 @@ class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
     __slots__ = [
-        "_app_data_dir",
-        "_hostname",
-        "_report_dir",
-        "_txrx",
-        "_write_text"]
+        "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
@@ -55,50 +51,55 @@ class DSGRegionReloader(object):
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
-        self._hostname = hostname
+        self._host = hostname
         self._write_text = write_text_specs
 
         # build file paths for reloaded stuff
-        self._app_data_dir = generate_unique_folder_name(
+        app_data_dir = generate_unique_folder_name(
             application_data_file_path, "reloaded_data_regions", "")
-        self._report_dir = generate_unique_folder_name(
-            report_directory, "reloaded_data_regions", "")
+        if not os.path.exists(app_data_dir):
+            os.makedirs(app_data_dir)
+        self._data_dir = app_data_dir
 
-        # build new folders
-        if not os.path.exists(self._app_data_dir):
-            os.makedirs(self._app_data_dir)
-        if not os.path.exists(self._report_dir):
-            os.makedirs(self._report_dir)
+        report_dir = None
+        if write_text_specs:
+            report_dir = generate_unique_folder_name(
+                report_directory, "reloaded_data_regions", "")
+            if not os.path.exists(report_dir):
+                os.makedirs(report_dir)
+        self._rpt_dir = report_dir
 
         application_vertices_to_reset = set()
 
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
-
             # Try to generate the data spec for the placement
             generated = self._regenerate_data_spec_for_vertices(
                 placement, placement.vertex)
-
             # If the region was regenerated, mark it reloaded
             if generated:
                 placement.vertex.mark_regions_reloaded()
-            else:
-                # If the spec wasn't generated directly, but there is an
-                # application vertex, try with that
-                associated_vertex = placement.vertex.app_vertex
-                if associated_vertex is not None:
-                    generated = self._regenerate_data_spec_for_vertices(
-                        placement, associated_vertex)
+                continue
 
-                    # If the region was regenerated, remember the application
-                    # vertex for resetting later
-                    if generated:
-                        application_vertices_to_reset.add(associated_vertex)
+            # If the spec wasn't generated directly, but there is an
+            # application vertex, try with that
+            app_vertex = placement.vertex.app_vertex
+            if app_vertex is not None:
+                generated = self._regenerate_data_spec_for_vertices(
+                    placement, app_vertex)
+
+                # If the region was regenerated, remember the application
+                # vertex for resetting later
+                if generated:
+                    application_vertices_to_reset.add(app_vertex)
 
         # Only reset the application vertices here, otherwise only one
-        # machine vertices data will be updated
-        for vertex in application_vertices_to_reset:
-            vertex.mark_regions_reloaded()
+        # machine vertex's data per app vertex will be updated
+        for app_vertex in application_vertices_to_reset:
+            app_vertex.mark_regions_reloaded()
+
+        # App data directory can be removed as should be empty
+        os.rmdir(app_data_dir)
 
     def _regenerate_data_spec_for_vertices(self, placement, vertex):
         # If the vertex doesn't regenerate, skip
@@ -111,8 +112,8 @@ class DSGRegionReloader(object):
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, self._hostname,
-            self._report_dir, self._write_text, self._app_data_dir)
+            placement.x, placement.y, placement.p, self._host,
+            self._rpt_dir, self._write_text, self._data_dir)
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)
