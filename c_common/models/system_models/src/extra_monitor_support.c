@@ -861,7 +861,7 @@ static void data_in_clear_router(void) {
 static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
         uint written_words = data_in_write_address - first_write_address;
-        io_printf(IO_BUF, "Wrote %u words\n", written_words);
+        //io_printf(IO_BUF, "Wrote %u words\n", written_words);
         data_in_write_address = NULL;
     }
     first_write_address = NULL;
@@ -871,7 +871,7 @@ static inline void data_in_process_address(uint data) {
     if (data_in_write_address) {
         data_in_process_boundary();
     }
-    io_printf(IO_BUF, "Setting write address to 0x%08x\n", data);
+    //io_printf(IO_BUF, "Setting write address to 0x%08x\n", data);
     data_in_write_address = (address_t) data;
     first_write_address = data_in_write_address;
 }
@@ -895,7 +895,6 @@ static void data_in_process_mc_payload_packet(uint key, uint data) {
         data_in_process_address(data);
     } else if (key == data_in_data_key) {
         data_in_process_data(data);
-        io_printf(IO_BUF, "data is %u\n", data);
     } else if (key == data_in_boundary_key) {
         data_in_process_boundary();
     } else {
@@ -913,12 +912,12 @@ static INT_HANDLER process_mc_payload_packet(void) {
 
     if (key == reinjection_timeout_mc_key) {
         reinjection_set_timeout(data);
-        io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
+        //io_printf(IO_BUF, "setting the reinjection timeout by mc\n");
     } else if (key == reinjection_emergency_timeout_mc_key) {
         reinjection_set_emergency_timeout(data);
-        io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
+        //io_printf(IO_BUF, "setting the reinjection emergency timeout by mc\n");
     } else if (key == reinjection_clear_mc_key) {
-        io_printf(IO_BUF, "setting the reinjection clear by mc\n");
+        //io_printf(IO_BUF, "setting the reinjection clear by mc\n");
         reinjection_clear();
     } else {
         data_in_process_mc_payload_packet(key, data);
@@ -933,7 +932,7 @@ static INT_HANDLER process_mc_payload_packet(void) {
 //! \param[in] n_entries: how many router entries to read in
 static void data_in_load_router(
         router_entry_t *sdram_address, uint n_entries) {
-    io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
+    //io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
     if (n_entries == 0) {
         return;
     }
@@ -998,14 +997,14 @@ static void data_in_speed_up_load_in_system_tables(
         data_in_data_items_t *items) {
     // read in router table into app store in sdram (in case its changed
     // since last time)
-    io_printf(IO_BUF, "Saving existing router table\n");
+    //io_printf(IO_BUF, "Saving existing router table\n");
     data_in_save_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
     data_in_clear_router();
 
     // read in and load routing table entries
-    io_printf(IO_BUF, "Loading system routes\n");
+    //io_printf(IO_BUF, "Loading system routes\n");
     data_in_load_router(
             items->system_router_entries, items->n_system_router_entries);
 }
@@ -1017,7 +1016,7 @@ static void data_in_speed_up_load_in_application_routes(void) {
     data_in_clear_router();
 
     // load app router entries from sdram
-    io_printf(IO_BUF, "Loading application routes\n");
+    //io_printf(IO_BUF, "Loading application routes\n");
     data_in_load_router(
             saved_application_router_table, application_table_n_valid_entries);
 }
@@ -1029,12 +1028,12 @@ static void data_in_speed_up_load_in_application_routes(void) {
 static uint data_in_speed_up_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
     case SDP_COMMAND_FOR_SAVING_APPLICATION_MC_ROUTING:
-        io_printf(IO_BUF, "Reading application router entries from router\n");
+        //io_printf(IO_BUF, "Reading application router entries from router\n");
         data_in_save_router();
         msg->cmd_rc = RC_OK;
         break;
     case SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES:
-        io_printf(IO_BUF, "Loading application router entries command\n");
+        //io_printf(IO_BUF, "Loading application router entries command\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
         last_table_load_was_system = false;
@@ -1042,11 +1041,12 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
         if (last_table_load_was_system) {
             io_printf(
-                IO_BUF, "Already loaded system router. ignoring but replying");
+                IO_BUF,
+                "Already loaded system router. ignoring but replying\n");
             msg->cmd_rc = RC_OK;
             break;
         }
-        io_printf(IO_BUF, "Loading system router entries command\n");
+        //io_printf(IO_BUF, "Loading system router entries command\n");
         data_in_speed_up_load_in_system_tables(
                 dsg_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
@@ -1336,7 +1336,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     sdp_data_out_t *message = (sdp_data_out_t *) msg->data;
     switch (message->command) {
     case SDP_CMD_START_SENDING_DATA: {
-        io_printf(IO_BUF, "data out start sdp\n");
+        //io_printf(IO_BUF, "data out start sdp\n");
         stop = 0;
 
         // set SDRAM position and length
