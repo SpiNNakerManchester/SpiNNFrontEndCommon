@@ -1082,7 +1082,6 @@ static void data_out_send_data_block(
         uint32_t current_data = data_to_transmit[current_dma_pointer][i];
 
         send_fixed_route_packet(first_packet_key, current_data);
-        io_printf(IO_BUF, "Sending data %d \n", current_data);
 
         // update key to transmit with
         first_packet_key = basic_data_key;
