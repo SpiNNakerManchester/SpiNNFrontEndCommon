@@ -1751,8 +1751,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        n_machine_time_steps = self._max_run_time_in_us // self._lcm_timestep
-        inputs["RunUntilTimeSteps"] = n_machine_time_steps
+        inputs["RunUntilTimeInUs"] = self._max_run_time_in_us
 
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
@@ -1969,7 +1968,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
-        inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunUntilTimeInUs"] = run_until_timesteps * self._lcm_timestep
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps

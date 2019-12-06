@@ -671,21 +671,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @inject("FirstMachineTimeStep")
     @inject_items({
-        "run_until_timesteps": "RunUntilTimeSteps"
+        "run_until_time_in_us": "RunUntilTimeInUs"
     })
     def update_buffer(
-            self, first_machine_time_step, run_until_timesteps):
+            self, first_machine_time_step, run_until_time_in_us):
         """ Updates the buffers on specification of the first machine timestep.
             Note: This is called by injection.
 
         :param first_machine_time_step:\
             The first machine time step in the simulation
         :type first_machine_time_step: int
-        :param run_until_timesteps:\
-            The last machine time step in the simulation
-        :type run_until_timesteps: int
+        :param run_until_time_in_us:\
+            The run until time in us for the simulation
+        :type run_until_time_in_us: int
         """
         if self._virtual_key is not None:
+            run_until_timesteps = self.simtime_in_us_to_timesteps(
+                run_until_time_in_us)
             self._fill_send_buffer(
                 first_machine_time_step, run_until_timesteps)
 
