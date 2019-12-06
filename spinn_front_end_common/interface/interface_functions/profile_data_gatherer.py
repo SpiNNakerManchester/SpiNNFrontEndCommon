@@ -17,6 +17,7 @@ import os
 import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
+from spinn_front_end_common.utilities.constants import US_TO_MS
 
 logger = logging.getLogger(__name__)
 
@@ -25,29 +26,25 @@ class ProfileDataGatherer(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, placements, provenance_file_path,
-            machine_time_step):
+            self, transceiver, placements, provenance_file_path):
         """
         :param transceiver: the SpiNNMan interface object
         :param placements: The placements of the vertices
         :param has_ran: token that states that the simulation has ran
         :param provenance_file_path: The location to store the profile data
-        :param machine_time_step: machine time step in ms
         """
         # pylint: disable=too-many-arguments
-        machine_time_step_ms = float(machine_time_step) / 1000.0
-
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
-
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
-            if isinstance(placement.vertex, AbstractHasProfileData):
+            vertex = placement.vertex
+            if isinstance(vertex, AbstractHasProfileData):
                 # get data
-                profile_data = placement.vertex.get_profile_data(
-                    transceiver, placement)
+                profile_data = vertex.get_profile_data(transceiver, placement)
                 if profile_data.tags:
-                    self._write(placement, profile_data, machine_time_step_ms,
+                    self._write(placement,
+                                profile_data, vertex.timestep_in_us / US_TO_MS,
                                 provenance_file_path)
 
     def _write(self, p, profile_data, machine_time_step_ms, directory):
