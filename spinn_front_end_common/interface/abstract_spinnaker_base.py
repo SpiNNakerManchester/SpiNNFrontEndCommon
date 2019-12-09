@@ -523,6 +523,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
 
+        self._allocated_time_in_us = 0
+
     def set_n_boards_required(self, n_boards_required):
         """
         Sets the machine requirements.
@@ -784,18 +786,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _calc_run_time(self, run_time):
         """
-        Calculates run_time and total_run_time based on run_time
-        and lcd of the time_step
+        Calculates run_time based on run_time and lcd of the time_step
 
         This method rounds the run up to the next timestep as discussed in\
         https://github.com/SpiNNakerManchester/sPyNNaker/issues/149
 
-        If run_time is None (run forever) both values will be None
+        If run_time is None (run forever) None wil be returned
 
         :param run_time: time user requested to run for in milliseconds
         :type run_time: float or None
-        :return: run_time in us and
-            total_run_time in ms
+        :return: run_time in us
         :rtype: (int, float) or (None, None)
         """
         if run_time is None:
@@ -811,12 +811,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "and has therefor been rounded up to {}ms",
                 run_time, lcm_timestep, calc_run_time)
 
-        total_run_timesteps = (
-            self._current_run_timesteps + n_lcm_time_steps)
-        total_run_time = (
-            total_run_timesteps * n_lcm_time_steps *
-            self.time_scale_factor)
-
         # Convert dt into microseconds and divide by
         # realtime proportion to get hardware timestep
         hardware_timestep_us = int(round(lcm_timestep / self.timescale_factor))
@@ -826,7 +820,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "using a hardware timestep of {}us",
             n_lcm_time_steps, lcm_timestep, hardware_timestep_us)
 
-        return calc_run_time, total_run_time
+        return calc_run_time
 
     def lcm_timestep(self):
         timesteps = set()
@@ -871,10 +865,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         logger.info("Starting execution process")
 
-        run_time_in_us, total_run_time = self._calc_run_time(run_time_in_ms)
+        run_time_in_us = self._calc_run_time(run_time_in_ms)
         if self._machine_allocation_controller is not None:
-            self._machine_allocation_controller.extend_allocation(
-                total_run_time)
+            self._machine_allocation_controller.allocate_time(
+                run_time_in_ms)
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
@@ -925,8 +919,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._max_run_time_in_us = None
 
             if self._machine is None:
-                self._get_machine(total_run_time, run_time_in_us)
-            self._do_mapping(run_time_in_us, total_run_time)
+                self._get_machine(run_time_in_us)
+            self._do_mapping(run_time_in_us)
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -1192,20 +1186,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
 
-    def _get_machine(self, total_run_time=0.0, run_time=None):
+    def _get_machine(self, run_time=None):
         if self._machine is not None:
             return self._machine
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
-            self._machine_by_hostname(run_time, total_run_time)
-
+            self._machine_by_hostname(run_time)
         elif self._use_virtual_board:
-            self._machine_by_virtual(run_time, total_run_time)
+            self._machine_by_virtual(run_time)
         else:
             # must be remote due to set_up_machine_specifics()
-            self._machine_by_remote(run_time, total_run_time)
+            self._machine_by_remote(run_time)
 
         if self._app_id is None:
             if self._txrx is None:
@@ -1231,9 +1224,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return self._machine
 
-    def _machine_by_hostname(self, run_time, total_run_time):
-        inputs, algorithms = self._get_machine_common(
-            run_time, total_run_time)
+    def _machine_by_hostname(self, run_time):
+        inputs, algorithms = self._get_machine_common(run_time)
         outputs = list()
         inputs["IPAddress"] = self._hostname
         inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
@@ -1254,9 +1246,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine_outputs = executor.get_items()
         self._machine_tokens = executor.get_completed_tokens()
 
-    def _machine_by_virtual(self, run_time, total_run_time):
-        inputs, algorithms = self._get_machine_common(
-            run_time, total_run_time)
+    def _machine_by_virtual(self, run_time):
+        inputs, algorithms = self._get_machine_common(run_time)
         outputs = list()
 
         inputs["IPAddress"] = "virtual"
@@ -1284,13 +1275,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine_tokens = executor.get_completed_tokens()
         self._machine = executor.get_item("MemoryMachine")
 
-    def _machine_by_remote(self, run_time, total_run_time):
+    def _machine_by_remote(self, run_time):
         """
         Gets a machine when we know one of self._spalloc_server or\
             self._remote_spinnaker_url is defined
         """
-        inputs, algorithms = self._get_machine_common(
-            run_time, total_run_time)
+        inputs, algorithms = self._get_machine_common(run_time)
         outputs = list()
 
         do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
@@ -1394,7 +1384,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return do_partitioning
 
-    def _get_machine_common(self, run_time, total_run_time):
+    def _get_machine_common(self, run_time):
         inputs = dict(self._extra_inputs)
         algorithms = list()
 
@@ -1416,7 +1406,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
         # Set the total run time
-        inputs["TotalRunTime"] = total_run_time
         inputs["MaxMachineCoreReduction"] = self._read_config_int(
             "Machine", "max_machine_core_reduction")
         inputs["MachineTimeStep"] = self.machine_time_step
@@ -1516,7 +1505,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
 
-    def _do_mapping(self, run_time, total_run_time):
+    def _do_mapping(self, run_time):
 
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
@@ -1529,7 +1518,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs.update(self._extra_mapping_inputs)
 
         inputs["RunTime"] = run_time
-        inputs["TotalRunTime"] = total_run_time
 
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")

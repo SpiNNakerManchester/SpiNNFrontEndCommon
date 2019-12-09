@@ -46,7 +46,7 @@ class TestHBPAllocator(unittest.TestCase):
         with LogCapture() as lc:
             controller = _HBPJobController("http://localhost", "test_machine")
             try:
-                controller.extend_allocation(1)
+                controller.allocate_time(1)
                 result = controller._check_lease(0)
                 assert result["allocated"] is True
                 controller.set_power(False)

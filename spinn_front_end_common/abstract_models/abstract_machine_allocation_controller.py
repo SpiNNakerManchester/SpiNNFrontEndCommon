@@ -25,13 +25,14 @@ class AbstractMachineAllocationController(object):
     __slots__ = ()
 
     @abstractmethod
-    def extend_allocation(self, new_total_run_time):
-        """ Extend the allocation of the machine from the original\
-            run time.
+    def allocate_time(self, run_time_in_us):
+        """ Add allocation of the machine run time.
 
-        :param new_total_run_time: The total run time that is now required\
-            starting from when the machine was first allocated
-        :type new_total_run_time: float
+        The allocator has to keep track of the total and\
+        decide what to do for None (run_forever)
+
+        :param run_time_in_us: The new run time that is now being uses.
+        :type run_time_in_us: int or None
         """
 
     @abstractmethod

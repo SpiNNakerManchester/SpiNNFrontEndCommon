@@ -32,7 +32,8 @@ class _HBPJobController(MachineAllocationController):
         "_set_power_url",
         "_where_is_url",
         "_machine_name",
-        "_power_on"
+        "_power_on",
+        "_total_run_time"
     ]
 
     _WAIT_TIME_MS = 10000
@@ -45,14 +46,19 @@ class _HBPJobController(MachineAllocationController):
         self._where_is_url = "{}/chipCoordinates".format(url)
         self._machine_name = machine_name
         self._power_on = True
+        self._total_run_time = 0
         # Lower the level of requests to WARNING to avoid extra messages
         logging.getLogger("requests").setLevel(logging.WARNING)
         super(_HBPJobController, self).__init__("HBPJobController")
 
-    @overrides(AbstractMachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time):
+    @overrides(AbstractMachineAllocationController.allocate_time)
+    def allocate_time(self, run_time_in_us):
+        if run_time_in_us is None:
+            raise NotImplementedError("Runtime of None (run forever) is "
+                                      "currently not supported by hbp portal")
+        self._total_run_time += run_time_in_us
         r = requests.get(self._extend_lease_url, params={
-            "runTime": new_total_run_time})
+            "runTime": self._total_run_time})
         r.raise_for_status()
 
     def _check_lease(self, wait_time):

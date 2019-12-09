@@ -40,8 +40,8 @@ class _SpallocJobController(MachineAllocationController):
         self._state = job.state
         super(_SpallocJobController, self).__init__("SpallocJobController")
 
-    @overrides(AbstractMachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time):
+    @overrides(AbstractMachineAllocationController.allocate_time)
+    def allocate_time(self, run_time_in_us):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
