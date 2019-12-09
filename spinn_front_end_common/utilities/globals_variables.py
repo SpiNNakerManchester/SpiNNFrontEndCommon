@@ -66,7 +66,6 @@ def unset_simulator():
     """
     global _simulator
     _simulator = None
-
     injection_decorator._instances = list()
 
 
