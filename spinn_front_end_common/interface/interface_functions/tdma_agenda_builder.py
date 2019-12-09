@@ -25,12 +25,14 @@ class TDMAAgendaBuilder(object):
         (time-division multiple access) system and graph colouring to deduce\
         the agenda set up. Ensures parallel transmissions so that the\
         destination should never be overloaded.
+
+        Current version only works if there is a unique time step .
     """
 
     def __call__(
             self, machine_graph, number_of_cpu_cycles_per_receive,
             other_cpu_demands_in_cpu_cycles,
-            n_packets_per_time_window, machine_time_step, time_scale_factor,
+            n_packets_per_time_window, unique_time_step, time_scale_factor,
             safety_factor=1):
         # pylint: disable=too-many-arguments
         time_offset = dict()
@@ -40,7 +42,7 @@ class TDMAAgendaBuilder(object):
 
         # check its possible to make an agenda
         cpu_cycles_needed_per_window = self._check_time_window_size(
-            number_of_cpu_cycles_per_receive, machine_time_step,
+            number_of_cpu_cycles_per_receive, unique_time_step,
             time_scale_factor, n_packets_per_time_window, max_in_edges,
             safety_factor, other_cpu_demands_in_cpu_cycles)
 
@@ -155,7 +157,7 @@ class TDMAAgendaBuilder(object):
         return True
 
     def _check_time_window_size(
-            self, number_of_cpu_cycles_per_receive, machine_time_step,
+            self, number_of_cpu_cycles_per_receive, unique_time_step,
             time_scale_factor, n_packets_per_time_window, max_in_edges,
             safety_factor, other_cpu_demands_in_cpu_cycles):
         """ Calculates the CPU cycles per window, and therefore verifies if\
@@ -163,7 +165,7 @@ class TDMAAgendaBuilder(object):
 
         :param number_of_cpu_cycles_per_receive:\
             how long the packet reception callback takes in CPU cycles
-        :param machine_time_step: the timer tick in microseconds
+        :param unique_time_step: the timer tick used by everywhere
         :param time_scale_factor:\
             the multiplicative factor on the machine time step.
         :param n_packets_per_time_window:\
@@ -183,7 +185,7 @@ class TDMAAgendaBuilder(object):
 
         # figure out if its feasible for window to work
         total_cycles_available = \
-            machine_time_step * time_scale_factor * \
+            unique_time_step * time_scale_factor * \
             _CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES
 
         cpu_cycles_needed_per_window = math.ceil(

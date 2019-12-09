@@ -1408,6 +1408,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Set the total run time
         inputs["MaxMachineCoreReduction"] = self._read_config_int(
             "Machine", "max_machine_core_reduction")
+        if self._lcm_timestep == self.machine_time_step:
+            inputs["UniqueTimeStep"] = self.machine_time_step
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
 
@@ -1545,6 +1547,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
+        if self._lcm_timestep == self.machine_time_step:
+            inputs["UniqueTimeStep"] = self.machine_time_step
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(

@@ -343,15 +343,15 @@ class DatabaseWriter(object):
                         get_edges_starting_at_vertex(vertex):
                     self.__insert_app_graph_element(vertex, edge)
 
-    def add_system_params(self, time_scale_factor, machine_time_step, runtime):
+    def add_system_params(self, time_scale_factor, unique_time_step, runtime):
         """ Write system params into the database
 
         :param time_scale_factor: the time scale factor used in timing
-        :param machine_time_step: the machine time step used in timing
+        :param unique_time_step: the time step used everywhere in the system
         :param runtime: the amount of time the application is to run for
         """
         with self._connection:
-            self.__insert_cfg("machine_time_step", machine_time_step)
+            self.__insert_cfg("machine_time_step", unique_time_step)
             self.__insert_cfg("time_scale_factor", time_scale_factor)
             if runtime is not None:
                 self.__insert_cfg("infinite_run", "False")

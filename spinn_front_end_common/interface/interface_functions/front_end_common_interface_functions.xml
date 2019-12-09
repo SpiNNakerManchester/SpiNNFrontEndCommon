@@ -440,8 +440,8 @@
                 <param_type>NPacketsPerTimeWindow</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>unique_time_step</param_name>
+                <param_type>UniqueTimeStep</param_type>
             </parameter>
             <parameter>
                 <param_name>time_scale_factor</param_name>
@@ -455,7 +455,7 @@
         <required_inputs>
             <param_name>other_cpu_demands_in_cpu_cycles</param_name>
             <param_name>n_packets_per_time_window</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>unique_time_step</param_name>
             <param_name>time_scale_factor</param_name>
             <param_name>number_of_cpu_cycles_per_receive</param_name>
             <param_name>machine_graph</param_name>
@@ -1377,8 +1377,8 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_time_step</param_name>
-                <param_type>MachineTimeStep</param_type>
+                <param_name>unique_time_step</param_name>
+                <param_type>UniqueTimeStep</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -1415,7 +1415,7 @@
             <param_name>machine</param_name>
             <param_name>data_simtime_in_us</param_name>
             <param_name>time_scale_factor</param_name>
-            <param_name>machine_time_step</param_name>
+            <param_name>unique_time_step</param_name>
             <param_name>placements</param_name>
             <param_name>routing_infos</param_name>
             <param_name>router_tables</param_name>
