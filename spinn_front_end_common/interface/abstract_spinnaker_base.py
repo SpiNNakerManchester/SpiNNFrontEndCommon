@@ -1410,6 +1410,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "max_machine_core_reduction")
         if self._lcm_timestep == self.machine_time_step:
             inputs["UniqueTimeStep"] = self.machine_time_step
+        else:
+            inputs["UniqueTimeStep"] = None
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
 
@@ -1549,6 +1551,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["TimeScaleFactor"] = self.time_scale_factor
         if self._lcm_timestep == self.machine_time_step:
             inputs["UniqueTimeStep"] = self.machine_time_step
+        else:
+            inputs["UniqueTimeStep"] = None
         inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(

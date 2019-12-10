@@ -57,6 +57,10 @@ class DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database(machine_graph)
 
         if self.needs_database:
+            if unique_time_step is None:
+                raise NotImplementedError(
+                    "The use of the DatabaseInterface is not supported when "
+                    "vertexes have different timesteps")
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
             self._write_to_db(machine, time_scale_factor, unique_time_step,

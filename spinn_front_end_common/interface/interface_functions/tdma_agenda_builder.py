@@ -34,6 +34,9 @@ class TDMAAgendaBuilder(object):
             other_cpu_demands_in_cpu_cycles,
             n_packets_per_time_window, unique_time_step, time_scale_factor,
             safety_factor=1):
+        raise NotImplementedError(
+            "The use of the TDMAAgendaBuilder is not supported when "
+            "vertexes have different timesteps")
         # pylint: disable=too-many-arguments
         time_offset = dict()
 
