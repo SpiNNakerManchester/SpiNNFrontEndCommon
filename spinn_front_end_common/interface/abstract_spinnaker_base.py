@@ -523,7 +523,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
 
-        self._allocated_time_in_us = 0
 
     def set_n_boards_required(self, n_boards_required):
         """
