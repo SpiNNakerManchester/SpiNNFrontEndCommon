@@ -31,25 +31,23 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor"
+            "time_scale_factor"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor):
+            time_scale_factor):
         """
         :param machine_graph: (Injected)
         :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
         :param routing_info: (Injected)
         :type routing_info: ~pacman.model.routing_info.RoutingInfo
         :param tags: (Injected)
-        :param machine_time_step: (Injected)
         :param time_scale_factor: (Injected)
         """
         # pylint: disable=too-many-arguments, arguments-differ
@@ -57,12 +55,12 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(
             spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor)
+            reverse_iptags, time_scale_factor)
 
     @abstractmethod
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor):
+            reverse_iptags, time_scale_factor):
         """
         :param spec: The data specification to write into.
         :type spec: ~data_specification.DataSpecificationGenerator
@@ -77,8 +75,6 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         :param reverse_iptags: The reverse IP tags for the vertex, if any
         :type reverse_iptags: \
             iterable(~spinn_machine.tags.ReverseIPTag) or None
-        :param machine_time_step: The machine time step
-        :type machine_time_step: int
         :param time_scale_factor: The time step scaling factor
         :type time_scale_factor: int
         :rtype: None

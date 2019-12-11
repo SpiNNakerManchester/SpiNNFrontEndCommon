@@ -155,23 +155,20 @@ class LivePacketGatherMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
         "tags": "MemoryTags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "tags"
-        })
+        additional_arguments={"time_scale_factor", "tags"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, tags):
+            time_scale_factor, tags):
         # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec, machine_time_step, time_scale_factor)
+        self._write_setup_info(spec, self.timestep_in_us, time_scale_factor)
         self._write_configuration_region(
             spec, tags.get_ip_tags_for_vertex(self))
 

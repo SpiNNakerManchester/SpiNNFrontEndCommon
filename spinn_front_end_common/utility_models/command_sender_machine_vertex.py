@@ -155,14 +155,12 @@ class CommandSenderMachineVertex(
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
         })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"machine_time_step", "time_scale_factor"})
-    def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor):
+        additional_arguments={"time_scale_factor"})
+    def generate_data_specification(self, spec, placement, time_scale_factor):
         # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
@@ -180,7 +178,7 @@ class CommandSenderMachineVertex(
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
+            self.get_binary_file_name(), self.timestep_in_us,
             time_scale_factor))
 
         # write commands
