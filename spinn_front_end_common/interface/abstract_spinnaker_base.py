@@ -58,8 +58,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, US_TO_MS)
+from spinn_front_end_common.utilities.constants import US_TO_MS
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
@@ -799,7 +798,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         if run_time is None:
             return None, None
-        run_time_in_us = math.ceil(run_time * MICRO_TO_MILLISECOND_CONVERSION)
+        run_time_in_us = math.ceil(run_time * US_TO_MS)
         lcm_timestep = self.lcm_timestep()
         n_lcm_time_steps = math.ceil(run_time_in_us / lcm_timestep)
         calc_run_time = n_lcm_time_steps * lcm_timestep
@@ -982,16 +981,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param run_until_complete: No use case known when it is True but..
         :raises ConfigurationException: If the runtime is too long
         """
-        max_run_in_ms = (self._max_run_time_in_us /
-                         MICRO_TO_MILLISECOND_CONVERSION)
+        max_run_in_ms = (self._max_run_time_in_us / US_TO_MS)
         if run_time_in_us > self._max_run_time_in_us:
             self._state = Simulator_State.FINISHED
             raise ConfigurationException(
                 "The SDRAM required by one or more vertices is based on"
                 " the run time, so the run time is limited to"
                 " {} ms".format(max_run_in_ms))
-        logger.info("Running for {}ms", run_time_in_us /
-                    MICRO_TO_MILLISECOND_CONVERSION)
+        logger.info("Running for {}ms", run_time_in_us / US_TO_MS)
         self._do_run(run_time_in_us, graph_changed, run_until_complete)
 
     def _run_undetermined(self, graph_changed, run_until_complete):
@@ -1040,7 +1037,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if left_over_runtime:
             steps.append(left_over_runtime)
         logger.info("Running for {} steps for a total of {}ms", len(steps),
-                    run_time_in_us / MICRO_TO_MILLISECOND_CONVERSION)
+                    run_time_in_us / US_TO_MS)
         for i, step in enumerate(steps):
             logger.info("Run {} of {}", i + 1, len(steps))
             self._do_run(step, graph_changed, run_until_complete)
