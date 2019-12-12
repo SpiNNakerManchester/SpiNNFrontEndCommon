@@ -1411,7 +1411,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["UniqueTimeStep"] = self.machine_time_step
         else:
             inputs["UniqueTimeStep"] = None
-        inputs["MachineTimeStep"] = self.machine_time_step
         inputs["TimeScaleFactor"] = self.time_scale_factor
 
         inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
@@ -1552,7 +1551,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["UniqueTimeStep"] = self.machine_time_step
         else:
             inputs["UniqueTimeStep"] = None
-        inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
