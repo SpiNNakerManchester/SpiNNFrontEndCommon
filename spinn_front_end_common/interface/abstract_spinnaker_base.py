@@ -59,7 +59,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities import (
     globals_variables, SimulatorInterface)
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION)
+    MICRO_TO_MILLISECOND_CONVERSION, US_TO_MS)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
@@ -803,11 +803,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         lcm_timestep = self.lcm_timestep()
         n_lcm_time_steps = math.ceil(run_time_in_us / lcm_timestep)
         calc_run_time = n_lcm_time_steps * lcm_timestep
-        if run_time != calc_run_time:
+        if run_time * US_TO_MS != calc_run_time:
             logger.warning(
                 "Your requested runtime of {}ms "
-                "is not a multiple of the time step of {}ms "
-                "and has therefor been rounded up to {}ms",
+                "is not a multiple of the time step of {}us "
+                "and has therefor been rounded up to {}us",
                 run_time, lcm_timestep, calc_run_time)
 
         # Convert dt into microseconds and divide by
