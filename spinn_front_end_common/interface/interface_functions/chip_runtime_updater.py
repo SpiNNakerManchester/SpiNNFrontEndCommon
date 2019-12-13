@@ -40,10 +40,8 @@ class ChipRuntimeUpdater(object):
             run_until_time_in_us = 0
             current_timesteps = 0
 
-        print("starting")
         # TODO: Expose the connection selector in SpiNNMan
         process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
         process.update_runtime(
             current_timesteps, run_until_time_in_us, infinite_run, core_subsets,
             placements)
-        print("done")
