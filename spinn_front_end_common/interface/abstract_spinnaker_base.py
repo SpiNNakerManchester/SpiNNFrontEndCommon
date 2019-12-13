@@ -273,9 +273,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         #
         "_no_machine_time_steps",
 
-        # The lowest values auto pause resume may use as steps
-        "_minimum_auto_time_steps",
-
         #
         "_app_id",
 
@@ -488,8 +485,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._no_sync_changes = 0
         self._max_run_time_in_us = None
         self._no_machine_time_steps = None
-        self._minimum_auto_time_steps = self._config.getint(
-                "Buffers", "minimum_auto_time_steps")
 
         self._app_id = self._read_config_int("Machine", "app_id")
 
@@ -1391,11 +1386,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean(
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
 
-        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
-            inputs["MinimumSimtimeInUs"] = \
-                self._minimum_auto_time_steps * self._lcm_timestep
-        else:
-            inputs["MinimumSimtimeInUs"] = run_time
+        inputs["MinimumSimtimeInUs"] = \
+            self._config.getint("Buffers", "minimum_auto_time_steps") * \
+            self.machine_time_step
+        if not (self._config.getboolean(
+                "Buffers", "use_auto_pause_and_resume")):
+            inputs["MinimumSimtimeInUs"] = max(
+                run_time, inputs["MinimumSimtimeInUs"])
 
         # add max SDRAM size and n_cores which we're going to allow
         # (debug purposes)
