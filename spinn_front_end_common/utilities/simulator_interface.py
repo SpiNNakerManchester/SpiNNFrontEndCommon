@@ -66,7 +66,7 @@ class SimulatorInterface(object):
         """
 
     @abstractproperty
-    def machine_time_step(self):
+    def user_time_step_in_us(self):
         pass
 
     @abstractproperty
