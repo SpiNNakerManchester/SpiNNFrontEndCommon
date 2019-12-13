@@ -117,7 +117,7 @@ class MyVertex(MachineVertex, AbstractUsesMemoryIO):
 
     def __init__(self):
         super(MyVertex, self).__init__(
-            globals_variables.get_simulator().machine_time_step)
+            globals_variables.get_simulator().user_time_step_in_us)
         self._test_tag = None
         self._tag = None
 

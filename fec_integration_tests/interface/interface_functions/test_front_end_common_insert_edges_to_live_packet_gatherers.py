@@ -73,7 +73,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             extended.update(
-                {'timestep_in_us': get_simulator().machine_time_step})
+                {'timestep_in_us': get_simulator().user_time_step_in_us})
             extended.update({'label': 'test'})
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
@@ -165,7 +165,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             extended.update(
-                {'timestep_in_us': get_simulator().machine_time_step})
+                {'timestep_in_us': get_simulator().user_time_step_in_us})
             extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(**extended)
             graph.add_vertex(vertex)
@@ -182,7 +182,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
             extended = dict(default_params)
             extended.update(
-                {'timestep_in_us': get_simulator().machine_time_step})
+                {'timestep_in_us': get_simulator().user_time_step_in_us})
             extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(**extended)
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2
