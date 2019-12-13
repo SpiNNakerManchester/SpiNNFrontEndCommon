@@ -264,7 +264,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         #
         "_current_run_timesteps",
 
-        #
+        # Endtime of previous run unless no run or reset in which case 0
+        "_previous_simtime_in_us",
+
         "_no_sync_changes",
 
         #
@@ -479,6 +481,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._has_reset_last = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
+        self._previous_simtime_in_us = 0
         self._no_sync_changes = 0
         self._max_run_time_in_us = None
 
@@ -866,6 +869,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self.stop()
             raise NotImplementedError(
                 "The network cannot be changed between runs without"
+                " resetting")
+
+        if self._previous_simtime_in_us is None:
+            raise NotImplementedError(
+                "The network cannot be run again after a run forever without"
                 " resetting")
 
         # If we have reset and the graph has changed, stop any running
@@ -1507,6 +1515,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
+        inputs["RunTime"] = run_time
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
@@ -1731,8 +1740,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["RunUntilTimeInUs"] = self._max_run_time_in_us
-
-        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        inputs["RunFromTimeInUs"] = self._previous_simtime_in_us
 
         inputs["DataSimtimeInUs"] = self._max_run_time_in_us
 
@@ -1887,6 +1895,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
+            if runtime_in_us is not None:
+                self._previous_simtime_in_us += runtime_in_us
+            else:
+                self._previous_simtime_in_us = None
 
             self._execute_time += convert_time_diff_to_total_milliseconds(
                 run_timer.take_sample())
@@ -1948,7 +1960,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunUntilTimeInUs"] = run_until_timesteps * self._lcm_timestep
-        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        inputs["RunTime"] = run_time
+        inputs["RunFromTimeInUs"] = self._previous_simtime_in_us
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
@@ -2213,6 +2226,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # reset the current count of how many milliseconds the application
         # has ran for over multiple calls to run
         self._current_run_timesteps = 0
+        self._previous_simtime_in_us = 0
 
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
@@ -2387,15 +2401,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._use_virtual_board
 
     def get_current_time(self):
-        """ Get the current simulation time.
+        """ Get the current simulation time in ms.
 
         :rtype: float
         """
-        if self._has_ran:
-            return (
-                float(self._current_run_timesteps) *
-                (self.user_time_step_in_us / 1000.0))
-        return 0.0
+        if self._previous_simtime_in_us is None:
+            raise NotImplementedError(
+                "get_current_time not supported after a run forever")
+        return self._previous_simtime_in_us / US_TO_MS
 
     def get_generated_output(self, name_of_variable):
         """ Get the value of an inter-algorithm variable.
@@ -2576,7 +2589,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         exc_info = None
 
         # If we have run forever, stop the binaries
-        if (self._has_ran and self._current_run_timesteps is None and
+        if (self._has_ran and self._previous_simtime_in_us is None and
                 not self._use_virtual_board):
             executor = self._create_stop_workflow()
             run_complete = False

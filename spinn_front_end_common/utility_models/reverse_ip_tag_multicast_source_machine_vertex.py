@@ -587,27 +587,27 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
-        "first_machine_time_step": "FirstMachineTimeStep",
+        "run_from_time_in_us": "RunFromTimeInUs",
         "data_simtime_in_us": "DataSimtimeInUs",
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "time_scale_factor", "machine_graph", "routing_info",
-            "first_machine_time_step", "data_simtime_in_us"
+            "run_from_time_in_us", "data_simtime_in_us"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, data_simtime_in_us):
+            run_from_time_in_us, data_simtime_in_us):
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
+        first_machine_time_step = self.simtime_in_us_to_timesteps(
+            run_from_time_in_us)
         run_until_timesteps = self.simtime_in_us_to_timesteps(
             data_simtime_in_us)
         self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
-        # TODO Once the Machine vertex has a link to the application vertext
-        # Swap from Global to timestep in Application vertex
         n_machine_time_steps = self.simtime_in_us_to_timesteps(
             data_simtime_in_us)
         # Reserve regions
@@ -669,12 +669,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def is_recording(self):
         return self._is_recording > 0
 
-    @inject("FirstMachineTimeStep")
+    @inject("RunFromTimeInUs")
     @inject_items({
         "run_until_time_in_us": "RunUntilTimeInUs"
     })
     def update_buffer(
-            self, first_machine_time_step, run_until_time_in_us):
+            self, run_from_time_in_us, run_until_time_in_us):
         """ Updates the buffers on specification of the first machine timestep.
             Note: This is called by injection.
 
@@ -688,6 +688,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._virtual_key is not None:
             run_until_timesteps = self.simtime_in_us_to_timesteps(
                 run_until_time_in_us)
+            first_machine_time_step = self.simtime_in_us_to_timesteps(
+                run_from_time_in_us)
             self._fill_send_buffer(
                 first_machine_time_step, run_until_timesteps)
 

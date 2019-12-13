@@ -28,7 +28,7 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
         if self._progress is not None:
             self._progress.update()
 
-    def update_runtime(self, current_timestep, run_until_time_in_us,
+    def update_runtime(self, run_from_time_in_us, run_until_time_in_us,
                        infinite_run, core_subsets, placements):
         self._progress = ProgressBar(len(core_subsets), "Updating run time")
         for core_subset in core_subsets:
@@ -36,6 +36,8 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
             y = core_subset.y
             for processor_id in core_subset.processor_ids:
                 vertex = placements.get_vertex_on_processor(x, y, processor_id)
+                current_timestep = vertex.simtime_in_us_to_timesteps(
+                    run_from_time_in_us)
                 until_timestep = vertex.simtime_in_us_to_timesteps(
                     run_until_time_in_us)
                 self._send_request(

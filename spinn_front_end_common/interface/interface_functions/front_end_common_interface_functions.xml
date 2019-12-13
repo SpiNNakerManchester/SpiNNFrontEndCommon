@@ -1507,8 +1507,8 @@
                 <param_type>RunUntilTimeInUs</param_type>
             </parameter>
             <parameter>
-                <param_name>current_timesteps</param_name>
-                <param_type>FirstMachineTimeStep</param_type>
+                <param_name>run_from_time_in_us</param_name>
+                <param_type>RunFromTimeInUs</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1517,7 +1517,7 @@
             <param_name>executable_types</param_name>
             <param_name>placements</param_name>
             <param_name>run_until_time_in_us</param_name>
-            <param_name>current_timesteps</param_name>
+            <param_name>run_from_time_in_us</param_name>
             <token>BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
