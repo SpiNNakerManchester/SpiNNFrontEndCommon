@@ -17,6 +17,7 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
+from spinn_front_end_common.utilities.constants import US_TO_MS
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -45,7 +46,7 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, user_create_database, tags,
-            runtime, machine, data_simtime_in_us, time_scale_factor,
+            runtime_in_us, machine, data_simtime_in_us, time_scale_factor,
             unique_time_step, placements, routing_infos, router_tables,
             database_directory, create_atom_to_event_id_mapping=False,
             application_graph=None, graph_mapper=None):
@@ -64,7 +65,7 @@ class DatabaseInterface(object):
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
             self._write_to_db(machine, time_scale_factor, unique_time_step,
-                              runtime, application_graph, machine_graph,
+                              runtime_in_us, application_graph, machine_graph,
                               data_simtime_in_us, graph_mapper, placements,
                               routing_infos, router_tables, tags,
                               create_atom_to_event_id_mapping)
@@ -85,14 +86,14 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, unique_time_step,
-            runtime, application_graph, machine_graph, data_simtime_in_us,
+            runtime_in_us, application_graph, machine_graph, data_simtime_in_us,
             graph_mapper, placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
         """
         :param machine:
         :param time_scale_factor:
         :param unique_time_step:
-        :param runtime:
+        :param runtime_in_us:
         :param application_graph:
         :param machine_graph:
         :param data_simtime_in_us: \
@@ -109,7 +110,8 @@ class DatabaseInterface(object):
 
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(time_scale_factor, unique_time_step, runtime)
+            w.add_system_params(time_scale_factor, unique_time_step,
+                                runtime_in_us / US_TO_MS)
             p.update()
             w.add_machine_objects(machine)
             p.update()

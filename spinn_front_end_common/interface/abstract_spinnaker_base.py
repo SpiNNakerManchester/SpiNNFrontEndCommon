@@ -1515,7 +1515,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
-        inputs["RunTime"] = run_time
+        inputs["RunTimeInUs"] = run_time
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
@@ -1855,12 +1855,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         run_complete = False
 
-        if runtime_in_us is None:
-            n_machine_time_steps = None
-        else:
-            n_machine_time_steps = runtime_in_us // self._lcm_timestep
-        executor, self._current_run_timesteps = self._create_execute_workflow(
-            n_machine_time_steps, graph_changed, run_until_complete)
+        executor = self._create_execute_workflow(
+            runtime_in_us, graph_changed, run_until_complete)
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -1941,13 +1937,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*e_inf)
 
     def _create_execute_workflow(
-            self, n_machine_time_steps, graph_changed, run_until_complete):
-        # calculate number of machine time steps
-        run_until_timesteps = self._calculate_number_of_machine_time_steps(
-            n_machine_time_steps)
-        run_time = None
-        if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self.user_time_step_in_us / 1000.0
+            self, runtime_in_us, graph_changed, run_until_complete):
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1959,8 +1949,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
-        inputs["RunUntilTimeInUs"] = run_until_timesteps * self._lcm_timestep
-        inputs["RunTime"] = run_time
+        if runtime_in_us is None:
+            inputs["RunUntilTimeInUs"] = None
+        else:
+            inputs["RunUntilTimeInUs"] = \
+                self._previous_simtime_in_us + runtime_in_us
+        inputs["RunTimeInUs"] = runtime_in_us
         inputs["RunFromTimeInUs"] = self._previous_simtime_in_us
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
@@ -2025,7 +2019,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
         if (not self._use_virtual_board and
-                (run_until_complete or n_machine_time_steps is not None)):
+                (run_until_complete or runtime_in_us is not None)):
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
@@ -2040,13 +2034,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
                 not self._use_virtual_board and
-                n_machine_time_steps is not None):
+                runtime_in_us is not None):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
         if (self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board and
-                n_machine_time_steps is not None):
+                runtime_in_us is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
@@ -2062,7 +2056,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path,
-            provenance_name="Execution"), run_until_timesteps
+            provenance_name="Execution")
 
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
@@ -2225,7 +2219,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # reset the current count of how many milliseconds the application
         # has ran for over multiple calls to run
-        self._current_run_timesteps = 0
         self._previous_simtime_in_us = 0
 
         # sets the reset last flag to true, so that when run occurs, the tools
@@ -2716,11 +2709,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._report_default_directory,
             self._read_config_int("Machine", "version"),
             self._spalloc_server, self._remote_spinnaker_url,
-            self.time_scale_factor, self.user_time_step_in_us,
-            pacman_provenance, router_provenance, self._machine_graph,
-            self._current_run_timesteps, self._buffer_manager,
-            self._mapping_time, self._load_time, self._execute_time,
-            self._dsg_time, self._extraction_time,
+            self.time_scale_factor, pacman_provenance, router_provenance,
+            self._machine_graph, self._previous_simtime_in_us,
+            self._buffer_manager, self._mapping_time, self._load_time,
+            self._execute_time, self._dsg_time, self._extraction_time,
             self._machine_allocation_controller)
 
     def _extract_iobufs(self):

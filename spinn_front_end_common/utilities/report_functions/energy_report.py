@@ -16,6 +16,7 @@
 import logging
 import os
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
+from spinn_front_end_common.utilities.constants import US_TO_MS
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
@@ -70,9 +71,9 @@ class EnergyReport(object):
     def __call__(
             self, placements, machine, report_default_directory, version,
             spalloc_server, remote_spinnaker_url, time_scale_factor,
-            machine_time_step, pacman_provenance, router_provenance,
-            machine_graph, runtime, buffer_manager, mapping_time, load_time,
-            execute_time, dsg_time, extraction_time,
+            pacman_provenance, router_provenance, machine_graph,
+            total_simtime_in_us, buffer_manager, mapping_time, load_time,
+            execute_time,  dsg_time, extraction_time,
             machine_allocation_controller=None):
         """
         :param placements: the placements
@@ -82,10 +83,10 @@ class EnergyReport(object):
         :param spalloc_server: spalloc server IP
         :param remote_spinnaker_url: remote SpiNNaker URL
         :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
         :param pacman_provenance: the PACMAN provenance
         :param router_provenance: the router provenance
         :param machine_graph: the machine graph
+        :param total_simtime_in_us: total simtime in us
         :param buffer_manager: the buffer manager
         :param mapping_time: time taken by the mapping process
         :param load_time: the time taken by the load process
@@ -118,7 +119,7 @@ class EnergyReport(object):
         total_booted_time = execute_time + load_time + extraction_time
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = runtime * time_scale_factor
+        runtime_total_ms = total_simtime_in_us / US_TO_MS * time_scale_factor
 
         # create detailed report
         with open(detailed_report, "w") as f:

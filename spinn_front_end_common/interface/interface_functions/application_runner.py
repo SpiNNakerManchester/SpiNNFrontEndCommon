@@ -17,6 +17,7 @@ import logging
 import time
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
+from spinn_front_end_common.utilities.constants import US_TO_S
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
@@ -51,7 +52,7 @@ class ApplicationRunner(object):
     # Wraps up as a PACMAN algorithm
     def __call__(
             self, buffer_manager, wait_on_confirmation, notification_interface,
-            executable_types, app_id, txrx, runtime, time_scale_factor,
+            executable_types, app_id, txrx, runtime_in_us, time_scale_factor,
             no_sync_changes, time_threshold, run_until_complete=False):
         # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
@@ -61,14 +62,14 @@ class ApplicationRunner(object):
             notification_interface, wait_on_confirmation)
 
         return self.run_application(
-            buffer_manager, notifier, executable_types, app_id, txrx, runtime,
-            time_scale_factor, no_sync_changes, time_threshold,
-            run_until_complete)
+            buffer_manager, notifier, executable_types, app_id, txrx,
+            runtime_in_us, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete)
 
     # The actual runner
     def run_application(
             self, buffer_manager, notifier, executable_types, app_id, txrx,
-            runtime, time_scale_factor, no_sync_changes, time_threshold,
+            runtime_in_us, time_scale_factor, no_sync_changes, time_threshold,
             run_until_complete):
         # pylint: disable=too-many-arguments
 
@@ -101,29 +102,29 @@ class ApplicationRunner(object):
         notifier.send_start_resume_notification()
 
         # Wait for the application to finish
-        if runtime is None and not run_until_complete:
+        if runtime_in_us is None and not run_until_complete:
             logger.info("Application is set to run forever; exiting")
             # Do NOT stop the buffer manager; app is using it still
         else:
             try:
                 self._run_wait(
                     txrx, app_id, executable_types, run_until_complete,
-                    runtime, time_scale_factor, time_threshold)
+                    runtime_in_us, time_scale_factor, time_threshold)
             finally:
                 # Stop the buffer manager after run
                 buffer_manager.stop()
 
         # Send stop notification
-        if runtime is not None:
+        if runtime_in_us is not None:
             notifier.send_stop_pause_notification()
 
         return no_sync_changes
 
     def _run_wait(self, txrx, app_id, executable_types, run_until_complete,
-                  runtime, time_scale_factor, time_threshold):
+                  runtime_in_us, time_scale_factor, time_threshold):
         # pylint: disable=too-many-arguments
         if not run_until_complete:
-            time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
+            time_to_wait = runtime_in_us / US_TO_S * time_scale_factor + 0.1
             logger.info(
                 "Application started; waiting {}s for it to stop",
                 time_to_wait)

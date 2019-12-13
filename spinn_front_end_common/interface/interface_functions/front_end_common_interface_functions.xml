@@ -1176,8 +1176,8 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>runtime</param_name>
-                <param_type>RunTime</param_type>
+                <param_name>runtime_in_us</param_name>
+                <param_type>RunTimeInUs</param_type>
             </parameter>
             <parameter>
                 <param_name>time_scale_factor</param_name>
@@ -1203,7 +1203,7 @@
             <param_name>executable_types</param_name>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
-            <param_name>runtime</param_name>
+            <param_name>runtime_in_us</param_name>
             <param_name>time_scale_factor</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
@@ -1361,8 +1361,8 @@
                 <param_type>ApplicationDataFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>runtime</param_name>
-                <param_type>RunTime</param_type>
+                <param_name>runtime_in_us</param_name>
+                <param_type>RunTimeInUs</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -1411,7 +1411,7 @@
             <param_name>user_create_database</param_name>
             <param_name>tags</param_name>
             <param_name>database_directory</param_name>
-            <param_name>runtime</param_name>
+            <param_name>runtime_in_us</param_name>
             <param_name>machine</param_name>
             <param_name>data_simtime_in_us</param_name>
             <param_name>time_scale_factor</param_name>
