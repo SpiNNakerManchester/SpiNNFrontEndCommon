@@ -943,12 +943,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
             if run_time_in_us is None:
-                self._run_undetermined(graph_changed, run_until_complete)
-            else:
-                self._run_single(
-                    run_time_in_us, graph_changed, run_until_complete)
-        else:
-            if run_time_in_us is None:
                 self._run_in_loop(graph_changed, run_until_complete)
             else:
                 if run_time_in_us <= self._max_run_time_in_us:
@@ -957,6 +951,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 else:
                     self._run_in_steps(
                         run_time_in_us, graph_changed, run_until_complete)
+        else:
+            if run_time_in_us is None:
+                self._run_undetermined(graph_changed, run_until_complete)
+            else:
+                self._run_single(
+                    run_time_in_us, graph_changed, run_until_complete)
 
         # Indicate that the signal handler needs to act
         if isinstance(threading.current_thread(), threading._MainThread):
