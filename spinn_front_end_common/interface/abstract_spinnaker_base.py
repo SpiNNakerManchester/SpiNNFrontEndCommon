@@ -261,9 +261,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         #
         "_has_reset_last",
 
-        #
-        "_current_run_timesteps",
-
         # Endtime of previous run unless no run or reset in which case 0
         "_previous_simtime_in_us",
 
@@ -480,7 +477,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
-        self._current_run_timesteps = 0
         self._previous_simtime_in_us = 0
         self._no_sync_changes = 0
         self._max_run_time_in_us = None
@@ -1126,13 +1122,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Round down to a multiple of self._lcm_timestep
         self._max_run_time_in_us = (self._max_run_time_in_us //
                                     self._lcm_timestep) * self._lcm_timestep
-
-    def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
-        if next_run_timesteps is not None:
-            total_timesteps = next_run_timesteps + self._current_run_timesteps
-            return total_timesteps
-
-        return None
 
     def _run_algorithms(
             self, inputs, algorithms, outputs, tokens, required_tokens,
