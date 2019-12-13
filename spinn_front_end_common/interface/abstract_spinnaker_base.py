@@ -813,11 +813,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def lcm_timestep(self):
         timesteps = set()
-        timesteps.add(self.machine_time_step)
+        timesteps.add(self.user_time_step_in_us)
         for vertex in self._original_application_graph.vertices:
             timesteps.add(vertex.timestep_in_us)
         self._lcm_timestep = lcm(timesteps)
-        if self._lcm_timestep != self.machine_time_step:
+        if self._lcm_timestep != self.user_time_step_in_us:
             logger.info(
                 "Multiple timestep values found! The timestep used for this "
                 "run will be {} which is the lcm of {}",
@@ -1382,7 +1382,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["MinimumSimtimeInUs"] = \
             self._config.getint("Buffers", "minimum_auto_time_steps") * \
-            self.machine_time_step
+            self.user_time_step_in_us
         if not (self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume")):
             inputs["MinimumSimtimeInUs"] = max(
@@ -1395,8 +1395,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Set the total run time
         inputs["MaxMachineCoreReduction"] = self._read_config_int(
             "Machine", "max_machine_core_reduction")
-        if self._lcm_timestep == self.machine_time_step:
-            inputs["UniqueTimeStep"] = self.machine_time_step
+        if self._lcm_timestep == self.user_time_step_in_us:
+            inputs["UniqueTimeStep"] = self.user_time_step_in_us
         else:
             inputs["UniqueTimeStep"] = None
         inputs["TimeScaleFactor"] = self.time_scale_factor
@@ -1535,8 +1535,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
-        if self._lcm_timestep == self.machine_time_step:
-            inputs["UniqueTimeStep"] = self.machine_time_step
+        if self._lcm_timestep == self.user_time_step_in_us:
+            inputs["UniqueTimeStep"] = self.user_time_step_in_us
         else:
             inputs["UniqueTimeStep"] = None
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
@@ -1937,7 +1937,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self.machine_time_step / 1000.0
+            run_time = n_machine_time_steps * self.user_time_step_in_us / 1000.0
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -2397,7 +2397,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
-                (self.machine_time_step / 1000.0))
+                (self.user_time_step_in_us / 1000.0))
         return 0.0
 
     def get_generated_output(self, name_of_variable):
@@ -2706,7 +2706,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._report_default_directory,
             self._read_config_int("Machine", "version"),
             self._spalloc_server, self._remote_spinnaker_url,
-            self.time_scale_factor, self.machine_time_step,
+            self.time_scale_factor, self.user_time_step_in_us,
             pacman_provenance, router_provenance, self._machine_graph,
             self._current_run_timesteps, self._buffer_manager,
             self._mapping_time, self._load_time, self._execute_time,

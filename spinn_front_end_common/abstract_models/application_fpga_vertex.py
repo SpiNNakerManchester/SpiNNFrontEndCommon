@@ -60,7 +60,7 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
         self._virtual_chip_y = None
         if timestep_in_us is None:
             self._timestep_in_us = \
-                globals_variables.get_simulator().machine_time_step
+                globals_variables.get_simulator().user_time_step_in_us
         else:
             self._timestep_in_us = timestep_in_us
 

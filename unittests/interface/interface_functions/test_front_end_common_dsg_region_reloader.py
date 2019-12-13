@@ -75,7 +75,7 @@ class _TestApplicationVertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return _TestMachineVertex(
-            timestep_in_us=globals_variables.get_simulator().machine_time_step)
+            timestep_in_us=globals_variables.get_simulator().user_time_step_in_us)
 
     def requires_memory_regions_to_be_reloaded(self):
         return self._requires_regions_to_be_reloaded
@@ -93,7 +93,7 @@ class _TestApplicationVertex(
 
     @property
     def timestep_in_us(self):
-        return globals_variables.get_simulator().machine_time_step
+        return globals_variables.get_simulator().user_time_step_in_us
 
 
 class _MockCPUInfo(object):

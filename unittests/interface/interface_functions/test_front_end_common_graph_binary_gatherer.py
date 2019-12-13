@@ -28,7 +28,7 @@ class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self, binary_file_name, binary_start_type):
         super(_TestVertexWithBinary, self).__init__(
-            get_simulator().machine_time_step)
+            get_simulator().user_time_step_in_us)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 
@@ -65,7 +65,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         vertex_3 = _TestVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
         vertex_4 = _TestVertexWithoutBinary(
-            timestep_in_us=get_simulator().machine_time_step)
+            timestep_in_us=get_simulator().user_time_step_in_us)
 
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2, vertex_3])

@@ -75,12 +75,12 @@ class TestSpinnakerMainInterface(unittest.TestCase):
 
         # Test defaults
         interface = MainInterfaceTimingImpl()
-        assert interface.machine_time_step == 1000
+        assert interface.user_time_step_in_us == 1000
         assert interface.time_scale_factor is None
 
         # Test specified
         interface = MainInterfaceTimingImpl(200, 10)
-        assert interface.machine_time_step == 200
+        assert interface.user_time_step_in_us == 200
         assert interface.time_scale_factor == 10
 
 

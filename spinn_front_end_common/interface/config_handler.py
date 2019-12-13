@@ -393,15 +393,15 @@ class ConfigHandler(object):
         return read_config_boolean(self._config, section, item)
 
     @property
-    def machine_time_step(self):
+    def user_time_step_in_us(self):
         """
         Gets the machine timestep in microsecond
         :return: machine timestep in microsecond
         """
         return self._read_config_int("Machine", "machine_time_step")
 
-    @machine_time_step.setter
-    def machine_time_step(self, new_value):
+    @user_time_step_in_us.setter
+    def user_time_step_in_us(self, new_value):
         """
         Sets the machine time step in microsecond
         :param new_value: machine time step in microsecond        """
@@ -428,12 +428,12 @@ class ConfigHandler(object):
 
         # set up timings
         if machine_time_step is not None:
-            self.machine_time_step = machine_time_step
+            self.user_time_step_in_us = machine_time_step
 
-        if self.machine_time_step <= 0:
+        if self.user_time_step_in_us <= 0:
             raise ConfigurationException(
                 "invalid machine_time_step {}: must greater than zero".format(
-                    self.machine_time_step))
+                    self.user_time_step_in_us))
 
         if time_scale_factor is not None:
             self.time_scale_factor = time_scale_factor

@@ -57,7 +57,7 @@ class TestFrontEndCommonTagsLoader(unittest.TestCase):
         """ Test calling the tags loader
         """
 
-        vertex = _TestVertex(timestep_in_us=get_simulator().machine_time_step)
+        vertex = _TestVertex(timestep_in_us=get_simulator().user_time_step_in_us)
 
         tag_1 = IPTag("127.0.0.1", 0, 0, 1, "localhost", 12345, True, "Test")
         tag_2 = IPTag("127.0.0.1", 0, 0, 2, "localhost", 54321, True, "Test")
