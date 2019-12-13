@@ -271,9 +271,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_max_run_time_in_us",
 
         #
-        "_no_machine_time_steps",
-
-        #
         "_app_id",
 
         #
@@ -484,7 +481,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
         self._max_run_time_in_us = None
-        self._no_machine_time_steps = None
 
         self._app_id = self._read_config_int("Machine", "app_id")
 
@@ -1126,10 +1122,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         if next_run_timesteps is not None:
             total_timesteps = next_run_timesteps + self._current_run_timesteps
-            self._no_machine_time_steps = total_timesteps
             return total_timesteps
 
-        self._no_machine_time_steps = None
         return None
 
     def _run_algorithms(
@@ -2309,11 +2303,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.machine)
     def machine(self):
         return self._get_machine()
-
-    @property
-    @overrides(SimulatorInterface.no_machine_time_steps)
-    def no_machine_time_steps(self):
-        return self._no_machine_time_steps
 
     @property
     def timescale_factor(self):

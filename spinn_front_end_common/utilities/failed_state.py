@@ -66,11 +66,6 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    @overrides(SimulatorInterface.no_machine_time_steps)
-    def no_machine_time_steps(self):
-        raise ConfigurationException(FAILED_STATE_MSG)
-
-    @property
     @overrides(SimulatorInterface.placements)
     def placements(self):
         raise ConfigurationException(FAILED_STATE_MSG)

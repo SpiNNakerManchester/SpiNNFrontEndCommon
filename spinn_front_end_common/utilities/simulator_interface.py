@@ -70,13 +70,6 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
-    def no_machine_time_steps(self):
-        """ The number of machine time steps.
-
-        :rtype: int
-        """
-
-    @abstractproperty
     def placements(self):
         """ Where machine vertices are placed on the machine.
 
