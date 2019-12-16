@@ -402,7 +402,6 @@
             </parameter>
             <parameter>
                 <param_name>timestep_in_us</param_name>
-                <!-- No reason this needs to be the Unique one, but then what? -->
                 <param_type>UniqueTimeStep</param_type>
             </parameter>
             <parameter>
@@ -414,6 +413,7 @@
             <param_name>live_packet_gatherer_parameters</param_name>
             <param_name>machine_graph</param_name>
             <param_name>machine</param_name>
+            <param_name>timestep_in_us</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
