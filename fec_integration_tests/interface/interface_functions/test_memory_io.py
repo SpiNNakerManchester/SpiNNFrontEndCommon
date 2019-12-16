@@ -116,8 +116,7 @@ class _MockTransceiver(object):
 class MyVertex(MachineVertex, AbstractUsesMemoryIO):
 
     def __init__(self):
-        super(MyVertex, self).__init__(
-            globals_variables.get_simulator().user_time_step_in_us)
+        super(MyVertex, self).__init__(timestep_in_us=1000)
         self._test_tag = None
         self._tag = None
 

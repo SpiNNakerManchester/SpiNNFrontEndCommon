@@ -43,7 +43,7 @@ class LivePacketGather(
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, constraints=None,
-            label=None):
+            label=None, timestep_in_us=None):
         # pylint: disable=too-many-arguments, too-many-locals
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
@@ -68,6 +68,11 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
+        if timestep_in_us is None:
+            self._timestep_in_us = \
+                globals_variables.get_simulator().user_time_step_in_us
+        else:
+            self._timestep_in_us = timestep_in_us
         super(LivePacketGather, self).__init__(label, constraints, 1)
 
         # storage objects
@@ -142,4 +147,4 @@ class LivePacketGather(
     @property
     @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us
+        return self._timestep_in_us

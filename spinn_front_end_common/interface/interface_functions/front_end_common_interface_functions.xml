@@ -401,6 +401,11 @@
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
+                <param_name>timestep_in_us</param_name>
+                <!-- No reason this needs to be the Unique one, but then what? -->
+                <param_type>UniqueTimeStep</param_type>
+            </parameter>
+            <parameter>
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
