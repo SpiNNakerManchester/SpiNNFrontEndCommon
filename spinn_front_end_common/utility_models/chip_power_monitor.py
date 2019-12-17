@@ -75,7 +75,7 @@ class ChipPowerMonitor(
         additional_arguments={"time_scale_factor", "data_simtime_in_us"})
     def generate_data_specification(
             self, spec, placement, time_scale_factor, data_simtime_in_us):
-        # pylint: disable=too-many-arguments, arguments-differ
+        # pylint: disable=too-many-arguments, arguments-differ,
         # pylint: disable=protected-access
 
         # generate spec for the machine vertex
@@ -94,8 +94,8 @@ class ChipPowerMonitor(
             time_scale_factor):
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
-            self.timestep_in_us, time_scale_factor,
-            self._n_samples_per_recording, self._sampling_frequency)
+            time_scale_factor, self._n_samples_per_recording,
+            self._sampling_frequency)
 
     @property
     @overrides(AbstractVertex.timestep_in_us)
