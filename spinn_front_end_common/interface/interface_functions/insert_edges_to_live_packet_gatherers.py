@@ -99,8 +99,6 @@ class InsertEdgesToLivePacketGatherers(object):
                 machine_edge = app_edge.create_machine_edge(
                     m_vertex, lpg, None)
                 app_graph.machine_graph.add_edge(machine_edge, partition_id)
-                # add mapping between the app edge and the machine edge
-                app_edge.remember_associated_machine_edge(machine_edge)
 
     def _connect_lpg_vertex_in_machine_graph(
             self, m_graph, m_vertex, lpg_params, p_ids):
