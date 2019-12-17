@@ -187,7 +187,6 @@ class ReverseIpTagMultiCastSource(
             if hasattr(send_buffer_times[0], "__len__"):
                 send_buffer_times = send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-        sim = globals_variables.get_simulator()
         container = ResourceContainer(
             sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
                 send_buffer_times, self._is_recording, self.timestep_in_us,
