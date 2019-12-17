@@ -66,7 +66,8 @@ class ReverseIpTagMultiCastSource(
             send_buffer_partition_id=None,
 
             # Extra flag for input without a reserved port
-            reserve_reverse_ip_tag=False):
+            reserve_reverse_ip_tag=False,
+            timestep_in_us=None):
         """
         :param n_keys: The number of keys to be sent via this multicast source
         :type n_keys: int
@@ -157,6 +158,11 @@ class ReverseIpTagMultiCastSource(
 
         # Keep the vertices for resuming runs
         self._machine_vertices = list()
+        if timestep_in_us is None:
+            self._timestep_in_us = \
+                globals_variables.get_simulator().user_time_step_in_us
+        else:
+            self._timestep_in_us = timestep_in_us
 
     def _validate_send_buffer_times(self, send_buffer_times):
         if send_buffer_times is None:
@@ -184,7 +190,7 @@ class ReverseIpTagMultiCastSource(
         sim = globals_variables.get_simulator()
         container = ResourceContainer(
             sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                send_buffer_times, self._is_recording, sim.user_time_step_in_us,
+                send_buffer_times, self._is_recording, self.timestep_in_us,
                 self._receive_rate, self._n_atoms),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
@@ -267,4 +273,4 @@ class ReverseIpTagMultiCastSource(
     @property
     @overrides(AbstractVertex.timestep_in_us)
     def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us
+        return self._timestep_in_us
