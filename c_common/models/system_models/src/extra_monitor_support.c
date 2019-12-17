@@ -784,19 +784,27 @@ static inline int reinjection_clear_message(sdp_msg_t *msg) {
 //! \return the length of extra data put into the message for return
 static uint reinjection_sdp_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
+    //io_printf(IO_BUF, "seq %d\n", msg->seq);
     case CMD_DPRI_SET_ROUTER_TIMEOUT:
+        //io_printf(IO_BUF, "router timeout\n");
         return reinjection_set_timeout_sdp(msg);
     case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
+        //io_printf(IO_BUF, "router emergency timeout\n");
         return reinjection_set_emergency_timeout_sdp(msg);
     case CMD_DPRI_SET_PACKET_TYPES:
+        //io_printf(IO_BUF, "router set packet type\n");
         return reinjection_set_packet_types(msg);
     case CMD_DPRI_GET_STATUS:
+        //io_printf(IO_BUF, "router get status\n");
         return reinjection_get_status(msg);
     case CMD_DPRI_RESET_COUNTERS:
+        //io_printf(IO_BUF, "router reset\n");
         return reinjection_reset_counters(msg);
     case CMD_DPRI_EXIT:
+        //io_printf(IO_BUF, "router exit\n");
         return reinjection_exit(msg);
     case CMD_DPRI_CLEAR:
+        //io_printf(IO_BUF, "router clear\n");
         return reinjection_clear_message(msg);
     default:
         // If we are here, the command was not recognised, so fail (ARG as the
@@ -1031,12 +1039,14 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
         //io_printf(IO_BUF, "Reading application router entries from router\n");
         data_in_save_router();
         msg->cmd_rc = RC_OK;
+        //io_printf(IO_BUF, "saving app mc routing\n");
         break;
     case SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES:
         //io_printf(IO_BUF, "Loading application router entries command\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
         last_table_load_was_system = false;
+        //io_printf(IO_BUF, "loading app mc routing\n");
         break;
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
         if (last_table_load_was_system) {
@@ -1051,6 +1061,7 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
                 dsg_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
         last_table_load_was_system = true;
+        //io_printf(IO_BUF, "loading system mc routing\n");
         break;
     default:
         io_printf(IO_BUF,
@@ -1486,6 +1497,7 @@ void __wrap_sark_int(void *pc) {
     // Make a copy so we can release the mailbox, and flag as ready for
     // interrupt again
     sdp_msg_t *msg = get_message_from_mailbox();
+    //io_printf(IO_BUF, "seq is %d\n", msg->seq);
     sc[SC_CLR_IRQ] = SC_CODE + (1 << sark.phys_cpu);
     if (msg == NULL) {
         return;
