@@ -185,9 +185,9 @@ class BufferManager(object):
                     self._extra_monitor_cores_by_chip,
                     self._packet_gather_cores_to_ethernet_connection_map)
 
-    def _request_data(self, transceiver, placement_x, placement_y, address,
-                      length):
-        """ Uses the extra monitor cores for data extraction.
+    def request_data(
+            self, transceiver, placement_x, placement_y, address, length):
+        """ Get data with or without the extra monitor cores.
 
         :param transceiver: the spinnman interface
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
@@ -387,7 +387,7 @@ class BufferManager(object):
             self, placement, state_region_base_address):
 
         # retrieve channel state memory area
-        channel_state_data = self._request_data(
+        channel_state_data = self.request_data(
             transceiver=self._transceiver, placement_x=placement.x,
             address=state_region_base_address, placement_y=placement.y,
             length=ChannelBufferState.size_of_channel_state())
@@ -739,7 +739,7 @@ class BufferManager(object):
                     "< Reading {} bytes from {}, {}, {}: {} for region {}",
                     length, placement.x, placement.y, placement.p,
                     hex(read_ptr), recording_region_id)
-                data = self._request_data(
+                data = self.request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.flushing_data_from_region(
@@ -755,7 +755,7 @@ class BufferManager(object):
                     "> Reading {} bytes from {}, {}, {}: {} for region {}",
                     length, placement.x, placement.y, placement.p,
                     hex(read_ptr), recording_region_id)
-                data = self._request_data(
+                data = self.request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.store_data_in_region_buffer(
@@ -767,7 +767,7 @@ class BufferManager(object):
                     "Reading {} bytes from {}, {}, {}: {} for region {}",
                     length, placement.x, placement.y, placement.p,
                     hex(read_ptr), recording_region_id)
-                data = self._request_data(
+                data = self.request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.flushing_data_from_region(
@@ -781,7 +781,7 @@ class BufferManager(object):
                     "= Reading {} bytes from {}, {}, {}: {} for region {}",
                     length, placement.x, placement.y, placement.p,
                     hex(read_ptr), recording_region_id)
-                data = self._request_data(
+                data = self.request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.store_data_in_region_buffer(
@@ -793,7 +793,7 @@ class BufferManager(object):
                     "Reading {} bytes from {}, {}, {}: {} for region {}",
                     length, placement.x, placement.y, placement.p,
                     hex(read_ptr), recording_region_id)
-                data = self._request_data(
+                data = self.request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.flushing_data_from_region(
