@@ -1005,13 +1005,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param run_until_complete:
         """
         logger.info("Running forever in steps of {}ms".format(
-            self._max_run_time_steps))
+            self._max_run_time_in_us * US_TO_MS))
         i = 0
         while self._state != Simulator_State.STOP_REQUESTED:
             logger.info("Run {}".format(i + 1))
             self._do_run(
-                self._max_run_time_steps, graph_changed,
-                run_until_complete)
+                self._max_run_time_in_us, graph_changed, run_until_complete)
             i += 1
 
     def _run_in_steps(self, run_time_in_us, graph_changed, run_until_complete):
