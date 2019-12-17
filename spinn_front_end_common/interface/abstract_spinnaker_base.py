@@ -512,7 +512,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
 
-
     def set_n_boards_required(self, n_boards_required):
         """
         Sets the machine requirements.
@@ -915,9 +914,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._get_machine(run_time_in_us)
             self._do_mapping(run_time_in_us)
 
-        # Check if anything has per-timestep SDRAM usage
-        is_per_timestep_sdram = self._is_per_timestep_sdram()
-
         # Disable auto pause and resume if the binary can't do it
         for executable_type in self._executable_types:
             if not executable_type.supports_auto_pause_and_resume:
@@ -1036,12 +1032,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         for i, step in enumerate(steps):
             logger.info("Run {} of {}", i + 1, len(steps))
             self._do_run(step, graph_changed, run_until_complete)
-
-    def _is_per_timestep_sdram(self):
-        for placement in self._placements.placements:
-            if placement.vertex.resources_required.sdram.per_simtime_us:
-                return True
-        return False
 
     def _add_commands_to_command_sender(self):
         vertices = self._application_graph.vertices

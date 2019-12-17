@@ -59,8 +59,7 @@ class ChipPowerMonitorMachineVertex(
     :param label: vertex label
     :type label: str
     :param constraints: constraints on this vertex
-    :type constraints: \
-        iterable(~pacman.model.constraints.AbstractConstraint)
+    :type constraints: iterable(~pacman.model.constraints.AbstractConstraint)
     :param n_samples_per_recording: how may samples between recording entry
     :type n_samples_per_recording: int
     :param sampling_frequency: how often to sample, in microseconds
@@ -99,8 +98,9 @@ class ChipPowerMonitorMachineVertex(
     def resources_required(self):
         # pylint: disable=arguments-differ
         sim = globals_variables.get_simulator()
-        return self.get_resources(sim.time_scale_factor,
-            self._n_samples_per_recording, self._sampling_frequency)
+        return self.get_resources(
+            sim.time_scale_factor, self._n_samples_per_recording,
+            self._sampling_frequency)
 
     @staticmethod
     def get_resources(
@@ -113,7 +113,7 @@ class ChipPowerMonitorMachineVertex(
         # The number of sample per us is clearly a faction likely < 1
         samples_per_us = 1 / sampling_frequency / time_scale_factor
         recording_per_us = (samples_per_us / n_samples_per_recording)
-        max_recording_per_us = math.ceil(recording_per_us) # Probably 1
+        max_recording_per_us = math.ceil(recording_per_us)  # Probably 1
         overflow_recordings = max_recording_per_us - recording_per_us
         system = SYSTEM_BYTES_REQUIREMENT
         config = CONFIG_SIZE_IN_BYTES
@@ -146,7 +146,7 @@ class ChipPowerMonitorMachineVertex(
                    "data_simtime_in_us": "DataSimtimeInUs"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={"time_scale_factor",
-                   "data_simtime_in_us"})
+                                     "data_simtime_in_us"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             time_scale_factor, data_simtime_in_us):

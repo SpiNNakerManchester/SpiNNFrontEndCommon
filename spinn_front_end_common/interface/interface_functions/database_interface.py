@@ -86,9 +86,9 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, unique_time_step,
-            runtime_in_us, application_graph, machine_graph, data_simtime_in_us,
-            graph_mapper, placements, routing_infos, router_tables, tags,
-            create_atom_to_event_id_mapping):
+            runtime_in_us, application_graph, machine_graph,
+            data_simtime_in_us, graph_mapper, placements, routing_infos,
+            router_tables, tags, create_atom_to_event_id_mapping):
         """
         :param machine:
         :param time_scale_factor:
