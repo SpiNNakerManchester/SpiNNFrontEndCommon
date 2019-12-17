@@ -1379,7 +1379,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
 
         // if already in a retransmission phase, don't process as normal
         if (n_missing_seq_sdp_packets != 0) {
-            //io_printf(IO_BUF, "forcing start of retransmission packet\n");
+            io_printf(IO_BUF, "forcing start of retransmission packet\n");
             n_missing_seq_sdp_packets = 0;
             missing_sdp_seq_num_sdram_address[
                     n_missing_seq_nums_in_sdram++] = END_FLAG;
@@ -1405,7 +1405,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
                 // packets all received, add finish flag for DMA stoppage
 
                 if (n_missing_seq_nums_in_sdram != 0) {
-                    //io_printf(IO_BUF, "starting resend process\n");
+                    io_printf(IO_BUF, "starting resend process\n");
                     missing_sdp_seq_num_sdram_address[
                             n_missing_seq_nums_in_sdram++] = END_FLAG;
                     position_in_read_data = 0;

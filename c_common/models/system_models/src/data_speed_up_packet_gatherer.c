@@ -703,6 +703,7 @@ static void receive_data(uint key, uint payload) {
             position_in_store--;
 
             send_data();
+            log_info("sent all data");
         } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             send_data();
         }
