@@ -1347,7 +1347,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     sdp_data_out_t *message = (sdp_data_out_t *) msg->data;
     switch (message->command) {
     case SDP_CMD_START_SENDING_DATA: {
-        //io_printf(IO_BUF, "data out start sdp\n");
+        io_printf(IO_BUF, "data out start sdp\n");
         stop = 0;
 
         // set SDRAM position and length
@@ -1375,6 +1375,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     }
     case SDP_CMD_START_OF_MISSING_SDP_PACKETS:
         // start or continue to gather missing packet list
+        io_printf(IO_BUF, "data out start missing\n");
 
         // if already in a retransmission phase, don't process as normal
         if (n_missing_seq_sdp_packets != 0) {
@@ -1390,6 +1391,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         }
         // fall through
     case SDP_CMD_MORE_MISSING_SDP_PACKETS:
+        io_printf(IO_BUF, "data out more missing\n");
         // reset state, as could be here from multiple attempts
         if (!in_retransmission_mode) {
             // put missing sequence numbers into SDRAM
@@ -1417,6 +1419,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         }
         return;
     case SDP_CMD_CLEAR:
+        io_printf(IO_BUF, "data out clear\n");
         stop = 1;
         break;
     default:
@@ -1503,8 +1506,11 @@ void __wrap_sark_int(void *pc) {
         return;
     }
 
+    io_printf(IO_BUF, "received sdp message\n");
+
     switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
     case REINJECTION_PORT:
+        io_printf(IO_BUF, "reinjection port\n");
         reflect_sdp_message(msg, reinjection_sdp_command(msg));
         while (!sark_msg_send(msg, 10)) {
             io_printf(IO_BUF, "timeout when sending reinjection reply\n");
@@ -1512,9 +1518,11 @@ void __wrap_sark_int(void *pc) {
         break;
     case DATA_SPEED_UP_OUT_PORT:
         // These are all one-way messages; replies are out of band
+        io_printf(IO_BUF, "out port\n");
         data_out_speed_up_command((sdp_msg_pure_data *) msg);
         break;
     case DATA_SPEED_UP_IN_PORT:
+        io_printf(IO_BUF, "in port\n");
         reflect_sdp_message(msg, data_in_speed_up_command(msg));
         while (!sark_msg_send(msg, 10)) {
             io_printf(IO_BUF, "timeout when sending speedup ctl reply\n");
