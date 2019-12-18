@@ -26,7 +26,8 @@ class PacmanProvenanceExtractor(object):
     def extract_provenance(self, executor):
         """ Acquires the timings from PACMAN algorithms (provenance data)
 
-        :param executor: the PACMAN workflow executor
+        :param ~pacman.executor.PACMANAlgorithmExecutor executor:
+            the PACMAN workflow executor
         :rtype: None
         """
         for (algorithm, run_time, exec_names) in executor.algorithm_timings:
@@ -39,8 +40,9 @@ class PacmanProvenanceExtractor(object):
     def data_items(self):
         """ Returns the provenance data items
 
-        :return: list of provenance data items.
-        :rtype: iterable(:py:class:`ProvenanceDataItem`)
+        :return: the provenance items
+        :rtype:
+            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
         return self._data_items
 

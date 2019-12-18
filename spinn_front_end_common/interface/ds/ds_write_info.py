@@ -25,10 +25,7 @@ class DsWriteInfo(MutableMapping):
 
     def __init__(self, database):
         """
-
-        :param database: Database to map
-        :type database:
-            py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
+        :param DsAbstractDatabase database: Database to map
         """
         # pylint: disable=super-init-not-called
         self._db = database
@@ -36,10 +33,12 @@ class DsWriteInfo(MutableMapping):
     def __getitem__(self, core):
         """
         Implements the mapping __getitem__ as long as core is the right type
+
         :param core:triple of (x, y, p)
-        :type core: (int, int, int)
-        :rtype: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :type core: tuple(int, int, int)
+        :return: dict with the keys
+            ``start_address``, ``memory_used`` and ``memory_written``
+        :rtype: dict(str,int)
         """
         (x, y, p) = core
         return self.get_info(x, y, p)
@@ -48,11 +47,12 @@ class DsWriteInfo(MutableMapping):
         """
         gets the info for the core x, y, p
 
-        :param x: core x
-        :param y: core y
-        :param p: core p
-        :rtype: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :return: dict with the keys
+            ``start_address``, ``memory_used`` and ``memory_written``
+        :rtype: dict(str,int)
         """
         return self._db.get_write_info(x, y, p)
 
@@ -61,20 +61,19 @@ class DsWriteInfo(MutableMapping):
         self.set_info(x, y, p, info)
 
     def set_info(self, x, y, p, info):
-        """
-        Sets the info for the core x, y, p
+        """ Sets the info for the core x, y, p
 
-        :param x: core x
-        :param y: core y
-        :param p: core p
-        :param info: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :param info: dict with the keys
+            ``start_address``, ``memory_used`` and ``memory_written``
+        :type info: dict(str,int)
         """
         self._db.set_write_info(x, y, p, info)
 
     def clear_write_info(self):
-        """
-        Clears the info for all cores,
+        """ Clears the info for all cores,
         """
         self._db.clear_write_info()
 
@@ -82,11 +81,11 @@ class DsWriteInfo(MutableMapping):
         raise NotImplementedError("Delete not supported")
 
     def keys(self):
-        """
-        Yields the keys.
+        """ Yields the keys.
 
         As the more typical call is iteritems this makes use of that
-        :return:
+
+        :rtype: iterable(tuple(int,int,int))
         """
         for key, _value in self._db.info_iteritems():
             yield key

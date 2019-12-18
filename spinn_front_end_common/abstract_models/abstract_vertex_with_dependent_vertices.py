@@ -37,7 +37,6 @@ class AbstractVertexWithEdgeToDependentVertices(object):
         """ Return the dependent edge identifiers for a particular dependent\
             vertex.
 
-        :param vertex:
-        :type vertex: ~pacman.model.graphs.application.ApplicationVertex
+        :param ~pacman.model.graphs.application.ApplicationVertex vertex:
         :rtype: iterable(str)
         """

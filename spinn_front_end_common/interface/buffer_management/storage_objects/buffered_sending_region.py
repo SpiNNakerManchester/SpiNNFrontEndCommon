@@ -73,10 +73,8 @@ class BufferedSendingRegion(object):
     def add_key(self, timestamp, key):
         """ Add a key to be sent at a given time.
 
-        :param timestamp: The time at which the key is to be sent
-        :type timestamp: int
-        :param key: The key to send
-        :type key: int
+        :param int timestamp: The time at which the key is to be sent
+        :param int key: The key to send
         """
         if timestamp not in self._buffer:
             bisect.insort(self._timestamps, timestamp)
@@ -86,10 +84,8 @@ class BufferedSendingRegion(object):
     def add_keys(self, timestamp, keys):
         """ Add a set of keys to be sent at the given time.
 
-        :param timestamp: The time at which the keys are to be sent
-        :type timestamp: int
-        :param keys: The keys to send
-        :type keys: iterable(int)
+        :param int timestamp: The time at which the keys are to be sent
+        :param iterable(int) keys: The keys to send
         """
         for key in keys:
             self.add_key(timestamp, key)
@@ -113,7 +109,7 @@ class BufferedSendingRegion(object):
     def get_n_keys(self, timestamp):
         """ Get the number of keys for a given timestamp.
 
-        :param timestamp: \
+        :param timestamp:
             the time stamp to check if there's still keys to transmit
         """
         if timestamp in self._buffer:
@@ -142,9 +138,8 @@ class BufferedSendingRegion(object):
     def is_next_key(self, timestamp):
         """ Determine if there is another key for the given timestamp.
 
-        :param timestamp: \
+        :param bool timestamp:
             the time stamp to check if there's still keys to transmit
-        :rtype: bool
         """
         if timestamp in self._buffer:
             return bool(self._buffer[timestamp])

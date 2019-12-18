@@ -35,6 +35,12 @@ class DsSqlliteDatabase(object):
     ]
 
     def __init__(self, machine, report_folder, init=None):
+        """
+        :param ~spinn_machine.Machine machine:
+        :param str report_folder:
+        :param init:
+        :type init: bool or None
+        """
         self._machine = machine
         database_file = os.path.join(report_folder, DB_NAME)
 
@@ -85,7 +91,7 @@ class DsSqlliteDatabase(object):
         """ Signals that the database can be closed and will not be reused.
 
         .. note::
-            Once this is called any other method in this API is allowed to\
+            Once this is called any other method in this API is allowed to
             raise any kind of exception.
         """
         if self._db is not None:
@@ -93,6 +99,11 @@ class DsSqlliteDatabase(object):
             self._db = None
 
     def __get_ethernet(self, ethernet_x, ethernet_y):
+        """
+        :param int ethernet_x:
+        :param int ethernet_y:
+        :rtype: int
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT ethernet_id FROM ethernet "
@@ -110,14 +121,10 @@ class DsSqlliteDatabase(object):
 
     def save_ds(self, core_x, core_y, core_p, ds):
         """
-        :param core_x: x of the core ds applies to
-        :type core_x: int
-        :param core_y: y of the core ds applies to
-        :type core_y: int
-        :param p: p of the core ds applies to
-        :type p: int
-        :param ds: the data spec as byte code
-        :type ds: bytearray
+        :param int core_x: x of the core ds applies to
+        :param int core_y: y of the core ds applies to
+        :param int p: p of the core ds applies to
+        :param bytearray ds: the data spec as byte code
         """
         chip = self._machine.get_chip_at(core_x, core_y)
         ethernet_id = self.__get_ethernet(
@@ -131,12 +138,9 @@ class DsSqlliteDatabase(object):
     def get_ds(self, x, y, p):
         """ Retrieves the data spec as byte code for this core.
 
-        :param x: core x
-        :type x: int
-        :param y: core y
-        :type y: int
-        :param p: core p
-        :type p: int
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
         :return: data spec as byte code
         :rtype: bytearray
         """
@@ -174,8 +178,7 @@ class DsSqlliteDatabase(object):
     def ds_set_app_id(self, app_id):
         """ Sets the same app_id for all rows that have ds content
 
-        :param app_id: value to set
-        :type app_id: int
+        :param int app_id: value to set
         """
         with self._db:
             self._db.execute(
@@ -185,12 +188,9 @@ class DsSqlliteDatabase(object):
     def ds_get_app_id(self, x, y, p):
         """ Gets the app_id set for this core
 
-        :param x: core x
-        :type x: int
-        :param y: core y
-        :type y: int
-        :param p: core p
-        :type p: int
+        :param int x: core x
+        :param int y: core y
+        :param int p: core
         :rtype: int
         """
         with self._db:
@@ -214,6 +214,10 @@ class DsSqlliteDatabase(object):
                     "WHERE x = ? AND y = ? AND processor = ?", xyp)
 
     def _row_to_info(self, row):
+        """
+        :param ~sqlite3.Row row:
+        :rtype: DataWritten
+        """
         return DataWritten(start_address=row["start_address"],
                            memory_used=row["memory_used"],
                            memory_written=row["memory_written"])
@@ -221,13 +225,10 @@ class DsSqlliteDatabase(object):
     def get_write_info(self, x, y, p):
         """ Gets the provenance returned by the Data Spec executor
 
-        :param x: core x
-        :type x: int
-        :param y: core y
-        :type y: int
-        :param p: core p
-        :type p: int
-        :rtype: ~spinn_front_end_common.utilities.utility_objs.DataWritten
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :rtype: DataWritten
         """
         with self._db:
             for row in self._db.execute(
@@ -240,14 +241,10 @@ class DsSqlliteDatabase(object):
     def set_write_info(self, x, y, p, info):
         """ Sets the provenance returned by the Data Spec executor.
 
-        :param x: core x
-        :type x: int
-        :param y: core y
-        :type y: int
-        :param p: core p
-        :type p: int
-        :param info: DataWritten
-        :type info: ~spinn_front_end_common.utilities.utility_objs.DataWritten
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :param DataWritten info:
         """
         if isinstance(info, DataWritten):
             start = info.start_address
@@ -275,8 +272,7 @@ class DsSqlliteDatabase(object):
                     (x, y, p, ethernet_id, start, used, written))
 
     def clear_write_info(self):
-        """
-        Clears the provenance for all rows
+        """ Clears the provenance for all rows
         """
         with self._db:
             self._db.execute(
