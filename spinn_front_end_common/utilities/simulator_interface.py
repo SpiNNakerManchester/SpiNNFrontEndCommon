@@ -106,3 +106,15 @@ class SimulatorInterface(object):
     @abstractproperty
     def use_virtual_board(self):
         pass
+
+    @abstractproperty
+    def lcm_timestep(self):
+        """
+        The lowest common multiple of the timestep in us all vertexes in the
+        current graph.
+
+        Warning adding to the graph could change this value.
+
+        :return: lcm timestep in us
+        :rtype: int
+        """

@@ -101,3 +101,8 @@ class FailedState(SimulatorInterface):
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
         raise ConfigurationException(FAILED_STATE_MSG)
+
+    @property
+    @overrides(SimulatorInterface.lcm_timestep)
+    def lcm_timestep(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
