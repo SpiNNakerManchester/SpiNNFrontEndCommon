@@ -30,7 +30,6 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities import globals_variables
 
 
 class _TestMachineVertex(MachineVertex):
