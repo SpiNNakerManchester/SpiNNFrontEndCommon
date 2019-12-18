@@ -785,10 +785,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: run_time in us
         :rtype: (int, float) or (None, None)
         """
-        if run_time is None:
-            return None, None
-        run_time_in_us = math.ceil(run_time * US_TO_MS)
         lcm_timestep = self.lcm_timestep()
+        if run_time is None:
+            return None
+        run_time_in_us = math.ceil(run_time * US_TO_MS)
         n_lcm_time_steps = math.ceil(run_time_in_us / lcm_timestep)
         calc_run_time = n_lcm_time_steps * lcm_timestep
         if run_time * US_TO_MS != calc_run_time:
