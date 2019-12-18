@@ -921,7 +921,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                                  "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
-        self._check_max_runtime()
+        variable_sdram = self._check_max_runtime()
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
@@ -934,7 +934,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
             if run_time_in_us is None:
-                self._run_in_loop(graph_changed, run_until_complete)
+                if variable_sdram:
+                    self._run_in_loop(graph_changed, run_until_complete)
+                else:
+                    self._run_undetermined(graph_changed, run_until_complete)
             else:
                 if run_time_in_us <= self._max_run_time_in_us:
                     self._run_single(
@@ -1100,9 +1103,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
         self._max_run_time_in_us = sys.maxsize
+        variable_sdram = False
         for (x, y), sdram in usage_by_chip.items():
             size = self._machine.get_chip_at(x, y).sdram.size
             if sdram.per_simtime_us:
+                variable_sdram = True
                 max_this_chip = int(
                     (size - sdram.fixed) // sdram.per_simtime_us)
                 self._max_run_time_in_us = min(
@@ -1111,6 +1116,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Round down to a multiple of self._lcm_timestep
         self._max_run_time_in_us = (self._max_run_time_in_us //
                                     self._lcm_timestep) * self._lcm_timestep
+        return variable_sdram
 
     def _run_algorithms(
             self, inputs, algorithms, outputs, tokens, required_tokens,
