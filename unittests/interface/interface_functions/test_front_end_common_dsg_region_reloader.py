@@ -93,7 +93,7 @@ class _TestApplicationVertex(
 
     @property
     def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us
+        return 1000
 
 
 class _MockCPUInfo(object):

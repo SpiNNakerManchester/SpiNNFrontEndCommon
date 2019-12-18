@@ -27,8 +27,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
 
     def __init__(self, binary_file_name, binary_start_type):
-        super(_TestVertexWithBinary, self).__init__(
-            get_simulator().user_time_step_in_us)
+        super(_TestVertexWithBinary, self).__init__(1000)
         self._binary_file_name = binary_file_name
         self._binary_start_type = binary_start_type
 
@@ -58,14 +57,10 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         """ Test calling the binary gatherer normally
         """
 
-        vertex_1 = _TestVertexWithBinary(
-            "test.aplx", ExecutableType.RUNNING)
-        vertex_2 = _TestVertexWithBinary(
-            "test2.aplx", ExecutableType.RUNNING)
-        vertex_3 = _TestVertexWithBinary(
-            "test2.aplx", ExecutableType.RUNNING)
-        vertex_4 = _TestVertexWithoutBinary(
-            timestep_in_us=get_simulator().user_time_step_in_us)
+        vertex_1 = _TestVertexWithBinary("test.aplx", ExecutableType.RUNNING)
+        vertex_2 = _TestVertexWithBinary("test2.aplx", ExecutableType.RUNNING)
+        vertex_3 = _TestVertexWithBinary("test2.aplx", ExecutableType.RUNNING)
+        vertex_4 = _TestVertexWithoutBinary(1000)
 
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2, vertex_3])
