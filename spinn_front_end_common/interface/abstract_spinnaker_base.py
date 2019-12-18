@@ -1381,12 +1381,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Set the total run time
         inputs["MaxMachineCoreReduction"] = self._read_config_int(
             "Machine", "max_machine_core_reduction")
-        if self._lcm_timestep == self.user_time_step_in_us:
-            inputs["UniqueTimeStep"] = self.user_time_step_in_us
-        else:
-            inputs["UniqueTimeStep"] = None
-        inputs["TimeScaleFactor"] = self.time_scale_factor
-
         inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
             self._config.get("Machine", "down_chips"))
         inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
