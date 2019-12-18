@@ -731,6 +731,7 @@ static void initialise(void) {
     end_flag_key = config->end_flag_key;
     basic_data_key = config->basic_data_key;
 
+    log_info("the tag id being used is %d", config->tag_id);
     my_msg.tag = config->tag_id;    	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet
     my_msg.dest_addr = sv->eth_addr;		// Nearest Ethernet chip
