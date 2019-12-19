@@ -15,16 +15,15 @@
 
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    ApplicationTimestepVertex)
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
-from spinn_front_end_common.utilities import globals_variables
 
 
 class ChipPowerMonitor(
-        ApplicationVertex, AbstractHasAssociatedBinary,
+        ApplicationTimestepVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
     """ Represents idle time recording code in a application graph.
     """
@@ -96,8 +95,3 @@ class ChipPowerMonitor(
         return ChipPowerMonitorMachineVertex.get_resources(
             time_scale_factor, self._n_samples_per_recording,
             self._sampling_frequency)
-
-    @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us

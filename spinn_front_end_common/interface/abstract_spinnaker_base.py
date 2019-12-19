@@ -813,7 +813,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         timesteps = set()
         timesteps.add(self.user_time_step_in_us)
         for vertex in self._original_application_graph.vertices:
-            timesteps.add(vertex.timestep_in_us)
+            timesteps.update(vertex.timesteps_in_us)
         self._lcm_timestep = lcm(timesteps)
         if self._lcm_timestep != self.user_time_step_in_us:
             logger.info(

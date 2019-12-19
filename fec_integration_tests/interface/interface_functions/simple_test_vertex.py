@@ -17,12 +17,10 @@
 """
 
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from pacman.model.graphs.machine import SimpleMachineVertex
-from spinn_front_end_common.utilities import globals_variables
 
 
 class SimpleTestVertex(ApplicationVertex):
@@ -99,6 +97,6 @@ class SimpleTestVertex(ApplicationVertex):
         return self._n_atoms
 
     @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return 1000
+    @overrides(ApplicationVertex.timesteps_in_us)
+    def timesteps_in_us(self):
+        return set()

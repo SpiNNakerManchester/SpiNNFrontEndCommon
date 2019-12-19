@@ -15,7 +15,6 @@
 
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
@@ -23,13 +22,13 @@ from pacman.model.resources import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    ApplicationTimestepVertex)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import globals_variables
 
 
 class LivePacketGather(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
+        ApplicationTimestepVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
@@ -68,12 +67,8 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        if timestep_in_us is None:
-            self._timestep_in_us = \
-                globals_variables.get_simulator().user_time_step_in_us
-        else:
-            self._timestep_in_us = timestep_in_us
-        super(LivePacketGather, self).__init__(label, constraints, 1)
+        super(LivePacketGather, self).__init__(
+            label, constraints, 1, timestep_in_us)
 
         # storage objects
         self._iptags = None
@@ -143,8 +138,3 @@ class LivePacketGather(
 
         # generate spec for the machine vertex
         placement.vertex.generate_data_specification(spec, placement)
-
-    @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return self._timestep_in_us

@@ -15,7 +15,6 @@
 
 import sys
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer,
@@ -29,14 +28,14 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    ApplicationTimestepVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import globals_variables
 
 
 class ReverseIpTagMultiCastSource(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
+        ApplicationTimestepVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints,
         ProvidesKeyToAtomMappingImpl):
@@ -121,7 +120,7 @@ class ReverseIpTagMultiCastSource(
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIpTagMultiCastSource, self).__init__(
-            label, constraints, max_atoms_per_core)
+            label, constraints, max_atoms_per_core, timestep_in_us)
 
         # basic items
         self._n_atoms = n_keys
@@ -158,11 +157,6 @@ class ReverseIpTagMultiCastSource(
 
         # Keep the vertices for resuming runs
         self._machine_vertices = list()
-        if timestep_in_us is None:
-            self._timestep_in_us = \
-                globals_variables.get_simulator().user_time_step_in_us
-        else:
-            self._timestep_in_us = timestep_in_us
 
     def _validate_send_buffer_times(self, send_buffer_times):
         if send_buffer_times is None:
@@ -268,8 +262,3 @@ class ReverseIpTagMultiCastSource(
 
     def __repr__(self):
         return self._label
-
-    @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return self._timestep_in_us

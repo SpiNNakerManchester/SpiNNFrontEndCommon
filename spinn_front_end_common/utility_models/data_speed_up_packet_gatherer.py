@@ -14,17 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities import globals_variables
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
+    ApplicationTimestepVertex)
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
 
 
 class DataSpeedUpPacketGather(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
+        ApplicationTimestepVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary):
     """ The gatherer for the data speed up protocols. Gatherers are only ever\
         deployed on chips with an ethernet connection.
@@ -94,8 +93,3 @@ class DataSpeedUpPacketGather(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return self._machine_vertex.get_binary_start_type()
-
-    @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us

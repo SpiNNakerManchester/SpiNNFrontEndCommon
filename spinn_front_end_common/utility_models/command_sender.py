@@ -19,14 +19,13 @@ from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary,
-    AbstractGeneratesDataSpecification)
+    AbstractGeneratesDataSpecification, ApplicationTimestepVertex)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import globals_variables
 
 
 class CommandSender(
-        ApplicationVertex, AbstractGeneratesDataSpecification,
+        ApplicationTimestepVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A utility for sending commands to a vertex (possibly an external\
@@ -106,8 +105,3 @@ class CommandSender(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
-
-    @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us

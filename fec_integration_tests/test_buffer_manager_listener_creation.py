@@ -18,14 +18,12 @@ import unittest
 from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
-from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_machine.tags import IPTag
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
 from spinn_front_end_common.interface.buffer_management import BufferManager
-from spinn_front_end_common.utilities import globals_variables
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
@@ -125,9 +123,9 @@ class _TestVertex(ApplicationVertex):
         return self._n_atoms
 
     @property
-    @overrides(AbstractVertex.timestep_in_us)
-    def timestep_in_us(self):
-        return globals_variables.get_simulator().user_time_step_in_us
+    @overrides(ApplicationVertex.timesteps_in_us)
+    def timesteps_in_us(self):
+        return set()
 
 
 if __name__ == "__main__":

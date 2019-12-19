@@ -40,6 +40,7 @@ from .abstract_uses_memory_io import AbstractUsesMemoryIO
 from .abstract_can_reset import AbstractCanReset
 from .application_fpga_vertex import ApplicationFPGAVertex
 from .application_spinnaker_link_vertex import ApplicationSpiNNakerLinkVertex
+from .application_timestep_vertex import ApplicationTimestepVertex
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
@@ -53,5 +54,6 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices",
            "AbstractUsesMemoryIO", "AbstractCanReset",
-           "ApplicationFPGAVertex", "ApplicationSpiNNakerLinkVertex"
+           "ApplicationFPGAVertex", "ApplicationSpiNNakerLinkVertex",
+           "ApplicationTimestepVertex"
            ]
