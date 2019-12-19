@@ -1387,6 +1387,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Set the total run time
         inputs["MaxMachineCoreReduction"] = self._read_config_int(
             "Machine", "max_machine_core_reduction")
+        inputs["TimeScaleFactor"] = self.time_scale_factor
         inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
             self._config.get("Machine", "down_chips"))
         inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
