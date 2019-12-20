@@ -794,8 +794,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if run_time * US_TO_MS != calc_run_time:
             logger.warning(
                 "Your requested runtime of {}ms "
-                "is not a multiple of the time step of {}us "
-                "and has therefor been rounded up to {}us",
+                "is not a multiple of the lcm time step of {}us "
+                " and has therefor been rounded up to {}us",
                 run_time, lcm_timestep, calc_run_time)
 
         # Convert dt into microseconds and divide by
@@ -1361,6 +1361,21 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return do_partitioning
 
+    def _calc_minimum_simtime_in_us(self):
+        min_time = self._config.getint("Buffers", "minimum_auto_time_steps") * \
+            self.user_time_step_in_us
+        n_lcm_time_steps = math.ceil(min_time / self._lcm_timestep)
+        calc_min_time = n_lcm_time_steps * self._lcm_timestep
+        if min_time != calc_min_time:
+            logger.warning(
+                "Your requested {} minimum_auto_time_steps of {}us total {}us."
+                "This is not a multiple of the lcm time step of {}us "
+                "and has therefor been rounded up to {}us",
+                self._config.getint("Buffers", "minimum_auto_time_steps"),
+                self.user_time_step_in_us, min_time, self._lcm_timestep,
+                calc_min_time)
+        return calc_min_time
+
     def _get_machine_common(self, run_time):
         inputs = dict(self._extra_inputs)
         algorithms = list()
@@ -1372,9 +1387,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean(
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
 
-        inputs["MinimumSimtimeInUs"] = \
-            self._config.getint("Buffers", "minimum_auto_time_steps") * \
-            self.user_time_step_in_us
+        inputs["MinimumSimtimeInUs"] = self._calc_minimum_simtime_in_us()
         if not (self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume")):
             inputs["MinimumSimtimeInUs"] = max(
