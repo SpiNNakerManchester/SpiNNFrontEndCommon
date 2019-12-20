@@ -22,7 +22,6 @@ from pacman.model.resources import ResourceContainer
 from pacman.model.graphs import (
     AbstractVirtual, AbstractSpiNNakerLink)
 from pacman.model.graphs.machine import MachineSpiNNakerLinkVertex
-from spinn_front_end_common.utilities import globals_variables
 
 
 class ApplicationSpiNNakerLinkVertex(
