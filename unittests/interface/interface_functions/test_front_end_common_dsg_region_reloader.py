@@ -17,6 +17,7 @@ import unittest
 import struct
 import shutil
 import numpy
+from spinn_utilities.overrides import overrides
 from spinn_machine import SDRAM
 from pacman.model.resources import ResourceContainer
 from pacman.model.graphs.common import Slice, GraphMapper
@@ -67,9 +68,11 @@ class _TestApplicationVertex(
         """
         return self._regenerate_call_count
 
+    @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return ResourceContainer()
 
+    @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
@@ -90,8 +93,9 @@ class _TestApplicationVertex(
         self._regenerate_call_count += 1
 
     @property
-    def timestep_in_us(self):
-        return 1000
+    @overrides(ApplicationVertex.timesteps_in_us)
+    def timesteps_in_us(self):
+        return set()
 
 
 class _MockCPUInfo(object):
