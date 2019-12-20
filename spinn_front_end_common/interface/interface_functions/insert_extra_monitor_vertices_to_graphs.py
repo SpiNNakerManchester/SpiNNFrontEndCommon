@@ -157,7 +157,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
     @staticmethod
     def __new_mach_monitor(chip):
         return ExtraMonitorSupportMachineVertex(
-            timestep_in_us=get_simulator().user_time_step_in_us,
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
 
     @staticmethod

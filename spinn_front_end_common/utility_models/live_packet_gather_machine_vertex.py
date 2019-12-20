@@ -18,7 +18,7 @@ import struct
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.machine import MachineVertex
+from pacman.model.graphs.machine import MachineTimestepVertex, MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
     ResourceContainer)
@@ -40,7 +40,7 @@ _TWO_BYTES = struct.Struct("<BB")
 
 
 class LivePacketGatherMachineVertex(
-        MachineVertex, ProvidesProvenanceDataFromMachineImpl,
+        MachineTimestepVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
     class _REGIONS(Enum):

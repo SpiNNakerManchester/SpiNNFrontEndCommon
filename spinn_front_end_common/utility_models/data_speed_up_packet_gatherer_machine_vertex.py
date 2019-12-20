@@ -32,7 +32,7 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.graphs.machine import MachineVertex
+from pacman.model.graphs.machine import MachineTimestepVertex, MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_storage_handlers import FileDataReader
@@ -166,7 +166,7 @@ SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
 
 
 class DataSpeedUpPacketGatherMachineVertex(
-        MachineVertex, AbstractGeneratesDataSpecification,
+        MachineTimestepVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
         "_x", "_y",

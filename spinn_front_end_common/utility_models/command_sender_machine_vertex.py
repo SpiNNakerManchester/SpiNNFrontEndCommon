@@ -18,7 +18,8 @@ from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
-from pacman.model.graphs.machine import MachineVertex, MachineEdge
+from pacman.model.graphs.machine import (
+    MachineEdge, MachineTimestepVertex, MachineVertex)
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
@@ -34,7 +35,7 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class CommandSenderMachineVertex(
-        MachineVertex, ProvidesProvenanceDataFromMachineImpl,
+        MachineTimestepVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
         AbstractProvidesOutgoingPartitionConstraints):
     # Regions for populations

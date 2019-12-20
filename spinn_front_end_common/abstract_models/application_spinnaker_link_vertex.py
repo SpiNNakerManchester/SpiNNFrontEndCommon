@@ -91,8 +91,7 @@ class ApplicationSpiNNakerLinkVertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         vertex = MachineSpiNNakerLinkVertex(
-            self._spinnaker_link_id, self._timestep_in_us,
-            self._board_address, label, constraints)
+            self._spinnaker_link_id, self._board_address, label, constraints)
         return vertex
 
     @property

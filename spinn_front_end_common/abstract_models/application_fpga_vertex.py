@@ -100,9 +100,8 @@ class ApplicationFPGAVertex(ApplicationVertex, AbstractFPGA):
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        vertex = MachineFPGAVertex(
-            self._fpga_id, self._fpga_link_id, self._board_address,
-            self._timestep_in_us, label, constraints)
+        vertex = MachineFPGAVertex(self._fpga_id, self._fpga_link_id,
+                                   self._board_address, label, constraints)
         vertex.set_virtual_chip_coordinates(
             self._virtual_chip_x, self._virtual_chip_y)
         return vertex

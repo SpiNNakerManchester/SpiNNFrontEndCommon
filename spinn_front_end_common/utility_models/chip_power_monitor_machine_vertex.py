@@ -21,7 +21,7 @@ import numpy
 from data_specification.enums import DataType
 from pacman.executor.injection_decorator import (
     inject_items, supports_injection)
-from pacman.model.graphs.machine import MachineVertex
+from pacman.model.graphs.machine import MachineTimestepVertex, MachineVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, TimeBasedSDRAM)
 from spinn_front_end_common.abstract_models import (
@@ -51,7 +51,7 @@ CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 @supports_injection
 class ChipPowerMonitorMachineVertex(
-        MachineVertex, AbstractHasAssociatedBinary,
+        MachineTimestepVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
