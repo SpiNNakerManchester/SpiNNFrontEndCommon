@@ -61,8 +61,8 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
-    @overrides(SimulatorInterface.user_time_step_in_us)
-    def user_time_step_in_us(self):
+    @overrides(SimulatorInterface.user_timestep_in_us)
+    def user_timestep_in_us(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
