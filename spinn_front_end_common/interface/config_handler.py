@@ -415,10 +415,10 @@ class ConfigHandler(object):
     def time_scale_factor(self, new_value):
         self._config.set("Machine", "time_scale_factor", new_value)
 
-    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
+    def set_up_timings(self, timestep_in_us=None, time_scale_factor=None):
         """ Set up timings of the machine
 
-        :param machine_time_step:\
+        :param timestep_in_us:\
             An explicitly specified time step for the machine.  If None,\
             the value is read from the config
         :param time_scale_factor:\
@@ -427,8 +427,9 @@ class ConfigHandler(object):
         """
 
         # set up timings
-        if machine_time_step is not None:
-            self.user_timestep_in_us = machine_time_step
+        if timestep_in_us is not None:
+            self.user_timestep_in_us = timestep_in_us
+        # else keep the one read form config
 
         if self.user_timestep_in_us <= 0:
             raise ConfigurationException(
