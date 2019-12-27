@@ -809,7 +809,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return calc_run_time
 
-    #@property
+    @property
     @overrides(SimulatorInterface.lcm_timestep)
     def lcm_timestep(self):
         timesteps = set()
