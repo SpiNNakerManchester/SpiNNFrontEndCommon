@@ -785,7 +785,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: run_time in us
         :rtype: (int, float) or (None, None)
         """
-        lcm_timestep = self.lcm_timestep()
+        lcm_timestep = self.lcm_timestep
         if run_time is None:
             return None
         run_time_in_us = math.ceil(run_time * US_TO_MS)
@@ -809,13 +809,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return calc_run_time
 
+    #@property
+    @overrides(SimulatorInterface.lcm_timestep)
     def lcm_timestep(self):
         timesteps = set()
-        timesteps.add(self.user_time_step_in_us)
+        timesteps.add(self.user_timestep_in_us)
         for vertex in self._original_application_graph.vertices:
             timesteps.update(vertex.timesteps_in_us)
         self._lcm_timestep = lcm(timesteps)
-        if self._lcm_timestep != self.user_time_step_in_us:
+        if self._lcm_timestep != self.user_timestep_in_us:
             logger.info(
                 "Multiple timestep values found! The timestep used for this "
                 "run will be {} which is the lcm of {}",
@@ -1362,8 +1364,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return do_partitioning
 
     def _calc_minimum_simtime_in_us(self):
-        min_time = self._config.getint("Buffers", "minimum_auto_time_steps") * \
-            self.user_time_step_in_us
+        min_time = self._config.getint(
+            "Buffers", "minimum_auto_time_steps") * \
+            self.user_timestep_in_us
         n_lcm_time_steps = math.ceil(min_time / self._lcm_timestep)
         calc_min_time = n_lcm_time_steps * self._lcm_timestep
         if min_time != calc_min_time:
@@ -1372,7 +1375,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "This is not a multiple of the lcm time step of {}us "
                 "and has therefor been rounded up to {}us",
                 self._config.getint("Buffers", "minimum_auto_time_steps"),
-                self.user_time_step_in_us, min_time, self._lcm_timestep,
+                self.user_timestep_in_us, min_time, self._lcm_timestep,
                 calc_min_time)
         return calc_min_time
 
@@ -1534,8 +1537,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
-        if self._lcm_timestep == self.user_time_step_in_us:
-            inputs["UniqueTimeStep"] = self.user_time_step_in_us
+        if self._lcm_timestep == self.user_timestep_in_us:
+            inputs["UniqueTimeStep"] = self.user_timestep_in_us
         else:
             inputs["UniqueTimeStep"] = None
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses

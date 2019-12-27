@@ -184,4 +184,4 @@ class InsertExtraMonitorVerticesToGraphs(object):
             extra_monitors_by_chip=vertex_to_chip_map,
             report_default_directory=default_report_directory,
             write_data_speed_up_reports=write_data_speed_up_reports,
-            timestep_in_us=get_simulator().user_time_step_in_us)
+            timestep_in_us=get_simulator().user_timestep_in_us)

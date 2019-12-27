@@ -50,7 +50,7 @@ class ApplicationTimestepVertex(ApplicationVertex):
             constraints=constraints)
         if timestep_in_us is None:
             self._timestep_in_us = \
-                globals_variables.get_simulator().user_time_step_in_us
+                globals_variables.get_simulator().user_timestep_in_us
         else:
             self._timestep_in_us = timestep_in_us
 

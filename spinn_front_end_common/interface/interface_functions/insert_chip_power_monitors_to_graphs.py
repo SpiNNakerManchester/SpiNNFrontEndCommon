@@ -56,7 +56,7 @@ class InsertChipPowerMonitorsToGraphs(object):
         # build constraint
         constraint = ChipAndCoreConstraint(chip.x, chip.y)
         timestep_in_us = \
-            globals_variables.get_simulator().user_time_step_in_us
+            globals_variables.get_simulator().user_timestep_in_us
         # build machine vert
         machine_vertex = ChipPowerMonitorMachineVertex(
             timestep_in_us=timestep_in_us,
