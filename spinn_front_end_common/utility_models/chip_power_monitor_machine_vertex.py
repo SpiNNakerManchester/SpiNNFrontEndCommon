@@ -110,8 +110,8 @@ class ChipPowerMonitorMachineVertex(
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        # The number of sample per us is clearly a faction likely < 1
-        samples_per_us = 1 / sampling_frequency / time_scale_factor
+        # The number of sample per (runtime) us is clearly a faction likely < 1
+        samples_per_us = time_scale_factor / sampling_frequency
         recording_per_us = (samples_per_us / n_samples_per_recording)
         max_recording_per_us = math.ceil(recording_per_us)  # Probably 1
         overflow_recordings = max_recording_per_us - recording_per_us
