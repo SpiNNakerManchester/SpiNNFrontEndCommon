@@ -336,7 +336,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_version_provenance",
 
         # Lowest Common Multiple of all timesteps in the system
-        "_lcm_timestep"
+        "__lcm_timestep"
     ]
 
     def __init__(
@@ -435,6 +435,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._java_caller = None
         self._ip_address = None
         self._executable_types = None
+        self.__lcm_timestep = None
 
         # pacman executor objects
         self._machine_outputs = None
@@ -812,17 +813,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     @overrides(SimulatorInterface.lcm_timestep)
     def lcm_timestep(self):
-        timesteps = set()
-        timesteps.add(self.user_timestep_in_us)
-        for vertex in self._original_application_graph.vertices:
-            timesteps.update(vertex.timesteps_in_us)
-        self._lcm_timestep = lcm(timesteps)
-        if self._lcm_timestep != self.user_timestep_in_us:
-            logger.info(
-                "Multiple timestep values found! The timestep used for this "
-                "run will be {} which is the lcm of {}",
-                self._lcm_timestep,  timesteps)
-        return self._lcm_timestep
+        if self.__lcm_timestep is None:
+            timesteps = set()
+            timesteps.add(self.user_timestep_in_us)
+            for vertex in self._original_application_graph.vertices:
+                timesteps.update(vertex.timesteps_in_us)
+            self.__lcm_timestep = lcm(timesteps)
+            if self.__lcm_timestep != self.user_timestep_in_us:
+                logger.info(
+                    "Multiple timestep values found! The timestep used for "
+                    "this run will be {} which is the lcm of {}",
+                    self.__lcm_timestep,  timesteps)
+        return self.__lcm_timestep
 
     def _run(self, run_time_in_ms, run_until_complete=False):
         """ The main internal run function
@@ -854,11 +856,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         logger.info("Starting execution process")
 
-        run_time_in_us = self._calc_run_time(run_time_in_ms)
-        if self._machine_allocation_controller is not None:
-            self._machine_allocation_controller.allocate_time(
-                run_time_in_ms)
-
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         graph_changed, data_changed = self._detect_if_graph_has_changed(True)
@@ -888,6 +885,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
+            self.__lcm_timestep = None
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
@@ -912,6 +910,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._machine_allocation_controller.close()
                 self._max_run_time_in_us = None
 
+            run_time_in_us = self._calc_run_time(run_time_in_ms)
+            if self._machine_allocation_controller is not None:
+                self._machine_allocation_controller.allocate_time(
+                    run_time_in_ms)
             if self._machine is None:
                 self._get_machine(run_time_in_us)
             self._do_mapping(run_time_in_us)
@@ -1115,9 +1117,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._max_run_time_in_us = min(
                     self._max_run_time_in_us, max_this_chip)
 
-        # Round down to a multiple of self._lcm_timestep
+        # Round down to a multiple of self.lcm_timestep
+        lcm_timestep = self.lcm_timestep
         self._max_run_time_in_us = (self._max_run_time_in_us //
-                                    self._lcm_timestep) * self._lcm_timestep
+                                    lcm_timestep) * lcm_timestep
         return variable_sdram
 
     def _run_algorithms(
@@ -1367,15 +1370,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         min_time = self._config.getint(
             "Buffers", "minimum_auto_time_steps") * \
             self.user_timestep_in_us
-        n_lcm_time_steps = math.ceil(min_time / self._lcm_timestep)
-        calc_min_time = n_lcm_time_steps * self._lcm_timestep
+        lcm_timestep = self.lcm_timestep
+        n_lcm_time_steps = math.ceil(min_time / lcm_timestep)
+        calc_min_time = n_lcm_time_steps * lcm_timestep
         if min_time != calc_min_time:
             logger.warning(
                 "Your requested {} minimum_auto_time_steps of {}us total {}us."
                 "This is not a multiple of the lcm time step of {}us "
                 "and has therefor been rounded up to {}us",
                 self._config.getint("Buffers", "minimum_auto_time_steps"),
-                self.user_timestep_in_us, min_time, self._lcm_timestep,
+                self.user_timestep_in_us, min_time, lcm_timestep,
                 calc_min_time)
         return calc_min_time
 
@@ -1537,7 +1541,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
-        if self._lcm_timestep == self.user_timestep_in_us:
+        if self.lcm_timestep == self.user_timestep_in_us:
             inputs["UniqueTimeStep"] = self.user_timestep_in_us
         else:
             inputs["UniqueTimeStep"] = None
