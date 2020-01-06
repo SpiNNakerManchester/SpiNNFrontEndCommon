@@ -865,6 +865,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "The network cannot be changed between runs without"
                 " resetting")
 
+        # Make sure there is no cached lcm_timestep if anything changed
+        if not self._has_ran or graph_changed:
+            self.__lcm_timestep = None
+
+        run_time_in_us = self._calc_run_time(run_time_in_ms)
+
         if self._previous_simtime_in_us is None:
             raise NotImplementedError(
                 "The network cannot be run again after a run forever without"
@@ -885,7 +891,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
-            self.__lcm_timestep = None
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
@@ -910,7 +915,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self._machine_allocation_controller.close()
                 self._max_run_time_in_us = None
 
-            run_time_in_us = self._calc_run_time(run_time_in_ms)
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.allocate_time(
                     run_time_in_ms)
