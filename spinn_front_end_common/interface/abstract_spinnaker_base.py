@@ -788,7 +788,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         lcm_timestep = self.lcm_timestep
         if run_time is None:
             return None
-        run_time_in_us = math.ceil(run_time * US_TO_MS)
+        run_time_in_us = int(math.ceil(run_time * US_TO_MS))
         n_lcm_time_steps = math.ceil(run_time_in_us / lcm_timestep)
         calc_run_time = n_lcm_time_steps * lcm_timestep
         if run_time * US_TO_MS != calc_run_time:
@@ -807,7 +807,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "using a hardware timestep of {}us",
             n_lcm_time_steps, lcm_timestep, hardware_timestep_us)
 
-        return calc_run_time
+        return run_time_in_us
 
     @property
     @overrides(SimulatorInterface.lcm_timestep)
@@ -1025,7 +1025,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param graph_changed:
         :param run_until_complete: No use case known when it is True but..
         """
-        n_full_iterations = run_time_in_us // self._max_run_time_in_us
+        n_full_iterations = int(run_time_in_us // self._max_run_time_in_us)
         left_over_runtime = run_time_in_us - (
                 run_time_in_us * self._max_run_time_in_us)
         steps = [self._max_run_time_in_us] * n_full_iterations
