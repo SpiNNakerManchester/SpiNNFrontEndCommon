@@ -790,7 +790,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if run_time is None:
             return None
         run_time_in_us = int(math.ceil(run_time * US_TO_MS))
-        n_lcm_time_steps = math.ceil(run_time_in_us / lcm_timestep)
+        n_lcm_time_steps = int(math.ceil(run_time_in_us / lcm_timestep))
         calc_run_time = n_lcm_time_steps * lcm_timestep
         if run_time * US_TO_MS != calc_run_time:
             logger.warning(
@@ -808,7 +808,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "using a hardware timestep of {}us",
             n_lcm_time_steps, lcm_timestep, hardware_timestep_us)
 
-        return run_time_in_us
+        # Use the calc runtime even if higher than the requested one
+        return calc_run_time
 
     @property
     @overrides(SimulatorInterface.lcm_timestep)
