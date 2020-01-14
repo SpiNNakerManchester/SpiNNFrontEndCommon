@@ -62,8 +62,10 @@ enum {
 #define ITEMS_PER_DATA_PACKET 68
 
 #define SEQUENCE_NUMBER_SIZE 1
+#define TRANSACTION_ID_SIZE 1
 
-#define SDP_PAYLOAD_WORDS (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)
+#define SDP_PAYLOAD_WORDS ( \
+    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE - TRANSACTION_ID_SIZE)
 #define SDP_PAYLOAD_BYTES (SDP_PAYLOAD_WORDS * sizeof(uint))
 
 #define TX_NOT_FULL_MASK 0x10000000
@@ -246,6 +248,7 @@ enum dma_tags_for_data_speed_up {
 //! \brief message payload for the data speed up out SDP messages
 typedef struct sdp_data_out_t {
     data_out_sdp_commands command;
+    uint transaction_id;
     address_t sdram_location;
     uint length;
 } sdp_data_out_t;
@@ -268,8 +271,9 @@ typedef struct data_in_data_items {
 
 //! \brief position in SDP message for missing sequence numbers
 enum missing_seq_num_sdp_data_positions {
-    POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 1,
-    START_OF_MISSING_SEQ_NUMS = 2
+    POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 2,
+    START_OF_MISSING_MORE = 2,
+    START_OF_MISSING_SEQ_NUMS = 3,
 };
 
 //! flag positions for packet types being reinjected
@@ -329,6 +333,7 @@ typedef struct data_speed_out_config_t {
     uint my_key;
     uint new_seq_key;
     uint first_data_key;
+    uint transaction_id_key;
     uint end_flag_key;
 } data_speed_out_config_t;
 
@@ -386,10 +391,11 @@ static bool last_table_load_was_system = false;
 // ------------------------------------------------------------------------
 
 //! transmission stuff
-static uint32_t *data_to_transmit[N_DMA_BUFFERS];
+static uint32_t data_to_transmit[N_DMA_BUFFERS][ITEMS_PER_DATA_PACKET];
 static uint32_t transmit_dma_pointer = 0;
 static uint32_t position_in_store = 0;
 static uint32_t num_items_read = 0;
+static uint32_t transaction_id = 0;
 static bool first_transmission = true;
 static bool has_finished = false;
 static uint32_t retransmitted_seq_num_items_read = 0;
@@ -419,6 +425,7 @@ static address_t store_address = NULL;
 static uint32_t basic_data_key = 0;
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
+static uint32_t transaction_id_key = 0;
 static uint32_t end_flag_key = 0;
 static uint32_t stop = 0;
 
@@ -868,7 +875,7 @@ static void data_in_clear_router(void) {
 
 static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
-        uint written_words = data_in_write_address - first_write_address;
+        //uint written_words = data_in_write_address - first_write_address;
         //io_printf(IO_BUF, "Wrote %u words\n", written_words);
         data_in_write_address = NULL;
     }
@@ -1097,7 +1104,8 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 //! defaults to the default key.
 static void data_out_send_data_block(
         uint32_t current_dma_pointer, uint32_t n_elements_to_send,
-        uint32_t first_packet_key) {
+        uint32_t first_packet_key, uint32_t second_packet_key) {
+
     // send data
     for (uint i = 0; i < n_elements_to_send; i++) {
         uint32_t current_data = data_to_transmit[current_dma_pointer][i];
@@ -1105,7 +1113,11 @@ static void data_out_send_data_block(
         send_fixed_route_packet(first_packet_key, current_data);
 
         // update key to transmit with
-        first_packet_key = basic_data_key;
+        if (i == 0) {
+            first_packet_key = second_packet_key;
+        } else {
+            first_packet_key = basic_data_key;
+        }
     }
 }
 
@@ -1150,15 +1162,18 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = basic_data_key;
+    uint32_t second_key_to_transmit = basic_data_key;
     uint32_t items_read_this_time = num_items_read;
 
     // put size in bytes if first send
     if (first_transmission) {
         //io_printf(IO_BUF, "in first\n");
         data_to_transmit[current_dma_pointer][0] = max_seq_num;
+        data_to_transmit[current_dma_pointer][1] = transaction_id;
         key_to_transmit = first_data_key;
+        second_key_to_transmit = transaction_id_key;
         first_transmission = false;
-        items_read_this_time += 1;
+        items_read_this_time += 2;
     }
 
     // stopping procedure
@@ -1177,10 +1192,10 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
         // set off another read and transmit DMA'ed one
         data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
         data_out_send_data_block(current_dma_pointer, items_read_this_time,
-                key_to_transmit);
+                key_to_transmit, second_key_to_transmit);
     } else {
         data_out_send_data_block(current_dma_pointer, items_read_this_time,
-                key_to_transmit);
+                key_to_transmit, second_key_to_transmit);
 
         // send end flag.
         data_out_send_end_flag();
@@ -1218,7 +1233,7 @@ static void data_out_write_missing_sdp_seq_nums_into_sdram(
 //! there is different behaviour
 static void data_out_store_missing_seq_nums(
         uint32_t data[], uint length, bool first) {
-    uint32_t start_reading_offset = 1;
+    uint32_t start_reading_offset = START_OF_MISSING_MORE;
     if (first) {
         n_missing_seq_sdp_packets =
                 data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
@@ -1296,14 +1311,15 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     if (missing_seq_num_being_processed != END_FLAG) {
         // regenerate data
         position_in_store = missing_seq_num_being_processed * SDP_PAYLOAD_WORDS;
-        uint32_t left_over_portion =
-                bytes_to_read_write / sizeof(uint) - position_in_store;
+        uint32_t left_over_portion = (
+            n_elements_to_read_from_sdram - position_in_store);
 
         if (left_over_portion < SDP_PAYLOAD_WORDS) {
             retransmitted_seq_num_items_read = left_over_portion + 1;
             data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
         } else {
-            retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
+            retransmitted_seq_num_items_read = (
+                ITEMS_PER_DATA_PACKET- TRANSACTION_ID_SIZE);
             data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, SDP_PAYLOAD_WORDS);
         }
     } else {        // finished data send, tell host its done
@@ -1320,7 +1336,6 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
 static void data_out_dma_complete_reading_retransmission_data(void) {
     // set sequence number as first element
     data_to_transmit[transmit_dma_pointer][0] = missing_seq_num_being_processed;
-
     if (missing_seq_num_being_processed > max_seq_num) {
         io_printf(IO_BUF,
                 "Got some bad seq num here. max is %d and got %d \n",
@@ -1328,8 +1343,9 @@ static void data_out_dma_complete_reading_retransmission_data(void) {
     }
 
     // send new data back to host
-    data_out_send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read,
-            new_sequence_key);
+    data_out_send_data_block(
+            transmit_dma_pointer, retransmitted_seq_num_items_read,
+            new_sequence_key, basic_data_key);
 
     position_in_read_data += 1;
     data_out_dma_complete_read_missing_seqeuence_nums();
@@ -1345,19 +1361,37 @@ static void data_out_dma_complete_writing_missing_seq_to_sdram(void) {
 //! \param[in] msg: the SDP message (without SCP header)
 static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     sdp_data_out_t *message = (sdp_data_out_t *) msg->data;
+
     switch (message->command) {
     case SDP_CMD_START_SENDING_DATA: {
-        io_printf(IO_BUF, "data out start sdp\n");
+
+        // updater transaction id if it hits the cap
+        if (((transaction_id + 1) & TRANSACTION_CAP) == 0) {
+            transaction_id = 0;
+        }
+
+        // if transaction id is not as expected. ignore it as its from the past.
+        // and worthless
+        if (message->transaction_id != transaction_id + 1) {
+            io_printf(
+                IO_BUF,
+                "received a start message with transaction id %d which was "
+                "not what i expect, as mine is %d\n",
+                message->transaction_id, transaction_id + 1);
+            return;
+        }
+
+        //extract transaction id and update
+        transaction_id = message->transaction_id;
         stop = 0;
 
         // set SDRAM position and length
         store_address = message->sdram_location;
         bytes_to_read_write = message->length;
 
-        uint32_t seq = bytes_to_read_write / (67 * 4),
-                mod = bytes_to_read_write % (67 * 4);
-        seq += mod > 0;
-        max_seq_num = seq;
+        max_seq_num = bytes_to_read_write / SDP_PAYLOAD_BYTES;
+        uint32_t mod = bytes_to_read_write % SDP_PAYLOAD_BYTES;
+        max_seq_num += mod > 0;
 
         // reset states
         first_transmission = true;
@@ -1366,16 +1400,21 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         n_elements_to_read_from_sdram = bytes_to_read_write / sizeof(uint);
 
         if (n_elements_to_read_from_sdram < SDP_PAYLOAD_WORDS) {
-            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 2,
                     n_elements_to_read_from_sdram);
         } else {
-            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 1, SDP_PAYLOAD_WORDS);
+            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 2, SDP_PAYLOAD_WORDS);
         }
         return;
     }
     case SDP_CMD_START_OF_MISSING_SDP_PACKETS:
-        // start or continue to gather missing packet list
-        io_printf(IO_BUF, "data out start missing\n");
+        if (message->transaction_id != transaction_id) {
+            io_printf(
+                IO_BUF, "received data from a different transaction for "
+                       "start of missing. expected %d got %d\n",
+                       transaction_id, message->transaction_id);
+            return;
+        }
 
         // if already in a retransmission phase, don't process as normal
         if (n_missing_seq_sdp_packets != 0) {
@@ -1391,7 +1430,15 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         }
         // fall through
     case SDP_CMD_MORE_MISSING_SDP_PACKETS:
-        io_printf(IO_BUF, "data out more missing\n");
+        if (message->transaction_id != transaction_id) {
+            io_printf(
+                IO_BUF,
+                "received data from a different transaction for more "
+                "missing. expected %d, got %d\n",
+                transaction_id, message->transaction_id);
+            return;
+        }
+
         // reset state, as could be here from multiple attempts
         if (!in_retransmission_mode) {
             // put missing sequence numbers into SDRAM
@@ -1405,7 +1452,6 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
                 // packets all received, add finish flag for DMA stoppage
 
                 if (n_missing_seq_nums_in_sdram != 0) {
-                    io_printf(IO_BUF, "starting resend process\n");
                     missing_sdp_seq_num_sdram_address[
                             n_missing_seq_nums_in_sdram++] = END_FLAG;
                     position_in_read_data = 0;
@@ -1419,6 +1465,14 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         }
         return;
     case SDP_CMD_CLEAR:
+        if (message->transaction_id != transaction_id) {
+            io_printf(
+                IO_BUF,
+                "received data from a different transaction for "
+                "clear. expected %d, got %d\n",
+                transaction_id, message->transaction_id);
+            return;
+        }
         io_printf(IO_BUF, "data out clear\n");
         stop = 1;
         break;
@@ -1581,21 +1635,20 @@ static void data_out_initialise(void) {
     basic_data_key = config->my_key;
     new_sequence_key = config->new_seq_key;
     first_data_key = config->first_data_key;
+    transaction_id_key = config->transaction_id_key;
     end_flag_key = config->end_flag_key;
+
+    io_printf(
+        IO_BUF,
+        "new seq key = %d, first data key = %d, transaction id key = %d, "
+        "end flag key = %d, basic_data_key = %d",
+        new_sequence_key, first_data_key, transaction_id_key, end_flag_key,
+        basic_data_key);
 
     // Various DMA callbacks
     set_vic_callback(DMA_SLOT, DMA_DONE_INT, data_out_dma_complete);
     set_vic_callback(DMA_ERROR_SLOT, DMA_ERR_INT, data_out_dma_error);
     set_vic_callback(DMA_TIMEOUT_SLOT, DMA_TO_INT, data_out_dma_timeout);
-
-    for (uint32_t i = 0; i < 2; i++) {
-        data_to_transmit[i] =
-                sark_alloc(ITEMS_PER_DATA_PACKET, sizeof(uint32_t));
-        if (data_to_transmit[i] == NULL) {
-            io_printf(IO_BUF, "failed to allocate DTCM for DMA buffers\n");
-            rt_error(RTE_SWERR);
-        }
-    }
 
     // configuration for the DMA's by the speed data loader
     dma[DMA_CTRL] = 0x3f; // Abort pending and active transfers

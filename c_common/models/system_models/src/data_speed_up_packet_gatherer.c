@@ -62,13 +62,18 @@ enum functionality_to_port_num_map {
 
 // location of command IDs in SDP message
 #define COMMAND_ID 0
+
+//! \brief location of where the seq num is in the packet
+#define SEQ_NUM_LOC 0
+
+//! \brief location of the transaction id in the packet
 #define TRANSACTION_ID 1
+
+//! \brief location of the start of raw data in the packet
+#define START_OF_DATA 2
 
 // flag when all seq numbers are missing
 #define ALL_MISSING_FLAG 0xFFFFFFFE
-
-// flag for cap on transaction id
-#define TRANSACTION_CAP 0xFFFFFFF
 
 // mask needed by router timeout
 #define ROUTER_TIMEOUT_MASK 0xFF
@@ -149,6 +154,7 @@ typedef struct sdp_msg_out_payload_t {
 //! the key that causes sequence number to be processed
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
+static uint32_t transaction_id_key = 0;
 static uint32_t end_flag_key = 0;
 static uint32_t basic_data_key = 0;
 
@@ -156,8 +162,10 @@ static uint32_t basic_data_key = 0;
 static uint32_t seq_num = FIRST_SEQ_NUM;
 static uint32_t max_seq_num = 0xFFFFFFFF;
 static uint32_t transaction_id = 0;
+static uint32_t data_out_transaction_id = 0;
 
-//! data holders for the SDP packet
+//! data holders for the SDP packet (plus 1 to protect against memory
+//! overwrites with command messages)
 static uint32_t data[ITEMS_PER_DATA_PACKET];
 static uint32_t position_in_store = 0;
 
@@ -174,6 +182,7 @@ enum {
 typedef struct data_out_config_t {
     uint new_seq_key;
     uint first_data_key;
+    uint transaction_id_key;
     uint end_flag_key;
     uint basic_data_key;
     uint tag_id;
@@ -666,19 +675,24 @@ static void send_data(void) {
 
     send_sdp_message();
 
-    position_in_store = 1;
     seq_num++;
-    data[0] = seq_num;
+    data[SEQ_NUM_LOC] = seq_num;
+    data[TRANSACTION_ID] = data_out_transaction_id;
+    position_in_store = START_OF_DATA;
 }
 
 static void receive_data(uint key, uint payload) {
     if (key == new_sequence_key) {
-        if (position_in_store != 1) {
+        if (position_in_store != START_OF_DATA) {
+            log_info("sending surplus data from new seq setting");
             send_data();
         }
-        data[0] = payload;
+
+        log_info("new seq num to set is %d", payload);
+        data[SEQ_NUM_LOC] = payload;
+        data[TRANSACTION_ID] = data_out_transaction_id;
         seq_num = payload;
-        position_in_store = 1;
+        position_in_store = START_OF_DATA;
 
         if (payload > max_seq_num) {
             log_error("Got a funky seq num; max is %d, received %d",
@@ -689,15 +703,22 @@ static void receive_data(uint key, uint payload) {
         position_in_store++;
 
         if (key == first_data_key) {
+            log_info("received new stream with max %d", payload);
             seq_num = FIRST_SEQ_NUM;
-            data[0] = seq_num;
-            position_in_store = 1;
+            data[SEQ_NUM_LOC] = seq_num;
+            position_in_store = TRANSACTION_ID;
             max_seq_num = payload;
+        }
+
+        if (key == transaction_id_key){
+            data_out_transaction_id = payload;
+            data[TRANSACTION_ID] = data_out_transaction_id;
+            position_in_store = START_OF_DATA;
         }
 
         if (key == end_flag_key) {
             // set end flag bit in seq num
-            data[0] |= 1 << 31;
+            data[SEQ_NUM_LOC] |= 1 << 31;
 
             // adjust size as last payload not counted
             position_in_store--;
@@ -728,8 +749,16 @@ static void initialise(void) {
             data_specification_get_region(CONFIG, ds_regions);
     new_sequence_key = config->new_seq_key;
     first_data_key = config->first_data_key;
+    transaction_id_key = config->transaction_id_key;
     end_flag_key = config->end_flag_key;
     basic_data_key = config->basic_data_key;
+
+    log_info(
+        "new seq key = %d, first data key = %d, transaction id key = %d, "
+        "end flag key = %d, basic_data_key = %d",
+        new_sequence_key, first_data_key, transaction_id_key, end_flag_key,
+        basic_data_key);
+
 
     log_info("the tag id being used is %d", config->tag_id);
     my_msg.tag = config->tag_id;    	// IPTag 1

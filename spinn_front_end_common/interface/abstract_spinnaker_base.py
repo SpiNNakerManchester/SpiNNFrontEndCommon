@@ -1722,6 +1722,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Run the data generation algorithms
         outputs = []
         algorithms = [self._dsg_algorithm]
+        algorithms.append("SynapticDataTracker")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, tokens, [], "data_generation")

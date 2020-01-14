@@ -81,8 +81,9 @@ TRANSACTION_ID_CAP = 0xFFFFFFFF
 SDP_RETRANSMISSION_HEADER_SIZE = 2
 
 #: size of config region in bytes
-#: 1.new seq key, 2.first data key, 3.end flag key, 4.base key, 5.iptag tag
-CONFIG_SIZE = 5 * BYTES_PER_WORD
+#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
+# 5.base key, 6.iptag tag
+CONFIG_SIZE = 6 * BYTES_PER_WORD
 
 #: items of data a SDP packet can hold when SCP header removed
 WORDS_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -90,9 +91,27 @@ WORDS_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
 #: size of items the sequence number uses
 SEQUENCE_NUMBER_SIZE_IN_ITEMS = 1
 
+#: transaction id size in words
+TRANSACTION_ID_SIZE_IN_ITEMS = 1
+
+#: the size in words of the command flag
+COMMAND_SIZE_IN_ITEMS = 1
+
+#: offset for missing seq starts in first packet
+WORDS_FOR_COMMAND_N_MISSING_TRANSACTION = 3
+
+#: offset for missing seq starts in more packet
+WORDS_FOR_COMMAND_TRANSACTION = (
+    COMMAND_SIZE_IN_ITEMS + TRANSACTION_ID_SIZE_IN_ITEMS)
+
+BYTES_FOR_SEQ_AND_TRANSACTION_ID = (
+    (SEQUENCE_NUMBER_SIZE_IN_ITEMS + TRANSACTION_ID_SIZE_IN_ITEMS) *
+    BYTES_PER_WORD)
+
 #: items of data from SDP packet with a sequence number
-WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM = \
-    WORDS_PER_FULL_PACKET - SEQUENCE_NUMBER_SIZE_IN_ITEMS
+WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM = (
+    WORDS_PER_FULL_PACKET - SEQUENCE_NUMBER_SIZE_IN_ITEMS -
+    TRANSACTION_ID_SIZE_IN_ITEMS)
 
 #: offset where data in starts on commands
 #: (command, transaction_id, seq num)
@@ -215,12 +234,14 @@ class DataSpeedUpPacketGatherMachineVertex(
     NEW_SEQ_KEY = 0xFFFFFFF8
     FIRST_DATA_KEY = 0xFFFFFFF7
     END_FLAG_KEY = 0xFFFFFFF6
+    TRANSACTION_ID_KEY = 0xFFFFFFF5
 
     #: to use with multicast stuff (reinjection acks have to be fixed route)
     BASE_MASK = 0xFFFFFFFB
     NEW_SEQ_KEY_OFFSET = 1
     FIRST_DATA_KEY_OFFSET = 2
     END_FLAG_KEY_OFFSET = 3
+    TRANSACTION_ID_KEY_OFFSET = 4
 
     # throttle on the transmission
     _TRANSMISSION_THROTTLE_TIME = 0.000001
@@ -413,15 +434,18 @@ class DataSpeedUpPacketGatherMachineVertex(
             new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
             first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
             end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
+            transaction_id_key = base_key + self.TRANSACTION_ID_KEY_OFFSET
         else:
             new_seq_key = self.NEW_SEQ_KEY
             first_data_key = self.FIRST_DATA_KEY
             end_flag_key = self.END_FLAG_KEY
             base_key = self.BASE_KEY
+            transaction_id_key = self.TRANSACTION_ID_KEY
 
         spec.switch_write_focus(_DATA_REGIONS.CONFIG.value)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
+        spec.write_value(transaction_id_key)
         spec.write_value(end_flag_key)
         spec.write_value(base_key)
 
@@ -1194,11 +1218,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         reraise(*einfo)
 
     def get_data(
-            self, placement, memory_address, length_in_bytes, fixed_routes):
+            self, extra_monitor, extra_monitor_placement, memory_address,
+            length_in_bytes, fixed_routes):
         """ Gets data from a given core and memory address.
 
-        :param placement: placement object for where to get data from
-        :type placement: ~pacman.model.placements.Placement
+        :param extra_monitor_placement: \
+            placement object for where to get data from
+        :type extra_monitor_placement: ~pacman.model.placements.Placement
+        :param extra_monitor: the extra monitor used for this data
+        :type extra_monitor: ExtraMonitor
         :param memory_address: the address in SDRAM to start reading from
         :type memory_address: int
         :param length_in_bytes: the length of data to read in bytes
@@ -1216,7 +1244,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             data = bytearray(0)
             end = float(time.time())
             self._provenance_data_items[
-                placement, memory_address,
+                extra_monitor_placement, memory_address,
                 length_in_bytes].append((end - start, [0]))
             return data
 
@@ -1227,40 +1255,50 @@ class DataSpeedUpPacketGatherMachineVertex(
             chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
         self.__reprogram_tag(connection)
 
+        # update transaction id for extra monitor
+        extra_monitor.update_transaction_id()
+        transaction_id = extra_monitor.transaction_id
+
         # send
         connection.send_sdp_message(self.__make_sdp_message(
-            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-            _THREE_WORDS.pack(
-                DATA_OUT_COMMANDS.START_SENDING.value,
+            extra_monitor_placement,
+            SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+            _FOUR_WORDS.pack(
+                DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
                 memory_address, length_in_bytes)))
 
         # receive
         self._output = bytearray(length_in_bytes)
         self._view = memoryview(self._output)
         self._max_seq_num = self.calculate_max_seq_num()
-        lost_seq_nums = self._receive_data(transceiver, placement, connection)
+        lost_seq_nums = self._receive_data(
+            transceiver, extra_monitor_placement, connection, transaction_id)
 
         # Stop anything else getting through (and reduce traffic)
         connection.send_sdp_message(self.__make_sdp_message(
-            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-            _ONE_WORD.pack(DATA_OUT_COMMANDS.CLEAR.value)))
+            extra_monitor_placement,
+            SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+            _TWO_WORDS.pack(DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
         connection.close()
 
         end = float(time.time())
         self._provenance_data_items[
-            placement, memory_address, length_in_bytes].append(
+            extra_monitor_placement, memory_address, length_in_bytes].append(
                 (end - start, lost_seq_nums))
 
         # create report elements
         if self._write_data_speed_up_reports:
             routers_been_in_use = self._determine_which_routers_were_used(
-                placement, fixed_routes, transceiver.get_machine_details())
+                extra_monitor_placement, fixed_routes,
+                transceiver.get_machine_details())
             self._write_routers_used_into_report(
-                self._out_report_path, routers_been_in_use, placement)
+                self._out_report_path, routers_been_in_use,
+                extra_monitor_placement)
 
         return self._output
 
-    def _receive_data(self, transceiver, placement, connection):
+    def _receive_data(
+            self, transceiver, placement, connection, transaction_id):
         seq_nums = set()
         lost_seq_nums = list()
         timeoutcount = 0
@@ -1269,10 +1307,17 @@ class DataSpeedUpPacketGatherMachineVertex(
             try:
                 data = connection.receive(
                     timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
-                timeoutcount = 0
-                seq_nums, finished = self._process_data(
-                    data, seq_nums, finished, placement, transceiver,
-                    lost_seq_nums)
+                response_transaction_id, = _ONE_WORD.unpack_from(data, 4)
+                if transaction_id == response_transaction_id:
+                    timeoutcount = 0
+                    seq_nums, finished = self._process_data(
+                        data, seq_nums, finished, placement, transceiver,
+                        lost_seq_nums, transaction_id)
+                else:
+                    log.info(
+                        "ignoring packet as transaction id should be {}"
+                        " but is {}".format(
+                            transaction_id, response_transaction_id))
             except SpinnmanTimeoutException:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise SpinnFrontEndException(
@@ -1283,7 +1328,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # self.__reset_connection()
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
-                        seq_nums, transceiver, placement, lost_seq_nums)
+                        seq_nums, transceiver, placement, lost_seq_nums,
+                        transaction_id)
         return lost_seq_nums
 
     @staticmethod
@@ -1340,13 +1386,15 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
-            self, seq_nums, transceiver, placement, lost_seq_nums):
+            self, seq_nums, transceiver, placement, lost_seq_nums,
+            transaction_id):
         """ Determine if there are any missing sequence numbers, and if so\
             retransmits the missing sequence numbers back to the core for\
             retransmission.
 
         :param seq_nums: the sequence numbers already received
         :param transceiver: spinnman instance
+        :param transaction_id: transaction_id
         :param placement: placement instance
         :return: whether all packets are transmitted
         :rtype: bool
@@ -1355,18 +1403,23 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
+
         lost_seq_nums.append(len(missing_seq_nums))
-        # self._print_missing(missing_seq_nums)
+        #self._print_missing(missing_seq_nums)
         if not missing_seq_nums:
             return True
 
         # figure n packets given the 2 formats
         n_packets = 1
         length_via_format2 = \
-            len(missing_seq_nums) - (WORDS_PER_FULL_PACKET - 2)
+            len(missing_seq_nums) - (
+                WORDS_PER_FULL_PACKET -
+                WORDS_FOR_COMMAND_N_MISSING_TRANSACTION)
         if length_via_format2 > 0:
             n_packets += ceildiv(
-                length_via_format2, WORDS_PER_FULL_PACKET - 1)
+                length_via_format2,
+                WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_TRANSACTION)
+        log.info("missing packets = {}", n_packets)
 
         # transmit missing sequence as a new SDP packet
         first = True
@@ -1380,21 +1433,26 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # get left over space / data size
                 size_of_data_left_to_transmit = min(
-                    length_left_in_packet - 2,
+                    length_left_in_packet -
+                    WORDS_FOR_COMMAND_N_MISSING_TRANSACTION,
                     len(missing_seq_nums) - seq_num_offset)
 
                 # build data holder accordingly
                 data = bytearray(
-                    (size_of_data_left_to_transmit + 2) * BYTES_PER_WORD)
+                    (size_of_data_left_to_transmit +
+                     WORDS_FOR_COMMAND_N_MISSING_TRANSACTION) * BYTES_PER_WORD)
 
                 # pack flag and n packets
                 _ONE_WORD.pack_into(
                     data, offset, DATA_OUT_COMMANDS.START_MISSING_SEQ.value)
-                _ONE_WORD.pack_into(data, BYTES_PER_WORD, n_packets)
+                _TWO_WORDS.pack_into(
+                    data, BYTES_PER_WORD, transaction_id, n_packets)
 
                 # update state
-                offset += 2 * BYTES_PER_WORD
-                length_left_in_packet -= 2
+                offset += (
+                    WORDS_FOR_COMMAND_N_MISSING_TRANSACTION * BYTES_PER_WORD)
+                length_left_in_packet -= (
+                    WORDS_FOR_COMMAND_N_MISSING_TRANSACTION)
                 first = False
 
             else:  # just add data
@@ -1405,13 +1463,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                 # build data holder accordingly
                 data = bytearray(
-                    (size_of_data_left_to_transmit + 1) * BYTES_PER_WORD)
+                    (size_of_data_left_to_transmit +
+                     WORDS_FOR_COMMAND_TRANSACTION) * BYTES_PER_WORD)
 
                 # pack flag
-                _ONE_WORD.pack_into(
-                    data, offset, DATA_OUT_COMMANDS.MISSING_SEQ.value)
-                offset += BYTES_PER_WORD
-                length_left_in_packet -= 1
+                _TWO_WORDS.pack_into(
+                    data, offset,
+                    DATA_OUT_COMMANDS.MISSING_SEQ.value, transaction_id)
+                offset += BYTES_PER_WORD * WORDS_FOR_COMMAND_TRANSACTION
+                length_left_in_packet -= WORDS_FOR_COMMAND_TRANSACTION
 
             # fill data field
             struct.pack_into(
@@ -1432,7 +1492,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _process_data(
             self, data, seq_nums, finished, placement, transceiver,
-            lost_seq_nums):
+            lost_seq_nums, transaction_id):
         """ Take a packet and processes it see if we're finished yet
 
         :param data: the packet data
@@ -1440,6 +1500,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param finished: bool which states if finished or not
         :param placement: placement object for location on machine
         :param transceiver: spinnman instance
+        :param transaction_id: the transaction id for this stream
         :param lost_seq_nums: the list of n sequence numbers lost per iteration
         :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
@@ -1465,11 +1526,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         offset = self._calculate_offset(seq_num)
 
         # write data
-        true_data_length = offset + length_of_data - BYTES_PER_WORD
-        if not is_end_of_stream or length_of_data != BYTES_PER_WORD:
+
+        # read offset from data is at byte 8. as first 4 is seq num,
+        # second 4 is transaction id
+        true_data_length = (
+                offset + length_of_data - BYTES_FOR_SEQ_AND_TRANSACTION_ID)
+        if (not is_end_of_stream or
+                length_of_data != BYTES_FOR_SEQ_AND_TRANSACTION_ID):
             self._write_into_view(
-                offset, true_data_length, data, BYTES_PER_WORD,
-                length_of_data, seq_num, length_of_data, False)
+                offset, true_data_length, data,
+                BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data, seq_num,
+                length_of_data, False)
 
         # add seq num to list
         seq_nums.add(seq_num)
@@ -1480,7 +1547,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             if not self._check(seq_nums):
                 finished = self._determine_and_retransmit_missing_seq_nums(
                     placement=placement, transceiver=transceiver,
-                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
+                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums,
+                    transaction_id=transaction_id)
             else:
                 finished = True
         return seq_nums, finished
@@ -1509,10 +1577,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise Exception(
                 "I'm trying to add to my output data, but am trying to add "
                 "outside my acceptable output positions! max is {} and I "
-                "received a request to fill to {} for sequence num {} from max"
-                " sequence num {} length of packet {} and final {}".format(
-                    len(self._output), view_end_position, seq_num,
-                    self._max_seq_num, packet_length, is_final))
+                "received a request to fill to {} from {} for sequence num "
+                "{} from max sequence num {} length of packet {} and "
+                "final {}".format(
+                    len(self._output), view_end_position, view_start_position,
+                    seq_num, self._max_seq_num - 1, packet_length, is_final))
         self._view[view_start_position: view_end_position] = \
             data[data_start_position:data_end_position]
 
@@ -1549,7 +1618,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         for seq_num in sorted(seq_nums):
-            log.debug("from list I'm missing sequence num {}", seq_num)
+            log.info("from list I'm missing sequence num {}", seq_num)
 
     @staticmethod
     def _print_out_packet_data(data, position):

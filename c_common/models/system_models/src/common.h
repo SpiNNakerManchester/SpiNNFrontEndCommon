@@ -63,6 +63,9 @@ void initialise_reinjection_mc_api(uint32_t base_mc_key){
 
 #define SDP_REPLY_HEADER_LEN 12
 
+// flag for cap on transaction id
+#define TRANSACTION_CAP 0xFFFFFFF
+
 //! does the setting of the msg to reflect back.
 static inline void reflect_sdp_message(sdp_msg_t *msg, uint body_length) {
     msg->length = SDP_REPLY_HEADER_LEN + body_length;

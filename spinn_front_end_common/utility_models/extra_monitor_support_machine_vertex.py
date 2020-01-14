@@ -44,11 +44,16 @@ from spinn_front_end_common.utilities.helpful_functions import (
 log = FormatAdapter(logging.getLogger(__name__))
 
 _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
-_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
+#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
+# 5.base key
+_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * BYTES_PER_KB
 _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
 _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
+
+# cap for stopping wrap arounds
+TRANSACTION_ID_CAP = 0xFFFFFFFF
 
 # SDRAM requirement for containing router table entries
 # 16 bytes per entry:
@@ -90,7 +95,10 @@ class ExtraMonitorSupportMachineVertex(
         "_placement",
         # app id, used for reporting failures on system core RTE
         "_app_id",
-        "_machine"
+        # machine instance
+        "_machine",
+        # the local transaction id
+        "_transaction_id"
     )
 
     def __init__(
@@ -130,6 +138,7 @@ class ExtraMonitorSupportMachineVertex(
         self._placement = None
         self._app_id = None
         self._machine = None
+        self._transaction_id = 0
 
     @property
     def reinject_multicast(self):
@@ -137,6 +146,13 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: bool
         """
         return self._reinject_multicast
+
+    @property
+    def transaction_id(self):
+        return self._transaction_id
+
+    def update_transaction_id(self):
+        self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
     @property
     def reinject_point_to_point(self):
@@ -285,11 +301,13 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(base_key)
             spec.write_value(base_key + Gatherer.NEW_SEQ_KEY_OFFSET)
             spec.write_value(base_key + Gatherer.FIRST_DATA_KEY_OFFSET)
+            spec.write_value(base_key + Gatherer.TRANSACTION_ID_KEY_OFFSET)
             spec.write_value(base_key + Gatherer.END_FLAG_KEY_OFFSET)
         else:
             spec.write_value(Gatherer.BASE_KEY)
             spec.write_value(Gatherer.NEW_SEQ_KEY)
             spec.write_value(Gatherer.FIRST_DATA_KEY)
+            spec.write_value(Gatherer.TRANSACTION_ID_KEY)
             spec.write_value(Gatherer.END_FLAG_KEY)
 
     def _generate_reinjection_config(

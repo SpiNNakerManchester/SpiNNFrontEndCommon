@@ -56,6 +56,8 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 _SDP_MAX_PACKAGE_SIZE = 272
 
+VERIFY = False
+
 
 class BufferManager(object):
     """ Manager of send buffers.
@@ -212,9 +214,20 @@ class BufferManager(object):
         receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
-        return receiver.get_data(
-            self._placements.get_placement_of_vertex(sender),
+        extra_mon_data = receiver.get_data(
+            sender, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
+        if VERIFY:
+            txrx_data = transceiver.read_memory(
+                placement_x, placement_y, address, length)
+            self._verify_data(extra_mon_data, txrx_data)
+        return extra_mon_data
+
+    def _verify_data(self, extra_mon_data, txrx_data):
+        for index, (extra_mon_element, txrx_element) in enumerate(
+                zip(extra_mon_data, txrx_data)):
+            if extra_mon_element != txrx_element:
+                raise Exception("WRONG")
 
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
