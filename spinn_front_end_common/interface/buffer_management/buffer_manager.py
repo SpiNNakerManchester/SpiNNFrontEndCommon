@@ -628,6 +628,10 @@ class BufferManager(object):
                 self._packet_gather_cores_to_ethernet_connection_map)
             for placement in placements))
 
+        # update transaction id from the machine for all extra monitors
+        for extra_mon in self._extra_monitor_cores:
+            extra_mon.update_transaction_id_from_machine(self._transceiver)
+
         # Ugly, to avoid an import loop...
         with receivers[0].streaming(
                 receivers, self._transceiver, self._extra_monitor_cores,

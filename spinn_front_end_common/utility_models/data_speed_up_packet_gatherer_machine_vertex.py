@@ -360,6 +360,16 @@ class DataSpeedUpPacketGatherMachineVertex(
     def resources_required(self):
         return self.static_resources_required()
 
+    def update_transaction_id_from_machine(self, txrx):
+        """ looks up from the machine what the current transaction id is
+        and updates the data speed up lpg.
+
+        :param txrx: SpiNNMan instance
+        :rtype: None
+        """
+        self._transaction_id = txrx.read_user_1(
+            self._placement.x, self._placement.y, self._placement.p)
+
     @staticmethod
     def static_resources_required():
         return ResourceContainer(
@@ -759,6 +769,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         chip = machine.get_chip_at(destination_chip_x, destination_chip_y)
         dest_x, dest_y = machine.get_local_xy(chip)
         self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
+
+        # for safety, check the transaction id from the machine before updating
+        self.update_transaction_id_from_machine(transceiver)
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
         # send first message
@@ -1405,7 +1418,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
 
         lost_seq_nums.append(len(missing_seq_nums))
-        #self._print_missing(missing_seq_nums)
+        # self._print_missing(missing_seq_nums)
         if not missing_seq_nums:
             return True
 

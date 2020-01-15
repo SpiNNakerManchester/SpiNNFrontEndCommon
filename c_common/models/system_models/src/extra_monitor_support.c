@@ -447,6 +447,11 @@ static inline void *dsg_block(uint index) {
     return dsg_header->regions[index];
 }
 
+//! \brief loads the transaction id into the user 1 register
+static void load_transaction_id_to_user_1(int transaction_id) {
+    sark_virtual_processor_info[sark.virt_cpu].user1 = transaction_id;
+}
+
 static inline void *sdram_alloc(uint size) {
     return sark_xalloc(sv->sdram_heap, size, 0,
             ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
@@ -1368,6 +1373,7 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         // updater transaction id if it hits the cap
         if (((transaction_id + 1) & TRANSACTION_CAP) == 0) {
             transaction_id = 0;
+            load_transaction_id_to_user_1(transaction_id);
         }
 
         // if transaction id is not as expected. ignore it as its from the past.
@@ -1383,6 +1389,8 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
 
         //extract transaction id and update
         transaction_id = message->transaction_id;
+        load_transaction_id_to_user_1(transaction_id);
+
         stop = 0;
 
         // set SDRAM position and length

@@ -154,6 +154,16 @@ class ExtraMonitorSupportMachineVertex(
     def update_transaction_id(self):
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
+    def update_transaction_id_from_machine(self, txrx):
+        """ looks up from the machine what the current transaction id is
+        and updates the extra monitor.
+
+        :param txrx: SpiNNMan instance
+        :rtype: None
+        """
+        self._transaction_id = txrx.read_user_1(
+            self._placement.x, self._placement.y, self._placement.p)
+
     @property
     def reinject_point_to_point(self):
         """

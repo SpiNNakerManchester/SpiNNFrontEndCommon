@@ -231,6 +231,16 @@ typedef struct data_in_config_t {
 // FUNCTIONS
 //-----------------------------------------------------------------------------
 
+//! \brief writes the updated transaction id to the user1
+static void set_transaction_id_to_user_1(int transaction_id) {
+// Get pointer to 1st virtual processor info struct in SRAM
+    vcpu_t *virtual_processor_table = (vcpu_t*) SV_VCPU;
+
+    // Get the address this core's DTCM data starts at from the user data
+    // member of the structure associated with this virtual processor
+    virtual_processor_table[spin1_get_core_id()].user1 = transaction_id;
+}
+
 //! \brief sends the SDP message built in the my_msg global
 static inline void send_sdp_message(void) {
     log_debug("sending message of length %u", my_msg.length);
@@ -354,6 +364,7 @@ static void process_address_data(
     // updater transaction id if it hits the cap
     if (((transaction_id + 1) & TRANSACTION_CAP) == 0) {
         transaction_id = 0;
+        set_transaction_id_to_user_1(transaction_id);
     }
 
     // if transaction id is not as expected. ignore it as its from the past.
@@ -368,6 +379,7 @@ static void process_address_data(
 
     //extract transaction id and update
     transaction_id = receive_data_cmd->transaction_id;
+    set_transaction_id_to_user_1(transaction_id);
 
     // track changes
     uint prev_x = chip_x, prev_y = chip_y;
