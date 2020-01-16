@@ -1682,6 +1682,9 @@ static void data_in_initialise(void) {
     // Save the current (application?) state
     data_in_save_router();
 
+    // load user 1 in case this is a consecutive load
+    load_transaction_id_to_user_1(transaction_id);
+
     // set up mc interrupts to deal with data writing
     set_vic_callback(
         MC_PAYLOAD_SLOT, CC_MC_INT, process_mc_payload_packet);

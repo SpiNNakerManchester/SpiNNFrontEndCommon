@@ -806,6 +806,9 @@ static void initialise(void) {
 
     // set sdp callback
     spin1_callback_on(SDP_PACKET_RX, receive_sdp_message, SDP);
+
+    // load user 1 in case this is a consecutive load
+    set_transaction_id_to_user_1(transaction_id);
 }
 
 
