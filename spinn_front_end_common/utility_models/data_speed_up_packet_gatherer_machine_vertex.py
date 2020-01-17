@@ -59,7 +59,7 @@ log = FormatAdapter(logging.getLogger(__name__))
 # shift by for the destination x coord in the word.
 DEST_X_SHIFT = 16
 
-TIMEOUT_RETRY_LIMIT = 20
+TIMEOUT_RETRY_LIMIT = 100
 TIMEOUT_MESSAGE = "Failed to hear from the machine during {} attempts. "\
     "Please try removing firewalls."
 _MINOR_LOSS_MESSAGE = (
@@ -260,7 +260,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     _SEQUENCE_NUMBER_MASK = 0x7fffffff
 
     # time outs used by the protocol for separate bits
-    _TIMEOUT_PER_RECEIVE_IN_SECONDS = 1
+    _TIMEOUT_PER_RECEIVE_IN_SECONDS = 2
     _TIMEOUT_FOR_SENDING_IN_SECONDS = 0.01
 
     # end flag for missing seq nums
