@@ -73,7 +73,7 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     :param list(str) tag_labels: labels for the profiling data
     :param ~spinnman.transceiver.Transceiver txrx: SpiNNMan transceiver
     :param ~pacman.model.placements.Placement placement: placement
-    :rtype: ~spinn_front_end_common.interface.profiling.ProfileData
+    :rtype: ProfileData
     """
     profile_data = ProfileData(tag_labels)
 

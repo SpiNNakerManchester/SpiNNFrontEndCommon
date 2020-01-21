@@ -40,6 +40,12 @@ class NotificationProtocolImpl(object):
         "__wait_pool"]
 
     def __init__(self, socket_addresses, wait_for_read_confirmation):
+        """
+        :param list(~spinn_utilities.socket_address.SocketAddress) \
+                socket_addresses: Where to notify.
+        :param bool wait_for_read_confirmation:
+            Whether to wait for the other side to acknowledge
+        """
         self.__socket_addresses = socket_addresses
 
         # Determines whether to wait for confirmation that the database

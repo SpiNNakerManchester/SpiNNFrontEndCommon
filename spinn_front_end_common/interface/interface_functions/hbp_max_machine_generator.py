@@ -28,7 +28,7 @@ class HBPMaxMachineGenerator(object):
     def __call__(self, hbp_server_url, total_run_time,
                  max_machine_core_reduction=0):
         """
-        :param hbp_server_url: \
+        :param str hbp_server_url:
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request
         :param max_machine_core_reduction: the number of cores less than

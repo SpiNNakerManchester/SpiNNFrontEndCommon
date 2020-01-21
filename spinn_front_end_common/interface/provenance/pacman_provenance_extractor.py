@@ -41,8 +41,7 @@ class PacmanProvenanceExtractor(object):
         """ Returns the provenance data items
 
         :return: the provenance items
-        :rtype:
-            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
+        :rtype: iterable(ProvenanceDataItem)
         """
         return self._data_items
 

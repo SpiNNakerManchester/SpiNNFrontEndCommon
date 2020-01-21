@@ -34,7 +34,8 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     @abstractproperty
     def send_buffers(self):
         """
-        :rtype: dict(int,BufferedSendingRegion)
+        :rtype: dict(int,
+            ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion)
         """
 
     @overrides(AbstractSendsBuffersFromHost.buffering_input)

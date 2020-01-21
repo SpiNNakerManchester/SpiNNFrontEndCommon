@@ -29,6 +29,5 @@ class AbstractProvidesLocalProvenanceData(object):
         """ Get an iterable of provenance data items
 
         :return: the provenance items
-        :rtype:
-            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
+        :rtype: iterable(ProvenanceDataItem)
         """

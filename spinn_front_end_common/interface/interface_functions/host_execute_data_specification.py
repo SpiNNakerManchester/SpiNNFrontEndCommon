@@ -121,7 +121,7 @@ class HostExecuteDataSpecification(object):
             dict of cores to a dict of
                 'start_address', 'memory_used', 'memory_written'
         :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int),dict(str,int))
+            dict(tuple(int,int,int),DataWritten)
         :return: map of of cores to a dict of \
                 'start_address', 'memory_used', 'memory_written'
             Note: If using python the return type is an actual dict object.
@@ -218,7 +218,8 @@ class HostExecuteDataSpecification(object):
         :param dsg_targets: map of placement to file path
         :param bool uses_advanced_monitors:
             whether to use fast data in protocol
-        :param ExecutableTargets executable_targets: what core will running what binary
+        :param ExecutableTargets executable_targets:
+            what core will running what binary
         :param ~pacman.model.placements.Placements placements:
             where vertices are located
         :param extra_monitor_cores: the deployed extra monitors, if any
@@ -342,20 +343,17 @@ class HostExecuteDataSpecification(object):
             processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
 
-        :param machine: the python representation of the spinnaker machine
-        :type machine: ~spinn_machine.Machine
-        :param transceiver: the spinnman instance
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param app_id: the application ID of the simulation
-        :type app_id: int
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: dict(tuple(int,int,int),str)
-        :param executable_targets: \
+        :param ~spinn_machine.Machine machine:
+            the python representation of the spinnaker machine
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
+        :param int app_id: the application ID of the simulation
+        :param dict(tuple(int,int,int),str) dsg_targets:
+            map of placement to file path
+        :param ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :type executable_targets: ExecutableTargets
         :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),\
-            ~spinn_front_end_common.utilities.utility_objs.DataWritten)
+        :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # pylint: disable=too-many-arguments
 
@@ -373,12 +371,10 @@ class HostExecuteDataSpecification(object):
     def __java_sys(self, dsg_targets, executable_targets):
         """ Does the Data Specification Execution and loading using Java
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            ~spinn_front_end_common.interface.ds.DataSpecificationTargets
-        :return: map of cores to \
-            :py:class:`~spinn_front_end_common.utilities.utility_objs.DataWritten`
-        :rtype: ~spinn_front_end_common.interface.ds.DsWriteInfo
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :return: map of cores to :py:class:`DataWritten`
+        :rtype: DsWriteInfo
         """
 
         # create a progress bar for end users
@@ -413,10 +409,10 @@ class HostExecuteDataSpecification(object):
         """ Does the Data Specification Execution and loading using Python
 
         :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
+        :type dsg_targets: DataSpecificationTargets
         :return: dict of cores to a dict of\
             'start_address', 'memory_used', 'memory_written
+        :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
@@ -435,6 +431,9 @@ class HostExecuteDataSpecification(object):
         return self._write_info_map
 
     def __execute(self, core, reader, writer_func):
+        """
+        :rtype: DataWritten
+        """
         x, y, p = core
 
         # Maximum available memory.

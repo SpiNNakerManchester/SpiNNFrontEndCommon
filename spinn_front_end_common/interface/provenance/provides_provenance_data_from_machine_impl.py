@@ -238,8 +238,8 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     def _get_remaining_provenance_data_items(self, provenance_data):
         """
-        :param list provenance_data:
-        :rtype: list
+        :param list(ProvenanceDataItem) provenance_data:
+        :rtype: list(ProvenanceDataItem)
         """
         return provenance_data[len(self.PROVENANCE_DATA_ENTRIES):]
 
@@ -253,8 +253,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             How to talk to the machine
         :param ~pacman.model.placements.Placement placement:
             Which vertex are we retrieving from, and where was it
-        :rtype:
-            list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
+        :rtype: list(ProvenanceDataItem)
         """
         provenance_data = self._read_provenance_data(
             transceiver, placement)

@@ -56,7 +56,23 @@ class _TranscieverDelegate(object):
 
 class WriteMemoryIOData(object):
     """ An algorithm that handles objects implementing the interface\
-        :py:class:`AbstractUsesMemoryIO`
+        :py:class:`AbstractUsesMemoryIO`. **Callable.**
+
+    :param ~pacman.model.graphs.AbstractGraph graph: The graph to process
+    :param ~pacman.model.placements.Placements placements:
+        The placements of vertices of the graph
+    :param int app_id: The ID of the application
+    :param str app_data_runtime_folder: The location of data files
+    :param str hostname: The host name of the machine
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        The transceiver to write data using; if None only data files\
+        are written
+    :param processor_to_app_data_base_address:
+        Optional existing dictionary of processor to base address
+    :type processor_to_app_data_base_address:
+        dict(tuple(int,int,int),DataWritten)
+    :return: The mapping between processor and addresses allocated
+    :rtype: dict(tuple(int,int,int),DataWritten)
     """
 
     __slots__ = [
@@ -82,17 +98,14 @@ class WriteMemoryIOData(object):
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
         """
-        :param graph: The graph to process
-        :param placements: The placements of vertices of the graph
-        :param app_id: The ID of the application
-        :param app_data_runtime_folder: The location of data files
-        :param hostname: The host name of the machine
-        :param transceiver:\
-            The transceiver to write data using; if None only data files\
-            are written
-        :param processor_to_app_data_base_address:\
-            Optional existing dictionary of processor to base address
-        :return: The mapping between processor and addresses allocated
+        :param ~pacman.model.graphs.AbstractGraph graph:
+        :param ~pacman.model.placements.Placements placements:
+        :param int app_id:
+        :param str app_data_runtime_folder:
+        :param str hostname:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int),DataWritten)
         :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # pylint: disable=too-many-arguments

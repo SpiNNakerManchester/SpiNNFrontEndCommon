@@ -35,5 +35,5 @@ class AbstractHasAssociatedBinary(object):
     def get_binary_start_type(self):
         """ Get the start type of the binary to be run.
 
-        :rtype: ExecutableType
+        :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType
         """
