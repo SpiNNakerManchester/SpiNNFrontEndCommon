@@ -43,7 +43,8 @@ def locate_extra_monitor_mc_receiver(
     :param int placement_x: The X coordinate of the reference chip
     :param int placement_y: The Y coordinate of the reference chip
     :param packet_gather_cores_to_ethernet_connection_map:
-    :type: dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+    :type packet_gather_cores_to_ethernet_connection_map:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     :rtype: DataSpeedUpPacketGatherMachineVertex
     """
     chip = machine.get_chip_at(placement_x, placement_y)
@@ -108,7 +109,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
 def convert_string_into_chip_and_core_subset(cores):
     """ Translate a string list of cores into a core subset
 
-    :param cores:\
+    :param cores:
         string representing down cores formatted as x,y,p[:x,y,p]*
     :type cores: str or None
     :rtype: ~spinn_machine.CoreSubsets
@@ -122,7 +123,7 @@ def convert_string_into_chip_and_core_subset(cores):
 
 
 def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
-    """ flood fills a binary to spinnaker on a given app_id \
+    """ flood fills a binary to spinnaker on a given `app_id` \
     given the executable targets and binary.
 
     :param ExecutableTargets executable_targets: the executable targets object
@@ -362,8 +363,7 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int app_id: The ID of the application.
-    :param ~spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary
-            vertex:
+    :param AbstractHasAssociatedBinary vertex:
         The vertex to retrieve the IOBUF from if it is suspected as being dead
     :param ~pacman.model.placements.Placement placement:
         Where the vertex is located.

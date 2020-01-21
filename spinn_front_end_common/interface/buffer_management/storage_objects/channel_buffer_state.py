@@ -143,8 +143,7 @@ class ChannelBufferState(object):
         """
         :param bytearray data:
             The contents of the buffer state structure on SpiNNaker.
-        :rtype:
-            ~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState
+        :rtype: ChannelBufferState
         """
         (start_address, current_write, current_dma_write, current_read,
          end_address, region_id, missing_info, last_buffer_operation) = \

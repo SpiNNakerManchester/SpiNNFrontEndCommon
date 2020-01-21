@@ -76,7 +76,7 @@ def pair_compression(
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the memory routing tables to be compressed
     :param ~spinnman.Transceiver transceiver: the spinnman interface
-    :param ~spinn_utilities.executable_finder.ExecutableFinder
+    :param ~spinn_utilities.executable_finder.ExecutableFinder \
             executable_finder:
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine representation

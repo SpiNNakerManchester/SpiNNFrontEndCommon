@@ -322,7 +322,7 @@ class DatabaseWriter(object):
 
     def add_application_vertices(self, application_graph):
         """
-        :param ~pacman.model.graphs.application.ApplicationGraph
+        :param ~pacman.model.graphs.application.ApplicationGraph \
                 application_graph:
         :rtype: None
         """
@@ -375,7 +375,7 @@ class DatabaseWriter(object):
             The machine graph object
         :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
-        :param ~pacman.model.graphs.application.ApplicationGraph
+        :param ~pacman.model.graphs.application.ApplicationGraph \
                 application_graph:
             The application graph object
         :rtype: None
@@ -440,7 +440,7 @@ class DatabaseWriter(object):
     def add_routing_tables(self, routing_tables):
         """ Adds the routing tables into the database
 
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
                 routing_tables:
             the routing tables object
         :rtype: None
@@ -480,7 +480,7 @@ class DatabaseWriter(object):
     def create_atom_to_event_id_mapping(
             self, application_graph, machine_graph, routing_infos):
         """
-        :param ~pacman.model.graphs.application.ApplicationGraph
+        :param ~pacman.model.graphs.application.ApplicationGraph \
                 application_graph:
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:

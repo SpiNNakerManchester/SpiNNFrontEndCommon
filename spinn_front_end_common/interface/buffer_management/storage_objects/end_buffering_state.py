@@ -33,10 +33,9 @@ class EndBufferingState(object):
     def __init__(self, buffering_out_fsm_state, list_channel_buffer_state):
         """
         :param int buffering_out_fsm_state: Final sequence number received
-        :param list_channel_buffer_state: a list of channel state, where each\
-            channel is stored in a ChannelBufferState object
-        :type list_channel_buffer_state:
-            list(~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState)
+        :param list(ChannelBufferState) list_channel_buffer_state:
+            a list of channel state, where each channel is stored in a
+            ChannelBufferState object
         """
         self._buffering_out_fsm_state = buffering_out_fsm_state
         self._list_channel_buffer_state = list_channel_buffer_state
@@ -51,16 +50,14 @@ class EndBufferingState(object):
     def channel_buffer_state(self, i):
         """
         :param int i: the index into the buffer states
-        :rtype:
-            ~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState
+        :rtype: ChannelBufferState
         """
         return self._list_channel_buffer_state[i]
 
     def get_state_for_region(self, region_id):
         """
         :param int region_id: The region identifier
-        :rtype: None or
-             ~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState
+        :rtype: None or ChannelBufferState
         """
         for state in self._list_channel_buffer_state:
             if state.region_id == region_id:

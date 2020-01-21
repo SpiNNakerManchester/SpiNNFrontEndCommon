@@ -33,13 +33,11 @@ class CommandSender(
 
     def __init__(self, label, constraints):
         """
-        :param label: The label of this vertex
-        :type label: str
+        :param str label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-
         super(CommandSender, self).__init__(label, constraints, 1)
         self._machine_vertex = CommandSenderMachineVertex(
             label, constraints, self)
@@ -49,19 +47,16 @@ class CommandSender(
             timed_commands, vertex_to_send_to):
         """ Add commands to be sent down a given edge
 
-        :param start_resume_commands: The commands to send when the simulation\
-            starts or resumes from pause
-        :type start_resume_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param pause_stop_commands: the commands to send when the simulation\
-            stops or pauses after running
-        :type pause_stop_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param timed_commands: The commands to send at specific times
-        :type timed_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param vertex_to_send_to: The vertex these commands are to be sent to
-        :type vertex_to_send_to: AbstractVertex
+        :param iterable(MultiCastCommand) start_resume_commands:
+            The commands to send when the simulation starts or resumes from
+            pause
+        :param iterable(MultiCastCommand) pause_stop_commands:
+            The commands to send when the simulation stops or pauses after
+            running
+        :param iterable(MultiCastCommand) timed_commands:
+            The commands to send at specific times
+        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:
+            The vertex these commands are to be sent to
         """
         self._machine_vertex.add_commands(
             start_resume_commands, pause_stop_commands, timed_commands,

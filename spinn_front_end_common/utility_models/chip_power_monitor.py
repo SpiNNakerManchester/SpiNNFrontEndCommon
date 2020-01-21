@@ -32,16 +32,13 @@ class ChipPowerMonitor(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
         """
-        :param label: vertex label
-        :type label: str
+        :param str label: vertex label
         :param constraints: constraints for the vertex
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
-        :param n_samples_per_recording: \
+        :param int n_samples_per_recording:
             how many samples to take before recording to SDRAM the total
-        :type n_samples_per_recording: int
-        :param sampling_frequency: how many microseconds between sampling
-        :type sampling_frequency: int
+        :param int sampling_frequency: how many microseconds between sampling
         """
         super(ChipPowerMonitor, self).__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording
@@ -77,6 +74,11 @@ class ChipPowerMonitor(
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param int n_machine_time_steps:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         # pylint: disable=protected-access
 
@@ -96,6 +98,10 @@ class ChipPowerMonitor(
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
             machine_time_step, time_scale_factor):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        """
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
             machine_time_step, time_scale_factor,

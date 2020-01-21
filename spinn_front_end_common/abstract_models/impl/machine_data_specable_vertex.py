@@ -74,7 +74,7 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         :param iptags: The (forward) IP tags for the vertex, if any
         :type iptags: iterable(~spinn_machine.tags.IPTag) or None
         :param reverse_iptags: The reverse IP tags for the vertex, if any
-        :type reverse_iptags: \
+        :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
         :param int machine_time_step: The machine time step
         :param int time_scale_factor: The time step scaling factor

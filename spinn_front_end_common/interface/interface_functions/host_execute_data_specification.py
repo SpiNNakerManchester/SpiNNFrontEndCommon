@@ -104,34 +104,30 @@ class HostExecuteDataSpecification(object):
             processor_to_app_data_base_address=None):
         """ Does the Data Specification Execution and loading
 
-        :param transceiver: the spinnman instance
-        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
-        :param machine: the python representation of the SpiNNaker machine
-        :type machine: :py:class:`spinn_machine.machine.Machine`
-        :param app_id: the application ID of the simulation
-        :type app_id: int
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
-        :param report_folder: The path where \
-            the SQLite database holding the data will be placed, \
-            and where any java provenance can be written. \
-            report_folder can not be None if java_caller is not None.
-        :type report_folder: str
-        :param java_caller: The support class to run via Java. \
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
+        :param ~spinn_machine.Machine machine:
+            the python representation of the SpiNNaker machine
+        :param int app_id: the application ID of the simulation
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :param str report_folder:
+            The path where the SQLite database holding the data will be placed,
+            and where any java provenance can be written.
+            `report_folder` can not be None if `java_caller` is not None.
+        :param JavaCaller java_caller: The support class to run via Java. \
             If None pure python is used.
-        :type java_caller: \
-            :py:class:`spinn_front_end_common.interface.java_caller.JavaCaller`
         :param processor_to_app_data_base_address: The write info which is a\
             dict of cores to a dict of
                 'start_address', 'memory_used', 'memory_written'
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int),dict(str,int))
         :return: map of of cores to a dict of \
                 'start_address', 'memory_used', 'memory_written'
             Note: If using python the return type is an actual dict object.
             If using Java the return is a DsWriteInfo \
                 but this implements the same mapping interface as dict
-        :rtype: dict or \
-            :py:class:`spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
+        :rtype: dict or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
@@ -148,12 +144,11 @@ class HostExecuteDataSpecification(object):
     def __java_all(self, dsg_targets):
         """ Does the Data Specification Execution and loading using Java
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
         :return: map of of cores to a dict of \
             'start_address', 'memory_used', 'memory_written'
-        :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
+        :rtype: DsWriteInfo
         """
 
         # create a progress bar for end users
@@ -183,9 +178,8 @@ class HostExecuteDataSpecification(object):
     def __python_all(self, dsg_targets):
         """ Does the Data Specification Execution and loading using Python
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
         :return: dict of cores to a dict of\
             'start_address', 'memory_used', 'memory_written
         """
@@ -216,19 +210,23 @@ class HostExecuteDataSpecification(object):
             disable_advanced_monitor_usage=False):
         """ Execute the data specs for all non-system targets.
 
-        :param machine: the python representation of the SpiNNaker machine
-        :param transceiver: the spinnman instance
-        :param app_id: the application ID of the simulation
+        :param ~spinn_machine.Machine machine:
+            the python representation of the SpiNNaker machine
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
+        :param int app_id: the application ID of the simulation
         :param dsg_targets: map of placement to file path
-        :param uses_advanced_monitors: whether to use fast data in protocol
-        :param executable_targets: what core will running what binary
-        :param placements: where vertices are located
+        :param bool uses_advanced_monitors:
+            whether to use fast data in protocol
+        :param ExecutableTargets executable_targets: what core will running what binary
+        :param ~pacman.model.placements.Placements placements:
+            where vertices are located
         :param extra_monitor_cores: the deployed extra monitors, if any
-        :param extra_monitor_cores_to_ethernet_connection_map: \
+        :param extra_monitor_cores_to_ethernet_connection_map:
             how to talk to extra monitor cores
-        :param processor_to_app_data_base_address: \
+        :param processor_to_app_data_base_address:
             map of placement and DSG data
-        :param disable_advanced_monitor_usage: \
+        :param disable_advanced_monitor_usage:
             whether to avoid using advanced monitors even if they're available
         :return: map of placement and DSG data
         """

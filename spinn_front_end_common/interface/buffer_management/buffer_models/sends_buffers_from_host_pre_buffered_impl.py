@@ -24,8 +24,7 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(AbstractBase)
 class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
-    """ Implementation of \
-        :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost`\
+    """ Implementation of :py:class:`AbstractReceiveBuffersToHost`\
         which uses an existing set of buffers for the details.
     """
     # pylint: disable=unsubscriptable-object, no-member

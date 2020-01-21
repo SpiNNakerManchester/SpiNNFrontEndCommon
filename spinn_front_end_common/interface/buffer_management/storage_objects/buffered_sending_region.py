@@ -36,10 +36,8 @@ _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
 def get_n_bytes(n_keys):
     """ Get the number of bytes used by a given number of keys.
 
-    :param n_keys: The number of keys
-    :type n_keys: int
+    :param int n_keys: The number of keys
     """
-
     # Get the total number of messages
     n_messages = int(math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE))
 

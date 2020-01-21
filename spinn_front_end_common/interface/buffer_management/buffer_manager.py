@@ -130,15 +130,22 @@ class BufferManager(object):
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param ~spinnman.transceiver.Transceiver transceiver:
             The transceiver to use for sending and receiving information
+        :param extra_monitor_cores:
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
-        :type packet_gather_cores_to_ethernet_connection_map: \
+        :type packet_gather_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param extra_monitor_to_chip_mapping:
+        :type exra_monitor_to_chip_mapping:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+        :param ~spinn_machine.Machine machine:
+        :param fixed_routes:
+        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
+        :param bool uses_advanced_monitors:
         :param str report_folder:
             The directory for reports which includes the file to use as an SQL
             database.
-        :param ~spinn_front_end_common.interface.java_caller.JavaCaller \
-                java_caller:
+        :param JavaCaller java_caller:
             Support class to call Java, or None to use python
         """
         # pylint: disable=too-many-arguments
@@ -654,7 +661,8 @@ class BufferManager(object):
     def get_data_for_vertex(self, placement, recording_region_id):
         """ It is no longer possible to get access to the data pointer.
 
-        .. warn::
+        .. warning::
+
             Use :py:meth:`get_data_by_vertex` instead which returns
             the data that ``pointer.read_all()`` used to return
             the missing flag as before.

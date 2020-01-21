@@ -20,23 +20,27 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetPacketTypesProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to control what messages are reinjected.
+    """
+
     def __init__(self, connection_selector):
+        """
+        :param \
+            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
+            connection_selector:
+        """
         super(SetPacketTypesProcess, self).__init__(connection_selector)
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
                          nearest_neighbour, fixed_route):
         """ Set what types of packets should be reinjected.
 
-        :param core_subsets: sets of cores to send command to
-        :param point_to_point: If point-to-point should be set
-        :type point_to_point: bool
-        :param multicast: If multicast should be set
-        :type multicast: bool
-        :param nearest_neighbour: If nearest neighbour should be set
-        :type nearest_neighbour: bool
-        :param fixed_route: If fixed route should be set
-        :type fixed_route: bool
-        :param command_code: The SCP command code
+        :param ~spinn_machine.CoreSubsets core_subsets:
+            sets of cores to send command to
+        :param bool point_to_point: If point-to-point should be set
+        :param bool multicast: If multicast should be set
+        :param bool nearest_neighbour: If nearest neighbour should be set
+        :param bool fixed_route: If fixed route should be set
         :rtype: None
         """
         # pylint: disable=too-many-arguments

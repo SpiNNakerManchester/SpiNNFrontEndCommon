@@ -48,8 +48,7 @@ class AbstractSendsBuffersFromHost(object):
         """ Get the size of the buffer to be used in SDRAM on the machine\
             for the region in bytes
 
-        :param region: The region to get the buffer size of
-        :type region: int
+        :param int region: The region to get the buffer size of
         :return: The size of the buffer space in bytes
         :rtype: int
         """

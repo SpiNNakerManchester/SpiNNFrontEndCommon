@@ -34,8 +34,7 @@ class DsWriteInfo(MutableMapping):
         """
         Implements the mapping __getitem__ as long as core is the right type
 
-        :param core:triple of (x, y, p)
-        :type core: tuple(int, int, int)
+        :param tuple(int,int,int) core:triple of (x, y, p)
         :return: dict with the keys
             ``start_address``, ``memory_used`` and ``memory_written``
         :rtype: dict(str,int)
@@ -66,9 +65,8 @@ class DsWriteInfo(MutableMapping):
         :param int x: core x
         :param int y: core y
         :param int p: core p
-        :param info: dict with the keys
+        :param dict(str,int) info: dict with the keys
             ``start_address``, ``memory_used`` and ``memory_written``
-        :type info: dict(str,int)
         """
         self._db.set_write_info(x, y, p, info)
 

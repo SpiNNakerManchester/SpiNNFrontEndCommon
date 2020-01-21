@@ -42,6 +42,25 @@ class LivePacketGather(
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, constraints=None,
             label=None):
+        """
+        :param str hostname:
+        :param int port:
+        :param int tag:
+        :param bool strip_sdp:
+        :param bool use_prefix:
+        :param int key_prefix:
+        :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:
+        :param ~spinnman.messages.eieio.EIEIOType message_type:
+        :param int right_shift:
+        :param bool payload_as_time_stamps:
+        :param bool use_payload_prefix:
+        :param int payload_prefix:
+        :param int payload_right_shift:
+        :param int number_of_packets_sent_per_time_step:
+        :param iterable(~pacman.model.constraints.AbstractConstraint) \
+                constraints:
+        :param str label:
+        """
         # pylint: disable=too-many-arguments, too-many-locals
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and

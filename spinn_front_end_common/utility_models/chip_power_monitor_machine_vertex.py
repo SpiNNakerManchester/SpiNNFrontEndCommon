@@ -159,6 +159,11 @@ class ChipPowerMonitorMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, data_n_time_steps):
+        """
+        :param int machine_time_step: machine time step
+        :param int time_scale_factor: time scale factor
+        :param int data_n_time_steps: timesteps to reserve data for
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
             spec, machine_time_step, time_scale_factor, data_n_time_steps)
@@ -284,9 +289,8 @@ class ChipPowerMonitorMachineVertex(
 
         :param ~pacman.model.placements.Placement placement:
             the location on machine to get data from
-        :param buffer_manager: the buffer manager that might have data
-        :type buffer_manager: \
-            ~spinn_front_end_common.interface.buffer_management.BufferManager
+        :param BufferManager buffer_manager:
+            the buffer manager that might have data
         :return: results, an array with 1 dimension of uint32 values
         :rtype: ~numpy.ndarray
         """

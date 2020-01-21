@@ -80,6 +80,18 @@ class ConfigHandler(object):
     ]
 
     def __init__(self, configfile, default_config_paths, validation_cfg):
+        """
+        :param str configfile:
+            The base name of the configuration file(s).
+            Should not include any path components.
+        :param list(str) default_config_paths:
+            The list of files to get default configurations from.
+        :type default_config_paths: list(str) or None
+        :param validation_cfg:
+            The list of files to read a validation configuration from.
+            If None, no such validation is performed.
+        :type validation_cfg: list(str) or None
+        """
         # global params
         if default_config_paths is None:
             default_config_paths = []
@@ -112,9 +124,9 @@ class ConfigHandler(object):
 
         :param runtime:
         :type runtime: int or bool
-        :type debug_enable_opts: frozenset(str)
-        :type report_disable_opts: frozenset(str)
-        :raises ConfigurationException
+        :param frozenset(str) debug_enable_opts:
+        :param frozenset(str) report_disable_opts:
+        :raises ConfigurationException:
         """
         if self._config.get("Mode", "mode") == "Debug":
             for option in self._config.options("Reports"):
@@ -173,9 +185,14 @@ class ConfigHandler(object):
 
     def child_folder(self, parent, child_name, must_create=False):
         """
-        :param must_create: If `True`, the directory named by `child_name`\
-            (but not necessarily its parents) must be created by this call,\
-            and an exception will be thrown if this fails.
+        :param str parent:
+        :param str child_name:
+        :param bool must_create:
+            If `True`, the directory named by `child_name` (but not necessarily
+            its parents) must be created by this call, and an exception will be
+            thrown if this fails.
+        :return: The fully qualified name of the child folder.
+        :rtype: str
         :raises OSError: if the directory existed ahead of time and creation\
             was required by the user
         """
@@ -229,10 +246,8 @@ class ConfigHandler(object):
 
     def _set_up_report_specifics(self, n_calls_to_run):
         """
-        :param n_calls_to_run: \
+        :param int n_calls_to_run:
             the counter of how many times run has been called.
-        :type n_calls_to_run: int
-        :return: The folder for this run, the time_stamp
         """
 
         default_report_file_path = self._config.get_str(
@@ -294,10 +309,8 @@ class ConfigHandler(object):
 
     def set_up_output_application_data_specifics(self, n_calls_to_run):
         """
-        :param n_calls_to_run: \
+        :param int n_calls_to_run:
             the counter of how many times run has been called.
-        :type n_calls_to_run: int
-        :return: the run folder for this simulation to hold app data
         """
         where_to_write_application_data_files = self._config.get(
             "Reports", "default_application_data_file_path")
@@ -328,9 +341,11 @@ class ConfigHandler(object):
                 n_calls_to_run))
 
     def _set_up_output_folders(self, n_calls_to_run):
-        """ Sets up all outgoing folders by creating\
-            a new timestamp folder for each and clearing
+        """ Sets up all outgoing folders by creating a new timestamp folder
+            for each and clearing
 
+        :param int n_calls_to_run:
+            the counter of how many times run has been called.
         :rtype: None
         """
 
@@ -370,7 +385,7 @@ class ConfigHandler(object):
             self._make_dirs(self._system_provenance_file_path)
 
     def write_finished_file(self):
-        """ Write a finished file that allows file removal to only remove \
+        """ Write a finished file that allows file removal to only remove
             folders that are finished.
         """
         app_file_name = os.path.join(self._app_data_top_simulation_folder,
@@ -394,21 +409,22 @@ class ConfigHandler(object):
 
     @property
     def machine_time_step(self):
-        """
-        Gets the machine timestep in microsecond
-        :return: machine timestep in microsecond
+        """ The machine timestep, in microseconds
+
+        :rtype: int
         """
         return self._read_config_int("Machine", "machine_time_step")
 
     @machine_time_step.setter
     def machine_time_step(self, new_value):
-        """
-        Sets the machine time step in microsecond
-        :param new_value: machine time step in microsecond        """
         self._config.set("Machine", "machine_time_step", new_value)
 
     @property
     def time_scale_factor(self):
+        """ The time scaling factor.
+
+        :rtype: int
+        """
         return self._read_config_int("Machine", "time_scale_factor")
 
     @time_scale_factor.setter
@@ -418,12 +434,14 @@ class ConfigHandler(object):
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
 
-        :param machine_time_step:\
-            An explicitly specified time step for the machine.  If None,\
+        :param machine_time_step:
+            An explicitly specified time step for the machine.  If None,
             the value is read from the config
-        :param time_scale_factor:\
-            An explicitly specified time scale factor for the simulation.\
+        :type machine_time_step: int or None
+        :param time_scale_factor:
+            An explicitly specified time scale factor for the simulation.
             If None, the value is read from the config
+        :type time_scale_factor: int or None
         """
 
         # set up timings

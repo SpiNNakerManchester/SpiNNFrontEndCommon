@@ -204,8 +204,8 @@ class DsSqlliteDatabase(object):
         """
         Flags a list of processors as running system binaries.
 
-        :param core_list: list of (core x, core y, core p)
-        :type core_list: iterable(tuple(int,int,int))
+        :param iterable(tuple(int,int,int)) core_list:
+            list of (core x, core y, core p)
         """
         with self._db:
             for xyp in core_list:
@@ -298,8 +298,7 @@ class DsSqlliteDatabase(object):
         transaction may be held while this iterator is processing.
 
         :return: Yields the (x, y, p) and DataWritten
-        :rtype: iterable(tuple(tuple(int, int, int),\
-            ~spinn_front_end_common.utilities.utility_objs.DataWritten))
+        :rtype: iterable(tuple(tuple(int, int, int), DataWritten))
         """
         with self._db:
             for row in self._db.execute(

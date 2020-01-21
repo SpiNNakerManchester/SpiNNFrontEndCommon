@@ -70,7 +70,7 @@ class CommandSenderMachineVertex(
     def __init__(self, label, constraints, app_vertex):
         """
         :param str label: The label of this vertex
-        :param iterable(~pacman.model.constraints.AbstractConstraint)
+        :param iterable(~pacman.model.constraints.AbstractConstraint) \
                 constraints:
             Any initial constraints to this vertex
         :param CommandSender app_vertex:
@@ -91,21 +91,17 @@ class CommandSenderMachineVertex(
             timed_commands, vertex_to_send_to):
         """ Add commands to be sent down a given edge
 
-        :param start_resume_commands: The commands to send when the simulation\
-            starts or resumes from pause
-        :type start_resume_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param pause_stop_commands: the commands to send when the simulation\
-            stops or pauses after running
-        :type pause_stop_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param timed_commands: The commands to send at specific times
-        :type timed_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param vertex_to_send_to: The vertex these commands are to be sent to
-        :type vertex_to_send_to: AbstractVertex
+        :param iterable(MultiCastCommand) start_resume_commands:
+            The commands to send when the simulation starts or resumes from
+            pause
+        :param iterable(MultiCastCommand) pause_stop_commands:
+            the commands to send when the simulation stops or pauses after
+            running
+        :param iterable(MultiCastCommand) timed_commands:
+            The commands to send at specific times
+        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:
+            The vertex these commands are to be sent to
         """
-
         # container for keys for partition mapping (remove duplicates)
         command_keys = set()
         self._vertex_to_key_map[vertex_to_send_to] = set()
@@ -162,6 +158,10 @@ class CommandSenderMachineVertex(
         additional_arguments={"machine_time_step", "time_scale_factor"})
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \

@@ -64,6 +64,27 @@ class LivePacketGatherMachineVertex(
             number_of_packets_sent_per_time_step=0,
             hostname=None, port=None, strip_sdp=None,
             tag=None, constraints=None):
+        """
+        :param str label:
+        :param LivePacketGather app_vertex:
+        :param ~pacman.model.graphs.common.Slice vertex_slice:
+        :param bool use_prefix:
+        :param int key_prefix:
+        :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:
+        :param ~spinnman.messages.eieio.EIEIOType message_type:
+        :param int right_shift:
+        :param bool payload_as_time_stamps:
+        :param bool use_payload_prefix:
+        :param int payload_prefix:
+        :param int payload_right_shift:
+        :param int number_of_packets_sent_per_time_step:
+        :param str hostname:
+        :param int port:
+        :param bool strip_sdp:
+        :param int tag:
+        :param iterable(~pacman.model.constraints.AbstractConstraint) \
+                constraints:
+        """
         # pylint: disable=too-many-arguments, too-many-locals
 
         # inheritance
@@ -168,6 +189,11 @@ class LivePacketGatherMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, tags):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param ~pacman.model.tags.Tags tags:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
@@ -182,6 +208,8 @@ class LivePacketGatherMachineVertex(
 
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas
+
+        :param ~data_specification.DataSpecificationGenerator spec:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -198,11 +226,10 @@ class LivePacketGatherMachineVertex(
     def _write_configuration_region(self, spec, iptags):
         """ Write the configuration region to the spec
 
-        :param spec: the spec object for the DSG
-        :type spec: ~data_specification.DataSpecificationGenerator
+        :param ~data_specification.DataSpecificationGenerator spec:
         :param iptags: The set of IP tags assigned to the object
         :type iptags: iterable(~spinn_machine.tags.IPTag)
-        :raise DataSpecificationException: \
+        :raise DataSpecificationException:
             when something goes wrong with the DSG generation
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
@@ -263,6 +290,8 @@ class LivePacketGatherMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
+
+        :param ~data_specification.DataSpecificationGenerator spec:
         """
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)

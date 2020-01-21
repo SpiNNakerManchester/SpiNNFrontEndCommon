@@ -347,11 +347,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             validation_cfg=None, front_end_versions=None):
         """
         :param str configfile: What the configuration file is called
-        :param ~spinn_utilities.executable_finder.ExecutableFinder
+        :param ~spinn_utilities.executable_finder.ExecutableFinder \
                 executable_finder:
             How to find APLX files to deploy to SpiNNaker
         :param str graph_label: A label for the overall application graph
-        :param iterable(~spinn_utilities.socket_address.SocketAddress)
+        :param iterable(~spinn_utilities.socket_address.SocketAddress) \
                 database_socket_addresses:
             How to talk to notification databases
         :param iterable(str) extra_algorithm_xml_paths:
@@ -511,7 +511,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def set_n_boards_required(self, n_boards_required):
         """ Sets the machine requirements.
 
-        .. warn::
+        .. warning::
+
             This method should not be called after the machine
             requirements have be computed based on the graph.
 
@@ -1071,11 +1072,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Generates the list of "timer" runs. These are usually in terms of\
             time steps, but need not be.
 
-        :param n_steps: the total runtime in machine time steps
-        :type n_steps: int
-        :param n_steps_per_segment: the minimum allowed per chunk
-        :type n_steps_per_segment: int
+        :param int n_steps: the total runtime in machine time steps
+        :param int n_steps_per_segment: the minimum allowed per chunk
         :return: list of time steps
+        :rtype: list(int)
         """
         if n_steps == 0:
             return [0]
@@ -1100,13 +1100,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_name, optional_algorithms=None):
         """ Runs getting a SpiNNaker machine logic
 
-        :param inputs: the inputs
-        :param algorithms: algorithms to call
-        :param outputs: outputs to get
-        :param tokens: The tokens to start with
-        :param required_tokens: The tokens that must be generated
-        :param optional_algorithms: optional algorithms to use
-        :param provenance_name: the name for provenance
+        :param dict(str,...) inputs: the inputs
+        :param list(str) algorithms: algorithms to call
+        :param list(str) outputs: outputs to get
+        :param list(str) tokens: The tokens to start with
+        :param list(str) required_tokens: The tokens that must be generated
+        :param str provenance_name: the name for provenance
+        :param list(str) optional_algorithms: optional algorithms to use
         :return: None
         """
         # pylint: disable=too-many-arguments
@@ -1141,6 +1141,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*exc_info)
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+        """
+        :param float total_run_time:
+        :param n_machine_time_steps:
+        :type n_machine_time_steps: int or None
+        :rtype: ~spinn_machine.Machine
+        :raises ConfigurationException:
+        """
         if self._machine is not None:
             return self._machine
 
@@ -1180,6 +1187,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._machine
 
     def _machine_by_hostname(self, n_machine_time_steps, total_run_time):
+        """
+        :param n_machine_time_steps:
+        :type n_machine_time_steps: int or None
+        :param float total_run_time:
+        """
         inputs, algorithms = self._get_machine_common(
             n_machine_time_steps, total_run_time)
         outputs = list()
@@ -1203,6 +1215,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine_tokens = executor.get_completed_tokens()
 
     def _machine_by_virtual(self, n_machine_time_steps, total_run_time):
+        """
+        :param n_machine_time_steps:
+        :type n_machine_time_steps: int or None
+        :param float total_run_time:
+        """
         inputs, algorithms = self._get_machine_common(
             n_machine_time_steps, total_run_time)
         outputs = list()
@@ -1233,9 +1250,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._machine = executor.get_item("MemoryMachine")
 
     def _machine_by_remote(self, n_machine_time_steps, total_run_time):
-        """
-        Gets a machine when we know one of self._spalloc_server or\
-            self._remote_spinnaker_url is defined
+        """ Gets a machine when we know one of `self._spalloc_server` or
+            `self._remote_spinnaker_url` is defined
+
+        :param n_machine_time_steps:
+        :type n_machine_time_steps: int or None
+        :param float total_run_time:
         """
         inputs, algorithms = self._get_machine_common(
             n_machine_time_steps, total_run_time)
@@ -1281,20 +1301,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "MachineAllocationController")
 
         if do_partitioning:
-            self._machine_graph = executor.get_item(
-                "MemoryMachineGraph")
+            self._machine_graph = executor.get_item("MemoryMachineGraph")
 
     def _machine_by_size(self, inputs, algorithms, outputs):
-        """
-        Checks if we can get a remote machine by size of if we have to use a\
-        virtual machine to get the size
+        """ Checks if we can get a remote machine by size of if we have to use
+            a virtual machine to get the size
 
         Adds the requires info to inputs, algorithms, outputs
 
-        :param inputs: Data to go into executor
-        :param algorithms: Algorithms to execute
-        :param outputs: Data needed after execution
+        :param dict(str,...) inputs: Data to go into executor
+        :param list(str) algorithms: Algorithms to execute
+        :param list(str) outputs: Data needed after execution
         :return: True if and only if the required steps included partitioning
+        :rtype: bool
         """
         # If we are using an allocation server but have been told how
         # many chips to use, just use that as an input
@@ -1340,6 +1359,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return do_partitioning
 
     def _get_machine_common(self, n_machine_time_steps, total_run_time):
+        """
+        :param n_machine_time_steps:
+        :type n_machine_time_steps: int or None
+        :param float total_run_time:
+        :return: inputs, algorithms
+        :rtype: tuple(dict(str,...), list(str))
+        """
         inputs = dict(self._extra_inputs)
         algorithms = list()
 
@@ -1461,6 +1487,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         executor.execute_mapping()
 
     def _do_mapping(self, run_time, total_run_time):
+        """
+        :param float run_time:
+        :param float total_run_time:
+        """
 
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
@@ -1679,7 +1709,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             mapping_total_timer.take_sample())
 
     def _do_data_generation(self, n_machine_time_steps):
-
+        """
+        :param int n_machine_time_steps:
+        """
         # set up timing
         data_gen_timer = Timer()
         data_gen_timer.start_timing()
@@ -1706,6 +1738,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             data_gen_timer.take_sample())
 
     def _do_load(self, graph_changed):
+        """
+        :param bool graph_changed:
+        """
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1798,6 +1833,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             load_timer.take_sample())
 
     def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
+        """
+        :param int n_machine_time_steps:
+        :param bool graph_changed:
+        :param bool run_until_complete:
+        """
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
@@ -1882,6 +1922,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _create_execute_workflow(
             self, n_machine_time_steps, graph_changed, run_until_complete):
+        """
+        :param int n_machine_time_steps:
+        :param bool graph_changed:
+        :param bool run_until_complete:
+        """
         # calculate number of machine time steps
         run_until_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
@@ -2007,6 +2052,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
+
+        :param list(ProvenanceDataItem) provenance_data_items:
         """
         writer = None
         if self._provenance_format == "xml":
@@ -2016,6 +2063,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
+        """
+        :param Exception exception:
+        :param exc_info:
+        :param ExecutableTargets executable_targets:
+        """
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
@@ -2148,6 +2200,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @staticmethod
     def _print_iobuf(errors, warnings):
+        """
+        :param list(str) errors:
+        :param list(str) warnings:
+        """
         for warning in warnings:
             logger.warning(warning)
         for error in errors:
@@ -2176,6 +2232,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.__reset_graph_elements()
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
+        """
+        :param list(str) extra_algorithm_xml_paths:
+        :rtype: list(str)
+        """
         # add the extra xml files from the config file
         xml_paths = self._config.get("Mapping", "extra_xmls_paths")
         if xml_paths == "None":
@@ -2192,6 +2252,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
         """ Iterates though the original graphs and look for changes
+
+        :param bool reset_flags:
+        :return: mapping_changed, data_changed
+        :rtype: tuple(bool, bool)
         """
         changed = False
         data_changed = False
@@ -2262,29 +2326,46 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def timescale_factor(self):
+        """
+        :rtype: int
+        """
         return self._read_config_int("Machine", "time_scale_factor")
 
     @property
     def machine_graph(self):
+        """
+        :rtype: ~pacman.model.graphs.machine.MachineGraph
+        """
         return self._machine_graph
 
     @property
     def original_machine_graph(self):
+        """
+        :rtype: ~pacman.model.graphs.machine.MachineGraph
+        """
         return self._original_machine_graph
 
     @property
     def original_application_graph(self):
+        """
+        :rtype: ~pacman.model.graphs.application.ApplicationGraph
+        """
         return self._original_application_graph
 
     @property
     def application_graph(self):
-        """ The application graph used to derive the runtime machine \
+        """ The application graph used to derive the runtime machine
             configuration.
+
+        :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
         return self._application_graph
 
     @property
     def routing_infos(self):
+        """
+        :rtype: ~pacman.model.routing_info.RoutingInfo
+        """
         return self._routing_infos
 
     @property
@@ -2302,6 +2383,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def tags(self):
+        """
+        :rtype: ~pacman.model.tags.Tags
+        """
         return self._tags
 
     @property
@@ -2312,6 +2396,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def dsg_algorithm(self):
         """ The DSG algorithm used by the tools
+
+        :rtype: str
         """
         return self._dsg_algorithm
 
@@ -2319,7 +2405,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def dsg_algorithm(self, new_dsg_algorithm):
         """ Set the DSG algorithm to be used by the tools
 
-        :param new_dsg_algorithm: the new DSG algorithm name
+        :param str new_dsg_algorithm: the new DSG algorithm name
         :rtype: None
         """
         self._dsg_algorithm = new_dsg_algorithm
@@ -2340,6 +2426,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def use_virtual_board(self):
         """ True if this run is using a virtual machine
+
+        :rtype: bool
         """
         return self._use_virtual_board
 
@@ -2358,7 +2446,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Get the value of an inter-algorithm variable.
 
         :param str name_of_variable: The variable to retrieve
-        :return: The value (of arbitrary type), or None if the variable is \
+        :return: The value (of arbitrary type), or None if the variable is
             not found.
         :raises ConfigurationException: If the simulation hasn't yet run
         """
@@ -2701,8 +2789,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Executes the power saving mode of either on or off of the\
             SpiNNaker machine.
 
-        :param config_flag: Flag read from the configuration file
-        :type config_flag: str
+        :param str config_flag: Flag read from the configuration file
         :rtype: None
         """
         # check if machine should be turned off

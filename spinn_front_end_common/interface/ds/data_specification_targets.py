@@ -45,8 +45,7 @@ class DataSpecificationTargets(MutableMapping):
         """ Implements the mapping `__getitem__` as long as core is the right
             type.
 
-        :param core: triple of (x, y, p)
-        :type core: tuple(int, int, int)
+        :param tuple(int,int,int) core: triple of (x, y, p)
         :return: dictionary with the keys ``start_address``, ``memory_used``
             and ``memory_written``
         :rtype: dict(str,int); has

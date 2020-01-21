@@ -354,18 +354,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :param send_buffer_times: When events will be sent
         :type send_buffer_times: \
-            numpy.ndarray(numpy.ndarray(numpy.int32)) or \
-            list(numpy.ndarray(numpy.int32)) or None
-        :param recording_enabled: Whether recording is done
-        :type recording_enabled: bool
-        :param machine_time_step: What the machine timestep is
-        :type machine_time_step: int
-        :param receive_rate: What the expected message receive rate is
-        :type receive_rate: float
-        :param n_keys: How many keys are being sent
-        :type n_keys: int
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+            list(~numpy.ndarray(numpy.int32)) or None
+        :param bool recording_enabled: Whether recording is done
+        :param int machine_time_step: What the machine timestep is
+        :param float receive_rate: What the expected message receive rate is
+        :param int n_keys: How many keys are being sent
         """
-
         static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
             (ReverseIPTagMulticastSourceMachineVertex.
@@ -501,6 +496,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _update_virtual_key(self, routing_info, machine_graph):
+        """
+        :param ~pacman.model.routing_info.RoutingInfo routing_info:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        """
         if self._virtual_key is None:
             if self._send_buffer_partition_id is not None:
 
@@ -602,6 +601,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
             first_machine_time_step, data_n_time_steps, run_until_timesteps):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.routing_info.RoutingInfo routing_info:
+        :param int first_machine_time_step:
+        :param int data_n_time_steps:
+        :param int run_until_timesteps:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
@@ -674,12 +682,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """ Updates the buffers on specification of the first machine timestep.
             Note: This is called by injection.
 
-        :param first_machine_time_step:\
+        :param int first_machine_time_step:
             The first machine time step in the simulation
-        :type first_machine_time_step: int
-        :param run_until_timesteps:\
+        :param int run_until_timesteps:
             The last machine time step in the simulation
-        :type run_until_timesteps: int
         """
         if self._virtual_key is not None:
             self._fill_send_buffer(
