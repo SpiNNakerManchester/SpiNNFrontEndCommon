@@ -43,12 +43,17 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 log = FormatAdapter(logging.getLogger(__name__))
 
-_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
-_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * BYTES_PER_WORD
+_CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
+#: 1.new seq key, 2.first data key, 3. transaction id key 4.end flag key,
+# 5.base key
+_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * BYTES_PER_WORD
 _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * BYTES_PER_KB
 _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 3 * BYTES_PER_WORD
-_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 + 1) * BYTES_PER_WORD
+_MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = ((49 * 3) + 1) * BYTES_PER_WORD
 _BIT_SHIFT_TO_MOVE_APP_ID = 24
+
+# cap for stopping wrap arounds
+TRANSACTION_ID_CAP = 0xFFFFFFFF
 
 # SDRAM requirement for containing router table entries
 # 16 bytes per entry:
@@ -90,7 +95,10 @@ class ExtraMonitorSupportMachineVertex(
         "_placement",
         # app id, used for reporting failures on system core RTE
         "_app_id",
-        "_machine"
+        # machine instance
+        "_machine",
+        # the local transaction id
+        "_transaction_id"
     )
 
     def __init__(
@@ -130,6 +138,7 @@ class ExtraMonitorSupportMachineVertex(
         self._placement = None
         self._app_id = None
         self._machine = None
+        self._transaction_id = 0
 
     @property
     def reinject_multicast(self):
@@ -137,6 +146,23 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: bool
         """
         return self._reinject_multicast
+
+    @property
+    def transaction_id(self):
+        return self._transaction_id
+
+    def update_transaction_id(self):
+        self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
+
+    def update_transaction_id_from_machine(self, txrx):
+        """ looks up from the machine what the current transaction id is
+        and updates the extra monitor.
+
+        :param txrx: SpiNNMan instance
+        :rtype: None
+        """
+        self._transaction_id = txrx.read_user_1(
+            self._placement.x, self._placement.y, self._placement.p)
 
     @property
     def reinject_point_to_point(self):
@@ -218,16 +244,17 @@ class ExtraMonitorSupportMachineVertex(
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "app_id": "APPID",
-                   "machine": "MemoryExtendedMachine"})
+                   "machine": "MemoryExtendedMachine",
+                   "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"routing_info", "machine_graph",
-                                     "data_in_routing_tables",
-                                     "mc_data_chips_to_keys", "app_id",
-                                     "machine"})
+               additional_arguments={
+                   "routing_info", "machine_graph", "data_in_routing_tables",
+                   "mc_data_chips_to_keys", "app_id", "machine",
+                   "router_timeout_keys"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
             data_in_routing_tables, mc_data_chips_to_keys, app_id,
-            machine):
+            machine, router_timeout_keys):
         """
         :param routing_info: (injected)
         :type routing_info: ~pacman.model.routing_info.RoutingInfo
@@ -249,7 +276,8 @@ class ExtraMonitorSupportMachineVertex(
         self._app_id = app_id
         self._machine = machine
         # write reinjection config
-        self._generate_reinjection_config(spec)
+        self._generate_reinjection_config(
+            spec, router_timeout_keys, placement, machine)
         # write data speed up out config
         self._generate_data_speed_up_out_config(
             spec, routing_info, machine_graph)
@@ -283,14 +311,17 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(base_key)
             spec.write_value(base_key + Gatherer.NEW_SEQ_KEY_OFFSET)
             spec.write_value(base_key + Gatherer.FIRST_DATA_KEY_OFFSET)
+            spec.write_value(base_key + Gatherer.TRANSACTION_ID_KEY_OFFSET)
             spec.write_value(base_key + Gatherer.END_FLAG_KEY_OFFSET)
         else:
             spec.write_value(Gatherer.BASE_KEY)
             spec.write_value(Gatherer.NEW_SEQ_KEY)
             spec.write_value(Gatherer.FIRST_DATA_KEY)
+            spec.write_value(Gatherer.TRANSACTION_ID_KEY)
             spec.write_value(Gatherer.END_FLAG_KEY)
 
-    def _generate_reinjection_config(self, spec):
+    def _generate_reinjection_config(
+            self, spec, router_timeout_keys, placement, machine):
         """
         :param spec: spec file
         :type spec: ~data_specification.DataSpecificationGenerator
@@ -306,6 +337,13 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_fixed_route,
                 self._reinject_nearest_neighbour]:
             spec.write_value(int(not value))
+
+        # add the reinjection mc interface
+        chip = machine.get_chip_at(placement.x, placement.y)
+        reinjector_base_mc_key = (
+            router_timeout_keys[
+                (chip.nearest_ethernet_x, chip.nearest_ethernet_y)])
+        spec.write_value(reinjector_base_mc_key)
 
     def _generate_data_speed_up_in_config(
             self, spec, data_in_routing_tables, chip, mc_data_chips_to_keys):

@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import defaultdict
 
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
@@ -19,17 +20,20 @@ from pacman.model.routing_tables import (
 from spinn_machine import MulticastRoutingEntry
 from spinn_utilities.progress_bar import ProgressBar
 
-N_KEYS_PER_PARTITION_ID = 4
-KEY_START_VALUE = 4
-ROUTING_MASK = 0xFFFFFFFC
+# ADDRESS_KEY, DATA_KEY, BOUNDARY_KEY
+N_KEYS_PER_PARTITION_ID = 8
+# timeout key, timeout emergency key, clear reinjection queue.
+N_KEYS_PER_REINJECTION_PARTITION = 3
+KEY_START_VALUE = 8
+ROUTING_MASK = 0xFFFFFFF8
 
 
-class DataInMulticastRoutingGenerator(object):
+class SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
     extra monitor cores.
     """
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
-                 "_placements", "_routing_tables"]
+                 "_placements", "_routing_tables", "_time_out_keys_by_board"]
 
     def __call__(self, machine, extra_monitor_cores, placements):
         # pylint: disable=attribute-defined-outside-init
@@ -38,6 +42,8 @@ class DataInMulticastRoutingGenerator(object):
         self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()
         self._key_to_destination_map = dict()
+        self._time_out_keys_by_board = dict()
+
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,
@@ -47,7 +53,8 @@ class DataInMulticastRoutingGenerator(object):
             tree = self._generate_routing_tree(ethernet_chip)
             self._add_routing_entries(ethernet_chip, tree)
 
-        return self._routing_tables, self._key_to_destination_map
+        return (self._routing_tables, self._key_to_destination_map,
+                self._time_out_keys_by_board)
 
     def _generate_routing_tree(self, ethernet_chip):
         """
@@ -60,6 +67,7 @@ class DataInMulticastRoutingGenerator(object):
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
         tree = dict()
+
         to_reach = set(
             self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
         reached = set()
@@ -89,7 +97,7 @@ class DataInMulticastRoutingGenerator(object):
                         ethernet_chip.ip_address))
         return tree
 
-    def _add_routing_entry(self, x, y, key, processor_id=None, link_id=None):
+    def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
         """
         Adds a routing entry on this chip. Creating the table if needed
 
@@ -107,10 +115,10 @@ class DataInMulticastRoutingGenerator(object):
             processor_ids = []
         else:
             processor_ids = [processor_id]
-        if link_id is None:
+        if link_ids is None:
             link_ids = []
         else:
-            link_ids = [link_id]
+            link_ids = link_ids
         entry = MulticastRoutingEntry(
             routing_entry_key=key, mask=ROUTING_MASK,
             processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
@@ -125,8 +133,8 @@ class DataInMulticastRoutingGenerator(object):
             - A local route to the monitor core is added.
             - The tree is walked adding a route on each source to get here
 
-        :param ethernet_chip:
-        :param tree:
+        :param ethernet_chip: the ethernet chip to make entries for
+        :param tree: map of chips and links
         :return:
         """
         eth_x = ethernet_chip.x
@@ -140,5 +148,24 @@ class DataInMulticastRoutingGenerator(object):
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
                 x, y, link = tree[(x, y)]
-                self._add_routing_entry(x, y, key, link_id=link)
+                self._add_routing_entry(x, y, key, link_ids=[link])
             key += N_KEYS_PER_PARTITION_ID
+
+        # accum links to make a broad cast
+        links_per_chip = defaultdict(list)
+        for chip_key in tree:
+            x, y, link = tree[chip_key]
+            links_per_chip[(x, y)].append(link)
+
+        # add broadcast router timeout keys
+        time_out_key = key
+        for (x, y) in self._machine.get_existing_xys_by_ethernet(
+                eth_x, eth_y):
+            placement = self._placements.get_placement_of_vertex(
+                self._monitors[x, y])
+            self._add_routing_entry(
+                x, y, time_out_key, processor_id=placement.p,
+                link_ids=links_per_chip[x, y])
+            # update tracker
+            self._time_out_keys_by_board[(eth_x, eth_y)] = key
+        key += N_KEYS_PER_REINJECTION_PARTITION

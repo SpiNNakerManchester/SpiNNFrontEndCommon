@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BUILD_DIRS = command_sender_multicast_source reverse_iptag_multicast_source \
-	live_packet_gather chip_power_monitor system_models minimise
+APP = extra_monitor_support
+SOURCES = extra_monitor_support.c
 
-all: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
+LFLAGS += -Wl,--wrap=sark_int
 
-clean: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d clean || exit $$?; done
+SPINN_LIBS := $(SPINN_DIRS)/lib/libsark.a
+
+include ../fec_models.mk

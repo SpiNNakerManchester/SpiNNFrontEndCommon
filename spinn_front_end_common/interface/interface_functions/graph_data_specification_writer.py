@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+
+from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification import DataSpecificationGenerator
 from data_specification.utility_calls import get_report_writer
@@ -31,7 +33,7 @@ class GraphDataSpecificationWriter(object):
     __slots__ = (
         # Dict of SDRAM usage by chip coordinates
         "_sdram_usage",
-        # Dict of list of region sizes by vertex
+        # Dict of list of region sizes by core coordinates
         "_region_sizes",
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip",
@@ -53,7 +55,7 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            machine, data_simtime_in_us, graph_mapper=None,
+            machine, data_n_timesteps, graph_mapper=None,
             placement_order=None):
         """
         :param placements: placements of machine graph to cores
@@ -90,7 +92,7 @@ class GraphDataSpecificationWriter(object):
         for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
             generated = self.__generate_data_spec_for_vertices(
-                placement, placement.vertex, targets, data_simtime_in_us)
+                placement, placement.vertex, targets, data_n_timesteps)
 
             if generated and isinstance(
                     placement.vertex, AbstractRewritesDataSpecification):
@@ -102,7 +104,7 @@ class GraphDataSpecificationWriter(object):
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, associated_vertex, targets, data_simtime_in_us)
+                    placement, associated_vertex, targets, data_n_timesteps)
                 if generated and isinstance(
                         associated_vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(associated_vertex)
@@ -111,15 +113,14 @@ class GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.mark_regions_reloaded()
 
-        return targets
+        return targets, self._region_sizes
 
     def __generate_data_spec_for_vertices(
-            self, pl, vertex, targets, data_simtime_in_us):
+            self, pl, vertex, targets, data_n_timesteps):
         """
         :param pl: placement of machine graph to cores
         :param vertex: the specific vertex to write DSG for.
         :param targets: DataSpecificationTargets
-        :param data_simtime_in_us: The simtime in us for which space is saved
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         """
@@ -137,7 +138,14 @@ class GraphDataSpecificationWriter(object):
             vertex.generate_data_specification(spec, pl)
 
             # Check the memory usage
-            self._region_sizes[pl.vertex] = spec.region_sizes
+            self._region_sizes[pl.x, pl.y, pl.p] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+            # extracts the int from the numpy data type generated
+            if not isinstance(self._region_sizes[pl.x, pl.y, pl.p], int):
+                self._region_sizes[pl.x, pl.y, pl.p] =\
+                    self._region_sizes[pl.x, pl.y, pl.p].item()
+
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
             if (self._sdram_usage[pl.x, pl.y] <=
@@ -149,10 +157,10 @@ class GraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
-                vert, self._region_sizes[vert],
-                sum(self._region_sizes[vert]),
-                vert.resources_required.get_sdram_for_simtime(
-                    data_simtime_in_us))
+                vert, self._region_sizes[pl.x, pl.y, pl.p],
+                sum(self._region_sizes[pl.x, pl.y, pl.p]),
+                vert.resources_required.sdram.get_total_sdram(
+                    data_n_timesteps))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(

@@ -18,9 +18,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
-    <algorithm name="DataInMulticastRoutingGenerator">
+    <algorithm name="SystemMulticastRoutingGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>DataInMulticastRoutingGenerator</python_class>
+        <python_class>SystemMulticastRoutingGenerator</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
@@ -43,6 +43,7 @@
         <outputs>
             <param_type>DataInMulticastRoutingTables</param_type>
             <param_type>DataInMulticastKeyToChipMap</param_type>
+            <param_type>SystemMulticastRouterTimeoutKeys</param_type>
         </outputs>
     </algorithm>
     <algorithm name="ProcessPartitionConstraints">
@@ -579,10 +580,15 @@
                 <param_name>disable_advanced_monitor_usage</param_name>
                 <param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
             </parameter>
+            <parameter>
+                <param_name>region_sizes</param_name>
+                <param_type>RegionSizes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
+            <param_name>region_sizes</param_name>
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>uses_advanced_monitors</param_name>
@@ -642,6 +648,10 @@
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
+            <parameter>
+                <param_name>region_sizes</param_name>
+                <param_type>RegionSizes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -649,6 +659,7 @@
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>executable_targets</param_name>
+            <param_name>region_sizes</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>report_folder</param_name>
@@ -1013,6 +1024,7 @@
         </optional_inputs>
         <outputs>
             <param_type>DataSpecificationTargets</param_type>
+            <param_type>RegionSizes</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphBinaryGatherer">
