@@ -308,19 +308,19 @@ class HostExecuteDataSpecification(object):
             total_sizes[(x, y, p)] = total
             total_sizes[
                 (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += total
-            total_sizes[(0, 0, 0)] += total
+            total_sizes[(-1, -1, -1)] += total
 
             matrix_sizes[(x, y, p)] = matrix
             matrix_sizes[
                 (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += \
                 matrix
-            matrix_sizes[(0, 0, 0)] += matrix
+            matrix_sizes[(-1, -1, -1)] += matrix
 
             connection_build_sizes[(x, y, p)] = connection
             connection_build_sizes[
                 (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += \
                 connection
-            connection_build_sizes[(0, 0, 0)] += connection
+            connection_build_sizes[(-1, -1, -1)] += connection
 
         if use_monitors:
             self.__reset_router_timeouts()
@@ -348,7 +348,7 @@ class HostExecuteDataSpecification(object):
         self._java.execute_app_data_specification(use_monitors)
 
         progress.end()
-        return dw_write_info, {(0,0,0):0}, {(0,0,0):0}, {(0,0,0):0}
+        return dw_write_info, {(-1,-1,-1):0}, {(-1,-1,-1):0}, {(-1,-1,-1):0}
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets, region_sizes,
