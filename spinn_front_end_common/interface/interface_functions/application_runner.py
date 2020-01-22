@@ -123,7 +123,7 @@ class ApplicationRunner(object):
                   runtime, time_scale_factor, time_threshold):
         # pylint: disable=too-many-arguments
         if not run_until_complete:
-            time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
+            time_to_wait = runtime * time_scale_factor / 1000.0 + 5.0
             logger.info(
                 "Application started; waiting {}s for it to stop",
                 time_to_wait)

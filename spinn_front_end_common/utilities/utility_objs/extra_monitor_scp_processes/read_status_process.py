@@ -12,7 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from spinn_front_end_common.utilities import globals_variables, \
+    helpful_functions
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         GetReinjectionStatusMessage)
@@ -21,7 +22,15 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 class ReadStatusProcess(AbstractMultiConnectionProcess):
     def __init__(self, connection_selector):
-        super(ReadStatusProcess, self).__init__(connection_selector)
+        n_channels = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "SpinnMan",
+            "multi_packets_in_flight_n_channels")
+        intermediate_channel_waits = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "SpinnMan",
+            "multi_packets_in_flight_channel_waits")
+        super(ReadStatusProcess, self).__init__(
+            connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
         self._reinjection_status = dict()
 
     def handle_reinjection_status_response(self, response):
