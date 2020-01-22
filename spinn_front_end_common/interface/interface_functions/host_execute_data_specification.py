@@ -277,7 +277,7 @@ class HostExecuteDataSpecification(object):
                 self.__malloc_and_user_0(core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(dsg_targets)):
-            x, y, p = core
+            x, y, _p = core
             # write information for the memory map report
             self._write_info_map[core] = self.__python_execute(
                 core, reader,

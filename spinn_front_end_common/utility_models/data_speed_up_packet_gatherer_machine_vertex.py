@@ -637,7 +637,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):  #pylint: disable=unused-argument
+            cpu=0, is_filename=False):  # pylint: disable=unused-argument
         """ sends a block of data into SpiNNaker to a given chip
 
         :param x: chip x for data
@@ -725,7 +725,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             for i, (a, b) in enumerate(zip(original_data, verified_data)):
                 if a != b:
                     raise Exception("damn at " + str(i))
-
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):

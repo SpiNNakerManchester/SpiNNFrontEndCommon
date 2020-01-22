@@ -128,8 +128,6 @@ class SystemMulticastRoutingGenerator(object):
             processor_ids = [processor_id]
         if link_ids is None:
             link_ids = []
-        else:
-            link_ids = link_ids
         entry = MulticastRoutingEntry(
             routing_entry_key=key, mask=ROUTING_MASK,
             processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
@@ -166,7 +164,7 @@ class SystemMulticastRoutingGenerator(object):
         links_per_chip = defaultdict(list)
         for chip_key in tree:
             x, y, link = tree[chip_key]
-            links_per_chip[(x, y)].append(link)
+            links_per_chip[x, y].append(link)
 
         # add broadcast router timeout keys
         time_out_key = key
