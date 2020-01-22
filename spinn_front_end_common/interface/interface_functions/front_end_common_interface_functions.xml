@@ -592,13 +592,13 @@
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>uses_advanced_monitors</param_name>
+            <param_name>placements</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>report_folder</param_name>
             <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>executable_targets</param_name>
-            <param_name>placements</param_name>
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
             <param_name>disable_advanced_monitor_usage</param_name>
@@ -607,6 +607,9 @@
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
+            <param_type>TotalSDRAMTracker</param_type>
+            <param_type>MatrixTracker</param_type>
+            <param_type>ExpanderTracker</param_type>
             <token part="DSGDataLoaded">DataLoaded</token>
             <token part="DSGAppDataLoaded">DataLoaded</token>
         </outputs>
@@ -652,6 +655,10 @@
                 <param_name>region_sizes</param_name>
                 <param_type>RegionSizes</param_type>
             </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -660,6 +667,7 @@
             <param_name>dsg_targets</param_name>
             <param_name>executable_targets</param_name>
             <param_name>region_sizes</param_name>
+            <param_name>placements</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>report_folder</param_name>
@@ -788,6 +796,14 @@
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
+            <parameter>
+                <param_name>multi_packets_in_flight_n_channels</param_name>
+                <param_type>MultiPacketsInFlightNChannels</param_type>
+            </parameter>
+            <parameter>
+                <param_name>multi_packets_in_flight_channel_waits</param_name>
+                <param_type>MultiPacketsInFlightNChannelWaits</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hostname</param_name>
@@ -804,6 +820,8 @@
             <param_name>repair_machine</param_name>
             <param_name>ignore_bad_ethernets</param_name>
             <param_name>default_report_directory</param_name>
+            <param_name>multi_packets_in_flight_channel_waits</param_name>
+            <param_name>multi_packets_in_flight_n_channels</param_name>
         </required_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1523,6 +1541,14 @@
                 <param_name>current_timesteps</param_name>
                 <param_type>FirstMachineTimeStep</param_type>
             </parameter>
+            <parameter>
+                <param_name>n_channels</param_name>
+                <param_type>MultiPacketsInFlightNChannels</param_type>
+            </parameter>
+            <parameter>
+                <param_name>intermediate_channel_waits</param_name>
+                <param_type>MultiPacketsInFlightNChannelWaits</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
@@ -1530,6 +1556,8 @@
             <param_name>executable_types</param_name>
             <param_name>run_until_timesteps</param_name>
             <param_name>current_timesteps</param_name>
+            <param_name>n_channels</param_name>
+            <param_name>intermediate_channel_waits</param_name>
             <token>BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
@@ -1574,10 +1602,20 @@
                 <param_name>executable_types</param_name>
                 <param_type>ExecutableTypes</param_type>
             </parameter>
+            <parameter>
+                <param_name>n_channels</param_name>
+                <param_type>MultiPacketsInFlightNChannels</param_type>
+            </parameter>
+            <parameter>
+                <param_name>intermediate_channel_waits</param_name>
+                <param_type>MultiPacketsInFlightNChannelWaits</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_types</param_name>
+            <param_name>n_channels</param_name>
+            <param_name>intermediate_channel_waits</param_name>
         </required_inputs>
         <outputs>
             <token>ClearedIOBuf</token>

@@ -30,9 +30,15 @@ class MachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
+            multi_packets_in_flight_n_channels,
+            multi_packets_in_flight_channel_waits,
             max_sdram_size=None, repair_machine=False,
             ignore_bad_ethernets=True, default_report_directory=None):
         """
+        :param multi_packets_in_flight_channel_waits: \
+            how many packets to have in flight before sending more
+        :param multi_packets_in_flight_n_channels: \
+            how many channels to have
         :param hostname: the hostname or IP address of the SpiNNaker machine
         :param bmp_details: the details of the BMP connections
         :param downed_chips: \
@@ -89,7 +95,11 @@ class MachineGenerator(object):
             max_sdram_size=max_sdram_size,
             repair_machine=repair_machine,
             ignore_bad_ethernets=ignore_bad_ethernets,
-            default_report_directory=default_report_directory)
+            default_report_directory=default_report_directory,
+            multi_packets_in_flight_n_channels=(
+                multi_packets_in_flight_n_channels),
+            multi_packets_in_flight_channel_waits=(
+                multi_packets_in_flight_channel_waits))
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()

@@ -24,10 +24,14 @@ class ChipIOBufClearer(object):
 
     __slots__ = []
 
-    def __call__(self, transceiver, executable_types):
+    def __call__(
+            self, transceiver, executable_types, n_channels,
+            intermediate_channel_waits):
 
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-        process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
+        process = ClearIOBUFProcess(
+            transceiver.scamp_connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
         process.clear_iobuf(core_subsets, len(core_subsets))

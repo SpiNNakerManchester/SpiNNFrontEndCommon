@@ -20,8 +20,11 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class ClearQueueProcess(AbstractMultiConnectionProcess):
-    def __init__(self, connection_selector):
-        super(ClearQueueProcess, self).__init__(connection_selector)
+    def __init__(
+            self, connection_selector, n_channels, intermediate_channel_waits):
+        super(ClearQueueProcess, self).__init__(
+            connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
     def reset_counters(self, core_subsets):
         for core_subset in core_subsets.core_subsets:

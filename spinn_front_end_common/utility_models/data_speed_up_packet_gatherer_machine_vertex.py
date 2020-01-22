@@ -24,6 +24,8 @@ from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
 
+from spinn_front_end_common.utilities import globals_variables, \
+    helpful_functions
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import \
     SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess, \
@@ -1047,10 +1049,13 @@ class DataSpeedUpPacketGatherMachineVertex(
             gatherers, transceiver, extra_monitor_cores, placements)
 
     def set_cores_for_data_streaming(
-            self, transceiver, extra_monitor_cores, placements):
+            self, transceiver, extra_monitor_cores, placements,
+            n_channels, intermediate_channel_waits):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming
-
+        :param n_channels: mpif n packets in parallel
+        :param intermediate_channel_waits: how many to be in flight before \
+            more transmission
         :param transceiver: the SpiNNMan instance
         :type transceiver: ~spinnman.transceiver.Transceiver
         :param extra_monitor_cores: the extra monitor cores to set
@@ -1073,7 +1078,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        self.clear_reinjection_queue(transceiver, placements)
+        self.clear_reinjection_queue(
+            transceiver, placements, n_channels, intermediate_channel_waits)
 
         # set time outs
         self.set_router_emergency_timeout(
@@ -1140,16 +1146,22 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placements.get_placement_of_vertex(self))
             raise
 
-    def clear_reinjection_queue(self, transceiver, placements):
+    def clear_reinjection_queue(
+            self, transceiver, placements, n_channels,
+            intermediate_channel_waits):
         """ Clears the queues for reinjection
-
+        :param n_channels: mpif n packets in parallel
+        :param intermediate_channel_waits: how many to be in flight before \
+            more transmission
         :param transceiver: the spinnMan interface
         :type transceiver: ~spinnman.transceiver.Transceiver
         :param placements: the placements object
         :type placements: ~pacman.model.placements.Placements
         """
         core_subsets = convert_vertices_to_core_subset([self], placements)
-        process = ClearQueueProcess(transceiver.scamp_connection_selector)
+        process = ClearQueueProcess(
+            transceiver.scamp_connection_selector, n_channels,
+            intermediate_channel_waits)
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
@@ -1688,12 +1700,18 @@ class _StreamingContextManager(object):
         self._placements = placements
 
     def __enter__(self):
+        config = globals_variables.get_simulator().config
+        n_channels = helpful_functions.read_config_int(
+            config, "SpinnMan", "multi_packets_in_flight_n_channels")
+        intermediate_channel_waits = helpful_functions.read_config_int(
+            config, "SpinnMan", "multi_packets_in_flight_channel_waits")
         for gatherer in self._gatherers:
             gatherer.load_system_routing_tables(
                 self._txrx, self._monitors, self._placements)
         for gatherer in self._gatherers:
             gatherer.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._txrx, self._monitors, self._placements,
+                n_channels, intermediate_channel_waits)
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:

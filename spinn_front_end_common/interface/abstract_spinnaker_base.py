@@ -1367,8 +1367,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["DisableAdvancedMonitorUsageForDataIn"] = \
             self._config.getboolean(
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
+        inputs['MultiPacketsInFlightNChannels'] = \
+            self._read_config_int(
+                "SpinnMan", "multi_packets_in_flight_n_channels")
+        inputs['MultiPacketsInFlightNChannelWaits'] = \
+            self._read_config_int(
+                "SpinnMan", "multi_packets_in_flight_channel_waits")
 
-        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
+        if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
@@ -2632,6 +2638,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*exc_info)
         else:
             self.write_finished_file()
+
+    @property
+    def all_provenance_items(self):
+        return self._all_provenance_items
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs

@@ -21,8 +21,11 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 class ClearIOBUFProcess(AbstractMultiConnectionProcess):
 
-    def __init__(self, connection_selector):
-        super(ClearIOBUFProcess, self).__init__(connection_selector)
+    def __init__(
+            self, connection_selector, n_channels, intermediate_channel_waits):
+        super(ClearIOBUFProcess, self).__init__(
+            connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
         self._progress = None
 
     def receive_response(self, _response):
