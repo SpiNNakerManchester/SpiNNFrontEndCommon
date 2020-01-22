@@ -104,7 +104,7 @@ class GraphDataSpecificationWriter(object):
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, associated_vertex, targets, data_n_timesteps)
+                    placement, associated_vertex, targets, data_simtime_in_us)
                 if generated and isinstance(
                         associated_vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(associated_vertex)
