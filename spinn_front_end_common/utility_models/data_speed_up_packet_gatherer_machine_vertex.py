@@ -37,7 +37,7 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.graphs.machine import MachineVertex
+from pacman.model.graphs.machine import MachineTimestepVertex, MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_storage_handlers import FileDataReader
@@ -186,7 +186,7 @@ SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
 
 
 class DataSpeedUpPacketGatherMachineVertex(
-        MachineVertex, AbstractGeneratesDataSpecification,
+        MachineTimestepVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
         # x coordinate
@@ -284,7 +284,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
             report_default_directory,
-            write_data_speed_up_reports, constraints=None):
+            write_data_speed_up_reports, timestep_in_us, constraints=None):
         """
         :param x: Where this gatherer is.
         :type x: int
@@ -301,11 +301,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param write_data_speed_up_reports: \
             Whether to write low-level reports on data transfer speeds.
         :type write_data_speed_up_reports: bool
+        :param timestep_in_us: The timestep of this vertex in us
+        :type timestep_in_us: int
         :param constraints:
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
+            timestep_in_us=timestep_in_us,
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
             constraints=constraints)
 
@@ -389,7 +392,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys",
@@ -399,15 +401,13 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor",
-            "mc_data_chips_to_keys", "machine", "app_id",
-            "router_timeout_key"
+            "machine_graph", "routing_info", "tags", "time_scale_factor",
+            "mc_data_chips_to_keys", "machine", "app_id", "router_timeout_key"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor, mc_data_chips_to_keys,
-            machine, app_id, router_timeout_key):
+            time_scale_factor, mc_data_chips_to_keys, machine, app_id,
+            router_timeout_key):
         """
         :param machine_graph: (injected)
         :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
@@ -415,8 +415,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type routing_info: ~pacman.model.routing_info.RoutingInfo
         :param tags: (injected)
         :type tags: ~pacman.model.tags.Tags
-        :param machine_time_step: (injected)
-        :type machine_time_step: int
         :param time_scale_factor: (injected)
         :type time_scale_factor: int
         :param mc_data_chips_to_keys: (injected)
