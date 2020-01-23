@@ -229,7 +229,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         # bool flag for writing reports
         "_write_data_speed_up_reports",
         # data holder for output
-        "_view"]
+        "_view",
+        # n channels
+        "_n_channels",
+        # _intermediate_channel_waits
+        "_intermediate_channel_waits"]
 
     #: base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
@@ -321,6 +325,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._extra_monitors_by_chip = extra_monitors_by_chip
         self._missing_seq_nums_data_in = list()
         self._missing_seq_nums_data_in.append(set())
+
+        self._n_channels = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "SpinnMan",
+            "multi_packets_in_flight_n_channels")
+        self._intermediate_channel_waits = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "SpinnMan",
+            "multi_packets_in_flight_channel_waits")
 
         # Create a connection to be used
         self._x = x
@@ -1124,7 +1135,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            transceiver.scamp_connection_selector, n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             process.set_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
@@ -1136,8 +1148,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     def set_router_emergency_timeout(self, timeout, transceiver, placements):
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
+
         process = SetRouterEmergencyTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            transceiver.scamp_connection_selector, n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             process.set_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722

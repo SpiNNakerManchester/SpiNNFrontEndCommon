@@ -21,8 +21,11 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
 
-    def __init__(self, connection_selector):
-        super(SetRouterTimeoutProcess, self).__init__(connection_selector)
+    def __init__(
+            self, connection_selector, n_channels, intermediate_channel_waits):
+        super(SetRouterTimeoutProcess, self).__init__(
+            connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
     def set_timeout(self, mantissa, exponent, core_subsets):
         for core_subset in core_subsets.core_subsets:

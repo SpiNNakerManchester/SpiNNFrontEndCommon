@@ -20,9 +20,11 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetRouterEmergencyTimeoutProcess(AbstractMultiConnectionProcess):
-    def __init__(self, connection_selector):
+    def __init__(
+            self, connection_selector, n_channels, intermediate_channel_waits):
         super(SetRouterEmergencyTimeoutProcess, self).__init__(
-            connection_selector)
+            connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
     def set_timeout(self, mantissa, exponent, core_subsets):
         for core in core_subsets.core_subsets:

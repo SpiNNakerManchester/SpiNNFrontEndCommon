@@ -20,8 +20,11 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetPacketTypesProcess(AbstractMultiConnectionProcess):
-    def __init__(self, connection_selector):
-        super(SetPacketTypesProcess, self).__init__(connection_selector)
+    def __init__(
+            self, connection_selector, n_channels, intermediate_channel_waits):
+        super(SetPacketTypesProcess, self).__init__(
+            connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
                          nearest_neighbour, fixed_route):

@@ -24,7 +24,8 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.utilities import globals_variables, \
+    helpful_functions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
@@ -98,7 +99,11 @@ class ExtraMonitorSupportMachineVertex(
         # machine instance
         "_machine",
         # the local transaction id
-        "_transaction_id"
+        "_transaction_id",
+        #
+        "_n_channels",
+        #
+        "_intermediate_channel_waits"
     )
 
     def __init__(
@@ -139,6 +144,12 @@ class ExtraMonitorSupportMachineVertex(
         self._app_id = None
         self._machine = None
         self._transaction_id = 0
+        self._n_channels = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "SpinnMan",
+            "multi_packets_in_flight_n_channels")
+        self._intermediate_channel_waits = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "SpinnMan",
+            "multi_packets_in_flight_channel_waits")
 
     @property
     def reinject_multicast(self):
@@ -439,7 +450,8 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            transceiver.scamp_connection_selector, n_channels=n_channels,
+            intermediate_channel_waits=intermediate_channel_waits)
         try:
             process.set_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
@@ -589,7 +601,10 @@ class ExtraMonitorSupportMachineVertex(
 
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = SetPacketTypesProcess(transceiver.scamp_connection_selector)
+
+        process = SetPacketTypesProcess(
+            transceiver.scamp_connection_selector, n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             process.set_packet_types(
                 core_subsets, self._reinject_point_to_point,
@@ -618,8 +633,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
+
         process = LoadSystemMCRoutesProcess(
-            transceiver.scamp_connection_selector)
+            transceiver.scamp_connection_selector, n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
@@ -646,7 +663,8 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = LoadApplicationMCRoutesProcess(
-            transceiver.scamp_connection_selector)
+            transceiver.scamp_connection_selector, n_channels=self._n_channels,
+            intermediate_channel_waits=self._intermediate_channel_waits)
         try:
             return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
