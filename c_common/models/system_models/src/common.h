@@ -37,6 +37,36 @@ typedef enum {
     REINJECTOR_CLEAR_QUEUE_OFFSET = 2,
 } reinjector_key_offsets;
 
+enum {
+    //! How many payload words are in an SDP packet.
+    ITEMS_PER_DATA_PACKET = 68
+};
+
+// ------------------------------------------------------------------------
+// structs used in system
+// ------------------------------------------------------------------------
+
+//! struct for a SDP message with pure data, no SCP header
+typedef struct sdp_msg_pure_data {  // SDP message (=292 bytes)
+    struct sdp_msg *next;           // Next in free list
+    uint16_t length;                // length
+    uint16_t checksum;              // checksum (if used)
+
+    // sdp_hdr_t
+    // The length field measures from HERE...
+    uint8_t flags;                  // SDP flag byte
+    uint8_t tag;                    // SDP IPtag
+    uint8_t dest_port;              // SDP destination port/CPU
+    uint8_t srce_port;              // SDP source port/CPU
+    uint16_t dest_addr;             // SDP destination address
+    uint16_t srce_addr;             // SDP source address
+
+    // User data (272 bytes when no SCP header)
+    uint32_t data[ITEMS_PER_DATA_PACKET];
+
+    uint32_t _PAD;                  // Private padding
+} sdp_msg_pure_data;
+
 // ------------------------------------------------------------------------
 // global variables for the reinjection mc interface
 // ------------------------------------------------------------------------
