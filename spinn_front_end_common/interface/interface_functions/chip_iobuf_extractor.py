@@ -25,6 +25,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -46,9 +47,20 @@ class ChipIOBufExtractor(object):
         self._recovery_mode = bool(recovery_mode)
 
     def __call__(
-            self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
-            binary_executable_types, from_cores="ALL", binary_types=None):
+            self, transceiver, executable_targets, executable_finder=None,
+            app_provenance_file_path=None, system_provenance_file_path=None,
+            binary_executable_types=None, from_cores="ALL", binary_types=None):
+
+        sim = get_simulator()
+        if executable_finder is None:
+            executable_finder = sim._executable_finder
+        if app_provenance_file_path is None:
+            app_provenance_file_path = sim._app_provenance_file_path
+        if system_provenance_file_path is None:
+            system_provenance_file_path = sim._system_provenance_file_path
+        if binary_executable_types is None:
+            binary_executable_types = \
+                sim._mapping_outputs["BinaryToExecutableType"]
 
         error_entries = list()
         warn_entries = list()

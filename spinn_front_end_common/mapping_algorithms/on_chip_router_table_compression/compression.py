@@ -34,7 +34,7 @@ _SDRAM_TAG = 1
 
 def mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id,
-        system_provenance_folder, compress_only_when_needed=True,
+        compress_only_when_needed=True,
         compress_as_much_as_possible=False):
     """
     Load routing tables and compress then using Mundy's algorithm
@@ -43,7 +43,6 @@ def mundy_on_chip_router_compression(
     :param transceiver: the spinnman interface
     :param machine: the SpiNNaker machine representation
     :param app_id: the application ID used by the main application
-    :param system_provenance_folder: the path to where to write the data
     :param compress_as_much_as_possible:\
         If False, the compressor will only reduce the table until it fits\
         in the router space, otherwise it will try to reduce until it\
@@ -60,15 +59,13 @@ def mundy_on_chip_router_compression(
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
     compression = _Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        compress_only_when_needed, machine, system_provenance_folder,
-        routing_tables, transceiver)
+        compress_only_when_needed, machine, routing_tables, transceiver)
     compression._compress()
 
 
 def pair_compression(
         routing_tables, transceiver, executable_finder,
-        machine, app_id, provenance_file_path,
-        compress_only_when_needed=False,
+        machine, app_id, compress_only_when_needed=False,
         compress_as_much_as_possible=True):
     """
     Load routing tables and compress then using Pair Algorithm
@@ -81,7 +78,6 @@ def pair_compression(
     :param executable_finder:
     :param machine: the SpiNNaker machine representation
     :param app_id: the application ID used by the main application
-    :param provenance_file_path: the path to where to write the data
     :param compress_as_much_as_possible:\
         If False, the compressor will only reduce the table until it fits\
         in the router space, otherwise it will try to reduce until it\
@@ -98,8 +94,7 @@ def pair_compression(
         "simple_minimise.aplx")
     compression = _Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        compress_only_when_needed, machine, provenance_file_path,
-        routing_tables, transceiver)
+        compress_only_when_needed, machine, routing_tables, transceiver)
     compression._compress()
 
 
@@ -113,21 +108,18 @@ class _Compression(object):
                  "_compress_only_when_needed",
                  "_compressor_app_id",
                  "_machine",
-                 "_provenance_file_path",
                  "_transceiver",
                  "_routing_tables",
                  ]
 
     def __init__(
             self, app_id, binary_path, compress_as_much_as_possible,
-            compress_only_when_needed, machine, provenance_file_path,
-            routing_tables, transceiver):
+            compress_only_when_needed, machine, routing_tables, transceiver):
         self._app_id = app_id
         self._binary_path = binary_path
         self._compress_as_much_as_possible = compress_as_much_as_possible
         self._compress_only_when_needed = compress_only_when_needed
         self._machine = machine
-        self._provenance_file_path = provenance_file_path
         self._transceiver = transceiver
         self._routing_tables = routing_tables
 
@@ -217,8 +209,8 @@ class _Compression(object):
         iobuf_extractor = ChipIOBufExtractor()
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            self._transceiver, executable_targets, executable_finder,
-            self._provenance_file_path)
+            self._transceiver, executable_targets, executable_finder)
+
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
