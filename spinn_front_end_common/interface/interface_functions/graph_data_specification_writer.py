@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+
+from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification import DataSpecificationGenerator
 from data_specification.utility_calls import get_report_writer
@@ -31,7 +33,7 @@ class GraphDataSpecificationWriter(object):
     __slots__ = (
         # Dict of SDRAM usage by chip coordinates
         "_sdram_usage",
-        # Dict of list of region sizes by vertex
+        # Dict of list of region sizes by core coordinates
         "_region_sizes",
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip",
@@ -107,7 +109,7 @@ class GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.mark_regions_reloaded()
 
-        return targets
+        return targets, self._region_sizes
 
     def __generate_data_spec_for_vertices(
             self, pl, vertex, targets, data_n_timesteps):
@@ -132,7 +134,14 @@ class GraphDataSpecificationWriter(object):
             vertex.generate_data_specification(spec, pl)
 
             # Check the memory usage
-            self._region_sizes[pl.vertex] = spec.region_sizes
+            self._region_sizes[pl.x, pl.y, pl.p] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
+            # extracts the int from the numpy data type generated
+            if not isinstance(self._region_sizes[pl.x, pl.y, pl.p], int):
+                self._region_sizes[pl.x, pl.y, pl.p] =\
+                    self._region_sizes[pl.x, pl.y, pl.p].item()
+
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
             if (self._sdram_usage[pl.x, pl.y] <=
@@ -144,8 +153,8 @@ class GraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
-                vert, self._region_sizes[vert],
-                sum(self._region_sizes[vert]),
+                vert, self._region_sizes[pl.x, pl.y, pl.p],
+                sum(self._region_sizes[pl.x, pl.y, pl.p]),
                 vert.resources_required.sdram.get_total_sdram(
                     data_n_timesteps))
             for vert in self._vertices_by_chip[pl.x, pl.y]))

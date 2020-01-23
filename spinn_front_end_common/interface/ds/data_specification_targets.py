@@ -48,7 +48,7 @@ class DataSpecificationTargets(MutableMapping):
         :param tuple(int,int,int) core: triple of (x, y, p)
         :return: dictionary with the keys ``start_address``, ``memory_used``
             and ``memory_written``
-        :rtype: dict(str,int); has
+        :rtype: dict(str,int)
         """
         (x, y, p) = core
         return DataRowReader(self._db.get_ds(x, y, p))

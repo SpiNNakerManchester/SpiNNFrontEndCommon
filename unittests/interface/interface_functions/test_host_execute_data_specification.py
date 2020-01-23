@@ -17,7 +17,8 @@ import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
 from pacman.model.placements import Placement
-from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.constants import (
+    MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
@@ -99,13 +100,17 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.write_value(3)
             spec.end_specification()
 
+        region_sizes = dict()
+        region_sizes[0, 0, 0] = (
+                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+
         # Execute the spec
         targets = ExecutableTargets()
         targets.place_binary("text.aplx", Placement(None, 0, 0, 0),
                              ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, False, targets,
-            report_folder=tempdir)
+            report_folder=tempdir, region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -116,28 +121,28 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions), 4)
 
         # Base address for header and table
-        self.assertEqual(regions[0][0], 0)
+        self.assertEqual(regions[1][0], 0)
 
         # Base address for region 0 (after header and table)
-        self.assertEqual(regions[1][0], header_and_table_size)
+        self.assertEqual(regions[2][0], header_and_table_size)
 
         # Base address for region 2
-        self.assertEqual(regions[2][0], header_and_table_size + 200)
+        self.assertEqual(regions[3][0], header_and_table_size + 200)
 
         # User 0 write address
-        self.assertEqual(regions[3][0], 1000)
+        self.assertEqual(regions[0][0], 1000)
 
         # Size of header and table
-        self.assertEqual(len(regions[0][1]), header_and_table_size)
+        self.assertEqual(len(regions[1][1]), header_and_table_size)
 
         # Size of region 0
-        self.assertEqual(len(regions[1][1]), 12)
+        self.assertEqual(len(regions[2][1]), 12)
 
         # Size of region 2
-        self.assertEqual(len(regions[2][1]), 4)
+        self.assertEqual(len(regions[3][1]), 4)
 
         # Size of user 0
-        self.assertEqual(len(regions[3][1]), 4)
+        self.assertEqual(len(regions[0][1]), 4)
 
         info = infos[(0, 0, 0)]
         self.assertEqual(info.memory_used, 372)
