@@ -15,8 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// ------------------------------------------------------------------------
+//
+// Common definitions for the non-SCAMP system binaries.
+//
+// ------------------------------------------------------------------------
+
 #ifndef __COMMON_H__
 #define __COMMON_H__
+#include "common-typedefs.h"
 
 // Dropped packet re-injection internal control commands (RC of SCP message)
 enum reinjector_command_codes {
@@ -82,13 +89,13 @@ static uint reinjection_clear_mc_key = 0;
 
 //! \brief sets up the mc keys for the reinjection mc api
 //! \param[in] base_mc_key: the base key for the api.
-void initialise_reinjection_mc_api(uint32_t base_mc_key){
+static void initialise_reinjection_mc_api(uint32_t base_mc_key) {
     // set the router timeout keys
     reinjection_timeout_mc_key = base_mc_key + ROUTER_TIMEOUT_OFFSET;
     reinjection_emergency_timeout_mc_key =
-        base_mc_key + ROUTER_EMERGENCY_TIMEOUT_OFFSET;
+            base_mc_key + ROUTER_EMERGENCY_TIMEOUT_OFFSET;
     reinjection_clear_mc_key =
-        base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
+            base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
 }
 
 #define SDP_REPLY_HEADER_LEN 12
