@@ -23,11 +23,6 @@ import sys
 from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
-
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import \
-    SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess, \
-    ClearQueueProcess
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -53,6 +48,10 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes import (
+        SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess,
+        ClearQueueProcess)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -692,9 +691,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             i = 0
             for (a, b) in zip(original_data, verified_data):
                 if a != b:
-                    break
+                    raise Exception("damn at " + str(i))
                 i += 1
-            raise Exception("damn at " + str(i))
 
     @staticmethod
     def __verify_sent_data_py3(
@@ -704,13 +702,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                       x, y, base_address, n_bytes)
             log.error("original:{}", original_data.hex())
             log.error("verified:{}", verified_data.hex())
-            for (index, (a, b)) in enumerate(
-                    zip(original_data, verified_data)):
+            for i, (a, b) in enumerate(zip(original_data, verified_data)):
                 if a != b:
-                    break
-
-                raise Exception(
-                    "damn at " + str(index))
+                    raise Exception("damn at " + str(i))
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):

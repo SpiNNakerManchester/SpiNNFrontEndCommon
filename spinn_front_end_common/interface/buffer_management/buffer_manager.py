@@ -228,7 +228,7 @@ class BufferManager(object):
         for index, (extra_mon_element, txrx_element) in enumerate(
                 zip(extra_mon_data, txrx_data)):
             if extra_mon_element != txrx_element:
-                raise Exception("WRONG")
+                raise Exception("WRONG (at index {})".format(index))
 
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
