@@ -208,6 +208,10 @@ class CommandSenderMachineVertex(
         spec.end_specification()
 
     def _write_basic_commands(self, commands, spec):
+        """
+        :param list(MultiCastCommand) commands:
+        :param ~data_specification.DataSpecificationGenerator spec:
+        """
         # number of commands
         spec.write_value(len(commands))
 
@@ -216,6 +220,10 @@ class CommandSenderMachineVertex(
             self._write_command(command, spec)
 
     def _write_timed_commands(self, timed_commands, spec):
+        """
+        :param list(MultiCastCommand) timed_commands:
+        :param ~data_specification.DataSpecificationGenerator spec:
+        """
         spec.write_value(len(timed_commands))
 
         # write commands
@@ -225,6 +233,10 @@ class CommandSenderMachineVertex(
 
     @staticmethod
     def _write_command(command, spec):
+        """
+        :param MultiCastCommand command:
+        :param ~data_specification.DataSpecificationGenerator spec:
+        """
         spec.write_value(command.key)
         if command.is_payload:
             spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
@@ -243,6 +255,12 @@ class CommandSenderMachineVertex(
         1. Area for information on what data to record
         2. Area for start commands
         3. Area for end commands
+
+        :param ~data_specification.DataSpecificationGenerator spec:
+        :param int time_command_size:
+        :param int start_command_size:
+        :param int end_command_size:
+        :param ProvidesProvenanceDataFromMachineImpl vertex:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -269,6 +287,9 @@ class CommandSenderMachineVertex(
         vertex.reserve_provenance_data_region(spec)
 
     def get_timed_commands_bytes(self):
+        """
+        :rtype: int
+        """
         n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
         n_bytes += (
             (CommandSenderMachineVertex._COMMAND_TIMESTAMP_SIZE +
@@ -279,6 +300,10 @@ class CommandSenderMachineVertex(
 
     @staticmethod
     def get_n_command_bytes(commands):
+        """
+        :param list(MultiCastCommand) commands:
+        :rtype: int
+        """
         n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
         n_bytes += (
             CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE *
@@ -304,6 +329,11 @@ class CommandSenderMachineVertex(
         ])]
 
     def get_edges_and_partitions(self, pre_vertex, edge_type):
+        """
+        :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:
+        :param callable edge_type:
+        :rtype: tuple(list, list(str))
+        """
         edges = list()
         partition_ids = list()
         keys_added = set()

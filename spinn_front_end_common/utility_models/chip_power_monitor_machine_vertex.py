@@ -88,10 +88,18 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     def sampling_frequency(self):
+        """ how often to sample, in microseconds
+
+        :rtype: int
+        """
         return self._sampling_frequency
 
     @property
     def n_samples_per_recording(self):
+        """ how may samples between recording entry
+
+        :rtype: int
+        """
         return self._n_samples_per_recording
 
     @property

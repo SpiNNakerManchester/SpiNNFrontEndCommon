@@ -372,6 +372,10 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(self.__encode_route(entry))
 
     def __encode_route(self, entry):
+        """
+        :param ~spinn_machine.MulticastRoutingEntry entry:
+        :rtype: int
+        """
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route

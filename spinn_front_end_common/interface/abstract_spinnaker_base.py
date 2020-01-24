@@ -734,10 +734,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @overrides(SimulatorInterface.run)
     def run(self, run_time):
-        """ Run a simulation for a fixed amount of time
-
-        :param int run_time: the run duration in milliseconds.
-        """
         self._run(run_time)
 
     def _build_graphs_for_usage(self):
@@ -804,7 +800,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Convert dt into microseconds and divide by
         # realtime proportion to get hardware timestep
         hardware_timestep_us = int(round(
-            float(self.machine_time_step) / float(self.timescale_factor)))
+            float(self.machine_time_step) / float(self.time_scale_factor)))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
@@ -2324,13 +2320,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._no_machine_time_steps
 
     @property
-    def timescale_factor(self):
-        """
-        :rtype: int
-        """
-        return self._read_config_int("Machine", "time_scale_factor")
-
-    @property
     def machine_graph(self):
         """
         :rtype: ~pacman.model.graphs.machine.MachineGraph
@@ -2372,6 +2361,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._fixed_routes
 
     @property
+    @overrides(SimulatorInterface.placements)
     def placements(self):
         return self._placements
 
@@ -2381,10 +2371,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._txrx
 
     @property
+    @overrides(SimulatorInterface.tags)
     def tags(self):
-        """
-        :rtype: ~pacman.model.tags.Tags
-        """
         return self._tags
 
     @property
@@ -2423,6 +2411,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._none_labelled_edge_count += 1
 
     @property
+    @overrides(SimulatorInterface.use_virtual_board)
     def use_virtual_board(self):
         """ True if this run is using a virtual machine
 

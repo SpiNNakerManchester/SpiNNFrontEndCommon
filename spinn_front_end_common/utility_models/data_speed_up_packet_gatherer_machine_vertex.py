@@ -354,10 +354,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         return self.static_resources_required()
 
     def update_transaction_id_from_machine(self, txrx):
-        """ looks up from the machine what the current transaction id is
-        and updates the data speed up lpg.
+        """ looks up from the machine what the current transaction ID is\
+            and updates the data speed up gatherer.
 
-        :param txrx: SpiNNMan instance
+        :param ~spinnman.transceiver.Transceiver txrx: SpiNNMan instance
         :rtype: None
         """
         self._transaction_id = txrx.read_user_1(
@@ -712,6 +712,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~pacman.model.placements.Placement placement:
         :param SDP_PORTS port:
         :param bytearray payload:
+        :rtype: ~spinnman.messages.sdp.SDPMessage
         """
         return SDPMessage(
             sdp_header=SDPHeader(
@@ -910,7 +911,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param position: the position in the data to write to spinnaker
         :type position: int or None
         :return: SDP message and how much data has been written
-        :rtype: SDP message
+        :rtype: tuple(~spinnman.messages.sdp.SDPMessage, int)
         """
 
         # check for last packet
@@ -952,9 +953,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         return message, packet_data_length
 
     def _send_location(self, start_address):
-        """ send location as separate message
+        """ Send location as separate message.
 
-        :param start_address: sdram location
+        :param int start_address: sdram location
         :rtype: None
         """
         self._connection.send_sdp_message(self.__make_sdp_message(
@@ -968,17 +969,15 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self._transaction_id, start_address))
 
     def _send_tell_flag(self):
-        """  send end flag as separate message
-        :rtype: None
+        """ Send end flag as separate message.
         """
-
         self._connection.send_sdp_message(self.__make_sdp_message(
             self._placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP,
             _TWO_WORDS.pack(
                 DATA_IN_COMMANDS.SEND_TELL.value, self._transaction_id)))
 
     def _send_all_data_based_packets(self, data_to_write):
-        """ Send all the data as one block
+        """ Send all the data as one block.
 
         :param bytearray data_to_write: the data to send
         """
@@ -1086,6 +1085,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             placements, extra_monitor_cores, transceiver)
 
     def set_router_time_outs(self, timeout, transceiver, placements):
+        """
+        :param tuple(int,int) timeout:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placements placements:
+        """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterTimeoutProcess(
@@ -1099,6 +1103,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise
 
     def set_router_emergency_timeout(self, timeout, transceiver, placements):
+        """
+        :param tuple(int,int) timeout:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placements placements:
+        """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterEmergencyTimeoutProcess(
@@ -1114,10 +1123,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     def clear_reinjection_queue(self, transceiver, placements):
         """ Clears the queues for reinjection
 
-        :param transceiver: the spinnMan interface
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placements: the placements object
-        :type placements: ~pacman.model.placements.Placements
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnMan interface
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
         """
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = ClearQueueProcess(transceiver.scamp_connection_selector)
@@ -1288,6 +1297,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~spinnman.connections.udp_packet_connections.UDPConnection \
                 connection:
         :param int transaction_id:
+        :rtype: list(int)
         """
         seq_nums = set()
         lost_seq_nums = list()
@@ -1332,10 +1342,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param dict(tuple(int,int),?) fixed_routes:
             the fixed routes for each router
         :param ~spinn_machine.Machine machine: the spinnMachine instance
-        :return: list of chip IDs
+        :return: list of chip locations
+        :rtype: list(tuple(int,int))
         """
-        routers = list()
-        routers.append((placement.x, placement.y))
+        routers = [(placement.x, placement.y)]
         entry = fixed_routes[placement.x, placement.y]
         chip_x = placement.x
         chip_y = placement.y
@@ -1501,6 +1511,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             the list of n sequence numbers lost per iteration
         :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
+        :rtype: tuple(set(int), bool)
         """
         # pylint: disable=too-many-arguments
         # self._print_out_packet_data(data)
@@ -1552,6 +1563,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _calculate_offset(seq_num):
+        """
+        :param int seq_num:
+        :rtype: int
+        """
         return (seq_num * WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
                 BYTES_PER_WORD)
 
@@ -1655,11 +1670,17 @@ class DataSpeedUpPacketGatherMachineVertex(
 
 class _StreamingContextManager(object):
     """ The implementation of the context manager object for streaming \
-    configuration control.
+        configuration control.
     """
     __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
 
     def __init__(self, gatherers, txrx, monitors, placements):
+        """
+        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param list(ExtraMonitorSupportMachineVertex) monitors:
+        :param ~pacman.model.placements.Placements placements:
+        """
         self._gatherers = list(gatherers)
         self._txrx = txrx
         self._monitors = monitors

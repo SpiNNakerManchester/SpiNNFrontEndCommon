@@ -302,7 +302,7 @@ class LivePacketGatherMachineVertex(
     def get_cpu_usage():
         """ Get the CPU used by this vertex
 
-        :return:  0
+        :return: 0
         :rtype: int
         """
         return 0
@@ -322,5 +322,7 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_dtcm_usage():
         """ Get the DTCM used by this vertex
+
+        :rtype: int
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE

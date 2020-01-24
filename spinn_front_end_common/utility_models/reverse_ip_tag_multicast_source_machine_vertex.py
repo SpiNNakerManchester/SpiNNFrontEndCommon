@@ -76,7 +76,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         SendsBuffersFromHostPreBufferedImpl,
         AbstractReceiveBuffersToHost, AbstractRecordable):
     """ A model which allows events to be injected into SpiNNaker and\
-        converted in to multicast packets
+        converted in to multicast packets.
     """
 
     class _REGIONS(Enum):
@@ -236,6 +236,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def _max_send_buffer_keys_per_timestep(send_buffer_times, n_keys):
+        """
+        :param send_buffer_times: When events will be sent
+        :type send_buffer_times: \
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+            list(~numpy.ndarray(numpy.int32)) or None
+        :param int n_keys:
+        :rtype: int
+        """
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             counts = numpy.bincount(numpy.concatenate(send_buffer_times))
             if len(counts):
@@ -360,6 +368,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int machine_time_step: What the machine timestep is
         :param float receive_rate: What the expected message receive rate is
         :param int n_keys: How many keys are being sent
+        :rtype: ~pacman.model.resources.VariableSDRAM
         """
         static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
@@ -390,6 +399,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @staticmethod
     def _n_regions_to_allocate(send_buffering, recording):
         """ Get the number of regions that will be allocated
+
+        :param bool send_buffering:
+        :param bool recording:
+        :rtype: int
         """
         if recording and send_buffering:
             return 5
@@ -399,6 +412,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @property
     def send_buffer_times(self):
+        """ When events will be sent.
+
+        :rtype:
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+            list(~numpy.ndarray(numpy.int32)) or None
+        """
         return self._send_buffer_times
 
     @send_buffer_times.setter
@@ -408,6 +427,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _is_in_range(
             self, time_stamp_in_ticks,
             first_machine_time_step, n_machine_time_steps):
+        """
+        :param int time_stamp_in_ticks:
+        :param int first_machine_time_step:
+        :param n_machine_time_steps:
+        :type n_machine_time_steps: int or None
+        """
         return (n_machine_time_steps is None) or (
             first_machine_time_step <= time_stamp_in_ticks <
             n_machine_time_steps)
@@ -415,8 +440,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _fill_send_buffer(
             self, first_machine_time_step, run_until_timesteps):
         """ Fill the send buffer with keys to send
-        """
 
+        :param int first_machine_time_step:
+        :param int run_until_timesteps:
+        """
         key_to_send = self._virtual_key
         if self._virtual_key is None:
             key_to_send = 0
@@ -436,6 +463,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def __fill_send_buffer_2d(
             self, key_base, first_time_step, n_time_steps):
+        """
+        :param int key_base:
+        :param int first_time_step:
+        :param int n_time_steps:
+        """
         for key in range(self._n_keys):
             for tick in sorted(self._send_buffer_times[key]):
                 if self._is_in_range(tick, first_time_step, n_time_steps):
@@ -443,6 +475,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def __fill_send_buffer_1d(
             self, key_base, first_time_step, n_time_steps):
+        """
+        :param int key_base:
+        :param int first_time_step:
+        :param int n_time_steps:
+        """
         key_list = [key + key_base for key in xrange(self._n_keys)]
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, n_time_steps):
@@ -450,12 +487,21 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
+        """
+        :param spinnman.messages.eieio.EIEIOPrefix prefix_type:
+        :param int virtual_key:
+        :rtype: int
+        """
         if prefix_type == EIEIOPrefix.LOWER_HALF_WORD:
             return virtual_key & 0xFFFF
         return (virtual_key >> 16) & 0xFFFF
 
     @staticmethod
     def _calculate_mask(n_neurons):
+        """
+        :param int n_neurons:
+        :rtype: int
+        """
         temp_value = n_neurons.bit_length()
         max_key = 2**temp_value - 1
         mask = 0xFFFFFFFF - max_key
@@ -467,6 +513,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._is_recording = new_state
 
     def _reserve_regions(self, spec, n_machine_time_steps):
+        """
+        :param ~data_specification.DataSpecificationGenerator spec:
+        :param int n_machine_time_steps:
+        """
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
@@ -528,6 +578,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def _write_configuration(self, spec, machine_time_step,
                              time_scale_factor):
+        """
+        :param ~data_specification.DataSpecificationGenerator spec:
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        """
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
@@ -708,6 +763,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return self._send_buffers
 
     def get_region_buffer_size(self, region):
+        """
+        :param int region: Region ID
+        :return: Size of buffer, in bytes.
+        :rtype: int
+        """
         if region == self._REGIONS.SEND_BUFFER.value:
             return self._send_buffer_size
         return 0

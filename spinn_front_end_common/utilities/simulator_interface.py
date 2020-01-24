@@ -27,19 +27,24 @@ class SimulatorInterface(object):
     def add_socket_address(self, socket_address):
         """ Add the address of a socket used in the run notification protocol.
 
-        :param socket_address: The address of the socket
-        :type socket_address: ~spinn_utilities.socket_address.SocketAddress
+        :param ~spinn_utilities.socket_address.SocketAddress socket_address:
+            The address of the socket
         :rtype: None
         """
 
     @abstractproperty
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
+
+        :rtype:
+            ~spinn_front_end_common.interface.buffer_management.BufferManager
         """
 
     @abstractproperty
     def config(self):
         """ Provides access to the configuration for front end interfaces.
+
+        :rtype: ~spinn_front_end_common.interface.ConfigHandler
         """
 
     @abstractproperty
@@ -63,7 +68,10 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def machine_time_step(self):
-        pass
+        """ The machine timestep, in microseconds.
+
+        :rtype: int
+        """
 
     @abstractproperty
     def no_machine_time_steps(self):
@@ -81,17 +89,21 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def tags(self):
-        pass
+        """
+        :rtype: ~pacman.model.tags.Tags
+        """
 
     @abstractproperty
     def time_scale_factor(self):
-        pass
+        """
+        :rtype: int
+        """
 
     @abstractmethod
     def run(self, run_time):
         """ Run a simulation for a fixed amount of time
 
-        :param run_time: the run duration in milliseconds.
+        :param int run_time: the run duration in milliseconds.
         """
 
     @abstractmethod
@@ -108,4 +120,6 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def use_virtual_board(self):
-        pass
+        """
+        :rtype: bool
+        """

@@ -36,9 +36,8 @@ TIMESTAMP_FILENAME = "time_stamp"
 
 
 class ConfigHandler(object):
-    """
-    Subclass of AbstractSpinnaker base that handles function only dependent
-    of the config and the order its methods are called
+    """ Superclass of AbstractSpinnakerBase that handles function only \
+        dependent of the config and the order its methods are called.
     """
 
     __slots__ = [
