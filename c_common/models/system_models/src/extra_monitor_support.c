@@ -52,21 +52,18 @@ enum {
 // magic numbers for data speed up extractor
 //-----------------------------------------------------------------------------
 
-//! flag size for saying ended
+//! flag size for saying ended, in bytes
 #define END_FLAG_SIZE 4
-
 //! flag for saying stuff has ended
-#define END_FLAG 0xFFFFFFFF
+#define END_FLAG      0xFFFFFFFF
 
-//! items per SDP packet for sending
-#define ITEMS_PER_DATA_PACKET 68
-
-#define SEQUENCE_NUMBER_SIZE 1
-#define TRANSACTION_ID_SIZE 1
-
-#define SDP_PAYLOAD_WORDS ( \
-    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE - TRANSACTION_ID_SIZE)
-#define SDP_PAYLOAD_BYTES (SDP_PAYLOAD_WORDS * sizeof(uint))
+enum {
+    SEQUENCE_NUMBER_SIZE = 1,
+    TRANSACTION_ID_SIZE = 1,
+    SDP_PAYLOAD_WORDS =
+            ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE - TRANSACTION_ID_SIZE,
+    SDP_PAYLOAD_BYTES = SDP_PAYLOAD_WORDS * sizeof(uint)
+};
 
 #define TX_NOT_FULL_MASK 0x10000000
 
@@ -123,7 +120,7 @@ typedef enum data_out_sdp_commands {
 //-----------------------------------------------------------------------------
 
 //! throttle power on the MC transmissions if needed (assume not needed)
-#define TDMA_WAIT_PERIOD 0
+#define TDMA_WAIT_PERIOD   0
 
 // The initial timeout of the router
 #define ROUTER_INITIAL_TIMEOUT 0x004f0000
@@ -197,26 +194,6 @@ enum {
 // ------------------------------------------------------------------------
 // structs used in system
 // ------------------------------------------------------------------------
-
-//! struct for a SDP message with pure data, no SCP header
-typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
-    struct sdp_msg *next;		// Next in free list
-    uint16_t length;		// length
-    uint16_t checksum;		// checksum (if used)
-
-    // sdp_hdr_t
-    uint8_t flags;	    	// SDP flag byte
-    uint8_t tag;		      	// SDP IPtag
-    uint8_t dest_port;		// SDP destination port/CPU
-    uint8_t srce_port;		// SDP source port/CPU
-    uint16_t dest_addr;		// SDP destination address
-    uint16_t srce_addr;		// SDP source address
-
-    // User data (272 bytes when no SCP header)
-    uint32_t data[ITEMS_PER_DATA_PACKET];
-
-    uint32_t _PAD;		// Private padding
-} sdp_msg_pure_data;
 
 //! dumped packet type
 typedef struct dumped_packet_t {
@@ -470,6 +447,14 @@ static inline uint sdram_max_block_size(void) {
 // reinjector main functions
 // ------------------------------------------------------------------------
 
+static inline void enable_comms_interrupt(void) {
+    vic[VIC_ENABLE] = 1 << CC_TNF_INT;
+}
+
+static inline void disable_comms_interrupt(void) {
+    vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+}
+
 //! \brief the plugin callback for the timer
 static INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
@@ -486,7 +471,7 @@ static INT_HANDLER reinjection_timer_callback(void) {
             cpu_int_restore(cpsr);
 
             // enable communications controller. interrupt to bounce packets
-            vic[VIC_ENABLE] = 1 << CC_TNF_INT;
+            enable_comms_interrupt();
         } else {
             // restore FIQ after queue access
             cpu_int_restore(cpsr);
@@ -532,17 +517,17 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
             cc[CC_TXKEY] = key;
 
             // Add to statistics
-            n_reinjected_packets += 1;
+            n_reinjected_packets++;
         } else {
             // restore FIQ after queue access,
             cpu_int_restore(cpsr);
 
             // and disable communications controller interrupts
-            vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+            disable_comms_interrupt();
         }
     } else {
         // disable communications controller interrupts
-        vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+        disable_comms_interrupt();
     }
 
     // and tell VIC we're done
@@ -571,7 +556,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
 
         // check for overflow from router
         if (rtr_dstat & RTR_DOVRFLW_MASK) {
-            n_missed_dropped_packets += 1;
+            n_missed_dropped_packets++;
         } else {
             // Note that the processor_dump and link_dump flags are sticky
             // so you can only really count these if you *haven't* missed a
@@ -595,7 +580,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
         }
 
         // Only update this counter if this is a packet to reinject
-        n_dropped_packets += 1;
+        n_dropped_packets++;
 
         // Disable FIQ for queue access
         uint cpsr = cpu_fiq_disable();
@@ -614,7 +599,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
             pkt_queue.tail = new_tail;
         } else {
             // The queue of packets has overflowed
-            n_dropped_packet_overflows += 1;
+            n_dropped_packet_overflows++;
         }
 
         // restore FIQ after queue access,
@@ -663,7 +648,7 @@ static inline void reinjection_set_timeout(uint payload) {
             | ((payload & ROUTER_TIMEOUT_MASK) << 16);
 }
 
-static inline void reinjection_set_emergency_timeout(uint payload){
+static inline void reinjection_set_emergency_timeout(uint payload) {
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
             | ((payload & ROUTER_TIMEOUT_MASK) << 24);
 }
@@ -691,7 +676,7 @@ static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
 
     reinjection_set_emergency_timeout(msg->arg1);
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
@@ -703,7 +688,7 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_fr = msg->arg3;
     reinject_nn = msg->data[0];
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
@@ -740,7 +725,7 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
         }
     }
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     // Return the number of bytes in the packet
     return sizeof(reinjector_status_response_packet_t);
@@ -755,7 +740,7 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
     n_link_dumped_packets = 0;
     n_processor_dumped_packets = 0;
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
@@ -763,16 +748,16 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
 static inline int reinjection_exit(sdp_msg_t *msg) {
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
     vic[VIC_DISABLE] = int_select;
-    vic[VIC_DISABLE] = (1 << CC_TNF_INT);
+    disable_comms_interrupt();
     vic[VIC_SELECT] = 0;
     run = false;
 
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
 
-static void reinjection_clear(void){
+static void reinjection_clear(void) {
     // Disable FIQ for queue access
     uint cpsr = cpu_fiq_disable();
     // Clear any stored dropped packets
@@ -781,12 +766,12 @@ static void reinjection_clear(void){
     // restore FIQ after queue access,
     cpu_int_restore(cpsr);
     // and disable communications controller interrupts
-    vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+    disable_comms_interrupt();
 }
 
 static inline int reinjection_clear_message(sdp_msg_t *msg) {
     reinjection_clear();
-    // set SCP command to OK , as successfully completed
+    // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
@@ -868,20 +853,22 @@ static void data_in_clear_router(void) {
     // clear the currently loaded routing table entries
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES;
             entry_id < N_ROUTER_ENTRIES; entry_id++) {
-        //io_printf(IO_BUF, "clearing entry %d \n", entry_id);
+        //io_printf(IO_BUF, "clearing entry %d\n", entry_id);
         if (rtr_mc_get(entry_id, &router_entry) &&
                 router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
                 router_entry.mask != INVALID_ROUTER_ENTRY_MASK) {
             rtr_free(entry_id, 1);
         }
     }
-    //io_printf(IO_BUF, "\n\nmax free block is %d\n\n", rtr_alloc_max());
+    //io_printf(IO_BUF, "max free block is %d\n", rtr_alloc_max());
 }
 
 static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
-        //uint written_words = data_in_write_address - first_write_address;
-        //io_printf(IO_BUF, "Wrote %u words\n", written_words);
+#if 0
+        uint written_words = data_in_write_address - first_write_address;
+        io_printf(IO_BUF, "Wrote %u words\n", written_words);
+#endif
         data_in_write_address = NULL;
     }
     first_write_address = NULL;
@@ -998,15 +985,15 @@ static void data_in_save_router(void) {
 
         if (router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
                 router_entry.mask != INVALID_ROUTER_ENTRY_MASK &&
-                router_entry.route != INVALID_ROUTER_ENTRY_ROUTE){
+                router_entry.route != INVALID_ROUTER_ENTRY_ROUTE) {
             // move to sdram
             saved_application_router_table[
-                application_table_n_valid_entries].key = router_entry.key;
+                    application_table_n_valid_entries].key = router_entry.key;
             saved_application_router_table[
-                application_table_n_valid_entries].mask = router_entry.mask;
+                    application_table_n_valid_entries].mask = router_entry.mask;
             saved_application_router_table[
-                application_table_n_valid_entries].route = router_entry.route;
-            application_table_n_valid_entries += 1;
+                    application_table_n_valid_entries].route = router_entry.route;
+            application_table_n_valid_entries++;
         }
     }
 }
@@ -1062,9 +1049,8 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
         break;
     case SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES:
         if (last_table_load_was_system) {
-            io_printf(
-                IO_BUF,
-                "Already loaded system router. ignoring but replying\n");
+            io_printf(IO_BUF,
+                    "Already loaded system router; ignoring but replying\n");
             msg->cmd_rc = RC_OK;
             break;
         }
@@ -1110,7 +1096,6 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 static void data_out_send_data_block(
         uint32_t current_dma_pointer, uint32_t n_elements_to_send,
         uint32_t first_packet_key, uint32_t second_packet_key) {
-
     // send data
     for (uint i = 0; i < n_elements_to_send; i++) {
         uint32_t current_data = data_to_transmit[current_dma_pointer][i];
@@ -1257,21 +1242,21 @@ static void data_out_store_missing_seq_nums(
         if (missing_sdp_seq_num_sdram_address == NULL) {
             // biggest sdram block
             uint32_t max_bytes = sdram_max_block_size();
-
-            // if can hold more than this packets worth of data
-            if (max_bytes >= SDP_PAYLOAD_BYTES + END_FLAG_SIZE) {
-                io_printf(IO_BUF, "Activate bacon protocol!");
-                // allocate biggest block
-                missing_sdp_seq_num_sdram_address = sdram_alloc(max_bytes);
-                // determine max full seq num packets to store
-                max_bytes -= END_FLAG_SIZE + SDP_PAYLOAD_BYTES;
-                n_missing_seq_sdp_packets = 1
-                        + max_bytes / (ITEMS_PER_DATA_PACKET * sizeof(uint));
-            } else {
+            // if can't hold more than this packets worth of data, blow up
+            if (max_bytes < SDP_PAYLOAD_BYTES + END_FLAG_SIZE) {
                 io_printf(IO_BUF,
-                        "Can't allocate SDRAM for missing seq nums!!\n");
+                        "Can't allocate SDRAM for missing seq nums\n");
                 rt_error(RTE_SWERR);
             }
+
+            io_printf(IO_BUF, "Activate bacon protocol!");
+
+            // allocate biggest block
+            missing_sdp_seq_num_sdram_address = sdram_alloc(max_bytes);
+            // determine max full seq num packets to store
+            max_bytes -= END_FLAG_SIZE + SDP_PAYLOAD_BYTES;
+            n_missing_seq_sdp_packets = 1
+                    + max_bytes / (ITEMS_PER_DATA_PACKET * sizeof(uint));
         }
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
     }
@@ -1281,8 +1266,7 @@ static void data_out_store_missing_seq_nums(
                 data, length, start_reading_offset);
         n_missing_seq_sdp_packets -= 1;
     } else {
-        io_printf(IO_BUF,
-                "Unable to save missing sequence number\n");
+        io_printf(IO_BUF, "Unable to save missing sequence number\n");
     }
 }
 
@@ -1316,15 +1300,15 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     if (missing_seq_num_being_processed != END_FLAG) {
         // regenerate data
         position_in_store = missing_seq_num_being_processed * SDP_PAYLOAD_WORDS;
-        uint32_t left_over_portion = (
-            n_elements_to_read_from_sdram - position_in_store);
+        uint32_t left_over_portion =
+                n_elements_to_read_from_sdram - position_in_store;
 
         if (left_over_portion < SDP_PAYLOAD_WORDS) {
             retransmitted_seq_num_items_read = left_over_portion + 1;
             data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
         } else {
-            retransmitted_seq_num_items_read = (
-                ITEMS_PER_DATA_PACKET- TRANSACTION_ID_SIZE);
+            retransmitted_seq_num_items_read =
+                    ITEMS_PER_DATA_PACKET - TRANSACTION_ID_SIZE;
             data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, SDP_PAYLOAD_WORDS);
         }
     } else {        // finished data send, tell host its done
@@ -1343,7 +1327,7 @@ static void data_out_dma_complete_reading_retransmission_data(void) {
     data_to_transmit[transmit_dma_pointer][0] = missing_seq_num_being_processed;
     if (missing_seq_num_being_processed > max_seq_num) {
         io_printf(IO_BUF,
-                "Got some bad seq num here. max is %d and got %d \n",
+                "Got some bad seq num here; max is %d, got %d\n",
                 max_seq_num, missing_seq_num_being_processed);
     }
 
@@ -1352,7 +1336,7 @@ static void data_out_dma_complete_reading_retransmission_data(void) {
             transmit_dma_pointer, retransmitted_seq_num_items_read,
             new_sequence_key, basic_data_key);
 
-    position_in_read_data += 1;
+    position_in_read_data++;
     data_out_dma_complete_read_missing_seqeuence_nums();
 }
 
@@ -1369,7 +1353,6 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
 
     switch (message->command) {
     case SDP_CMD_START_SENDING_DATA: {
-
         // updater transaction id if it hits the cap
         if (((transaction_id + 1) & TRANSACTION_CAP) == 0) {
             transaction_id = 0;
@@ -1379,11 +1362,10 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         // if transaction id is not as expected. ignore it as its from the past.
         // and worthless
         if (message->transaction_id != transaction_id + 1) {
-            io_printf(
-                IO_BUF,
-                "received a start message with transaction id %d which was "
-                "not what i expect, as mine is %d\n",
-                message->transaction_id, transaction_id + 1);
+            io_printf(IO_BUF,
+                    "received start message with unexpected "
+                    "transaction id %d; mine is %d\n",
+                    message->transaction_id, transaction_id + 1);
             return;
         }
 
@@ -1417,10 +1399,10 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     }
     case SDP_CMD_START_OF_MISSING_SDP_PACKETS:
         if (message->transaction_id != transaction_id) {
-            io_printf(
-                IO_BUF, "received data from a different transaction for "
-                       "start of missing. expected %d got %d\n",
-                       transaction_id, message->transaction_id);
+            io_printf(IO_BUF,
+                    "received data from a different transaction for "
+                    "start of missing. expected %d got %d\n",
+                    transaction_id, message->transaction_id);
             return;
         }
 
@@ -1428,8 +1410,8 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         if (n_missing_seq_sdp_packets != 0) {
             io_printf(IO_BUF, "forcing start of retransmission packet\n");
             n_missing_seq_sdp_packets = 0;
-            missing_sdp_seq_num_sdram_address[
-                    n_missing_seq_nums_in_sdram++] = END_FLAG;
+            missing_sdp_seq_num_sdram_address[n_missing_seq_nums_in_sdram++] =
+                    END_FLAG;
             position_in_read_data = 0;
             position_for_retransmission = 0;
             in_retransmission_mode = true;
@@ -1439,11 +1421,10 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         // fall through
     case SDP_CMD_MORE_MISSING_SDP_PACKETS:
         if (message->transaction_id != transaction_id) {
-            io_printf(
-                IO_BUF,
-                "received data from a different transaction for more "
-                "missing. expected %d, got %d\n",
-                transaction_id, message->transaction_id);
+            io_printf(IO_BUF,
+                    "received data from different transaction for more "
+                    "missing; expected %d, got %d\n",
+                    transaction_id, message->transaction_id);
             return;
         }
 
@@ -1474,11 +1455,10 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         return;
     case SDP_CMD_CLEAR:
         if (message->transaction_id != transaction_id) {
-            io_printf(
-                IO_BUF,
-                "received data from a different transaction for "
-                "clear. expected %d, got %d\n",
-                transaction_id, message->transaction_id);
+            io_printf(IO_BUF,
+                    "received data from different transaction for "
+                    "clear; expected %d, got %d\n",
+                    transaction_id, message->transaction_id);
             return;
         }
         io_printf(IO_BUF, "data out clear\n");
@@ -1510,7 +1490,7 @@ static INT_HANDLER data_out_dma_complete(void) {
             data_out_dma_complete_writing_missing_seq_to_sdram();
             break;
         default:
-            io_printf(IO_BUF, "Invalid DMA callback port: %d!\n",
+            io_printf(IO_BUF, "Invalid DMA callback port: %d\n",
                     dma_port_last_used);
             rt_error(RTE_SWERR);
         }
@@ -1521,7 +1501,7 @@ static INT_HANDLER data_out_dma_complete(void) {
 
 //! \brief the handler for DMA errors
 static INT_HANDLER data_out_dma_error(void) {
-    io_printf(IO_BUF, "DMA failed: 0x%08x!\n", dma[DMA_STAT]);
+    io_printf(IO_BUF, "DMA failed: 0x%08x\n", dma[DMA_STAT]);
     dma[DMA_CTRL] = 0x4;
     vic[VIC_VADDR] = (uint) vic;
     rt_error(RTE_DABT);
@@ -1529,7 +1509,7 @@ static INT_HANDLER data_out_dma_error(void) {
 
 //! \brief the handler for DMA timeouts (hopefully unlikely...)
 static INT_HANDLER data_out_dma_timeout(void) {
-    io_printf(IO_BUF, "DMA timeout: 0x%08x!\n", dma[DMA_STAT]);
+    io_printf(IO_BUF, "DMA timeout: 0x%08x\n", dma[DMA_STAT]);
     dma[DMA_CTRL] = 0x10;
     vic[VIC_VADDR] = (uint) vic;
 }
@@ -1646,12 +1626,11 @@ static void data_out_initialise(void) {
     transaction_id_key = config->transaction_id_key;
     end_flag_key = config->end_flag_key;
 
-    io_printf(
-        IO_BUF,
-        "new seq key = %d, first data key = %d, transaction id key = %d, "
-        "end flag key = %d, basic_data_key = %d",
-        new_sequence_key, first_data_key, transaction_id_key, end_flag_key,
-        basic_data_key);
+    io_printf(IO_BUF,
+            "new seq key = %d, first data key = %d, transaction id key = %d, "
+            "end flag key = %d, basic_data_key = %d\n",
+            new_sequence_key, first_data_key, transaction_id_key,
+            end_flag_key, basic_data_key);
 
     // Various DMA callbacks
     set_vic_callback(DMA_SLOT, DMA_DONE_INT, data_out_dma_complete);
@@ -1714,7 +1693,7 @@ void c_main(void) {
             (1 << DMA_DONE_INT) | (1 << CC_MC_INT) |
             (1 << DMA_ERR_INT) | (1 << DMA_TO_INT);
     vic[VIC_DISABLE] = int_select;
-    vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+    disable_comms_interrupt();
 
     // set up reinjection functionality
     reinjection_initialise();
