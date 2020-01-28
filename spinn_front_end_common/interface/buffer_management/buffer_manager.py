@@ -613,11 +613,12 @@ class BufferManager(object):
                 self._java_caller.get_all_data()
                 if progress:
                     progress.end()
+                return 0
             elif self._uses_advanced_monitors:
-                self.__old_get_data_for_placements_with_monitors(
+                return self.__old_get_data_for_placements_with_monitors(
                     placements, progress)
             else:
-                self.__old_get_data_for_placements(placements, progress)
+                return self.__old_get_data_for_placements(placements, progress)
 
     def __old_get_data_for_placements_with_monitors(
             self, placements, progress):
@@ -633,20 +634,25 @@ class BufferManager(object):
             extra_mon.update_transaction_id_from_machine(self._transceiver)
 
         # Ugly, to avoid an import loop...
+        total = 0
         with receivers[0].streaming(
                 receivers, self._transceiver, self._extra_monitor_cores,
                 self._placements):
             # get data
-            self.__old_get_data_for_placements(placements, progress)
+            total += self.__old_get_data_for_placements(placements, progress)
+        return total
 
     def __old_get_data_for_placements(self, placements, progress):
         # get data
+        total = 0
         for placement in placements:
             vertex = placement.vertex
             for recording_region_id in vertex.get_recorded_region_ids():
-                self._retreive_by_placement(placement, recording_region_id)
+                total += self._retreive_by_placement(
+                    placement, recording_region_id)
                 if progress is not None:
                     progress.update()
+        return total
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """ It is no longer possible to get access to the data pointer.
@@ -691,6 +697,7 @@ class BufferManager(object):
         recording_data_address = \
             placement.vertex.get_recording_region_base_address(
                 self._transceiver, placement)
+        length = 0
 
         # Ensure the last sequence number sent has been retrieved
         if not self._received_data.is_end_buffering_sequence_number_stored(
@@ -823,6 +830,7 @@ class BufferManager(object):
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
+        return length
 
     def _process_last_ack(self, placement, region_id, end_state):
         # if the last ACK packet has not been processed on the chip,

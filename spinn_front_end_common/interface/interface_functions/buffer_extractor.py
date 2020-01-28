@@ -41,11 +41,13 @@ class BufferExtractor(object):
         # Read back the regions
         progress = ProgressBar(
             n_regions_to_read, "Extracting buffers from the last run")
+        total_size = 0
         try:
-            buffer_manager.get_data_for_placements(
+            total_size += buffer_manager.get_data_for_placements(
                 recording_placements, progress)
         finally:
             progress.end()
+        return total_size
 
     @staticmethod
     def _count_regions(machine_graph, placements):

@@ -170,7 +170,7 @@ _FIVE_WORDS = struct.Struct("<IIIII")
 
 # Set to true to check that the data is correct after it has been sent in.
 # This is expensive, and only works in Python 3.5 or later.
-VERIFY_SENT_DATA = True
+VERIFY_SENT_DATA = False
 
 
 def ceildiv(dividend, divisor):
@@ -773,6 +773,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param start_address: the base sdram address
         :rtype: None
         """
+
         # how many packets after first one we need to send
         self._max_seq_num = ceildiv(
             len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)

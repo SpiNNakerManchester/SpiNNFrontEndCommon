@@ -1912,6 +1912,9 @@
             <param_name>buffer_manager</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
+        <outputs>
+            <param_type>TotalDataExtracted</param_type>
+        </outputs>
     </algorithm>
     <algorithm name="ProfileDataGatherer">
         <python_module>spinn_front_end_common.interface.interface_functions.profile_data_gatherer</python_module>

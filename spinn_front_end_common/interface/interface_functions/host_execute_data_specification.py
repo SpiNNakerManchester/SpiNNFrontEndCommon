@@ -37,6 +37,7 @@ from spinn_front_end_common.utilities import globals_variables, \
 from spynnaker.pyNN.models.neuron import PopulationMachineVertex
 from spynnaker.pyNN.models.utility_models.delays import \
     DelayExtensionMachineVertex
+from spynnaker.pyNN.utilities.constants import POPULATION_BASED_REGIONS
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -293,22 +294,36 @@ class HostExecuteDataSpecification(object):
         total_sizes = defaultdict(int)
         matrix_sizes = defaultdict(int)
         connection_build_sizes = defaultdict(int)
+        total_sizes_vertex = defaultdict(int)
 
         for core, reader in progress.over(iteritems(dsg_targets)):
             x, y, p = core
             chip = self._machine.get_chip_at(x, y)
-            data_written, matrix, connection, total = self.__python_execute(
-                core, reader,
-                self.__select_writer(x, y)
-                if use_monitors else self._txrx.write_memory,
-                base_addresses[core], region_sizes[core],
-                self._placements.get_vertex_on_processor(x, y, p))
+            data_written, matrix, connection, total, executor = \
+                self.__python_execute(
+                    core, reader,
+                    self.__select_writer(x, y)
+                    if use_monitors else self._txrx.write_memory,
+                    base_addresses[core], region_sizes[core],
+                    self._placements.get_vertex_on_processor(x, y, p))
             self._write_info_map[core] = data_written
+
+            vertex = self._placements.get_vertex_on_processor(x, y, p)
+
+            for region_id in _MEM_REGIONS:
+                region = executor.get_region(region_id)
+                if region is not None:
+                    total_sizes[(x, y, p, region_id)] = \
+                        region.max_write_pointer
+                    total_sizes_vertex[(vertex.label, region_id)] = \
+                        region.max_write_pointer
+
+
             # write information for the memory map report
-            total_sizes[(x, y, p)] = total
+            total_sizes[(x, y, p, -1)] = total
             total_sizes[
                 (0, chip.nearest_ethernet_x, chip.nearest_ethernet_y)] += total
-            total_sizes[(-1, -1, -1)] += total
+            total_sizes[(-1, -1, -1, -1)] += total
 
             matrix_sizes[(x, y, p)] = matrix
             matrix_sizes[
@@ -453,7 +468,7 @@ class HostExecuteDataSpecification(object):
 
         for core, reader in progress.over(iteritems(sys_targets)):
             x, y, p = core
-            data_written, matrix, connection, total = self.__python_execute(
+            data_written, matrix, connection, total, ex = self.__python_execute(
                 core, reader, self._txrx.write_memory, base_addresses[core],
                 region_sizes[core],
                 self._placements.get_vertex_on_processor(x, y, p))
@@ -510,7 +525,11 @@ class HostExecuteDataSpecification(object):
 
         if isinstance(machine_vertex, PopulationMachineVertex):
             matrix_size += executor.get_region(4).max_write_pointer
-            region = executor.get_region(9)
+            region = executor.get_region(10)
+            if region is not None:
+                matrix_size += region.max_write_pointer
+            region = executor.get_region(
+                POPULATION_BASED_REGIONS.CONNECTOR_BUILDER.value)
             if region is not None:
                 connection_builder_size += region.max_write_pointer
         if isinstance(machine_vertex, DelayExtensionMachineVertex):
@@ -542,4 +561,4 @@ class HostExecuteDataSpecification(object):
 
         return (
             DataWritten(base_address, size_allocated, bytes_written),
-            matrix_size, connection_builder_size, total_size)
+            matrix_size, connection_builder_size, total_size, executor)
