@@ -210,6 +210,17 @@ class BufferManager(object):
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
 
+        # Round to word boundaries
+        initial = 0
+        if address & 3:
+            initial = 4 - (address & 3)
+            address &= ~3
+            length += initial
+        final = 0
+        if length & 3:
+            final = 4 - (length & 3)
+            length += final
+
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
@@ -221,7 +232,16 @@ class BufferManager(object):
             txrx_data = transceiver.read_memory(
                 placement_x, placement_y, address, length)
             self._verify_data(extra_mon_data, txrx_data)
-        return extra_mon_data
+
+        # If we rounded to word boundaries, strip the padding junk
+        if initial and final:
+            return extra_mon_data[initial:-final]
+        elif initial:
+            return extra_mon_data[initial:]
+        elif final:
+            return extra_mon_data[:-final]
+        else:
+            return extra_mon_data
 
     def _verify_data(self, extra_mon_data, txrx_data):
         for index, (extra_mon_element, txrx_element) in enumerate(
