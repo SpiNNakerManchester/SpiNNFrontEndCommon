@@ -70,6 +70,7 @@ typedef struct {
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
 //! \param[in] size_bytes the number of bytes that this data will take up.
+//!            This may be any number of bytes, not just whole words.
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_record(
@@ -80,6 +81,8 @@ bool recording_record(
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
 //! \param[in] size_bytes the number of bytes that this data will take up.
+//!            This must be in whole words if the callback is supplied due to
+//!            limitations in the DMA engine.
 //! \param[in] callback callback to call when the recording has completed
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
