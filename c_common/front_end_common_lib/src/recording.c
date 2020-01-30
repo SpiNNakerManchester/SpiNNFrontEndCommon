@@ -421,7 +421,7 @@ static void buffering_in_handler(uint mailbox, uint port) {
     log_debug("Done freeing message");
 }
 
-static bool record_and_notify(
+bool recording_do_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
     if (has_been_initialised(channel)) {
@@ -446,22 +446,6 @@ static bool record_and_notify(
         callback();
     }
     return false;
-}
-
-bool recording_record_and_notify(
-        uint8_t channel, void *data, uint32_t size_bytes,
-        recording_complete_callback_t callback) {
-    if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
-	log_error("DMA transfer of non-word data quantity!");
-        rt_error(RTE_SWERR);
-    }
-    return record_and_notify(channel, data, size_bytes, callback);
-}
-
-bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
-    // Because callback is NULL, spin1_memcpy will be used
-    // and that means that non-word transfers are supported.
-    return record_and_notify(channel, data, size_bytes, NULL);
 }
 
 //! \brief this writes the state data to the regions
