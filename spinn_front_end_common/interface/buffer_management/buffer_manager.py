@@ -30,6 +30,7 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.utilities.exceptions import (
@@ -211,15 +212,11 @@ class BufferManager(object):
                 placement_x, placement_y, address, length)
 
         # Round to word boundaries
-        initial = 0
-        if address & 3:
-            initial = 4 - (address & 3)
-            address &= ~3
-            length += initial
-        final = 0
-        if length & 3:
-            final = 4 - (length & 3)
-            length += final
+        initial = address % BYTES_PER_WORD
+        address -= initial
+        length += initial
+        final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
+        length += final
 
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
