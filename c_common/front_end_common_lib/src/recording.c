@@ -24,7 +24,6 @@
 #include <recording.h>
 #include <simulation.h>
 #include <buffered_eieio_defs.h>
-#include <simulation.h>
 #include <sark.h>
 #include <circular_buffer.h>
 #include <spin1_api_params.h>

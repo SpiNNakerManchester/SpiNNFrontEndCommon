@@ -108,7 +108,7 @@ static inline bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
     if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
-	log_error("DMA transfer of non-word data quantity!");
+    	io_printf(IO_BUF, "ERROR: DMA transfer of non-word data quantity!");
         rt_error(RTE_SWERR);
     }
     return recording_do_record_and_notify(channel, data, size_bytes, callback);
