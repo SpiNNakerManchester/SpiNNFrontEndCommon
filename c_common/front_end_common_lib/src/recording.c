@@ -447,6 +447,13 @@ bool recording_do_record_and_notify(
     return false;
 }
 
+__attribute__((noreturn)) void recording_bad_offset(
+	void *data, uint32_t size) {
+    log_error("DMA transfer of non-word data quantity in recording! "
+	    "(data=0x%08x, size=0x%x)", data, size);
+    rt_error(RTE_SWERR);
+}
+
 //! \brief this writes the state data to the regions
 static void recording_buffer_state_data_write(void) {
     for (uint32_t recording_region_id = 0;

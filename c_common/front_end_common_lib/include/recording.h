@@ -93,6 +93,12 @@ static inline bool recording_record(
     return recording_do_record_and_notify(channel, data, size_bytes, NULL);
 }
 
+//! \brief Prints an error about DMA API abuse and RTEs.
+//! \param[in] data the pointer to the data.
+//! \param[in] size the number of bytes in the data.
+__attribute__((noreturn)) void recording_bad_offset(
+	void *data, uint32_t size);
+
 //! \brief records some data into a specific recording channel, calling a
 //!        callback function once complete
 //! \param[in] channel the channel to store the data into.
@@ -108,8 +114,7 @@ static inline bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
     if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
-    	io_printf(IO_BUF, "ERROR: DMA transfer of non-word data quantity!");
-        rt_error(RTE_SWERR);
+	recording_bad_offset(data, size_bytes);
     }
     return recording_do_record_and_notify(channel, data, size_bytes, callback);
 }
