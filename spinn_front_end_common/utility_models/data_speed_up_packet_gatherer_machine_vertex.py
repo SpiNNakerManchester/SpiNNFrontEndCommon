@@ -24,10 +24,6 @@ from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
 
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import \
-    SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess, \
-    ClearQueueProcess
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -53,6 +49,10 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes import \
+    SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess, \
+    ClearQueueProcess
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -392,7 +392,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "time_scale_factor": "TimeScaleFactor",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys",
         "machine": "MemoryExtendedMachine",
@@ -401,13 +400,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "tags", "time_scale_factor",
+            "machine_graph", "routing_info", "tags",
             "mc_data_chips_to_keys", "machine", "app_id", "router_timeout_key"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            time_scale_factor, mc_data_chips_to_keys, machine, app_id,
-            router_timeout_key):
+            mc_data_chips_to_keys, machine, app_id, router_timeout_key):
         """
         :param machine_graph: (injected)
         :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
@@ -415,8 +413,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :type routing_info: ~pacman.model.routing_info.RoutingInfo
         :param tags: (injected)
         :type tags: ~pacman.model.tags.Tags
-        :param time_scale_factor: (injected)
-        :type time_scale_factor: int
         :param mc_data_chips_to_keys: (injected)
         :type mc_data_chips_to_keys: dict(tuple(int,int), int)
         :param machine: (injected)
@@ -640,7 +636,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):
+            cpu=0, is_filename=False):  # pylint: disable=unused-argument
         """ sends a block of data into SpiNNaker to a given chip
 
         :param x: chip x for data
@@ -714,9 +710,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             i = 0
             for (a, b) in zip(original_data, verified_data):
                 if a != b:
-                    break
+                    raise Exception("damn at " + str(i))
                 i += 1
-            raise Exception("damn at " + str(i))
+            raise Exception("NO damn found")
 
     @staticmethod
     def __verify_sent_data_py3(
@@ -729,10 +725,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             for (index, (a, b)) in enumerate(
                     zip(original_data, verified_data)):
                 if a != b:
-                    break
-
-                raise Exception(
-                    "damn at " + str(index))
+                    raise Exception("damn at " + str(index))
+            raise Exception("NO damn found")
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):

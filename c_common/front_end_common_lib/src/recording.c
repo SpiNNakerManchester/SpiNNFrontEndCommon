@@ -24,7 +24,6 @@
 #include <recording.h>
 #include <simulation.h>
 #include <buffered_eieio_defs.h>
-#include <simulation.h>
 #include <sark.h>
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
@@ -421,7 +420,7 @@ static void buffering_in_handler(uint mailbox, uint port) {
     log_debug("Done freeing message");
 }
 
-bool recording_record_and_notify(
+bool recording_do_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
     if (has_been_initialised(channel)) {
@@ -448,12 +447,11 @@ bool recording_record_and_notify(
     return false;
 }
 
-bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
-    // Because callback is NULL, spin1_memcpy will be used
-    if (!recording_record_and_notify(channel, data, size_bytes, NULL)) {
-        return false;
-    }
-    return true;
+__attribute__((noreturn)) void recording_bad_offset(
+	void *data, uint32_t size) {
+    log_error("DMA transfer of non-word data quantity in recording! "
+	    "(data=0x%08x, size=0x%x)", data, size);
+    rt_error(RTE_SWERR);
 }
 
 //! \brief this writes the state data to the regions

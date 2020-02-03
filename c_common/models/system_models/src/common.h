@@ -15,8 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// ------------------------------------------------------------------------
+//
+// Common definitions for the non-SCAMP system binaries.
+//
+// ------------------------------------------------------------------------
+
 #ifndef __COMMON_H__
 #define __COMMON_H__
+#include "common-typedefs.h"
 
 // Dropped packet re-injection internal control commands (RC of SCP message)
 enum reinjector_command_codes {
@@ -37,6 +44,36 @@ typedef enum {
     REINJECTOR_CLEAR_QUEUE_OFFSET = 2,
 } reinjector_key_offsets;
 
+enum {
+    //! How many payload words are in an SDP packet.
+    ITEMS_PER_DATA_PACKET = 68
+};
+
+// ------------------------------------------------------------------------
+// structs used in system
+// ------------------------------------------------------------------------
+
+//! struct for a SDP message with pure data, no SCP header
+typedef struct sdp_msg_pure_data {  // SDP message (=292 bytes)
+    struct sdp_msg *next;           // Next in free list
+    uint16_t length;                // length
+    uint16_t checksum;              // checksum (if used)
+
+    // sdp_hdr_t
+    // The length field measures from HERE...
+    uint8_t flags;                  // SDP flag byte
+    uint8_t tag;                    // SDP IPtag
+    uint8_t dest_port;              // SDP destination port/CPU
+    uint8_t srce_port;              // SDP source port/CPU
+    uint16_t dest_addr;             // SDP destination address
+    uint16_t srce_addr;             // SDP source address
+
+    // User data (272 bytes when no SCP header)
+    uint32_t data[ITEMS_PER_DATA_PACKET];
+
+    uint32_t _PAD;                  // Private padding
+} sdp_msg_pure_data;
+
 // ------------------------------------------------------------------------
 // global variables for the reinjection mc interface
 // ------------------------------------------------------------------------
@@ -52,13 +89,13 @@ static uint reinjection_clear_mc_key = 0;
 
 //! \brief sets up the mc keys for the reinjection mc api
 //! \param[in] base_mc_key: the base key for the api.
-void initialise_reinjection_mc_api(uint32_t base_mc_key){
+static void initialise_reinjection_mc_api(uint32_t base_mc_key) {
     // set the router timeout keys
     reinjection_timeout_mc_key = base_mc_key + ROUTER_TIMEOUT_OFFSET;
     reinjection_emergency_timeout_mc_key =
-        base_mc_key + ROUTER_EMERGENCY_TIMEOUT_OFFSET;
+            base_mc_key + ROUTER_EMERGENCY_TIMEOUT_OFFSET;
     reinjection_clear_mc_key =
-        base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
+            base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
 }
 
 #define SDP_REPLY_HEADER_LEN 12

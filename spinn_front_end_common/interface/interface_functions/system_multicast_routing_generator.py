@@ -30,12 +30,24 @@ ROUTING_MASK = 0xFFFFFFF8
 
 class SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
-    extra monitor cores.
+        extra monitor cores.
+
+    :param ~spinn_machine.Machine machine:
+    :param extra_monitor_cores:
+    :type extra_monitor_cores:
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+    :param ~pacman.model.placements.Placements placements:
     """
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
                  "_placements", "_routing_tables", "_time_out_keys_by_board"]
 
     def __call__(self, machine, extra_monitor_cores, placements):
+        """
+        :type machine: ~spinn_machine.Machine
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
+        :type placements: ~pacman.model.placements.Placements
+        """
         # pylint: disable=attribute-defined-outside-init
         self._machine = machine
         self._placements = placements
@@ -57,12 +69,11 @@ class SystemMulticastRoutingGenerator(object):
                 self._time_out_keys_by_board)
 
     def _generate_routing_tree(self, ethernet_chip):
-        """
-        Generates a map for each chip to over which link it gets its data.
+        """ Generates a map for each chip to over which link it gets its data.
 
-        :param ethernet_chip:
+        :param ~spinn_machine.Chip ethernet_chip:
         :return: Map of chip.x, chip.y tp (source.x, source.y, source.link)
-        :rtype: dict(int.int) = (int, int, int)
+        :rtype: dict(tuple(int, int), tuple(int, int, int))
         """
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
@@ -98,14 +109,14 @@ class SystemMulticastRoutingGenerator(object):
         return tree
 
     def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
-        """
-        Adds a routing entry on this chip. Creating the table if needed
+        """ Adds a routing entry on this chip, creating the table if needed.
 
-        :param x: chip.x
-        :param y: chip.y
-        :param key: The key to use
-        :param processor_id: placement.p of the monitor vertex if applicable
-        :param link_id: If of the link out if applicable
+        :param int x: chip.x
+        :param int y: chip.y
+        :param int key: The key to use
+        :param int processor_id:
+            placement.p of the monitor vertex if applicable
+        :param int link_id: If of the link out if applicable
         """
         table = self._routing_tables.get_routing_table_for_chip(x, y)
         if table is None:
@@ -117,25 +128,23 @@ class SystemMulticastRoutingGenerator(object):
             processor_ids = [processor_id]
         if link_ids is None:
             link_ids = []
-        else:
-            link_ids = link_ids
         entry = MulticastRoutingEntry(
             routing_entry_key=key, mask=ROUTING_MASK,
             processor_ids=processor_ids, link_ids=link_ids, defaultable=False)
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(self, ethernet_chip, tree):
-        """
-        Adds the routing entires based on the tree.
+        """ Adds the routing entires based on the tree.
 
         For every chip with this ethernet:
             - A key is generated (and saved) for this chip.
             - A local route to the monitor core is added.
             - The tree is walked adding a route on each source to get here
 
-        :param ethernet_chip: the ethernet chip to make entries for
-        :param tree: map of chips and links
-        :return:
+        :param ~spinn_machine.Chip ethernet_chip:
+            the ethernet chip to make entries for
+        :param dict(tuple(int,int),tuple(int,int,int)) tree:
+            map of chips and links
         """
         eth_x = ethernet_chip.x
         eth_y = ethernet_chip.y
@@ -155,7 +164,7 @@ class SystemMulticastRoutingGenerator(object):
         links_per_chip = defaultdict(list)
         for chip_key in tree:
             x, y, link = tree[chip_key]
-            links_per_chip[(x, y)].append(link)
+            links_per_chip[x, y].append(link)
 
         # add broadcast router timeout keys
         time_out_key = key

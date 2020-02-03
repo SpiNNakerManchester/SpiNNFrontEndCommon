@@ -801,7 +801,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # Convert dt into microseconds and divide by
         # realtime proportion to get hardware timestep
-        hardware_timestep_us = int(round(lcm_timestep / self.timescale_factor))
+        hardware_timestep_us = int(round(lcm_timestep / self.time_scale_factor))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
@@ -2310,10 +2310,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.machine)
     def machine(self):
         return self._get_machine()
-
-    @property
-    def timescale_factor(self):
-        return self._read_config_int("Machine", "time_scale_factor")
 
     @property
     def machine_graph(self):
