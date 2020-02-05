@@ -20,8 +20,8 @@ import os
 import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
-from pacman.utilities.file_format_converters.convert_to_java_machine import (
-    ConvertToJavaMachine)
+from pacman.operations.algorithm_reports.convert_to_json_machine import (
+    ConvertToJsonMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
@@ -182,7 +182,7 @@ class JavaCaller(object):
         """
         if self._machine_json_path is None:
             path = os.path.join(self._json_folder, "machine.json")
-            self._machine_json_path = ConvertToJavaMachine.do_convert(
+            self._machine_json_path = ConvertToJsonMachine.do_convert(
                 self._machine, path)
         return self._machine_json_path
 

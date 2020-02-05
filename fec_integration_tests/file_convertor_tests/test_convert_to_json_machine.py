@@ -21,8 +21,8 @@ import unittest
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-from pacman.utilities.file_format_converters.convert_to_java_machine import (
-    ConvertToJavaMachine)
+from pacman.operations.algorithm_reports.convert_to_json_machine import (
+    ConvertToJsonMachine)
 from spinn_front_end_common.interface.interface_functions import (
     SpallocAllocator)
 
@@ -74,7 +74,7 @@ class TestConvertJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
 
-        jsonAlgo = ConvertToJavaMachine()
+        jsonAlgo = ConvertToJsonMachine()
 
         fn = "test_spinn4.json"
         filename = jsonAlgo(machine, str(fn))
@@ -113,7 +113,7 @@ class TestConvertJson(unittest.TestCase):
 
         m_allocation_controller.close()
 
-        jsonAlgo = ConvertToJavaMachine()
+        jsonAlgo = ConvertToJsonMachine()
 
         fn = "test_spinn2.json"
         filename = jsonAlgo(machine, str(fn))
