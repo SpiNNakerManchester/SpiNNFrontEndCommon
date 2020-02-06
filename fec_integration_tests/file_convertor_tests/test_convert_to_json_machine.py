@@ -22,7 +22,7 @@ from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
 from pacman.operations.algorithm_reports.convert_to_json_machine import (
-    ConvertToJsonMachine)
+    ConvertToJsonMachine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
     SpallocAllocator)
 
@@ -66,6 +66,13 @@ class TestConvertJson(unittest.TestCase):
                             key, json1[key], json2[key]))
         raise AssertionError("Some wierd difference")
 
+    def _check_folder(self, folder):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        json_file = os.path.join(folder, MACHINE_FILENAME)
+        if os.path.exists(json_file):
+            os.remove(json_file)
+
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
@@ -76,8 +83,9 @@ class TestConvertJson(unittest.TestCase):
 
         jsonAlgo = ConvertToJsonMachine()
 
-        fn = "test_spinn4.json"
-        filename = jsonAlgo(machine, str(fn))
+        folder = "spinn4"
+        self._check_folder(folder)
+        filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -89,10 +97,11 @@ class TestConvertJson(unittest.TestCase):
         chip = machine.get_chip_at(1, 2)
         chip._sdram._size = chip._sdram._size - 101
 
-        fn = "test_spinn4_fiddle.json"
-        filename = jsonAlgo(machine, str(fn))
-        self.json_compare(filename, "spinn4_fiddle.json")
+        folder = "spinn4_fiddle"
+        self._check_folder(folder)
+        filename = jsonAlgo(machine, folder)
 
+        self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
 
     def testSpin2(self):
@@ -115,9 +124,9 @@ class TestConvertJson(unittest.TestCase):
 
         jsonAlgo = ConvertToJsonMachine()
 
-        fn = "test_spinn2.json"
-        filename = jsonAlgo(machine, str(fn))
+        folder = "spinn2"
+        self._check_folder(folder)
+        filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn2.json")
-
         trans.close()
