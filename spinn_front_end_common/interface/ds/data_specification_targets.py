@@ -59,6 +59,12 @@ class DataSpecificationTargets(MutableMapping):
     def __delitem__(self, core):
         raise NotImplementedError("Delete not supported")
 
+    def time_to_load_in_mico_sec(self):
+        return self._db.sum_over_times_loading()
+
+    def sum_over_region_sizes(self):
+        return self._db.sum_over_region_sizes()
+
     def keys(self):
         """ Yields the keys.
 

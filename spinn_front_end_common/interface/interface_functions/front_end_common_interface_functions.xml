@@ -610,6 +610,7 @@
             <param_type>TotalSDRAMTracker</param_type>
             <param_type>MatrixTracker</param_type>
             <param_type>ExpanderTracker</param_type>
+            <param_type>TimeToUseIO</param_type>
             <token part="DSGDataLoaded">DataLoaded</token>
             <token part="DSGAppDataLoaded">DataLoaded</token>
         </outputs>

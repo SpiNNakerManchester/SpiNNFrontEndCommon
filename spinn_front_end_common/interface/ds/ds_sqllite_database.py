@@ -147,6 +147,22 @@ class DsSqlliteDatabase(object):
                 return row["content"]
         return b""
 
+    def sum_over_times_loading(self):
+        with self._db:
+            for row in self._db.execute(
+                    "SELECT SUM(time) as content FROM core WHERE "
+                    "is_system = 0"):
+                return row["content"]
+        return b""
+
+    def sum_over_region_sizes(self):
+        with self._db:
+            for row in self._db.execute(
+                    "SELECT SUM(memory_written) as content FROM core WHERE "
+                    "is_system = 0"):
+                return row["content"]
+        return b""
+
     def ds_iteritems(self):
         """ Yields the keys and values for the DS data
 
