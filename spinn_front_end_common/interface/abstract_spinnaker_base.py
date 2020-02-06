@@ -1461,23 +1461,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     names=["version_data", name], value=value))
         self._version_provenance = version_provenance
 
-    def generate_file_machine(self):
-        """ Generates a machine JSON file
-        """
-        inputs = {
-            "MemoryMachine": self.machine,
-            "FileMachineFilePath": os.path.join(
-                self._json_folder, "machine.json")
-        }
-        outputs = ["FileMachine"]
-        executor = PACMANAlgorithmExecutor(
-            algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
-            xml_paths=self._xml_paths,
-            required_outputs=outputs, required_output_tokens=[],
-            do_timings=self._do_timings, print_timings=self._print_timings,
-            provenance_path=self._pacman_executor_provenance_path)
-        executor.execute_mapping()
-
     def _do_mapping(self, run_time, total_run_time):
 
         # time the time it takes to do all pacman stuff
