@@ -66,9 +66,7 @@ class TestConvertJson(unittest.TestCase):
                             key, json1[key], json2[key]))
         raise AssertionError("Some wierd difference")
 
-    def _check_folder(self, folder):
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+    def _remove_old_json(self, folder):
         json_file = os.path.join(folder, MACHINE_FILENAME)
         if os.path.exists(json_file):
             os.remove(json_file)
@@ -84,7 +82,7 @@ class TestConvertJson(unittest.TestCase):
         jsonAlgo = ConvertToJsonMachine()
 
         folder = "spinn4"
-        self._check_folder(folder)
+        self._remove_old_json(folder)
         filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn4.json")
@@ -98,7 +96,7 @@ class TestConvertJson(unittest.TestCase):
         chip._sdram._size = chip._sdram._size - 101
 
         folder = "spinn4_fiddle"
-        self._check_folder(folder)
+        self._remove_old_json(folder)
         filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn4_fiddle.json")
@@ -125,7 +123,7 @@ class TestConvertJson(unittest.TestCase):
         jsonAlgo = ConvertToJsonMachine()
 
         folder = "spinn2"
-        self._check_folder(folder)
+        self._remove_old_json(folder)
         filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn2.json")

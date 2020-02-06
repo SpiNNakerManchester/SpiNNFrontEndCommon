@@ -181,9 +181,8 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            path = os.path.join(self._json_folder, "machine.json")
             self._machine_json_path = ConvertToJsonMachine.do_convert(
-                self._machine, path)
+                self._machine, self._json_folder)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
