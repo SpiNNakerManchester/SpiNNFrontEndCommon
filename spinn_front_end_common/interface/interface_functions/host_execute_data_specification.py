@@ -373,7 +373,7 @@ class HostExecuteDataSpecification(object):
             dw_write_info,
             {(-1, -1, -1, -1): dsg_targets.sum_over_region_sizes()},
              {(-1, -1, -1): 0}, {(-1, -1, -1): 0},
-            dsg_targets.time_to_load_in_mico_sec() / 1e9)
+            dsg_targets.time_to_load_in_nano_sec() / 1e9)
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets, region_sizes,

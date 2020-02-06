@@ -147,12 +147,21 @@ class DsSqlliteDatabase(object):
                 return row["content"]
         return b""
 
-    def sum_over_times_loading(self):
+    def sum_over_times_loading(self, accum):
         with self._db:
-            for row in self._db.execute(
-                    "SELECT SUM(time) as content FROM core WHERE "
-                    "is_system = 0"):
-                return row["content"]
+            if accum:
+                for row in self._db.execute(
+                        "SELECT SUM(time) as content FROM core WHERE "
+                        "is_system = 0"):
+                    return row["content"]
+            else:
+                boards_times = list()
+                for board_id in range(1, 4):
+                    for row in self._db.execute(
+                            "SELECT SUM(time) as content FROM core WHERE "
+                            "is_system = 0 AND ethernet_id = ?", board_id):
+                        boards_times.append(row["content"])
+                return min(boards_times)
         return b""
 
     def sum_over_region_sizes(self):

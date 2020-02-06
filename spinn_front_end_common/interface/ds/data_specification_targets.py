@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ...utilities import globals_variables, helpful_functions
 
 try:
     from collections import MutableMapping
@@ -59,8 +60,14 @@ class DataSpecificationTargets(MutableMapping):
     def __delitem__(self, core):
         raise NotImplementedError("Delete not supported")
 
-    def time_to_load_in_mico_sec(self):
-        return self._db.sum_over_times_loading()
+    def time_to_load_in_nano_sec(self):
+        parallel = helpful_functions.read_config_int(
+            globals_variables.get_simulator().config, "Java",
+            "spinnaker.parallel_tasks")
+        if parallel == 1:
+            return self._db.sum_over_times_loading(True)
+        else:
+            return self._db.sum_over_times_loading(False)
 
     def sum_over_region_sizes(self):
         return self._db.sum_over_region_sizes()
