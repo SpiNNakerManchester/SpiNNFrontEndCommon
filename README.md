@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/SpiNNakerManchester/SpiNNFrontEndCommon.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/SpiNNFrontEndCommon)
+[![Documentation Status](https://readthedocs.org/projects/spinnfrontendcommon/badge/?version=latest)](https://spinnfrontendcommon.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/SpiNNakerManchester/SpiNNFrontEndCommon/badge.svg?branch=master)](https://coveralls.io/github/SpiNNakerManchester/SpiNNFrontEndCommon?branch=master)
 
 This package provides functionality which are common to front ends that
