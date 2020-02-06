@@ -1500,6 +1500,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
+        inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
         inputs["MachineTimeStep"] = self.machine_time_step
@@ -1600,6 +1601,22 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_machine_graph_placer_report"):
                 algorithms.append("PlacerReportWithoutApplicationGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine"):
+                algorithms.append("WriteJsonMachine")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine_graph"):
+                algorithms.append("WriteJsonMachineGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_placements"):
+                algorithms.append("WriteJsonPlacements")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_routing_tables"):
+                algorithms.append("WriteJsonRoutingTables")
 
             # only add network specification report if there's
             # application vertices.

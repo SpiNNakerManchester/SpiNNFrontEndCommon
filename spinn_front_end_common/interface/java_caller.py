@@ -20,8 +20,8 @@ import os
 import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
-from pacman.operations.algorithm_reports.convert_to_json_machine import (
-    ConvertToJsonMachine)
+from pacman.operations.algorithm_reports.write_json_machine import (
+    WriteJsonMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
@@ -181,7 +181,7 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = ConvertToJsonMachine.do_convert(
+            self._machine_json_path = WriteJsonMachine.do_convert(
                 self._machine, self._json_folder)
         return self._machine_json_path
 
