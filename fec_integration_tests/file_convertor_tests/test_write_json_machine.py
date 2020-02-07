@@ -21,13 +21,13 @@ import unittest
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-from pacman.operations.algorithm_reports.convert_to_json_machine import (
-    ConvertToJsonMachine, MACHINE_FILENAME)
+from pacman.operations.algorithm_reports.write_json_machine import (
+    WriteJsonMachine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
     SpallocAllocator)
 
 
-class TestConvertJson(unittest.TestCase):
+class TestWriteJson(unittest.TestCase):
 
     spin4Host = "spinn-4.cs.man.ac.uk"
     spalloc = "spinnaker.cs.man.ac.uk"
@@ -79,7 +79,7 @@ class TestConvertJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
 
-        jsonAlgo = ConvertToJsonMachine()
+        jsonAlgo = WriteJsonMachine()
 
         folder = "spinn4"
         self._remove_old_json(folder)
@@ -120,7 +120,7 @@ class TestConvertJson(unittest.TestCase):
 
         m_allocation_controller.close()
 
-        jsonAlgo = ConvertToJsonMachine()
+        jsonAlgo = WriteJsonMachine()
 
         folder = "spinn2"
         self._remove_old_json(folder)
