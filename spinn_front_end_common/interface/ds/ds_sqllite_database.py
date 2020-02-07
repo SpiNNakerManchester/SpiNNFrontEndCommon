@@ -161,7 +161,8 @@ class DsSqlliteDatabase(object):
                             "SELECT SUM(time) as content FROM core WHERE "
                             "is_system = 0 AND ethernet_id = {}".format(
                                 board_id)):
-                        boards_times.append(row["content"])
+                        if row["content"] is not None:
+                            boards_times.append(row["content"])
                 return min(boards_times)
         return b""
 
