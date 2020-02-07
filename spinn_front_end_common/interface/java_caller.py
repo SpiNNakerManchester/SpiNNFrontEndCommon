@@ -181,7 +181,7 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = WriteJsonMachine.do_convert(
+            self._machine_json_path = WriteJsonMachine.write_json(
                 self._machine, self._json_folder)
         return self._machine_json_path
 
