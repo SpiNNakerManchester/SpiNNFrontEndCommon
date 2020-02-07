@@ -67,9 +67,12 @@ class TestWriteJson(unittest.TestCase):
         raise AssertionError("Some wierd difference")
 
     def _remove_old_json(self, folder):
-        json_file = os.path.join(folder, MACHINE_FILENAME)
-        if os.path.exists(json_file):
-            os.remove(json_file)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        else:
+            json_file = os.path.join(folder, MACHINE_FILENAME)
+            if os.path.exists(json_file):
+                os.remove(json_file)
 
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
