@@ -20,7 +20,6 @@ from __future__ import division
 from collections import defaultdict
 import logging
 import math
-import os
 import signal
 import sys
 import time
