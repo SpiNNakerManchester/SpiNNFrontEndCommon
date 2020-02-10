@@ -1618,6 +1618,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_json_routing_tables"):
                 algorithms.append("WriteJsonRoutingTables")
 
+            if self._config.getboolean(
+                    "Reports", "write_json_partition_n_keys_map"):
+                algorithms.append("WriteJsonPartitionNKeysMap")
+
             # only add network specification report if there's
             # application vertices.
             if (self._config.getboolean(
