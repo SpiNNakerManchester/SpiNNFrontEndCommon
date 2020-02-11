@@ -15,6 +15,7 @@
 
 from collections import OrderedDict, defaultdict
 
+import datetime
 import logging
 import struct
 import numpy
@@ -502,8 +503,6 @@ class HostExecuteDataSpecification(object):
             self, core, reader, writer_func, base_address, size_allocated,
             machine_vertex):
         x, y, p = core
-        matrix_size = 0
-        connection_builder_size = 0
         total_size = 0
 
         # Maximum available memory.
@@ -541,7 +540,8 @@ class HostExecuteDataSpecification(object):
             if region is not None:
                 total_size += region.max_write_pointer
 
-        time_total = None
+        time_total = datetime.timedelta()
+        timer = Timer()
         # Write each region
         for region_id in _MEM_REGIONS:
             region = executor.get_region(region_id)
@@ -555,14 +555,9 @@ class HostExecuteDataSpecification(object):
             data = region.region_data[:max_pointer]
 
             # Write the data to the position
-            timer = Timer()
-            timer.start_timing()
-            writer_func(x, y, pointer_table[region_id], data)
-            time_taken = timer.take_sample()
-            if time_total is None:
-                time_total = time_taken
-            else:
-                time_total += time_taken
+            with timer:
+                writer_func(x, y, pointer_table[region_id], data)
+            time_total += timer.measured_interval
 
             bytes_written += len(data)
 
@@ -578,18 +573,21 @@ class HostExecuteDataSpecification(object):
         matrix_size, connection_builder_size = 0, 0
 
         if isinstance(machine_vertex, PopulationMachineVertex):
-            matrix_size += executor.get_region(4).max_write_pointer
-            region = executor.get_region(10)
+            regions = POPULATION_BASED_REGIONS
+            region = executor.get_region(regions.SYNAPTIC_MATRIX.value)  # 4
+            matrix_size += region.max_write_pointer
+            region = executor.get_region(regions.DIRECT_MATRIX.value)  # 10
             if region is not None:
                 matrix_size += region.max_write_pointer
-            region = executor.get_region(
-                POPULATION_BASED_REGIONS.CONNECTOR_BUILDER.value)
+            region = executor.get_region(regions.CONNECTOR_BUILDER.value)  # 9
             if region is not None:
                 connection_builder_size += region.max_write_pointer
 
         if isinstance(machine_vertex, DelayExtensionMachineVertex):
-            matrix_size += executor.get_region(1).max_write_pointer
-            region = executor.get_region(3)
+            regions = DelayExtensionMachineVertex._DELAY_EXTENSION_REGIONS
+            region = executor.get_region(regions.DELAY_PARAMS.value)  # 1
+            matrix_size += region.max_write_pointer
+            region = executor.get_region(regions.EXPANDER_REGION.value)  # 3
             if region is not None:
                 connection_builder_size += region.max_write_pointer
 
