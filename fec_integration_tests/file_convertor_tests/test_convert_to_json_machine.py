@@ -99,11 +99,11 @@ class TestConvertJson(unittest.TestCase):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         spallocAlgo = SpallocAllocator()
-
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
-                            self.spin2Port)
+                spallocAlgo(spalloc_server=self.spalloc,
+                            spalloc_user="Integration testing ok to kill",
+                            n_chips=20, spalloc_port=self.spin2Port)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 
