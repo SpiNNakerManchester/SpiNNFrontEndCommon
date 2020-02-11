@@ -66,26 +66,58 @@ typedef struct {
     uint8_t sequence;
 } host_data_read_ack_packet_header;
 
-//! \brief records some data into a specific recording channel.
-//! \param[in] channel the channel to store the data into.
-//! \param[in] data the data to store into the channel.
-//! \param[in] size_bytes the number of bytes that this data will take up.
-//! \return boolean which is True if the data has been stored in the channel,
-//!         False otherwise.
-bool recording_record(
-        uint8_t channel, void *data, uint32_t size_bytes);
-
 //! \brief records some data into a specific recording channel, calling a
-//!        callback function once complete
+//!        callback function once complete. DO NOT CALL THIS DIRECTLY. Use
+//!        recording_record() or recording_record_and_notify().
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
 //! \param[in] size_bytes the number of bytes that this data will take up.
 //! \param[in] callback callback to call when the recording has completed
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
-bool recording_record_and_notify(
+bool recording_do_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback);
+
+//! \brief records some data into a specific recording channel.
+//! \param[in] channel the channel to store the data into.
+//! \param[in] data the data to store into the channel.
+//! \param[in] size_bytes the number of bytes that this data will take up.
+//!            This may be any number of bytes, not just whole words.
+//! \return boolean which is True if the data has been stored in the channel,
+//!         False otherwise.
+static inline bool recording_record(
+        uint8_t channel, void *data, uint32_t size_bytes) {
+    // Because callback is NULL, spin1_memcpy will be used
+    // and that means that non-word transfers are supported.
+    return recording_do_record_and_notify(channel, data, size_bytes, NULL);
+}
+
+//! \brief Prints an error about DMA API abuse and RTEs.
+//! \param[in] data the pointer to the data.
+//! \param[in] size the number of bytes in the data.
+__attribute__((noreturn)) void recording_bad_offset(
+	void *data, uint32_t size);
+
+//! \brief records some data into a specific recording channel, calling a
+//!        callback function once complete
+//! \param[in] channel the channel to store the data into.
+//! \param[in] data the data to store into the channel.
+//! \param[in] size_bytes the number of bytes that this data will take up.
+//!            This must be in whole words if the callback is supplied due to
+//!            limitations in the DMA engine.
+//! \param[in] callback callback to call when the recording has completed, or
+//!            NULL to use direct, immediate copying.
+//! \return boolean which is True if the data has been stored in the channel,
+//!         False otherwise.
+static inline bool recording_record_and_notify(
+        uint8_t channel, void *data, uint32_t size_bytes,
+        recording_complete_callback_t callback) {
+    if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
+	recording_bad_offset(data, size_bytes);
+    }
+    return recording_do_record_and_notify(channel, data, size_bytes, callback);
+}
 
 //! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0
