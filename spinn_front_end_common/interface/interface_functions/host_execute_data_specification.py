@@ -298,7 +298,7 @@ class HostExecuteDataSpecification(object):
         connection_build_sizes = defaultdict(int)
         total_sizes_vertex = defaultdict(int)
 
-        time = None
+        time = datetime.timedelta()
         for core, reader in progress.over(iteritems(dsg_targets)):
             x, y, p = core
             chip = self._machine.get_chip_at(x, y)
@@ -310,10 +310,7 @@ class HostExecuteDataSpecification(object):
                     base_addresses[core], region_sizes[core],
                     self._placements.get_vertex_on_processor(x, y, p))
             self._write_info_map[core] = data_written
-            if time is None:
-                time = time_taken
-            else:
-                time += time_taken
+            time += time_taken
 
             vertex = self._placements.get_vertex_on_processor(x, y, p)
 
@@ -347,7 +344,7 @@ class HostExecuteDataSpecification(object):
             self.__reset_router_timeouts()
         return (
             self._write_info_map, total_sizes, matrix_sizes,
-            connection_build_sizes, time)
+            connection_build_sizes, time.total_seconds())
 
     def __java_app(
             self, dsg_targets, executable_targets, use_monitors,
@@ -373,7 +370,7 @@ class HostExecuteDataSpecification(object):
             dw_write_info,
             {(-1, -1, -1, -1): dsg_targets.sum_over_region_sizes()},
              {(-1, -1, -1): 0}, {(-1, -1, -1): 0},
-            dsg_targets.time_to_load_in_nano_sec() / 1e9)
+            dsg_targets.time_to_load_in_seconds())
 
     def execute_system_data_specs(
             self, transceiver, machine, app_id, dsg_targets, region_sizes,

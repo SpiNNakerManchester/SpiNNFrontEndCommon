@@ -60,14 +60,15 @@ class DataSpecificationTargets(MutableMapping):
     def __delitem__(self, core):
         raise NotImplementedError("Delete not supported")
 
-    def time_to_load_in_nano_sec(self):
+    def time_to_load_in_seconds(self):
         parallel = helpful_functions.read_config_int(
             globals_variables.get_simulator().config, "Java",
             "spinnaker.parallel_tasks")
         if parallel == 1:
-            return self._db.sum_over_times_loading(True)
+            nanos = self._db.sum_over_times_loading(True)
         else:
-            return self._db.sum_over_times_loading(False)
+            nanos = self._db.sum_over_times_loading(False)
+        return nanos / 1e9
 
     def sum_over_region_sizes(self):
         return self._db.sum_over_region_sizes()

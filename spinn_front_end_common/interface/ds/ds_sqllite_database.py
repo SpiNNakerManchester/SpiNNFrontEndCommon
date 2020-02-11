@@ -148,31 +148,37 @@ class DsSqlliteDatabase(object):
         return b""
 
     def sum_over_times_loading(self, accum):
-        with self._db:
-            if accum:
+        """
+        :param bool accum:
+            Whether to report the accumulated time across all boards (when
+            `True`) or simply the maximum time taken by any particular board
+            (when `False`).
+        :return: time, in nanoseconds
+        :rtype: int
+        """
+        if accum:
+            with self._db:
                 for row in self._db.execute(
-                        "SELECT SUM(time) as content FROM core WHERE "
-                        "is_system = 0"):
-                    return row["content"]
-            else:
-                boards_times = list()
-                for board_id in range(1, 4):
-                    for row in self._db.execute(
-                            "SELECT SUM(time) as content FROM core WHERE "
-                            "is_system = 0 AND ethernet_id = {}".format(
-                                board_id)):
-                        if row["content"] is not None:
-                            boards_times.append(row["content"])
-                return min(boards_times)
-        return b""
+                        "SELECT SUM(time) AS time_total FROM core WHERE "
+                        "is_system = 0 LIMIT 1"):
+                    return row["time_total"]
+        else:
+            with self._db:
+                for row in self._db.execute(
+                        "SELECT MAX(time_sum) AS time_max FROM ("
+                        "    SELECT SUM(time) AS time_sum FROM core "
+                        "    WHERE is_system = 0 GROUP BY ethernet_id"
+                        ") LIMIT 1"):
+                    return row["time_max"]
+        return 0
 
     def sum_over_region_sizes(self):
         with self._db:
             for row in self._db.execute(
-                    "SELECT SUM(memory_written) as content FROM core WHERE "
+                    "SELECT SUM(memory_written) AS written FROM core WHERE "
                     "is_system = 0"):
-                return row["content"]
-        return b""
+                return row["written"]
+        return 0
 
     def ds_iteritems(self):
         """ Yields the keys and values for the DS data
