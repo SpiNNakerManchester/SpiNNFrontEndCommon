@@ -44,10 +44,10 @@ CREATE TABLE IF NOT EXISTS core(
 	is_system INTEGER DEFAULT 0,
 	app_id INTEGER,
 	content BLOB,
+	"time" INTEGER,
 	start_address INTEGER,
 	memory_used INTEGER,
-	memory_written INTEGER,
-	time BIGINT);
+	memory_written INTEGER);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
