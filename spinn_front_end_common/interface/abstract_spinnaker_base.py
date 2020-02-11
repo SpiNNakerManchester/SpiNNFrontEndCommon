@@ -820,7 +820,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Convert dt into microseconds and divide by
         # realtime proportion to get hardware timestep
         hardware_timestep_us = int(round(
-            float(self.machine_time_step) / float(self.timescale_factor)))
+            float(self.machine_time_step) / float(self.time_scale_factor)))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
@@ -1153,7 +1153,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                self.write_finished_file()
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
@@ -1564,7 +1563,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
-            algorithms.append("DataInMulticastRoutingGenerator")
+            algorithms.append("SystemMulticastRoutingGenerator")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
@@ -2293,10 +2292,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._no_machine_time_steps
 
     @property
-    def timescale_factor(self):
-        return self._read_config_int("Machine", "time_scale_factor")
-
-    @property
     def machine_graph(self):
         return self._machine_graph
 
@@ -2634,10 +2629,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Reset provenance
             self._all_provenance_items = list()
 
-        self.write_finished_file()
-
         if exc_info is not None:
             reraise(*exc_info)
+        self.write_finished_file()
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
