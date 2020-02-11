@@ -30,6 +30,7 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.utilities.exceptions import (
@@ -210,6 +211,13 @@ class BufferManager(object):
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
 
+        # Round to word boundaries
+        initial = address % BYTES_PER_WORD
+        address -= initial
+        length += initial
+        final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
+        length += final
+
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
@@ -221,13 +229,22 @@ class BufferManager(object):
             txrx_data = transceiver.read_memory(
                 placement_x, placement_y, address, length)
             self._verify_data(extra_mon_data, txrx_data)
-        return extra_mon_data
+
+        # If we rounded to word boundaries, strip the padding junk
+        if initial and final:
+            return extra_mon_data[initial:-final]
+        elif initial:
+            return extra_mon_data[initial:]
+        elif final:
+            return extra_mon_data[:-final]
+        else:
+            return extra_mon_data
 
     def _verify_data(self, extra_mon_data, txrx_data):
         for index, (extra_mon_element, txrx_element) in enumerate(
                 zip(extra_mon_data, txrx_data)):
             if extra_mon_element != txrx_element:
-                raise Exception("WRONG")
+                raise Exception("WRONG (at index {})".format(index))
 
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.

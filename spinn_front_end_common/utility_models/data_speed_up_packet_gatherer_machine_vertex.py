@@ -23,13 +23,6 @@ import sys
 from enum import Enum
 from six.moves import xrange
 from six import reraise, PY2
-
-from spinn_front_end_common.utilities import globals_variables, \
-    helpful_functions
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import \
-    SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess, \
-    ClearQueueProcess
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -45,7 +38,8 @@ from pacman.model.resources import (
 from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, emergency_recover_state_from_failure)
+    convert_vertices_to_core_subset, emergency_recover_state_from_failure,
+    read_config_int)
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
@@ -55,6 +49,10 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes import (
+        SetRouterTimeoutProcess, SetRouterEmergencyTimeoutProcess,
+        ClearQueueProcess)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -326,12 +324,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._missing_seq_nums_data_in = list()
         self._missing_seq_nums_data_in.append(set())
 
-        self._n_channels = helpful_functions.read_config_int(
-            globals_variables.get_simulator().config, "SpinnMan",
-            "multi_packets_in_flight_n_channels")
-        self._intermediate_channel_waits = helpful_functions.read_config_int(
-            globals_variables.get_simulator().config, "SpinnMan",
-            "multi_packets_in_flight_channel_waits")
+        config = get_simulator().config
+        self._n_channels = read_config_int(
+            config, "SpinnMan", "multi_packets_in_flight_n_channels")
+        self._intermediate_channel_waits = read_config_int(
+            config, "SpinnMan", "multi_packets_in_flight_channel_waits")
 
         # Create a connection to be used
         self._x = x
@@ -402,8 +399,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys",
         "machine": "MemoryExtendedMachine",
@@ -413,14 +408,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_graph", "routing_info", "tags",
-            "machine_time_step", "time_scale_factor",
             "mc_data_chips_to_keys", "machine", "app_id",
             "router_timeout_key"
         })
     def generate_data_specification(
             self, spec, placement, machine_graph, routing_info, tags,
-            machine_time_step, time_scale_factor, mc_data_chips_to_keys,
-            machine, app_id, router_timeout_key):
+            mc_data_chips_to_keys, machine, app_id, router_timeout_key):
         """
         :param machine_graph: (injected)
         :type machine_graph: ~pacman.model.graphs.machine.MachineGraph
@@ -655,7 +648,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):
+            cpu=0, is_filename=False):  # pylint: disable=unused-argument
         """ sends a block of data into SpiNNaker to a given chip
 
         :param x: chip x for data
@@ -729,9 +722,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             i = 0
             for (a, b) in zip(original_data, verified_data):
                 if a != b:
-                    break
+                    raise Exception("damn at " + str(i))
                 i += 1
-            raise Exception("damn at " + str(i))
 
     @staticmethod
     def __verify_sent_data_py3(
@@ -741,13 +733,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                       x, y, base_address, n_bytes)
             log.error("original:{}", original_data.hex())
             log.error("verified:{}", verified_data.hex())
-            for (index, (a, b)) in enumerate(
-                    zip(original_data, verified_data)):
+            for i, (a, b) in enumerate(zip(original_data, verified_data)):
                 if a != b:
-                    break
-
-                raise Exception(
-                    "damn at " + str(index))
+                    raise Exception("damn at " + str(i))
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):
@@ -1715,10 +1703,10 @@ class _StreamingContextManager(object):
         self._placements = placements
 
     def __enter__(self):
-        config = globals_variables.get_simulator().config
-        n_channels = helpful_functions.read_config_int(
+        config = get_simulator().config
+        n_channels = read_config_int(
             config, "SpinnMan", "multi_packets_in_flight_n_channels")
-        intermediate_channel_waits = helpful_functions.read_config_int(
+        intermediate_channel_waits = read_config_int(
             config, "SpinnMan", "multi_packets_in_flight_channel_waits")
         for gatherer in self._gatherers:
             gatherer.load_system_routing_tables(

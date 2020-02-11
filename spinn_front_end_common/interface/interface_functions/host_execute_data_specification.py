@@ -154,8 +154,7 @@ class HostExecuteDataSpecification(object):
         :param dsg_targets: map of placement to file path
         :type dsg_targets: \
             :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
-        :param region_sizes: map between vertex and list of region \
-        sizes
+        :param region_sizes: map between vertex and list of region sizes
         :return: dict of cores to a dict of\
             'start_address', 'memory_used', 'memory_written
         """
@@ -178,7 +177,7 @@ class HostExecuteDataSpecification(object):
 
         for core, reader in progress.over(iteritems(dsg_targets)):
             x, y, p = core
-            data_written, matrix, connection, total, time = \
+            data_written, _matrix, _connection, _total, _executor, _time = \
                 self.__python_execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core],
@@ -478,7 +477,7 @@ class HostExecuteDataSpecification(object):
 
         for core, reader in progress.over(iteritems(sys_targets)):
             x, y, p = core
-            data_written, matrix, connection, total, ex, time = \
+            data_written, _matrix, _connection, _total, _ex, _time = \
                 self.__python_execute(
                     core, reader, self._txrx.write_memory, base_addresses[core],
                     region_sizes[core],
@@ -534,20 +533,8 @@ class HostExecuteDataSpecification(object):
         self._txrx.write_memory(x, y, base_address, data_to_write)
         bytes_written = len(data_to_write)
 
-        if isinstance(machine_vertex, PopulationMachineVertex):
-            matrix_size += executor.get_region(4).max_write_pointer
-            region = executor.get_region(10)
-            if region is not None:
-                matrix_size += region.max_write_pointer
-            region = executor.get_region(
-                POPULATION_BASED_REGIONS.CONNECTOR_BUILDER.value)
-            if region is not None:
-                connection_builder_size += region.max_write_pointer
-        if isinstance(machine_vertex, DelayExtensionMachineVertex):
-            matrix_size += executor.get_region(1).max_write_pointer
-            region = executor.get_region(3)
-            if region is not None:
-                connection_builder_size += region.max_write_pointer
+        matrix_size, connection_builder_size = self.__get_extra_sizes(
+            machine_vertex, executor)
 
         for region_id in _MEM_REGIONS:
             region = executor.get_region(region_id)
@@ -583,3 +570,27 @@ class HostExecuteDataSpecification(object):
             DataWritten(base_address, size_allocated, bytes_written),
             matrix_size, connection_builder_size, total_size, executor,
             time_total)
+
+    @staticmethod
+    def __get_extra_sizes(machine_vertex, executor):
+        """ EVIL!
+        """
+        matrix_size, connection_builder_size = 0, 0
+
+        if isinstance(machine_vertex, PopulationMachineVertex):
+            matrix_size += executor.get_region(4).max_write_pointer
+            region = executor.get_region(10)
+            if region is not None:
+                matrix_size += region.max_write_pointer
+            region = executor.get_region(
+                POPULATION_BASED_REGIONS.CONNECTOR_BUILDER.value)
+            if region is not None:
+                connection_builder_size += region.max_write_pointer
+
+        if isinstance(machine_vertex, DelayExtensionMachineVertex):
+            matrix_size += executor.get_region(1).max_write_pointer
+            region = executor.get_region(3)
+            if region is not None:
+                connection_builder_size += region.max_write_pointer
+
+        return matrix_size, connection_builder_size

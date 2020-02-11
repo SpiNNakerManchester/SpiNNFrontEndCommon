@@ -60,17 +60,19 @@ enum functionality_to_port_num_map {
 // threshold for sdram vs dtcm missing seq store.
 #define SDRAM_VS_DTCM_THRESHOLD 40000
 
-// location of command IDs in SDP message
-#define COMMAND_ID 0
+enum {
+    //! \brief location of command IDs in SDP message
+    COMMAND_ID = 0,
 
-//! \brief location of where the seq num is in the packet
-#define SEQ_NUM_LOC 0
+    //! \brief location of where the seq num is in the packet
+    SEQ_NUM_LOC = 0,
 
-//! \brief location of the transaction id in the packet
-#define TRANSACTION_ID 1
+    //! \brief location of the transaction id in the packet
+    TRANSACTION_ID = 1,
 
-//! \brief location of the start of raw data in the packet
-#define START_OF_DATA 2
+    //! \brief location of the start of raw data in the packet
+    START_OF_DATA = 2
+};
 
 // flag when all seq numbers are missing
 #define ALL_MISSING_FLAG 0xFFFFFFFE
@@ -79,8 +81,6 @@ enum functionality_to_port_num_map {
 #define ROUTER_TIMEOUT_MASK 0xFF
 
 enum {
-    //! How many multicast packets are to be received per SDP packet
-    ITEMS_PER_DATA_PACKET = 68,
     //! offset with just command transaction id and seq in bytes
     SEND_SEQ_DATA_HEADER_WORDS = 3,
     //! offset with just command, transaction id
@@ -99,33 +99,12 @@ enum {
     //! size of payload for a packet describing the batch of missing inbound
     //! seqs
     ITEMS_PER_MISSING_PACKET =
-        ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
+            ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
 };
 
 //-----------------------------------------------------------------------------
 // TYPES AND GLOBALS
 //-----------------------------------------------------------------------------
-
-//! struct for a SDP message with pure data, no SCP header
-typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
-    struct sdp_msg *next;	// Next in free list
-    uint16_t length;		// length
-    uint16_t checksum;		// checksum (if used)
-
-    // sdp_hdr_t
-    // The length field measures from HERE...
-    uint8_t flags;	    	// SDP flag byte
-    uint8_t tag;		    // SDP IPtag
-    uint8_t dest_port;		// SDP destination port/CPU
-    uint8_t srce_port;		// SDP source port/CPU
-    uint16_t dest_addr;		// SDP destination address
-    uint16_t srce_addr;		// SDP source address
-
-    // User data (272 bytes when no SCP header)
-    uint32_t data[ITEMS_PER_DATA_PACKET];
-
-    uint32_t _PAD;		// Private padding
-} sdp_msg_pure_data;
 
 //! meaning of payload in first data in SDP packet
 typedef struct receive_data_to_location_msg_t {
@@ -337,7 +316,7 @@ static inline void free_sequence_number_bitfield(void) {
 //! \return the new sdram location.
 static inline uint calculate_sdram_address_from_seq_num(uint seq_num) {
     return (start_sdram_address
-            + (DATA_IN_NORMAL_PACKET_WORDS * seq_num  * sizeof(uint)));
+            + (DATA_IN_NORMAL_PACKET_WORDS * seq_num * sizeof(uint)));
 }
 
 static inline void set_message_length(const void *end) {
@@ -351,13 +330,12 @@ static inline void set_message_length(const void *end) {
 //! sdp message
 static void process_address_data(
         const receive_data_to_location_msg_t *receive_data_cmd) {
-
     // if received when doing a stream. ignore as either clone or oddness
-    if (received_seq_nums_store != NULL){
+    if (received_seq_nums_store != NULL) {
         log_error(
-            "received a location message with transaction id %d when already "
-            "processing a stream with transaction id %d",
-            receive_data_cmd->transaction_id, transaction_id);
+                "received location message with transaction id %d when "
+                "already processing stream with transaction id %d",
+                receive_data_cmd->transaction_id, transaction_id);
         return;
     }
 
@@ -371,9 +349,9 @@ static void process_address_data(
     // and worthless
     if (receive_data_cmd->transaction_id != transaction_id + 1) {
         log_error(
-            "received a location message with transaction id %d which was "
-            "not what i expect, as mine is %d",
-            receive_data_cmd->transaction_id, transaction_id + 1);
+                "received location message with unexpected "
+                "transaction id %d; mine is %d",
+                receive_data_cmd->transaction_id, transaction_id + 1);
         return;
     }
 
@@ -390,8 +368,8 @@ static void process_address_data(
 
     if (prev_x != chip_x || prev_y != chip_y) {
         log_debug(
-            "Changed stream target chip to %d,%d for transaction id %d",
-            chip_x, chip_y, transaction_id);
+                "Changed stream target chip to %d,%d for transaction id %d",
+                chip_x, chip_y, transaction_id);
     }
 
     log_debug("Writing %u packets to 0x%08x for transaction id %d",
@@ -410,14 +388,14 @@ static void process_address_data(
 }
 
 //! \brief sends the finished request
-static void send_finished_response(void){
+static void send_finished_response(void) {
     // send boundary key, so that monitor knows everything in the previous
     // stream is done
     sdp_msg_out_payload_t *payload = (sdp_msg_out_payload_t *) my_msg.data;
     send_mc_message(BOUNDARY_KEY_OFFSET, 0);
     payload->command = SDP_SEND_FINISHED_DATA_IN_CMD;
-    my_msg.length = (
-        sizeof(sdp_hdr_t) + sizeof(int) * SEND_MISSING_SEQ_HEADER_WORDS);
+    my_msg.length = sizeof(sdp_hdr_t) +
+            sizeof(int) * SEND_MISSING_SEQ_HEADER_WORDS;
     send_sdp_message();
     log_debug("Sent end flag");
 }
@@ -559,7 +537,8 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
             log_debug("data is %x", receive_data_cmd->data[data_index]);
         }
         copy_data(
-            (address_t) this_sdram_address, receive_data_cmd->data, n_elements);
+                (address_t) this_sdram_address, receive_data_cmd->data,
+                n_elements);
     } else {
         // transmit data to chip; the data lasts to the end of the message
         process_sdp_message_into_mc_messages(
@@ -596,7 +575,7 @@ static void data_in_receive_sdp_data(sdp_msg_pure_data *msg) {
 //! \param[in] timeout: the timeout to transmit
 //! \param[in] key: the mc key to use here
 //! \return the length of extra data put into the message for return
-static void send_timeout(sdp_msg_t* msg, uint32_t key){
+static void send_timeout(sdp_msg_t* msg, uint32_t key) {
     if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
         msg->cmd_rc = RC_ARG;
         return;
@@ -639,8 +618,8 @@ static void reinjection_sdp_command(sdp_msg_t *msg) {
         // If we are here, the command was not recognised, so fail
         // (ARG as the command is an argument)
         log_error(
-            "ignoring message as dont know what to do with it when "
-            "command id is %d", msg->cmd_rc);
+                "ignoring message as don't know what to do with it when "
+                "command id is %d", msg->cmd_rc);
         return;
     }
 
@@ -722,7 +701,7 @@ static void receive_data(uint key, uint payload) {
             max_seq_num = payload;
         }
 
-        if (key == transaction_id_key){
+        if (key == transaction_id_key) {
             data_out_transaction_id = payload;
             data[TRANSACTION_ID] = data_out_transaction_id;
             position_in_store = START_OF_DATA;
@@ -766,16 +745,15 @@ static void initialise(void) {
     basic_data_key = config->basic_data_key;
 
     log_info(
-        "new seq key = %d, first data key = %d, transaction id key = %d, "
-        "end flag key = %d, basic_data_key = %d",
-        new_sequence_key, first_data_key, transaction_id_key, end_flag_key,
-        basic_data_key);
-
+            "new seq key = %d, first data key = %d, transaction id key = %d, "
+            "end flag key = %d, basic_data_key = %d",
+            new_sequence_key, first_data_key, transaction_id_key,
+            end_flag_key, basic_data_key);
 
     log_info("the tag id being used is %d", config->tag_id);
-    my_msg.tag = config->tag_id;    	// IPTag 1
-    my_msg.dest_port = PORT_ETH;		// Ethernet
-    my_msg.dest_addr = sv->eth_addr;		// Nearest Ethernet chip
+    my_msg.tag = config->tag_id;        // IPTag 1
+    my_msg.dest_port = PORT_ETH;        // Ethernet
+    my_msg.dest_addr = sv->eth_addr;    // Nearest Ethernet chip
 
     // fill in SDP source & flag fields
     my_msg.flags = 0x07;
