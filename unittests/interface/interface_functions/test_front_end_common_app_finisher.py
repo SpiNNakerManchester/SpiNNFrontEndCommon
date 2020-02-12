@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from six import itervalues
@@ -62,8 +61,6 @@ class _MockTransceiver(object):
         self.sdp_send_count += 1
 
 
-@unittest.skip(
-    "https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/381")
 def test_app_finisher():
     finisher = ApplicationFinisher()
     core_subsets = CoreSubsets()
