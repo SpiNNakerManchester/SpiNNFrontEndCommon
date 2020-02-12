@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from six import itervalues
