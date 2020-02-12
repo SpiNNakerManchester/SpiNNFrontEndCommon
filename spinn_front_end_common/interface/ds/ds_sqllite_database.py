@@ -148,7 +148,8 @@ class DsSqlliteDatabase(object):
         return b""
 
     def sum_over_times_loading(self, accum):
-        """
+        """ Reports the time taken to load data.
+
         :param bool accum:
             Whether to report the accumulated time across all boards (when
             `True`) or simply the maximum time taken by any particular board
@@ -173,6 +174,10 @@ class DsSqlliteDatabase(object):
         return 0
 
     def sum_over_region_sizes(self):
+        """ Reports the total amount of data written.
+
+        :rtype: int
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT SUM(memory_written) AS written FROM core WHERE "
