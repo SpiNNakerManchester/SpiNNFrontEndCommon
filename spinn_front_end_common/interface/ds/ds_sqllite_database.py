@@ -313,6 +313,13 @@ class DsSqlliteDatabase(object):
                     (x, y, p, ethernet_id, start, used, written))
 
     def set_size_info(self, x, y, p, memory_used):
+        """ Updates the DB with how much memory was used by a core.
+
+        :param int x: coordinate
+        :param int y: coordinate
+        :param int p: coordinate
+        :param int memory_used: Amount of memory used
+        """
         with self._db:
             cursor = self._db.cursor()
             cursor.execute(
@@ -331,8 +338,7 @@ class DsSqlliteDatabase(object):
                     (x, y, p, ethernet_id, int(memory_used)))
 
     def clear_write_info(self):
-        """
-        Clears the provenance for all rows
+        """ Clears the provenance for all rows
         """
         with self._db:
             self._db.execute(
