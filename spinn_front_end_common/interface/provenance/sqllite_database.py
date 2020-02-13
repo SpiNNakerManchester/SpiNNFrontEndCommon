@@ -13,13 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import os
 import sqlite3
-import time
 import sys
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import AbstractDatabase
-from spinn_utilities.overrides import overrides
+
 
 if sys.version_info < (3,):
     # pylint: disable=redefined-builtin, undefined-variable
@@ -28,7 +26,7 @@ if sys.version_info < (3,):
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
 
-class SqlLiteDatabase(AbstractDatabase):
+class SqlLiteDatabase(object):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -56,6 +54,21 @@ class SqlLiteDatabase(AbstractDatabase):
     def __del__(self):
         self.close()
 
+    def __enter__(self):
+        """ Start mehod is use in a with statement
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        End method if used in a with statement
+        :param exc_type:
+        :param exc_val:
+        :param exc_tb:
+        :return:
+        """
+        self.close()
+
     def close(self):
         if self._db is not None:
             self._db.close()
@@ -74,9 +87,16 @@ class SqlLiteDatabase(AbstractDatabase):
             cursor = self._db.cursor()
             vertex_id = self.__get_vertex_id(cursor, item.names[0])
             description_id = self.__get_description_id(cursor, item.names[-1])
-            cursor.execute(
-                "INSERT INTO provenance(vertex_id, description_id, the_value) VALUES(?, ?, ?)",
-                (vertex_id, description_id, item.value))
+            value = item.value
+            if isinstance(value, datetime.timedelta):
+                value = value.microseconds
+            try:
+                cursor.execute(
+                    "INSERT INTO provenance(vertex_id, description_id, the_value) VALUES(?, ?, ?)",
+                    (vertex_id, description_id, item.value))
+            except Exception:
+                print(type(value))
+                print("here")
 
     def __get_vertex_id(self, cursor, vertex_name):
         for row in cursor.execute(

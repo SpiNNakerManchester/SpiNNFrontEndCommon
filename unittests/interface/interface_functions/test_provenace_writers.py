@@ -15,7 +15,7 @@
 
 import os
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceJSONWriter, ProvenanceXMLWriter)
+    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter)
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
@@ -24,7 +24,7 @@ def _create_provenenace():
     items.append(ProvenanceDataItem(["core1", "value1"], 23))
     items.append(ProvenanceDataItem(["core1", "value2"], 45))
     items.append(ProvenanceDataItem(["core1", "value3"], 67))
-    items.append(ProvenanceDataItem(["core2", "value1"], 32))
+    items.append(ProvenanceDataItem(["core2", "value1"], "bacon"))
     items.append(ProvenanceDataItem(["core2", "value2"], 23))
     items.append(ProvenanceDataItem(["core2", "value3"], 45))
     return items
@@ -49,4 +49,15 @@ def test_xml():
             os.remove(os.path.join(provenance_data_path, filename))
     provenance_data_items = _create_provenenace()
     writer = ProvenanceXMLWriter()
+    writer(provenance_data_items, provenance_data_path)
+
+
+def test_database():
+    provenance_data_path = "test_output"
+    for filename in os.listdir(provenance_data_path):
+        _, file_extension = os.path.splitext(filename)
+        if file_extension == ".sqlite3":
+            os.remove(os.path.join(provenance_data_path, filename))
+    provenance_data_items = _create_provenenace()
+    writer = ProvenanceSQLWriter()
     writer(provenance_data_items, provenance_data_path)

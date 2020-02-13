@@ -42,3 +42,7 @@ CREATE VIEW IF NOT EXISTS provenance_view AS
     SELECT vertex_id, description_id, provenance_id, vertex_name, description_name, the_value
     FROM vertex NATURAL JOIN description NATURAL JOIN provenance;
 
+CREATE VIEW IF NOT EXISTS stats_view AS
+    SELECT description_name, min(the_value) as min, max(the_value) as max, avg(the_value) as avg, sum(the_value) as total, count(the_value) as count
+    FROM description NATURAL JOIN provenance
+    group by description_name
