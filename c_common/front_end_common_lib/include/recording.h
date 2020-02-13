@@ -124,7 +124,9 @@ static inline bool recording_record_and_notify(
 void recording_finalise(void);
 
 //! \brief initialises the recording of data
-//! \param[in] recording_data_address The start of the data about the recording
+//! \param[in/out] recording_data_address The start of the data about the
+//!                                       recording, updated to point to just
+//!                                       after the data if return True.
 //!            Data is {
 //!                // number of potential recording regions
 //!                uint32_t n_regions;
@@ -153,7 +155,7 @@ void recording_finalise(void);
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags);
+        void **recording_data_address, uint32_t *recording_flags);
 
 //! \brief resets recording to the state just after initialisation
 void recording_reset(void);

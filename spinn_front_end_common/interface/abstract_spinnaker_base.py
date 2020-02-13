@@ -1965,7 +1965,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["ExtractIobufFromCores"] = self._config.get(
             "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+        inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed

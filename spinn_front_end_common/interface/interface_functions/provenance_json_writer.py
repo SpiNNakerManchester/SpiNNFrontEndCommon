@@ -64,4 +64,4 @@ class ProvenanceJSONWriter(object):
     @staticmethod
     def _get_file(path, name):
         remapped = "".join(c if c in _VALID_CHARS else '_' for c in name)
-        return generate_unique_folder_name(path, remapped, ".xml")
+        return generate_unique_folder_name(path, remapped, ".json")
