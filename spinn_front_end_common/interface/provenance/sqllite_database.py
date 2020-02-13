@@ -85,28 +85,24 @@ class SqlLiteDatabase(object):
     def insert_item(self, item):
         with self._db:
             cursor = self._db.cursor()
-            vertex_id = self.__get_vertex_id(cursor, item.names[0])
+            source_id = self.__get_source_id(cursor, item.names[0])
             description_id = self.__get_description_id(cursor, item.names[-1])
             value = item.value
             if isinstance(value, datetime.timedelta):
                 value = value.microseconds
-            try:
-                cursor.execute(
-                    "INSERT INTO provenance(vertex_id, description_id, the_value) VALUES(?, ?, ?)",
-                    (vertex_id, description_id, item.value))
-            except Exception:
-                print(type(value))
-                print("here")
+            cursor.execute(
+                "INSERT INTO provenance(source_id, description_id, the_value) VALUES(?, ?, ?)",
+                (source_id, description_id, str(value)))
 
-    def __get_vertex_id(self, cursor, vertex_name):
+    def __get_source_id(self, cursor, source_name):
         for row in cursor.execute(
-                "SELECT vertex_id FROM vertex "
-                + "WHERE vertex_name = ? ",
-                (vertex_name, )):
-            return row["vertex_id"]
+                "SELECT source_id FROM source "
+                + "WHERE source_name = ? ",
+                (source_name, )):
+            return row["source_id"]
         cursor.execute(
-            "INSERT INTO vertex(vertex_name) VALUES(?)",
-            (vertex_name, ))
+            "INSERT INTO source(source_name) VALUES(?)",
+            (source_name, ))
         return cursor.lastrowid
 
     def __get_description_id(self, cursor, description_name):

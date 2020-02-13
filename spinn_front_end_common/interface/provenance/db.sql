@@ -17,10 +17,10 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to vertex names
-CREATE TABLE IF NOT EXISTS vertex(
-  vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	vertex_name STRING NOT NULL);
+-- A table assigning ids to sourcex names
+CREATE TABLE IF NOT EXISTS source(
+  source_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	source_name STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table assigning ids to description names
@@ -33,16 +33,16 @@ CREATE TABLE IF NOT EXISTS description(
 -- A table holding the values
 CREATE TABLE IF NOT EXISTS provenance(
   provenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  vertex_id INTEGER NOT NULL,
+  source_id INTEGER NOT NULL,
   description_id INTEGER NOT NULL,
 	the_value INTEGER NOT NULL);
 
 
 CREATE VIEW IF NOT EXISTS provenance_view AS
-    SELECT vertex_id, description_id, provenance_id, vertex_name, description_name, the_value
-    FROM vertex NATURAL JOIN description NATURAL JOIN provenance;
+    SELECT source_id, description_id, provenance_id, source_name, description_name, the_value
+    FROM source NATURAL JOIN description NATURAL JOIN provenance;
 
 CREATE VIEW IF NOT EXISTS stats_view AS
-    SELECT description_name, min(the_value) as min, max(the_value) as max, avg(the_value) as avg, sum(the_value) as total, count(the_value) as count
-    FROM description NATURAL JOIN provenance
+    SELECT case count(DISTINCT source_name) when 1 then source_name else "" end as source, description_name, min(the_value) as min, max(the_value) as max, avg(the_value) as avg, sum(the_value) as total, count(the_value) as count
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
     group by description_name
