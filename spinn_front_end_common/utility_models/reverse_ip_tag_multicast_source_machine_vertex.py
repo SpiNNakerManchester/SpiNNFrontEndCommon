@@ -36,14 +36,14 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_sending_region import (
-        get_n_bytes)
+    .buffered_sending_region import get_n_bytes
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
@@ -174,6 +174,36 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # Extra flag for receiving packets without a port
             reserve_reverse_ip_tag=False):
+        """
+        :param n_keys: The number of keys to be sent via this multicast source
+        :param label: The label of this vertex
+        :param constraints: Any initial constraints to this vertex
+        :param board_address: The IP address of the board on which to place\
+            this vertex if receiving data, either buffered or live (by\
+            default, any board is chosen)
+        :param receive_port: The port on the board that will listen for\
+            incoming event packets (default is to disable this feature; set a\
+            value to enable it, or set the reserve_reverse_ip_tag parameter\
+            to True if a random port is to be used)
+        :param receive_sdp_port: The SDP port to listen on for incoming event\
+            packets (defaults to 1)
+        :param receive_tag: The IP tag to use for receiving live events\
+            (uses any by default)
+        :param virtual_key: The base multicast key to send received events\
+            with (assigned automatically by default)
+        :param prefix: The prefix to "or" with generated multicast keys\
+            (default is no prefix)
+        :param prefix_type: Whether the prefix should apply to the upper or\
+            lower half of the multicast keys (default is upper half)
+        :param check_keys: True if the keys of received events should be\
+            verified before sending (default False)
+        :param send_buffer_times: An array of arrays of time steps at which\
+            keys should be sent (one array for each key, default disabled)
+        :param reserve_reverse_ip_tag: True if the source should set up a tag\
+            through which it can receive packets; if port is set to None this\
+            can be used to enable the reception of packets on a randomly\
+            assigned port, which can be read from the database
+        """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
             label, constraints)
@@ -270,7 +300,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # If recording live data, use the user provided receive rate
         if is_recording and send_buffer_times is None:
             keys_per_timestep = math.ceil(
-                (receive_rate / (machine_time_step * 1000.0)) * 1.1
+                (receive_rate / (
+                    machine_time_step * MICRO_TO_MILLISECOND_CONVERSION)) * 1.1
             )
             header_size = EIEIODataHeader.get_header_size(
                 EIEIOType.KEY_32_BIT, is_payload_base=True)
@@ -699,9 +730,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             placement, self._REGIONS.RECORDING.value, txrx)
 
     @property
-    @overrides(SendsBuffersFromHostPreBufferedImpl.send_buffers)
     def send_buffers(self):
         return self._send_buffers
+
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
 
     def get_region_buffer_size(self, region):
         if region == self._REGIONS.SEND_BUFFER.value:
