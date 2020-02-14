@@ -1371,7 +1371,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean(
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
 
-        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
+        if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
@@ -1497,6 +1497,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
+        # runtime full runtime from pynn
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
 
@@ -1927,7 +1928,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self.machine_time_step / 1000.0
+            run_time = (
+                n_machine_time_steps * self.machine_time_step /
+                MICRO_TO_MILLISECOND_CONVERSION)
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1948,7 +1951,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["ExtractIobufFromCores"] = self._config.get(
             "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+        inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
@@ -2427,7 +2430,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
-                (self.machine_time_step / 1000.0))
+                (self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION))
         return 0.0
 
     def get_generated_output(self, name_of_variable):
