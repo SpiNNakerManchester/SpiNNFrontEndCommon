@@ -29,35 +29,32 @@ def _create_provenenace():
     items.append(ProvenanceDataItem(["core2", "value3"], 45))
     return items
 
-
-def test_json():
-    provenance_data_path = "test_output"
+def check_provenance_data_path(extenstion):
+    me_dir = os.path.dirname(os.path.realpath(__file__))
+    provenance_data_path = os.path.join(me_dir, "test_output")
+    print(os.path.abspath(provenance_data_path))
     for filename in os.listdir(provenance_data_path):
         _, file_extension = os.path.splitext(filename)
-        if file_extension == ".json":
+        if file_extension == extenstion:
             os.remove(os.path.join(provenance_data_path, filename))
+    return provenance_data_path
+
+def test_json():
+    provenance_data_path = check_provenance_data_path(".json")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceJSONWriter()
     writer(provenance_data_items, provenance_data_path)
 
 
 def test_xml():
-    provenance_data_path = "test_output"
-    for filename in os.listdir(provenance_data_path):
-        _, file_extension = os.path.splitext(filename)
-        if file_extension == ".xml":
-            os.remove(os.path.join(provenance_data_path, filename))
+    provenance_data_path = check_provenance_data_path(".xml")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceXMLWriter()
     writer(provenance_data_items, provenance_data_path)
 
 
 def test_database():
-    provenance_data_path = "test_output"
-    for filename in os.listdir(provenance_data_path):
-        _, file_extension = os.path.splitext(filename)
-        if file_extension == ".sqlite3":
-            os.remove(os.path.join(provenance_data_path, filename))
+    provenance_data_path = check_provenance_data_path(".sqlite3")
     provenance_data_items = _create_provenenace()
     writer = ProvenanceSQLWriter()
     writer(provenance_data_items, provenance_data_path)
