@@ -91,7 +91,8 @@ class SqlLiteDatabase(object):
             if isinstance(value, datetime.timedelta):
                 value = value.microseconds
             cursor.execute(
-                "INSERT INTO provenance(source_id, description_id, the_value) VALUES(?, ?, ?)",
+                "INSERT INTO provenance(source_id, description_id, the_value) "
+                "VALUES(?, ?, ?)",
                 (source_id, description_id, str(value)))
 
     def __get_source_id(self, cursor, source_name):

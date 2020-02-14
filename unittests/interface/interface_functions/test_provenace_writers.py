@@ -29,6 +29,7 @@ def _create_provenenace():
     items.append(ProvenanceDataItem(["core2", "value3"], 45))
     return items
 
+
 def check_provenance_data_path(extenstion):
     me_dir = os.path.dirname(os.path.realpath(__file__))
     provenance_data_path = os.path.join(me_dir, "test_output")
@@ -38,6 +39,7 @@ def check_provenance_data_path(extenstion):
         if file_extension == extenstion:
             os.remove(os.path.join(provenance_data_path, filename))
     return provenance_data_path
+
 
 def test_json():
     provenance_data_path = check_provenance_data_path(".json")
