@@ -177,30 +177,27 @@ class CommandSenderMachineVertex(
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(
-            CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value)
+            self.DATA_REGIONS.SYSTEM_REGION.value)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 
         # write commands
         spec.switch_write_focus(
-            region=CommandSenderMachineVertex.DATA_REGIONS.
-            COMMANDS_WITH_ARBITRARY_TIMES.value)
+            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value)
 
         # write commands to spec for timed commands
         self._write_timed_commands(self._timed_commands, spec)
 
         # write commands fired off during a start or resume
         spec.switch_write_focus(
-            region=CommandSenderMachineVertex.DATA_REGIONS.
-            COMMANDS_AT_START_RESUME.value)
+            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME.value)
 
         self._write_basic_commands(self._commands_at_start_resume, spec)
 
         # write commands fired off during a pause or end
         spec.switch_write_focus(
-            region=CommandSenderMachineVertex.DATA_REGIONS.
-            COMMANDS_AT_STOP_PAUSE.value)
+            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value)
 
         self._write_basic_commands(self._commands_at_pause_stop, spec)
 
@@ -231,24 +228,24 @@ class CommandSenderMachineVertex(
             spec.write_value(command.time)
             self._write_command(command, spec)
 
-    @staticmethod
-    def _write_command(command, spec):
+    @classmethod
+    def _write_command(cls, command, spec):
         """
         :param MultiCastCommand command:
         :param ~data_specification.DataSpecificationGenerator spec:
         """
         spec.write_value(command.key)
         if command.is_payload:
-            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+            spec.write_value(cls._HAS_PAYLOAD)
         else:
-            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
+            spec.write_value(cls._HAS_NO_PAYLOAD)
         spec.write_value(command.payload if command.is_payload else 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
 
-    @staticmethod
+    @classmethod
     def _reserve_memory_regions(
-            spec, time_command_size, start_command_size, end_command_size,
+            cls, spec, time_command_size, start_command_size, end_command_size,
             vertex):
         """ Reserve SDRAM space for memory areas:
 
@@ -266,22 +263,19 @@ class CommandSenderMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
+            region=cls.DATA_REGIONS.SYSTEM_REGION.value,
             size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.
-            DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
+            region=cls.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
             size=time_command_size, label='commands with arbitrary times')
 
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.
-            DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
+            region=cls.DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
             size=start_command_size, label='commands with start resume times')
 
         spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.
-            DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
+            region=cls.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
             size=end_command_size, label='commands with stop pause times')
 
         vertex.reserve_provenance_data_region(spec)
@@ -290,25 +284,21 @@ class CommandSenderMachineVertex(
         """
         :rtype: int
         """
-        n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
+        n_bytes = self._N_COMMANDS_SIZE
         n_bytes += (
-            (CommandSenderMachineVertex._COMMAND_TIMESTAMP_SIZE +
-             CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE) *
+            (self._COMMAND_TIMESTAMP_SIZE + self._COMMAND_WITH_PAYLOAD_SIZE) *
             len(self._timed_commands)
         )
         return n_bytes
 
-    @staticmethod
-    def get_n_command_bytes(commands):
+    @classmethod
+    def get_n_command_bytes(cls, commands):
         """
         :param list(MultiCastCommand) commands:
         :rtype: int
         """
-        n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
-        n_bytes += (
-            CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE *
-            len(commands)
-        )
+        n_bytes = cls._N_COMMANDS_SIZE
+        n_bytes += cls._COMMAND_WITH_PAYLOAD_SIZE * len(commands)
         return n_bytes
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)

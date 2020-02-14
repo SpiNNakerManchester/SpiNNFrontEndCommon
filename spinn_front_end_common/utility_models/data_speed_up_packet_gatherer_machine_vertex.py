@@ -363,8 +363,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._transaction_id = txrx.read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
-    @staticmethod
-    def static_resources_required():
+    @classmethod
+    def static_resources_required(cls):
         """
         :rtype: ~pacman.model.resources.ResourceContainer
         """
@@ -373,9 +373,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
                 SIZE_DATA_IN_CHIP_TO_KEY_SPACE),
             iptags=[IPtagResource(
-                port=DataSpeedUpPacketGatherMachineVertex._TAG_INITIAL_PORT,
-                strip_sdp=True, ip_address="localhost",
-                traffic_identifier="DATA_SPEED_UP")])
+                port=cls._TAG_INITIAL_PORT, strip_sdp=True,
+                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

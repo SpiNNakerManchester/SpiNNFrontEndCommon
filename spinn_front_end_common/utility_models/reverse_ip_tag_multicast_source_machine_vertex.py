@@ -253,22 +253,33 @@ class ReverseIPTagMulticastSourceMachineVertex(
             return 0
         return 0
 
-    @staticmethod
-    def _send_buffer_sdram_per_timestep(send_buffer_times, n_keys):
+    @classmethod
+    def _send_buffer_sdram_per_timestep(cls, send_buffer_times, n_keys):
         """ Determine the amount of SDRAM required per timestep.
+
+        :param send_buffer_times:
+        :param int n_keys:
+        :rtype: int
         """
         # If there is a send buffer, calculate the keys per timestep
         if send_buffer_times is not None:
-            sdram = get_n_bytes(ReverseIPTagMulticastSourceMachineVertex
-                                ._max_send_buffer_keys_per_timestep(
-                                    send_buffer_times, n_keys))
+            sdram = get_n_bytes(cls._max_send_buffer_keys_per_timestep(
+                send_buffer_times, n_keys))
             return sdram
         return 0
 
-    @staticmethod
+    @classmethod
     def _recording_sdram_per_timestep(
-            machine_time_step, is_recording, receive_rate, send_buffer_times,
-            n_keys):
+            cls, machine_time_step, is_recording, receive_rate,
+            send_buffer_times, n_keys):
+        """
+        :param int machine_time_step:
+        :param bool is_recording:
+        :param float receive_rate:
+        :param ~numpy.ndarray send_buffer_times:
+        :param int n_keys:
+        :rtype: int
+        """
 
         # If recording live data, use the user provided receive rate
         if is_recording and send_buffer_times is None:
@@ -284,14 +295,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If recording send data, the recorded size is the send size
         if is_recording and send_buffer_times is not None:
-            return (ReverseIPTagMulticastSourceMachineVertex
-                    ._send_buffer_sdram_per_timestep(
-                        send_buffer_times, n_keys))
+            return cls._send_buffer_sdram_per_timestep(
+                send_buffer_times, n_keys)
 
         # Not recording no SDRAM needed per timestep
         return 0
 
     def _install_send_buffer(self, send_buffer_times):
+        """
+        :param ~numpy.ndarray send_buffer_times:
+        """
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             # Working with a list of lists so check length
             if len(send_buffer_times) != self._n_keys:
@@ -307,6 +320,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         }
 
     def _install_virtual_key(self, n_keys):
+        """
+        :param int n_keys:
+        """
         # check that virtual key is valid
         if self._virtual_key < 0:
             raise ConfigurationException("Virtual keys must be positive")
@@ -353,9 +369,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             reverse_iptags=self._reverse_iptags)
         return resources
 
-    @staticmethod
+    @classmethod
     def get_sdram_usage(
-            send_buffer_times, recording_enabled, machine_time_step,
+            cls, send_buffer_times, recording_enabled, machine_time_step,
             receive_rate, n_keys):
         """
         :param send_buffer_times: When events will be sent
@@ -370,17 +386,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
-            (ReverseIPTagMulticastSourceMachineVertex.
-                _CONFIGURATION_REGION_SIZE) +
+            cls._CONFIGURATION_REGION_SIZE +
             get_recording_header_size(1) +
             get_recording_data_constant_size(1) +
-            (ReverseIPTagMulticastSourceMachineVertex.
-                get_provenance_data_size(0)))
+            cls.get_provenance_data_size(0))
         per_timestep = (
-            ReverseIPTagMulticastSourceMachineVertex
-            ._send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
-            ReverseIPTagMulticastSourceMachineVertex.
-            _recording_sdram_per_timestep(
+            cls._send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
+            cls._recording_sdram_per_timestep(
                 machine_time_step, recording_enabled, receive_rate,
                 send_buffer_times, n_keys))
         static_usage += per_timestep
@@ -507,6 +519,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def enable_recording(self, new_state=True):
         """ Enable recording of the keys sent
+
+        :param bool new_state:
         """
         self._is_recording = new_state
 
@@ -574,8 +588,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec, machine_time_step,
-                             time_scale_factor):
+    def _write_configuration(
+            self, spec, machine_time_step, time_scale_factor):
         """
         :param ~data_specification.DataSpecificationGenerator spec:
         :param int machine_time_step:

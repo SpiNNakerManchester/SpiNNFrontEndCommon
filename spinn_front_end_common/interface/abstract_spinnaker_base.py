@@ -674,11 +674,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "A SpiNNaker machine must be specified your configuration"
                 " file")
 
-        n_items_specified = sum([
-            1 if item is not None else 0
+        n_items_specified = sum(
+            item is not None
             for item in [
                 self._hostname, self._spalloc_server,
-                self._remote_spinnaker_url]])
+                self._remote_spinnaker_url])
 
         if (n_items_specified > 1 or
                 (n_items_specified == 1 and self._use_virtual_board)):
@@ -717,13 +717,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
+    _RUNNING_STATES = (Simulator_State.IN_RUN, Simulator_State.RUN_FOREVER)
+    _SHUTDOWN_STATES = (Simulator_State.SHUTDOWN, )
+
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
-        if self._state in [Simulator_State.IN_RUN,
-                           Simulator_State.RUN_FOREVER]:
+        if self._state in self._RUNNING_STATES:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
-        if self._state in [Simulator_State.SHUTDOWN]:
+        if self._state in self._SHUTDOWN_STATES:
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 

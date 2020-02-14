@@ -74,15 +74,15 @@ class ProvidesProvenanceDataFromMachineImpl(
             self.get_provenance_data_size(self._n_additional_data_items),
             label="Provenance", empty=True)
 
-    @staticmethod
-    def get_provenance_data_size(n_additional_data_items):
+    @classmethod
+    def get_provenance_data_size(cls, n_additional_data_items):
         """
         :param int n_additional_data_items:
         :rtype: int
         """
         return (
-            (len(ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES)
-             + n_additional_data_items) * BYTES_PER_WORD)
+            (len(cls.PROVENANCE_DATA_ENTRIES) + n_additional_data_items)
+            * BYTES_PER_WORD)
 
     def _get_provenance_region_address(self, transceiver, placement):
         """

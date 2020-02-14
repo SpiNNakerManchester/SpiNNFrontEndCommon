@@ -157,9 +157,9 @@ class ChannelBufferState(object):
             end_address, region_id, missing_info, last_buffer_operation)
         return buffer_state
 
-    @staticmethod
-    def size_of_channel_state():
+    @classmethod
+    def size_of_channel_state(cls):
         """
         :rtype: int
         """
-        return ChannelBufferState.ChannelBufferStateSize
+        return cls.ChannelBufferStateSize

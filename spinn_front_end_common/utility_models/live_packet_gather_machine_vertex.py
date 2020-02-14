@@ -307,22 +307,20 @@ class LivePacketGatherMachineVertex(
         """
         return 0
 
-    @staticmethod
-    def get_sdram_usage():
+    @classmethod
+    def get_sdram_usage(cls):
         """ Get the SDRAM used by this vertex
 
         :rtype: int
         """
         return (
-            SYSTEM_BYTES_REQUIREMENT +
-            LivePacketGatherMachineVertex._CONFIG_SIZE +
-            LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex._N_ADDITIONAL_PROVENANCE_ITEMS))
+            SYSTEM_BYTES_REQUIREMENT + cls._CONFIG_SIZE +
+            cls.get_provenance_data_size(cls._N_ADDITIONAL_PROVENANCE_ITEMS))
 
-    @staticmethod
-    def get_dtcm_usage():
+    @classmethod
+    def get_dtcm_usage(cls):
         """ Get the DTCM used by this vertex
 
         :rtype: int
         """
-        return LivePacketGatherMachineVertex._CONFIG_SIZE
+        return cls._CONFIG_SIZE
