@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import filecmp
 import json
 import os
@@ -6,10 +21,10 @@ import unittest
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-from pacman.utilities.file_format_converters.convert_to_java_machine \
-    import ConvertToJavaMachine
-from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
-    import SpallocAllocator
+from pacman.utilities.file_format_converters.convert_to_java_machine import (
+    ConvertToJavaMachine)
+from spinn_front_end_common.interface.interface_functions import (
+    SpallocAllocator)
 
 
 class TestConvertJson(unittest.TestCase):
@@ -66,10 +81,9 @@ class TestConvertJson(unittest.TestCase):
 
         self.json_compare(filename, "spinn4.json")
 
-        # Create a machione with Exception
+        # Create a machine with Exception
         chip = machine.get_chip_at(1, 1)
         chip._sdram._size = chip._sdram._size - 100
-        chip._router._clock_speed = chip._router._clock_speed - 100
         chip._router._n_available_multicast_entries -= 10
         chip._virtual = not chip._virtual
         chip = machine.get_chip_at(1, 2)
@@ -85,11 +99,11 @@ class TestConvertJson(unittest.TestCase):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         spallocAlgo = SpallocAllocator()
-
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
-                            self.spin2Port)
+                spallocAlgo(spalloc_server=self.spalloc,
+                            spalloc_user="Integration testing ok to kill",
+                            n_chips=20, spalloc_port=self.spin2Port)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 

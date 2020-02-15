@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 try:
     from collections import MutableMapping
 except ImportError:
@@ -11,22 +26,27 @@ class DataSpecificationTargets(MutableMapping):
 
     __slots__ = ["_db"]
 
-    def __init__(self, machine, report_folder, init=True):
+    def __init__(self, machine, report_folder, init=None, clear=True):
         """
         :param machine:
-        :type machine: :py:class:`spinn_machine.Machine`
+        :type machine: ~spinn_machine.Machine
         :param report_folder:
+        :type report_folder: str
         """
+        # pylint: disable=super-init-not-called
         # real DB would write to report_folder
         self._db = DsSqlliteDatabase(machine, report_folder, init)
+        # Clear any current data specs
+        if clear:
+            self._db.clear_ds()
 
     def __getitem__(self, core):
         """
         Implements the mapping __getitem__ as long as core is the right type.
 
-        :param core:triple of (x, y, p)
-        :type core: (int, int, int)
-        :rtype: dict() with the keys
+        :param core: triple of (x, y, p)
+        :type core: tuple(int, int, int)
+        :rtype: dict(); has the keys
             'start_address', 'memory_used' and 'memory_written'
         """
         (x, y, p) = core
@@ -40,12 +60,11 @@ class DataSpecificationTargets(MutableMapping):
         raise NotImplementedError("Delete not supported")
 
     def keys(self):
-        """
-        Yields the keys.
+        """ Yields the keys.
 
         As the more typical call is iteritems this makes use of that
 
-        :return:
+        :rtype: iterable(tuple(int,int,int))
         """
         for key, _value in self._db.ds_iteritems():
             yield key
@@ -78,8 +97,7 @@ class DataSpecificationTargets(MutableMapping):
     def get_database(self):
         """ Expose the database so it can be shared
 
-        :rtype:
-            py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
+        :rtype: ~spinn_front_end_common.interface.ds.DsAbstractDatabase
         """
         return self._db
 
@@ -87,7 +105,7 @@ class DataSpecificationTargets(MutableMapping):
         """ Sets the same app_id for all rows that have DS content
 
         :param app_id: value to set
-        :rtype app_id: int
+        :type app_id: int
         """
         self._db.ds_set_app_id(app_id)
 
@@ -100,3 +118,12 @@ class DataSpecificationTargets(MutableMapping):
         :rtype: int
         """
         return self._db.ds_get_app_id(x, y, p)
+
+    def mark_system_cores(self, core_subsets):
+        cores_to_mark = []
+        for subset in core_subsets:
+            x = subset.x
+            y = subset.y
+            for p in subset.processor_ids:
+                cores_to_mark.append((x, y, p))
+        self._db.ds_mark_as_system(cores_to_mark)

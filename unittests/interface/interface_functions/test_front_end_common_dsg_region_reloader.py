@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 import struct
 import shutil
@@ -14,6 +29,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 class _TestMachineVertex(MachineVertex):
@@ -67,7 +83,7 @@ class _TestApplicationVertex(
 
     def regenerate_data_specification(self, spec, placement):
         for region_id, data in self._reload_region_data:
-            spec.reserve_memory_region(region_id, len(data) * 4)
+            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
             spec.switch_write_focus(region_id)
             spec.write_array(data)
         spec.end_specification()

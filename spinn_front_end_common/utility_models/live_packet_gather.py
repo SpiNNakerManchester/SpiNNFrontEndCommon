@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.graphs.application import ApplicationVertex
@@ -20,7 +35,7 @@ class LivePacketGather(
     """
 
     def __init__(
-            self, hostname, port, board_address=None, tag=None,
+            self, hostname=None, port=None, tag=None,
             strip_sdp=True, use_prefix=False, key_prefix=None,
             prefix_type=None, message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
@@ -59,7 +74,6 @@ class LivePacketGather(
         # tag info
         self._ip_address = hostname
         self._port = port
-        self._board_address = board_address
         self._tag = tag
         self._strip_sdp = strip_sdp
 
@@ -87,8 +101,7 @@ class LivePacketGather(
             self._payload_prefix, self._payload_right_shift,
             self._number_of_packets_sent_per_time_step,
             hostname=self._ip_address, port=self._port,
-            strip_sdp=self._strip_sdp, board_address=self._board_address,
-            constraints=constraints)
+            strip_sdp=self._strip_sdp, constraints=constraints)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

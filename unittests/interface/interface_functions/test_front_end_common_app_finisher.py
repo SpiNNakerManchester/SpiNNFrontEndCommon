@@ -1,10 +1,25 @@
-import unittest
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from six import itervalues
 from spinnman.model.enums.cpu_state import CPUState
-from spinn_front_end_common.interface.interface_functions \
-    import ApplicationFinisher
+from spinn_front_end_common.interface.interface_functions import (
+    ApplicationFinisher)
+from spinnman.model.cpu_infos import CPUInfos
 
 
 class _MockTransceiver(object):
@@ -25,7 +40,7 @@ class _MockTransceiver(object):
         return count
 
     def get_cores_in_state(self, core_subsets, states):
-        cores_in_state = CoreSubsets()
+        cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
         for core_subset in core_subsets:
             x = core_subset.x
@@ -35,9 +50,9 @@ class _MockTransceiver(object):
                 if (x, y, p) in core_states:
                     if hasattr(states, "__iter__"):
                         if core_states[x, y, p] in states:
-                            cores_in_state.add_processor(x, y, p)
+                            cores_in_state.add_processor(x, y, p, None)
                     elif core_states[x, y, p] == states:
-                        cores_in_state.add_processor(x, y, p)
+                        cores_in_state.add_processor(x, y, p, None)
 
         self._current_state += 1
         return cores_in_state
@@ -46,8 +61,6 @@ class _MockTransceiver(object):
         self.sdp_send_count += 1
 
 
-@unittest.skip(
-    "https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/381")
 def test_app_finisher():
     finisher = ApplicationFinisher()
     core_subsets = CoreSubsets()

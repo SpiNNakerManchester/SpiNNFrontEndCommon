@@ -1,3 +1,18 @@
+-- Copyright (c) 2017-2019 The University of Manchester
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 -- We want foreign key enforcement; it should be default on, but it isn't for
 -- messy historical reasons.
 PRAGMA foreign_keys = ON;
@@ -42,6 +57,7 @@ CREATE TABLE IF NOT EXISTS Processor(
 CREATE TABLE IF NOT EXISTS Application_vertices(
     vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
     vertex_label TEXT,
+    vertex_class TEXT,
     no_atoms INTEGER,
     max_atom_constrant INTEGER,
     recorded INTEGER);
@@ -52,6 +68,7 @@ CREATE TABLE IF NOT EXISTS Application_edges(
     pre_vertex INTEGER,
     post_vertex INTEGER,
     edge_label TEXT,
+    edge_class TEXT,
     FOREIGN KEY (pre_vertex)
         REFERENCES Application_vertices(vertex_id),
     FOREIGN KEY (post_vertex)
@@ -71,6 +88,7 @@ CREATE TABLE IF NOT EXISTS Application_graph(
 CREATE TABLE IF NOT EXISTS Machine_vertices(
     vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT,
+    class TEXT,
     cpu_used INTEGER,
     sdram_used INTEGER,
     dtcm_used INTEGER);
@@ -81,6 +99,7 @@ CREATE TABLE IF NOT EXISTS Machine_edges(
     pre_vertex INTEGER,
     post_vertex INTEGER,
     label TEXT,
+    class TEXT,
     FOREIGN KEY (pre_vertex)
         REFERENCES Machine_vertices(vertex_id),
     FOREIGN KEY (post_vertex)
@@ -178,3 +197,118 @@ CREATE TABLE IF NOT EXISTS event_to_atom_mapping(
     event_id INTEGER PRIMARY KEY,
     FOREIGN KEY (vertex_id)
         REFERENCES Machine_vertices(vertex_id));
+
+-- Views that simplify common queries
+
+CREATE VIEW IF NOT EXISTS label_event_atom_view AS SELECT
+    e_to_a.atom_id AS atom,
+    e_to_a.event_id AS event,
+    app_vtx.vertex_label AS label,
+    app_vtx.vertex_class AS class
+FROM event_to_atom_mapping AS e_to_a
+    NATURAL JOIN Application_vertices AS app_vtx;
+
+CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
+    IP_tags.ip_address AS ip_address,
+    IP_tags.port AS port,
+    IP_tags.strip_sdp AS strip_sdp,
+    IP_tags.board_address AS board_address,
+    IP_tags.tag AS tag,
+    pre_vertices.vertex_label AS pre_vertex_label,
+    pre_vertices.vertex_class AS pre_vertex_class,
+    post_vertices.vertex_label AS post_vertex_label,
+    post_vertices.vertex_class AS post_vertex_class
+FROM IP_tags
+    JOIN graph_mapper_vertex AS mapper
+        ON IP_tags.vertex_id = mapper.machine_vertex_id
+    JOIN Application_vertices AS post_vertices
+        ON mapper.application_vertex_id = post_vertices.vertex_id
+    JOIN Application_edges AS edges
+        ON mapper.application_vertex_id = edges.post_vertex
+    JOIN Application_vertices AS pre_vertices
+        ON edges.pre_vertex = pre_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
+    IP_tags.ip_address AS ip_address,
+    IP_tags.port AS port,
+    IP_tags.strip_sdp AS strip_sdp,
+    IP_tags.board_address AS board_address,
+    IP_tags.tag AS tag,
+    pre_vertices.label AS pre_vertex_label,
+    pre_vertices.class AS pre_vertex_class,
+    post_vertices.label AS post_vertex_label,
+    post_vertices.class AS post_vertex_class
+FROM IP_tags
+    JOIN Machine_vertices AS post_vertices
+        ON IP_tags.vertex_id = post_vertices.vertex_id
+    JOIN Machine_edges AS edges
+        ON edges.post_vertex = post_vertices.vertex_id
+    JOIN Machine_vertices AS pre_vertices
+        ON edges.pre_vertex = pre_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS app_input_tag_view AS SELECT
+    Reverse_IP_tags.board_address AS board_address,
+    Reverse_IP_tags.port AS port,
+    application.vertex_label AS application_label,
+    application.vertex_class AS application_class
+FROM Reverse_IP_tags
+    JOIN graph_mapper_vertex AS mapper
+        ON Reverse_IP_tags.vertex_id = mapper.machine_vertex_id
+    JOIN Application_vertices AS application
+        ON mapper.application_vertex_id = application.vertex_id;
+
+CREATE VIEW IF NOT EXISTS machine_input_tag_view AS SELECT
+    Reverse_IP_tags.board_address AS board_address,
+    Reverse_IP_tags.port AS port,
+    post_vertices.label AS machine_label,
+    post_vertices.class AS machine_class
+FROM Reverse_IP_tags
+    JOIN Machine_vertices AS post_vertices
+        ON Reverse_IP_tags.vertex_id = post_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS machine_edge_key_view AS SELECT
+    Routing_info."key" AS "key",
+    Routing_info.mask AS mask,
+    pre_vertices.label AS pre_vertex_label,
+    pre_vertices.class AS pre_vertex_class,
+    post_vertices.label AS post_vertex_label,
+    post_vertices.class AS post_vertex_class
+FROM Routing_info
+    JOIN Machine_edges
+        ON Machine_edges.edge_id = Routing_info.edge_id
+    JOIN Machine_vertices AS post_vertices
+        ON post_vertices.vertex_id = Machine_edges.post_vertex
+    JOIN Machine_vertices AS pre_vertices
+        ON pre_vertices.vertex_id = Machine_edges.pre_vertex;
+
+CREATE VIEW IF NOT EXISTS machine_vertex_placement AS SELECT
+    Placements.chip_x AS x,
+    Placements.chip_y AS y,
+    Placements.chip_p AS p,
+    Machine_vertices.label AS vertex_label,
+    Machine_vertices.class AS vertex_class
+FROM Placements
+    NATURAL JOIN Machine_vertices;
+
+CREATE VIEW IF NOT EXISTS application_vertex_placements AS SELECT
+    Placements.chip_x AS x,
+    Placements.chip_y AS y,
+    Placements.chip_p AS p,
+    Application_vertices.vertex_label AS vertex_label,
+    Application_vertices.vertex_class AS vertex_class
+FROM Placements
+    JOIN graph_mapper_vertex
+        ON Placements.vertex_id = graph_mapper_vertex.machine_vertex_id
+    JOIN Application_vertices
+        ON graph_mapper_vertex.application_vertex_id = Application_vertices.vertex_id;
+
+CREATE VIEW IF NOT EXISTS chip_eth_info AS SELECT
+    chip.chip_x AS x,
+    chip.chip_y AS y,
+    eth_chip.chip_x AS eth_x,
+    eth_chip.chip_y AS eth_y,
+    eth_chip.ip_address AS eth_ip_address
+FROM Machine_chip AS chip
+    JOIN Machine_chip AS eth_chip
+        ON  chip.nearest_ethernet_x = eth_chip.chip_x
+        AND chip.nearest_ethernet_y = eth_chip.chip_y;

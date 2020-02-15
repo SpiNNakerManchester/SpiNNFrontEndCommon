@@ -1,5 +1,17 @@
-import struct
-import pytest
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_machine.virtual_machine import virtual_machine
 from spinnman.model.enums import CPUState
@@ -7,10 +19,9 @@ from spinnman.model import IOBuffer
 from spinnman.utilities.appid_tracker import AppIdTracker
 from pacman.model.routing_tables import (
     MulticastRoutingTables, MulticastRoutingTable)
-from spinn_front_end_common.mapping_algorithms\
-    .on_chip_router_table_compression.mundy_on_chip_router_compression import \
-    MundyOnChipRouterCompression
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.mapping_algorithms.\
+    on_chip_router_table_compression.compression import (
+        mundy_on_chip_router_compression)
 
 
 class MockTransceiverError(object):
@@ -42,14 +53,6 @@ class MockTransceiverError(object):
         # Return immediately
         pass
 
-    def get_user_0_register_address_from_core(self, p):
-        # Just return 0 as the read is mocked too
-        return 0
-
-    def read_memory(self, x, y, base_address, length, cpu=0):
-        # This will read the status, which will be 1 for "error"
-        return struct.pack("<I", 1)
-
     def get_iobuf(self, core_subsets=None):
         # Yield a fake iobuf
         for core_subset in core_subsets:
@@ -62,14 +65,15 @@ class MockTransceiverError(object):
         # No need to stop nothing!
         pass
 
+    def read_user_0(self, x, y, p):
+        return 0
+
 
 def test_router_compressor_on_error():
-    compressor = MundyOnChipRouterCompression()
     routing_tables = MulticastRoutingTables(
         [MulticastRoutingTable(0, 0)])
     transceiver = MockTransceiverError()
-    machine = virtual_machine(version=5)
-    with pytest.raises(SpinnFrontEndException):
-        compressor(
-            routing_tables, transceiver, machine, app_id=17,
-            provenance_file_path="")
+    machine = virtual_machine(width=8, height=8)
+    mundy_on_chip_router_compression(
+        routing_tables, transceiver, machine, app_id=17,
+        system_provenance_folder="")

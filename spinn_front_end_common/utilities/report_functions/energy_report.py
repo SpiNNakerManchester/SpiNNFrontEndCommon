@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
@@ -9,7 +24,8 @@ logger = logging.getLogger(__name__)
 
 
 class EnergyReport(object):
-    """ A report that describes the energy usage during a SpiNNaker job.
+    """ Creates a report about the approximate total energy consumed by a\
+        SpiNNaker job execution.
     """
 
     # given from indar measurements
@@ -163,37 +179,43 @@ class EnergyReport(object):
         kilowatt_hours = total_joules / EnergyReport.JOULES_TO_KILOWATT_HOURS
 
         # write summary data
+        f.write("Summary energy file\n-------------------\n\n")
         f.write(
-            "Summary energy file\n\n"
-            "Energy used by chips during runtime is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used by FPGAs is {} Joules over the entire time the "
-            "machine was booted is {} milliseconds \n"
-            "Energy used by FPGAs is {} Joules over the runtime period is "
-            "{} milliseconds \n"
+            "Energy used by chips during runtime is {} Joules (over {} "
+            "milliseconds)\n".format(active_chip_cost, runtime_total_ms))
+        f.write(
+            "Energy used by FPGAs is {} Joules (over the entire time the "
+            "machine was booted {} milliseconds)\n".format(
+                fpga_cost_total, total_booted_time))
+        f.write(
+            "Energy used by FPGAs is {} Joules (over the runtime period of "
+            "{} milliseconds)\n".format(
+                fpga_cost_runtime, runtime_total_ms))
+        f.write(
             "Energy used by outside router / cooling during the runtime "
-            "period is {} Joules\n"
-            "Energy used by packet transmissions is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the mapping process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used by the data generation process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the loading process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the data extraction process is {} Joules over "
-            "{} milliseconds\n"
-            "Total energy used by the simulation over {} milliseconds is: \n"
-            "     {} Joules or \n"
-            "     {} estimated average Watts or \n"
+            "period is {} Joules\n".format(router_cooling_runtime_cost))
+        f.write(
+            "Energy used by packet transmissions is {} Joules (over {} "
+            "milliseconds)\n".format(packet_cost, total_time))
+        f.write(
+            "Energy used during the mapping process is {} Joules (over {} "
+            "milliseconds)\n".format(mapping_cost, mapping_time))
+        f.write(
+            "Energy used by the data generation process is {} Joules (over {} "
+            "milliseconds)\n".format(dsg_cost, dsg_time))
+        f.write(
+            "Energy used during the loading process is {} Joules (over {} "
+            "milliseconds)\n".format(load_time_cost, load_time))
+        f.write(
+            "Energy used during the data extraction process is {} Joules "
+            "(over {} milliseconds\n".format(
+                data_extraction_cost, extraction_time))
+        f.write(
+            "Total energy used by the simulation over {} milliseconds is:\n"
+            "     {} Joules, or\n"
+            "     {} estimated average Watts, or\n"
             "     {} kWh\n".format(
-                active_chip_cost, runtime_total_ms, fpga_cost_total,
-                total_booted_time, fpga_cost_runtime,
-                runtime_total_ms, router_cooling_runtime_cost,
-                packet_cost, total_time, mapping_cost, mapping_time, dsg_cost,
-                dsg_time, load_time_cost, load_time, data_extraction_cost,
-                extraction_time, total_time, total_joules, total_watts,
-                kilowatt_hours))
+                total_time, total_joules, total_watts, kilowatt_hours))
 
     def _write_detailed_report(
             self, placements, machine, version, spalloc_server,
@@ -209,7 +231,7 @@ class EnergyReport(object):
         :param version: machine version
         :param spalloc_server: spalloc server
         :param remote_spinnaker_url: remote SpiNNaker URL
-        :param pacman_provenance: provenance generated by pacman
+        :param pacman_provenance: provenance generated by PACMAN
         :param router_provenance: provenance generated by the router
         :param buffer_manager: buffer manager
         :param f: file writer
@@ -315,8 +337,8 @@ class EnergyReport(object):
         :param version: machine version
         :param spalloc_server: spalloc server IP
         :param remote_spinnaker_url: remote SpiNNaker URL
-        :param total_runtime: runtime:
-        :param f: the file writer:
+        :param total_runtime: the runtime
+        :param f: the file writer
         :param runtime_total_ms:
         :return: power usage of FPGAs
         :rtype: tuple(float,float)
@@ -403,7 +425,7 @@ class EnergyReport(object):
         return power_usage_total, power_usage_runtime
 
     def _board_n_operational_fpgas(self, machine, ethernet_connected_chip):
-        """ Figures out which FPGAs were switched on.
+        """ Figures out how many FPGAs were switched on.
 
         :param machine: SpiNNaker machine
         :param ethernet_connected_chip: the ethernet chip to look from
@@ -592,7 +614,7 @@ class EnergyReport(object):
         """ Energy usage from the loading phase
 
         :param pacman_provenance: provenance items from the PACMAN set
-        :param machine: machine rep
+        :param machine: machine description
         :param f: file writer
         :param active_chips: the chips which have end user code in them
         :param load_time: the time of the entire load time phase in ms
@@ -648,7 +670,7 @@ class EnergyReport(object):
         """ Data extraction cost
 
         :param pacman_provenance: provenance items from the PACMAN set
-        :param machine: machine rep
+        :param machine: machine description
         :param f: file writer
         :param active_chips:
         :return: cost of data extraction in Joules
@@ -693,9 +715,9 @@ class EnergyReport(object):
         return energy_cost
 
     def _calculate_idle_cost(self, time, machine):
-        """ Calculate energy used by being idle
+        """ Calculate energy used by being idle.
 
-        :param machine: machine object
+        :param machine: machine description
         :param time: time machine was idle
         :type time: float
         :return: cost in joules
@@ -734,7 +756,7 @@ class EnergyReport(object):
 
         :param machine: the machine object
         :param machine_allocation_controller: the spalloc job object
-        :return: n frames
+        :return: number of frames
         """
 
         # if not spalloc, then could be any type of board, but unknown cooling

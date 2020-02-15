@@ -1,9 +1,25 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import os
 import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -48,15 +64,16 @@ class MemoryMapOnHostChipReport(object):
         pointer_table_addr = self._get_app_pointer_table(
             txrx, x, y, user_0_addr)
         memmap_data = txrx.read_memory(
-            x, y, pointer_table_addr, 4 * MAX_MEM_REGIONS)
+            x, y, pointer_table_addr, BYTES_PER_WORD * MAX_MEM_REGIONS)
 
         # Convert the map to a human-readable description
         f.write("On chip data specification executor\n\n")
         for i in range(MAX_MEM_REGIONS):
-            region_address, = _ONE_WORD.unpack_from(memmap_data, i * 4)
+            region_address, = _ONE_WORD.unpack_from(
+                memmap_data, i * BYTES_PER_WORD)
             f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
                 i, region_address))
 
     def _get_app_pointer_table(self, txrx, x, y, table_pointer):
-        encoded_address = txrx.read_memory(x, y, table_pointer, 4)
-        return _ONE_WORD.unpack_from(encoded_address)[0] + 8
+        encoded_address = txrx.read_memory(x, y, table_pointer, BYTES_PER_WORD)
+        return _ONE_WORD.unpack_from(encoded_address)[0] + 2 * BYTES_PER_WORD

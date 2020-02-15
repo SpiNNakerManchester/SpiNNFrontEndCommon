@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
@@ -20,10 +35,13 @@ class ChipPowerMonitor(
         :param label: vertex label
         :type label: str
         :param constraints: constraints for the vertex
+        :type constraints: \
+            iterable(~pacman.model.constraints.AbstractConstraint)
         :param n_samples_per_recording: \
             how many samples to take before recording to SDRAM the total
         :type n_samples_per_recording: int
         :param sampling_frequency: how many microseconds between sampling
+        :type sampling_frequency: int
         """
         super(ChipPowerMonitor, self).__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording

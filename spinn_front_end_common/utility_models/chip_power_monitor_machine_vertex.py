@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import math
 import logging
 from enum import Enum
@@ -16,7 +31,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -28,9 +43,9 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
-RECORDING_SIZE_PER_ENTRY = 18 * 4
+RECORDING_SIZE_PER_ENTRY = 18 * BYTES_PER_WORD
 DEFAULT_MALLOCS_USED = 3
-CONFIG_SIZE_IN_BYTES = 8
+CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 
 
 @supports_injection
@@ -39,30 +54,31 @@ class ChipPowerMonitorMachineVertex(
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
     """ Machine vertex for C code representing functionality to record\
         idle times in a machine graph.
+
+    :param label: vertex label
+    :type label: str
+    :param constraints: constraints on this vertex
+    :type constraints: \
+        iterable(~pacman.model.constraints.AbstractConstraint)
+    :param n_samples_per_recording: how may samples between recording entry
+    :type n_samples_per_recording: int
+    :param sampling_frequency: how often to sample, in microseconds
+    :type sampling_frequency: int
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
-    # data regions
-    CHIP_POWER_MONITOR_REGIONS = Enum(
-        value="CHIP_POWER_MONITOR_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1),
-               ('RECORDING', 2)])
+    class _REGIONS(Enum):
+        # data regions
+        SYSTEM = 0
+        CONFIG = 1
+        RECORDING = 2
 
-    # default magic numbers
-    SAMPLE_RECORDING_REGION = 0
+    #: which channel in the recording region has the recorded samples
+    _SAMPLE_RECORDING_CHANNEL = 0
 
     def __init__(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
-        """
-        :param label: vertex label
-        :param constraints: constraints on this vertex
-        :param n_samples_per_recording: how may samples between recording entry
-        :type n_samples_per_recording: int
-        :param sampling_frequency: how often to sample
-        :type sampling_frequency: microseconds
-        """
         super(ChipPowerMonitorMachineVertex, self).__init__(
             label=label, constraints=constraints)
         self._n_samples_per_recording = n_samples_per_recording
@@ -91,7 +107,7 @@ class ChipPowerMonitorMachineVertex(
             n_samples_per_recording, sampling_frequency):
         """ Get the resources used by this vertex
 
-        :return: Resource container
+        :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
         step_in_microseconds = (time_step * time_scale_factor)
@@ -123,7 +139,7 @@ class ChipPowerMonitorMachineVertex(
     def binary_file_name():
         """ Return the string binary file name
 
-        :return: basestring
+        :rtype: str
         """
         return BINARY_FILE_NAME
 
@@ -170,8 +186,7 @@ class ChipPowerMonitorMachineVertex(
         :param spec: spec object
         :rtype: None
         """
-        spec.switch_write_focus(
-            region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value)
+        spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
         spec.write_value(self._n_samples_per_recording,
                          data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
@@ -187,13 +202,11 @@ class ChipPowerMonitorMachineVertex(
         :rtype: None
         """
         # pylint: disable=too-many-arguments
-        spec.switch_write_focus(
-            region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value)
+        spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
-        spec.switch_write_focus(
-            region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value)
+        spec.switch_write_focus(region=self._REGIONS.RECORDING.value)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor) * n_machine_time_steps]
@@ -210,14 +223,14 @@ class ChipPowerMonitorMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value,
+            region=self._REGIONS.SYSTEM.value,
             size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
-            region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,
+            region=self._REGIONS.CONFIG.value,
             size=CONFIG_SIZE_IN_BYTES, label='config')
         spec.reserve_memory_region(
-            region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value,
+            region=self._REGIONS.RECORDING.value,
             size=recording_utilities.get_recording_header_size(1),
             label="Recording")
 
@@ -230,13 +243,14 @@ class ChipPowerMonitorMachineVertex(
         """ The type of binary that implements this vertex
 
         :return: starttype enum
+        :rtype: ExecutableType
         """
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
         return locate_memory_region_for_placement(
-            placement, self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value, txrx)
+            placement, self._REGIONS.RECORDING.value, txrx)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
@@ -260,14 +274,17 @@ class ChipPowerMonitorMachineVertex(
         """ Get data from SDRAM given placement and buffer manager
 
         :param placement: the location on machine to get data from
+        :type placement: ~pacman.model.placements.Placement
         :param buffer_manager: the buffer manager that might have data
-        :return: results
-        :rtype: numpy array with 1 dimension
+        :type buffer_manager: \
+            ~spinn_front_end_common.interface.buffer_management.BufferManager
+        :return: results, an array with 1 dimension of uint32 values
+        :rtype: numpy.ndarray
         """
         # for buffering output info is taken form the buffer manager
         # get raw data as a byte array
         record_raw, data_missing = buffer_manager.get_data_by_placement(
-            placement, self.SAMPLE_RECORDING_REGION)
+            placement, self._SAMPLE_RECORDING_CHANNEL)
         if data_missing:
             logger.warning(
                 "Chip Power monitor has lost data on chip({}, {})",

@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 from concurrent.futures import ThreadPoolExecutor, wait
 from spinn_utilities.log import FormatAdapter
@@ -58,7 +73,7 @@ class NotificationProtocol(object):
         for c in self._data_base_message_connections:
             try:
                 c.send_eieio_message(eieio_command_message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to send start/resume notification to external "
                     "application on {}:{} about the simulation ***",
@@ -76,7 +91,7 @@ class NotificationProtocol(object):
         for c in self._data_base_message_connections:
             try:
                 c.send_eieio_message(eieio_command_message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to send stop/pause notification to external "
                     "application on {}:{} about the simulation ***",
@@ -105,7 +120,7 @@ class NotificationProtocol(object):
         # noinspection PyBroadException
         try:
             self._do_read_notify(database_path)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
@@ -131,7 +146,7 @@ class NotificationProtocol(object):
         for c in self._data_base_message_connections:
             try:
                 c.send_eieio_message(message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to notify external application on {}:{} "
                     "about the database ***",
@@ -145,7 +160,7 @@ class NotificationProtocol(object):
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to receive notification from external "
                     "application on {}:{} about the database ***",

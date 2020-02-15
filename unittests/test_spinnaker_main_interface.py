@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import sys
 import unittest
@@ -61,12 +76,12 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         # Test defaults
         interface = MainInterfaceTimingImpl()
         assert interface.machine_time_step == 1000
-        assert interface.timescale_factor is None
+        assert interface.time_scale_factor is None
 
         # Test specified
         interface = MainInterfaceTimingImpl(200, 10)
         assert interface.machine_time_step == 200
-        assert interface.timescale_factor == 10
+        assert interface.time_scale_factor == 10
 
 
 if __name__ == "__main__":

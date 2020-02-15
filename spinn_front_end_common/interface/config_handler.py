@@ -1,10 +1,28 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 import logging
 import os
 import errno
 import shutil
+import time
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import Machine
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     read_config, read_config_boolean, read_config_int)
 
@@ -40,6 +58,12 @@ class ConfigHandler(object):
         "_provenance_file_path",
 
         #
+        "_app_provenance_file_path",
+
+        #
+        "_system_provenance_file_path",
+
+        #
         "_report_default_directory",
 
         #
@@ -50,11 +74,12 @@ class ConfigHandler(object):
 
         #
         "_use_virtual_board",
+
+        # If not None, path to append pacman executor provenance info to
+        "_pacman_executor_provenance_path",
     ]
 
-    def __init__(
-            self, configfile, default_config_paths, validation_cfg):
-
+    def __init__(self, configfile, default_config_paths, validation_cfg):
         # global params
         if default_config_paths is None:
             default_config_paths = []
@@ -69,6 +94,11 @@ class ConfigHandler(object):
         self._use_virtual_board = self._config.getboolean(
             "Machine", "virtual_board")
 
+        # Pass max_machine_cores to Machine so if effects everything!
+        max_machine_core = self._read_config_int("Machine", "max_machine_core")
+        if max_machine_core is not None:
+            Machine.set_max_cores_per_chip(max_machine_core)
+
         self._app_data_runtime_folder = None
         self._app_data_top_simulation_folder = None
         self._json_folder = None
@@ -77,17 +107,19 @@ class ConfigHandler(object):
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
 
-    def _adjust_config(self, runtime):
+    def _adjust_config(self, runtime, debug_enable_opts, report_disable_opts):
         """ Adjust and checks config based on runtime and mode
 
         :param runtime:
         :type runtime: int or bool
+        :type debug_enable_opts: frozenset(str)
+        :type report_disable_opts: frozenset(str)
         :raises ConfigurationException
         """
         if self._config.get("Mode", "mode") == "Debug":
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
+                if option in debug_enable_opts or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "True")
@@ -98,7 +130,7 @@ class ConfigHandler(object):
         elif not self._config.getboolean("Reports", "reportsEnabled"):
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
+                if option in report_disable_opts or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "False")
@@ -139,9 +171,20 @@ class ConfigHandler(object):
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
 
-    def child_folder(self, parent, child_name):
+    def child_folder(self, parent, child_name, must_create=False):
+        """
+        :param must_create: If `True`, the directory named by `child_name`\
+            (but not necessarily its parents) must be created by this call,\
+            and an exception will be thrown if this fails.
+        :raises OSError: if the directory existed ahead of time and creation\
+            was required by the user
+        """
         child = os.path.join(parent, child_name)
-        if not os.path.exists(child):
+        if must_create:
+            # Throws OSError or FileExistsError (a subclass of OSError) if the
+            # directory exists.
+            os.makedirs(child)
+        elif not os.path.exists(child):
             self._make_dirs(child)
         return child
 
@@ -186,8 +229,8 @@ class ConfigHandler(object):
 
     def _set_up_report_specifics(self, n_calls_to_run):
         """
-        :param n_calls_to_run:
-        the counter of how many times run has been called.
+        :param n_calls_to_run: \
+            the counter of how many times run has been called.
         :type n_calls_to_run: int
         :return: The folder for this run, the time_stamp
         """
@@ -207,7 +250,7 @@ class ConfigHandler(object):
                 self._make_dirs(report_default_directory)
         else:
             report_default_directory = self.child_folder(
-                default_report_file_path,  REPORTS_DIRNAME)
+                default_report_file_path, REPORTS_DIRNAME)
 
         # clear and clean out folders considered not useful anymore
         if os.listdir(report_default_directory):
@@ -215,17 +258,20 @@ class ConfigHandler(object):
                 self._config.getint("Reports", "max_reports_kept"),
                 report_default_directory)
 
-        # determine the time slot for later
+        # determine the time slot for later while also making the report folder
         if self._this_run_time_string is None:
-            now = datetime.datetime.now()
-            self._this_run_time_string = (
-                "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-                    now.year, now.month, now.day,
-                    now.hour, now.minute, now.second, now.microsecond))
-
-        # handle timing app folder and cleaning of report folder from last run
-        self._report_simulation_top_directory = self.child_folder(
-            report_default_directory, self._this_run_time_string)
+            while True:
+                try:
+                    timestamp = self.__make_timestamp()
+                    self._report_simulation_top_directory = self.child_folder(
+                        report_default_directory, timestamp, must_create=True)
+                    self._this_run_time_string = timestamp
+                    break
+                except OSError:
+                    time.sleep(0.5)
+        else:
+            self._report_simulation_top_directory = self.child_folder(
+                report_default_directory, self._this_run_time_string)
 
         # create sub folder within reports for sub runs
         # (where changes need to be recorded)
@@ -239,10 +285,17 @@ class ConfigHandler(object):
         with open(time_of_run_file_name, "w") as f:
             f.writelines(self._this_run_time_string)
 
+    @staticmethod
+    def __make_timestamp():
+        now = datetime.datetime.now()
+        return "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+            now.year, now.month, now.day,
+            now.hour, now.minute, now.second, now.microsecond)
+
     def set_up_output_application_data_specifics(self, n_calls_to_run):
         """
-        :param n_calls_to_run:
-        the counter of how many times run has been called.
+        :param n_calls_to_run: \
+            the counter of how many times run has been called.
         :type n_calls_to_run: int
         :return: the run folder for this simulation to hold app data
         """
@@ -304,10 +357,22 @@ class ConfigHandler(object):
         if not os.path.exists(self._provenance_file_path):
             self._make_dirs(self._provenance_file_path)
 
-    def write_finished_file(self):
-        # write a finished file that allows file removal to only remove folders
-        # that are finished
+        # make application folder for provenance data storage
+        self._app_provenance_file_path = os.path.join(
+            self._provenance_file_path, "app_provenance_data")
+        if not os.path.exists(self._app_provenance_file_path):
+            self._make_dirs(self._app_provenance_file_path)
 
+        # make system folder for provenance data storage
+        self._system_provenance_file_path = os.path.join(
+            self._provenance_file_path, "system_provenance_data")
+        if not os.path.exists(self._system_provenance_file_path):
+            self._make_dirs(self._system_provenance_file_path)
+
+    def write_finished_file(self):
+        """ Write a finished file that allows file removal to only remove \
+            folders that are finished.
+        """
         app_file_name = os.path.join(self._app_data_top_simulation_folder,
                                      FINISHED_FILENAME)
         with open(app_file_name, "w") as f:
@@ -326,6 +391,52 @@ class ConfigHandler(object):
 
     def _read_config_boolean(self, section, item):
         return read_config_boolean(self._config, section, item)
+
+    @property
+    def machine_time_step(self):
+        """
+        Gets the machine timestep in microsecond
+        :return: machine timestep in microsecond
+        """
+        return self._read_config_int("Machine", "machine_time_step")
+
+    @machine_time_step.setter
+    def machine_time_step(self, new_value):
+        """
+        Sets the machine time step in microsecond
+        :param new_value: machine time step in microsecond        """
+        self._config.set("Machine", "machine_time_step", new_value)
+
+    @property
+    def time_scale_factor(self):
+        return self._read_config_int("Machine", "time_scale_factor")
+
+    @time_scale_factor.setter
+    def time_scale_factor(self, new_value):
+        self._config.set("Machine", "time_scale_factor", new_value)
+
+    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
+        """ Set up timings of the machine
+
+        :param machine_time_step:\
+            An explicitly specified time step for the machine.  If None,\
+            the value is read from the config
+        :param time_scale_factor:\
+            An explicitly specified time scale factor for the simulation.\
+            If None, the value is read from the config
+        """
+
+        # set up timings
+        if machine_time_step is not None:
+            self.machine_time_step = machine_time_step
+
+        if self.machine_time_step <= 0:
+            raise ConfigurationException(
+                "invalid machine_time_step {}: must greater than zero".format(
+                    self.machine_time_step))
+
+        if time_scale_factor is not None:
+            self.time_scale_factor = time_scale_factor
 
     @staticmethod
     def _make_dirs(path):

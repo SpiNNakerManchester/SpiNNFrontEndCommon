@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import unittest
 import tempfile
 import os
@@ -21,7 +36,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
             # TODO missing
             # data, missing = brd.get_region_data(0, 0, 0, 0)
-            # self.assertIsNotNone(missing, "data should be 'missing'")
+            # self.assertTrue(missing, "data should be 'missing'")
             # self.assertEqual(data, b"")
 
             brd.store_data_in_region_buffer(0, 0, 0, 0, b"abc")
@@ -29,7 +44,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             brd.store_end_buffering_state(0, 0, 0, 0, "LOLWUT")
             data, missing = brd.get_region_data(0, 0, 0, 0)
 
-            self.assertIsNone(missing, "data shouldn't be 'missing'")
+            self.assertFalse(missing, "data shouldn't be 'missing'")
             self.assertEqual(bytes(data), b"abcdef")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")

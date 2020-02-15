@@ -1,16 +1,36 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from collections import defaultdict, OrderedDict
 import json
+import logging
 import os
 import subprocess
+from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.utilities.file_format_converters.convert_to_java_machine import (
     ConvertToJavaMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class JavaCaller(object):
     """ Support class that holds all the stuff for running stuff in Java.
-
         This includes the work of preparing data for transmitting to Java and\
         back.
 
@@ -62,10 +82,10 @@ class JavaCaller(object):
             https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.
         :param java_properties:
             Optional properties that will be passed to Java.\
-            Must start with -D
-            For example -Dlogging.level=DEBUG
+            Must start with ``-D``.
+            For example ``-Dlogging.level=DEBUG``
         :type java_properties: str
-        :raise ConfigurationException if simple parameter checking fails.
+        :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
         self._report_folder = None
@@ -118,7 +138,7 @@ class JavaCaller(object):
         """ Passes the machine in leaving this class to decide pass it to Java.
 
         :param machine: A machine Object
-        :type machine: :py:class:`spinn_machine.machine.Machine`
+        :type machine: ~spinn_machine.Machine
         """
         self._machine = machine
 
@@ -126,12 +146,13 @@ class JavaCaller(object):
             self, placements, tags, monitor_cores, packet_gathers):
         """
         :param placements: The placements of the vertices
-        :type placements:\
-            :py:class:`pacman.model.placements.Placements`
+        :type placements: ~pacman.model.placements.Placements
         :param tags: The tags assigned to the vertices
-        :type tags: :py:class:`pacman.model.tags.Tags`
-        :param monitor_cores:
-        :param packet_gathers:
+        :type tags: ~pacman.model.tags.Tags
+        :param monitor_cores: Where the advanced monitor for each core is
+        :type monitor_cores: dict(Vertex,Vertex)
+        :param packet_gathers: Where the packet gatherers are
+        :type packet_gathers: dict(Vertex,Vertex)
         :rtype: None
         """
         self._monitor_cores = dict()
@@ -189,7 +210,9 @@ class JavaCaller(object):
         database.
 
         :param placements: The Placements Object
+        :type placements: ~pacman.model.placements.Placements
         :param transceiver: The Transceiver
+        :type transceiver: ~spinnman.transceiver.Transceiver
         """
         path = os.path.join(self._json_folder, "java_placements.json")
         self._recording = False
@@ -203,9 +226,6 @@ class JavaCaller(object):
     def _json_placement(self, placement, transceiver):
 
         vertex = placement.vertex
-        if len(vertex.get_recorded_region_ids()) == 0:
-            return None
-        self._recording = True
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
@@ -213,10 +233,16 @@ class JavaCaller(object):
 
         json_vertex = OrderedDict()
         json_vertex["label"] = vertex.label
-        json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
-        json_vertex["recordingRegionBaseAddress"] = \
-            vertex.get_recording_region_base_address(
-                transceiver, placement)
+        if isinstance(vertex, AbstractReceiveBuffersToHost) and \
+                vertex.get_recorded_region_ids():
+            self._recording = True
+            json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
+            json_vertex["recordingRegionBaseAddress"] = \
+                vertex.get_recording_region_base_address(
+                    transceiver, placement)
+        else:
+            json_vertex["recordedRegionIds"] = []
+            json_vertex["recordingRegionBaseAddress"] = 0
         json_placement["vertex"] = json_vertex
 
         return json_placement
@@ -295,9 +321,12 @@ class JavaCaller(object):
 
     @property
     def _jar_file(self):
-        return os.path.join(
+        f = os.path.join(
             self._java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
+        if not os.path.exists(f):
+            logger.warning("no Java build in file {}; failure expected", f)
+        return f
 
     def _run_java(self, *args):
         if self._java_properties is None:
@@ -329,11 +358,43 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def host_execute_data_specification(self):
+    def execute_data_specification(self):
         """ Writes all the data specs, uploading the result to the machine.
         """
         result = self._run_java(
             'dse', self._machine_json(), self._report_folder)
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def execute_system_data_specification(self):
+        """ Writes all the data specs for system cores, \
+            uploading the result to the machine.
+        """
+        result = self._run_java(
+            'dse_sys', self._machine_json(), self._report_folder)
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def execute_app_data_specification(self, use_monitors):
+        """ Writes all the data specs for application cores, \
+            uploading the result to the machine.
+
+        .. note:
+            May assume that system cores are already loaded and running.
+        """
+        if use_monitors:
+            result = self._run_java(
+                'dse_app_mon', self._placement_json, self._machine_json(),
+                self._report_folder, self._report_folder)
+        else:
+            result = self._run_java(
+                'dse_app', self._machine_json(), self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
