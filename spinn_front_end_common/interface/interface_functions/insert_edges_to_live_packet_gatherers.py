@@ -14,10 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.application import ApplicationEdge, \
-    ApplicationOutgoingEdgePartition
-from pacman.model.graphs.machine import MachineEdge, \
-    MachineOutgoingEdgePartition
+from pacman.model.graphs.application import (
+    ApplicationEdge, ApplicationOutgoingEdgePartition)
+from pacman.model.graphs.machine import (
+    MachineEdge, MachineOutgoingEdgePartition)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
@@ -138,8 +138,8 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine_lpg: the machine LPG
         :param vertex: the application vertex to link to
         :param partition_ids: the partition ID to put the edge on
-        :return the application edge for this vertex and LPG
-        :rtype: ApplicationEdge
+        :return: the application edge for this vertex and LPG
+        :rtype: ~pacman.model.graph.application.ApplicationEdge
         """
         # pylint: disable=too-many-arguments
 
@@ -178,6 +178,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine_vertex: the machine vertex to locate the nearest LPG to
         :param machine_lpgs: dict of gatherers by chip placed on
         :param machine: the SpiNNaker machine object
+        :type machine: ~spinn_machine.Machine
         :param placements: the placements object
         :return: the local LPG
         :raise ConfigurationException: if a local gatherer cannot be found

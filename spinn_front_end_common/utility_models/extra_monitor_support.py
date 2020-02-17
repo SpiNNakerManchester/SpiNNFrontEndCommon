@@ -24,9 +24,17 @@ from .extra_monitor_support_machine_vertex import (
 class ExtraMonitorSupport(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
+    """ Control over the extra monitors.
+    """
+
     __slots__ = []
 
     def __init__(self, constraints):
+        """
+        :param constraints: The constraints on the vertex
+        :type constraints: \
+            iterable(~pacman.model.constraints.AbstractConstraint)
+        """
         super(ExtraMonitorSupport, self).__init__(
             label="ExtraMonitorSupport", constraints=constraints)
 
@@ -52,6 +60,7 @@ class ExtraMonitorSupport(
     def get_resources_used_by_atoms(self, vertex_slice):
         return ExtraMonitorSupportMachineVertex.static_resources_required()
 
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(
             spec=spec, placement=placement)

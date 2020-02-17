@@ -21,6 +21,8 @@ from spinn_front_end_common import mapping_algorithms
 
 def get_front_end_common_pacman_xml_paths():
     """ Get the XML path for the front end common interface functions
+
+    :rtype: list(str)
     """
     return [
         os.path.join(

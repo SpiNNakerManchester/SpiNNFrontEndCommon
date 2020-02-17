@@ -82,7 +82,7 @@ class InsertLivePacketGatherersToGraphs(object):
 
         :param lpg_vertex_class: the type to create for the vertex
         :param params: the parameters of the vertex
-        :return the vertex built
+        :return: the vertex built
         """
         return lpg_vertex_class(
             hostname=params.hostname,

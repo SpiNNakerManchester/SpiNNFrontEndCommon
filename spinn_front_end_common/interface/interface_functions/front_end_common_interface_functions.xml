@@ -46,9 +46,9 @@
             <param_name>app_id</param_name>
         </required_inputs>
     </algorithm>
-    <algorithm name="DataInMulticastRoutingGenerator">
+    <algorithm name="SystemMulticastRoutingGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>DataInMulticastRoutingGenerator</python_class>
+        <python_class>SystemMulticastRoutingGenerator</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
@@ -71,6 +71,7 @@
         <outputs>
             <param_type>DataInMulticastRoutingTables</param_type>
             <param_type>DataInMulticastKeyToChipMap</param_type>
+            <param_type>SystemMulticastRouterTimeoutKeys</param_type>
         </outputs>
     </algorithm>
     <algorithm name="ProcessPartitionConstraints">
@@ -607,10 +608,15 @@
                 <param_name>disable_advanced_monitor_usage</param_name>
                 <param_type>DisableAdvancedMonitorUsageForDataIn</param_type>
             </parameter>
+            <parameter>
+                <param_name>region_sizes</param_name>
+                <param_type>RegionSizes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
+            <param_name>region_sizes</param_name>
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>uses_advanced_monitors</param_name>
@@ -670,6 +676,10 @@
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
+            <parameter>
+                <param_name>region_sizes</param_name>
+                <param_type>RegionSizes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -677,6 +687,7 @@
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>executable_targets</param_name>
+            <param_name>region_sizes</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>report_folder</param_name>
@@ -801,6 +812,10 @@
                 <param_name>ignore_bad_ethernets</param_name>
                 <param_type>IgnoreBadEthernets</param_type>
             </parameter>
+            <parameter>
+                <param_name>default_report_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>hostname</param_name>
@@ -815,7 +830,8 @@
             <param_name>boot_port_num</param_name>
             <param_name>max_sdram_size</param_name>
             <param_name>repair_machine</param_name>
-             <param_name>ignore_bad_ethernets</param_name>
+            <param_name>ignore_bad_ethernets</param_name>
+            <param_name>default_report_directory</param_name>
         </required_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -945,16 +961,8 @@
                 <param_type>MachineHeight</param_type>
             </parameter>
             <parameter>
-                <param_name>virtual_has_wrap_arounds</param_name>
-                <param_type>MachineHasWrapAroundsFlag</param_type>
-            </parameter>
-            <parameter>
                 <param_name>version</param_name>
                 <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>with_monitors</param_name>
-                <param_type>VirtualChipsHaveMonitor</param_type>
             </parameter>
             <parameter>
                 <param_name>down_chips</param_name>
@@ -981,12 +989,12 @@
                 <param_type>MachineJsonPath</param_type>
             </parameter>
         </input_definitions>
-        <optional_inputs>
+        <required_inputs>
             <param_name>width</param_name>
             <param_name>height</param_name>
-            <param_name>virtual_has_wrap_arounds</param_name>
+        </required_inputs>
+        <optional_inputs>
             <param_name>version</param_name>
-            <param_name>with_monitors</param_name>
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
             <param_name>down_links</param_name>
@@ -1044,6 +1052,7 @@
         </optional_inputs>
         <outputs>
             <param_type>DataSpecificationTargets</param_type>
+            <param_type>RegionSizes</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphBinaryGatherer">
@@ -1093,6 +1102,10 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
+            </parameter>
+            <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
                 <param_type>MemoryApplicationGraph</param_type>
@@ -1101,12 +1114,14 @@
         <required_inputs>
             <param_name>graph</param_name>
             <param_name>placements</param_name>
+            <param_name>executable_finder</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ExecutableTypes</param_type>
+            <param_type>BinaryToExecutableType</param_type>
         </outputs>
     </algorithm>
     <algorithm name="BufferManagerCreator">
@@ -1194,10 +1209,6 @@
                 <param_type>NotificationInterface</param_type>
             </parameter>
             <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_types</param_name>
                 <param_type>ExecutableTypes</param_type>
             </parameter>
@@ -1234,7 +1245,6 @@
             <param_name>buffer_manager</param_name>
             <param_name>wait_on_confirmation</param_name>
             <param_name>notification_interface</param_name>
-            <param_name>executable_targets</param_name>
             <param_name>executable_types</param_name>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
@@ -1266,21 +1276,14 @@
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_data_objects</param_name>
-                <param_type>ProvenanceItems</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
-        <optional_inputs>
-            <param_name>provenance_data_objects</param_name>
-        </optional_inputs>
         <outputs>
-            <param_type>ProvenanceItems</param_type>
+            <param_type>PlacementsProvenanceItems</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphProvenanceGatherer">
@@ -1295,20 +1298,15 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>provenance_data_objects</param_name>
-                <param_type>ProvenanceItems</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>ProvenanceItems</param_type>
+            <param_type>GraphProvenanceItems</param_type>
         </outputs>
     </algorithm>
     <algorithm name="RouterProvenanceGatherer">
@@ -1329,10 +1327,6 @@
                 <param_type>MemoryRoutingTables</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_data_objects</param_name>
-                <param_type>ProvenanceItems</param_type>
-            </parameter>
-            <parameter>
                 <param_name>extra_monitor_vertices</param_name>
                 <param_type>MemoryExtraMonitorVertices</param_type>
             </parameter>
@@ -1348,12 +1342,11 @@
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
-            <param_name>provenance_data_objects</param_name>
             <param_name>extra_monitor_vertices</param_name>
             <param_name>placements</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>ProvenanceItems</param_type>
+            <param_type>RouterProvenanceItems</param_type>
         </outputs>
     </algorithm>
     <algorithm name="ProvenanceXMLWriter">
@@ -1366,7 +1359,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_data_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1384,7 +1377,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_data_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1635,8 +1628,12 @@
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_name>app_provenance_file_path</param_name>
+                <param_type>AppProvenanceFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>system_provenance_file_path</param_name>
+                <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>from_cores</param_name>
@@ -1646,12 +1643,18 @@
                 <param_name>binary_types</param_name>
                 <param_type>ExtractIobufFromBinaryTypes</param_type>
             </parameter>
+            <parameter>
+                <param_name>binary_executable_types</param_name>
+                <param_type>BinaryToExecutableType</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_targets</param_name>
             <param_name>executable_finder</param_name>
-            <param_name>provenance_file_path</param_name>
+            <param_name>app_provenance_file_path</param_name>
+            <param_name>system_provenance_file_path</param_name>
+            <param_name>binary_executable_types</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
@@ -1914,7 +1917,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_type>AppProvenanceFilePath</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_time_step</param_name>

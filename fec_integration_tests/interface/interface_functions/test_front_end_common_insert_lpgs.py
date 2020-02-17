@@ -32,7 +32,7 @@ class TestInsertLPGs(unittest.TestCase):
     """
 
     def test_that_3_lpgs_are_generated_on_3_board(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -79,7 +79,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertIn(vertex, verts)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()
@@ -139,7 +139,7 @@ class TestInsertLPGs(unittest.TestCase):
         self.assertEqual(len(app_verts), 3)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -190,7 +190,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph(self):
-        machine = virtual_machine(width=12, height=12, with_wrap_arounds=True)
+        machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
         app_graph_mapper = GraphMapper()

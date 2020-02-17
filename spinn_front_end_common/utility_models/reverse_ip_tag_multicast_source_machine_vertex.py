@@ -36,14 +36,14 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_sending_region import (
-        get_n_bytes)
+    .buffered_sending_region import get_n_bytes
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
@@ -77,6 +77,57 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractReceiveBuffersToHost, AbstractRecordable):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets
+
+    :param n_keys: The number of keys to be sent via this multicast source
+    :type n_keys: int
+    :param label: The label of this vertex
+    :type label: str
+    :param constraints: Any initial constraints to this vertex
+    :type constraints: \
+        iterable(~pacman.model.constraints.AbstractConstraint)
+    :param board_address: The IP address of the board on which to place\
+        this vertex if receiving data, either buffered or live (by\
+        default, any board is chosen)
+    :type board_address: str or None
+    :param receive_port: The port on the board that will listen for\
+        incoming event packets (default is to disable this feature; set a\
+        value to enable it)
+    :type receive_port: int or None
+    :param receive_sdp_port: The SDP port to listen on for incoming event\
+        packets (defaults to 1)
+    :type receive_sdp_port: int
+    :param receive_tag: The IP tag to use for receiving live events\
+        (uses any by default)
+    :type receive_tag: IPTag
+    :param receive_rate: The estimated rate of packets that will be sent\
+        by this source
+    :type receive_rate: float
+    :param virtual_key: The base multicast key to send received events\
+        with (assigned automatically by default)
+    :type virtual_key: int
+    :param prefix: The prefix to "or" with generated multicast keys\
+        (default is no prefix)
+    :type prefix: int
+    :param prefix_type: Whether the prefix should apply to the upper or\
+        lower half of the multicast keys (default is upper half)
+    :type prefix_type: ~spinnman.messages.eieio.EIEIOPrefix
+    :param check_keys: True if the keys of received events should be\
+        verified before sending (default False)
+    :type check_keys: bool
+    :param send_buffer_times: An array of arrays of times at which keys\
+        should be sent (one array for each key, default disabled)
+    :type send_buffer_times: \
+        numpy.ndarray(numpy.ndarray(numpy.int32)) or \
+        list(numpy.ndarray(numpy.int32)) or None
+    :param send_buffer_partition_id: The ID of the partition containing\
+        the edges down which the events are to be sent
+    :type send_buffer_partition_id: str or None
+    :param reserve_reverse_ip_tag: \
+        Extra flag for input without a reserved port
+    :type reserve_reverse_ip_tag: bool
+    :param enable_injection:\
+        Flag to indicate that data will be received to inject
+    :type enable_injection: bool
     """
 
     class _REGIONS(Enum):
@@ -125,7 +176,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
             send_buffer_partition_id=None,
 
             # Extra flag for receiving packets without a port
-            reserve_reverse_ip_tag=False):
+            reserve_reverse_ip_tag=False,
+
+            # Flag to indicate that data will be received to inject
+            enable_injection=False):
         """
         :param n_keys: The number of keys to be sent via this multicast source
         :param label: The label of this vertex
@@ -151,19 +205,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             verified before sending (default False)
         :param send_buffer_times: An array of arrays of time steps at which\
             keys should be sent (one array for each key, default disabled)
-        :param send_buffer_max_space: The maximum amount of space to use of\
-            the SDRAM on the machine (default is 1MB)
-        :param send_buffer_space_before_notify: The amount of space free in\
-            the sending buffer before the machine will ask the host for more\
-            data (default setting is optimised for most cases)
-        :param buffer_notification_ip_address: The IP address of the host that\
-            will send new buffers (must be specified if a send buffer is\
-            specified)
-        :param buffer_notification_port: The port that the host that will\
-            send new buffers is listening on (must be specified if a send\
-            buffer is specified)
-        :param buffer_notification_tag: The IP tag to use to notify the\
-            host about space in the buffer (default is to use any tag)
         :param reserve_reverse_ip_tag: True if the source should set up a tag\
             through which it can receive packets; if port is set to None this\
             can be used to enable the reception of packets on a randomly\
@@ -190,7 +231,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer = None
         self._send_buffer_partition_id = send_buffer_partition_id
         self._send_buffer_size = 0
-        if send_buffer_times is None:
+        n_buffer_times = 0
+        if send_buffer_times is not None:
+            for i in send_buffer_times:
+                if hasattr(i, "__len__"):
+                    n_buffer_times += len(i)
+                else:
+                    # assuming this must be a single integer
+                    n_buffer_times += 1
+        if n_buffer_times == 0:
             self._send_buffer_times = None
             self._send_buffers = None
         else:
@@ -200,8 +249,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._is_recording = False
 
         # set flag for checking if in injection mode
-        self._in_injection_mode = \
-            receive_port is not None or reserve_reverse_ip_tag
+        self._in_injection_mode = (
+            receive_port is not None or reserve_reverse_ip_tag or
+            enable_injection)
 
         # Sort out the keys to be used
         self._virtual_key = virtual_key
@@ -224,7 +274,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._n_vertices += 1
 
     @staticmethod
-    def max_send_buffer_keys_per_timestep(send_buffer_times, n_keys):
+    def _max_send_buffer_keys_per_timestep(send_buffer_times, n_keys):
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             counts = numpy.bincount(numpy.concatenate(send_buffer_times))
             if len(counts):
@@ -238,24 +288,27 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return 0
 
     @staticmethod
-    def send_buffer_sdram_per_timestep(send_buffer_times, n_keys):
+    def _send_buffer_sdram_per_timestep(send_buffer_times, n_keys):
+        """ Determine the amount of SDRAM required per timestep.
+        """
         # If there is a send buffer, calculate the keys per timestep
         if send_buffer_times is not None:
             sdram = get_n_bytes(ReverseIPTagMulticastSourceMachineVertex
-                                .max_send_buffer_keys_per_timestep(
+                                ._max_send_buffer_keys_per_timestep(
                                     send_buffer_times, n_keys))
             return sdram
         return 0
 
     @staticmethod
-    def recording_sdram_per_timestep(
+    def _recording_sdram_per_timestep(
             machine_time_step, is_recording, receive_rate, send_buffer_times,
             n_keys):
 
         # If recording live data, use the user provided receive rate
         if is_recording and send_buffer_times is None:
             keys_per_timestep = math.ceil(
-                (receive_rate / (machine_time_step * 1000.0)) * 1.1
+                (receive_rate / (
+                    machine_time_step * MICRO_TO_MILLISECOND_CONVERSION)) * 1.1
             )
             header_size = EIEIODataHeader.get_header_size(
                 EIEIOType.KEY_32_BIT, is_payload_base=True)
@@ -266,7 +319,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # If recording send data, the recorded size is the send size
         if is_recording and send_buffer_times is not None:
             return (ReverseIPTagMulticastSourceMachineVertex
-                    .send_buffer_sdram_per_timestep(send_buffer_times, n_keys))
+                    ._send_buffer_sdram_per_timestep(
+                        send_buffer_times, n_keys))
 
         # Not recording no SDRAM needed per timestep
         return 0
@@ -337,6 +391,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_sdram_usage(
             send_buffer_times, recording_enabled, machine_time_step,
             receive_rate, n_keys):
+        """
+        :param send_buffer_times: When events will be sent
+        :type send_buffer_times: \
+            numpy.ndarray(numpy.ndarray(numpy.int32)) or \
+            list(numpy.ndarray(numpy.int32)) or None
+        :param recording_enabled: Whether recording is done
+        :type recording_enabled: bool
+        :param machine_time_step: What the machine timestep is
+        :type machine_time_step: int
+        :param receive_rate: What the expected message receive rate is
+        :type receive_rate: float
+        :param n_keys: How many keys are being sent
+        :type n_keys: int
+        """
 
         static_usage = (
             SYSTEM_BYTES_REQUIREMENT +
@@ -348,9 +416,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 get_provenance_data_size(0)))
         per_timestep = (
             ReverseIPTagMulticastSourceMachineVertex
-            .send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
+            ._send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
             ReverseIPTagMulticastSourceMachineVertex.
-            recording_sdram_per_timestep(
+            _recording_sdram_per_timestep(
                 machine_time_step, recording_enabled, receive_rate,
                 send_buffer_times, n_keys))
         static_usage += per_timestep
@@ -365,7 +433,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return 1
 
     @staticmethod
-    def n_regions_to_allocate(send_buffering, recording):
+    def _n_regions_to_allocate(send_buffering, recording):
         """ Get the number of regions that will be allocated
         """
         if recording and send_buffering:
@@ -444,7 +512,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._is_recording = new_state
 
     def _reserve_regions(self, spec, n_machine_time_steps):
-
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
@@ -462,7 +529,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Reserve send buffer region if required
         if self._send_buffer_times is not None:
             self._send_buffer_size = (
-                self.send_buffer_sdram_per_timestep(
+                self._send_buffer_sdram_per_timestep(
                     self._send_buffer_times, self._n_keys) *
                 n_machine_time_steps)
             if self._send_buffer_size:
@@ -592,7 +659,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.switch_write_focus(self._REGIONS.RECORDING.value)
         recording_size = 0
         if self._is_recording:
-            per_timestep = self.recording_sdram_per_timestep(
+            per_timestep = self._recording_sdram_per_timestep(
                 machine_time_step, self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
             recording_size = per_timestep * data_n_time_steps
@@ -644,6 +711,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
     })
     def update_buffer(
             self, first_machine_time_step, run_until_timesteps):
+        """ Updates the buffers on specification of the first machine timestep.
+            Note: This is called by injection.
+
+        :param first_machine_time_step:\
+            The first machine time step in the simulation
+        :type first_machine_time_step: int
+        :param run_until_timesteps:\
+            The last machine time step in the simulation
+        :type run_until_timesteps: int
+        """
         if self._virtual_key is not None:
             self._fill_send_buffer(
                 first_machine_time_step, run_until_timesteps)

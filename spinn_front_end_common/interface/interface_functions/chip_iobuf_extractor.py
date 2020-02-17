@@ -16,6 +16,8 @@
 import logging
 import os
 import re
+
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
@@ -45,7 +47,8 @@ class ChipIOBufExtractor(object):
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
-            provenance_file_path, from_cores="ALL", binary_types=None):
+            app_provenance_file_path, system_provenance_file_path,
+            binary_executable_types, from_cores="ALL", binary_types=None):
 
         error_entries = list()
         warn_entries = list()
@@ -57,8 +60,13 @@ class ChipIOBufExtractor(object):
             progress = ProgressBar(len(executable_targets.binaries), label)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
+                if (binary_executable_types[binary].value ==
+                        ExecutableType.SYSTEM.value):
+                    prov_path = system_provenance_file_path
+                else:
+                    prov_path = app_provenance_file_path
                 self._run_for_core_subsets(
-                    core_subsets, binary, transceiver, provenance_file_path,
+                    core_subsets, binary, transceiver, prov_path,
                     error_entries, warn_entries)
 
         elif from_cores:
@@ -75,10 +83,14 @@ class ChipIOBufExtractor(object):
                         core_subsets = iocores.intersect(
                             executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
+                        if (binary_executable_types[binary] ==
+                                ExecutableType.SYSTEM):
+                            prov_path = system_provenance_file_path
+                        else:
+                            prov_path = app_provenance_file_path
                         self._run_for_core_subsets(
-                            core_subsets, binary, transceiver,
-                            provenance_file_path, error_entries,
-                            warn_entries)
+                            core_subsets, binary, transceiver, prov_path,
+                            error_entries, warn_entries)
 
             else:
                 # some hard coded cores
@@ -88,9 +100,14 @@ class ChipIOBufExtractor(object):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
+                        if (binary_executable_types[binary] ==
+                                ExecutableType.SYSTEM):
+                            prov_path = system_provenance_file_path
+                        else:
+                            prov_path = app_provenance_file_path
                         self._run_for_core_subsets(
-                            core_subsets, binary, transceiver,
-                            provenance_file_path, error_entries, warn_entries)
+                            core_subsets, binary, transceiver, prov_path,
+                            error_entries, warn_entries)
         else:
             if binary_types:
                 # some binaries
@@ -99,9 +116,14 @@ class ChipIOBufExtractor(object):
                 for binary in progress.over(binaries):
                     core_subsets = executable_targets.get_cores_for_binary(
                         binary)
+                    if (binary_executable_types[binary] ==
+                            ExecutableType.SYSTEM):
+                        prov_path = system_provenance_file_path
+                    else:
+                        prov_path = app_provenance_file_path
                     self._run_for_core_subsets(
-                        core_subsets, binary, transceiver,
-                        provenance_file_path, error_entries, warn_entries)
+                        core_subsets, binary, transceiver, prov_path,
+                        error_entries, warn_entries)
             else:
                 # nothing
                 pass
