@@ -321,7 +321,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         # store of the extra monitors to location. helpful in data in
         self._extra_monitors_by_chip = extra_monitors_by_chip
         self._missing_seq_nums_data_in = list()
-        self._missing_seq_nums_data_in.append(set())
 
         # Create a connection to be used
         self._x = x
@@ -752,6 +751,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param start_address: the base sdram address
         :rtype: None
         """
+        # Set up the connection
+        self._connection = SCAMPConnection(
+            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
+        self.__reprogram_tag(self._connection)
+
         # how many packets after first one we need to send
         self._max_seq_num = ceildiv(
             len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
@@ -765,132 +769,123 @@ class DataSpeedUpPacketGatherMachineVertex(
         # for safety, check the transaction id from the machine before updating
         self.update_transaction_id_from_machine(transceiver)
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
-
-        # send first message
-        self._connection = SCAMPConnection(
-            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
-        self.__reprogram_tag(self._connection)
-        self._send_location(start_address)
-
-        # send initial attempt at sending all the data
-        self._send_all_data_based_packets(data_to_write)
+        time_out_count = 0
 
         # verify completed
         received_confirmation = False
-        time_out_count = 0
         while not received_confirmation:
-            try:
-                # try to receive a confirmation of some sort from spinnaker
-                data = self._connection.receive(
-                    timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
-                time_out_count = 0
 
-                # check which message type we have received
-                received_confirmation = self._outgoing_process_packet(
-                    data, data_to_write, start_address)
+            # send initial attempt at sending all the data
+            self._send_all_data_based_packets(data_to_write, start_address)
 
-            except SpinnmanTimeoutException:  # if time out, keep trying
-                # if the timeout has not occurred x times, keep trying
-                if time_out_count > TIMEOUT_RETRY_LIMIT:
-                    emergency_recover_state_from_failure(
-                        transceiver, self._app_id, self, self._placement)
-                    raise SpinnFrontEndException(
-                        TIMEOUT_MESSAGE.format(time_out_count))
+            # Don't create a missing buffer until at least one packet has
+            # come back.
+            missing = None
 
-                # reopen the connection and try again
-                time_out_count += 1
-                remote_port = self._connection.remote_port
-                local_port = self._connection.local_port
-                local_ip = self._connection.local_ip_address
-                remote_ip = self._connection.remote_ip_address
-                self._connection.close()
-                self._connection = SCAMPConnection(
-                    local_port=local_port, remote_port=remote_port,
-                    local_host=local_ip, remote_host=remote_ip)
+            while not received_confirmation:
+                try:
+                    # try to receive a confirmation of some sort from spinnaker
+                    data = self._connection.receive(
+                        timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
+                    time_out_count = 0
 
-                # if we have not received confirmation of finish, try to
-                # retransmit missing seq nums
-                if not received_confirmation:
+                    # Read command and transaction id
+                    (cmd, transaction_id) = _TWO_WORDS.unpack_from(data, 0)
+
+                    # If wrong transaction id, ignore packet
+                    if self._transaction_id != transaction_id:
+                        continue
+
+                    # Decide what to do with the packet
+                    if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED.value:
+                        received_confirmation = True
+                        break
+
+                    if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA.value:
+                        raise Exception("Unknown command {} received".format(
+                            cmd))
+
+                    # The currently received packet has missing sequence
+                    # numbers. Accumulate and dispatch transactionId when
+                    # we've got them all.
+                    if missing is None:
+                        missing = set()
+                        self._missing_seq_nums_data_in.append(missing)
+                    seen_last, seen_all = self._read_in_missing_seq_nums(
+                        data, BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER,
+                        missing)
+
+                    # Check that you've seen something that implies ready
+                    # to retransmit.
+                    if seen_all or seen_last:
+                        self._outgoing_retransmit_missing_seq_nums(
+                            data_to_write, missing)
+                        missing.clear()
+
+                except SpinnmanTimeoutException:  # if time out, keep trying
+                    # if the timeout has not occurred x times, keep trying
+                    time_out_count += 1
+                    if time_out_count > TIMEOUT_RETRY_LIMIT:
+                        emergency_recover_state_from_failure(
+                            transceiver, self._app_id, self, self._placement)
+                        raise SpinnFrontEndException(
+                            TIMEOUT_MESSAGE.format(time_out_count))
+
+                    # If we never received a packet, we will never have
+                    # created the buffer, so send everything again
+                    if missing is None:
+                        break
+
                     self._outgoing_retransmit_missing_seq_nums(
-                        data_to_write, start_address)
+                            data_to_write, missing)
+                    missing.clear()
+
+        # Close the connection
         self._connection.close()
 
-    def _read_in_missing_seq_nums(
-            self, data, data_to_write, position, start_address):
+    def _read_in_missing_seq_nums(self, data, position, seq_nums):
         """ handles a missing seq num packet from spinnaker
 
         :param data: the data to translate into missing seq nums
-        :param data_to_write: the data to write
         :param position: the position in the data to write.
-        :param start_address: the base sdram address
-        :rtype: None
+        :param seq_nums: a set of sequence numbers to add to
+        :return: seen_last flag and seen_all flag
+        :rtype: bool, bool
         """
         # find how many elements are in this packet
         n_elements = (len(data) - position) // BYTES_PER_WORD
 
         # store missing
-        missing_seqs = list()
-        missing_seqs.extend(struct.unpack_from(
-            "<{}I".format(n_elements), data, position))
+        new_seq_nums = struct.unpack_from(
+            "<{}I".format(n_elements), data, position)
 
         # add missing seqs accordingly
         seen_last = False
         seen_all = False
-        if missing_seqs[-1] == self._MISSING_SEQ_NUMS_END_FLAG:
-            del missing_seqs[-1]
+        if new_seq_nums[-1] == self._MISSING_SEQ_NUMS_END_FLAG:
+            del new_seq_nums[-1]
             seen_last = True
-        if missing_seqs[-1] == self.FLAG_FOR_MISSING_ALL_SEQUENCES:
+        if new_seq_nums[-1] == self.FLAG_FOR_MISSING_ALL_SEQUENCES:
             for missing_seq in range(0, self._max_seq_num):
-                self._missing_seq_nums_data_in[-1].add(missing_seq)
+                seq_nums.add(missing_seq)
             seen_all = True
         else:
-            self._missing_seq_nums_data_in[-1].update(missing_seqs)
+            seq_nums.update(new_seq_nums)
 
-        # determine if ready to send missing seq nums
-        if seen_last or seen_all:
-            self._outgoing_retransmit_missing_seq_nums(
-                data_to_write, start_address)
-
-    def _outgoing_process_packet(self, data, data_to_write, start_address):
-        """ processes a packet from SpiNNaker
-
-        :param data: the packet data
-        :param data_to_write: the data to write to spinnaker
-        :return: if the packet contains a confirmation of complete
-        :rtype: bool
-        """
-        position = 0
-        (command_id, transaction_id) = (_TWO_WORDS.unpack_from(data, 0))
-        position += BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER
-        log.debug("received packet with id {}", command_id)
-
-        # ignore any packet with wrong identifier
-        if transaction_id != self._transaction_id:
-            return False
-
-        # process missing seq packets
-        if command_id == DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA.value:
-            self._read_in_missing_seq_nums(
-                data, data_to_write, position, start_address)
-
-        # process the confirmation of all data received
-        return command_id == DATA_IN_COMMANDS.RECEIVE_FINISHED.value
+        return seen_last, seen_all
 
     def _outgoing_retransmit_missing_seq_nums(
-            self, data_to_write, start_address):
+            self, data_to_write, missing):
         """ Transmits back into SpiNNaker the missing data based off missing\
             sequence numbers
 
         :param data_to_write: the data to write.
-        :param start_address: the base sdram address
+        :param missing: a set of missing sequence numbers
         :rtype: None
         """
 
-        missing_seqs_as_list = list(self._missing_seq_nums_data_in[-1])
+        missing_seqs_as_list = list(missing)
         missing_seqs_as_list.sort()
-
-        # send location message
-        self._send_location(start_address)
 
         # send seq data
         for missing_seq_num in missing_seqs_as_list:
@@ -899,8 +894,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 DATA_IN_COMMANDS.SEND_SEQ_DATA.value, None)
             self.__throttled_send(message)
 
-        # update states
-        self._missing_seq_nums_data_in.append(set())
+        # request an update on what is missing
         self._send_tell_flag()
 
     @staticmethod
@@ -991,16 +985,19 @@ class DataSpeedUpPacketGatherMachineVertex(
             _TWO_WORDS.pack(
                 DATA_IN_COMMANDS.SEND_TELL.value, self._transaction_id)))
 
-    def _send_all_data_based_packets(self, data_to_write):
+    def _send_all_data_based_packets(self, data_to_write, start_address):
         """ Send all the data as one block
 
         :param data_to_write: the data to send
         :rtype: None
         """
+        # Send the location
+        self._send_location(start_address)
+
         # where in the data we are currently up to
         position_in_data = 0
+
         # send rest of data
-        total_data_length = len(data_to_write)
         for seq_num in range(0, self._max_seq_num):
             # put in command flag and seq num
             message, length_to_send = \
@@ -1013,10 +1010,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.__throttled_send(message)
             log.debug("sent seq {} of {} bytes", seq_num, length_to_send)
 
-            # check for end flag
-            if position_in_data == total_data_length:
-                self._send_tell_flag()
-                log.debug("sent end flag")
+        # check for end flag
+        self._send_tell_flag()
+        log.debug("sent end flag")
 
     @staticmethod
     def streaming(gatherers, transceiver, extra_monitor_cores, placements):
