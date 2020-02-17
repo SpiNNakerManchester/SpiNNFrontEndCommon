@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pacman.model.graphs.machine import AbstractSDRAMPartition, \
-    SourceSegmentedSDRAMMachinePartition
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.graphs import AbstractSDRAMPartition
+from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 class SDRAMOutgoingPartitionAllocator(object):
