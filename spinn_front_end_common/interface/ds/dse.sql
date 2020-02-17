@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS core(
 	is_system INTEGER DEFAULT 0,
 	app_id INTEGER,
 	content BLOB,
-	"time" INTEGER,
+	"time" INTEGER DEFAULT 0,
 	start_address INTEGER,
 	memory_used INTEGER,
 	memory_written INTEGER);
