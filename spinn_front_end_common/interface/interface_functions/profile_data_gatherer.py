@@ -17,8 +17,6 @@ from __future__ import division
 import os
 import logging
 
-from spinn_front_end_common.utilities.constants import \
-    MICRO_TO_MILLISECOND_CONVERSION
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 from spinn_front_end_common.utilities.constants import US_TO_MS
