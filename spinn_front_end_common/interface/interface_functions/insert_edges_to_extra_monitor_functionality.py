@@ -121,7 +121,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                             PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)):
                         app_partition = ApplicationOutgoingEdgePartition(
                             PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP,
-                            app_source)
+                            app_source, traffic_type=DataSpeedUp.TRAFFIC_TYPE)
                         application_graph.add_outgoing_edge_partition(
                             app_partition)
                     application_graph.add_edge(
