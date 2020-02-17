@@ -209,8 +209,8 @@ class _Compression(object):
         iobuf_extractor = ChipIOBufExtractor()
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
-            self._transceiver, executable_targets, executable_finder)
-
+            self._transceiver, executable_targets, executable_finder,
+            binary_executable_types={self._binary_path: ExecutableType.SYSTEM})
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:

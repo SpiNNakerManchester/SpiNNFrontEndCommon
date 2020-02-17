@@ -125,6 +125,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     :param reserve_reverse_ip_tag: \
         Extra flag for input without a reserved port
     :type reserve_reverse_ip_tag: bool
+    :param enable_injection:\
+        Flag to indicate that data will be received to inject
+    :type enable_injection: bool
     """
 
     class _REGIONS(Enum):
@@ -173,7 +176,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
             send_buffer_partition_id=None,
 
             # Extra flag for receiving packets without a port
-            reserve_reverse_ip_tag=False):
+            reserve_reverse_ip_tag=False,
+
+            # Flag to indicate that data will be received to inject
+            enable_injection=False):
         """
         :param n_keys: The number of keys to be sent via this multicast source
         :param label: The label of this vertex
@@ -243,8 +249,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._is_recording = False
 
         # set flag for checking if in injection mode
-        self._in_injection_mode = \
-            receive_port is not None or reserve_reverse_ip_tag
+        self._in_injection_mode = (
+            receive_port is not None or reserve_reverse_ip_tag or
+            enable_injection)
 
         # Sort out the keys to be used
         self._virtual_key = virtual_key
