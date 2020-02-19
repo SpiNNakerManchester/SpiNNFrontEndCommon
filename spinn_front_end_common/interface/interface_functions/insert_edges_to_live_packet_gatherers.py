@@ -81,9 +81,8 @@ class InsertEdgesToLivePacketGatherers(object):
         app_edges = dict()
 
         # iterate through the associated machine vertices
-        for m_vertex in app_vertex.machine_vertices:
-            lpg = self._find_closest_live_packet_gatherer(
-                m_vertex, lpg_params)
+        for vertex in app_vertex.machine_vertices:
+            lpg = self._find_closest_live_packet_gatherer(vertex, lpg_params)
 
             # if not yet built the app edges, add them now
             # has to be postponed until we know the LPG
@@ -95,9 +94,8 @@ class InsertEdgesToLivePacketGatherers(object):
 
             # add a edge between the closest LPG and the app_vertex
             for partition_id in p_ids:
-                app_edge = app_edges[p_ids]
-                machine_edge = app_edge.create_machine_edge(
-                    m_vertex, lpg, None)
+                machine_edge = app_edges[partition_id].create_machine_edge(
+                    vertex, lpg, None)
                 app_graph.machine_graph.add_edge(machine_edge, partition_id)
 
     def _connect_lpg_vertex_in_machine_graph(
