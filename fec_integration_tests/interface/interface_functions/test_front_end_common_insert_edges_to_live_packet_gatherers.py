@@ -249,6 +249,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         machine = virtual_machine(width=12, height=12)
         graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
+        app_graph.machine_graph = graph
 
         default_params = {
             'use_prefix': False,
