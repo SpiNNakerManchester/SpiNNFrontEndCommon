@@ -65,7 +65,10 @@ class ReverseIpTagMultiCastSource(
             send_buffer_partition_id=None,
 
             # Extra flag for input without a reserved port
-            reserve_reverse_ip_tag=False):
+            reserve_reverse_ip_tag=False,
+
+            # Flag to indicate that data will be received to inject
+            enable_injection=False):
         """
         :param int n_keys:
             The number of keys to be sent via this multicast source
@@ -112,6 +115,8 @@ class ReverseIpTagMultiCastSource(
         :type send_buffer_partition_id: str or None
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
+        :param bool enable_injection:
+            Flag to indicate that data will be received to inject
         """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIpTagMultiCastSource, self).__init__(
@@ -146,6 +151,7 @@ class ReverseIpTagMultiCastSource(
 
         # Store the buffering details
         self._reserve_reverse_ip_tag = reserve_reverse_ip_tag
+        self._enable_injection = enable_injection
 
         # Store recording parameters
         self._is_recording = False
@@ -253,7 +259,8 @@ class ReverseIpTagMultiCastSource(
             prefix_type=self._prefix_type, check_keys=self._check_keys,
             send_buffer_times=send_buffer_times,
             send_buffer_partition_id=self._send_buffer_partition_id,
-            reserve_reverse_ip_tag=self._reserve_reverse_ip_tag)
+            reserve_reverse_ip_tag=self._reserve_reverse_ip_tag,
+            enable_injection=self._enable_injection)
         vertex.enable_recording(self._is_recording)
         self._my_machine_vertices.append((vertex_slice, vertex))
         return vertex
