@@ -13,13 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-try:
-    from collections import MutableMapping
-except ImportError:
-    from UserDict import DictMixin as MutableMapping
 
-
-class DsWriteInfo(MutableMapping):
+class DsWriteInfo(object):
 
     __slots__ = ["_db"]
 
@@ -56,10 +51,6 @@ class DsWriteInfo(MutableMapping):
         """
         return self._db.get_write_info(x, y, p)
 
-    def __setitem__(self, core, info):
-        (x, y, p) = core
-        self.set_info(x, y, p, info)
-
     def set_info(self, x, y, p, info):
         """
         Sets the info for the core x, y, p
@@ -72,14 +63,22 @@ class DsWriteInfo(MutableMapping):
         """
         self._db.set_write_info(x, y, p, info)
 
+    def set_size_info(self, x, y, p, memory_used):
+        """ Sets the size info for the core x, y p.
+
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :param memory_used: memory allocated
+        :rtype None:
+        """
+        self._db.set_size_info(x, y, p, memory_used)
+
     def clear_write_info(self):
         """
         Clears the info for all cores,
         """
         self._db.clear_write_info()
-
-    def __delitem__(self, key):
-        raise NotImplementedError("Delete not supported")
 
     def keys(self):
         """

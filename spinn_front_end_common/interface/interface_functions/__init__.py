@@ -22,8 +22,8 @@ from .chip_iobuf_extractor import ChipIOBufExtractor
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
 from .database_interface import DatabaseInterface
-from .data_in_multicast_routing_generator import (
-    DataInMulticastRoutingGenerator)
+from .system_multicast_routing_generator import (
+    SystemMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .graph_binary_gatherer import GraphBinaryGatherer
@@ -59,6 +59,7 @@ from .preallocate_resources_for_extra_monitor_support import (
 from .process_partition_constraints import ProcessPartitionConstraints
 from .profile_data_gatherer import ProfileDataGatherer
 from .provenance_json_writer import ProvenanceJSONWriter
+from .provenance_sql_writer import ProvenanceSQLWriter
 from .provenance_xml_writer import ProvenanceXMLWriter
 from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
@@ -75,7 +76,7 @@ __all__ = [
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
     "ChipRuntimeUpdater", "DatabaseInterface",
-    "DataInMulticastRoutingGenerator",
+    "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
@@ -92,7 +93,7 @@ __all__ = [
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
-    "ProvenanceJSONWriter", "ProvenanceXMLWriter",
+    "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",

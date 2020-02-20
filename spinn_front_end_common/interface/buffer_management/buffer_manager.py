@@ -30,6 +30,7 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.utilities.exceptions import (
@@ -55,6 +56,8 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 _SDP_MAX_PACKAGE_SIZE = 272
+
+VERIFY = False
 
 
 class BufferManager(object):
@@ -208,13 +211,40 @@ class BufferManager(object):
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
 
+        # Round to word boundaries
+        initial = address % BYTES_PER_WORD
+        address -= initial
+        length += initial
+        final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
+        length += final
+
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
-        return receiver.get_data(
-            self._placements.get_placement_of_vertex(sender),
+        extra_mon_data = receiver.get_data(
+            sender, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
+        if VERIFY:
+            txrx_data = transceiver.read_memory(
+                placement_x, placement_y, address, length)
+            self._verify_data(extra_mon_data, txrx_data)
+
+        # If we rounded to word boundaries, strip the padding junk
+        if initial and final:
+            return extra_mon_data[initial:-final]
+        elif initial:
+            return extra_mon_data[initial:]
+        elif final:
+            return extra_mon_data[:-final]
+        else:
+            return extra_mon_data
+
+    def _verify_data(self, extra_mon_data, txrx_data):
+        for index, (extra_mon_element, txrx_element) in enumerate(
+                zip(extra_mon_data, txrx_data)):
+            if extra_mon_element != txrx_element:
+                raise Exception("WRONG (at index {})".format(index))
 
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
@@ -614,6 +644,10 @@ class BufferManager(object):
                 self._machine, placement.x, placement.y,
                 self._packet_gather_cores_to_ethernet_connection_map)
             for placement in placements))
+
+        # update transaction id from the machine for all extra monitors
+        for extra_mon in self._extra_monitor_cores:
+            extra_mon.update_transaction_id_from_machine(self._transceiver)
 
         # Ugly, to avoid an import loop...
         with receivers[0].streaming(

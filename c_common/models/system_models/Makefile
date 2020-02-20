@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2019-2020 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,11 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BUILD_DIRS = command_sender_multicast_source reverse_iptag_multicast_source \
-	live_packet_gather chip_power_monitor system_models minimise
+APPS = extra_monitor.mk data_speed_up_packet_gatherer.mk
 
-all: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
+all: $(APPS)
+	for f in $(APPS); do $(MAKE) -f $$f || exit $$?; done
 
-clean: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d clean || exit $$?; done
+clean: $(DIRS)
+	for f in $(APPS); do $(MAKE) -f $$f clean || exit $$?; done

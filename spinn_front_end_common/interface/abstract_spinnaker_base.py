@@ -76,8 +76,9 @@ from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceXMLWriter, ProvenanceJSONWriter, ChipProvenanceUpdater,
-    PlacementsProvenanceGatherer, RouterProvenanceGatherer, ChipIOBufExtractor)
+    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
+    ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
+    RouterProvenanceGatherer, ChipIOBufExtractor)
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -94,6 +95,9 @@ MINIMUM_OFF_STATE_TIME = 20
 
 # 0-15 are reserved for system use (per lplana)
 ALANS_DEFAULT_RANDOM_APP_ID = 16
+
+# Number of provenace items before auto changes to sql format
+PROVENANCE_TYPE_CUTOFF = 20000
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -501,7 +505,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Reports", "display_algorithm_timings")
         self._provenance_format = self._config.get(
             "Reports", "provenance_format")
-        if self._provenance_format not in ["xml", "json"]:
+        if self._provenance_format not in ["xml", "json", "sql", "auto"]:
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
 
@@ -818,7 +822,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Convert dt into microseconds and divide by
         # realtime proportion to get hardware timestep
         hardware_timestep_us = int(round(
-            float(self.machine_time_step) / float(self.timescale_factor)))
+            float(self.machine_time_step) / float(self.time_scale_factor)))
 
         logger.info(
             "Simulating for {} {}ms timesteps "
@@ -1151,7 +1155,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                self.write_finished_file()
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
@@ -1369,7 +1372,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean(
                 "Machine", "disable_advanced_monitor_usage_for_data_in")
 
-        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
+        if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
             inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["PlanNTimeSteps"] = n_machine_time_steps
@@ -1491,6 +1494,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
+        # runtime full runtime from pynn
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
 
@@ -1561,7 +1565,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
-            algorithms.append("DataInMulticastRoutingGenerator")
+            algorithms.append("SystemMulticastRoutingGenerator")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
@@ -1914,7 +1918,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self.machine_time_step / 1000.0
+            run_time = (
+                n_machine_time_steps * self.machine_time_step /
+                MICRO_TO_MILLISECOND_CONVERSION)
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1935,7 +1941,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         inputs["ExtractIobufFromCores"] = self._config.get(
             "Reports", "extract_iobuf_from_cores")
-        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+        inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
             "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
@@ -2040,6 +2046,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             writer = ProvenanceXMLWriter()
         elif self._provenance_format == "json":
             writer = ProvenanceJSONWriter()
+        elif self._provenance_format == "sql":
+            writer = ProvenanceSQLWriter()
+        elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
+            writer = ProvenanceXMLWriter()
+        else:
+            writer = ProvenanceSQLWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
@@ -2288,10 +2300,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._no_machine_time_steps
 
     @property
-    def timescale_factor(self):
-        return self._read_config_int("Machine", "time_scale_factor")
-
-    @property
     def machine_graph(self):
         return self._machine_graph
 
@@ -2380,7 +2388,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
-                (self.machine_time_step / 1000.0))
+                (self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION))
         return 0.0
 
     def get_generated_output(self, name_of_variable):
@@ -2629,10 +2637,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # Reset provenance
             self._all_provenance_items = list()
 
-        self.write_finished_file()
-
         if exc_info is not None:
             reraise(*exc_info)
+        self.write_finished_file()
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
