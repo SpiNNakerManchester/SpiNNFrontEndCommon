@@ -76,8 +76,9 @@ from spinn_front_end_common.interface.provenance import (
     PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions import (
-    ProvenanceXMLWriter, ProvenanceJSONWriter, ChipProvenanceUpdater,
-    PlacementsProvenanceGatherer, RouterProvenanceGatherer, ChipIOBufExtractor)
+    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
+    ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
+    RouterProvenanceGatherer, ChipIOBufExtractor)
 from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
@@ -94,6 +95,9 @@ MINIMUM_OFF_STATE_TIME = 20
 
 # 0-15 are reserved for system use (per lplana)
 ALANS_DEFAULT_RANDOM_APP_ID = 16
+
+# Number of provenace items before auto changes to sql format
+PROVENANCE_TYPE_CUTOFF = 20000
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -495,7 +499,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Reports", "display_algorithm_timings")
         self._provenance_format = self._config.get(
             "Reports", "provenance_format")
-        if self._provenance_format not in ["xml", "json"]:
+        if self._provenance_format not in ["xml", "json", "sql", "auto"]:
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
 
@@ -2070,6 +2074,12 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             writer = ProvenanceXMLWriter()
         elif self._provenance_format == "json":
             writer = ProvenanceJSONWriter()
+        elif self._provenance_format == "sql":
+            writer = ProvenanceSQLWriter()
+        elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
+            writer = ProvenanceXMLWriter()
+        else:
+            writer = ProvenanceSQLWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
