@@ -39,6 +39,11 @@ _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
 def system_cores(exec_targets):
+    """ Get the subset of cores that are to be used for system operations.
+
+    :param ExecutableTargets exec_targets:
+    :rtype: ~spinn_machine.CoreSubsets
+    """
     cores = CoreSubsets()
     for binary in exec_targets.get_binaries_of_executable_type(
             ExecutableType.SYSTEM):
@@ -47,7 +52,12 @@ def system_cores(exec_targets):
 
 
 def filter_out_system_executables(dsg_targets, executable_targets):
-    """ Select just the application DSG loading tasks """
+    """ Select just the application DSG loading tasks
+
+    :param DataSpecificationTargets dsg_tagets:
+    :param ExecutableTargets executable_targets:
+    :rtype: dict(tuple(int,int,int), DataRowReader)
+    """
     syscores = system_cores(executable_targets)
     return OrderedDict(
         (core, spec) for (core, spec) in iteritems(dsg_targets)
@@ -55,7 +65,12 @@ def filter_out_system_executables(dsg_targets, executable_targets):
 
 
 def filter_out_app_executables(dsg_targets, executable_targets):
-    """ Select just the system DSG loading tasks """
+    """ Select just the system DSG loading tasks
+
+    :param DataSpecificationTargets dsg_tagets:
+    :param ExecutableTargets executable_targets:
+    :rtype: dict(tuple(int,int,int), DataRowReader)
+    """
     syscores = system_cores(executable_targets)
     return OrderedDict(
         (core, spec) for (core, spec) in iteritems(dsg_targets)
@@ -99,6 +114,12 @@ class HostExecuteDataSpecification(object):
         self._write_info_map = None
 
     def __java_database(self, dsg_targets, progress, region_sizes):
+        """
+        :param DataSpecificationTargets dsg_tagets:
+        :param progress:
+        :param dict(tuple(int,int,int)int) region_sizes:
+        :rtype: DsWriteInfo
+        """
         # Copy data from WriteMemoryIOData to database
         dw_write_info = DsWriteInfo(dsg_targets.get_database())
         dw_write_info.clear_write_info()
@@ -120,14 +141,11 @@ class HostExecuteDataSpecification(object):
     def __java_all(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
-        :return: map of of cores to a dict of \
-            'start_address', 'memory_used', 'memory_written'
-        :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :return: map of of cores to descriptions of what was written
+        :rtype: DsWriteInfo
         """
-
         # create a progress bar for end users
         progress = ProgressBar(
             3, "Executing data specifications and loading data using Java")
@@ -144,13 +162,12 @@ class HostExecuteDataSpecification(object):
     def __python_all(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Python
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`~spinn_front_end_common.interface.ds.DataSpecificationTargets`
-        :param region_sizes: map between vertex and list of region \
-        sizes
-        :return: dict of cores to a dict of\
-            'start_address', 'memory_used', 'memory_written
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :param dict(tuple(int,int,int),int) region_sizes:
+            map between vertex and list of region sizes
+        :return: dict of cores to descriptions of what was written
+        :rtype: dict(tuple(int,int,int), DataWritten)
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
@@ -165,9 +182,9 @@ class HostExecuteDataSpecification(object):
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in progress.over(iteritems(dsg_targets)):
-            base_addresses[core] = \
-                self.__malloc_and_user_0(core, region_sizes[core])
+        for core, _ in iteritems(dsg_targets):
+            base_addresses[core] = self.__malloc_region_storage(
+                core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(dsg_targets)):
             results[core] = self.__python_execute(
@@ -186,22 +203,35 @@ class HostExecuteDataSpecification(object):
             disable_advanced_monitor_usage=False):
         """ Execute the data specs for all non-system targets.
 
-        :param machine: the python representation of the SpiNNaker machine
-        :param transceiver: the spinnman instance
-        :param app_id: the application ID of the simulation
-        :param region_sizes: the coord for region sizes for each core
-        :param dsg_targets: map of placement to file path
-        :param uses_advanced_monitors: whether to use fast data in protocol
-        :param executable_targets: what core will running what binary
-        :param placements: where vertices are located
-        :param extra_monitor_cores: the deployed extra monitors, if any
-        :param extra_monitor_cores_to_ethernet_connection_map: \
+        :param ~spinn_machine.Machine machine:
+            the python representation of the SpiNNaker machine
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
+        :param int app_id: the application ID of the simulation
+        :param dict(tuple(int,int,int),int) region_sizes:
+            the coord for region sizes for each core
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :param bool uses_advanced_monitors:
+            whether to use fast data in protocol
+        :param ExecutableTargets executable_targets:
+            what core will running what binary
+        :param ~pacman.model.placements.Placements placements:
+            where vertices are located
+        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+            the deployed extra monitors, if any
+        :param extra_monitor_cores_to_ethernet_connection_map:
             how to talk to extra monitor cores
-        :param processor_to_app_data_base_address: \
+        :type extra_monitor_cores_to_ethernet_connection_map:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param processor_to_app_data_base_address:
             map of placement and DSG data
-        :param disable_advanced_monitor_usage: \
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int), DsWriteInfo)
+        :param bool disable_advanced_monitor_usage:
             whether to avoid using advanced monitors even if they're available
         :return: map of placement and DSG data
+        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
@@ -257,6 +287,14 @@ class HostExecuteDataSpecification(object):
     def __python_app(
             self, dsg_targets, executable_targets, use_monitors,
             region_sizes):
+        """
+        :param DataSpecificationTargets dsg_targets:
+        :param ExecutableTargets executable_targets:
+        :param bool use_monitors:
+        :param dict(tuple(int,int,int),int) region_sizes:
+        :return: dict of cores to descriptions of what was written
+        :rtype: dict(tuple(int,int,int),DataWritten)
+        """
         dsg_targets = filter_out_system_executables(
             dsg_targets, executable_targets)
 
@@ -273,8 +311,8 @@ class HostExecuteDataSpecification(object):
         base_addresses = dict()
         for core, _ in progress.over(
                 iteritems(dsg_targets), finish_at_end=False):
-            base_addresses[core] = \
-                self.__malloc_and_user_0(core, region_sizes[core])
+            base_addresses[core] = self.__malloc_region_storage(
+                core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(dsg_targets)):
             x, y, _p = core
@@ -292,6 +330,14 @@ class HostExecuteDataSpecification(object):
     def __java_app(
             self, dsg_targets, executable_targets, use_monitors,
             region_sizes):
+        """
+        :param DataSpecificationTargets dsg_targets:
+        :param ExecutableTargets executable_targets:
+        :param bool use_monitors:
+        :param dict(tuple(int,int,int),int) region_sizes:
+        :return: map of cores to descriptions of what was written
+        :rtype: DsWriteInfo
+        """
         # create a progress bar for end users
         progress = ProgressBar(
             4, "Executing data specifications and loading data for "
@@ -316,21 +362,24 @@ class HostExecuteDataSpecification(object):
             executable_targets, report_folder=None,
             java_caller=None, processor_to_app_data_base_address=None):
         """ Execute the data specs for all system targets.
+
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
+        :param ~spinn_machine.Machine machine:
+            the python representation of the spinnaker machine
+        :param int app_id: the application ID of the simulation
+        :param dict(tuple(int,int,int),str) dsg_targets:
+            map of placement to file path
         :param region_sizes: the coord for region sizes for each core
-        :param machine: the python representation of the spinnaker machine
-        :type machine: ~spinn_machine.Machine
-        :param transceiver: the spinnman instance
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param app_id: the application ID of the simulation
-        :type app_id: int
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: dict(tuple(int,int,int),str)
-        :param executable_targets: \
+        :param ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :type executable_targets: ExecutableTargets
+        :param str report_folder:
+        :param JavaCaller java_caller:
+        :param processor_to_app_data_base_address:
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int),DataWritten)
         :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),\
-            ~spinn_front_end_common.utilities.utility_objs.DataWritten)
+        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
 
@@ -348,18 +397,15 @@ class HostExecuteDataSpecification(object):
     def __java_sys(self, dsg_targets, executable_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            ~spinn_front_end_common.interface.ds.DataSpecificationTargets
-        :param executable_targets: \
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :param ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :type executable_targets: ExecutableTargets
-        :param region_sizes: the coord for region sizes for each core
-        :return: map of cores to \
-            :py:class:`~spinn_front_end_common.utilities.utility_objs.DataWritten`
-        :rtype: ~spinn_front_end_common.interface.ds.DsWriteInfo
+        :param dict(tuple(int,int,int),int) region_sizes:
+            the coord for region sizes for each core
+        :return: map of cores to descriptions of what was written
+        :rtype: DsWriteInfo
         """
-
         # create a progress bar for end users
         progress = ProgressBar(
             4, "Executing data specifications and loading data for system "
@@ -380,15 +426,14 @@ class HostExecuteDataSpecification(object):
     def __python_sys(self, dsg_targets, executable_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Python
 
-        :param dsg_targets: map of placement to file path
-        :type dsg_targets: \
-            :py:class:`spinn_front_end_common.interface.ds.DataSpecificationTargets`
-        :param executable_targets: \
+        :param DataSpecificationTargets dsg_targets:
+            map of placement to file path
+        :param ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :type executable_targets: ExecutableTargets
-        :param region_sizes: the coord for region sizes for each core
-        :return: dict of cores to a dict of\
-            'start_address', 'memory_used', 'memory_written
+        :param dict(tuple(int,int,int),int) region_sizes:
+            the coord for region sizes for each core
+        :return: dict of cores to descriptions of what was written
+        :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
@@ -405,8 +450,8 @@ class HostExecuteDataSpecification(object):
         base_addresses = dict()
         for core, _ in progress.over(
                 iteritems(sys_targets), finish_at_end=False):
-            base_addresses[core] = \
-                self.__malloc_and_user_0(core, region_sizes[core])
+            base_addresses[core] = self.__malloc_region_storage(
+                core, region_sizes[core])
 
         for core, reader in progress.over(iteritems(sys_targets)):
             self._write_info_map[core] = self.__python_execute(
@@ -415,7 +460,17 @@ class HostExecuteDataSpecification(object):
 
         return self._write_info_map
 
-    def __malloc_and_user_0(self, core, size):
+    def __malloc_region_storage(self, core, size):
+        """ Allocates the storage for all DSG regions on the core and tells \
+            the core and our caller where that storage is.
+
+        :param tuple(int,int,int) core: Which core we're talking about.
+        :param int size:
+            The total size of all storage for regions on that core, including
+            for the header metadata.
+        :return: address of region header table (not yet filled)
+        :rtype: int
+        """
         (x, y, p) = core
 
         # allocate memory where the app data is going to be written; this

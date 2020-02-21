@@ -34,21 +34,16 @@ class DataSpeedUpPacketGather(
             report_default_directory,
             write_data_speed_up_reports, constraints=None):
         """
-        :param x: Where this gatherer is.
-        :type x: int
-        :param y: Where this gatherer is.
-        :type y: int
+        :param int x: Where this gatherer is.
+        :param int y: Where this gatherer is.
         :param extra_monitors_by_chip: UNUSED
         :type extra_monitors_by_chip: \
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
-        :param ip_address: \
+        :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :type ip_address: str
-        :param report_default_directory: Where reporting is done.
-        :type report_default_directory: str
-        :param write_data_speed_up_reports: \
+        :param str report_default_directory: Where reporting is done.
+        :param bool write_data_speed_up_reports:
             Whether to write low-level reports on data transfer speeds.
-        :type write_data_speed_up_reports: bool
         :param constraints:
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
@@ -57,6 +52,7 @@ class DataSpeedUpPacketGather(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
+            app_vertex=self,
             x=x, y=y, ip_address=ip_address, constraints=constraints,
             extra_monitors_by_chip=extra_monitors_by_chip,
             report_default_directory=report_default_directory,

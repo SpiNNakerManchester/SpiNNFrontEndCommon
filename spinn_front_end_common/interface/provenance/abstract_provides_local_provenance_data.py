@@ -28,5 +28,7 @@ class AbstractProvidesLocalProvenanceData(object):
     def get_local_provenance_data(self):
         """ Get an iterable of provenance data items
 
-        :return: iterable of :py:class:`ProvenanceDataItem`
+        :return: the provenance items
+        :rtype: \
+            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """

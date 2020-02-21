@@ -55,34 +55,24 @@ class AbstractDatabase(object):
         """ Store some information in the corresponding buffer for a\
             specific chip, core and recording region.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data to be stored
-        :type region: int
-        :param data: data to be stored
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be stored
+        :param bytearray data: data to be stored
 
             .. note::
                 Implementations may assume this to be shorter than 1GB
-
-        :type data: bytearray
         """
 
     @abstractmethod
     def get_region_data(self, x, y, p, region):
         """ Get the data stored for a given region of a given core
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
         :return: a buffer containing all the data received during the\
             simulation, and a flag indicating if any data was missing
 
