@@ -20,7 +20,6 @@ from __future__ import division
 from collections import defaultdict
 import logging
 import math
-import os
 import signal
 import sys
 import time
@@ -1512,7 +1511,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         executor.execute_mapping()
 
     def _do_mapping(self, run_time):
-
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
         mapping_total_timer.start_timing()
@@ -1548,6 +1546,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
+        inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
         if self.lcm_timestep == self.user_timestep_in_us:
@@ -1651,6 +1650,26 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_machine_graph_placer_report"):
                 algorithms.append("PlacerReportWithoutApplicationGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine"):
+                algorithms.append("WriteJsonMachine")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine_graph"):
+                algorithms.append("WriteJsonMachineGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_placements"):
+                algorithms.append("WriteJsonPlacements")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_routing_tables"):
+                algorithms.append("WriteJsonRoutingTables")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_partition_n_keys_map"):
+                algorithms.append("WriteJsonPartitionNKeysMap")
 
             # only add network specification report if there's
             # application vertices.
