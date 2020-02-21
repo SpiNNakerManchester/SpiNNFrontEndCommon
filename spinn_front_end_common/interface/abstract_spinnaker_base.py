@@ -20,7 +20,6 @@ from __future__ import division
 from collections import defaultdict
 import logging
 import math
-import os
 import signal
 import sys
 import time
@@ -1465,23 +1464,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     names=["version_data", name], value=value))
         self._version_provenance = version_provenance
 
-    def generate_file_machine(self):
-        """ Generates a machine JSON file
-        """
-        inputs = {
-            "MemoryMachine": self.machine,
-            "FileMachineFilePath": os.path.join(
-                self._json_folder, "machine.json")
-        }
-        outputs = ["FileMachine"]
-        executor = PACMANAlgorithmExecutor(
-            algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
-            xml_paths=self._xml_paths,
-            required_outputs=outputs, required_output_tokens=[],
-            do_timings=self._do_timings, print_timings=self._print_timings,
-            provenance_path=self._pacman_executor_provenance_path)
-        executor.execute_mapping()
-
     def _do_mapping(self, run_time, total_run_time):
 
         # time the time it takes to do all pacman stuff
@@ -1522,6 +1504,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
+        inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
         inputs["TimeScaleFactor"] = self.time_scale_factor
         inputs["MachineTimeStep"] = self.machine_time_step
@@ -1622,6 +1605,26 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_machine_graph_placer_report"):
                 algorithms.append("PlacerReportWithoutApplicationGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine"):
+                algorithms.append("WriteJsonMachine")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine_graph"):
+                algorithms.append("WriteJsonMachineGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_placements"):
+                algorithms.append("WriteJsonPlacements")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_routing_tables"):
+                algorithms.append("WriteJsonRoutingTables")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_partition_n_keys_map"):
+                algorithms.append("WriteJsonPartitionNKeysMap")
 
             # only add network specification report if there's
             # application vertices.
