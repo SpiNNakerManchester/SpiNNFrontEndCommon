@@ -16,10 +16,9 @@
 BUILD_DIRS = compressor_bit_field_models \
 	         live_packet_gather \
 	         chip_power_monitor \
-	         data_speed_up_packet_gatherer \
-	         extra_monitor_support \
 	         command_sender_multicast_source \
 	         reverse_iptag_multicast_source \
+	         system_models \
 	         minimise
 
 all: $(BUILD_DIRS)

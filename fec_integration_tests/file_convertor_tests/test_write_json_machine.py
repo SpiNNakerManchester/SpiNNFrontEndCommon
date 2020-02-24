@@ -21,13 +21,13 @@ import unittest
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-from pacman.utilities.file_format_converters.convert_to_java_machine import (
-    ConvertToJavaMachine)
+from pacman.operations.algorithm_reports.write_json_machine import (
+    WriteJsonMachine, MACHINE_FILENAME)
 from spinn_front_end_common.interface.interface_functions import (
     SpallocAllocator)
 
 
-class TestConvertJson(unittest.TestCase):
+class TestWriteJson(unittest.TestCase):
 
     spin4Host = "spinn-4.cs.man.ac.uk"
     spalloc = "spinnaker.cs.man.ac.uk"
@@ -66,6 +66,14 @@ class TestConvertJson(unittest.TestCase):
                             key, json1[key], json2[key]))
         raise AssertionError("Some wierd difference")
 
+    def _remove_old_json(self, folder):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        else:
+            json_file = os.path.join(folder, MACHINE_FILENAME)
+            if os.path.exists(json_file):
+                os.remove(json_file)
+
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
@@ -74,10 +82,11 @@ class TestConvertJson(unittest.TestCase):
 
         machine = trans.get_machine_details()
 
-        jsonAlgo = ConvertToJavaMachine()
+        jsonAlgo = WriteJsonMachine()
 
-        fn = "test_spinn4.json"
-        filename = jsonAlgo(machine, str(fn))
+        folder = "spinn4"
+        self._remove_old_json(folder)
+        filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -89,21 +98,22 @@ class TestConvertJson(unittest.TestCase):
         chip = machine.get_chip_at(1, 2)
         chip._sdram._size = chip._sdram._size - 101
 
-        fn = "test_spinn4_fiddle.json"
-        filename = jsonAlgo(machine, str(fn))
-        self.json_compare(filename, "spinn4_fiddle.json")
+        folder = "spinn4_fiddle"
+        self._remove_old_json(folder)
+        filename = jsonAlgo(machine, folder)
 
+        self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
 
     def testSpin2(self):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         spallocAlgo = SpallocAllocator()
-
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
-                            self.spin2Port)
+                spallocAlgo(spalloc_server=self.spalloc,
+                            spalloc_user="Integration testing ok to kill",
+                            n_chips=20, spalloc_port=self.spin2Port)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 
@@ -113,11 +123,11 @@ class TestConvertJson(unittest.TestCase):
 
         m_allocation_controller.close()
 
-        jsonAlgo = ConvertToJavaMachine()
+        jsonAlgo = WriteJsonMachine()
 
-        fn = "test_spinn2.json"
-        filename = jsonAlgo(machine, str(fn))
+        folder = "spinn2"
+        self._remove_old_json(folder)
+        filename = jsonAlgo(machine, folder)
 
         self.json_compare(filename, "spinn2.json")
-
         trans.close()

@@ -171,9 +171,9 @@ static bool initialize(uint32_t *timer) {
     simulation_ticks = (simulation_ticks * *timer) / sample_frequency;
     log_info("total_sim_ticks = %d", simulation_ticks);
 
-    return recording_initialize(
-            data_specification_get_region(RECORDING, ds_regions),
-            &recording_flags);
+    void *recording_region =
+            data_specification_get_region(RECORDING, ds_regions);
+    return recording_initialize(&recording_region, &recording_flags);
 }
 
 void c_main(void) {

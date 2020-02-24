@@ -20,8 +20,8 @@ import os
 import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
-from pacman.utilities.file_format_converters.convert_to_java_machine import (
-    ConvertToJavaMachine)
+from pacman.operations.algorithm_reports.write_json_machine import (
+    WriteJsonMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
@@ -31,7 +31,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class JavaCaller(object):
     """ Support class that holds all the stuff for running stuff in Java.
-
         This includes the work of preparing data for transmitting to Java and\
         back.
 
@@ -83,10 +82,10 @@ class JavaCaller(object):
             https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.
         :param java_properties:
             Optional properties that will be passed to Java.\
-            Must start with -D
-            For example -Dlogging.level=DEBUG
+            Must start with ``-D``.
+            For example ``-Dlogging.level=DEBUG``
         :type java_properties: str
-        :raise ConfigurationException if simple parameter checking fails.
+        :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
         self._report_folder = None
@@ -139,7 +138,7 @@ class JavaCaller(object):
         """ Passes the machine in leaving this class to decide pass it to Java.
 
         :param machine: A machine Object
-        :type machine: :py:class:`spinn_machine.machine.Machine`
+        :type machine: ~spinn_machine.Machine
         """
         self._machine = machine
 
@@ -147,12 +146,13 @@ class JavaCaller(object):
             self, placements, tags, monitor_cores, packet_gathers):
         """
         :param placements: The placements of the vertices
-        :type placements:\
-            :py:class:`pacman.model.placements.Placements`
+        :type placements: ~pacman.model.placements.Placements
         :param tags: The tags assigned to the vertices
-        :type tags: :py:class:`pacman.model.tags.Tags`
-        :param monitor_cores:
-        :param packet_gathers:
+        :type tags: ~pacman.model.tags.Tags
+        :param monitor_cores: Where the advanced monitor for each core is
+        :type monitor_cores: dict(Vertex,Vertex)
+        :param packet_gathers: Where the packet gatherers are
+        :type packet_gathers: dict(Vertex,Vertex)
         :rtype: None
         """
         self._monitor_cores = dict()
@@ -181,9 +181,8 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            path = os.path.join(self._json_folder, "machine.json")
-            self._machine_json_path = ConvertToJavaMachine.do_convert(
-                self._machine, path)
+            self._machine_json_path = WriteJsonMachine.write_json(
+                self._machine, self._json_folder)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
@@ -210,7 +209,9 @@ class JavaCaller(object):
         database.
 
         :param placements: The Placements Object
+        :type placements: ~pacman.model.placements.Placements
         :param transceiver: The Transceiver
+        :type transceiver: ~spinnman.transceiver.Transceiver
         """
         path = os.path.join(self._json_folder, "java_placements.json")
         self._recording = False
@@ -368,7 +369,8 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_system_data_specification(self):
-        """ Writes all the data specs, uploading the result to the machine.
+        """ Writes all the data specs for system cores, \
+            uploading the result to the machine.
         """
         result = self._run_java(
             'dse_sys', self._machine_json(), self._report_folder)
@@ -379,6 +381,12 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_app_data_specification(self, use_monitors):
+        """ Writes all the data specs for application cores, \
+            uploading the result to the machine.
+
+        .. note:
+            May assume that system cores are already loaded and running.
+        """
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),

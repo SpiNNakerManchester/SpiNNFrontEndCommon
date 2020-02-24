@@ -15,6 +15,7 @@
 
 from spinn_front_end_common.interface.interface_functions import \
     ChipIOBufExtractor
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.exceptions import SpinnmanException, SpinnmanTimeoutException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
@@ -62,16 +63,21 @@ def run_system_application(
         # fire all signals as required
         transceiver.send_signal(app_id, sync_signal)
 
-    # Wait for the executable to finish
     succeeded = False
+    binary_start_types = dict()
     if binaries_to_track is None:
         check_targets = executable_cores
+        for binary in executable_cores.binaries:
+            binary_start_types[binary] = ExecutableType.SYSTEM
     else:
         check_targets = ExecutableTargets()
         for binary_name in binaries_to_track:
             check_targets.add_subsets(
                 binary_name,
                 executable_cores.get_cores_for_binary(binary_name))
+            binary_start_types[binary_name] = ExecutableType.SYSTEM
+
+    # Wait for the executable to finish
     try:
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states)
@@ -94,7 +100,9 @@ def run_system_application(
         iobuf_reader = ChipIOBufExtractor()
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
-            provenance_file_path)
+            app_provenance_file_path=None,
+            system_provenance_file_path=provenance_file_path,
+            binary_executable_types=binary_start_types)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)

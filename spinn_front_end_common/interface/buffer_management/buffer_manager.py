@@ -30,6 +30,7 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.utilities.exceptions import (
@@ -55,6 +56,8 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 _SDP_MAX_PACKAGE_SIZE = 272
+
+VERIFY = False
 
 
 class BufferManager(object):
@@ -126,21 +129,23 @@ class BufferManager(object):
                  uses_advanced_monitors, report_folder, java_caller=None):
         """
         :param placements: The placements of the vertices
-        :type placements:\
-            :py:class:`~pacman.model.placements.Placements`
+        :type placements: ~pacman.model.placements.Placements
         :param tags: The tags assigned to the vertices
-        :type tags: :py:class:`~pacman.model.tags.Tags`
+        :type tags: ~pacman.model.tags.Tags
         :param transceiver: \
             The transceiver to use for sending and receiving information
-        :type transceiver: :py:class:`~spinnman.Transceiver`
+        :type transceiver: ~spinnman.transceiver.Transceiver
         :param packet_gather_cores_to_ethernet_connection_map:
-            mapping of cores to
-        :param report_folder: The directory for reports which includes the
+            mapping of cores to the gatherer vertex placed on them
+        :type packet_gather_cores_to_ethernet_connection_map: \
+            dict(tuple(int,int),\
+            ~spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex)
+        :param report_folder: The directory for reports which includes the \
             file to use as an SQL database.
         :type report_folder: str
-        :param java_caller: Support class to call Java or None to use python
+        :param java_caller: Support class to call Java, or None to use python
         :type java_caller:\
-            :py:class:`~spinn_front_end_common.interface.java_caller.JavaCaller`
+            ~spinn_front_end_common.interface.java_caller.JavaCaller
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -206,13 +211,40 @@ class BufferManager(object):
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
 
+        # Round to word boundaries
+        initial = address % BYTES_PER_WORD
+        address -= initial
+        length += initial
+        final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
+        length += final
+
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
-        return receiver.get_data(
-            self._placements.get_placement_of_vertex(sender),
+        extra_mon_data = receiver.get_data(
+            sender, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
+        if VERIFY:
+            txrx_data = transceiver.read_memory(
+                placement_x, placement_y, address, length)
+            self._verify_data(extra_mon_data, txrx_data)
+
+        # If we rounded to word boundaries, strip the padding junk
+        if initial and final:
+            return extra_mon_data[initial:-final]
+        elif initial:
+            return extra_mon_data[initial:]
+        elif final:
+            return extra_mon_data[:-final]
+        else:
+            return extra_mon_data
+
+    def _verify_data(self, extra_mon_data, txrx_data):
+        for index, (extra_mon_element, txrx_element) in enumerate(
+                zip(extra_mon_data, txrx_data)):
+            if extra_mon_element != txrx_element:
+                raise Exception("WRONG (at index {})".format(index))
 
     def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers.
@@ -315,6 +347,8 @@ class BufferManager(object):
             buffers to be received from them during runtime.
 
         :param vertex: the vertex to be managed
+        :type vertex:\
+            ~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost
         """
         self._add_buffer_listeners(vertex)
 
@@ -324,7 +358,7 @@ class BufferManager(object):
 
         :param vertex: the vertex to be managed
         :type vertex:\
-            :py:class:`~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost`
+            ~spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost
         """
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
@@ -582,6 +616,12 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_placements(self, placements, progress=None):
+        """
+        :param placements: Where to get the data from.
+        :type placements: ~pacman.model.placements.Placements
+        :param progress: How to measure/display the progress.
+        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        """
         if self._java_caller is not None:
             self._java_caller.set_placements(placements, self._transceiver)
 
@@ -604,6 +644,10 @@ class BufferManager(object):
                 self._machine, placement.x, placement.y,
                 self._packet_gather_cores_to_ethernet_connection_map)
             for placement in placements))
+
+        # update transaction id from the machine for all extra monitors
+        for extra_mon in self._extra_monitor_cores:
+            extra_mon.update_transaction_id_from_machine(self._transceiver)
 
         # Ugly, to avoid an import loop...
         with receivers[0].streaming(
@@ -635,12 +679,12 @@ class BufferManager(object):
             during the simulation from a specific region area of a core.
 
         :param placement: the placement to get the data from
-        :type placement: :py:class:`~pacman.model.placements.Placement`
+        :type placement: ~pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
+        :rtype: tuple(bytearray, bool)
         """
         # Ensure that any transfers in progress are complete first
         if not isinstance(placement.vertex, AbstractReceiveBuffersToHost):
@@ -657,7 +701,7 @@ class BufferManager(object):
         """ Retrieve the data for a vertex; must be locked first.
 
         :param placement: the placement to get the data from
-        :type placement: :py:class:`~pacman.model.placements.Placement`
+        :type placement: ~pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         """

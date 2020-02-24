@@ -148,8 +148,8 @@ class InsertEdgesToLivePacketGatherers(object):
         :param m_graph: the machine graph
         :param partition_ids: the partition IDs to put the edge on
         :param n_keys_map: map between partition and n keys
-        :return the application edge for this vertex and LPG
-        :rtype: ApplicationEdge
+        :return: the application edge for this vertex and LPG
+        :rtype: ~pacman.model.graph.application.ApplicationEdge
         """
         # pylint: disable=too-many-arguments
 
@@ -189,6 +189,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine_vertex: the machine vertex to locate the nearest LPG to
         :param machine_lpgs: dict of gatherers by chip placed on
         :param machine: the SpiNNaker machine object
+        :type machine: ~spinn_machine.Machine
         :param placements: the placements object
         :return: the local LPG
         :raise ConfigurationException: if a local gatherer cannot be found

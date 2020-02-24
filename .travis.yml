@@ -55,7 +55,7 @@ before_install:
 install:
   # These things ought to be enough
   - pip install -r requirements-test.txt
-  - pip install pylint python-coveralls 'coverage>=4.4'
+  - pip install pylint python-coveralls 'coverage>=4.4,<5.0'
   - python ./setup.py install
 
 before_script:
@@ -80,8 +80,8 @@ script:
   - support/rat.sh run
   # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
-  - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json
-  - support/travis-sphinx.sh singlehtml -T -b singlehtml -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
+  - support/travis-sphinx.sh json -q -T -b json -d _build/doctrees-json -D language=en . _build/json
+  - support/travis-sphinx.sh singlehtml -q -T -b singlehtml -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
