@@ -22,18 +22,22 @@ class ExecutableType(Enum):
         are started and controlled.
     """
 
+    #: Runs immediately without waiting for barrier and then exits.
     RUNNING = (
         0,
         [CPUState.RUNNING],
         [CPUState.FINISHED],
         False,
         "Runs immediately without waiting for barrier and then exits")
+    #: Calls ``spin1_start(SYNC_WAIT)`` and then eventually ``spin1_exit()``.
     SYNC = (
         1,
         [CPUState.SYNC0],
         [CPUState.FINISHED],
         False,
         "Calls spin1_start(SYNC_WAIT) and then eventually spin1_exit()")
+    #: Calls ``simulation_run()`` and ``simulation_exit()`` /
+    #: ``simulation_handle_pause_resume()``.
     USES_SIMULATION_INTERFACE = (
         2,
         [CPUState.SYNC0, CPUState.SYNC1, CPUState.PAUSED, CPUState.READY],
@@ -41,6 +45,8 @@ class ExecutableType(Enum):
         True,
         "Calls simulation_run() and simulation_exit() / "
         "simulation_handle_pause_resume()")
+    #: Situation where there user has supplied no application but for some
+    #: reason still wants to run.
     NO_APPLICATION = (
         3,
         [],
@@ -48,6 +54,7 @@ class ExecutableType(Enum):
         True,
         "Situation where there user has supplied no application but for "
         "some reason still wants to run")
+    #: Runs immediately without waiting for barrier and never ends.
     SYSTEM = (
         4,
         [CPUState.RUNNING],

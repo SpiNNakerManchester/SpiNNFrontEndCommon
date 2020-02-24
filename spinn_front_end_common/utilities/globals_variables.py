@@ -15,6 +15,7 @@
 
 from pacman.executor import injection_decorator
 
+# pylint: disable=global-statement
 _failed_state = None
 _simulator = None
 
@@ -51,8 +52,7 @@ def get_not_running_simulator():
 def set_simulator(new_simulator):
     """ Set the current simulator object.
 
-    :param new_simulator: The simulator to set.
-    :type new_simulator: SimulatorInterface
+    :param SimulatorInterface new_simulator: The simulator to set.
     """
     global _simulator, _failed_state
     if _failed_state is None:
@@ -81,8 +81,7 @@ def has_simulator():
 def set_failed_state(new_failed_state):
     """ Install a marker to say that the simulator has failed.
 
-    :param new_failed_state: the failure marker
-    :type new_failed_state: FailedState
+    :param FailedState new_failed_state: the failure marker
     """
     # pylint: disable=unidiomatic-typecheck
     global _failed_state

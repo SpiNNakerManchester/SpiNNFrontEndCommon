@@ -37,7 +37,7 @@ class SqlLiteDatabase(AbstractDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
-        NOT THREAD SAFE ON THE SAME DB. \
+        NOT THREAD SAFE ON THE SAME DB.
         Threads can access different DBs just fine.
     """
 
@@ -48,10 +48,10 @@ class SqlLiteDatabase(AbstractDatabase):
 
     def __init__(self, database_file=None):
         """
-        :param database_file: The name of a file that contains (or will\
-            contain) an SQLite database holding the data. If omitted, an\
-            unshared in-memory database will be used.
-        :type database_file: str
+        :param str database_file:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data. If omitted, an unshared in-memory
+            database will be used.
         """
         if database_file is None:
             database_file = ":memory:"  # Magic name!
@@ -86,6 +86,14 @@ class SqlLiteDatabase(AbstractDatabase):
         self._db.executescript(sql)
 
     def __read_contents(self, cursor, x, y, p, region):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region:
+        :rtype: memoryview
+        """
         for row in cursor.execute(
                 "SELECT region_id, content, have_extra FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
@@ -121,6 +129,13 @@ class SqlLiteDatabase(AbstractDatabase):
 
     @staticmethod
     def __get_core_id(cursor, x, y, p):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :rtype: int
+        """
         for row in cursor.execute(
                 "SELECT core_id FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? ",
@@ -132,6 +147,13 @@ class SqlLiteDatabase(AbstractDatabase):
         return cursor.lastrowid
 
     def __get_region_id(self, cursor, x, y, p, region):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region:
+        """
         for row in cursor.execute(
                 "SELECT region_id FROM region_view "
                 + "WHERE x = ? AND y = ? AND processor = ? "
@@ -173,6 +195,10 @@ class SqlLiteDatabase(AbstractDatabase):
             assert cursor.rowcount == 1
 
     def __use_main_table(self, cursor, region_id):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int region_id:
+        """
         for row in cursor.execute(
                 "SELECT COUNT(*) AS existing FROM region "
                 + "WHERE region_id = ? AND fetches = 0",
