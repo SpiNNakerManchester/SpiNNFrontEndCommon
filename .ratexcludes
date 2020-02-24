@@ -7,3 +7,4 @@
 **/*.json
 **/c_common/models/**/build/*.txt
 **/iobuf_for_*.txt
+**/test_output/**
