@@ -32,13 +32,16 @@ class ChipPowerMonitor(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
         """
-        :param str label: vertex label
+        :param label: vertex label
+        :type label: str
         :param constraints: constraints for the vertex
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
-        :param int n_samples_per_recording:
+        :param n_samples_per_recording: \
             how many samples to take before recording to SDRAM the total
-        :param int sampling_frequency: how many microseconds between sampling
+        :type n_samples_per_recording: int
+        :param sampling_frequency: how many microseconds between sampling
+        :type sampling_frequency: int
         """
         super(ChipPowerMonitor, self).__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording
@@ -51,14 +54,13 @@ class ChipPowerMonitor(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice,
-            resources_required,  # @UnusedVariable
+            self,
+            vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return ChipPowerMonitorMachineVertex(
-            constraints=constraints, label=label, app_vertex=self,
+            constraints=constraints, label=label,
             n_samples_per_recording=self._n_samples_per_recording,
-            sampling_frequency=self._sampling_frequency,
-            vertex_slice=vertex_slice)
+            sampling_frequency=self._sampling_frequency)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -74,11 +76,6 @@ class ChipPowerMonitor(
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps):
-        """
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        :param int n_machine_time_steps:
-        """
         # pylint: disable=too-many-arguments, arguments-differ
         # pylint: disable=protected-access
 
@@ -98,10 +95,6 @@ class ChipPowerMonitor(
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
             machine_time_step, time_scale_factor):
-        """
-        :param int machine_time_step:
-        :param int time_scale_factor:
-        """
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
             machine_time_step, time_scale_factor,
