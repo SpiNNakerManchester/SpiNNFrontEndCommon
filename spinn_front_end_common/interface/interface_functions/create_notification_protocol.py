@@ -15,7 +15,7 @@
 
 import logging
 from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol as Notification)
+    NotificationProtocol)
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class CreateNotificationProtocol(object):
             socket_addresses, database_file_path):
 
         # notification protocol
-        notification_protocol = Notification(
+        notification_protocol = NotificationProtocol(
             socket_addresses, wait_for_read_confirmation)
         notification_protocol.send_read_notification(database_file_path)
 

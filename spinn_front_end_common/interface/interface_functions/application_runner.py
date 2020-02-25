@@ -38,9 +38,6 @@ class ApplicationRunner(object):
         # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
 
-        # Simplify the notifications
-        notifier = notification_interface
-
         return self.run_application(
             buffer_manager, wait_on_confirmation, notification_interface,
             executable_types, app_id, txrx, runtime, time_scale_factor,
