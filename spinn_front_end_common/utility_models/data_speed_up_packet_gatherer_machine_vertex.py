@@ -1418,7 +1418,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_packets += ceildiv(
                 length_via_format2,
                 WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_TRANSACTION)
-        log.info("missing packets = {}", n_packets)
+        # self._print_missing_n_packets(n_packets)
 
         # transmit missing sequence as a new SDP packet
         first = True
@@ -1618,6 +1618,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         for seq_num in sorted(seq_nums):
             log.info("from list I'm missing sequence num {}", seq_num)
+
+    @staticmethod
+    def _print_missing_n_packets(n_packets):
+        """ Debug printer for the number of missing packets from the pile
+
+        :param n_packets: the number of packets
+        :rtype: None
+        """
+        log.info("missing packets = {}", n_packets)
 
     @staticmethod
     def _print_out_packet_data(data, position):
