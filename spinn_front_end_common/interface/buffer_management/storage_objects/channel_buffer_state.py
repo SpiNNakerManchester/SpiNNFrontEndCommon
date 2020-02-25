@@ -66,23 +66,16 @@ class ChannelBufferState(object):
             current_read, end_address, region_id, missing_info,
             last_buffer_operation):
         """
-        :param start_address: start buffering area memory address (32 bits)
-        :type start_address: int
-        :param current_write: address where data was last written (32 bits)
-        :type current_write: int
-        :param current_read: address where data was last read (32 bits)
-        :type current_read: int
-        :param end_address: \
+        :param int start_address: start buffering area memory address (32 bits)
+        :param int current_write: address where data was last written (32 bits)
+        :param int current_read: address where data was last read (32 bits)
+        :param int end_address:
             The address of first byte after the buffer (32 bits)
-        :type end_address: int
-        :param region_id: The ID of the region (8 bits)
-        :type region_id: int
-        :param missing_info: \
+        :param int region_id: The ID of the region (8 bits)
+        :param int missing_info:
             True if the region overflowed during the simulation (8 bits)
-        :type missing_info: int
-        :param last_buffer_operation: \
+        :param int last_buffer_operation:
             Last operation performed on the buffer - read or write (8 bits)
-        :type last_buffer_operation: int
         """
         # pylint: disable=too-many-arguments
         self._start_address = start_address
@@ -148,10 +141,9 @@ class ChannelBufferState(object):
     @staticmethod
     def create_from_bytearray(data):
         """
-        :param data: The contents of the buffer state structure on SpiNNaker.
-        :type data: bytearray
-        :rtype: \
-            ~spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState
+        :param bytearray data:
+            The contents of the buffer state structure on SpiNNaker.
+        :rtype: ChannelBufferState
         """
         (start_address, current_write, current_dma_write, current_read,
          end_address, region_id, missing_info, last_buffer_operation) = \
@@ -165,9 +157,9 @@ class ChannelBufferState(object):
             end_address, region_id, missing_info, last_buffer_operation)
         return buffer_state
 
-    @staticmethod
-    def size_of_channel_state():
+    @classmethod
+    def size_of_channel_state(cls):
         """
         :rtype: int
         """
-        return ChannelBufferState.ChannelBufferStateSize
+        return cls.ChannelBufferStateSize
