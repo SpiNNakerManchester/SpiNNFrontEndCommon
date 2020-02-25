@@ -2508,6 +2508,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.__close_allocation_controller()
         self._state = Simulator_State.SHUTDOWN
 
+        try:
+            if "NotificationInterface" in self._last_run_outputs:
+                self._last_run_outputs["NotificationInterface"].close()
+        except Exception:
+            logger.exception(
+                "Error when closing Notifications")
+
     def __clear(self, clear_tags, clear_routing_tables):
         # if stopping on machine, clear IP tags and
         if clear_tags:
