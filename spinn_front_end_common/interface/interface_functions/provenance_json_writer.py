@@ -30,7 +30,6 @@ class ProvenanceJSONWriter(object):
     __slots__ = []
 
     def __call__(self, provenance_data_items, provenance_data_path):
-
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
         for name, group in itertools.groupby(

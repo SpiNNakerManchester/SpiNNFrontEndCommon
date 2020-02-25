@@ -27,6 +27,7 @@ class AbstractHasProfileData(object):
     def get_profile_data(self, transceiver, placement):
         """ Get the profile data recorded during simulation
 
-        :rtype:\
-            :py:class:`spinn_front_end_common.interface.profiling.profile_data.ProfileData`
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placement placement:
+        :rtype: ~spinn_front_end_common.interface.profiling.ProfileData
         """

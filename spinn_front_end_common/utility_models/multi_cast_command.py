@@ -24,23 +24,21 @@ class MultiCastCommand(object):
             self, key, payload=None, time=None, repeat=0,
             delay_between_repeats=0):
         """
-        :param key: The key of the command
-        :type key: int
+        :param int key: The key of the command
         :param payload: The payload of the command
-        :type payload: int
+        :type payload: int or None
         :param time: The time within the simulation at which to send the\
             command, or None if this is not a timed command
-        :type time: int
-        :param repeat: The number of times that the command should be\
-            repeated after sending it once. This could be used to ensure that\
-            the command is sent despite lost packets. Must be between 0 and\
-            65535
-        :type repeat: int
-        :param delay_between_repeats: The amount of time in microseconds to\
-            wait between sending repeats of the same command. Must be between\
-            0 and 65535, and must be 0 if repeat is 0
-        :type delay_between_repeats: int
-        :raise SpynnakerException: If the repeat or delay are out of range
+        :type time: int or None
+        :param int repeat:
+            The number of times that the command should be repeated after
+            sending it once. This could be used to ensure that the command is
+            sent despite lost packets. Must be between 0 and 65535
+        :param int delay_between_repeats:
+            The amount of time in microseconds to wait between sending repeats
+            of the same command. Must be between 0 and 65535, and must be 0 if
+            repeat is 0
+        :raise ConfigurationException: If the repeat or delay are out of range
         """
         # pylint: disable=too-many-arguments
         if repeat < 0 or repeat > 0xFFFF:
@@ -62,30 +60,47 @@ class MultiCastCommand(object):
 
     @property
     def time(self):
+        """ The time within the simulation at which to send the\
+            command, or None if this is not a timed command
+
+        :rtype: int or None
+        """
         return self._time
 
     @property
     def is_timed(self):
+        """ Whether this command is a timed command.
+
+        :rtype: bool
+        """
         return self._time is not None
 
     @property
     def key(self):
+        """
+        :rtype: int
+        """
         return self._key
 
     @property
     def repeat(self):
+        """
+        :rtype: int
+        """
         return self._repeat
 
     @property
     def delay_between_repeats(self):
+        """
+        :rtype: int
+        """
         return self._delay_between_repeats
 
     @property
     def payload(self):
-        """ Get the payload of the command.
+        """ The payload of the command, or None if there is no payload.
 
-        :return: The payload of the command, or None if there is no payload
-        :rtype: int
+        :rtype: int or None
         """
         return self._payload
 
@@ -95,12 +110,11 @@ class MultiCastCommand(object):
 
     @property
     def is_payload(self):
-        """ Determine if this command has a payload. By default, this returns\
+        """ Whether this command has a payload. By default, this returns\
             True if the payload passed in to the constructor is not None, but\
             this can be overridden to indicate that a payload will be\
             generated, despite None being passed to the constructor
 
-        :return: True if there is a payload, False otherwise
         :rtype: bool
         """
         return self._payload is not None

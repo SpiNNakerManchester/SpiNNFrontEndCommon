@@ -27,6 +27,12 @@ _FOLDER_NAME = "routing_tables_from_machine"
 
 
 class RoutingTableFromMachineReport(object):
+    """
+    :param str report_default_directory:
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param int app_id:
+    """
     def __call__(
             self, report_default_directory, routing_tables):
 

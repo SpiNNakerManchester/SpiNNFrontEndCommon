@@ -71,26 +71,35 @@ class ProvidesProvenanceDataFromMachineImpl(
     def _n_additional_data_items(self):
         """
         :return: n_additional_data_items
+        :rtype: int
         """
 
     def reserve_provenance_data_region(self, spec):
         """
-        :param spec: The data specification being written.
-        :type spec: ~data_specification.DataSpecificationGenerator
+        :param ~data_specification.DataSpecificationGenerator spec:
+            The data specification being written.
         """
         spec.reserve_memory_region(
             self._provenance_region_id,
             self.get_provenance_data_size(self._n_additional_data_items),
             label="Provenance", empty=True)
 
-    @staticmethod
-    def get_provenance_data_size(n_additional_data_items):
+    @classmethod
+    def get_provenance_data_size(cls, n_additional_data_items):
+        """
+        :param int n_additional_data_items:
+        :rtype: int
+        """
         return (
             (ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES
              + n_additional_data_items) * BYTES_PER_WORD)
 
     def _get_provenance_region_address(self, transceiver, placement):
-
+        """
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placement placement:
+        :rtype: int
+        """
         # Get the App Data for the core
         app_data_base_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
@@ -103,6 +112,11 @@ class ProvidesProvenanceDataFromMachineImpl(
         return _ONE_WORD.unpack(base_address)[0]
 
     def _read_provenance_data(self, transceiver, placement):
+        """
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placement placement:
+        :rtype: iterable(int)
+        """
         provenance_address = self._get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(
@@ -114,6 +128,10 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     @staticmethod
     def _get_placement_details(placement):
+        """
+        :param ~pacman.model.placements.Placement placement:
+        :rtype: tuple(str,int,int,list(str))
+        """
         label = placement.vertex.label
         x = placement.x
         y = placement.y
@@ -123,17 +141,32 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     @staticmethod
     def _add_name(names, name):
+        """
+        :param iterable(str) names:
+        :param str name:
+        :rtype: list(str)
+        """
         new_names = list(names)
         new_names.append(name)
         return new_names
 
     @staticmethod
     def _add_names(names, extra_names):
+        """
+        :param iterable(str) names:
+        :param iterable(str) extra_names:
+        :rtype: list(str)
+        """
         new_names = list(names)
         new_names.extend(extra_names)
         return new_names
 
     def _read_basic_provenance_items(self, provenance_data, placement):
+        """
+        :param iterable(int) provenance_data:
+        :param ~pacman.model.placements.Placement placement:
+        :rtype: list(ProvenanceDataItem)
+        """
         transmission_event_overflow = provenance_data[
             self.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW.value]
         callback_queue_overloaded = provenance_data[
@@ -214,6 +247,10 @@ class ProvidesProvenanceDataFromMachineImpl(
         return data_items
 
     def _get_remaining_provenance_data_items(self, provenance_data):
+        """
+        :param list(ProvenanceDataItem) provenance_data:
+        :rtype: list(ProvenanceDataItem)
+        """
         return provenance_data[self.NUM_PROVENANCE_DATA_ENTRIES:]
 
     @overrides(
@@ -223,10 +260,10 @@ class ProvidesProvenanceDataFromMachineImpl(
     def get_provenance_data_from_machine(self, transceiver, placement):
         """ Retrieve the provenance data.
 
-        :param transceiver: How to talk to the machine
-        :type transceiver: ~spinnman.transceiver.Transceiver
-        :param placement: Which vertex are we retrieving from, and where was it
-        :type placement: ~pacman.model.placements.Placement
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            How to talk to the machine
+        :param ~pacman.model.placements.Placement placement:
+            Which vertex are we retrieving from, and where was it
         :rtype: \
             list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
