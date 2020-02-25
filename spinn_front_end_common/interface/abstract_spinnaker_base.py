@@ -1982,7 +1982,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["DatabaseFilePath"] = (
                 self._last_run_outputs["DatabaseFilePath"])
         if not self._use_virtual_board:
-            algorithms.append("NotificationProtocol")
+            algorithms.append("CreateNotificationProtocol")
 
         outputs = [
             "NoSyncChanges"

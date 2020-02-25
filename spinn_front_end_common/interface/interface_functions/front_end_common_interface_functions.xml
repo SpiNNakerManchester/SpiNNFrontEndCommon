@@ -1467,9 +1467,9 @@
             <param_type>DatabaseFilePath</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="NotificationProtocol">
+    <algorithm name="CreateNotificationProtocol">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>NotificationProtocol</python_class>
+        <python_class>CreateNotificationProtocol</python_class>
         <input_definitions>
             <parameter>
                 <param_name>wait_for_read_confirmation</param_name>
