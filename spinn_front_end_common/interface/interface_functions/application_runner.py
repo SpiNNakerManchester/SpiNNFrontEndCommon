@@ -32,22 +32,22 @@ class ApplicationRunner(object):
 
     # Wraps up as a PACMAN algorithm
     def __call__(
-            self, buffer_manager, wait_on_confirmation, notification_interface,
-            executable_types, app_id, txrx, runtime, time_scale_factor,
-            no_sync_changes, time_threshold, run_until_complete=False):
+            self, buffer_manager, notification_interface, executable_types,
+            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete=False):
         # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
 
         return self.run_application(
-            buffer_manager, wait_on_confirmation, notification_interface,
-            executable_types, app_id, txrx, runtime, time_scale_factor,
-            no_sync_changes, time_threshold, run_until_complete)
+            buffer_manager, notification_interface, executable_types,
+            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete)
 
     # The actual runner
     def run_application(
-            self, buffer_manager, wait_on_confirmation, notification_interface,
-            executable_types, app_id, txrx, runtime, time_scale_factor,
-            no_sync_changes, time_threshold, run_until_complete):
+            self, buffer_manager, notification_interface, executable_types,
+            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete):
         # pylint: disable=too-many-arguments
 
         # wait for all cores to be ready
@@ -61,8 +61,7 @@ class ApplicationRunner(object):
         buffer_manager.load_initial_buffers()
 
         # wait till external app is ready for us to start if required
-        if wait_on_confirmation:
-            notification_interface.wait_for_confirmation()
+        notification_interface.wait_for_confirmation()
 
         # set off the executables that are in sync state
         # (sending to all is just as safe)
