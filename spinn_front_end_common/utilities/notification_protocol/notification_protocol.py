@@ -172,6 +172,7 @@ class NotificationProtocol(object):
     def close(self):
         """ Closes the thread pool
         """
-        self._wait_pool.shutdown()
-        self._wait_futures = list()
-        self._wait_pool = None
+        if self._wait_pool:
+            self._wait_pool.shutdown()
+            self._wait_futures = list()
+            self._wait_pool = None
