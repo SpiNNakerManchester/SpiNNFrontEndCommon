@@ -105,7 +105,7 @@ class _Compression(object):
     """
 
     __slots__ = [
-        "_app_id",
+         "_app_id",
          "_binary_path",
          "_compress_as_much_as_possible",
          "_compress_only_when_needed",
