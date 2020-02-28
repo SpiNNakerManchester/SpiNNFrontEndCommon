@@ -25,11 +25,13 @@ class ProvenanceDataItem(object):
 
     def __init__(self, names, value, report=False, message=None):
         """
-        :param names: \
+        :param list(str) names:
             A list of strings representing the naming hierarchy of this item
         :param value: The value of the item
-        :param report: True if the item should be reported to the user
-        :param message: The message to send to the end user if report is True
+        :type value: int or float or str
+        :param bool report: True if the item should be reported to the user
+        :param str message:
+            The message to send to the end user if report is True
         """
         self._names = names
         self._value = value
@@ -39,24 +41,32 @@ class ProvenanceDataItem(object):
     @property
     def message(self):
         """ The message to report to the end user, or None if no message
+
+        :rtype: str
         """
         return self._message
 
     @property
     def report(self):
         """ True if this provenance data entry needs reporting to the end user
+
+        :rtype: bool
         """
         return self._report
 
     @property
     def names(self):
         """ The hierarchy of names of this bit of provenance data
+
+        :rtype: list(str)
         """
         return self._names
 
     @property
     def value(self):
         """ The value of the item
+
+        :rtype: int or float or str
         """
         return self._value
 

@@ -13,22 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from six import add_metaclass
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+import os
+from spinn_front_end_common.interface.provenance.sqllite_database import (
+    SqlLiteDatabase)
 
 
-@add_metaclass(AbstractBase)
-class AbstractProvidesLocalProvenanceData(object):
-    """ Indicates an object that provides locally obtained provenance data
+class ProvenanceSQLWriter(object):
+    """ Write provenance data into XML
     """
 
-    __slots__ = ()
+    __slots__ = []
 
-    @abstractmethod
-    def get_local_provenance_data(self):
-        """ Get an iterable of provenance data items
+    def __call__(self, provenance_data_items, provenance_data_path):
+        """ Writes provenance in SQL format
 
-        :return: the provenance items
-        :rtype: \
-            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
+        :param provenance_data_items: data items for provenance
+        :param provenance_data_path: the file path to store provenance in
+        :return: None
         """
+
+        database_file = os.path.join(
+            provenance_data_path, "provenance.sqlite3")
+        with SqlLiteDatabase(database_file) as db:
+            for item in provenance_data_items:
+                db.insert_item(item)
