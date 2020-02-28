@@ -41,6 +41,11 @@ class ConfigHandler(object):
     """
 
     __slots__ = [
+        #
+        "_app_data_runtime_folder",
+
+        #
+        "_app_data_top_simulation_folder",
 
         # the interface to the cfg files. supports get get_int etc
         "_config",
@@ -105,6 +110,8 @@ class ConfigHandler(object):
         if max_machine_core is not None:
             Machine.set_max_cores_per_chip(max_machine_core)
 
+        self._app_data_runtime_folder = None
+        self._app_data_top_simulation_folder = None
         self._json_folder = None
         self._provenance_file_path = None
         self._report_default_directory = None
@@ -299,6 +306,39 @@ class ConfigHandler(object):
             now.year, now.month, now.day,
             now.hour, now.minute, now.second, now.microsecond)
 
+    def set_up_output_application_data_specifics(self, n_calls_to_run):
+        """
+        :param int n_calls_to_run:
+            the counter of how many times run has been called.
+        """
+        where_to_write_application_data_files = self._config.get(
+            "Reports", "default_application_data_file_path")
+        if where_to_write_application_data_files == "DEFAULT":
+            where_to_write_application_data_files = os.getcwd()
+
+        application_generated_data_file_folder = self.child_folder(
+            where_to_write_application_data_files, APP_DIRNAME)
+        # add time stamped folder for this run
+        self._app_data_top_simulation_folder = self.child_folder(
+            application_generated_data_file_folder, self._this_run_time_string)
+
+        # remove folders that are old and above the limit
+        self._remove_excess_folders(
+            self._config.getint("Reports", "max_application_binaries_kept"),
+            application_generated_data_file_folder)
+
+        # store timestamp in latest/time_stamp
+        time_of_run_file_name = os.path.join(
+            self._app_data_top_simulation_folder, TIMESTAMP_FILENAME)
+        with open(time_of_run_file_name, "w") as f:
+            f.writelines(str(self._this_run_time_string))
+
+        # create sub folder within reports for sub runs
+        # (where changes need to be recorded)
+        self._app_data_runtime_folder = self.child_folder(
+            self._app_data_top_simulation_folder, "run_{}".format(
+                n_calls_to_run))
+
     def _set_up_output_folders(self, n_calls_to_run):
         """ Sets up all outgoing folders by creating a new timestamp folder
             for each and clearing
@@ -310,6 +350,9 @@ class ConfigHandler(object):
 
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
+
+        # set up application report folder
+        self.set_up_output_application_data_specifics(n_calls_to_run)
 
         if self._read_config_boolean("Reports",
                                      "writePacmanExecutorProvenance"):
@@ -344,9 +387,14 @@ class ConfigHandler(object):
         """ Write a finished file that allows file removal to only remove
             folders that are finished.
         """
-        report_file_name = os.path.join(self._report_simulation_top_directory,
-                                        FINISHED_FILENAME)
-        with open(report_file_name, "w") as f:
+        app_file_name = os.path.join(self._app_data_top_simulation_folder,
+                                     FINISHED_FILENAME)
+        with open(app_file_name, "w") as f:
+            f.writelines("finished")
+
+        app_file_name = os.path.join(self._report_simulation_top_directory,
+                                     FINISHED_FILENAME)
+        with open(app_file_name, "w") as f:
             f.writelines("finished")
 
     def _read_config(self, section, item):

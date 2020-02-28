@@ -45,11 +45,11 @@ class DatabaseInterface(object):
             self, machine_graph, user_create_database, tags,
             runtime, machine, data_n_timesteps, time_scale_factor,
             machine_time_step, placements, routing_infos, router_tables,
-            report_folder, create_atom_to_event_id_mapping=False,
+            database_directory, create_atom_to_event_id_mapping=False,
             application_graph=None, graph_mapper=None):
         # pylint: disable=too-many-arguments
 
-        self._writer = DatabaseWriter(report_folder)
+        self._writer = DatabaseWriter(database_directory)
         self._user_create_database = user_create_database
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)
