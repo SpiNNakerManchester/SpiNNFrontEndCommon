@@ -67,15 +67,14 @@ def run_system_application(
     binary_start_types = dict()
     if binaries_to_track is None:
         check_targets = executable_cores
-        for binary in executable_cores.binaries:
-            binary_start_types[binary] = ExecutableType.SYSTEM
     else:
         check_targets = ExecutableTargets()
         for binary_name in binaries_to_track:
             check_targets.add_subsets(
                 binary_name,
                 executable_cores.get_cores_for_binary(binary_name))
-            binary_start_types[binary_name] = ExecutableType.SYSTEM
+    for binary_name in executable_cores.binaries:
+        binary_start_types[binary_name] = ExecutableType.SYSTEM
 
     # Wait for the executable to finish
     try:

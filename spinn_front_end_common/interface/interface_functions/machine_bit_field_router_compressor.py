@@ -383,7 +383,9 @@ class MachineBitFieldRouterCompressor(object):
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
             transceiver, executable_targets, executable_finder,
-            provenance_file_path)
+            system_provenance_file_path=provenance_file_path,
+            app_provenance_file_path=None,
+            binary_executable_types=ExecutableType.SYSTEM)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
