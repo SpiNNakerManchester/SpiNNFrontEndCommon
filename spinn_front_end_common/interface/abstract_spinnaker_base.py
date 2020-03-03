@@ -1611,10 +1611,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 algorithms.append("WriteJsonMachine")
 
             if self._config.getboolean(
-                    "Reports", "write_json_machine_graph"):
-                algorithms.append("WriteJsonMachineGraph")
-
-            if self._config.getboolean(
                     "Reports", "write_json_placements"):
                 algorithms.append("WriteJsonPlacements")
 
@@ -1649,6 +1645,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             full = self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms")
         algorithms.extend(full.replace(" ", "").split(","))
+
+        # needs to happen after partitioning algorithms to get edge filtering
+        if self._config.getboolean(
+                "Reports", "write_json_graphs"):
+            algorithms.append("WriteJsonGraphs")
 
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
