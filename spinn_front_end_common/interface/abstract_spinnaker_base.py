@@ -1619,8 +1619,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 algorithms.append("WriteJsonRoutingTables")
 
             if self._config.getboolean(
-                    "Reports", "write_json_partition_n_keys_map"):
+                    "Reports", "write_json_graphs"):
+                algorithms.append("WriteJsonGraphs")
                 algorithms.append("WriteJsonPartitionNKeysMap")
+            else:
+                if self._config.getboolean(
+                        "Reports", "write_json_partition_n_keys_map"):
+                    algorithms.append("WriteJsonPartitionNKeysMap")
 
             # only add network specification report if there's
             # application vertices.
@@ -1645,11 +1650,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             full = self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms")
         algorithms.extend(full.replace(" ", "").split(","))
-
-        # needs to happen after partitioning algorithms to get edge filtering
-        if self._config.getboolean(
-                "Reports", "write_json_graphs"):
-            algorithms.append("WriteJsonGraphs")
 
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
