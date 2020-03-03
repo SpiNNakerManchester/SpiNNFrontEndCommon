@@ -857,8 +857,7 @@ static void data_in_clear_router(void) {
         if (rtr_mc_get(entry_id, &router_entry) &&
                 router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
                 router_entry.mask != INVALID_ROUTER_ENTRY_MASK) {
-            rtr_mc_set(entry_id, INVALID_ROUTER_ENTRY_KEY,
-                    INVALID_ROUTER_ENTRY_MASK, INVALID_ROUTER_ENTRY_ROUTE);
+            rtr_free(entry_id, 1);
         }
     }
     //io_printf(IO_BUF, "max free block is %d\n", rtr_alloc_max());
@@ -940,42 +939,63 @@ static INT_HANDLER process_mc_payload_packet(void) {
 //! \param[in] n_entries: how many router entries to read in
 static void data_in_load_router(
         router_entry_t *sdram_address, uint n_entries) {
-    uint count_failures = 0;
     //io_printf(IO_BUF, "Writing %u router entries\n", n_entries);
+    if (n_entries == 0) {
+        return;
+    }
+    uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
+    if (start_entry_id == 0) {
+        io_printf(IO_BUF, "Received error with requesting %u router entries."
+                " Shutting down\n", n_entries);
+        rt_error(RTE_SWERR);
+    }
+
     for (uint idx = 0; idx < n_entries; idx++) {
-        if (!rtr_mc_set(idx + N_BASIC_SYSTEM_ROUTER_ENTRIES,
-                sdram_address[idx].key, sdram_address[idx].mask,
-                sdram_address[idx].route)) {
-            // Couldn't set the entry!
-            count_failures++;
-            if (count_failures == 1) {
-                io_printf(IO_BUF,
-                        "Error setting router entry %u to entry %u "
-                        "(key=%x, mask=%x, route=%x)\n",
-                        idx, idx + N_BASIC_SYSTEM_ROUTER_ENTRIES,
-                        sdram_address[idx].key, sdram_address[idx].mask,
-                        sdram_address[idx].route);
+        // check for invalid entries (possible during alloc and free or
+        // just not filled in.
+        if (sdram_address[idx].key != INVALID_ROUTER_ENTRY_KEY &&
+                sdram_address[idx].mask != INVALID_ROUTER_ENTRY_MASK &&
+                sdram_address[idx].route != INVALID_ROUTER_ENTRY_ROUTE) {
+#if 0
+            // Produces quite a lot of debugging output when enabled
+            io_printf(IO_BUF,
+                    "Setting key %08x, mask %08x, route %08x for entry %u\n",
+                    sdram_address[idx].key, sdram_address[idx].mask,
+                    sdram_address[idx].route, idx + start_entry_id);
+#endif
+            // try setting the valid router entry
+            if (rtr_mc_set(idx + start_entry_id, sdram_address[idx].key,
+                    sdram_address[idx].mask, sdram_address[idx].route) != 1) {
+                io_printf(IO_BUF, "Failed to write router entry %d, "
+                        "with key %08x, mask %08x, route %08x\n",
+                        idx + start_entry_id, sdram_address[idx].key,
+                        sdram_address[idx].mask, sdram_address[idx].route);
             }
         }
-    }
-    if (count_failures > 1) {
-        io_printf(IO_BUF, "Also failed to set a further %u entries\n",
-                count_failures - 1);
     }
 }
 
 //! \brief reads in routers entries and places in application sdram location
 static void data_in_save_router(void) {
-    rtr_entry_t *rtr_copy = sv->rtr_copy;
-
+    rtr_entry_t router_entry;
+    application_table_n_valid_entries = 0;
     for (uint entry_id = N_BASIC_SYSTEM_ROUTER_ENTRIES, i = 0;
             entry_id < N_ROUTER_ENTRIES; entry_id++, i++) {
-        saved_application_router_table[i].key = rtr_copy[i].key;
-        saved_application_router_table[i].mask = rtr_copy[i].mask;
-        saved_application_router_table[i].route = rtr_copy[i].route;
+        (void) rtr_mc_get(entry_id, &router_entry);
+
+        if (router_entry.key != INVALID_ROUTER_ENTRY_KEY &&
+                router_entry.mask != INVALID_ROUTER_ENTRY_MASK &&
+                router_entry.route != INVALID_ROUTER_ENTRY_ROUTE) {
+            // move to sdram
+            saved_application_router_table[
+                    application_table_n_valid_entries].key = router_entry.key;
+            saved_application_router_table[
+                    application_table_n_valid_entries].mask = router_entry.mask;
+            saved_application_router_table[
+                    application_table_n_valid_entries].route = router_entry.route;
+            application_table_n_valid_entries++;
+        }
     }
-    application_table_n_valid_entries =
-            N_ROUTER_ENTRIES - N_BASIC_SYSTEM_ROUTER_ENTRIES;
 }
 
 //! \brief sets up system routes on router. required by the data in speed
