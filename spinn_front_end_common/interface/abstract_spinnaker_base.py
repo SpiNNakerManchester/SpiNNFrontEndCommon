@@ -1983,7 +1983,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs["DatabaseFilePath"] = (
                 self._last_run_outputs["DatabaseFilePath"])
         if not self._use_virtual_board:
-            algorithms.append("NotificationProtocol")
+            algorithms.append("CreateNotificationProtocol")
 
         outputs = [
             "NoSyncChanges"
@@ -2508,6 +2508,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.__close_transceiver(turn_off_machine)
         self.__close_allocation_controller()
         self._state = Simulator_State.SHUTDOWN
+
+        try:
+            if "NotificationInterface" in self._last_run_outputs:
+                self._last_run_outputs["NotificationInterface"].close()
+        except Exception:
+            logger.exception(
+                "Error when closing Notifications")
 
     def __clear(self, clear_tags, clear_routing_tables):
         # if stopping on machine, clear IP tags and
