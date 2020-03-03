@@ -1173,10 +1173,6 @@
                 <param_type>BufferManager</param_type>
             </parameter>
             <parameter>
-                <param_name>wait_on_confirmation</param_name>
-                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
-            </parameter>
-            <parameter>
                 <param_name>notification_interface</param_name>
                 <param_type>NotificationInterface</param_type>
             </parameter>
@@ -1215,7 +1211,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>buffer_manager</param_name>
-            <param_name>wait_on_confirmation</param_name>
             <param_name>notification_interface</param_name>
             <param_name>executable_types</param_name>
             <param_name>app_id</param_name>
@@ -1467,9 +1462,9 @@
             <param_type>DatabaseFilePath</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="NotificationProtocol">
+    <algorithm name="CreateNotificationProtocol">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>NotificationProtocol</python_class>
+        <python_class>CreateNotificationProtocol</python_class>
         <input_definitions>
             <parameter>
                 <param_name>wait_for_read_confirmation</param_name>
