@@ -27,13 +27,13 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class NotificationProtocolImpl(object):
+class NotificationProtocol(object):
     """ The protocol which hand shakes with external devices about the\
         database and starting execution
     """
     __slots__ = [
         "__database_message_connections",
-        "_sent_visualisation_confirmation",
+        "__sent_visualisation_confirmation",
         "__socket_addresses",
         "__wait_for_read_confirmation",
         "__wait_futures",
@@ -53,7 +53,7 @@ class NotificationProtocolImpl(object):
         self.__wait_for_read_confirmation = wait_for_read_confirmation
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
-        self._sent_visualisation_confirmation = False
+        self.__sent_visualisation_confirmation = False
         self.__database_message_connections = list()
         for socket_address in socket_addresses:
             self.__database_message_connections.append(EIEIOConnection(
@@ -67,9 +67,10 @@ class NotificationProtocolImpl(object):
 
         :rtype: None
         """
-        logger.info("** Awaiting for a response from an external source "
-                    "to state its ready for the simulation to start **")
-        wait(self.__wait_futures)
+        if self.__wait_for_read_confirmation:
+            logger.info("** Awaiting for a response from an external source "
+                        "to state its ready for the simulation to start **")
+            wait(self.__wait_futures)
         self.__wait_futures = list()
 
     def send_start_resume_notification(self):
@@ -118,8 +119,10 @@ class NotificationProtocolImpl(object):
 
         :param str database_path: the path to the database file
         """
-        self.__wait_futures.append(self.__wait_pool.submit(
-            self._send_read_notification, database_path))
+        notification_thread = self.__wait_pool.submit(
+                self._send_read_notification, database_path)
+        if self.__wait_for_read_confirmation:
+            self.__wait_futures.append(notification_thread)
 
     def _send_read_notification(self, database_path):
         """ Sends notifications to a list of socket addresses that the\
@@ -130,13 +133,13 @@ class NotificationProtocolImpl(object):
         """
         # noinspection PyBroadException
         try:
-            self._do_read_notify(database_path)
+            self.__do_read_notify(database_path)
         except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
-    def _do_read_notify(self, database_path):
-        self._sent_visualisation_confirmation = True
+    def __do_read_notify(self, database_path):
+        self.__sent_visualisation_confirmation = True
 
         # add file path to database into command message.
         if (database_path is not None and
@@ -176,6 +179,10 @@ class NotificationProtocolImpl(object):
                     "*** Failed to receive notification from external "
                     "application on {}:{} about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
+
+    @property
+    def sent_visualisation_confirmation(self):
+        return self.__sent_visualisation_confirmation
 
     def close(self):
         """ Closes the thread pool
