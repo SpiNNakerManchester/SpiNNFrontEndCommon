@@ -1798,10 +1798,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     "Reports", "write_routing_compression_checker_report"):
                 routing_tables_needed = True
                 algorithms.append("routingCompressionCheckerReport")
-            if self._config.getboolean(
-                    "Reports",
-                    "write_routing_table_compression_bit_field_summary"):
-                algorithms.append("BitFieldCompressorReport")
 
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(

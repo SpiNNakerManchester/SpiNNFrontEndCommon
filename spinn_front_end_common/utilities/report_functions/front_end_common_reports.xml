@@ -28,7 +28,7 @@
             </parameter>
             <parameter>
                 <param_name>provenance_items</param_name>
-                <param_type>ProvenanceItems</param_type>
+                <param_type>RouterCompressorProvenanceItems</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
