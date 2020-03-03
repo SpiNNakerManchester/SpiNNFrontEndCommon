@@ -67,10 +67,11 @@ class NotificationProtocol(object):
 
         :rtype: None
         """
-        logger.info("** Awaiting for a response from an external source "
-                    "to state its ready for the simulation to start **")
-        wait(self.__wait_futures)
-        self.__wait_futures = list()
+        if self._wait_for_read_confirmation:
+            logger.info("** Awaiting for a response from an external source "
+                        "to state its ready for the simulation to start **")
+            wait(self._wait_futures)
+        self._wait_futures = list()
 
     def send_start_resume_notification(self):
         """ Either waits till all sources have confirmed read the database\
@@ -118,8 +119,10 @@ class NotificationProtocol(object):
 
         :param str database_path: the path to the database file
         """
-        self.__wait_futures.append(self.__wait_pool.submit(
-            self._send_read_notification, database_path))
+        notification_thread = self._wait_pool.submit(
+                self._send_read_notification, database_path)
+        if self._wait_for_read_confirmation:
+            self._wait_futures.append(notification_thread)
 
     def _send_read_notification(self, database_path):
         """ Sends notifications to a list of socket addresses that the\
