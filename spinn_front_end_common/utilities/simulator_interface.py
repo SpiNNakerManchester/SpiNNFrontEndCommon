@@ -72,7 +72,6 @@ class SimulatorInterface(object):
 
         :rtype: int
         """
-        pass
 
     @abstractproperty
     def placements(self):
@@ -129,4 +128,3 @@ class SimulatorInterface(object):
         :return: lcm timestep in us
         :rtype: int
         """
-
