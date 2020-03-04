@@ -20,31 +20,52 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class ReadStatusProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to read the status of extra monitors.
+    """
+
     def __init__(self, connection_selector):
+        """
+        :param \
+            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
+            connection_selector:
+        """
         super(ReadStatusProcess, self).__init__(connection_selector)
         self._reinjection_status = dict()
 
-    def handle_reinjection_status_response(self, response):
+    def __handle_reinjection_status_response(self, response):
+        """
+        :param GetReinjectionStatusMessageResponse response:
+        """
         status = response.reinjection_functionality_status
-        self._reinjection_status[(response.sdp_header.source_chip_x,
-                                  response.sdp_header.source_chip_y)] = status
+        self._reinjection_status[response.sdp_header.source_chip_x,
+                                 response.sdp_header.source_chip_y] = status
 
     def get_reinjection_status(self, x, y, p):
+        """
+        :param int x:
+        :param int y:
+        :param int p:
+        :rtype: ReInjectionStatus
+        """
         self._reinjection_status = dict()
         self._send_request(GetReinjectionStatusMessage(x, y, p),
-                           callback=self.handle_reinjection_status_response)
+                           callback=self.__handle_reinjection_status_response)
         self._finish()
         self.check_for_error()
-        return self._reinjection_status[(x, y)]
+        return self._reinjection_status[x, y]
 
     def get_reinjection_status_for_core_subsets(
             self, core_subsets):
+        """
+        :param ~spinn_machine.CoreSubsets core_subsets:
+        :rtype: dict(tuple(int,int), ReInjectionStatus)
+        """
         self._reinjection_status = dict()
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(GetReinjectionStatusMessage(
                     core_subset.x, core_subset.y, processor_id),
-                    callback=self.handle_reinjection_status_response)
+                    callback=self.__handle_reinjection_status_response)
         self._finish()
         self.check_for_error()
         return self._reinjection_status

@@ -61,5 +61,4 @@ class GraphBinaryGatherer(object):
         if binary_path is None:
             raise ExecutableNotFoundException(binary_name)
 
-        self._exe_targets.add_processor(
-            binary_path, placement.x, placement.y, placement.p, exec_type)
+        self._exe_targets.place_binary(binary_path, placement, exec_type)
