@@ -32,6 +32,19 @@ REGION_STRUCT = struct.Struct("<{}I".format(MAX_MEM_REGIONS))
 
 class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        SpiNNMan transceiver for communication
+    :param ~pacman.model.placements.Placements placements:
+        the list of placements of the machine graph to cores
+    :param str hostname:
+        the machine name
+    :param str report_directory:
+        the location where reports are stored
+    :param bool write_text_specs:
+        True if the textual version of the specification is to be written
+    :param str application_data_file_path:
+        Folder where data specifications should be written to
     """
     __slots__ = []
 
@@ -39,16 +52,13 @@ class DSGRegionReloader(object):
             self, transceiver, placements, hostname, report_directory,
             write_text_specs, application_data_file_path, graph_mapper=None):
         """
-        :param transceiver: SpiNNMan transceiver for communication
-        :param placements: the list of placements of the machine graph to cores
-        :param hostname: the machine name
-        :param report_directory: the location where reports are stored
-        :param write_text_specs:\
-            True if the textual version of the specification is to be written
-        :param application_data_file_path:\
-            Folder where data specifications should be written to
-        :param graph_mapper:\
-            the mapping between application and machine graph
+        :param ~.Transceiver transceiver:
+        :param ~.Placements placements:
+        :param str hostname:
+        :param str report_directory:
+        :param bool write_text_specs:
+        :param str application_data_file_path:
+        :param ~.GraphMapper graph_mapper:
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
@@ -104,6 +114,12 @@ class DSGRegionReloader(object):
     def _regenerate_data_spec_for_vertices(
             self, placement, vertex, txrx, hostname, report_dir, write_text,
             app_data_dir):
+        """
+        :param ~.Placement placement:
+        :param ~.AbstractVertex vertex:
+        :param ~.Transceiver txrx:
+        :rtype: bool
+        """
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):
             return False

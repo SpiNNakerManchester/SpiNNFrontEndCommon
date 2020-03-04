@@ -21,6 +21,25 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 
 
 class BufferManagerCreator(object):
+    """ Creates a buffer manager.
+
+    :param ~pacman.placements.Placements placements:
+    :param ~pacman.model.tags.Tags tags:
+    :param ~spinnman.transceiever.Transceiver txrx:
+    :param bool uses_advanced_monitors:
+    :param str report_folder:
+        The path where the SQLite database holding the data will be placed,
+        and where any java provenance can be written.
+    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+    :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \
+            extra_monitor_to_chip_mapping:
+    :param dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex) \
+            packet_gather_cores_to_ethernet_connection_map:
+    :param ~spinn_machine.Machine machine:
+    :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) fixed_routes:
+    :param JavaCaller java_caller:
+    :rtype: BufferManager
+    """
     __slots__ = []
 
     def __call__(
@@ -35,18 +54,15 @@ class BufferManagerCreator(object):
         :param ~spinnman.transceiever.Transceiver txrx:
         :param bool uses_advanced_monitors:
         :param str report_folder:
-            The path where the SQLite database holding the data will be placed,
-            and where any java provenance can be written.
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
         :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \
                 extra_monitor_to_chip_mapping:
         :param dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex) \
                 packet_gather_cores_to_ethernet_connection_map:
         :param ~spinn_machine.Machine machine:
-        :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) \
-                fixed_routes:
+        :param dict(tuple(int,int),~.FixedRouteEntry) fixed_routes:
         :param JavaCaller java_caller:
-        :return:
+        :rtype: BufferManager
         """
         # pylint: disable=too-many-arguments
         progress = ProgressBar(placements.n_placements, "Initialising buffers")

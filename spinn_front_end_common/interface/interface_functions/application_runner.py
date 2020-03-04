@@ -26,9 +26,23 @@ logger = FormatAdapter(logging.getLogger(__name__))
 class ApplicationRunner(object):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
+
+    :param BufferManager buffer_manager:
+    :param NotificationProtocol notification_interface:
+    :param dict(ExecutableType,~spinn_machine.CoreSubsets) \
+            executable_types:
+    :param int app_id:
+    :param ~spinnman.transceiver.Transceiver txrx:
+    :param int runtime:
+    :param int time_scale_factor:
+    :param int no_sync_changes:
+    :param int time_threshold:
+    :param bool run_until_complete:
+    :rtype: int
+    :raises ConfigurationException:
     """
 
-    __slots__ = []
+    __slots__ = ["__txrx", "__app_id", "__executable_types"]
 
     # Wraps up as a PACMAN algorithm
     def __call__(
@@ -48,10 +62,28 @@ class ApplicationRunner(object):
             self, buffer_manager, notification_interface, executable_types,
             app_id, txrx, runtime, time_scale_factor, no_sync_changes,
             time_threshold, run_until_complete):
+        """
+        :param BufferManager buffer_manager:
+        :param NotificationProtocol notification_interface:
+        :param dict(ExecutableType,~spinn_machine.CoreSubsets) \
+                executable_types:
+        :param int app_id:
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param int runtime:
+        :param int time_scale_factor:
+        :param int no_sync_changes:
+        :param float time_threshold:
+        :param bool run_until_complete:
+        :rtype: int
+        :raises ConfigurationException:
+        """
         # pylint: disable=too-many-arguments
+        self.__txrx = txrx
+        self.__app_id = app_id
+        self.__executable_types = executable_types
 
         # wait for all cores to be ready
-        self._wait_for_start(txrx, app_id, executable_types)
+        self._wait_for_start()
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
@@ -69,8 +101,7 @@ class ApplicationRunner(object):
                 or ExecutableType.SYNC in executable_types):
             # locate all signals needed to set off executables
             sync_signal, no_sync_changes = \
-                self._determine_simulation_sync_signals(
-                    executable_types, no_sync_changes)
+                self._determine_simulation_sync_signals(no_sync_changes)
 
             # fire all signals as required
             txrx.send_signal(app_id, sync_signal)
@@ -85,8 +116,8 @@ class ApplicationRunner(object):
         else:
             try:
                 self._run_wait(
-                    txrx, app_id, executable_types, run_until_complete,
-                    runtime, time_scale_factor, time_threshold)
+                    run_until_complete, runtime, time_scale_factor,
+                    time_threshold)
             finally:
                 # Stop the buffer manager after run
                 buffer_manager.stop()
@@ -97,47 +128,57 @@ class ApplicationRunner(object):
 
         return no_sync_changes
 
-    def _run_wait(self, txrx, app_id, executable_types, run_until_complete,
-                  runtime, time_scale_factor, time_threshold):
-        # pylint: disable=too-many-arguments
+    def _run_wait(self, run_until_complete, runtime, time_scale_factor,
+                  time_threshold):
+        """
+        :param bool run_until_complete:
+        :param int runtime:
+        :param int time_scale_factor:
+        :param float time_threshold:
+        """
         if not run_until_complete:
             time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
             logger.info(
                 "Application started; waiting {}s for it to stop",
                 time_to_wait)
             time.sleep(time_to_wait)
-            self._wait_for_end(txrx, app_id, executable_types,
-                               timeout=time_threshold)
+            self._wait_for_end(timeout=time_threshold)
         else:
             logger.info("Application started; waiting until finished")
-            self._wait_for_end(txrx, app_id, executable_types)
+            self._wait_for_end()
 
-    @staticmethod
-    def _wait_for_start(txrx, app_id, executable_types, timeout=None):
-        for executable_type in executable_types:
-            txrx.wait_for_cores_to_be_in_state(
-                executable_types[executable_type], app_id,
+    def _wait_for_start(self, timeout=None):
+        """
+        :param timeout:
+        :type timeout: float or None
+        """
+        for executable_type in self.__executable_types:
+            self.__txrx.wait_for_cores_to_be_in_state(
+                self.__executable_types[executable_type], self.__app_id,
                 executable_type.start_state, timeout=timeout)
 
-    @staticmethod
-    def _wait_for_end(txrx, app_id, executable_types, timeout=None):
-        for executable_type in executable_types:
-            txrx.wait_for_cores_to_be_in_state(
-                executable_types[executable_type], app_id,
+    def _wait_for_end(self, timeout=None):
+        """
+        :param timeout:
+        :type timeout: float or None
+        """
+        for executable_type in self.__executable_types:
+            self.__txrx.wait_for_cores_to_be_in_state(
+                self.__executable_types[executable_type], self.__app_id,
                 executable_type.end_state, timeout=timeout)
 
-    @staticmethod
-    def _determine_simulation_sync_signals(executable_types, no_sync_changes):
+    def _determine_simulation_sync_signals(self, no_sync_changes):
         """ Determines the start states, and creates core subsets of the\
             states for further checks.
 
-        :param no_sync_changes: sync counter
-        :param executable_types: the types of executables
+        :param int no_sync_changes: sync counter
         :return: the sync signal and updated no_sync_changes
+        :rtype: tuple(~.Signal, int)
+        :raises ConfigurationException:
         """
         sync_signal = None
 
-        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
+        if ExecutableType.USES_SIMULATION_INTERFACE in self.__executable_types:
             if no_sync_changes % 2 == 0:
                 sync_signal = Signal.SYNC0
             else:
@@ -148,7 +189,7 @@ class ApplicationRunner(object):
 
         # handle the sync states, but only send once if they work with \
         # the simulation interface requirement
-        if ExecutableType.SYNC in executable_types:
+        if ExecutableType.SYNC in self.__executable_types:
             if sync_signal == Signal.SYNC1:
                 raise ConfigurationException(
                     "There can only be one SYNC signal per run. This is "

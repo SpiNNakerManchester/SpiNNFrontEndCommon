@@ -23,12 +23,21 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class EdgeToNKeysMapper(object):
     """ Works out the number of keys needed for each edge.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+    :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
+    :raises: ConfigurationException
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph=None, graph_mapper=None):
-
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.GraphMapper graph_mapper:
+        :rtype: ~.DictBasedMachinePartitionNKeysMap
+        :raises: ConfigurationException
+        """
         if machine_graph is None:
             raise ConfigurationException(
                 "A machine graph is required for this mapper. "
@@ -42,6 +51,11 @@ class EdgeToNKeysMapper(object):
 
     def _allocate_by_app_graph_simple(
             self, machine_graph, graph_mapper):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.GraphMapper graph_mapper:
+        :rtype: ~.DictBasedMachinePartitionNKeysMap
+        """
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
@@ -64,6 +78,10 @@ class EdgeToNKeysMapper(object):
         return n_keys_map
 
     def _allocate_by_machine_graph_only(self, machine_graph):
+        """
+        :param ~.MachineGraph machine_graph:
+        :rtype: ~.DictBasedMachinePartitionNKeysMap
+        """
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
@@ -85,6 +103,11 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_application_partition(partition, n_keys_map, graph_mapper):
+        """
+        :param ~.OutgoingEdgePartition partition:
+        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
+        :param ~.GraphMapper graph_mapper:
+        """
         vertex_slice = graph_mapper.get_slice(
             partition.pre_vertex)
         vertex = graph_mapper.get_application_vertex(
@@ -98,6 +121,10 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_machine_partition(partition, n_keys_map):
+        """
+        :param ~.OutgoingEdgePartition partition:
+        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
+        """
         if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
             n_keys = partition.pre_vertex.get_n_keys_for_partition(
                 partition, None)
