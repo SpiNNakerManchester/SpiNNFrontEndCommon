@@ -218,8 +218,7 @@ class _Compression(object):
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
             self._transceiver, executable_targets, executable_finder,
-            self._provenance_file_path, self._provenance_file_path,
-            {self._binary_path: ExecutableType.SYSTEM})
+            self._provenance_file_path, self._provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
