@@ -22,7 +22,24 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DatabaseInterface(object):
-    """ Writes a database of the graph(s) and other information
+    """ Writes a database of the graph(s) and other information.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+    :param str user_create_database:
+    :param ~pacman.model.tags.Tags tags:
+    :param int runtime:
+    :param ~spinn_machine.Machine machine:
+    :param int data_n_timesteps:
+    :param int time_scale_factor:
+    :param int machine_time_step:
+    :param ~pacman.model.placements.Placements placements:
+    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
+    :param str database_directory:
+    :param bool create_atom_to_event_id_mapping:
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+    :return: Database interface, where the database is located
+    :rtype: tuple(DatabaseInterface, str)
     """
 
     __slots__ = [
@@ -47,6 +64,24 @@ class DatabaseInterface(object):
             machine_time_step, placements, routing_infos, router_tables,
             database_directory, create_atom_to_event_id_mapping=False,
             application_graph=None):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param str user_create_database:
+        :param ~.Tags tags:
+        :param int runtime:
+        :param ~.Machine machine:
+        :param int data_n_timesteps:
+        :param int time_scale_factor:
+        :param int machine_time_step:
+        :param ~.Placements placements:
+        :param ~.RoutingInfo routing_infos:
+        :param ~.MulticastRoutingTables router_tables:
+        :param str database_directory:
+        :param bool create_atom_to_event_id_mapping:
+        :param ~.ApplicationGraph application_graph:
+        :return: Database interface, where the database is located
+        :rtype: tuple(DatabaseInterface, str)
+        """
         # pylint: disable=too-many-arguments
 
         self._writer = DatabaseWriter(database_directory)
@@ -67,12 +102,18 @@ class DatabaseInterface(object):
 
     @property
     def needs_database(self):
+        """
+        :rtype: bool
+        """
         if self._user_create_database == "None":
             return self._needs_db
         return self._user_create_database == "True"
 
     @property
     def database_file_path(self):
+        """
+        :rtype: str or None
+        """
         if self.needs_database:
             return self._writer.database_path
         return None
@@ -82,19 +123,19 @@ class DatabaseInterface(object):
             runtime, app_graph, machine_graph, data_n_timesteps,
             placements, routing_infos, router_tables, tags, create_mapping):
         """
-        :param machine:
-        :param time_scale_factor:
-        :param machine_time_step:
-        :param runtime:
-        :param app_graph:
-        :param machine_graph:
-        :param data_n_timesteps: \
+        :param ~.Machine machine:
+        :param int time_scale_factor:
+        :param int machine_time_step:
+        :param int runtime:
+        :param ~.ApplicationGraph app_graph:
+        :param ~.MachineGraph machine_graph:
+        :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
-        :param placements:
-        :param routing_infos:
-        :param router_tables:
-        :param tags:
-        :param create_mapping:
+        :param ~.Placements placements:
+        :param ~.RoutingInfo routing_infos:
+        :param ~.MulticastRoutingTables router_tables:
+        :param ~.Tags tags:
+        :param bool create_mapping:
         :return:
         """
         # pylint: disable=too-many-arguments

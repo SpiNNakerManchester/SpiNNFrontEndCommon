@@ -28,6 +28,23 @@ from spinn_front_end_common.interface.ds.data_specification_targets import (
 
 class GraphDataSpecificationWriter(object):
     """ Executes the data specification generation step.
+
+    :param ~pacman.model.placements.Placements placements:
+        placements of machine graph to cores
+    :param str hostname: SpiNNaker machine name
+    :param str report_default_directory: the location where reports are stored
+    :param bool write_text_specs:
+        True if the textual version of the specification is to be written
+    :param ~spinn_machine.Machine machine:
+        the python representation of the SpiNNaker machine
+    :param int data_n_timesteps:
+        The number of timesteps for which data space will been reserved
+    :param list(~pacman.model.placements.Placement) placement_order:
+        the optional order in which placements should be examined
+    :return: DSG targets (map of placement tuple and filename)
+    :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
+    :raises ConfigurationException:
+        If the DSG asks to use more SDRAM than is available.
     """
 
     __slots__ = (
@@ -57,17 +74,15 @@ class GraphDataSpecificationWriter(object):
             report_default_directory, write_text_specs,
             machine, data_n_timesteps, placement_order=None):
         """
-        :param placements: placements of machine graph to cores
-        :param hostname: SpiNNaker machine name
-        :param report_default_directory: the location where reports are stored
-        :param write_text_specs:\
-            True if the textual version of the specification is to be written
-        :param machine: the python representation of the SpiNNaker machine
-        :param data_n_timesteps: The number of timesteps for which data space\
-            will been reserved
-        :param placement:\
-            the optional order in which placements should be examined
-        :return: DSG targets (map of placement tuple and filename)
+        :param ~.Placements placements:
+        :param str hostname:
+        :param str report_default_directory:
+        :param bool write_text_specs:
+        :param ~.Machine machine:
+        :param int data_n_timesteps:
+        :param list(~.Placement) placement_order:
+        :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
+        :raises ConfigurationException:
         """
         # pylint: disable=too-many-arguments, too-many-locals
         # pylint: disable=attribute-defined-outside-init
@@ -114,11 +129,13 @@ class GraphDataSpecificationWriter(object):
     def __generate_data_spec_for_vertices(
             self, pl, vertex, targets, data_n_timesteps):
         """
-        :param pl: placement of machine graph to cores
-        :param vertex: the specific vertex to write DSG for.
-        :param targets: DataSpecificationTargets
+        :param ~.Placement pl: placement of machine graph to cores
+        :param ~.AbstractVertex vertex:
+            the specific vertex to write DSG for.
+        :param DataSpecificationTargets targets:
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
+        :raises ConfigurationException:
         """
         # if the vertex can generate a DSG, call it
         if not isinstance(vertex, AbstractGeneratesDataSpecification):

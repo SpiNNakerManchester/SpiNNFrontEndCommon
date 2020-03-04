@@ -106,19 +106,29 @@ class _HBPJobController(MachineAllocationController):
 class HBPAllocator(object):
     """ Request a machine from the HBP remote access server that will fit\
         a number of chips.
+
+    :param str hbp_server_url:
+        The URL of the HBP server from which to get the machine
+    :param int total_run_time: The total run time to request
+    :param int n_chips: The number of chips required.
+        Only used if n_boards is None
+    :param int n_boards: The number of boards required
+    :rtype: tuple(str, int, object, bool, bool, object, object,
+        MachineAllocationController)
+    :raises PacmanConfigurationException:
+        If neither `n_chips` or `n_boards` provided
     """
 
     def __call__(
             self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
-        :param hbp_server_url: \
-            The URL of the HBP server from which to get the machine
-        :param total_run_time: The total run time to request
-        :param n_chips: The number of chips required.
-            Only used if n_boards is None
-        :param n_boards: The number of boards required
+        :param str hbp_server_url:
+        :param int total_run_time:
+        :param int n_chips:
+        :param int n_boards:
+        :rtype: tuple(str, int, object, bool, bool, object, object,
+            MachineAllocationController)
         :raises PacmanConfigurationException:
-            If neither n_chips or n_baords provided
         """
 
         url = hbp_server_url

@@ -19,7 +19,7 @@ from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
 from spinnman.constants import EIEIO_COMMAND_IDS
 from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocolImpl)
+    NotificationProtocol)
 
 
 class TestStartResumeNotificationProtocol(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestStartResumeNotificationProtocol(unittest.TestCase):
         listener = EIEIOConnection()
         socket_addresses = [SocketAddress(
             "127.0.0.1", listener.local_port, None)]
-        protocol = NotificationProtocolImpl(socket_addresses, False)
+        protocol = NotificationProtocol(socket_addresses, False)
         protocol.send_start_resume_notification()
         message = listener.receive_eieio_message(timeout=10)
         self.assertIsInstance(message, EIEIOCommandMessage)

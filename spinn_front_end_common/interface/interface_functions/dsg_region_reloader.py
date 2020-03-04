@@ -32,6 +32,19 @@ REGION_STRUCT = struct.Struct("<{}I".format(MAX_MEM_REGIONS))
 
 class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        SpiNNMan transceiver for communication
+    :param ~pacman.model.placements.Placements placements:
+        the list of placements of the machine graph to cores
+    :param str hostname:
+        the machine name
+    :param str report_directory:
+        the location where reports are stored
+    :param bool write_text_specs:
+        True if the textual version of the specification is to be written
+    :param str application_data_file_path:
+        Folder where data specifications should be written to
     """
     __slots__ = [
         "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
@@ -40,14 +53,12 @@ class DSGRegionReloader(object):
             self, transceiver, placements, hostname, report_directory,
             write_text_specs, application_data_file_path):
         """
-        :param transceiver: SpiNNMan transceiver for communication
-        :param placements: the list of placements of the machine graph to cores
-        :param hostname: the machine name
-        :param report_directory: the location where reports are stored
-        :param write_text_specs:\
-            True if the textual version of the specification is to be written
-        :param application_data_file_path:\
-            Folder where data specifications should be written to
+        :param ~.Transceiver transceiver:
+        :param ~.Placements placements:
+        :param str hostname:
+        :param str report_directory:
+        :param bool write_text_specs:
+        :param str application_data_file_path:
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
@@ -102,6 +113,11 @@ class DSGRegionReloader(object):
         os.rmdir(app_data_dir)
 
     def _regenerate_data_spec_for_vertices(self, placement, vertex):
+        """
+        :param ~.Placement placement:
+        :param ~.AbstractVertex vertex:
+        :rtype: bool
+        """
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):
             return False

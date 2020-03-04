@@ -23,9 +23,7 @@ class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
 
     @overrides(
         AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping)
-    def routing_key_partition_atom_mapping(
-            self, routing_info, partition):
-        # pylint: disable=arguments-differ
+    def routing_key_partition_atom_mapping(self, routing_info, partition):
         vertex_slice = partition.pre_vertex.vertex_slice
         if vertex_slice is not None:
             keys = routing_info.get_keys(vertex_slice.n_atoms)
