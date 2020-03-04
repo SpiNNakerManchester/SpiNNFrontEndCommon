@@ -14,9 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
-    import (
-        GetReinjectionStatusMessage)
+    import GetReinjectionStatusMessage
 from spinnman.processes import AbstractMultiConnectionProcess
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 
 
 class ReadStatusProcess(AbstractMultiConnectionProcess):
@@ -46,5 +49,8 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
                     core_subset.x, core_subset.y, processor_id),
                     callback=self.handle_reinjection_status_response)
         self._finish()
-        self.check_for_error()
+        if self.is_error():
+            logger.warn("Error(s) reading reinjection status:")
+            for (e, tb) in zip(self._exceptions, self._tracebacks):
+                traceback.print_exception(type(e), e, tb)
         return self._reinjection_status
