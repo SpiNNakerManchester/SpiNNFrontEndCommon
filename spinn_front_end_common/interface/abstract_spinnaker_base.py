@@ -838,7 +838,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.verify_not_running()
 
         # verify that we can keep doing auto pause and resume
-        if self._has_ran:
+        if self._has_ran and not self._use_virtual_board:
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in self._executable_types)
@@ -921,10 +921,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
-        for executable_type in self._executable_types:
-            if not executable_type.supports_auto_pause_and_resume:
-                self._config.set("Buffers",
-                                 "use_auto_pause_and_resume", "False")
+        if not self._use_virtual_board:
+            for executable_type in self._executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    self._config.set("Buffers",
+                                     "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
@@ -1642,14 +1643,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         algorithms.extend(full.replace(" ", "").split(","))
 
         # add check for algorithm start type
-        algorithms.append("LocateExecutableStartType")
+        if not self._use_virtual_board:
+            algorithms.append("LocateExecutableStartType")
 
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph", "ExecutableTypes"
+            "MemoryMachineGraph"
         ]
+
+        if not self._use_virtual_board:
+            outputs.append("ExecutableTypes")
 
         if add_data_speed_up:
             outputs.append("MemoryFixedRoutes")
