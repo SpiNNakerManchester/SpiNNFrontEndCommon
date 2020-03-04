@@ -48,8 +48,7 @@ class AbstractSendsBuffersFromHost(object):
         """ Get the size of the buffer to be used in SDRAM on the machine\
             for the region in bytes
 
-        :param region: The region to get the buffer size of
-        :type region: int
+        :param int region: The region to get the buffer size of
         :return: The size of the buffer space in bytes
         :rtype: int
         """
@@ -58,8 +57,7 @@ class AbstractSendsBuffersFromHost(object):
     def is_next_timestamp(self, region):
         """ Determine if there is another timestamp with data to be sent
 
-        :param region: The region to determine if there is more data for
-        :type region: int
+        :param int region: The region to determine if there is more data for
         :return: Whether there is more data
         :rtype: bool
         """
@@ -69,8 +67,7 @@ class AbstractSendsBuffersFromHost(object):
         """ Get the next timestamp at which there are still keys to be sent\
             for the given region
 
-        :param region: The region to get the timestamp for
-        :type region: int
+        :param int region: The region to get the timestamp for
         :return: The timestamp of the next available keys
         :rtype: int
         """
@@ -80,10 +77,9 @@ class AbstractSendsBuffersFromHost(object):
         """ Determine if there are still keys to be sent at the given\
             timestamp for the given region
 
-        :param region: The region to determine if there are keys for
-        :type region: int
-        :param timestamp: The timestamp to determine if there are more keys for
-        :type timestamp: int
+        :param int region: The region to determine if there are keys for
+        :param int timestamp:
+            The timestamp to determine if there are more keys for
         :return: Whether there are more keys to send for the parameters
         :rtype: bool
         """
@@ -92,8 +88,7 @@ class AbstractSendsBuffersFromHost(object):
     def get_next_key(self, region):
         """ Get the next key in the given region
 
-        :param region: The region to get the next key from
-        :type region: int
+        :param int region: The region to get the next key from
         :return: The next key, or None if there are no more keys
         :rtype: int
         """
@@ -103,8 +98,7 @@ class AbstractSendsBuffersFromHost(object):
         """ Return true if there are no spikes to be buffered for the\
             specified region
 
-        :param region: The region to get the next key from
-        :type region: int
+        :param int region: The region to get the next key from
         :return: Whether there are no keys to send for the region
         :rtype: bool
         """
@@ -114,6 +108,5 @@ class AbstractSendsBuffersFromHost(object):
         """ Rewinds the internal buffer in preparation of re-sending\
             the spikes
 
-        :param region: The region to rewind
-        :type region: int
+        :param int region: The region to rewind
         """

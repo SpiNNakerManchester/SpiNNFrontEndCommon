@@ -30,23 +30,32 @@ class ExecutableTargets(SuperExecTargets):
     @overrides(SuperExecTargets.add_subsets, extend_defaults=True,
                additional_arguments={"executable_type"})
     def add_subsets(self, binary, subsets, executable_type=None):
+        """
+        :type binary: str
+        :type subsets: ~spinn_machine.CoreSubsets
+        :param ExecutableType executable_type:
+        """
         SuperExecTargets.add_subsets(self, binary, subsets)
         if executable_type is not None:
             self._binary_type_map[executable_type].add(binary)
 
-    @overrides(SuperExecTargets.add_processor, extend_defaults=True,
-               additional_arguments={"executable_type"})
-    def add_processor(self, binary, chip_x, chip_y, chip_p,
-                      executable_type=None):
-        SuperExecTargets.add_processor(self, binary, chip_x, chip_y, chip_p)
+    def place_binary(self, binary, placement, executable_type=None):
+        """
+        :param str binary:
+        :param ~pacman.model.placements.Placement placement:
+        :param ExecutableType executable_type:
+        """
+        self.add_processor(binary, placement.x, placement.y, placement.p)
         if executable_type is not None:
             self._binary_type_map[executable_type].add(binary)
 
     def get_n_cores_for_executable_type(self, executable_type):
-        """ returns the number of cores that the executable type is using
+        """ get the number of cores that the executable type is using
 
-        :param executable_type: the executable type for locating n cores of
+        :param ExecutableType executable_type:
+            the executable type for locating n cores of
         :return: the number of cores using this executable type
+        :rtype: int
         """
         return sum(
             len(self.get_cores_for_binary(aplx))
@@ -55,8 +64,9 @@ class ExecutableTargets(SuperExecTargets):
     def get_binaries_of_executable_type(self, executable_type):
         """ get the binaries of a given a executable type
 
-        :param execute_type: the executable type enum value
+        :param ExecutableType execute_type: the executable type enum value
         :return: iterable of binaries with that executable type
+        :rtype: iterable(str)
         """
         return self._binary_type_map[executable_type]
 
@@ -64,5 +74,6 @@ class ExecutableTargets(SuperExecTargets):
         """ get the executable types in the set of binaries
 
         :return: iterable of the executable types in this binary set.
+        :rtype: iterable(ExecutableType)
         """
         return self._binary_type_map.keys()
