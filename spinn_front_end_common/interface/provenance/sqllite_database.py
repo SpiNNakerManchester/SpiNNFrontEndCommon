@@ -88,7 +88,8 @@ class SqlLiteDatabase(object):
                 "INSERT OR IGNORE INTO source(source_name) VALUES(?)",
                 ((s,) for s in set(item.names[0] for item in items)))
             self._db.executemany(
-                "INSERT OR IGNORE INTO description(description_name) VALUES(?)",
+                "INSERT OR IGNORE INTO description(description_name) "
+                "VALUES(?)",
                 ((d,) for d in set(item.names[-1] for item in items)))
             self._db.executemany(
                 "INSERT INTO provenance(source_id, description_id, the_value) "
