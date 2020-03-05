@@ -48,7 +48,7 @@ from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_generator import MachineGenerator
-from .notification_protocol import NotificationProtocol
+from .create_notification_protocol import CreateNotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
 from .pre_allocate_resources_for_chip_power_monitor import (
     PreAllocateResourcesForChipPowerMonitor)
@@ -75,7 +75,7 @@ __all__ = [
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "DatabaseInterface",
+    "ChipRuntimeUpdater", "CreateNotificationProtocol", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
@@ -88,7 +88,7 @@ __all__ = [
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
     "LocateExecutableStartType", "LoadFixedRoutes", "MachineGenerator",
-    "NotificationProtocol", "PlacementsProvenanceGatherer",
+    "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
