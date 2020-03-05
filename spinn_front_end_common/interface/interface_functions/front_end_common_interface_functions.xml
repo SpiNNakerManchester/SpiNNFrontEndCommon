@@ -962,9 +962,14 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>width</param_name>
-            <param_name>height</param_name>
-        </required_inputs>
+            <one_of>
+                <all_of>
+                   <param_name>width</param_name>
+                   <param_name>height</param_name>
+                </all_of>
+                <param_name>json_path</param_name>
+            </one_of>
+       </required_inputs>
         <optional_inputs>
             <param_name>version</param_name>
             <param_name>down_chips</param_name>
