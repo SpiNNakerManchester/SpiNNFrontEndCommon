@@ -484,6 +484,14 @@ class HostExecuteDataSpecification(object):
 
     def __python_execute(
             self, core, reader, writer_func, base_address, size_allocated):
+        """
+        :param tuple(int,int,int) core:
+        :param ~.AbstractDataReader reader:
+        :param callable(tuple(int,int,int,bytearray),None) writer_func:
+        :param int base_address:
+        :param int size_allocated:
+        :rtype: DataWritten
+        """
         x, y, p = core
 
         # Maximum available memory.

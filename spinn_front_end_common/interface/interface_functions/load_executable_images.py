@@ -33,16 +33,33 @@ class LoadExecutableImages(object):
     __slots__ = []
 
     def load_app_images(self, executable_targets, app_id, transceiver):
+        """
+        :param ExecutableTargets executable_targets:
+        :param int app_id:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        """
         self.__load_images(executable_targets, app_id, transceiver,
                            lambda ty: ty is not ExecutableType.SYSTEM,
                            "Loading executables onto the machine")
 
     def load_sys_images(self, executable_targets, app_id, transceiver):
+        """
+        :param ExecutableTargets executable_targets:
+        :param int app_id:
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        """
         self.__load_images(executable_targets, app_id, transceiver,
                            lambda ty: ty is ExecutableType.SYSTEM,
                            "Loading system executables onto the machine")
 
     def __load_images(self, executable_targets, app_id, txrx, filt, label):
+        """
+        :param ExecutableTargets executable_targets:
+        :param int app_id:
+        :param ~.Transceiver txrx:
+        :param callable(ExecutableType,bool) filt:
+        :param str label
+        """
         # Compute what work is to be done here
         binaries, cores = self.__filter(executable_targets, filt)
 
@@ -58,6 +75,11 @@ class LoadExecutableImages(object):
 
     @staticmethod
     def __filter(targets, filt):
+        """
+        :param ExecutableTargets executable_targets:
+        :param callable(ExecutableType,bool) filt:
+        :rtype: tuple(list(str), ExecutableTargets)
+        """
         binaries = []
         cores = ExecutableTargets()
         for exe_type in targets.executable_types_in_binary_set():
@@ -70,6 +92,11 @@ class LoadExecutableImages(object):
 
     @staticmethod
     def __start_simulation(executable_targets, txrx, app_id):
+        """
+        :param ExecutableTargets executable_targets:
+        :param ~.Transceiver txrx:
+        :param int app_id:
+        """
         txrx.wait_for_cores_to_be_in_state(
             executable_targets.all_core_subsets, app_id, [CPUState.READY])
         txrx.send_signal(app_id, Signal.START)

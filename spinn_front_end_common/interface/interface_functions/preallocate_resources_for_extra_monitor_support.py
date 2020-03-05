@@ -24,18 +24,28 @@ from spinn_front_end_common.utility_models import (
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
+    """ Allocates resources for the extra monitors.
+
+    :param ~spinn_machine.Machine machine: SpiNNaker machine object
+    :param pre_allocated_resources: resources already preallocated
+    :type pre_allocated_resources:
+        ~pacman.model.resources.PreAllocatedResourceContainer
+    :param int n_cores_to_allocate: how many gatherers to use per chip
+    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
+    """
     def __call__(
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
         """
-        :param machine: SpiNNaker machine object
-        :param pre_allocated_resources: resources already preallocated
-        :param n_cores_to_allocate: how many gatherers to use
+        :param ~.Machine machine:
+        :param ~.PreAllocatedResourceContainer pre_allocated_resources:
+        :param int n_cores_to_allocate:
+        :rtype: ~.PreAllocatedResourceContainer
         """
 
         progress = ProgressBar(
             len(list(machine.ethernet_connected_chips)) + machine.n_chips,
-            "Pre allocating resources for Extra Monitor support vertices")
+            "Preallocating resources for Extra Monitor support vertices")
 
         sdrams = list()
         cores = list()
@@ -67,9 +77,9 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """ Adds the second monitor preallocations, which reflect the\
             reinjector and data extractor support
 
-        :param cores: the storage of core requirements
-        :param machine: the spinnMachine instance
-        :param progress: the progress bar to operate one
+        :param list(~.CoreResource) cores: the storage of core requirements
+        :param ~.Machine machine: the spinnMachine instance
+        :param ~.ProgressBar progress: the progress bar to operate one
         :rtype: None
         """
         extra_usage = \
@@ -85,12 +95,15 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """ Adds the packet gathering functionality tied into the data\
             extractor within each chip
 
-        :param sdrams: the preallocated SDRAM requirement for these vertices
-        :param cores: the preallocated cores requirement for these vertices
-        :param tags: the preallocated tags requirement for these vertices
-        :param machine: the spinnMachine instance
-        :param progress: the progress bar to update as needed
-        :param n_cores_to_allocate: \
+        :param list(~.SpecificChipSDRAMResource) sdrams:
+            the preallocated SDRAM requirement for these vertices
+        :param list(~.CoreResource) cores:
+            the preallocated cores requirement for these vertices
+        :param list(~.SpecificBoardIPtagResource) tags:
+            the preallocated tags requirement for these vertices
+        :param ~.Machine machine: the spinnMachine instance
+        :param ~.ProgressBar progress: the progress bar to update as needed
+        :param int n_cores_to_allocate:
             how many packet gathers to allocate per chip
         :rtype: None
         """

@@ -24,6 +24,15 @@ _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 class InsertChipPowerMonitorsToGraphs(object):
     """ Adds chip power monitors into a given graph.
+
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine as discovered
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param int n_samples_per_recording:
+    :param int sampling_frequency:
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
     """
 
     def __call__(
@@ -32,10 +41,12 @@ class InsertChipPowerMonitorsToGraphs(object):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
 
-        :param machine: the SpiNNaker machine as discovered
-        :param application_graph: the application graph
-        :param machine_graph: the machine graph
-        :return: mapping between LPG parameters and LPG vertex
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param int n_samples_per_recording:
+        :param int sampling_frequency:
+        :param ~.ApplicationGraph application_graph:
+        :param ~.GraphMapper graph_mapper:
         """
         # pylint: disable=too-many-arguments
 
@@ -52,6 +63,14 @@ class InsertChipPowerMonitorsToGraphs(object):
     def _add_power_monitor_for_chip(
             chip, machine_graph, application_graph, graph_mapper,
             sampling_frequency, n_samples_per_recording):
+        """
+        :param ~.Chip chip:
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
+        :param ~.GraphMapper graph_mapper:
+        :param int sampling_frequency:
+        :param int n_samples_per_recording:
+        """
         # build constraint
         constraint = ChipAndCoreConstraint(chip.x, chip.y)
 

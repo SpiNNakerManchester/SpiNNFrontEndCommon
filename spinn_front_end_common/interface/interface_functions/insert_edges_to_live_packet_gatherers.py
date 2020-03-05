@@ -21,6 +21,24 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class InsertEdgesToLivePacketGatherers(object):
     """ Add edges from the recorded vertices to the local Live PacketGatherers.
+
+    :param live_packet_gatherer_parameters: the set of parameters
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~pacman.model.placements.Placements placements:
+        the placements object
+    :param live_packet_gatherers_to_vertex_mapping:
+        the mapping of LPG parameters and the machine vertices associated
+        with it
+    :type live_packet_gatherers_to_vertex_mapping:
+        dict(LivePacketGatherParameters,
+        dict(tuple(int,int),LivePacketGatherMachineVertex))
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
     """
 
     def __call__(
@@ -28,16 +46,19 @@ class InsertEdgesToLivePacketGatherers(object):
             live_packet_gatherers_to_vertex_mapping, machine,
             machine_graph, application_graph=None, graph_mapper=None):
         """
-        :param live_packet_gatherer_parameters: the set of parameters
-        :param placements: the placements object
-        :param live_packet_gatherers_to_vertex_mapping:\
-            the mapping of LPG parameters and the machine vertices associated\
-            with it
-        :param machine: the SpiNNaker machine
-        :param machine_graph: the machine graph
-        :param application_graph: the application graph
-        :param graph_mapper: \
-            the mapping between application and machine graphs
+        :param live_packet_gatherer_parameters:
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.Placements placements:
+        :param live_packet_gatherers_to_vertex_mapping:
+        :type live_packet_gatherers_to_vertex_mapping:
+            dict(LivePacketGatherParameters,
+            dict(tuple(int,int), LivePacketGatherMachineVertex))
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
+        :param ~.GraphMapper graph_mapper:
         :rtype: None
         """
         # pylint: disable=too-many-arguments
@@ -60,6 +81,16 @@ class InsertEdgesToLivePacketGatherers(object):
             self, app_graph, mapper, machine, placements, m_graph, vertex,
             lpg_to_vertex, lpg_params, partition_ids):
         # pylint: disable=too-many-arguments
+        """
+        :param ~.ApplicationGraph app_graph:
+        :param ~.GraphMapper mapper:
+        :param ~.Machine machine:
+        :param ~.Placements placements:
+        :param ~.MachineGraph m_graph:
+        :param ~.ApplicationVertex vertex:
+        :param LivePacketGatherParameters lpg_params:
+        :param list(str) partition_ids:
+        """
 
         # Find all Live Gatherer machine vertices
         m_lpgs = lpg_to_vertex[lpg_params]
@@ -93,15 +124,14 @@ class InsertEdgesToLivePacketGatherers(object):
             placements, machine_graph, partition_ids):
         """ Locates and places an edge for a machine vertex.
 
-        :param machine_vertex: the machine vertex that needs an edge to a LPG
-        :param m_lpgs:\
-            dict of chip placed on to gatherers that are associated with the\
-            parameters
-        :param machine: the SpiNNaker machine object
-        :param placements: the placements object
-        :param machine_graph: the machine graph object
-        :param partition_id: the partition ID to add to the edge
+        :param ~.MachineVertex machine_vertex:
+        :param m_lpgs:
+        :param ~.MachineVertex machine:
+        :param ~.Placements placements:
+        :param ~.MachineGraph machine_graph:
+        :param str partition_id:
         :return: machine edge and the LPG vertex
+        :rtype: tuple(dict(str,~.MachineEdge),LivePacketGatherMachineVertex)
         """
         # pylint: disable=too-many-arguments
 
@@ -125,13 +155,15 @@ class InsertEdgesToLivePacketGatherers(object):
             partition_ids, machine_edges, app_graph_edges):
         """ Handles changes to the application graph and graph mapper.
 
-        :param application_graph: the application graph
-        :param graph_mapper: the graph mapper
-        :param machine_lpg: the machine LPG
-        :param vertex: the application vertex to link to
-        :param partition_id: the partition ID to put the edge on
+        :param ~.ApplicationGraph application_graph:
+        :param ~.GraphMapper graph_mapper:
+        :param LivePacketGatherMachineVertex machine_lpg:
+        :param ~.ApplicationVertex vertex:
+        :param str partition_id:
+        :param dict(str,~.MachineEdge) machine_edges:
+        :param dict(str,~.ApplicationEdge) app_graph_edges:
         :return: the application edge for this vertex and LPG
-        :rtype: ~pacman.model.graph.application.ApplicationEdge
+        :rtype: dict(str,~.ApplicationEdge)
         """
         # pylint: disable=too-many-arguments
 
@@ -161,12 +193,14 @@ class InsertEdgesToLivePacketGatherers(object):
             machine vertex in question, or the LPG on 0, 0 if a closer one\
             can't be found.
 
-        :param machine_vertex: the machine vertex to locate the nearest LPG to
-        :param machine_lpgs: dict of gatherers by chip placed on
-        :param machine: the SpiNNaker machine object
-        :type machine: ~spinn_machine.Machine
-        :param placements: the placements object
+        :param ~.MachineVertex m_vertex:
+            the machine vertex to locate the nearest LPG to
+        :param dict(tuple(int,int),LivePacketGatherMachineVertex) machine_lpgs:
+            dict of gatherers by chip placed on
+        :param ~.Machine machine: the SpiNNaker machine object
+        :param ~.Placements placements: the placements object
         :return: the local LPG
+        :rtype: LivePacketGatherMachineVertex
         :raise ConfigurationException: if a local gatherer cannot be found
         """
 
