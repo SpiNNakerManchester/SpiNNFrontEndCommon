@@ -22,15 +22,25 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class LocateExecutableStartType(object):
+    """ Discovers where applications of particular types need to be launched.
+
+    :param ~pacman.model.graphs.machine.MachineGraph graph:
+    :param ~pacman.model.placements.Placements placements:
+    :param ~spinn_utilities.executable_finder.ExecutableFinder
+            executable_finder:
+    :rtype: tuple(
+        dict(ExecutableType,~spinn_machine.CoreSubsets)
+        or list(ExecutableType), dict(str,ExecutableType))
+    """
+
     def __call__(self, graph, placements, executable_finder):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph graph:
-        :param ~pacman.model.placements.Placements placements:
-        :param ~spinn_utilities.executable_finder.ExecutableFinder
-                executable_finder:
+        :param ~.MachineGraph graph:
+        :param ~.Placements placements:
+        :param ~.ExecutableFinder executable_finder:
         :rtype: tuple(
-            dict(ExecutableType,~spinn_machine.CoreSubsets)
-            or list(ExecutableType), dict(str,ExecutableType))
+            dict(ExecutableType, ~.CoreSubsets)
+            or list(ExecutableType), dict(str, ExecutableType))
         """
         if not graph.vertices:
             return [ExecutableType.NO_APPLICATION], {}
@@ -83,9 +93,9 @@ class LocateExecutableStartType(object):
     @staticmethod
     def _add_vertex_to_subset(machine_vertex, placements, core_subsets):
         """
-        :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
-        :param ~pacman.model.placements.Placements placements:
-        :param ~spinn_machine.CoreSubsets core_subsets:
+        :param ~.MachineVertex machine_vertex:
+        :param ~.Placements placements:
+        :param ~.CoreSubsets core_subsets:
         """
         placement = placements.get_placement_of_vertex(machine_vertex)
         core_subsets.add_processor(x=placement.x, y=placement.y,

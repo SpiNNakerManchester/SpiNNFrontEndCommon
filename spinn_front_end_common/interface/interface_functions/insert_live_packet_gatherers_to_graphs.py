@@ -24,7 +24,21 @@ _LPG_SLICE = Slice(0, 0)
 
 
 class InsertLivePacketGatherersToGraphs(object):
-    """ Adds LPGs as required into a given graph
+    """ Adds LPGs as required into a given graph.
+
+    :param live_packet_gatherer_parameters:
+        the Live Packet Gatherer parameters requested by the script
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
+    :param ~pacman.model.graphs.machine.MachinGraph machine_graph:
+        the machine graph
+    :return: mapping between LPG parameters and LPG vertex
+    :rtype: dict(LivePacketGatherParameters,
+        dict(tuple(int,int),LivePacketGatherMachineVertex))
     """
 
     def __call__(
@@ -33,16 +47,12 @@ class InsertLivePacketGatherersToGraphs(object):
         """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:
-            the Live Packet Gatherer parameters requested by the script
         :type live_packet_gatherer_parameters:
-            iterable(LivePacketGatherParameters)
-        :param machine: the SpiNNaker machine as discovered
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :param ~pacman.model.graphs.machine.MachinGraph machine_graph:
-            the machine graph
-        :return: mapping between LPG parameters and LPG vertex
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.Machine machine:
+        :param ~.ApplicationGraph application_graph:
+        :param ~.MachinGraph machine_graph:
         :rtype: dict(LivePacketGatherParameters,
             dict(tuple(int,int),LivePacketGatherMachineVertex))
         """
@@ -81,12 +91,12 @@ class InsertLivePacketGatherersToGraphs(object):
         """ Adds a LPG vertex to a machine graph that has an associated\
             application graph.
 
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+        :param ~.ApplicationGraph app_graph:
         :rtype: LivePacketGatherMachineVertex
         """
         # pylint: disable=too-many-arguments
 
-        app_vtx = self._create_vertex(LivePacketGather, params)
+        app_vtx = self.__create_vertex(LivePacketGather, params)
         app_graph.add_vertex(app_vtx)
         resources = app_vtx.get_resources_used_by_atoms(_LPG_SLICE)
         vtx = app_vtx.create_machine_vertex(
@@ -100,10 +110,10 @@ class InsertLivePacketGatherersToGraphs(object):
         """ Adds a LPG vertex to a machine graph without an associated\
             application graph.
 
-        :param ~pacman.model.graphs.machine.MachineGraph app_graph:
+        :param ~.MachineGraph app_graph:
         :rtype: LivePacketGatherMachineVertex
         """
-        vtx = self._create_vertex(
+        vtx = self.__create_vertex(
             LivePacketGatherMachineVertex, params,
             app_vertex=None, vertex_slice=_LPG_SLICE,
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
@@ -111,11 +121,12 @@ class InsertLivePacketGatherersToGraphs(object):
         return vtx
 
     @staticmethod
-    def _create_vertex(lpg_vertex_class, params, **kwargs):
+    def __create_vertex(lpg_vertex_class, params, **kwargs):
         """ Creates a Live Packet Gather Vertex
 
-        :param lpg_vertex_class: the type to create for the vertex
-        :param params: the parameters of the vertex
+        :param class lpg_vertex_class: the type to create for the vertex
+        :param LivePacketGatherParameters params:
+            the parameters of the vertex
         :return: the vertex built
         """
         return lpg_vertex_class(

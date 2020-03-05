@@ -25,18 +25,32 @@ from spinn_front_end_common.utility_models import (
 
 
 class PreAllocateResourcesForLivePacketGatherers(object):
-    """ Adds Live Packet Gatherer resources as required for a machine
+    """ Adds Live Packet Gatherer resources as required for a machine.
+
+    :param live_packet_gatherer_parameters:
+        the LPG parameters requested by the script
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~pacman.model.resources.PreAllocatedResourceContainer \
+            pre_allocated_resources:
+        other preallocated resources
+    :param ~.Machine machine: the SpiNNaker machine as discovered
+    :return: preallocated resources
+    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
 
     def __call__(
             self, live_packet_gatherer_parameters, machine,
             pre_allocated_resources=None):
         """
-        :param live_packet_gatherer_parameters:\
-            the LPG parameters requested by the script
-        :param previous_allocated_resources: other preallocated resources
-        :param machine: the SpiNNaker machine as discovered
-        :return: preallocated resources
+        :param live_packet_gatherer_parameters:
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.PreAllocatedResourceContainer pre_allocated_resources:
+        :param ~.Machine machine:
+        :rtype: ~.PreAllocatedResourceContainer
         """
 
         progress = ProgressBar(
@@ -71,6 +85,17 @@ class PreAllocateResourcesForLivePacketGatherers(object):
     @staticmethod
     def _add_chip_lpg_reqs(
             lpg_parameters, chip, lpg_sdram, sdrams, cores, iptags):
+        """
+        :param lpg_parameters:
+        :type lpg_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.Chip chip:
+        :param int lpg_sdram:
+        :param list(~.SpecificChipSDRAMResource) sdrams:
+        :param list(~.CoreResource) cores:
+        :param list(~.SpecificBoardTagResource) iptags:
+        """
         # pylint: disable=too-many-arguments
         sdram_reqs = 0
         core_reqs = 0

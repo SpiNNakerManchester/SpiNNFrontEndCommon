@@ -26,18 +26,30 @@ from spinn_front_end_common.utility_models import (
 class InsertEdgesToExtraMonitorFunctionality(object):
     """ Inserts edges between vertices who use MC speed up and its local\
         MC data gatherer.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph instance
+    :param ~pacman.model.placements.Placements placements: the placements
+    :param ~spinn_machine.Machine machine: the machine object
+    :param vertex_to_ethernet_connected_chip_mapping:
+        mapping between ethernet connected chips and packet gatherers
+    :type vertex_to_ethernet_connected_chip_mapping:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
     """
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None):
         """
-        :param machine_graph: the machine graph instance
-        :param placements: the placements
-        :param machine: the machine object
-        :param application_graph: the application graph
-        :param vertex_to_ethernet_connected_chip_mapping: \
-            mapping between ethernet connected chips and packet gatherers
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :param ~.Machine machine:
+        :param vertex_to_ethernet_connected_chip_mapping:
+        :type vertex_to_ethernet_connected_chip_mapping:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param ~.ApplicationGraph application_graph:
         :rtype: None
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
@@ -73,9 +85,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             self, vertex, machine_graph, application_graph):
         """ Inserts edges as required for a given vertex
 
-        :param vertex: the extra monitor core
-        :param machine_graph: machine graph object
-        :param application_graph: app graph object; not None
+        :param ExtraMonitorSupportMachineVertex vertex: the extra monitor core
+        :param ~.MachineGraph machine_graph: machine graph object
+        :param ~.ApplicationGraph application_graph: app graph object; not None
         :rtype: None
         """
         gatherer = self._get_gatherer_vertex(vertex)
@@ -99,9 +111,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
     def _process_mach_graph_vertex(self, vertex, machine_graph):
         """ Inserts edges as required for a given vertex
 
-        :param vertex: the extra monitor core
-        :param machine_graph: machine graph object, which is not associated\
-            with any application graph
+        :param ExtraMonitorSupportMachineVertex vertex: the extra monitor core
+        :param ~.MachineGraph machine_graph:
+            machine graph object, which is not associated with any application
+            graph
         :rtype: None
         """
         gatherer = self._get_gatherer_vertex(vertex)
@@ -114,6 +127,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
     def _get_gatherer_vertex(self, vertex):
+        """
+        :param ExtraMonitorSupportMachineVertex vertex:
+        :rtype: DataSpeedUpPacketGatherMachineVertex
+        """
         placement = self._placements.get_placement_of_vertex(vertex)
         chip = self._machine.get_chip_at(placement.x, placement.y)
         ethernet_chip = self._machine.get_chip_at(
@@ -122,6 +139,12 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
     @staticmethod
     def __get_app_edge(graph, source, destination):
+        """
+        :param ~.ApplicationGraph graph:
+        :param ~.ApplicationVertex source:
+        :param ~.ApplicationVertex destination:
+        :rtype: ~.ApplicationEdge
+        """
         for edge in graph.get_edges_ending_at_vertex(destination):
             if edge.pre_vertex == source:
                 return edge
@@ -131,9 +154,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
     def __has_edge_already(source, destination, graph):
         """ Checks if a edge already exists
 
-        :param source: the source of the edge
-        :param destination: destination of the edge
-        :param graph: which graph to look in
+        :param ~.AbstractVertex source: the source of the edge
+        :param ~.AbstractVertex destination: destination of the edge
+        :param ~.Graph graph: which graph to look in
         :return: Whether the edge was found
         :rtype: bool
         """

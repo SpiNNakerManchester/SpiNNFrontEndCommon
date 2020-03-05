@@ -21,7 +21,19 @@ from spinn_front_end_common.utility_models import (
 
 
 class PreAllocateResourcesForChipPowerMonitor(object):
-    """ Adds chip power monitor resources as required for a machine
+    """ Adds chip power monitor resources as required for a machine.
+
+    :param pre_allocated_resources: other preallocated resources
+    :type pre_allocated_resources:
+        ~pacman.model.resources.PreAllocatedResourceContainer
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
+    :param int n_samples_per_recording:
+        how many samples between record entries
+    :param int sampling_frequency: the frequency of sampling
+    :param int time_scale_factor: the time scale factor
+    :param int machine_time_step: the machine time step
+    :return: preallocated resources
+    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer
     """
 
     def __call__(
@@ -29,13 +41,13 @@ class PreAllocateResourcesForChipPowerMonitor(object):
             sampling_frequency, time_scale_factor, machine_time_step,
             pre_allocated_resources=None):
         """
-        :param pre_allocated_resources: other preallocated resources
-        :param machine: the SpiNNaker machine as discovered
-        :param n_samples_per_recording: how many samples between record entries
-        :param sampling_frequency: the frequency of sampling
-        :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
-        :return: preallocated resources
+        :param ~.PreAllocatedResourceContainer pre_allocated_resources:
+        :param ~.Machine machine:
+        :param int n_samples_per_recording:
+        :param int sampling_frequency:
+        :param int time_scale_factor:
+        :param int machine_time_step:
+        :rtype: ~.PreAllocatedResourceContainer
         """
         # pylint: disable=too-many-arguments
 

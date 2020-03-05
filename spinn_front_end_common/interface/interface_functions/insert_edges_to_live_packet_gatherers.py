@@ -21,6 +21,24 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class InsertEdgesToLivePacketGatherers(object):
     """ Add edges from the recorded vertices to the local Live PacketGatherers.
+
+    :param live_packet_gatherer_parameters: the set of parameters
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~pacman.model.placements.Placements placements:
+        the placements object
+    :param live_packet_gatherers_to_vertex_mapping:
+        the mapping of LPG parameters and the machine vertices associated
+        with it
+    :type live_packet_gatherers_to_vertex_mapping:
+        dict(LivePacketGatherParameters,
+        dict(tuple(int,int),LivePacketGatherMachineVertex))
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
     """
 
     def __call__(
@@ -28,14 +46,18 @@ class InsertEdgesToLivePacketGatherers(object):
             live_packet_gatherers_to_vertex_mapping, machine,
             machine_graph, application_graph=None):
         """
-        :param live_packet_gatherer_parameters: the set of parameters
-        :param placements: the placements object
+        :param live_packet_gatherer_parameters:
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.Placements placements:
         :param live_packet_gatherers_to_vertex_mapping:
-            the mapping of LPG parameters and the machine vertices associated\
-            with it
-        :param machine: the SpiNNaker machine
-        :param machine_graph: the machine graph
-        :param application_graph: the application graph
+        :type live_packet_gatherers_to_vertex_mapping:
+            dict(LivePacketGatherParameters,
+            dict(tuple(int,int), LivePacketGatherMachineVertex))
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
         :rtype: None
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
@@ -72,6 +94,8 @@ class InsertEdgesToLivePacketGatherers(object):
         """
         :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
         :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
+        :param LivePacketGatherParameters lpg_params:
+        :param list(str) p_ids:
         """
         if not app_vertex.machine_vertices or not p_ids:
             return
@@ -103,6 +127,8 @@ class InsertEdgesToLivePacketGatherers(object):
         """
         :param ~pacman.model.graphs.machine.MachineGraph m_graph:
         :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+        :param LivePacketGatherParameters lpg_params:
+        :param list(str) p_ids:
         """
         # Find all Live Gatherer machine vertices
         lpg = self._find_closest_live_packet_gatherer(m_vertex, lpg_params)
@@ -118,8 +144,10 @@ class InsertEdgesToLivePacketGatherers(object):
 
         :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
             the machine vertex to locate the nearest LPG to
-        :param lpg_params: parameters to decide what LPG is to be used
+        :param LivePacketGatherParameters lpg_params:
+            parameters to decide what LPG is to be used
         :return: the local LPG
+        :rtype: LivePacketGatherMachineVertex
         :raise ConfigurationException: if a local gatherer cannot be found
         """
         # locate location of vertex in machine
