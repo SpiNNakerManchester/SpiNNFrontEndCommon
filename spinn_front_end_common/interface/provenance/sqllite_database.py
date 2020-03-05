@@ -82,6 +82,28 @@ class SqlLiteDatabase(object):
             sql = f.read()
         self._db.executescript(sql)
 
+    def insert_items(self, items):
+        with self._db:
+            self._db.executemany(
+                "INSERT OR IGNORE INTO source(source_name) VALUES(?)",
+                ((s,) for s in set(item.names[0] for item in items)))
+            self._db.executemany(
+                "INSERT OR IGNORE INTO description(description_name) VALUES(?)",
+                ((d,) for d in set(item.names[-1] for item in items)))
+            self._db.executemany(
+                "INSERT INTO provenance(source_id, description_id, the_value) "
+                "VALUES((SELECT source_id FROM source WHERE source_name = ?), "
+                "(SELECT description_id FROM description "
+                "WHERE description_name = ?), ?)",
+                (self.__condition_row(item) for item in items))
+
+    @staticmethod
+    def __condition_row(item):
+        value = item.value
+        if isinstance(value, datetime.timedelta):
+            value = value.microseconds
+        return item.names[0], item.names[-1], value
+
     def insert_item(self, item):
         with self._db:
             cursor = self._db.cursor()
