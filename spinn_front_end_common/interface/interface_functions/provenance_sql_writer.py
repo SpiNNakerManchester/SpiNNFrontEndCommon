@@ -35,5 +35,4 @@ class ProvenanceSQLWriter(object):
         database_file = os.path.join(
             provenance_data_path, "provenance.sqlite3")
         with SqlLiteDatabase(database_file) as db:
-            for item in provenance_data_items:
-                db.insert_item(item)
+            db.insert_items(provenance_data_items)
