@@ -26,7 +26,8 @@ from spinn_utilities.overrides import overrides
 
 
 class _UpdateRuntimeRequest(AbstractSCPRequest):
-    def __init__(self, x, y, p, current_timestep, until_timestep, infinite_run):
+    def __init__(
+            self, x, y, p, current_timestep, until_timestep, infinite_run):
         """
         :param int x:
         :param int y:
