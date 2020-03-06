@@ -21,7 +21,18 @@ from spinn_front_end_common.abstract_models import (
 
 
 class ProcessPartitionConstraints(object):
+    """ Adds constraints to partitions if the vertices at either end of the\
+        partition request it.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+    """
+
     def __call__(self, machine_graph, application_graph=None):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
+        """
         if application_graph is not None:
             # generate progress bar
             progress = ProgressBar(
@@ -50,6 +61,9 @@ class ProcessPartitionConstraints(object):
 
     @staticmethod
     def _process_application_partition(partition):
+        """
+        :param ~.OutgoingEdgePartition partition:
+        """
         vertex = partition.pre_vertex.app_vertex
         if isinstance(vertex, AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(
@@ -63,6 +77,9 @@ class ProcessPartitionConstraints(object):
 
     @staticmethod
     def _process_machine_partition(partition):
+        """
+        :param ~.OutgoingEdgePartition partition:
+        """
         if isinstance(partition.pre_vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(

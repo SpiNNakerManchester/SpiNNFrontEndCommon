@@ -25,17 +25,29 @@ logger = logging.getLogger(__name__)
 
 
 class ProfileDataGatherer(object):
+    """ Gets all the profiling data recorded by vertices and writes it to\
+        files.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the SpiNNMan interface object
+    :param ~pacman.model.placements.Placements placements:
+        The placements of the vertices
+    :param str provenance_file_path:
+        The location to store the profile data
+    :param int machine_time_step:
+        machine time step in ms
+    """
+
     __slots__ = []
 
     def __call__(
             self, transceiver, placements, provenance_file_path,
             machine_time_step):
         """
-        :param transceiver: the SpiNNMan interface object
-        :param placements: The placements of the vertices
-        :param has_ran: token that states that the simulation has ran
-        :param provenance_file_path: The location to store the profile data
-        :param machine_time_step: machine time step in ms
+        :param ~.Transceiver transceiver:
+        :param ~.Placements placements:
+        :param str provenance_file_path:
+        :param int machine_time_step:
         """
         # pylint: disable=too-many-arguments
         machine_time_step_ms = (
@@ -54,33 +66,36 @@ class ProfileDataGatherer(object):
                     self._write(placement, profile_data, machine_time_step_ms,
                                 provenance_file_path)
 
-    def _write(self, p, profile_data, machine_time_step_ms, directory):
-        # pylint: disable=too-many-arguments
-        max_tag_len = max(len(tag) for tag in profile_data.tags)
+    _FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
+    _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
+    _FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
-        # write data
+    @classmethod
+    def _write(cls, p, profile_data, machine_time_step_ms, directory):
+        """
+        :param ~.Placement p:
+        :param ProfileData profile_data:
+        :param int machine_time_step_ms:
+        :param str directory:
+        """
+        max_tag_len = max(len(tag) for tag in profile_data.tags)
         file_name = os.path.join(
             directory, "{}_{}_{}_profile.txt".format(p.x, p.y, p.p))
 
-        # set mode of the file based off if the file already exists
-        mode = "w"
-        if os.path.exists(file_name):
-            mode = "a"
+        # write profile data to file, creating if necessary
+        with open(file_name, "a") as f:
+            # Write header
+            f.write(cls._FMT_A.format(
+                "tag", max_tag_len, "n_calls", "mean_ms", "n_calls_per_ts",
+                "mean_ms_per_ts"))
+            f.write(cls._FMT_B.format("", max_tag_len, "", "", "", ""))
 
-        # write profile data to file
-        with open(file_name, mode) as f:
-            f.write("{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n".format(
-                "tag", max_tag_len, "n_calls", "mean_ms",
-                "n_calls_per_ts", "mean_ms_per_ts"))
-            f.write("{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n".format(
-                "", max_tag_len, "", "", "", ""))
+            # Write content
             for tag in profile_data.tags:
-                f.write("{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
-                        .format(
-                            tag, max_tag_len,
-                            profile_data.get_n_calls(tag),
-                            profile_data.get_mean_ms(tag),
-                            profile_data.get_mean_n_calls_per_ts(
-                                tag, machine_time_step_ms),
-                            profile_data.get_mean_ms_per_ts(
-                                tag, machine_time_step_ms)))
+                f.write(cls._FMT_C.format(
+                    tag, max_tag_len, profile_data.get_n_calls(tag),
+                    profile_data.get_mean_ms(tag),
+                    profile_data.get_mean_n_calls_per_ts(
+                        tag, machine_time_step_ms),
+                    profile_data.get_mean_ms_per_ts(
+                        tag, machine_time_step_ms)))
