@@ -22,9 +22,23 @@ from spinnman.model.enums import (
 
 
 class RoutingSetup(object):
+    """ Initialises the routers. Note that this does not load any routes into\
+        them.
+
+    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
+    :param int app_id:
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param ~spinn_machine.Machine machine:
+    """
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
+        """
+        :param ~.MulticastRoutingTables router_tables:
+        :param int app_id:
+        :param ~.Transceiver transceiver:
+        :param ~.Machine machine:
+        """
         routing_tables = list(router_tables.routing_tables)
         progress = ProgressBar(routing_tables, "Preparing Routing Tables")
 
@@ -46,6 +60,11 @@ class RoutingSetup(object):
 
     @staticmethod
     def _set_router_diagnostic_filters(x, y, transceiver):
+        """
+        :param int x:
+        :param int y:
+        :param ~.Transceiver transceiver:
+        """
         transceiver.set_router_diagnostic_filter(
             x, y, ROUTER_REGISTER_REGISTERS.USER_3.value,
             DiagnosticFilter(

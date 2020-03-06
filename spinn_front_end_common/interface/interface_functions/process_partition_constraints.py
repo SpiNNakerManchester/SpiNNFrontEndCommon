@@ -22,8 +22,20 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class ProcessPartitionConstraints(object):
+    """ Adds constraints to partitions if the vertices at either end of the\
+        partition request it.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+    """
+
     def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
+        :param ~.GraphMapper graph_mapper:
+        """
 
         if machine_graph is None:
             raise ConfigurationException(
@@ -65,6 +77,10 @@ class ProcessPartitionConstraints(object):
 
     @staticmethod
     def _process_application_partition(partition, graph_mapper):
+        """
+        :param ~.OutgoingEdgePartition partition:
+        :param ~.GraphMapper graph_mapper:
+        """
         vertex = graph_mapper.get_application_vertex(
             partition.pre_vertex)
         if isinstance(vertex,
@@ -81,6 +97,9 @@ class ProcessPartitionConstraints(object):
 
     @staticmethod
     def _process_machine_partition(partition):
+        """
+        :param ~.OutgoingEdgePartition partition:
+        """
         if isinstance(partition.pre_vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             partition.add_constraints(

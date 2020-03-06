@@ -25,11 +25,18 @@ _VALID_CHARS = frozenset(
 
 class ProvenanceJSONWriter(object):
     """ Write provenance data into JSON
+
+    :param list(ProvenanceDataItem) provenance_data_items:
+    :param str provenance_data_path:
     """
 
     __slots__ = []
 
     def __call__(self, provenance_data_items, provenance_data_path):
+        """
+        :param list(ProvenanceDataItem) provenance_data_items:
+        :param str provenance_data_path:
+        """
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
         for name, group in itertools.groupby(
@@ -51,6 +58,12 @@ class ProvenanceJSONWriter(object):
 
     @staticmethod
     def _build_path(root, item):
+        """
+        :param root:
+        :type root: dict(str, object)
+        :param ProvenanceDataItem item:
+        :rtype: dict(str, str)
+        """
         parent = root
         for name in item.names[1:-1]:
             if not (name in parent and isinstance(parent[name], dict)):
@@ -62,5 +75,10 @@ class ProvenanceJSONWriter(object):
 
     @staticmethod
     def _get_file(path, name):
+        """
+        :param str path:
+        :param str name:
+        :rtype: str
+        """
         remapped = "".join(c if c in _VALID_CHARS else '_' for c in name)
         return generate_unique_folder_name(path, remapped, ".json")

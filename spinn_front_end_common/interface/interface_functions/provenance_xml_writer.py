@@ -26,19 +26,22 @@ _XML_LEAF_NAME = "provenance_data_item"
 
 
 class ProvenanceXMLWriter(object):
-    """ Write provenance data into XML
+    """ Writes provenance in XML format.
+
+    :param list(ProvenanceDataItem) provenance_data_items:
+        data items for provenance
+    :param str provenance_data_path: the file path to store provenance in
+    :return: None
     """
 
     __slots__ = []
 
     def __call__(self, provenance_data_items, provenance_data_path):
-        """ Writes provenance in XML format
-
-        :param provenance_data_items: data items for provenance
-        :param provenance_data_path: the file path to store provenance in
+        """
+        :param list(ProvenanceDataItem) provenance_data_items:
+        :param str provenance_data_path:
         :return: None
         """
-
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
         for name, group in itertools.groupby(
@@ -65,11 +68,22 @@ class ProvenanceXMLWriter(object):
 
     @staticmethod
     def _get_file(path, name):
+        """
+        :param str path:
+        :param str name:
+        :rtype: str
+        """
         remapped = "".join(c if c in _VALID_CHARS else '_' for c in name)
         return generate_unique_folder_name(path, remapped, ".xml")
 
     @staticmethod
     def _build_path(root, categories, item):
+        """
+        :param etree.Element root:
+        :param dict(etree.Element,dict) categories:
+        :param ProvenanceDataItem item:
+        :rtype: etree.Element
+        """
         parent = root
         cats = categories[root]
         for cat_name in item.names[1:-1]:
