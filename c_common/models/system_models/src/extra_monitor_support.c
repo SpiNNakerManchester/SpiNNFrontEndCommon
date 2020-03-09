@@ -845,6 +845,9 @@ static void reinjection_configure_router(void) {
     // clear router dump status,
     (void) rtr[RTR_DSTAT];
 
+    // clear router error status,
+    (void) rtr[RTR_ESTAT];
+
     // and enable router interrupts when dumping packets, and count errors
     rtr[RTR_CONTROL] |= RTR_DENABLE_MASK | RTR_ERROR_COUNT;
 }
