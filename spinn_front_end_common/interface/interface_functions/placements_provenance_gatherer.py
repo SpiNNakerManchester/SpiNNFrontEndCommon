@@ -17,6 +17,7 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class PlacementsProvenanceGatherer(object):
         """
 
         prov_items = list()
+        prov_placement = list()
 
         progress = ProgressBar(
             placements.n_placements, "Getting provenance data")
@@ -43,5 +45,44 @@ class PlacementsProvenanceGatherer(object):
                 prov_items.extend(
                     placement.vertex.get_provenance_data_from_machine(
                         transceiver, placement))
+                prov_placement.append(placement)
+
+        # write provenance to file here in a useful way
+        columns = ['pop', 'label', 'min_atom', 'max_atom', 'no_atoms',
+                   'x', 'y', 'p',
+                   'prov_name', 'prov_value',
+                   'fixed_sdram', 'sdram_per_timestep',
+                   'cpu_cycles', 'dtcm']
+
+        structured_provenance = list()
+        for i, (provenance, placement) in enumerate(zip(prov_items, prov_placement)):
+            prov_name = provenance.names[1]
+            prov_value = provenance.value
+            pop = placement.vertex.label.split(":")[0]
+            x = placement.x
+            y = placement.y
+            p = placement.p
+            fixed_sdram = placement.vertex.resources_required.sdram.fixed
+            sdram_per_timestep = placement.vertex.resources_required.sdram.per_timestep
+            cpu_cycles = placement.vertex.resources_required.cpu_cycles.get_value()
+            dtcm = placement.vertex.resources_required.dtcm.get_value()
+
+            label = placement.vertex.label
+            slices = label.split(":")
+            max_atom = int(slices[-1])
+            min_atom = int(slices[-2])
+            no_atoms = max_atom - min_atom + 1
+
+            structured_provenance.append(
+                [pop, label, min_atom, max_atom, no_atoms,
+                 x, y, p,
+                 prov_name, prov_value,
+                 fixed_sdram, sdram_per_timestep,
+                 cpu_cycles, dtcm]
+            )
+
+        structured_provenance_df = pd.DataFrame.from_records(
+            structured_provenance, columns=columns)
+        structured_provenance_df.to_csv("structured_provenance.csv")
 
         return prov_items
