@@ -157,15 +157,21 @@ enum {
     RTR_BLOCKED_BIT = 25,
     RTR_FPE_BIT = 17,
     RTR_LE_BIT = 6,
-    RTR_DENABLE_BIT = 2
+    RTR_PARITY_COUNT_BIT = 5,
+    RTR_FRAME_COUNT_BIT = 4,
+    RTR_TS_COUNT_BIT = 3,
+    RTR_DUMP_ENABLE_BIT = 2
 };
 
 enum {
-    RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT,   // router blocked
-    RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT,   // router dump overflow
-    RTR_DENABLE_MASK = 1 << RTR_DENABLE_BIT,   // enable dump interrupts
-    RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,     // if the dumped packet was a processor failure
-    RTR_LE_MASK = (1 << RTR_LE_BIT) - 1        // if the dumped packet was a link failure
+    RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT,     // router blocked
+    RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT,     // router dump overflow
+    RTR_DENABLE_MASK = 1 << RTR_DUMP_ENABLE_BIT, // enable dump interrupts
+    RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,       // if the dumped packet was a processor failure
+    RTR_LE_MASK = (1 << RTR_LE_BIT) - 1,         // if the dumped packet was a link failure
+    RTR_ERROR_COUNT = (1 << RTR_PARITY_COUNT_BIT) |
+                      (1 << RTR_FRAME_COUNT_BIT) |
+                      (1 << RTR_TS_COUNT_BIT)    // count the error packets
 };
 
 enum {
@@ -839,8 +845,8 @@ static void reinjection_configure_router(void) {
     // clear router dump status,
     (void) rtr[RTR_DSTAT];
 
-    // and enable router interrupts when dumping packets
-    rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
+    // and enable router interrupts when dumping packets, and count errors
+    rtr[RTR_CONTROL] |= RTR_DENABLE_MASK | RTR_ERROR_COUNT;
 }
 
 //-----------------------------------------------------------------------------
