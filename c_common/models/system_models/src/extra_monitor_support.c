@@ -132,9 +132,8 @@ typedef enum data_out_sdp_commands {
 #define PKT_QUEUE_SIZE     4096
 
 //-----------------------------------------------------------------------------
-// VIC stuff
+// VIC slots assigned
 //-----------------------------------------------------------------------------
-
 enum {
     // CPU VIC slot (WDOG and SDP)
     CPU_SLOT = SLOT_0,
@@ -152,26 +151,46 @@ enum {
     MC_PAYLOAD_SLOT = SLOT_6
 };
 
+// Router dump status register bits
 enum {
-    RTR_DOVRFLW_BIT = 30,
-    RTR_BLOCKED_BIT = 25,
-    RTR_FPE_BIT = 17,
-    RTR_LE_BIT = 6,
-    RTR_PARITY_COUNT_BIT = 5,
-    RTR_FRAME_COUNT_BIT = 4,
-    RTR_TS_COUNT_BIT = 3,
-    RTR_DUMP_ENABLE_BIT = 2
+    RTR_DSTAT_OVRFLW_BIT = 30
 };
 
+// Router status register bits
 enum {
-    RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT,     // router blocked
-    RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT,     // router dump overflow
-    RTR_DENABLE_MASK = 1 << RTR_DUMP_ENABLE_BIT, // enable dump interrupts
-    RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,       // if the dumped packet was a processor failure
-    RTR_LE_MASK = (1 << RTR_LE_BIT) - 1,         // if the dumped packet was a link failure
-    RTR_ERROR_COUNT = (1 << RTR_PARITY_COUNT_BIT) |
-                      (1 << RTR_FRAME_COUNT_BIT) |
-                      (1 << RTR_TS_COUNT_BIT)    // count the error packets
+    RTR_STAT_BLOCKED_BIT = 25
+};
+
+// Router dump outputs register bits
+enum {
+    RTR_DLINK_FPE_BIT = 18,
+    RTR_DLINK_LE_BIT = 6
+};
+
+// Router control register bits
+enum {
+    RTR_CTL_PARITY_COUNT_BIT = 5,
+    RTR_CTL_FRAME_COUNT_BIT = 4,
+    RTR_CTL_TS_COUNT_BIT = 3,
+    RTR_CTL_DUMP_ENABLE_BIT = 2
+};
+
+// Masks which use the router bits
+enum {
+    // router status blocked
+    RTR_STAT_BLOCKED_MASK = 1 << RTR_STAT_BLOCKED_BIT,
+    // router dump overflow
+    RTR_DSTAT_DOVRFLW_MASK = 1 << RTR_DSTAT_OVRFLW_BIT,
+    // router dump outputs mask of dumped by processor bits
+    RTR_DLINK_FPE_MASK = (1 << RTR_DLINK_FPE_BIT) - 1,
+    // router dump outputs mask of dumped by link bits
+    RTR_DLINK_LE_MASK = (1 << RTR_DLINK_LE_BIT) - 1,
+    // enable dump interrupts
+    RTR_CTL_DUMP_ENABLE_MASK = 1 << RTR_CTL_DUMP_ENABLE_BIT,
+    // router control mask to count the error packets
+    RTR_CTL_ERROR_COUNT_MASK = (1 << RTR_CTL_PARITY_COUNT_BIT) |
+                               (1 << RTR_CTL_FRAME_COUNT_BIT) |
+                               (1 << RTR_CTL_TS_COUNT_BIT)
 };
 
 enum {
@@ -467,7 +486,7 @@ static INT_HANDLER reinjection_timer_callback(void) {
     tc[T1_INT_CLR] = 1;
 
     // check if router not blocked
-    if ((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) == 0) {
+    if ((rtr[RTR_STATUS] & RTR_STAT_BLOCKED_MASK) == 0) {
         // access packet queue with FIQ disabled,
         uint cpsr = cpu_fiq_disable();
 
@@ -493,7 +512,7 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
-    if ((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) == 0) {
+    if ((rtr[RTR_STATUS] & RTR_STAT_BLOCKED_MASK) == 0) {
         // access packet queue with FIQ disabled,
         uint cpsr = cpu_fiq_disable();
 
@@ -550,8 +569,8 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
     // clear dump status and interrupt in router,
     uint rtr_dstat = rtr[RTR_DSTAT];
     uint rtr_dump_outputs = rtr[RTR_DLINK];
-    uint is_processor_dump = (rtr_dump_outputs >> 6) & RTR_FPE_MASK;
-    uint is_link_dump = rtr_dump_outputs & RTR_LE_MASK;
+    uint is_processor_dump = (rtr_dump_outputs >> 6) & RTR_DLINK_FPE_MASK;
+    uint is_link_dump = rtr_dump_outputs & RTR_DLINK_LE_MASK;
 
     // only reinject if configured
     uint packet_type = (hdr & PKT_TYPE_MASK);
@@ -561,7 +580,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
             ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
 
         // check for overflow from router
-        if (rtr_dstat & RTR_DOVRFLW_MASK) {
+        if (rtr_dstat & RTR_DSTAT_DOVRFLW_MASK) {
             n_missed_dropped_packets++;
         } else {
             // Note that the processor_dump and link_dump flags are sticky
@@ -849,7 +868,7 @@ static void reinjection_configure_router(void) {
     (void) rtr[RTR_ESTAT];
 
     // and enable router interrupts when dumping packets, and count errors
-    rtr[RTR_CONTROL] |= RTR_DENABLE_MASK | RTR_ERROR_COUNT;
+    rtr[RTR_CONTROL] |= RTR_CTL_DUMP_ENABLE_MASK | RTR_CTL_ERROR_COUNT_MASK;
 }
 
 //-----------------------------------------------------------------------------
