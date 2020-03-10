@@ -42,10 +42,12 @@ class PlacementsProvenanceGatherer(object):
             if isinstance(placement.vertex,
                           AbstractProvidesProvenanceDataFromMachine):
                 # get data
+                new_prov = placement.vertex.get_provenance_data_from_machine(
+                    transceiver, placement)
                 prov_items.extend(
-                    placement.vertex.get_provenance_data_from_machine(
-                        transceiver, placement))
-                prov_placement.append(placement)
+                    new_prov
+                    )
+                prov_placement.extend([placement]*len(new_prov))
 
         # write provenance to file here in a useful way
         columns = ['pop', 'label', 'min_atom', 'max_atom', 'no_atoms',
@@ -53,7 +55,7 @@ class PlacementsProvenanceGatherer(object):
                    'prov_name', 'prov_value',
                    'fixed_sdram', 'sdram_per_timestep',
                    'cpu_cycles', 'dtcm']
-
+        assert (len(prov_placement) == len(prov_items))
         structured_provenance = list()
         for i, (provenance, placement) in enumerate(zip(prov_items, prov_placement)):
             prov_name = provenance.names[1]
