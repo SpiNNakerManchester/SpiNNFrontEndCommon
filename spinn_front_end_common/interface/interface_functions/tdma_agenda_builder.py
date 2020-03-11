@@ -101,7 +101,7 @@ class TDMAAgendaBuilder(object):
                 'time_offset': cycles_per_window * time_offset[vertex],
                 'time_between_packets': cycles_per_window // packets_per_window
             }
-            for vertex in machine_graph.vertices }
+            for vertex in machine_graph.vertices}
 
     @staticmethod
     def _calculate_max_edges(machine_graph):

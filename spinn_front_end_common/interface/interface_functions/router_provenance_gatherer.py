@@ -281,7 +281,8 @@ class RouterProvenanceGatherer(object):
                 "the router table entries for this chip.".format(
                     x, y, router_diagnostic.user_3))))
         items.append(ProvenanceDataItem(
-            self.__add_name(names, "default_routed_external_multicast_packets"),
+            self.__add_name(
+                names, "default_routed_external_multicast_packets"),
             str(router_diagnostic.user_2),
             report=(router_diagnostic.user_2 > 0 and
                     ((router_table is not None and
