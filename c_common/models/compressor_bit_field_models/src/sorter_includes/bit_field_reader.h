@@ -36,8 +36,8 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
     int n_pairs_of_addresses = region_addresses->n_pairs;
     log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
 
-    if (n_pairs_of_addresses == 0){
-        log_debug("no bitfields to read in, so just return");
+    if (n_pairs_of_addresses == 0) {
+        log_info("no bitfields to read in, so just return");
         *success = true;
         return NULL;
     }

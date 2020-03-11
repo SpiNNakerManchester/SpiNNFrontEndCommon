@@ -25,7 +25,7 @@ def run_system_application(
         executable_cores, app_id, transceiver, provenance_file_path,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         handle_failure_function, cpu_end_states, needs_sync_barrier,
-        no_sync_changes, binaries_to_track=None):
+        no_sync_changes, filename_template, binaries_to_track=None):
     """ executes the app
 
     :param executable_cores: the cores to run the executable on
@@ -33,11 +33,11 @@ def run_system_application(
     :param transceiver: the SpiNNMan instance
     :param provenance_file_path: the path for where provenance data is\
     stored
+    :param filename_template: the iobuf filename template.
     :param read_algorithm_iobuf: bool flag for report
     :param executable_finder: finder for executable paths
     :param check_for_success_function: function used to check success: \
-    expects executable_cores, transceiver, provenance_file_path,\
-    app_id, executable_finder as inputs
+    expects executable_cores, transceiver, as inputs
     :param handle_failure_function: function used to deal with failures\
     expects executable_cores, transceiver, provenance_file_path,\
     app_id, executable_finder as inputs
@@ -83,20 +83,15 @@ def run_system_application(
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException):
         handle_failure_function(executable_cores)
-    finally:
-        # get the debug data
-        if not succeeded:
-            handle_failure_function(executable_cores)
+        succeeded = False
 
     # Check if any cores have not completed successfully
     if succeeded and check_for_success_function is not None:
-        check_for_success_function(
-            executable_cores, transceiver, provenance_file_path,
-            app_id, executable_finder)
+        succeeded = check_for_success_function(executable_cores, transceiver)
 
     # if doing iobuf, read iobuf
-    if read_algorithm_iobuf:
-        iobuf_reader = ChipIOBufExtractor()
+    if read_algorithm_iobuf or not succeeded:
+        iobuf_reader = ChipIOBufExtractor(filename_template=filename_template)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
             app_provenance_file_path=None,

@@ -67,18 +67,8 @@ bool compress_only_when_needed = false;
 //! control flag for compressing as much as possible
 bool compress_as_much_as_possible = false;
 
-//! control flag if the routing tables are able to be stored in somewhere.
-bool can_store_routing_tables = false;
-
-//! bool to control the small time when the first message disappears but you
-//! still get the second packet.
-bool have_received_first_packet = false;
-
 //! \brief the sdram location to write the compressed router table into
 table_t *sdram_loc_for_compressed_entries;
-
-//! how many packets waiting for
-uint32_t number_of_packets_waiting_for = 0;
 
 //! \brief the control core id for sending responses to
 int control_core_id = -1;
@@ -121,7 +111,7 @@ void return_success_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_debug("send success ack");
+    log_info("send success ack");
 }
 
 //! \brief send a failed response due to the control forcing it to stop
@@ -227,39 +217,23 @@ void start_compression_process(uint unused0, uint unused1) {
             return_failed_by_space_response_message();
         }
     }
-
-    // forces the process to only handle first packets
-    can_store_routing_tables = false;
-    have_received_first_packet = false;
-}
-
-//! \brief takes a array of tables from a packet and puts them into the dtcm
-//! store of routing tables based off a given offset
-//! \param[in] n_tables_in_packet: the number of tables in packet to pull
-//! \param[in] tables: the tables from the packet.
-void store_info_table_store(int n_tables_in_packet, table_t **tables) {
-    for (int rt_index = 0; rt_index < n_tables_in_packet; rt_index++) {
-        log_debug("address of table is %x",  tables[rt_index]);
-        routing_tables_store_routing_table(tables[rt_index]);
-    }
 }
 
 //! \brief handle the first message. Will store in the routing table store,
 //! and then set off user event if no more  are expected.
 //! \param[in] first_cmd: the first packet.
-static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
+static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // reset states by first turning off timer (puts us in pause state as well)
     spin1_pause();
 
     // set up fake heap
     log_debug("setting up fake heap for sdram usage");
-    platform_new_heap_update(first_cmd->fake_heap_data);
+    platform_new_heap_update(start_cmd->fake_heap_data);
     log_debug("finished setting up fake heap for sdram usage");
 
     failed_by_malloc = false;
     finished_by_compressor_force = false;
     timer_for_compression_attempt = false;
-    have_received_first_packet = true;
     counter = 0;
     aliases_clear(&aliases);
     routing_table_reset();
@@ -268,60 +242,20 @@ static void handle_start_data_stream(start_stream_sdp_packet_t *first_cmd) {
     aliases = aliases_init();
 
     // location where to store the compressed table
-    sdram_loc_for_compressed_entries = first_cmd->address_for_compressed;
+    sdram_loc_for_compressed_entries = start_cmd->table_data->compressed_table;
 
-    // set up packet tracker
-    number_of_packets_waiting_for = first_cmd->n_sdp_packets_till_delivered;
-    can_store_routing_tables = routing_tables_init(first_cmd->total_n_tables);
+    bool success = routing_tables_init(
+        start_cmd->table_data->n_elements, start_cmd->table_data->elements);
 
-    if (!can_store_routing_tables) {
+    if (!success) {
         log_error("failed to allocate memory for routing table.h state");
         return_malloc_response_message();
         return;
     }
 
-    // store this set into the store
-    log_debug("store routing table addresses into store");
-    log_debug("%d addresses in packet", first_cmd->n_tables_in_packet);
-    for (int i = 0; i < first_cmd->n_tables_in_packet; i++) {
-        log_debug("address is %x for %d", first_cmd->tables[i], i);
-    }
-    store_info_table_store(first_cmd->n_tables_in_packet, first_cmd->tables);
-    log_debug("finished storing routing table address into store");
-
-    // if no more packets to locate, then start compression process
-    if (--number_of_packets_waiting_for == 0) {
-        spin1_schedule_callback(
-            start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
-    }
-}
-
-//! \brief handles a extra message (includes extra routing tables). Will
-//! store in the routing table store, and then set off user event if no more
-//! are expected.
-//! \param[in] extra_cmd: the extra packet.
-static void handle_extra_data_stream(extra_stream_sdp_packet_t *extra_cmd) {
-    if (!can_store_routing_tables) {
-        log_error(
-            "ignore extra routing table addresses packet, as cant store them");
-        if (!have_received_first_packet){
-            log_debug("never received the first sdp message");
-            return_malloc_response_message();
-        }
-        return;
-    }
-
-    // store this set into the store
-    log_debug("store extra routing table addresses into store");
-    store_info_table_store(extra_cmd->n_tables_in_packet, extra_cmd->tables);
-    log_debug("finished storing extra routing table address into store");
-
-    // if no more packets to locate, then start compression process
-    if (--number_of_packets_waiting_for == 0) {
-        spin1_schedule_callback(
-            start_compression_process, 0, 0,
-            COMPRESSION_START_PRIORITY);
-    }
+    // start compression process
+    spin1_schedule_callback(
+        start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
 }
 
 //! \brief the sdp control entrance.
@@ -348,11 +282,8 @@ void _sdp_handler(uint mailbox, uint port) {
     if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
         switch (payload->command) {
             case START_DATA_STREAM:
-                handle_start_data_stream(&payload->start.msg);
-                sark_msg_free((sdp_msg_t*) msg);
-                break;
-            case EXTRA_DATA_STREAM:
-                handle_extra_data_stream(&payload->extra.msg);
+                log_info("start a stream packet");
+                handle_start_data_stream(&payload->start);
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
             case COMPRESSION_RESPONSE:

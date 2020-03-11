@@ -22,6 +22,12 @@
 #include <common-typedefs.h>
 #include <debug.h>
 
+//! debug flag to lock in safety features
+bool safety = true;
+#define SAFETY_FLAG 0xDEADBEEF
+#define EXTRA_BYTES 8
+#define BYTE_TO_WORD 4
+
 
 //! a sdram block outside the heap
 typedef struct sdram_block {
@@ -266,8 +272,8 @@ void print_free_sizes_in_heap(void){
 static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
     // NOTE use if not trusting the heap
-    //stolen_sdram_heap = sv->sdram_heap;
-    // return true;
+    stolen_sdram_heap = sv->sdram_heap;
+    return true;
 
     // allocate blocks store for figuring out block order
     uint n_mallocs = available_mallocs(sv->sdram_heap);
@@ -320,13 +326,29 @@ static inline bool platform_new_heap_creation(
     return true;
 }
 
+//static inline void terminate(uint result_code) __attribute__((noreturn));
+//! \brief stops a binary dead
+//! \param[in] code to put in user 1
+static inline void terminate(uint result_code) {
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    uint core = spin1_get_core_id();
+
+    sark_virtual_processor_info[core].user1 = result_code;
+    spin1_pause();
+    spin1_exit(0);
+}
+
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
 void * safe_sdram_malloc(uint bytes){
     // try SDRAM stolen from the cores synaptic matrix areas.
     //print_free_sizes_in_heap();
-    void * p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
+    uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
+
+    if (safety) {
+
+    }
 
     if (p == NULL) {
         log_error("Failed to malloc %u bytes.\n", bytes);
@@ -339,12 +361,23 @@ void * safe_sdram_malloc(uint bytes){
 //! \return: the address of the block of memory to utilise.
 static void * safe_malloc(uint bytes) {
 
-    // try DTCM
-    void *p = sark_alloc(bytes, 1);
-    if (p != NULL) {
-        return p;
+    if (safety) {
+        bytes = bytes + EXTRA_BYTES;
     }
-    return safe_sdram_malloc(bytes);
+
+    // try DTCM
+    int *p = sark_alloc(bytes, 1);
+
+    if (p == NULL) {
+       p = safe_sdram_malloc(bytes);
+    }
+
+    if (safety) {
+        int n_words = (int) ((bytes - EXTRA_BYTES) / BYTE_TO_WORD);
+        p[0] = n_words;
+        p[n_words] = SAFETY_FLAG;
+    }
+    return (void *) &p[1];
 }
 
 //! \brief locates the biggest block of available memory from the heaps
@@ -359,13 +392,39 @@ static inline uint platform_max_available_block_size(void) {
     }
 }
 
+static bool platform_check(void *ptr) {
+    int* int_pointer = (int*) ptr;
+    if (safety) {
+        int_pointer = int_pointer - 1;
+        int words = int_pointer[0];
+        uint32_t flag = int_pointer[words];
+
+        if (flag != SAFETY_FLAG) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    return true;
+}
+
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
 static void safe_x_free(void *ptr) {
+    int* int_pointer = (int*) ptr;
+    if (safety) {
+        if (!platform_check(ptr)) {
+            log_error("over ran whatever is being freed");
+            terminate(2);
+        }
+    }
+
+    return;
     if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
-        sark_xfree(sark.heap, ptr, 0);
+        sark_xfree(sark.heap, int_pointer, 0);
     } else {
-        sark_xfree(stolen_sdram_heap, ptr, ALLOC_LOCK);
+        sark_xfree(stolen_sdram_heap, int_pointer, ALLOC_LOCK);
     }
 }
 

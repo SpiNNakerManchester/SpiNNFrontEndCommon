@@ -128,10 +128,6 @@ void routing_table_reset(void) {
     n_tables = 0;
     current_n_tables = 0;
     current_low_entry = 0;
-    if (routing_tables != NULL){
-        FREE(routing_tables);
-        routing_tables = NULL;
-    }
     if (table_lo_entry != NULL){
         FREE(table_lo_entry);
         table_lo_entry = NULL;
@@ -153,23 +149,6 @@ void routing_table_print_list_tables(void){
                 entry.key_mask.mask, entry.route, entry.source);
         }
     }
-}
-
-//! \brief stores a table and metadata into state
-//! \param[in]
-static inline void routing_tables_store_routing_table(table_t* table) {
-    // store table
-    routing_tables[current_n_tables] = table;
-    // store low entry tracker (reduces sdram requirements)
-    table_lo_entry[current_n_tables] = current_low_entry;
-
-    // update current n tables.
-    current_n_tables += 1;
-    // update low entry
-    current_low_entry += table->size;
-
-    // store what is basically total entries to end of list.
-    table_lo_entry[current_n_tables] = current_low_entry;
 }
 
 //! \brief gets the length of the group of routing tables
@@ -219,30 +198,37 @@ int find_index_of_table_for_entry(int entry_id) {
 //! \brief the init for the routing tables
 //! \param[in] total_n_tables: the total tables to be stored
 //! \return bool saying the routing tables have been initialised.
-static inline bool routing_tables_init(int total_n_tables) {
+static inline bool routing_tables_init(
+        int total_n_tables, table_t **elements) {
     n_tables = total_n_tables;
 
     // set up addresses data holder
-    log_debug(
-        "allocating %d bytes for %d total n tables",
-        n_tables * sizeof(table_t*), n_tables);
-    routing_tables = MALLOC(n_tables * sizeof(table_t*));
+    routing_tables = elements;
+
     log_debug(
         "allocating %d bytes for table lo entry",
         (n_tables + 1) * sizeof(int));
     table_lo_entry = MALLOC((n_tables + 1) * sizeof(int));
 
-    if (routing_tables == NULL) {
-        log_error(
-            "failed to allocate memory for holding the addresses "
-            "locations");
-        return false;
-    }
     if (table_lo_entry == NULL) {
         log_error(
             "failed to allocate memory for the holding the low entry");
         return false;
     }
+
+    // update the lo entry map
+    for (int rt_index = 0; rt_index < total_n_tables; rt_index++) {
+        // store low entry tracker (reduces sdram requirements)
+        table_lo_entry[current_n_tables] = current_low_entry;
+            // update current n tables.
+        current_n_tables += 1;
+        // update low entry
+        current_low_entry += routing_tables[rt_index]->size;
+
+        // store what is basically total entries to end of list.
+        table_lo_entry[current_n_tables] = current_low_entry;
+    }
+
     return true;
 }
 

@@ -21,18 +21,6 @@
 #include "constants.h"
 #include <filter_info.h>
 
-//static inline void terminate(uint result_code) __attribute__((noreturn));
-//! \brief stops a binary dead
-//! \param[in] code to put in user 1
-static inline void terminate(uint result_code) {
-    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
-    uint core = spin1_get_core_id();
-
-    sark_virtual_processor_info[core].user1 = result_code;
-    spin1_pause();
-    spin1_exit(0);
-}
-
 //! \brief finds the processor id of a given bitfield address (search though
 //! the bit field by processor
 //! \param[in] filter: the location in sdram where the bitfield starts
@@ -53,6 +41,13 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
         }
     }
     log_error("failed to find the bitfield address %x anywhere.", filter.data);
+    for (int bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
+        bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
+        for (int addr_i = 0; addr_i < element.length_of_list; addr_i++) {
+            log_info("address %x", element.bit_field_addresses[addr_i].data);
+        }
+    }
+
     terminate(EXIT_FAIL);
     return 0;
 }
@@ -102,10 +97,10 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         sorted_bit_fields_t* sorted_bit_fields){
 
     int n_keys = 0;
+    log_info("in population_master_pop_bit_field_ts");
     // check each bitfield to see if the key been recorded already
     for (int bit_field_index = 0; bit_field_index < mid_point;
             bit_field_index++) {
-
         // get key
         filter_info_t* bf_pointer =
             sorted_bit_fields->bit_fields[bit_field_index];
@@ -118,12 +113,21 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
                 found = true;
             }
         }
+
         if (!found) {
+            //log_info("bf pointer address = %x", bf_pointer);
+            //log_info(
+            //    " bf pointer key = %d, n keys = %d",
+            //    bf_pointer->key, n_keys);
+            //log_info(
+            //    "address of keys = %x, address pf keys[n_keys] = %x",
+            //    &keys, &keys[n_keys]);
             keys[n_keys].master_pop_key =  bf_pointer->key;
             keys[n_keys].n_bitfields_with_key = 1;
             n_keys++;
         }
     }
+    log_info("out population_master_pop_bit_field_ts");
     return n_keys;
 }
 
@@ -135,6 +139,8 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
 bool helpful_functions_free_sdram_from_compression_attempt(
         int comp_core_index, comp_core_store_t* comp_cores_bf_tables){
     int elements = comp_cores_bf_tables[comp_core_index].n_elements;
+
+    return true;
 
     for (int core_bit_field_id = 0; core_bit_field_id < elements;
             core_bit_field_id++) {
@@ -149,7 +155,6 @@ bool helpful_functions_free_sdram_from_compression_attempt(
     comp_cores_bf_tables[comp_core_index].elements = NULL;
     comp_cores_bf_tables[comp_core_index].n_elements = 0;
     comp_cores_bf_tables[comp_core_index].n_bit_fields = 0;
-
     return true;
 }
 

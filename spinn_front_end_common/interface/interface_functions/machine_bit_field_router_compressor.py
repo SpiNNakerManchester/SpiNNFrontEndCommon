@@ -197,6 +197,7 @@ class MachineBitFieldRouterCompressor(object):
                     self._handle_failure_for_bit_field_router_compressor,
                     host_chips=on_host_chips, txrx=transceiver),
                 [CPUState.FINISHED], True, no_sync_changes,
+                "bit_field_compressor_on_{}_{}_{}",
                 [bit_field_sorter_executable_path])
         except (SpinnmanException, SpinnFrontEndException):
             self._handle_failure_for_bit_field_router_compressor(
@@ -311,8 +312,7 @@ class MachineBitFieldRouterCompressor(object):
                 bit_field_compressor_executable_path)
 
     def _check_bit_field_router_compressor_for_success(
-            self, executable_targets, transceiver, provenance_file_path,
-            compressor_app_id, executable_finder, host_chips,
+            self, executable_targets, transceiver, host_chips,
             sorter_binary_path, prov_data_items):
         """ Goes through the cores checking for cores that have failed to\
             generate the compressed routing tables with bitfield
@@ -320,10 +320,7 @@ class MachineBitFieldRouterCompressor(object):
         :param executable_targets: cores to load router compressor with\
          bitfield on
         :param transceiver: SpiNNMan instance
-        :param provenance_file_path: path to provenance folder
-        :param compressor_app_id: the app id for the compressor c code
         :param host_chips: the chips which need to be ran on host.
-        :param executable_finder: executable path finder
         :param sorter_binary_path: the path to the sorter binary
         :param prov_data_items: the store of data items
         :rtype: None
@@ -356,16 +353,13 @@ class MachineBitFieldRouterCompressor(object):
                         x, y, user_2_base_address, self._USER_BYTES))[0]
 
                 if result != self.SUCCESS:
-                    self._call_iobuf_and_clean_up(
-                        executable_targets, transceiver, provenance_file_path,
-                        compressor_app_id, executable_finder)
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
-                    raise SpinnFrontEndException(
-                        self._ON_CHIP_ERROR_MESSAGE.format(x, y))
+                    return False
                 else:
                     prov_data_items.append(ProvenanceDataItem(
                         names, str(total_bit_fields_merged)))
+        return True
 
     @staticmethod
     def _call_iobuf_and_clean_up(
@@ -401,6 +395,7 @@ class MachineBitFieldRouterCompressor(object):
         :param executable_targets: cores which are running the router \
         compressor with bitfield.
         :param host_chips: chips which need host based compression
+        :param txrx: spinnman instance
         :rtype: None
         """
         logger.info(
@@ -410,7 +405,8 @@ class MachineBitFieldRouterCompressor(object):
                 host_chips.append((core_subset.x, core_subset.y))
         cores = txrx.get_cores_in_state(
             executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
-        logger.info("failed on cores {}".format(cores.values()))
+        logger.info("failed on cores {}".format(cores))
+
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,

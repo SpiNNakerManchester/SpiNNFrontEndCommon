@@ -180,8 +180,8 @@ bool generate_entries_from_bitfields(
         original_entry.key_mask.key, region_addresses);
 
 
-    *sdram_table = MALLOC_SDRAM(routing_table_sdram_size_of_table
-    (n_atoms));
+    *sdram_table = MALLOC_SDRAM(
+        routing_table_sdram_size_of_table(n_atoms));
 
     if (*sdram_table == NULL) {
         FREE(bit_field_processors);
@@ -197,7 +197,7 @@ bool generate_entries_from_bitfields(
 
     // set up the new route process
     uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
-    bit_field_t processors = bit_field_alloc(size);
+    bit_field_t processors = (bit_field_t) MALLOC(size);
     if (processors == NULL) {
         log_error(
             "could not allocate memory for the processor tracker when "
@@ -211,7 +211,7 @@ bool generate_entries_from_bitfields(
     clear_bit_field(processors, size);
 
     // create memory holder for atom based route
-    bit_field_t atom_processors = bit_field_alloc(size);
+    bit_field_t atom_processors = (bit_field_t) MALLOC(size);
     if (atom_processors == NULL) {
         log_error(
             "could not allocate memory for the atom processor tracker when "
@@ -294,6 +294,9 @@ bool generate_rt_from_bit_field(
 
     // reduce future iterations, by finding the exact bitfield filter
     filter_info_t **filters = MALLOC(n_bfs_for_key * sizeof(filter_info_t));
+    if (filters == NULL) {
+        return false;
+    }
 
     int index = 0;
     for (int bit_field_index = 0; bit_field_index < mid_point;
@@ -303,7 +306,8 @@ bool generate_rt_from_bit_field(
         if (bf_pointer->key == master_pop_key){
             filters[index] = sorted_bit_fields->bit_fields[bit_field_index];
             log_debug(
-                "filter in index %d is at address %x", index, filters[index]);
+                "filter in index %d is at address %x",
+                index, filters[index]->data);
             index += 1;
         }
     }
@@ -352,6 +356,7 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
         sorted_bit_fields_t *sorted_bit_fields){
 
     // get n keys that exist
+    log_info("midpoint = %d", mid_point);
     master_pop_bit_field_t *keys =
         MALLOC(mid_point * sizeof(master_pop_bit_field_t));
     if (keys == NULL) {
@@ -361,7 +366,7 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
-    log_debug("n rts is %d", *n_rt_addresses);
+    log_info("n rts is %d", *n_rt_addresses);
 
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
@@ -376,7 +381,7 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
         return NULL;
     }
 
-    log_debug("looking for %d bytes", *n_rt_addresses * sizeof(table_t*));
+    log_info("looking for %d bytes", *n_rt_addresses * sizeof(table_t*));
     table_t** bit_field_routing_tables =
         MALLOC(*n_rt_addresses * sizeof(table_t*));
     if (bit_field_routing_tables == NULL) {
