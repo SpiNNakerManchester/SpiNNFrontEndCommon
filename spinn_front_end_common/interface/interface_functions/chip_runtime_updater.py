@@ -23,7 +23,7 @@ class ChipRuntimeUpdater(object):
 
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param int app_id:
-    :param dict(ExecutableType,~.spinn_machine.CoreSubsets) executable_types:
+    :param dict(ExecutableType,~spinn_machine.CoreSubsets) executable_types:
     :param run_until_timesteps:
     :type run_until_timesteps: int or None
     :param int current_timesteps:

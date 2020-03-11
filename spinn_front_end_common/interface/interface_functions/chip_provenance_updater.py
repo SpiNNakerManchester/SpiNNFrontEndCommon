@@ -33,7 +33,7 @@ class ChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit.
 
     :param ~spinnman.transceiver.Transceiver txrx:
-    :param int app_id;
+    :param int app_id:
     :param ~spinn_machine.CoreSubsets all_core_subsets:
     """
 
@@ -42,7 +42,7 @@ class ChipProvenanceUpdater(object):
     def __call__(self, txrx, app_id, all_core_subsets):
         """
         :param ~.Transceiver txrx:
-        :param int app_id;
+        :param int app_id:
         :param ~.CoreSubsets all_core_subsets:
         """
         # check that the right number of processors are in sync
@@ -82,7 +82,7 @@ class ChipProvenanceUpdater(object):
         :param int total_processors:
         :param int processors_completed:
         :param ~.CoreSubsets all_core_subsets:
-        :param int app_id;
+        :param int app_id:
         :param ~.ProgressBar progress:
         """
         # pylint: disable=too-many-arguments

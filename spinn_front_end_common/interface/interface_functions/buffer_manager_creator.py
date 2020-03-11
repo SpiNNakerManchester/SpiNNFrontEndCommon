@@ -23,9 +23,9 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 class BufferManagerCreator(object):
     """ Creates a buffer manager.
 
-    :param ~pacman.placements.Placements placements:
+    :param ~pacman.model.placements.Placements placements:
     :param ~pacman.model.tags.Tags tags:
-    :param ~spinnman.transceiever.Transceiver txrx:
+    :param ~spinnman.transceiver.Transceiver txrx:
     :param bool uses_advanced_monitors:
     :param str report_folder:
         The path where the SQLite database holding the data will be placed,
@@ -49,9 +49,9 @@ class BufferManagerCreator(object):
             packet_gather_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None, java_caller=None):
         """
-        :param ~pacman.placements.Placements placements:
-        :param ~pacman.model.tags.Tags tags:
-        :param ~spinnman.transceiever.Transceiver txrx:
+        :param ~.Placements placements:
+        :param ~.Tags tags:
+        :param ~.Transceiver txrx:
         :param bool uses_advanced_monitors:
         :param str report_folder:
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:

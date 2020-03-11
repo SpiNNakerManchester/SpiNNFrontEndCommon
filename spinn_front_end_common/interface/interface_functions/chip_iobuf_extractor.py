@@ -37,7 +37,7 @@ class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
 
-    :param ~spinnman.transciever.Transceiver transceiver:
+    :param ~spinnman.transceiver.Transceiver transceiver:
     :param ExecutableTargets executable_targets:
     :param ExecutableFinder executable_finder:
     :param str app_provenance_file_path:
@@ -67,7 +67,7 @@ class ChipIOBufExtractor(object):
             app_provenance_file_path, system_provenance_file_path,
             binary_executable_types, from_cores="ALL", binary_types=None):
         """
-        :param ~spinnman.transciever.Transceiver transceiver:
+        :param ~.Transceiver transceiver:
         :param ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
         :param str app_provenance_file_path:

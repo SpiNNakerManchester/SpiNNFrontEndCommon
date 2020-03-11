@@ -37,8 +37,10 @@ class MachineGenerator(object):
         (1, 2, 3, 4 or 5)
     :param bool auto_detect_bmp:
         Whether the BMP should be automatically determined
-    :param list(~.SocketAddressWithChip) scamp_connection_data:
+    :param scamp_connection_data:
         the list of SC&MP connection data or None
+    :type scamp_connection_data:
+        list(~spinnman.connections.SocketAddressWithChip)
     :param int boot_port_num: the port number used for the boot connection
     :param bool reset_machine_on_start_up:
     :param max_sdram_size: the maximum SDRAM each chip can say it has

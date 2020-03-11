@@ -25,7 +25,7 @@ class LocateExecutableStartType(object):
 
     :param ~pacman.model.graphs.machine.MachineGraph graph:
     :param ~pacman.model.placements.Placements placements:
-    :param ~spinn_utilities.executable_finder.ExecutableFinder
+    :param ~spinn_utilities.executable_finder.ExecutableFinder \
             executable_finder:
     :rtype: tuple(
         dict(ExecutableType,~spinn_machine.CoreSubsets)
