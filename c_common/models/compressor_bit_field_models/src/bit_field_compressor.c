@@ -225,7 +225,7 @@ void start_compression_process(uint unused0, uint unused1) {
 static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // reset states by first turning off timer (puts us in pause state as well)
     spin1_pause();
-    return;
+
     // set up fake heap
     log_info("setting up fake heap for sdram usage");
     platform_new_heap_update(start_cmd->fake_heap_data);
