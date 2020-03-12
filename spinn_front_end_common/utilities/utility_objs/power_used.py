@@ -22,6 +22,7 @@ class PowerUsed(object):
 
     __slots__ = [
         "__num_chips",
+        "__num_cores",
         "__num_fpgas",
         "__exec_time",
         "__mapping_time",
@@ -43,6 +44,7 @@ class PowerUsed(object):
 
     def __init__(self):
         self.__num_chips = 0
+        self.__num_cores = 0
         self.__num_fpgas = 0
         self.__exec_time = 0.0
         self.__mapping_time = 0.0
@@ -72,6 +74,18 @@ class PowerUsed(object):
     @num_chips.setter
     def num_chips(self, value):
         self.__num_chips = int(value)
+
+    @property
+    def num_cores(self):
+        """ The total number of cores used, including for SCAMP.
+
+        :rtype: int
+        """
+        return self.__num_cores
+
+    @num_cores.setter
+    def num_cores(self, value):
+        self.__num_cores = int(value)
 
     @property
     def num_fpgas(self):

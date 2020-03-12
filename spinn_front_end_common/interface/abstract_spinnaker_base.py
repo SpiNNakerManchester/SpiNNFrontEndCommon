@@ -2020,6 +2020,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
 
+        if self._config.getboolean("Reports", "write_energy_report"):
+            algorithms.append("ComputeEnergyUsed")
+
         # add extractor of provenance if needed
         if (self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board and

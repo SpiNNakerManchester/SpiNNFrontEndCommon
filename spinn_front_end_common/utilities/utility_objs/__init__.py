@@ -19,9 +19,11 @@ from .executable_finder import ExecutableFinder
 from .executable_targets import ExecutableTargets
 from .executable_type import ExecutableType
 from .live_packet_gather_parameters import LivePacketGatherParameters
+from .power_used import PowerUsed
 from .provenance_data_item import ProvenanceDataItem
 from .reinjection_status import ReInjectionStatus
 
-__all__ = ["DataWritten", "DPRIFlags", "ExecutableFinder", "ExecutableType",
-           "LivePacketGatherParameters", "ProvenanceDataItem",
-           "ReInjectionStatus", "ExecutableTargets"]
+__all__ = [
+    "DataWritten", "DPRIFlags", "ExecutableFinder", "ExecutableTargets",
+    "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
+    "ProvenanceDataItem", "ReInjectionStatus"]
