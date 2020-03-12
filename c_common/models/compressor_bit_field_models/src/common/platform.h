@@ -344,21 +344,26 @@ static inline void terminate(uint result_code) {
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-static void * safe_sdram_malloc(uint bytes, bool controled_safety) {
+static void * safe_sdram_malloc(uint bytes) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     //print_free_sizes_in_heap();
-
-    if (controled_safety) {
-        bytes = bytes + EXTRA_BYTES;
-    }
-
     uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
     if (p == NULL) {
         log_error("Failed to malloc %u bytes.\n", bytes);
     }
 
-    if (controled_safety) {
+    return (void *) p;
+}
+
+void * safe_sdram_malloc_wrapper(uint bytes) {
+    if (safety) {
+        bytes = bytes + EXTRA_BYTES;
+    }
+
+    int * p= safe_sdram_malloc(bytes);
+
+    if (safety) {
         int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
@@ -367,11 +372,6 @@ static void * safe_sdram_malloc(uint bytes, bool controled_safety) {
         log_info("index %d", malloc_point_index - 1);
         return (void *) &p[1];
     }
-    return (void *) p;
-}
-
-void * safe_sdram_malloc_wrapper(uint bytes) {
-    return safe_sdram_malloc(bytes, true);
 }
 
 //! \brief allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
@@ -387,7 +387,7 @@ static void * safe_malloc(uint bytes) {
     int *p = sark_alloc(bytes, 1);
 
     if (p == NULL) {
-       p = safe_sdram_malloc(bytes, false);
+       p = safe_sdram_malloc(bytes);
     }
 
     if (safety) {
