@@ -564,6 +564,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
         }
 
         // update the redundant packet pointer
+        check_all();
         passed = platform_check(coverage);
         if (! passed){
             log_error("failed");

@@ -93,6 +93,12 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
             bit_field_by_processor[r_id].bit_field_addresses[bf_id] =
                 filter_region->filters[bf_id];
         }
+
+        bool check = platform_check(
+            bit_field_by_processor[r_id].bit_field_addresses);
+        if (!check){
+            log_error("failed");
+        }
     }
 
     bool check = platform_check(bit_field_by_processor);

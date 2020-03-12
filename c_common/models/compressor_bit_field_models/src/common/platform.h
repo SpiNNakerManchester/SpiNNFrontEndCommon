@@ -28,6 +28,9 @@ bool safety = true;
 #define EXTRA_BYTES 8
 #define BYTE_TO_WORD 4
 
+void** malloc_points [1000];
+int malloc_point_index = 0;
+
 
 //! a sdram block outside the heap
 typedef struct sdram_block {
@@ -341,11 +344,11 @@ static inline void terminate(uint result_code) {
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-static void * safe_sdram_malloc(uint bytes, bool safety) {
+static void * safe_sdram_malloc(uint bytes, bool controled_safety) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     //print_free_sizes_in_heap();
 
-    if (safety) {
+    if (controled_safety) {
         bytes = bytes + EXTRA_BYTES;
     }
 
@@ -355,12 +358,16 @@ static void * safe_sdram_malloc(uint bytes, bool safety) {
         log_error("Failed to malloc %u bytes.\n", bytes);
     }
 
-    if (safety) {
+    if (controled_safety) {
         int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
+        malloc_points[malloc_point_index] = (void *)  &p[1];
+        malloc_point_index += 1;
+        log_info("index %d", malloc_point_index - 1);
+        return (void *) &p[1];
     }
-    return (void *) &p[1];
+    return (void *) p;
 }
 
 void * safe_sdram_malloc_wrapper(uint bytes) {
@@ -387,8 +394,13 @@ static void * safe_malloc(uint bytes) {
         int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
+        malloc_points[malloc_point_index] = (void *)  &p[1];
+        malloc_point_index += 1;
+        log_info("index %d", malloc_point_index - 1);
+        return (void *) &p[1];
     }
-    return (void *) &p[1];
+
+    return (void *) p;
 }
 
 //! \brief locates the biggest block of available memory from the heaps
@@ -404,6 +416,7 @@ static inline uint platform_max_available_block_size(void) {
 }
 
 static bool platform_check(void *ptr) {
+
     int* int_pointer = (int*) ptr;
     if (safety) {
         int_pointer = int_pointer - 1;
@@ -418,6 +431,14 @@ static bool platform_check(void *ptr) {
         }
     }
     return true;
+}
+
+void check_all(){
+    for(int index = 0; index < malloc_point_index; index ++){
+        if (!platform_check(malloc_points[index])){
+            log_error("the malloc with index %d has overran", index);
+        }
+    }
 }
 
 //! \brief frees the sdram allocated from whatever heap it came from
