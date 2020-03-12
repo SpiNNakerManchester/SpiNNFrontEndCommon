@@ -225,11 +225,11 @@ void start_compression_process(uint unused0, uint unused1) {
 static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // reset states by first turning off timer (puts us in pause state as well)
     spin1_pause();
-
+    return;
     // set up fake heap
-    log_debug("setting up fake heap for sdram usage");
+    log_info("setting up fake heap for sdram usage");
     platform_new_heap_update(start_cmd->fake_heap_data);
-    log_debug("finished setting up fake heap for sdram usage");
+    log_info("finished setting up fake heap for sdram usage");
 
     failed_by_malloc = false;
     finished_by_compressor_force = false;
@@ -244,8 +244,10 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // location where to store the compressed table
     sdram_loc_for_compressed_entries = start_cmd->table_data->compressed_table;
 
+    log_info("table init");
     bool success = routing_tables_init(
         start_cmd->table_data->n_elements, start_cmd->table_data->elements);
+    log_info("table init finish");
 
     if (!success) {
         log_error("failed to allocate memory for routing table.h state");
@@ -253,6 +255,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
         return;
     }
 
+    log_info("starting compression attempt");
     // start compression process
     spin1_schedule_callback(
         start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);

@@ -185,8 +185,18 @@ bool set_up_search_bitfields(void) {
 
     log_info("n bf addresses is %d", n_bf_addresses);
     uint32_t words = get_bit_field_size(n_bf_addresses);
-    tested_mid_points = (bit_field_t) MALLOC(words);
-    mid_points_successes = (bit_field_t) MALLOC(words);
+    tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
+    mid_points_successes = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
+
+    bool check = platform_check(tested_mid_points);
+    if (!check){
+        log_error("failed");
+    }
+
+    check = platform_check(mid_points_successes);
+    if (!check){
+        log_error("failed");
+    }
 
     // check the malloc worked
     if (tested_mid_points == NULL) {
@@ -200,6 +210,16 @@ bool set_up_search_bitfields(void) {
     // clear the bitfields
     clear_bit_field(tested_mid_points, words);
     clear_bit_field(mid_points_successes, words);
+
+    check = platform_check(tested_mid_points);
+    if (!check){
+        log_error("failed");
+    }
+
+    check = platform_check(mid_points_successes);
+    if (!check){
+        log_error("failed");
+    }
 
     // return if successful
     return true;
@@ -410,7 +430,6 @@ bool remove_merged_bitfields_from_cores(void) {
     }
 
     // which bitfields are to be removed from which processors
-    log_info("f");
     proc_bit_field_keys_t *sorted_bf_key_proc = sorter_sort_sorted_to_cores(
         region_addresses, best_search_point, sorted_bit_fields);
     if (sorted_bf_key_proc == NULL) {
@@ -422,7 +441,7 @@ bool remove_merged_bitfields_from_cores(void) {
     // region
     for (int c_i = 0; c_i < region_addresses->n_pairs; c_i++){
         int proc_id = sorted_bf_key_proc[c_i].processor_id;
-        log_info("proc %d", proc_id);
+        log_debug("proc %d", proc_id);
 
         filter_region_t *filter_region = find_processor_bit_field_region(
             proc_id);
@@ -434,9 +453,7 @@ bool remove_merged_bitfields_from_cores(void) {
             n_bfs - sorted_bf_key_proc[c_i].key_list->length_of_list;
 
         // only operate if there is a reduction to do
-        log_info("a");
         if (filter_region->n_filters != n_bfs){
-            log_info("b");
             // pointers for shifting data up by excluding the ones been added to
             // router.
             filter_info_t *write_index = filter_region->filters;
@@ -444,19 +461,15 @@ bool remove_merged_bitfields_from_cores(void) {
 
             // iterate though the bitfields only writing ones which are not
             // removed
-            log_info("c");
             for (int bf_index = 0; bf_index < n_bfs; bf_index++) {
                 // if entry is to be removed
-                log_info("d");
                 if (!has_entry_in_sorted_keys(
                         sorted_bf_key_proc[c_i], read_index->key)) {
-                    log_info("e");
                     // write the data in the current write positions, if it
                     // isn't where we're currently reading from
                     if (write_index != read_index) {
                         // copy the key, n_words and bitfield pointer over to
                         // the new location
-                        log_info("f");
                         sark_mem_cpy(
                             write_index, read_index, sizeof(filter_info_t));
                     }
@@ -857,7 +870,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
         }
     }
 
-    log_debug("checking state");
+    log_info("checking state");
 
     // if failed to malloc, limit exploration to the number of cores running.
     if (failed_to_malloc) {
@@ -1122,8 +1135,7 @@ void sdp_handler(uint mailbox, uint port) {
                     sark_msg_free((sdp_msg_t*) msg);
                     msg = NULL;
 
-                    process_compressor_response(
-                        comp_core_index, finished_state);
+                    process_compressor_response(comp_core_index, finished_state);
                 }
                 break;
             case STOP_COMPRESSION_ATTEMPT:
@@ -1144,7 +1156,7 @@ void sdp_handler(uint mailbox, uint port) {
         sark_msg_free((sdp_msg_t *) msg);
     }
 
-    log_debug("finish sdp process");
+    log_info("finish sdp process");
 }
 
 bool setup_the_uncompressed_attempt(){
@@ -1316,6 +1328,11 @@ bool initialise_compressor_cores(void) {
             core, compressor_cores_top->core_id[core]);
     }
 
+    bool check = platform_check(compressor_cores);
+    if (!check){
+        log_error("failed");
+    }
+
     // populate with compressor cores
     log_info("start populate compression cores");
     for (int core=0; core < n_compression_cores; core++) {
@@ -1333,10 +1350,20 @@ bool initialise_compressor_cores(void) {
         return false;
     }
 
+    check = platform_check(comp_core_mid_point);
+    if (!check){
+        log_error("failed");
+    }
+
     log_info("setting midpoints to DOING_NOWT");
     // set the trackers all to -1 as starting point. to ensure completeness
     for (int core = 0; core < n_compression_cores; core++) {
         comp_core_mid_point[core] = DOING_NOWT;
+    }
+
+    check = platform_check(comp_core_mid_point);
+    if (!check){
+        log_error("failed");
     }
 
     // set up addresses tracker (use sdram so that this can be handed to the
@@ -1351,6 +1378,11 @@ bool initialise_compressor_cores(void) {
         return false;
     }
 
+    check = platform_check(comp_cores_bf_tables);
+    if (!check){
+        log_error("failed");
+    }
+
     // ensure all bits set properly as init
     log_info("setting up table trackers.");
     for (int c_core = 0; c_core < n_compression_cores; c_core++) {
@@ -1358,6 +1390,11 @@ bool initialise_compressor_cores(void) {
         comp_cores_bf_tables[c_core].n_bit_fields = 0;
         comp_cores_bf_tables[c_core].compressed_table = NULL;
         comp_cores_bf_tables[c_core].elements = NULL;
+    }
+
+    check = platform_check(comp_cores_bf_tables);
+    if (!check){
+        log_error("failed");
     }
 
     return true;
@@ -1370,6 +1407,9 @@ static bool initialise(void) {
 
     log_info("test");
     int * test = MALLOC(16);
+    test[0] = 1;
+    test[1] = 2;
+    test[3] = 4;
     bool test_check = platform_check(test);
     if (! test_check){
         log_error("failed test");

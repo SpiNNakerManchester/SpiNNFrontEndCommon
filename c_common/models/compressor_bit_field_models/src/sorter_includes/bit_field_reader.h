@@ -95,6 +95,11 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         }
     }
 
+    bool check = platform_check(bit_field_by_processor);
+    if (!check){
+        log_error("failed");
+    }
+
     *success = true;
     return bit_field_by_processor;
 }

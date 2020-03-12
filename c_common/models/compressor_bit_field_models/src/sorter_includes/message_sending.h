@@ -67,23 +67,12 @@ static inline bool store_sdram_addresses_for_compression(
         FREE(comp_cores_bf_tables[comp_core_index].elements);
     }
 
-    // allocate memory for the elements
-    comp_cores_bf_tables[comp_core_index].elements =
-        MALLOC(n_rt_addresses * sizeof(table_t**));
-    if (comp_cores_bf_tables[comp_core_index].elements == NULL) {
-        log_error("cannot allocate memory for sdram tracker of addresses");
-        return false;
-    }
-
     // store the elements. note need to copy over, as this is a central malloc
     // space for the routing tables.
     comp_cores_bf_tables[comp_core_index].n_elements = n_rt_addresses;
     comp_cores_bf_tables[comp_core_index].n_bit_fields = mid_point;
     comp_cores_bf_tables[comp_core_index].compressed_table = compressed_address;
-    for (int rt_index = 0; rt_index < n_rt_addresses; rt_index++) {
-        comp_cores_bf_tables[comp_core_index].elements[rt_index] =
-            bit_field_routing_tables[rt_index];
-    }
+    comp_cores_bf_tables[comp_core_index].elements = bit_field_routing_tables;
     return true;
 }
 
@@ -261,7 +250,7 @@ bool message_sending_set_off_no_bit_field_compression(
 
     // set up the bitfield routing tables so that it'll map down below
     log_debug("allocating bf routing tables");
-    table_t **bit_field_routing_tables = MALLOC(sizeof(table_t**));
+    table_t **bit_field_routing_tables = MALLOC_SDRAM(sizeof(table_t**));
     log_debug("malloc finished");
     if (bit_field_routing_tables == NULL){
         log_error(

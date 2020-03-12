@@ -197,7 +197,7 @@ bool generate_entries_from_bitfields(
 
     // set up the new route process
     uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
-    bit_field_t processors = (bit_field_t) MALLOC(size);
+    bit_field_t processors = (bit_field_t) MALLOC(size * sizeof(bit_field_t));
     if (processors == NULL) {
         log_error(
             "could not allocate memory for the processor tracker when "
@@ -211,7 +211,8 @@ bool generate_entries_from_bitfields(
     clear_bit_field(processors, size);
 
     // create memory holder for atom based route
-    bit_field_t atom_processors = (bit_field_t) MALLOC(size);
+    bit_field_t atom_processors =
+        (bit_field_t) MALLOC(size * sizeof(bit_field_t));
     if (atom_processors == NULL) {
         log_error(
             "could not allocate memory for the atom processor tracker when "
@@ -267,7 +268,6 @@ bool generate_entries_from_bitfields(
     FREE(bit_field_processors);
     FREE(processors);
     FREE(atom_processors);
-
     return true;
 
 }
@@ -312,11 +312,23 @@ bool generate_rt_from_bit_field(
         }
     }
 
+    bool passed = platform_check(filters);
+    if (! passed){
+        log_error("failed");
+        terminate(2);
+    }
+
     // extract original routing entry from uncompressed table
     entry_t original_entry;
 
     extract_and_remove_entry_from_table(
         uncompressed_table, master_pop_key, &original_entry);
+
+    passed = platform_check(filters);
+    if (! passed){
+        log_error("failed");
+        terminate(2);
+    }
 
     // create table entries with bitfields
     bool success = generate_entries_from_bitfields(
@@ -363,6 +375,12 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
         log_error("cannot allocate memory for keys");
         return NULL;
     }
+    bool check = platform_check(keys);
+    if (!check){
+        log_error("failed");
+        terminate(2);
+    }
+
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
@@ -374,6 +392,11 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
     table_t* uncompressed_table =
         helpful_functions_clone_un_compressed_routing_table(
             uncompressed_router_table);
+    check = platform_check(uncompressed_table);
+    if (!check){
+        log_error("failed");
+        terminate(2);
+    }
     if (uncompressed_table == NULL) {
         log_error(
             "failed to clone uncompressed tables for attempt %d", mid_point);
@@ -381,9 +404,11 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
         return NULL;
     }
 
-    log_info("looking for %d bytes", *n_rt_addresses * sizeof(table_t*));
+    log_info(
+        "looking for %d bytes from %d tables",
+        *n_rt_addresses * sizeof(table_t*), *n_rt_addresses);
     table_t** bit_field_routing_tables =
-        MALLOC(*n_rt_addresses * sizeof(table_t*));
+        MALLOC_SDRAM(*n_rt_addresses * sizeof(table_t*));
     if (bit_field_routing_tables == NULL) {
         log_error("failed to allocate memory for bitfield routing tables");
         FREE(keys);
@@ -393,7 +418,17 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
 
     // add clone to back of list, to ensure its easily accessible (plus its
     // part of the expected logic)
+    check = platform_check(bit_field_routing_tables);
+    if (!check){
+        log_error("failed");
+        terminate(2);
+    }
     bit_field_routing_tables[*n_rt_addresses - 1] = uncompressed_table;
+    check = platform_check(bit_field_routing_tables);
+    if (!check){
+        log_error("failed");
+        terminate(2);
+    }
 
     // iterate through the keys, accumulating bitfields and turn into routing
     // table entries.
@@ -410,7 +445,7 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
 
         // if failed, free stuff and tell above it failed
         if (!success){
-            log_info("failed to allocate memory for rt table");
+            log_error("failed to allocate memory for rt table");
             FREE(keys);
             FREE(bit_field_routing_tables);
             FREE(uncompressed_table);
@@ -422,7 +457,13 @@ table_t** bit_field_table_generator_create_bit_field_router_tables(
     }
 
     // free stuff
-    FREE(keys);
+    FREE(keys);;
+
+    check = platform_check(bit_field_routing_tables);
+    if (!check){
+        log_error("failed");
+        terminate(2);
+    }
     return bit_field_routing_tables;
 }
 

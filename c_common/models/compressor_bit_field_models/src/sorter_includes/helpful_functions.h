@@ -108,7 +108,7 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         // start cycle looking for a clone
         bool found = false;
         for (int keys_index = 0; keys_index < n_keys; keys_index++) {
-            if (keys[keys_index].master_pop_key ==  bf_pointer->key) {
+            if (keys[keys_index].master_pop_key == bf_pointer->key) {
                 keys[keys_index].n_bitfields_with_key += 1;
                 found = true;
             }
@@ -122,7 +122,7 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
             //log_info(
             //    "address of keys = %x, address pf keys[n_keys] = %x",
             //    &keys, &keys[n_keys]);
-            keys[n_keys].master_pop_key =  bf_pointer->key;
+            keys[n_keys].master_pop_key = bf_pointer->key;
             keys[n_keys].n_bitfields_with_key = 1;
             n_keys++;
         }
@@ -175,10 +175,23 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
         return NULL;
     }
 
+    bool check = platform_check(where_was_cloned);
+    if (!check){
+        log_info("failed");
+        terminate(2);
+    }
+
     // copy over data
     sark_mem_cpy(
-        where_was_cloned, &uncompressed_router_table->uncompressed_table.size,
+        where_was_cloned, &uncompressed_router_table->uncompressed_table,
         sdram_used);
+
+    check = platform_check(where_was_cloned);
+    if (!check){
+        log_info("failed");
+        terminate(2);
+    }
+
     return where_was_cloned;
 }
 

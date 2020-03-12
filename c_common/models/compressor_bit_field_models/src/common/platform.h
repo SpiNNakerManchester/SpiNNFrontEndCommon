@@ -341,19 +341,30 @@ static inline void terminate(uint result_code) {
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-void * safe_sdram_malloc(uint bytes){
+static void * safe_sdram_malloc(uint bytes, bool safety) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     //print_free_sizes_in_heap();
-    uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
     if (safety) {
-
+        bytes = bytes + EXTRA_BYTES;
     }
+
+    uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
     if (p == NULL) {
         log_error("Failed to malloc %u bytes.\n", bytes);
     }
-    return p;
+
+    if (safety) {
+        int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
+        p[0] = n_words;
+        p[n_words] = SAFETY_FLAG;
+    }
+    return (void *) &p[1];
+}
+
+void * safe_sdram_malloc_wrapper(uint bytes) {
+    return safe_sdram_malloc(bytes, true);
 }
 
 //! \brief allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
@@ -369,11 +380,11 @@ static void * safe_malloc(uint bytes) {
     int *p = sark_alloc(bytes, 1);
 
     if (p == NULL) {
-       p = safe_sdram_malloc(bytes);
+       p = safe_sdram_malloc(bytes, false);
     }
 
     if (safety) {
-        int n_words = (int) ((bytes - EXTRA_BYTES) / BYTE_TO_WORD);
+        int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
     }
@@ -398,8 +409,8 @@ static bool platform_check(void *ptr) {
         int_pointer = int_pointer - 1;
         int words = int_pointer[0];
         uint32_t flag = int_pointer[words];
-
         if (flag != SAFETY_FLAG) {
+            log_error("flag is actually %x", flag);
             return false;
         }
         else {
@@ -428,10 +439,8 @@ static void safe_x_free(void *ptr) {
     }
 }
 
-
 #define MALLOC safe_malloc
 #define FREE   safe_x_free
-#define MALLOC_SDRAM safe_sdram_malloc
-
+#define MALLOC_SDRAM safe_sdram_malloc_wrapper
 
 #endif  // __PLATFORM_H__

@@ -201,11 +201,12 @@ int find_index_of_table_for_entry(int entry_id) {
 static inline bool routing_tables_init(
         int total_n_tables, table_t **elements) {
     n_tables = total_n_tables;
+    log_info("n tables = %d", n_tables);
 
     // set up addresses data holder
     routing_tables = elements;
 
-    log_debug(
+    log_info(
         "allocating %d bytes for table lo entry",
         (n_tables + 1) * sizeof(int));
     table_lo_entry = MALLOC((n_tables + 1) * sizeof(int));
@@ -218,6 +219,8 @@ static inline bool routing_tables_init(
 
     // update the lo entry map
     for (int rt_index = 0; rt_index < total_n_tables; rt_index++) {
+        log_info("n table entries is %d", routing_tables[rt_index]->size);
+
         // store low entry tracker (reduces sdram requirements)
         table_lo_entry[current_n_tables] = current_low_entry;
             // update current n tables.
@@ -227,6 +230,11 @@ static inline bool routing_tables_init(
 
         // store what is basically total entries to end of list.
         table_lo_entry[current_n_tables] = current_low_entry;
+    }
+
+    bool check = platform_check(table_lo_entry);
+    if (!check){
+        log_error("failed");
     }
 
     return true;

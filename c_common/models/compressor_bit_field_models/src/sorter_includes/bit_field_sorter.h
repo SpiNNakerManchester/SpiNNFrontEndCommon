@@ -215,7 +215,7 @@ void print_proc_by_coverage(
         for (int l_id =0;
                 l_id < proc_cov_by_bf[region_index]->length_of_list;
                 l_id++) {
-            log_info(
+            log_debug(
                 "proc %d at index %d has redundant packets count of %d",
                 proc_cov_by_bf[region_index]->processor_id, l_id,
                 proc_cov_by_bf[region_index]->redundant_packets[l_id]);
@@ -477,7 +477,7 @@ static inline int determine_unique_redundant_packets(
                     redundant_packet_count)) {
                 unique_redundant_packets[unique_packet_count_index] =
                     redundant_packet_count;
-                log_info(
+                log_debug(
                     "putting %d in unique index %d",
                     redundant_packet_count, unique_packet_count_index);
                 unique_packet_count_index += 1;
@@ -486,7 +486,7 @@ static inline int determine_unique_redundant_packets(
     }
 
     for (int index = 0; index < unique_packet_count_index; index ++) {
-        log_info(
+        log_debug(
             "redundant packet count at index %d is %d",
             index, unique_redundant_packets[index]);
     }
@@ -516,11 +516,25 @@ static _coverage_t** create_coverage_by_redundant_packet(
     
     // malloc coverage
     _coverage_t** coverage =
-        MALLOC(n_unique_redundant_packets * sizeof(_coverage_t*));
+        MALLOC_SDRAM(n_unique_redundant_packets * sizeof(_coverage_t*));
     if (coverage == NULL) {
         log_error("failed to malloc memory for the bitfields by coverage. "
                   "might as well fail");
         return NULL;
+    }
+
+    log_info("the address for the coverage main pointer is %x", &coverage);
+
+    for (int unique_redundant_index = 0;
+            unique_redundant_index < n_unique_redundant_packets;
+            unique_redundant_index++) {
+        coverage[unique_redundant_index] = NULL;
+    }
+
+    bool passed = platform_check(coverage);
+    if (! passed){
+        log_error("failed");
+        terminate(2);
     }
 
     // go through the unique x redundant packets and build the list of
@@ -532,7 +546,16 @@ static _coverage_t** create_coverage_by_redundant_packet(
         log_info(
             "try to allocate memory of size %d for coverage at index %d",
              sizeof(_coverage_t), unique_redundant_index);
-        coverage[unique_redundant_index] = MALLOC(sizeof(_coverage_t));
+        _coverage_t *element = MALLOC(sizeof(_coverage_t));
+
+        // update the redundant packet pointer
+        passed = platform_check(coverage);
+        if (! passed){
+            log_error("failed");
+            terminate(2);
+        }
+
+        coverage[unique_redundant_index] = element;
         if (coverage[unique_redundant_index] == NULL) {
             log_error(
                 "failed to malloc memory for the bitfields by coverage "
@@ -541,7 +564,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
         }
 
         // update the redundant packet pointer
-        bool passed = platform_check(coverage);
+        passed = platform_check(coverage);
         if (! passed){
             log_error("failed");
             terminate(2);
@@ -572,7 +595,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
             }
         }
 
-        log_debug("size going to be %d", n_bf_with_same_r_packets);
+        log_info("size going to be %d", n_bf_with_same_r_packets);
 
         // update length of list
         coverage[unique_redundant_index]->length_of_list =
@@ -587,7 +610,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
         // malloc list size for these addresses of bitfields with same
         // redundant packet counts.
         coverage[unique_redundant_index]->bit_field_addresses =
-            MALLOC((n_bf_with_same_r_packets + 1) * sizeof(filter_info_t*));
+            MALLOC((n_bf_with_same_r_packets) * sizeof(filter_info_t*));
         if (coverage[unique_redundant_index]->bit_field_addresses == NULL) {
             log_error(
                 "failed to allocate memory for the coverage on index %d"
@@ -603,7 +626,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
             n_bf_with_same_r_packets * sizeof(uint32_t),
             n_bf_with_same_r_packets);
         coverage[unique_redundant_index]->processor_ids =
-            MALLOC((n_bf_with_same_r_packets + 1) * sizeof(uint32_t));
+            MALLOC((n_bf_with_same_r_packets) * sizeof(uint32_t));
         if (coverage[unique_redundant_index]->processor_ids == NULL) {
             log_error(
                 "failed to allocate memory for the coverage on index %d"
@@ -629,18 +652,18 @@ static _coverage_t** create_coverage_by_redundant_packet(
                         proc_cov_by_bf[region_index]->length_of_list;
                     proc_redundant_index ++) {
 
-                log_debug(
+                log_info(
                     "comparing %d with %d",
                     proc_cov_by_bf[region_index]->redundant_packets[
                         proc_redundant_index],
                     unique_redundant_packets[unique_redundant_index]);
-                log_debug("processor_i = %d", processor_i);
+                log_info("processor_i = %d", processor_i);
 
                 if (proc_cov_by_bf[region_index]->redundant_packets[
                         proc_redundant_index] ==
                             unique_redundant_packets[unique_redundant_index]) {
 
-                    log_debug(
+                    log_info(
                         "found! at %x",
                         bf_by_processor[region_index].bit_field_addresses[
                             proc_redundant_index]);
@@ -773,7 +796,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
 
     // populate the bitfield by coverage
-    log_info("create proc cov by bitfield");
+    log_debug("create proc cov by bitfield");
     _proc_cov_by_bitfield_t** proc_cov_by_bf = create_coverage_by_bit_field(
         region_addresses);
     if (proc_cov_by_bf == NULL){
