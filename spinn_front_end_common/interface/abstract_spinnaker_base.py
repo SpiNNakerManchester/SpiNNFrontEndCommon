@@ -1711,6 +1711,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
+        self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1738,6 +1739,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
+        self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
     def _do_load(self, graph_changed):
         # set up timing
@@ -1830,6 +1832,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
+        self._load_outputs["LoadTimeMs"] = self._load_time
 
     def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
         # start timer
@@ -1876,6 +1879,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             self._execute_time += convert_time_diff_to_total_milliseconds(
                 run_timer.take_sample())
+            self._last_run_outputs["ExecuteTimeMs"] = self._execute_time
+            self._last_run_outputs["ExtractionTimeMs"] = self._extraction_time
 
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
