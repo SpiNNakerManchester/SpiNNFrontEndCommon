@@ -1987,6 +1987,25 @@
             <token part="MemoryIODataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
+    <algorithm name="FinaliseTimingData">
+    	<python_module>spinn_front_end_common.interface.interface_functions.finalise_timing_data</python_module>
+    	<python_class>FinaliseTimingData</python_class>
+    	<input_definitions></input_definitions>
+    	<required_inputs>
+            <token>ApplicationRun</token>
+    	</required_inputs>
+    	<optional_inputs>
+    		<!-- After iobuf extraction, if that happens at all -->
+            <token>ReadIOBuf</token>
+    	</optional_inputs>
+    	<outputs>
+            <param_type>MappingTimeMs</param_type>
+            <param_type>DSGTimeMs</param_type>
+            <param_type>LoadTimeMs</param_type>
+            <param_type>ExecuteTimeMs</param_type>
+            <param_type>ExtractionTimeMs</param_type>
+    	</outputs>
+    </algorithm>
     <algorithm name="ComputeEnergyUsed">
     	<python_module>spinn_front_end_common.interface.interface_functions.compute_energy_used</python_module>
     	<python_class>ComputeEnergyUsed</python_class>

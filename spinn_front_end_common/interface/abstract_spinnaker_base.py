@@ -325,6 +325,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # the time takes to execute the simulation
         "_execute_time",
+        # the timer used to log the execute time
+        "_run_timer",
 
         # time takes to do data generation
         "_dsg_time",
@@ -1834,10 +1836,24 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             load_timer.take_sample())
         self._load_outputs["LoadTimeMs"] = self._load_time
 
+    def _end_of_run_timing(self):
+        """
+        :return:
+            mapping_time, dsg_time, load_time, execute_time, extraction_time
+        :rtype: tuple(float, float, float, float, float)
+        """
+        timer = self._run_timer
+        if timer is not None:
+            self._execute_time += convert_time_diff_to_total_milliseconds(
+                self._run_timer.take_sample())
+        return (
+            self._mapping_time, self._dsg_time, self._load_time,
+            self._execute_time, self._extraction_time)
+
     def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
         # start timer
-        run_timer = Timer()
-        run_timer.start_timing()
+        self._run_timer = Timer()
+        self._run_timer.start_timing()
 
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
@@ -1876,11 +1892,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
-
-            self._execute_time += convert_time_diff_to_total_milliseconds(
-                run_timer.take_sample())
-            self._last_run_outputs["ExecuteTimeMs"] = self._execute_time
-            self._last_run_outputs["ExtractionTimeMs"] = self._extraction_time
 
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
@@ -2024,6 +2035,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
+
+        # add in the timing finalisation
+        algorithms.append("FinaliseTimingData")
 
         if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append("ComputeEnergyUsed")
