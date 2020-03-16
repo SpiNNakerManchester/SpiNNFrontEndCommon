@@ -24,6 +24,7 @@ class PowerUsed(object):
         "__num_chips",
         "__num_cores",
         "__num_fpgas",
+        "__num_frames",
         "__exec_time",
         "__mapping_time",
         "__data_gen_time",
@@ -46,6 +47,7 @@ class PowerUsed(object):
         self.__num_chips = 0
         self.__num_cores = 0
         self.__num_fpgas = 0
+        self.__num_frames = 0
         self.__exec_time = 0.0
         self.__mapping_time = 0.0
         self.__data_gen_time = 0.0
@@ -98,6 +100,18 @@ class PowerUsed(object):
     @num_fpgas.setter
     def num_fpgas(self, value):
         self.__num_fpgas = int(value)
+
+    @property
+    def num_frames(self):
+        """ The total number of frames used.
+
+        :rtype: int
+        """
+        return self.__num_frames
+
+    @num_frames.setter
+    def num_frames(self, value):
+        self.__num_frames = int(value)
 
     @property
     def total_time_secs(self):

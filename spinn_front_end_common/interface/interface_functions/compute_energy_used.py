@@ -42,9 +42,6 @@ class ComputeEnergyUsed(object):
     #: Massively-Parallel Neural Network Simulation)
     MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD = 0.001 - MILLIWATTS_PER_IDLE_CHIP
 
-    #: converter between joules to kilowatt hours
-    JOULES_TO_KILOWATT_HOURS = 3600000
-
     #: measured from the real power meter and timing between
     #: the photos for a days powered off
     MILLIWATTS_FOR_FRAME_IDLE_COST = 0.117
@@ -137,23 +134,24 @@ class ComputeEnergyUsed(object):
 
         # figure how many frames are using, as this is a constant cost of
         # routers, cooling etc
-        n_frames = self._calculate_n_frames(machine, job)
+        power_used.n_frames = self._calculate_n_frames(machine, job)
 
         # figure load time cost
         power_used.loading_joules = self._calculate_loading_energy(
-            pacman_provenance, machine, load_time, active_chips, n_frames)
+            pacman_provenance, machine, load_time, active_chips,
+            power_used.n_frames)
 
         # figure the down time idle cost for mapping
         power_used.mapping_joules = self._calculate_power_down_energy(
-            mapping_time, machine, job, version, n_frames)
+            mapping_time, machine, job, version, power_used.n_frames)
 
         # figure the down time idle cost for DSG
         power_used.data_gen_joules = self._calculate_power_down_energy(
-            dsg_time, machine, job, version, n_frames)
+            dsg_time, machine, job, version, power_used.n_frames)
 
         # figure extraction time cost
         power_used.saving_joules = self._calculate_data_extraction_energy(
-            pacman_provenance, machine, active_chips, n_frames)
+            pacman_provenance, machine, active_chips, power_used.n_frames)
 
         # figure out active chips cost
         power_used.chip_energy_joules = sum(
@@ -163,17 +161,18 @@ class ComputeEnergyUsed(object):
 
         # figure out cooling/internet router idle cost during runtime
         power_used.baseline_joules = (
-            runtime_total_ms * n_frames * self.MILLIWATTS_FOR_FRAME_IDLE_COST)
+            runtime_total_ms * power_used.n_frames *
+            self.MILLIWATTS_FOR_FRAME_IDLE_COST)
 
-    _PER_CHIP_NAMES = set((
+    _PER_CHIP_NAMES = frozenset((
         "expected_routers", "unexpected_routers"))
-    _MULTICAST_COUNTER_NAMES = set((
+    _MULTICAST_COUNTER_NAMES = frozenset((
         "Local_Multicast_Packets", "External_Multicast_Packets", "Reinjected"))
-    _PEER_TO_PEER_COUNTER_NAMES = set((
+    _PEER_TO_PEER_COUNTER_NAMES = frozenset((
         "Local_P2P_Packets", "External_P2P_Packets"))
-    _NEAREST_NEIGHBOUR_COUNTER_NAMES = set((
+    _NEAREST_NEIGHBOUR_COUNTER_NAMES = frozenset((
         "Local_NN_Packets", "External_NN_Packets"))
-    _FIXED_ROUTE_COUNTER_NAMES = set((
+    _FIXED_ROUTE_COUNTER_NAMES = frozenset((
         "Local_FR_Packets", "External_FR_Packets"))
 
     def _router_packet_energy(self, router_provenance, power_used):
