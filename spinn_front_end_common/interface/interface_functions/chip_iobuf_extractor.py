@@ -41,9 +41,13 @@ class ChipIOBufExtractor(object):
 
     # The log dict is the same every time so can be static
     if 'SPINN_DIRS' in os.environ:
-        _log_dict_path = os.path.join(os.environ['SPINN_DIRS'], "lib")
-    else:
+        _log_dict_path = os.path.join(
+            os.environ['SPINN_DIRS'], "lib", "logs.dict")
+    elif os.environ.get('CONTINUOUS_INTEGRATION', 'false').lower() == 'true':
         _log_dict_path = None
+    else:
+        raise PacmanConfigurationException(
+            "Environment variable 'SPINN_DIRS' not set")
 
     __slots__ = [
         # Template for the file names to be used where writing the results
