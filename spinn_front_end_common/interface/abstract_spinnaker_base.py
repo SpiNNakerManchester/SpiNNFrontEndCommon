@@ -1543,7 +1543,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs['MemoryMachineGraph'] = self._machine_graph
 
         inputs['ReportFolder'] = self._report_default_directory
-        inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path

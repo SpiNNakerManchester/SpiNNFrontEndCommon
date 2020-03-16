@@ -181,8 +181,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         reloader = DSGRegionReloader()
         reloader.__call__(
-            transceiver, placements, "localhost", "test", False, "test",
-            graph_mapper)
+            transceiver, placements, "localhost", "test", False, graph_mapper)
 
         regions_rewritten = transceiver.regions_rewritten
 

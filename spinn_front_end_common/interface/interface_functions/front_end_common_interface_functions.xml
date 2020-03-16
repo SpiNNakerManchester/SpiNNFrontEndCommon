@@ -498,10 +498,6 @@
                 <param_type>WriteTextSpecsFlag</param_type>
             </parameter>
             <parameter>
-                <param_name>application_data_file_path</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
@@ -512,7 +508,6 @@
             <param_name>hostname</param_name>
             <param_name>report_directory</param_name>
             <param_name>write_text_specs</param_name>
-            <param_name>application_data_file_path</param_name>
         </required_inputs>
         <optional_inputs>
             <token part="DSGDataLoaded">DataLoaded</token>
@@ -1387,8 +1382,8 @@
                 <param_type>MemoryTags</param_type>
             </parameter>
             <parameter>
-                <param_name>database_directory</param_name>
-                <param_type>ApplicationDataFolder</param_type>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>runtime_in_us</param_name>
@@ -1440,7 +1435,7 @@
             <param_name>machine_graph</param_name>
             <param_name>user_create_database</param_name>
             <param_name>tags</param_name>
-            <param_name>database_directory</param_name>
+            <param_name>report_folder</param_name>
             <param_name>runtime_in_us</param_name>
             <param_name>machine</param_name>
             <param_name>data_simtime_in_us</param_name>
@@ -1935,8 +1930,8 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>hostname</param_name>
@@ -1971,7 +1966,7 @@
             <param_name>graph</param_name>
             <param_name>placements</param_name>
             <param_name>app_id</param_name>
-            <param_name>app_data_runtime_folder</param_name>
+            <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
         </required_inputs>
         <optional_inputs>

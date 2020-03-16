@@ -148,7 +148,7 @@ def test_memory_io():
         "MemoryMachineGraph": graph,
         "MemoryPlacements": placements,
         "IPAddress": "testing",
-        "ApplicationDataFolder": temp,
+        "ReportFolder": temp,
         "APPID": 30
     }
     algorithms = ["WriteMemoryIOData"]
