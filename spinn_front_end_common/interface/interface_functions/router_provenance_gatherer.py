@@ -51,13 +51,12 @@ class RouterProvenanceGatherer(object):
 
     def __call__(
             self, transceiver, machine, router_tables,
-            provenance_data_objects=None, extra_monitor_vertices=None,
-            placements=None):
+            extra_monitor_vertices=None, placements=None):
         """
         :param transceiver: the SpiNNMan interface object
-        :type transceiver: :py:class:`~spinnman.Transceiver`
+        :type transceiver: ~spinnman.transceiver.Transceiver
         :param machine: the SpiNNaker machine
-        :type machine: :py:class:`~spinn_machine.Machine`
+        :type machine: ~spinn_machine.Machine
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran
         :param provenance_data_objects: other provenance data items
@@ -76,10 +75,7 @@ class RouterProvenanceGatherer(object):
         self._machine = machine
         self._placements = placements
 
-        if provenance_data_objects is not None:
-            prov_items = provenance_data_objects
-        else:
-            prov_items = list()
+        prov_items = list()
 
         prov_items.extend(self._write_router_provenance_data(
             router_tables, extra_monitor_vertices))
@@ -352,4 +348,15 @@ class RouterProvenanceGatherer(object):
                     " each packet. These packets were reinjected and so this"
                     " number is likely a overestimate.".format(
                         x, y, reinjection_status.n_processor_dumps))))
+
+        items.append(ProvenanceDataItem(
+            self._add_name(names, "Error status"),
+            str(router_diagnostic.error_status),
+            report=router_diagnostic.error_status > 0,
+            message=(
+                "The router on {}, {} has a non-zero error status.  This could"
+                " indicate a hardware fault.  The errors set are {}, and the"
+                " error count is {}".format(
+                    x, y, router_diagnostic.errors_set,
+                    router_diagnostic.error_count))))
         return items

@@ -982,12 +982,12 @@ static bool setup_buffer_region(uint8_t *region_address) {
 static bool initialise_recording(void) {
     data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();
-    address_t recording_region = data_specification_get_region(
+    void *recording_region = data_specification_get_region(
             RECORDING_REGION, ds_regions);
 
     log_info("Recording starts at 0x%08x", recording_region);
 
-    bool success = recording_initialize(recording_region, &recording_flags);
+    bool success = recording_initialize(&recording_region, &recording_flags);
     log_info("Recording flags = 0x%08x", recording_flags);
     return success;
 }

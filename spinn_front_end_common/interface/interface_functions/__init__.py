@@ -22,8 +22,8 @@ from .chip_iobuf_extractor import ChipIOBufExtractor
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
 from .database_interface import DatabaseInterface
-from .data_in_multicast_routing_generator import (
-    DataInMulticastRoutingGenerator)
+from .system_multicast_routing_generator import (
+    SystemMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
 from .graph_binary_gatherer import GraphBinaryGatherer
@@ -48,7 +48,7 @@ from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
 from .machine_generator import MachineGenerator
-from .notification_protocol import NotificationProtocol
+from .create_notification_protocol import CreateNotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
 from .pre_allocate_resources_for_chip_power_monitor import (
     PreAllocateResourcesForChipPowerMonitor)
@@ -59,6 +59,7 @@ from .preallocate_resources_for_extra_monitor_support import (
 from .process_partition_constraints import ProcessPartitionConstraints
 from .profile_data_gatherer import ProfileDataGatherer
 from .provenance_json_writer import ProvenanceJSONWriter
+from .provenance_sql_writer import ProvenanceSQLWriter
 from .provenance_xml_writer import ProvenanceXMLWriter
 from .router_provenance_gatherer import RouterProvenanceGatherer
 from .routing_setup import RoutingSetup
@@ -74,8 +75,8 @@ __all__ = [
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "DatabaseInterface",
-    "DataInMulticastRoutingGenerator",
+    "ChipRuntimeUpdater", "CreateNotificationProtocol", "DatabaseInterface",
+    "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
@@ -87,12 +88,12 @@ __all__ = [
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
     "LocateExecutableStartType", "LoadFixedRoutes", "MachineGenerator",
-    "NotificationProtocol", "PlacementsProvenanceGatherer",
+    "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
-    "ProvenanceJSONWriter", "ProvenanceXMLWriter",
+    "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",

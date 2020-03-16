@@ -16,9 +16,7 @@
 import logging
 import os
 import sqlite3
-from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
-from .ds_abstact_database import DsAbstractDatabase
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 
 DB_NAME = "ds.sqlite3"
@@ -26,7 +24,7 @@ DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class DsSqlliteDatabase(DsAbstractDatabase):
+class DsSqlliteDatabase(object):
     __slots__ = [
         # the database holding the data to store, if used
         "_db",
@@ -37,6 +35,12 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     ]
 
     def __init__(self, machine, report_folder, init=None):
+        """
+        :param ~spinn_machine.Machine machine:
+        :param str report_folder:
+        :param init:
+        :type init: bool or None
+        """
         self._machine = machine
         database_file = os.path.join(report_folder, DB_NAME)
 
@@ -83,13 +87,23 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     def __del__(self):
         self.close()
 
-    @overrides(DsAbstractDatabase.close)
     def close(self):
+        """ Signals that the database can be closed and will not be reused.
+
+        .. note::
+            Once this is called any other method in this API is allowed to
+            raise any kind of exception.
+        """
         if self._db is not None:
             self._db.close()
             self._db = None
 
     def __get_ethernet(self, ethernet_x, ethernet_y):
+        """
+        :param int ethernet_x:
+        :param int ethernet_y:
+        :rtype: int
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT ethernet_id FROM ethernet "
@@ -98,14 +112,20 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return row["ethernet_id"]
         return self._root_ethernet_id
 
-    @overrides(DsAbstractDatabase.clear_ds)
     def clear_ds(self):
+        """ Clear all saved data specification data
+        """
         with self._db:
             self._db.execute(
                 "DELETE FROM core")
 
-    @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):
+        """
+        :param int core_x: x of the core ds applies to
+        :param int core_y: y of the core ds applies to
+        :param int p: p of the core ds applies to
+        :param bytearray ds: the data spec as byte code
+        """
         chip = self._machine.get_chip_at(core_x, core_y)
         ethernet_id = self.__get_ethernet(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
@@ -115,8 +135,15 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 + "VALUES(?, ?, ?, ?, ?) ",
                 (core_x, core_y, core_p, ethernet_id, sqlite3.Binary(ds)))
 
-    @overrides(DsAbstractDatabase.get_ds)
     def get_ds(self, x, y, p):
+        """ Retrieves the data spec as byte code for this core.
+
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :return: data spec as byte code
+        :rtype: bytearray
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT content FROM core "
@@ -124,16 +151,23 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return row["content"]
         return b""
 
-    @overrides(DsAbstractDatabase.ds_iteritems)
     def ds_iteritems(self):
+        """ Yields the keys and values for the DS data
+
+        :return: Yields the (x, y, p) and saved ds pairs
+        :rtype: iterable(tuple(tuple(int, int, int), bytearray))
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT x, y, processor, content FROM core "
                     + "WHERE content IS NOT NULL"):
                 yield (row["x"], row["y"], row["processor"]), row["content"]
 
-    @overrides(DsAbstractDatabase.ds_n_cores)
     def ds_n_cores(self):
+        """ Returns the number for cores there is a ds saved for
+
+        :rtype: int
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT COUNT(*) as count FROM core "
@@ -141,25 +175,22 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return row["count"]
         raise Exception("Count query failed")
 
-    @overrides(DsAbstractDatabase.ds_set_app_id)
     def ds_set_app_id(self, app_id):
-        """ Sets the same app_id for all rows that have DS content
+        """ Sets the same app_id for all rows that have ds content
 
-        :param app_id: value to set
-        :rtype app_id: int
+        :param int app_id: value to set
         """
         with self._db:
             self._db.execute(
                 "UPDATE core SET app_id = ? WHERE content IS NOT NULL",
                 (app_id,))
 
-    @overrides(DsAbstractDatabase.ds_get_app_id)
     def ds_get_app_id(self, x, y, p):
         """ Gets the app_id set for this core
 
-        :param x: core x
-        :param y: core y
-        :param p: core p
+        :param int x: core x
+        :param int y: core y
+        :param int p: core
         :rtype: int
         """
         with self._db:
@@ -169,8 +200,13 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return row["app_id"]
         return None
 
-    @overrides(DsAbstractDatabase.ds_mark_as_system)
     def ds_mark_as_system(self, core_list):
+        """
+        Flags a list of processors as running system binaries.
+
+        :param iterable(tuple(int,int,int)) core_list:
+            list of (core x, core y, core p)
+        """
         with self._db:
             for xyp in core_list:
                 self._db.execute(
@@ -178,12 +214,22 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     "WHERE x = ? AND y = ? AND processor = ?", xyp)
 
     def _row_to_info(self, row):
+        """
+        :param ~sqlite3.Row row:
+        :rtype: DataWritten
+        """
         return DataWritten(start_address=row["start_address"],
                            memory_used=row["memory_used"],
                            memory_written=row["memory_written"])
 
-    @overrides(DsAbstractDatabase.get_write_info)
     def get_write_info(self, x, y, p):
+        """ Gets the provenance returned by the Data Spec executor
+
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :rtype: DataWritten
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT start_address, memory_used, memory_written "
@@ -192,15 +238,13 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return self._row_to_info(row)
         raise ValueError("No info for {}:{}:{}".format(x, y, p))
 
-    @overrides(DsAbstractDatabase.set_write_info)
     def set_write_info(self, x, y, p, info):
-        """ Gets the provenance returned by the Data Spec executor
+        """ Sets the provenance returned by the Data Spec executor.
 
-        :param x: core x
-        :param y: core y
-        :param p: core p
-        :param info: DataWritten or dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        :param DataWritten info:
         """
         if isinstance(info, DataWritten):
             start = info.start_address
@@ -227,16 +271,38 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
                     (x, y, p, ethernet_id, start, used, written))
 
-    @overrides(DsAbstractDatabase.clear_write_info)
+    def set_size_info(self, x, y, p, memory_used):
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute(
+                "UPDATE core SET "
+                "memory_used = ? "
+                "WHERE x = ? AND y = ? AND processor = ? ",
+                (memory_used, x, y, p))
+            if cursor.rowcount == 0:
+                chip = self._machine.get_chip_at(x, y)
+                ethernet_id = self.__get_ethernet(
+                    chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+                cursor.execute(
+                    "INSERT INTO core(x, y, processor, ethernet_id, "
+                    + "memory_used) "
+                    + "VALUES(?, ?, ?, ?, ?) ",
+                    (x, y, p, ethernet_id, int(memory_used)))
+
     def clear_write_info(self):
+        """ Clears the provenance for all rows
+        """
         with self._db:
             self._db.execute(
                 "UPDATE core SET "
                 + "start_address = NULL, memory_used = NULL, "
                 + "memory_written = NULL")
 
-    @overrides(DsAbstractDatabase.info_n_cores)
     def info_n_cores(self):
+        """ Returns the number for cores there is a info saved for.
+
+        :rtype: int
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT count(*) as count FROM core "
@@ -244,8 +310,14 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return row["count"]
         raise Exception("Count query failed")
 
-    @overrides(DsAbstractDatabase.info_iteritems)
     def info_iteritems(self):
+        """
+        Yields the keys and values for the Info data. Note that a DB \
+        transaction may be held while this iterator is processing.
+
+        :return: Yields the (x, y, p) and DataWritten
+        :rtype: iterable(tuple(tuple(int, int, int), DataWritten))
+        """
         with self._db:
             for row in self._db.execute(
                     "SELECT x, y, processor, "

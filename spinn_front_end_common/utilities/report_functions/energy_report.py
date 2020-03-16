@@ -25,36 +25,58 @@ logger = logging.getLogger(__name__)
 
 class EnergyReport(object):
     """ Creates a report about the approximate total energy consumed by a\
-        SpiNNaker job execution.
+        SpiNNaker job execution. **Callable.**
+
+    :param ~pacman.model.placements.Placements placements: the placements
+    :param ~spinn_machine.Machine machine: the machine
+    :param str report_default_directory: location for reports
+    :param int version: version of machine
+    :param str spalloc_server: spalloc server IP
+    :param str remote_spinnaker_url: remote SpiNNaker URL
+    :param int time_scale_factor: the time scale factor
+    :param int machine_time_step: the machine time step
+    :param list(ProvenanceDataItem) pacman_provenance: the PACMAN provenance
+    :param list(ProvenanceDataItem) router_provenance: the router provenance
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param BufferManager buffer_manager: the buffer manager
+    :param int mapping_time: time taken by the mapping process
+    :param int load_time: the time taken by the load process
+    :param int execute_time: the time taken by the execute time process
+    :param int dsg_time: the time taken by the DSG time
+    :param int extraction_time: the time taken by data extraction time
+    :param MachineAllocationController machine_allocation_controller:
+        the machine controller for spalloc
+    :rtype: None
     """
 
-    # given from indar measurements
+    #: given from Indar's measurements
     MILLIWATTS_PER_FPGA = 0.000584635
 
-    # stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
-    # Massively-Parallel Neural Network Simulation)
+    #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
+    #: Massively-Parallel Neural Network Simulation)
     JOULES_PER_SPIKE = 0.000000000800
 
-    # stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
-    # Massively-Parallel Neural Network Simulation)
+    #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
+    #: Massively-Parallel Neural Network Simulation)
     MILLIWATTS_PER_IDLE_CHIP = 0.000360
 
-    # stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
-    # Massively-Parallel Neural Network Simulation)
+    #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
+    #: Massively-Parallel Neural Network Simulation)
     MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD = 0.001 - MILLIWATTS_PER_IDLE_CHIP
 
-    # converter between joules to kilowatt hours
+    #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
 
-    # measured from the real power meter and timing between
-    #  the photos for a days powered off
+    #: measured from the real power meter and timing between
+    #: the photos for a days powered off
     MILLIWATTS_FOR_FRAME_IDLE_COST = 0.117
 
-    # measured from the loading of the column and extrapolated
+    #: measured from the loading of the column and extrapolated
     MILLIWATTS_PER_FRAME_ACTIVE_COST = 0.154163558
 
-    # measured from the real power meter and timing between the photos
-    # for a day powered off
+    #: measured from the real power meter and timing between the photos
+    #: for a day powered off
     MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST = 0.0045833333
 
     # TODO needs filling in
@@ -64,8 +86,8 @@ class EnergyReport(object):
     N_MONITORS_ACTIVE_DURING_COMMS = 2
 
     # energy report file name
-    ENERGY_DETAILED_FILENAME = "Detailed_energy_report.rpt"
-    ENERGY_SUMMARY_FILENAME = "energy_summary_report.rpt"
+    _DETAILED_FILENAME = "detailed_energy_report.rpt"
+    _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
     def __call__(
             self, placements, machine, report_default_directory, version,
@@ -74,28 +96,6 @@ class EnergyReport(object):
             machine_graph, runtime, buffer_manager, mapping_time, load_time,
             execute_time, dsg_time, extraction_time,
             machine_allocation_controller=None):
-        """
-        :param placements: the placements
-        :param machine: the machine
-        :param report_default_directory: location for reports
-        :param version: version of machine
-        :param spalloc_server: spalloc server IP
-        :param remote_spinnaker_url: remote SpiNNaker URL
-        :param time_scale_factor: the time scale factor
-        :param machine_time_step: the machine time step
-        :param pacman_provenance: the PACMAN provenance
-        :param router_provenance: the router provenance
-        :param machine_graph: the machine graph
-        :param buffer_manager: the buffer manager
-        :param mapping_time: time taken by the mapping process
-        :param load_time: the time taken by the load process
-        :param execute_time: the time taken by the execute time process
-        :param dsg_time: the time taken by the DSG time
-        :param extraction_time: the time taken by data extraction time
-        :param machine_allocation_controller: \
-            the machine controller for spalloc
-        :rtype: None
-        """
         # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
@@ -103,11 +103,11 @@ class EnergyReport(object):
 
         # detailed report path
         detailed_report = os.path.join(
-            report_default_directory, self.ENERGY_DETAILED_FILENAME)
+            report_default_directory, self._DETAILED_FILENAME)
 
         # summary report path
         summary_report = os.path.join(
-            report_default_directory, self.ENERGY_SUMMARY_FILENAME)
+            report_default_directory, self._SUMMARY_FILENAME)
 
         # overall time taken up
         total_time = (
@@ -179,37 +179,43 @@ class EnergyReport(object):
         kilowatt_hours = total_joules / EnergyReport.JOULES_TO_KILOWATT_HOURS
 
         # write summary data
+        f.write("Summary energy file\n-------------------\n\n")
         f.write(
-            "Summary energy file\n\n"
-            "Energy used by chips during runtime is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used by FPGAs is {} Joules over the entire time the "
-            "machine was booted is {} milliseconds \n"
-            "Energy used by FPGAs is {} Joules over the runtime period is "
-            "{} milliseconds \n"
+            "Energy used by chips during runtime is {} Joules (over {} "
+            "milliseconds)\n".format(active_chip_cost, runtime_total_ms))
+        f.write(
+            "Energy used by FPGAs is {} Joules (over the entire time the "
+            "machine was booted {} milliseconds)\n".format(
+                fpga_cost_total, total_booted_time))
+        f.write(
+            "Energy used by FPGAs is {} Joules (over the runtime period of "
+            "{} milliseconds)\n".format(
+                fpga_cost_runtime, runtime_total_ms))
+        f.write(
             "Energy used by outside router / cooling during the runtime "
-            "period is {} Joules\n"
-            "Energy used by packet transmissions is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the mapping process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used by the data generation process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the loading process is {} Joules over {} "
-            "milliseconds\n"
-            "Energy used during the data extraction process is {} Joules over "
-            "{} milliseconds\n"
-            "Total energy used by the simulation over {} milliseconds is: \n"
-            "     {} Joules or \n"
-            "     {} estimated average Watts or \n"
+            "period is {} Joules\n".format(router_cooling_runtime_cost))
+        f.write(
+            "Energy used by packet transmissions is {} Joules (over {} "
+            "milliseconds)\n".format(packet_cost, total_time))
+        f.write(
+            "Energy used during the mapping process is {} Joules (over {} "
+            "milliseconds)\n".format(mapping_cost, mapping_time))
+        f.write(
+            "Energy used by the data generation process is {} Joules (over {} "
+            "milliseconds)\n".format(dsg_cost, dsg_time))
+        f.write(
+            "Energy used during the loading process is {} Joules (over {} "
+            "milliseconds)\n".format(load_time_cost, load_time))
+        f.write(
+            "Energy used during the data extraction process is {} Joules "
+            "(over {} milliseconds\n".format(
+                data_extraction_cost, extraction_time))
+        f.write(
+            "Total energy used by the simulation over {} milliseconds is:\n"
+            "     {} Joules, or\n"
+            "     {} estimated average Watts, or\n"
             "     {} kWh\n".format(
-                active_chip_cost, runtime_total_ms, fpga_cost_total,
-                total_booted_time, fpga_cost_runtime,
-                runtime_total_ms, router_cooling_runtime_cost,
-                packet_cost, total_time, mapping_cost, mapping_time, dsg_cost,
-                dsg_time, load_time_cost, load_time, data_extraction_cost,
-                extraction_time, total_time, total_joules, total_watts,
-                kilowatt_hours))
+                total_time, total_joules, total_watts, kilowatt_hours))
 
     def _write_detailed_report(
             self, placements, machine, version, spalloc_server,

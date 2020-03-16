@@ -27,12 +27,18 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(AbstractBase)
 class MachineAllocationController(AbstractMachineAllocationController):
+    """ How to manage the allocation of a machine so that it gets cleaned up\
+        neatly when the script dies.
+    """
     __slots__ = [
-        # boolean flag for telling this thread when the system has ended
+        #: boolean flag for telling this thread when the system has ended
         "_exited"
     ]
 
     def __init__(self, thread_name):
+        """
+        :param str thread_name:
+        """
         thread = Thread(name=thread_name, target=self.__manage_allocation)
         thread.daemon = True
         self._exited = False
@@ -54,7 +60,6 @@ class MachineAllocationController(AbstractMachineAllocationController):
     def _teardown(self):
         """ Perform any extra teardown that the thread requires. Does not\
             need to be overridden if no action is desired."""
-        pass
 
     def __manage_allocation(self):
         machine_still_allocated = True

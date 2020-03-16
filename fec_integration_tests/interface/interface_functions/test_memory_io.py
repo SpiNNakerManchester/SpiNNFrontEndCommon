@@ -23,6 +23,7 @@ from pacman.model.placements import Placements, Placement
 from spinnman.model import HeapElement
 from spinnman.exceptions import SpinnmanInvalidParameterException
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
+from spinn_front_end_common.utilities.constants import BYTES_PER_KB
 from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.abstract_models.abstract_uses_memory_io import (
@@ -32,7 +33,7 @@ from spinn_front_end_common.abstract_models.abstract_uses_memory_io import (
 class _MockTransceiver(object):
     # pylint: disable=unused-argument
 
-    _HEAP_SIZE = 120 * 1024 * 1024
+    _HEAP_SIZE = 120 * 1024 * BYTES_PER_KB
 
     def __init__(self):
         self._data = dict()
@@ -146,7 +147,7 @@ def test_memory_io():
         "MemoryMachineGraph": graph,
         "MemoryPlacements": placements,
         "IPAddress": "testing",
-        "ApplicationDataFolder": temp,
+        "ReportFolder": temp,
         "APPID": 30
     }
     algorithms = ["WriteMemoryIOData"]

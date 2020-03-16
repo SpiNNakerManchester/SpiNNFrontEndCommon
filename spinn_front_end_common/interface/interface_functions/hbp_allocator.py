@@ -111,7 +111,6 @@ class HBPAllocator(object):
     def __call__(
             self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
-
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request

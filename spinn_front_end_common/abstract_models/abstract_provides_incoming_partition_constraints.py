@@ -29,10 +29,8 @@ class AbstractProvidesIncomingPartitionConstraints(object):
         """ Get constraints to be added to the given edge that goes in to\
             a vertex of this vertex.
 
-        :param partition: An partition that goes in to this vertex
-        :type partition:\
-            :py:class:`~pacman.utilities.utility_objs.OutgoingPartition`
+        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:
+            An partition that goes in to this vertex
         :return: A list of constraints
-        :rtype: \
-            list(:py:class:`~pacman.model.constraints.AbstractConstraint`)
+        :rtype: list(~pacman.model.constraints.AbstractConstraint)
         """

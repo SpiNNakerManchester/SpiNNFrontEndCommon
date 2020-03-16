@@ -29,7 +29,11 @@ class AbstractProvidesProvenanceDataFromMachine(object):
     def get_provenance_data_from_machine(self, transceiver, placement):
         """ Get an iterable of provenance data items
 
-        :param transceiver: the SpinnMan interface object
-        :param placement: the placement of the object
-        :return: iterable of :py:class:`ProvenanceDataItem`
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpinnMan interface object
+        :param ~pacman.model.placements.Placement placement:
+            the placement of the object
+        :return: the provenance items
+        :rtype: \
+            iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """

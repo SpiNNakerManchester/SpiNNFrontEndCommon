@@ -29,6 +29,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.interface_functions import (
     DSGRegionReloader)
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 class _TestMachineVertex(MachineVertex):
@@ -82,7 +83,7 @@ class _TestApplicationVertex(
 
     def regenerate_data_specification(self, spec, placement):
         for region_id, data in self._reload_region_data:
-            spec.reserve_memory_region(region_id, len(data) * 4)
+            spec.reserve_memory_region(region_id, len(data) * BYTES_PER_WORD)
             spec.switch_write_focus(region_id)
             spec.write_array(data)
         spec.end_specification()
@@ -172,8 +173,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         reloader = DSGRegionReloader()
         reloader.__call__(
-            transceiver, placements, "localhost", "test", False, "test",
-            graph_mapper)
+            transceiver, placements, "localhost", "test", False, graph_mapper)
 
         regions_rewritten = transceiver.regions_rewritten
 

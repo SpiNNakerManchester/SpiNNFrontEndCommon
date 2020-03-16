@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.socket_address import SocketAddress
+APP = simple_minimise
+SOURCES = simple_minimise.c
 
-__all__ = ["SocketAddress"]
+include ../fec_models.mk
