@@ -1995,6 +1995,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             logger.warning(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
+            tokens.append("ApplicationRun")
         else:
             algorithms.append("ApplicationRunner")
 
