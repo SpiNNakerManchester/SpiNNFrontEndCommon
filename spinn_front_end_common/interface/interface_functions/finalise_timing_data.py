@@ -28,4 +28,7 @@ class FinaliseTimingData(object):
             mapping_time, dsg_time, load_time, execute_time, extraction_time
         :rtype: tuple(float, float, float, float, float)
         """
+        # Note that this algorithm "knows" the simulator is an
+        # AbstractSpinnakerBase instance of some kind, and that that the
+        # _end_of_run_timing method exists.
         return get_simulator()._end_of_run_timing()

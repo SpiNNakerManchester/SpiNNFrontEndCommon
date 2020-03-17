@@ -27,6 +27,29 @@ _MS_PER_SECOND = 1000.0
 
 
 class ComputeEnergyUsed(object):
+    """ This algorithm does the actual work of computing energy used by a\
+        simulation (or other application) running on SpiNNaker.
+
+    :param ~pacman.model.placements.Placements placements:
+    :param ~spinn_machine.Machine machine:
+    :param int version:
+    :param str spalloc_server:
+    :param str remote_spinnaker_url:
+    :param int time_scale_factor:
+    :param list(ProvenanceDataItem) pacman_provenance:
+    :param list(ProvenanceDataItem) router_provenance:
+    :param float runtime:
+    :param BufferManager buffer_manager:
+    :param float mapping_time:
+    :param float load_time:
+    :param float execute_time:
+    :param float dsg_time:
+    :param float extraction_time:
+    :param MachineAllocationController machine_allocation_controller:
+        (optional)
+    :rtype: PowerUsed
+    """
+
     #: given from Indar's measurements
     MILLIWATTS_PER_FPGA = 0.000584635
 
@@ -71,24 +94,25 @@ class ComputeEnergyUsed(object):
         :param ~.Placements placements:
         :param ~.Machine machine:
         :param int version:
-        :param spalloc_server:
+        :param str spalloc_server:
         :param str remote_spinnaker_url:
         :param int time_scale_factor:
-        :param pacman_provenance:
-        :param router_provenance:
-        :param runtime:
-        :param buffer_manager:
-        :param mapping_time:
-        :param load_time:
-        :param execute_time:
-        :param dsg_time:
-        :param extraction_time:
-        :param machine_allocation_controller:
+        :param list(ProvenanceDataItem) pacman_provenance:
+        :param list(ProvenanceDataItem) router_provenance:
+        :param float runtime:
+        :param BufferManager buffer_manager:
+        :param float mapping_time:
+        :param float load_time:
+        :param float execute_time:
+        :param float dsg_time:
+        :param float extraction_time:
+        :param MachineAllocationController machine_allocation_controller:
         :rtype: PowerUsed
         """
         # pylint: disable=too-many-arguments
 
         power_used = PowerUsed()
+
         power_used.num_chips = machine.n_chips
         # One extra per chip for SCAMP
         power_used.num_cores = placements.n_placements + machine.n_chips
@@ -98,23 +122,36 @@ class ComputeEnergyUsed(object):
         power_used.data_gen_time_secs = dsg_time / _MS_PER_SECOND
         power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
+        using_spalloc = bool(spalloc_server or remote_spinnaker_url)
         self._compute_energy_consumption(
-             placements, machine, version, spalloc_server,
-             remote_spinnaker_url, pacman_provenance, router_provenance,
-             dsg_time, buffer_manager, load_time, mapping_time,
-             execute_time + load_time + extraction_time,
+             placements, machine, version, using_spalloc, pacman_provenance,
+             router_provenance, dsg_time, buffer_manager, load_time,
+             mapping_time, execute_time + load_time + extraction_time,
              machine_allocation_controller,
              runtime * time_scale_factor, power_used)
 
         return power_used
 
     def _compute_energy_consumption(
-            self, placements, machine, version, spalloc_server,
-            remote_spinnaker_url, pacman_provenance, router_provenance,
-            dsg_time, buffer_manager, load_time, mapping_time,
-            total_booted_time, job, runtime_total_ms, power_used):
+            self, placements, machine, version, using_spalloc,
+            pacman_provenance, router_provenance, dsg_time, buffer_manager,
+            load_time, mapping_time, total_booted_time, job, runtime_total_ms,
+            power_used):
         """
-        :rtype: tuple(float,float,float,float,float,float)
+        :param ~.Placements placements:
+        :param ~.Machine machine:
+        :param int version:
+        :param bool using_spalloc:
+        :param list(ProvenanceDataItem) pacman_provenance:
+        :param list(ProvenanceDataItem) router_provenance:
+        :param float dsg_time:
+        :param BufferManager buffer_manager:
+        :param float load_time:
+        :param float mapping_time:
+        :param float total_booted_time:
+        :param MachineAllocationController job:
+        :param float runtime_total_ms:
+        :param PowerUsed power_used:
         """
         # figure active chips
         active_chips = set()
@@ -126,11 +163,9 @@ class ComputeEnergyUsed(object):
         self._router_packet_energy(router_provenance, power_used)
 
         # figure FPGA cost over all booted and during runtime cost
-        fpga_cost_total, fpga_cost_runtime = self._calculate_fpga_energy(
-            machine, version, spalloc_server, remote_spinnaker_url,
-            total_booted_time, runtime_total_ms, power_used)
-        power_used.fpga_total_energy_joules = fpga_cost_total
-        power_used.fpga_exec_energy_joules = fpga_cost_runtime
+        self._calculate_fpga_energy(
+            machine, version, using_spalloc, total_booted_time,
+            runtime_total_ms, power_used)
 
         # figure how many frames are using, as this is a constant cost of
         # routers, cooling etc
@@ -177,6 +212,7 @@ class ComputeEnergyUsed(object):
 
     def _router_packet_energy(self, router_provenance, power_used):
         """
+        :param list(ProvenanceDataItem) router_provenance:
         :param PowerUsed power_used:
         """
         energy_cost = 0.0
@@ -224,6 +260,7 @@ class ComputeEnergyUsed(object):
         :param ~.Chip chip: the chip to consider
         :param ~.Placements placements: placements
         :param BufferManager buffer_manager: buffer manager
+        :param float runtime_total_ms:
         :param PowerUsed power_used:
         :return: energy cost
         """
@@ -281,17 +318,21 @@ class ComputeEnergyUsed(object):
         raise Exception("expected to find a chip power monitor!")
 
     def _calculate_fpga_energy(
-            self, machine, version, spalloc_server, remote_spinnaker_url,
-            total_runtime, runtime_total_ms, power_used):
+            self, machine, version, using_spalloc, total_runtime,
+            runtime_total_ms, power_used):
         """
         :param ~.Machine machine:
+        :param int version:
+        :param bool using_spalloc:
+        :param float total_runtime:
+        :param float runtime_total_ms:
         :param PowerUsed power_used:
         """
         # pylint: disable=too-many-arguments
 
         total_fpgas = 0
         # if not spalloc, then could be any type of board
-        if spalloc_server is None and remote_spinnaker_url is None:
+        if not using_spalloc:
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if int(version) in (2, 3):
                 return 0, 0
@@ -324,7 +365,6 @@ class ComputeEnergyUsed(object):
             runtime_total_ms * self.MILLIWATTS_PER_FPGA * total_fpgas)
         power_used.fpga_total_energy_joules = power_usage_total
         power_used.fpga_exec_energy_joules = power_usage_runtime
-        return power_usage_total, power_usage_runtime
 
     def _board_n_operational_fpgas(self, machine, ethernet_chip):
         """ Figures out how many FPGAs were switched on for a particular \
@@ -367,7 +407,7 @@ class ComputeEnergyUsed(object):
         # top and right
         fpga_2 = self.__deduce_fpga(
             top_chips, right_chips, (2, 1), (0, 1))
-        return fpga_1 + fpga_0 + fpga_2
+        return fpga_0 + fpga_1 + fpga_2
 
     @staticmethod
     def __deduce_fpga(chips_1, chips_2, links_1, links_2):
@@ -380,7 +420,6 @@ class ComputeEnergyUsed(object):
         :return: 0 if not on, 1 if on
         :rtype: int
         """
-        # pylint: disable=too-many-arguments
         for chip, link_id in itertools.product(chips_1, links_1):
             if chip and chip.router.get_link(link_id) is not None:
                 return 1
@@ -393,7 +432,7 @@ class ComputeEnergyUsed(object):
             self, pacman_provenance, machine, load_time_ms, active_chips,
             n_frames):
         """
-        :param pacman_provenance:
+        :param list(ProvenanceDataItem) pacman_provenance:
         :param ~.Machine machine:
         :param float load_time_ms: milliseconds
         :param list active_chips:
@@ -441,7 +480,8 @@ class ComputeEnergyUsed(object):
             self, pacman_provenance, machine, active_chips, n_frames):
         """ Data extraction cost
 
-        :param pacman_provenance: provenance items from the PACMAN set
+        :param list(ProvenanceDataItem) pacman_provenance:
+            provenance items from the PACMAN set
         :param ~.Machine machine: machine description
         :param list active_chips:
         :param int n_frames:
@@ -490,10 +530,11 @@ class ComputeEnergyUsed(object):
                 machine.DEFAULT_MAX_CORES_PER_CHIP)
 
     @classmethod
-    def _calculate_power_down_energy(cls, time, machine, job, version, n_frames):
+    def _calculate_power_down_energy(
+            cls, time, machine, job, version, n_frames):
         """ Calculate power down costs
 
-        :param time: time powered down, in milliseconds
+        :param float time: time powered down, in milliseconds
         :param ~.Machine machine:
         :param AbstractMachineAllocationController job:
             the spalloc job object
@@ -516,7 +557,6 @@ class ComputeEnergyUsed(object):
         # boom
         else:
             raise ConfigurationException("don't know what to do here")
-
 
     @staticmethod
     def _calculate_n_frames(machine, job):

@@ -19,7 +19,8 @@ from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
-from spinn_front_end_common.interface.interface_functions.compute_energy_used import ComputeEnergyUsed
+from spinn_front_end_common.interface.interface_functions import (
+    ComputeEnergyUsed)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,16 @@ class EnergyReport(object):
             spalloc_server, remote_spinnaker_url, time_scale_factor,
             pacman_provenance, runtime, buffer_manager, power_used):
         """
+        :param ~.Placements placements:
+        :param ~.Machine machine:
+        :param str report_default_directory:
+        :param int version:
+        :param str spalloc_server:
+        :param str remote_spinnaker_url:
+        :param int time_scale_factor:
+        :param list(ProvenanceDataItem) pacman_provenance:
+        :param int runtime:
+        :param BufferManager buffer_manager:
         :param PowerUsed power_used:
         """
         # pylint: disable=too-many-arguments, too-many-locals
@@ -75,9 +86,9 @@ class EnergyReport(object):
         # create detailed report
         with open(detailed_report, "w") as f:
             self._write_detailed_report(
-                placements, machine, version, spalloc_server,
-                remote_spinnaker_url, pacman_provenance,
-                power_used, f, runtime_total_ms)
+                placements, machine, version,
+                bool(spalloc_server or remote_spinnaker_url),
+                pacman_provenance, power_used, f, runtime_total_ms)
 
         # create summary report
         with open(summary_report, "w") as f:
@@ -89,7 +100,7 @@ class EnergyReport(object):
 
         :param int runtime_total_ms:
             Runtime with time scale factor taken into account
-        :param f: file writer
+        :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
         # pylint: disable=too-many-arguments, too-many-locals
@@ -97,44 +108,43 @@ class EnergyReport(object):
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
         f.write(
-            "Energy used by chips during runtime is {} Joules (over {} "
-            "milliseconds)\n".format(
-                power_used.chip_energy_joules, runtime_total_ms))
+            "Energy used by chips during runtime is {} Joules {}\n".format(
+                power_used.chip_energy_joules,
+                cls.__report_time(runtime_total_ms / 1000)))
         f.write(
-            "Energy used by FPGAs is {} Joules (over the entire time the "
-            "machine was booted {} milliseconds)\n".format(
+            "Energy used by FPGAs is {} Joules over the entire time the "
+            "machine was booted {}\n".format(
                 power_used.fpga_total_energy_joules,
-                power_used.booted_time_secs * 1000))
+                cls.__report_time(power_used.booted_time_secs)))
         f.write(
-            "Energy used by FPGAs is {} Joules (over the runtime period of "
-            "{} milliseconds)\n".format(
-                power_used.fpga_exec_energy_joules, runtime_total_ms))
+            "Energy used by FPGAs is {} Joules over the runtime period {}\n"
+            .format(
+                power_used.fpga_exec_energy_joules,
+                cls.__report_time(runtime_total_ms / 1000)))
         f.write(
             "Energy used by outside router / cooling during the runtime "
             "period is {} Joules\n".format(power_used.baseline_joules))
         f.write(
-            "Energy used by packet transmissions is {} Joules (over {} "
-            "milliseconds)\n".format(
-                power_used.packet_joules, power_used.total_time_secs * 1000))
+            "Energy used by packet transmissions is {} Joules {}\n".format(
+                power_used.packet_joules,
+                cls.__report_time(power_used.total_time_secs)))
         f.write(
-            "Energy used during the mapping process is {} Joules (over {} "
-            "milliseconds)\n".format(
+            "Energy used during the mapping process is {} Joules {}\n".format(
                 power_used.mapping_joules,
-                power_used.mapping_time_secs * 1000))
+                cls.__report_time(power_used.mapping_time_secs)))
         f.write(
-            "Energy used by the data generation process is {} Joules (over {} "
-            "milliseconds)\n".format(
+            "Energy used by the data generation process is {} Joules {}\n"
+            .format(
                 power_used.data_gen_joules,
-                power_used.data_gen_time_secs * 1000))
+                cls.__report_time(power_used.data_gen_time_secs)))
         f.write(
-            "Energy used during the loading process is {} Joules (over {} "
-            "milliseconds)\n".format(
+            "Energy used during the loading process is {} Joules {}\n".format(
                 power_used.loading_joules,
-                power_used.loading_time_secs * 1000))
+                cls.__report_time(power_used.loading_time_secs)))
         f.write(
-            "Energy used during the data extraction process is {} Joules "
-            "(over {} milliseconds\n".format(
-                power_used.saving_joules, power_used.saving_time_secs * 1000))
+            "Energy used during the data extraction process is {} Joules {}\n"
+            .format(power_used.saving_joules, cls.__report_time(
+                power_used.saving_time_secs)))
         f.write(
             "Total energy used by the simulation over {} milliseconds is:\n"
             "     {} Joules, or\n"
@@ -146,20 +156,30 @@ class EnergyReport(object):
                 power_used.total_energy_joules /
                 cls.JOULES_TO_KILOWATT_HOURS))
 
+    @staticmethod
+    def __report_time(time):
+        """
+        :param float time:
+        :rtype: str
+        """
+        if time < 1:
+            return "(over {} milliseconds)".format(time * 1000)
+        else:
+            return "(over {} seconds)".format(time)
+
     def _write_detailed_report(
-            self, placements, machine, version, spalloc_server,
-            remote_spinnaker_url, pacman_provenance,
-            power_used, f, runtime_total_ms):
+            self, placements, machine, version, using_spalloc,
+            pacman_provenance, power_used, f, runtime_total_ms):
         """ Write detailed report and calculate costs
 
         :param ~.Placements placements: placements
         :param ~.Machine machine: machine representation
         :param int version: machine version
-        :param str spalloc_server: spalloc server
-        :param str remote_spinnaker_url: remote SpiNNaker URL
-        :param pacman_provenance: provenance generated by PACMAN
+        :param bool using_spalloc: whether spalloc is in use
+        :param list(ProvenanceDataItem) pacman_provenance:
+            provenance generated by PACMAN
         :param PowerUsed power_used:
-        :param f: file writer
+        :param ~io.TextIOBase f: file writer
         :param float runtime_total_ms:
             total runtime with time scale factor taken into account
         """
@@ -173,15 +193,13 @@ class EnergyReport(object):
             power_used.packet_joules))
 
         # figure FPGA cost over all booted and during runtime cost
-        self._write_fpga_cost(
-            version, spalloc_server, remote_spinnaker_url, power_used, f)
+        self._write_fpga_cost(version, using_spalloc, power_used, f)
 
         # figure load time cost
-        self._write_load_time_cost(pacman_provenance, f, power_used)
+        self._write_load_time_cost(pacman_provenance, power_used, f)
 
         # figure extraction time cost
-        self._write_data_extraction_time_cost(
-            pacman_provenance, power_used, f)
+        self._write_data_extraction_time_cost(pacman_provenance, power_used, f)
 
         # figure out active chips idle time
         active_chips = set()
@@ -190,12 +208,12 @@ class EnergyReport(object):
                 active_chips.add(machine.get_chip_at(placement.x, placement.y))
         for chip in active_chips:
             self._write_chips_active_cost(
-                chip, placements, f, runtime_total_ms, power_used)
+                chip, placements, runtime_total_ms, power_used, f)
 
     def _write_warning(self, f):
         """ Writes the warning about this being only an estimate
 
-        :param f: the writer
+        :param ~io.TextIOBase f: the writer
         :rtype: None
         """
 
@@ -223,19 +241,18 @@ class EnergyReport(object):
 
     @staticmethod
     def _write_fpga_cost(
-            version, spalloc_server, remote_spinnaker_url, power_used, f):
+            version, using_spalloc, power_used, f):
         """ FPGA cost calculation
 
         :param version: machine version
-        :param spalloc_server: spalloc server IP
-        :param remote_spinnaker_url: remote SpiNNaker URL
+        :param bool using_spalloc: whether we used spalloc
         :param PowerUsed power_used: the runtime
-        :param f: the file writer
+        :param ~io.TextIOBase f: the file writer
         """
         # pylint: disable=too-many-arguments
 
         # if not spalloc, then could be any type of board
-        if spalloc_server is None and remote_spinnaker_url is None:
+        if not using_spalloc:
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if int(version) in (2, 3):
                 f.write(
@@ -282,14 +299,14 @@ class EnergyReport(object):
 
     @staticmethod
     def _write_chips_active_cost(
-            chip, placements, f, runtime_total_ms, power_used):
+            chip, placements, runtime_total_ms, power_used, f):
         """ Figure out the chip active cost during simulation
 
-        :param chip: the chip to consider
+        :param ~.Chip chip: the chip to consider
         :param ~.Placements placements: placements
-        :param buffer_manager: buffer manager
-        :param f: file writer
+        :param float runtime_total_ms:
         :param PowerUsed power_used:
+        :param ~io.TextIOBase f: file writer
         :return: energy cost
         """
         # pylint: disable=too-many-arguments
@@ -316,12 +333,13 @@ class EnergyReport(object):
             "during the execution of the simulation".format(idle_cost))
 
     @staticmethod
-    def _write_load_time_cost(pacman_provenance, f, power_used):
+    def _write_load_time_cost(pacman_provenance, power_used, f):
         """ Energy usage from the loading phase
 
-        :param pacman_provenance: provenance items from the PACMAN set
-        :param f: file writer
+        :param list(ProvenanceDataItem) pacman_provenance:
+            provenance items from the PACMAN set
         :param PowerUsed power_used:
+        :param ~io.TextIOBase f: file writer
         """
         # pylint: disable=too-many-arguments
 
@@ -351,9 +369,10 @@ class EnergyReport(object):
     def _write_data_extraction_time_cost(pacman_provenance, power_used, f):
         """ Data extraction cost
 
-        :param pacman_provenance: provenance items from the PACMAN set
+        :param list(ProvenanceDataItem) pacman_provenance:
+            provenance items from the PACMAN set
         :param PowerUsed power_used:
-        :param f: file writer
+        :param ~io.TextIOBase f: file writer
         """
         # pylint: disable=too-many-arguments
 
@@ -379,26 +398,3 @@ class EnergyReport(object):
             "overall energy usage is {} Joules.\n".format(
                 total_time_ms, energy_cost_of_active_router,
                 power_used.saving_joules))
-
-    @staticmethod
-    def _calculate_n_frames(machine, machine_allocation_controller):
-        """ Figures out how many frames are being used in this setup.\
-            A key of cabinet,frame will be used to identify unique frame.
-
-        :param machine: the machine object
-        :param machine_allocation_controller: the spalloc job object
-        :return: number of frames
-        """
-
-        # if not spalloc, then could be any type of board, but unknown cooling
-        if machine_allocation_controller is None:
-            return 0
-
-        # if using spalloc in some form
-        cabinet_frame = set()
-        for ethernet_connected_chip in machine.ethernet_connected_chips:
-            cabinet, frame, _ = machine_allocation_controller.where_is_machine(
-                chip_x=ethernet_connected_chip.x,
-                chip_y=ethernet_connected_chip.y)
-            cabinet_frame.add((cabinet, frame))
-        return len(list(cabinet_frame))
