@@ -2508,7 +2508,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state = Simulator_State.SHUTDOWN
 
         try:
-            if "NotificationInterface" in self._last_run_outputs:
+            if self._last_run_outputs and \
+                    "NotificationInterface" in self._last_run_outputs:
                 self._last_run_outputs["NotificationInterface"].close()
         except Exception:
             logger.exception(
