@@ -342,6 +342,16 @@ class PowerUsed(object):
         """
         self.__router_energy[x, y] += float(joules)
 
+    @property
+    def active_routers(self):
+        """ Enumeration of the coordinates of the routers that can report\
+            active energy usage.
+
+        :rtype: iterable(tuple(int, int))
+        """
+        for xy in self.__router_energy:
+            yield xy
+
     def get_core_active_energy_joules(self, x, y, p):
         """ Energy used (above idle baseline) by a particular core, in Joules.
 
@@ -366,3 +376,13 @@ class PowerUsed(object):
         :param float joules: the energy to add for this core, in Joules.
         """
         self.__core_energy[x, y, p] += float(joules)
+
+    @property
+    def active_cores(self):
+        """ Enumeration of the coordinates of the cores that can report active\
+            energy usage.
+
+        :rtype: iterable(tuple(int, int, int))
+        """
+        for xyp in self.__core_energy:
+            yield xyp

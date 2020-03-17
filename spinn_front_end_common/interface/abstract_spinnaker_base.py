@@ -1881,6 +1881,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 prov_item = executor.get_item("RouterProvenanceItems")
                 if prov_item is not None:
                     prov_items.extend(prov_item)
+                prov_item = executor.get_item("PowerProvenanceItems")
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
                 self._pacman_provenance.clear()
                 self._version_provenance = list()
                 self._write_provenance(prov_items)
@@ -2021,7 +2024,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 (run_until_complete or n_machine_time_steps is not None)):
             algorithms.append("BufferExtractor")
 
-        if self._config.getboolean("Reports", "write_provenance_data"):
+        write_prov = self._config.getboolean(
+            "Reports", "write_provenance_data")
+        if write_prov:
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
@@ -2039,12 +2044,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add in the timing finalisation
         algorithms.append("FinaliseTimingData")
 
-        if self._config.getboolean("Reports", "write_energy_report"):
+        if (self._config.getboolean("Reports", "write_energy_report") and
+                not self._use_virtual_board):
             algorithms.append("ComputeEnergyUsed")
+            if write_prov:
+                algorithms.append("EnergyProvenanceReporter")
 
         # add extractor of provenance if needed
-        if (self._config.getboolean("Reports", "write_provenance_data") and
-                not self._use_virtual_board and
+        if (write_prov and not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
