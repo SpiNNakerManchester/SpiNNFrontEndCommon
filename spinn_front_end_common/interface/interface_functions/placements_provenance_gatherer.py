@@ -14,12 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import traceback
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
-import traceback
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class PlacementsProvenanceGatherer(object):
@@ -46,11 +47,11 @@ class PlacementsProvenanceGatherer(object):
                     prov_items.extend(
                         placement.vertex.get_provenance_data_from_machine(
                             transceiver, placement))
-                except Exception:
+                except Exception:  #pylint: disable=broad-except
                     errors.append(traceback.format_exc())
         if errors:
-            logger.warn("Errors found during provenance gathering:")
+            logger.warning("Errors found during provenance gathering:")
             for error in errors:
-                logger.warn(error)
+                logger.warning("{}", error)
 
         return prov_items
