@@ -151,8 +151,8 @@ class ComputeEnergyUsed(object):
 
     def _compute_energy_consumption(
             self, placements, machine, version, using_spalloc,
-            router_provenance, dsg_time, buffer_manager,
-            load_time, mapping_time, total_booted_time, job, runtime_total_ms,
+            router_provenance, dsg_time, buffer_manager, load_time,
+            mapping_time, total_booted_time, job, runtime_total_ms,
             power_used):
         """
         :param ~.Placements placements:

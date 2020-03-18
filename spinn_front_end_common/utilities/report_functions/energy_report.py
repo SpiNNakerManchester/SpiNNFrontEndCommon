@@ -21,7 +21,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 logger = logging.getLogger(__name__)
 
@@ -165,8 +164,7 @@ class EnergyReport(object):
             return "(over {} seconds)".format(time)
 
     def _write_detailed_report(
-            self, placements, machine,
-            power_used, f, runtime_total_ms):
+            self, placements, machine, power_used, f, runtime_total_ms):
         """ Write detailed report and calculate costs
 
         :param ~.Placements placements: placements
