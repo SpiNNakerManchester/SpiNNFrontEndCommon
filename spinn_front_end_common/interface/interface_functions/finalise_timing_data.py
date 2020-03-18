@@ -18,14 +18,15 @@ from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 class FinaliseTimingData(object):
     """ Produces the timing information for the run.
+
+    :return: mapping_time, dsg_time, load_time, execute_time, extraction_time
+    :rtype: tuple(float, float, float, float, float)
     """
 
     __slots__ = []
 
     def __call__(self):
         """
-        :return:
-            mapping_time, dsg_time, load_time, execute_time, extraction_time
         :rtype: tuple(float, float, float, float, float)
         """
         # Note that this algorithm "knows" the simulator is an

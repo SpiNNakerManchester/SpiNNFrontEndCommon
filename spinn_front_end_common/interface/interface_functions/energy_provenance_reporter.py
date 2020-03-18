@@ -37,7 +37,9 @@ class EnergyProvenanceReporter(object):
     """ Converts the power usage information into provenance data.
 
     :param PowerUsed power_used:
-    :param ~.Placements placements:
+        The computed basic power consumption information
+    :param ~pacman.model.placements.Placements placements:
+        Used for describing what a core was actually doing
     :rtype: list(ProvenanceDataItem)
     """
 

@@ -15,6 +15,7 @@
 
 import itertools
 import re
+from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -33,18 +34,28 @@ class ComputeEnergyUsed(object):
     :param ~pacman.model.placements.Placements placements:
     :param ~spinn_machine.Machine machine:
     :param int version:
-    :param str spalloc_server:
-    :param str remote_spinnaker_url:
+        The version of the SpiNNaker boards in use.
     :param int time_scale_factor:
     :param list(ProvenanceDataItem) pacman_provenance:
+        Provenance information from PACMAN.
     :param list(ProvenanceDataItem) router_provenance:
+        Provenance information from routers.
     :param float runtime:
     :param BufferManager buffer_manager:
     :param float mapping_time:
+        From simulator via :py:class:`~.FinaliseTimingData`.
     :param float load_time:
+        From simulator via :py:class:`~.FinaliseTimingData`.
     :param float execute_time:
+        From simulator via :py:class:`~.FinaliseTimingData`.
     :param float dsg_time:
+        From simulator via :py:class:`~.FinaliseTimingData`.
     :param float extraction_time:
+        From simulator via :py:class:`~.FinaliseTimingData`.
+    :param str spalloc_server:
+        (optional)
+    :param str remote_spinnaker_url:
+        (optional)
     :param MachineAllocationController machine_allocation_controller:
         (optional)
     :rtype: PowerUsed
@@ -86,10 +97,10 @@ class ComputeEnergyUsed(object):
 
     def __call__(
             self, placements, machine, version, time_scale_factor,
-            pacman_provenance, router_provenance, runtime,
-            buffer_manager, mapping_time, load_time, execute_time, dsg_time,
-            extraction_time, spalloc_server=None,
-            remote_spinnaker_url=None, machine_allocation_controller=None):
+            pacman_provenance, router_provenance, runtime, buffer_manager,
+            mapping_time, load_time, execute_time, dsg_time, extraction_time,
+            spalloc_server=None, remote_spinnaker_url=None,
+            machine_allocation_controller=None):
         """
         :param ~.Placements placements:
         :param ~.Machine machine:
@@ -156,10 +167,7 @@ class ComputeEnergyUsed(object):
         :param PowerUsed power_used:
         """
         # figure active chips
-        active_chips = set()
-        for placement in placements:
-            if not isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
-                active_chips.add(machine.get_chip_at(placement.x, placement.y))
+        active_chips = self.__active_chips(machine, placements)
 
         # figure out packet cost
         self._router_packet_energy(router_provenance, power_used)
@@ -200,6 +208,18 @@ class ComputeEnergyUsed(object):
         power_used.baseline_joules = (
             runtime_total_ms * power_used.n_frames *
             self.MILLIWATTS_FOR_FRAME_IDLE_COST)
+
+    @staticmethod
+    def __active_chips(machine, placements):
+        """
+        :param ~.Machine machine:
+        :param ~.Placements placements
+        :rtype: set(~.Chip)
+        """
+        return OrderedSet(
+            machine.get_chip_at(placement.x, placement.y)
+            for placement in placements
+            if isinstance(placement.vertex, ChipPowerMonitorMachineVertex))
 
     _PER_CHIP_NAMES = frozenset((
         "expected_routers", "unexpected_routers"))
@@ -269,7 +289,7 @@ class ComputeEnergyUsed(object):
         # pylint: disable=too-many-arguments
 
         # locate chip power monitor
-        chip_power_monitor = self._get_chip_power_monitor(chip, placements)
+        chip_power_monitor = self.__get_chip_power_monitor(chip, placements)
 
         # get recordings from the chip power monitor
         recorded_measurements = chip_power_monitor.get_recorded_data(
@@ -299,7 +319,7 @@ class ComputeEnergyUsed(object):
         idle_cost = runtime_total_ms * self.MILLIWATTS_PER_IDLE_CHIP
         return sum(cores_power_cost) + idle_cost
 
-    def _get_chip_power_monitor(self, chip, placements):
+    def __get_chip_power_monitor(self, chip, placements):
         """ Locate chip power monitor
 
         :param ~.Chip chip: the chip to consider
@@ -308,6 +328,9 @@ class ComputeEnergyUsed(object):
         :rtype: ChipPowerMonitorMachineVertex
         :raises Exception: if it can't find the monitor
         """
+        # TODO this should be in the ChipPowerMonitor class
+        # it is its responsibility, but needs the self-partitioning
+
         # start at top, as more likely it was placed on the top
         for processor_id in range(chip.n_processors):
             if placements.is_processor_occupied(chip.x, chip.y, processor_id):
@@ -348,14 +371,14 @@ class ComputeEnergyUsed(object):
             # are there, if not then assume fpgas are turned off.
 
             # how many fpgas are active
-            total_fpgas = self._board_n_operational_fpgas(
+            total_fpgas = self.__board_n_operational_fpgas(
                 machine, machine.ethernet_connected_chips[0])
             # active fpgas
             if total_fpgas == 0:
                 return 0, 0
         else:  # spalloc machine, need to check each board
             for ethernet_connected_chip in machine.ethernet_connected_chips:
-                total_fpgas += self._board_n_operational_fpgas(
+                total_fpgas += self.__board_n_operational_fpgas(
                     machine, ethernet_connected_chip)
 
         # Only need to update this here now that we've learned there are FPGAs
@@ -368,7 +391,7 @@ class ComputeEnergyUsed(object):
         power_used.fpga_total_energy_joules = power_usage_total
         power_used.fpga_exec_energy_joules = power_usage_runtime
 
-    def _board_n_operational_fpgas(self, machine, ethernet_chip):
+    def __board_n_operational_fpgas(self, machine, ethernet_chip):
         """ Figures out how many FPGAs were switched on for a particular \
             SpiNN-5 board.
 
