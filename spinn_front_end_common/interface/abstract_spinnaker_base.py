@@ -2710,7 +2710,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def _do_energy_report(self):
         # create energy reporter
-        energy_reporter = EnergyReport(self._report_default_directory,
+        energy_reporter = EnergyReport(
+            self._report_default_directory,
             self._read_config_int("Machine", "version"), self._spalloc_server,
             self._remote_spinnaker_url, self.time_scale_factor)
 
