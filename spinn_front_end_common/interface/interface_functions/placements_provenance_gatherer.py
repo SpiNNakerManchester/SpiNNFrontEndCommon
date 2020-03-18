@@ -47,7 +47,7 @@ class PlacementsProvenanceGatherer(object):
                     prov_items.extend(
                         placement.vertex.get_provenance_data_from_machine(
                             transceiver, placement))
-                except Exception:  #pylint: disable=broad-except
+                except Exception:  # pylint: disable=broad-except
                     errors.append(traceback.format_exc())
         if errors:
             logger.warning("Errors found during provenance gathering:")
