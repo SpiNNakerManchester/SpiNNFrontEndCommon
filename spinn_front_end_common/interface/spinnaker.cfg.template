@@ -28,10 +28,6 @@ time_scale_factor = None
 # In all cases oldest folders are automatically deleted to max_reports_kept=
 default_report_file_path = DEFAULT
 
-# options are DEFAULT, or a file path
-# In all cases oldest folders are automatically deleted to max_reports_kept=
-default_application_data_file_path = DEFAULT
-
 [Mode]
 # mode = Production or Debug
 # In Debug mode all report boolean config values are automatically overwritten to True
