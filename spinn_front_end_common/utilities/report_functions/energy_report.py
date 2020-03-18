@@ -21,27 +21,18 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 logger = logging.getLogger(__name__)
 
 
 class EnergyReport(object):
-    """ Creates a report about the approximate total energy consumed by a\
-        SpiNNaker job execution. **Callable.**
-
-    :param ~pacman.model.placements.Placements placements: the placements
-    :param ~spinn_machine.Machine machine: the machine
-    :param str report_default_directory: location for reports
-    :param int version: version of machine
-    :param str spalloc_server: spalloc server IP
-    :param str remote_spinnaker_url: remote SpiNNaker URL
-    :param int time_scale_factor: the time scale factor
-    :param list(ProvenanceDataItem) pacman_provenance: the PACMAN provenance
-    :param int runtime:
-    :param BufferManager buffer_manager:
-    :param PowerUsed power_used:
-    :rtype: None
+    """ This class creates a report about the approximate total energy\
+        consumed by a SpiNNaker job execution.
     """
+
+    __slots__ = (
+        "__report_dir", "__version", "__uses_spalloc", "__time_scale_factor")
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -50,22 +41,30 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def __call__(
-            self, placements, machine, report_default_directory, version,
-            spalloc_server, remote_spinnaker_url, time_scale_factor,
-            pacman_provenance, runtime, buffer_manager, power_used):
+    def __init__(self, report_default_directory, version, spalloc_server,
+                 remote_spinnaker_url, time_scale_factor):
         """
-        :param ~.Placements placements:
-        :param ~.Machine machine:
-        :param str report_default_directory:
-        :param int version:
-        :param str spalloc_server:
-        :param str remote_spinnaker_url:
-        :param int time_scale_factor:
-        :param list(ProvenanceDataItem) pacman_provenance:
+        :param str report_default_directory: location for reports
+        :param int version: version of machine
+        :param str spalloc_server: spalloc server IP
+        :param str remote_spinnaker_url: remote SpiNNaker URL
+        :param int time_scale_factor: the time scale factor
+        """
+        self.__report_dir = report_default_directory
+        self.__version = version
+        self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
+        self.__time_scale_factor = time_scale_factor
+
+    def write_energy_report(
+            self, placements, machine, runtime, buffer_manager, power_used):
+        """ Writes the report.
+
+        :param ~pacman.model.placements.Placements placements: the placements
+        :param ~spinn_machine.Machine machine: the machine
         :param int runtime:
         :param BufferManager buffer_manager:
         :param PowerUsed power_used:
+        :rtype: None
         """
         # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
@@ -74,21 +73,19 @@ class EnergyReport(object):
 
         # detailed report path
         detailed_report = os.path.join(
-            report_default_directory, self._DETAILED_FILENAME)
+            self.__report_dir, self._DETAILED_FILENAME)
 
         # summary report path
         summary_report = os.path.join(
-            report_default_directory, self._SUMMARY_FILENAME)
+            self.__report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = runtime * time_scale_factor
+        runtime_total_ms = runtime * self.__time_scale_factor
 
         # create detailed report
         with open(detailed_report, "w") as f:
             self._write_detailed_report(
-                placements, machine, version,
-                bool(spalloc_server or remote_spinnaker_url),
-                pacman_provenance, power_used, f, runtime_total_ms)
+                placements, machine, power_used, f, runtime_total_ms)
 
         # create summary report
         with open(summary_report, "w") as f:
@@ -168,16 +165,12 @@ class EnergyReport(object):
             return "(over {} seconds)".format(time)
 
     def _write_detailed_report(
-            self, placements, machine, version, using_spalloc,
-            pacman_provenance, power_used, f, runtime_total_ms):
+            self, placements, machine,
+            power_used, f, runtime_total_ms):
         """ Write detailed report and calculate costs
 
         :param ~.Placements placements: placements
         :param ~.Machine machine: machine representation
-        :param int version: machine version
-        :param bool using_spalloc: whether spalloc is in use
-        :param list(ProvenanceDataItem) pacman_provenance:
-            provenance generated by PACMAN
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         :param float runtime_total_ms:
@@ -193,13 +186,13 @@ class EnergyReport(object):
             power_used.packet_joules))
 
         # figure FPGA cost over all booted and during runtime cost
-        self._write_fpga_cost(version, using_spalloc, power_used, f)
+        self._write_fpga_cost(power_used, f)
 
         # figure load time cost
-        self._write_load_time_cost(pacman_provenance, power_used, f)
+        self._write_load_time_cost(power_used, f)
 
         # figure extraction time cost
-        self._write_data_extraction_time_cost(pacman_provenance, power_used, f)
+        self._write_data_extraction_time_cost(power_used, f)
 
         # figure out active chips idle time
         active_chips = set()
@@ -239,27 +232,23 @@ class EnergyReport(object):
                 ComputeEnergyUsed.JOULES_PER_SPIKE,
                 ComputeEnergyUsed.MILLIWATTS_PER_FPGA))
 
-    @staticmethod
-    def _write_fpga_cost(
-            version, using_spalloc, power_used, f):
+    def _write_fpga_cost(self, power_used, f):
         """ FPGA cost calculation
 
-        :param version: machine version
-        :param bool using_spalloc: whether we used spalloc
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
         # pylint: disable=too-many-arguments
 
         # if not spalloc, then could be any type of board
-        if not using_spalloc:
+        if not self.__uses_spalloc:
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            if int(version) in (2, 3):
+            if int(self.__version) in (2, 3):
                 f.write(
                     "A SpiNN-{} board does not contain any FPGA's, and so "
-                    "its energy cost is 0 \n".format(version))
+                    "its energy cost is 0 \n".format(self.__version))
                 return
-            elif int(version) not in (4, 5):
+            elif int(self.__version) not in (4, 5):
                 # no idea where we are; version unrecognised
                 raise ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "
@@ -272,12 +261,12 @@ class EnergyReport(object):
                 f.write(
                     "The FPGA's on the SpiNN-{} board are turned off and "
                     "therefore the energy used by the FPGA is 0\n".format(
-                        version))
+                        self.__version))
                 return
             # active fpgas; fall through to shared main part report
 
         # print out as needed for spalloc and non-spalloc versions
-        if version is None:
+        if self.__version is None:
             f.write(
                 "{} FPGAs on the Spalloc-ed boards are turned on and "
                 "therefore the energy used by the FPGA during the entire time "
@@ -292,7 +281,7 @@ class EnergyReport(object):
                 "therefore the energy used by the FPGA during the entire time "
                 "the machine was booted (which was {} ms) is {}. "
                 "The usage during execution was {}".format(
-                    power_used.num_fpgas, version,
+                    power_used.num_fpgas, self.__version,
                     power_used.total_time_secs * 1000,
                     power_used.fpga_total_energy_joules,
                     power_used.fpga_exec_energy_joules))
@@ -333,11 +322,9 @@ class EnergyReport(object):
             "during the execution of the simulation".format(idle_cost))
 
     @staticmethod
-    def _write_load_time_cost(pacman_provenance, power_used, f):
+    def _write_load_time_cost(power_used, f):
         """ Energy usage from the loading phase
 
-        :param list(ProvenanceDataItem) pacman_provenance:
-            provenance items from the PACMAN set
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
@@ -345,7 +332,7 @@ class EnergyReport(object):
 
         # find time in milliseconds
         total_time_ms = 0.0
-        for element in pacman_provenance:
+        for element in power_used._algorithm_timing_provenance:
             if element.names[1] == "loading":
                 total_time_ms += convert_time_diff_to_total_milliseconds(
                     element.value)
@@ -366,11 +353,9 @@ class EnergyReport(object):
                 power_used.loading_joules))
 
     @staticmethod
-    def _write_data_extraction_time_cost(pacman_provenance, power_used, f):
+    def _write_data_extraction_time_cost(power_used, f):
         """ Data extraction cost
 
-        :param list(ProvenanceDataItem) pacman_provenance:
-            provenance items from the PACMAN set
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
@@ -378,7 +363,7 @@ class EnergyReport(object):
 
         # find time
         total_time_ms = 0.0
-        for element in pacman_provenance:
+        for element in power_used._algorithm_timing_provenance:
             if (element.names[1] == "Execution" and element.names[2] !=
                     "run_time_of_FrontEndCommonApplicationRunner"):
                 total_time_ms += convert_time_diff_to_total_milliseconds(

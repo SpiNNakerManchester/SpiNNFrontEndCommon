@@ -22,6 +22,7 @@ from spinn_front_end_common.utility_models import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
@@ -36,8 +37,6 @@ class ComputeEnergyUsed(object):
     :param int version:
         The version of the SpiNNaker boards in use.
     :param int time_scale_factor:
-    :param list(ProvenanceDataItem) pacman_provenance:
-        Provenance information from PACMAN.
     :param list(ProvenanceDataItem) router_provenance:
         Provenance information from routers.
     :param float runtime:
@@ -97,8 +96,8 @@ class ComputeEnergyUsed(object):
 
     def __call__(
             self, placements, machine, version, time_scale_factor,
-            pacman_provenance, router_provenance, runtime, buffer_manager,
-            mapping_time, load_time, execute_time, dsg_time, extraction_time,
+            router_provenance, runtime, buffer_manager, mapping_time,
+            load_time, execute_time, dsg_time, extraction_time,
             spalloc_server=None, remote_spinnaker_url=None,
             machine_allocation_controller=None):
         """
@@ -106,7 +105,6 @@ class ComputeEnergyUsed(object):
         :param ~.Machine machine:
         :param int version:
         :param int time_scale_factor:
-        :param list(ProvenanceDataItem) pacman_provenance:
         :param list(ProvenanceDataItem) router_provenance:
         :param float runtime:
         :param BufferManager buffer_manager:
@@ -126,6 +124,12 @@ class ComputeEnergyUsed(object):
 
         power_used = PowerUsed()
 
+        # CHEAT! We call into the guts of AbstractSpinnakerBase to get the
+        # algorithm timing data; it's still being written to at this point...
+        pacman_provenance = get_simulator()._pacman_provenance.data_items
+        # Take a copy of the PACMAN algorithm timing provenance data
+        power_used._algorithm_timing_provenance = list(pacman_provenance)
+
         power_used.num_chips = machine.n_chips
         # One extra per chip for SCAMP
         power_used.num_cores = placements.n_placements + machine.n_chips
@@ -137,7 +141,7 @@ class ComputeEnergyUsed(object):
 
         using_spalloc = bool(spalloc_server or remote_spinnaker_url)
         self._compute_energy_consumption(
-             placements, machine, version, using_spalloc, pacman_provenance,
+             placements, machine, version, using_spalloc,
              router_provenance, dsg_time, buffer_manager, load_time,
              mapping_time, execute_time + load_time + extraction_time,
              machine_allocation_controller,
@@ -147,7 +151,7 @@ class ComputeEnergyUsed(object):
 
     def _compute_energy_consumption(
             self, placements, machine, version, using_spalloc,
-            pacman_provenance, router_provenance, dsg_time, buffer_manager,
+            router_provenance, dsg_time, buffer_manager,
             load_time, mapping_time, total_booted_time, job, runtime_total_ms,
             power_used):
         """
@@ -155,7 +159,6 @@ class ComputeEnergyUsed(object):
         :param ~.Machine machine:
         :param int version:
         :param bool using_spalloc:
-        :param list(ProvenanceDataItem) pacman_provenance:
         :param list(ProvenanceDataItem) router_provenance:
         :param float dsg_time:
         :param BufferManager buffer_manager:
@@ -183,8 +186,8 @@ class ComputeEnergyUsed(object):
 
         # figure load time cost
         power_used.loading_joules = self._calculate_loading_energy(
-            pacman_provenance, machine, load_time, active_chips,
-            power_used.n_frames)
+            power_used._algorithm_timing_provenance, machine, load_time,
+            active_chips, power_used.n_frames)
 
         # figure the down time idle cost for mapping
         power_used.mapping_joules = self._calculate_power_down_energy(
@@ -196,7 +199,8 @@ class ComputeEnergyUsed(object):
 
         # figure extraction time cost
         power_used.saving_joules = self._calculate_data_extraction_energy(
-            pacman_provenance, machine, active_chips, power_used.n_frames)
+            power_used._algorithm_timing_provenance, machine, active_chips,
+            power_used.n_frames)
 
         # figure out active chips cost
         power_used.chip_energy_joules = sum(
@@ -453,6 +457,13 @@ class ComputeEnergyUsed(object):
                 return 1
         return 0
 
+    @staticmethod
+    def __get_running_time_ms(pacman_provenance, filter_rule):
+        return float(sum(
+            convert_time_diff_to_total_milliseconds(element.value)
+            for element in pacman_provenance
+            if filter_rule(element.names)))
+
     def _calculate_loading_energy(
             self, pacman_provenance, machine, load_time_ms, active_chips,
             n_frames):
@@ -467,10 +478,8 @@ class ComputeEnergyUsed(object):
         # pylint: disable=too-many-arguments
 
         # find time in milliseconds
-        total_time_ms = float(sum(
-            convert_time_diff_to_total_milliseconds(element.value)
-            for element in pacman_provenance
-            if element.names[1] == "loading"))
+        total_time_ms = self.__get_running_time_ms(
+            pacman_provenance, lambda names: names[1] == "loading")
 
         # handle monitor core active cost
 
@@ -516,11 +525,10 @@ class ComputeEnergyUsed(object):
         # pylint: disable=too-many-arguments
 
         # find time
-        total_time_ms = float(sum(
-            convert_time_diff_to_total_milliseconds(element.value)
-            for element in pacman_provenance
-            if (element.names[1] == "Execution" and element.names[2] !=
-                "run_time_of_FrontEndCommonApplicationRunner")))
+        total_time_ms = self.__get_running_time_ms(
+            pacman_provenance, lambda names: (
+                names[1] == "Execution" and names[2] !=
+                "run_time_of_FrontEndCommonApplicationRunner"))
 
         # min between chips that are active and fixed monitor, as when 1
         # chip is used its one monitor, if more than 1 chip,

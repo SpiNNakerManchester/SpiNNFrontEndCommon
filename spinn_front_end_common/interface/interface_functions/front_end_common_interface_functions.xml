@@ -2022,10 +2022,6 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-            	<param_name>pacman_provenance</param_name>
-            	<param_type>PacmanProvenanceItems</param_type>
-            </parameter>
-            <parameter>
             	<param_name>router_provenance</param_name>
             	<param_type>RouterProvenanceItems</param_type>
             </parameter>
@@ -2075,7 +2071,6 @@
     		<param_name>machine</param_name>
     		<param_name>version</param_name>
     		<param_name>time_scale_factor</param_name>
-    		<param_name>pacman_provenance</param_name>
     		<param_name>router_provenance</param_name>
     		<param_name>runtime</param_name>
     		<param_name>buffer_manager</param_name>
