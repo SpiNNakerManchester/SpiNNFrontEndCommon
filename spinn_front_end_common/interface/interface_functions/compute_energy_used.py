@@ -85,17 +85,15 @@ class ComputeEnergyUsed(object):
     __slots__ = []
 
     def __call__(
-            self, placements, machine, version, spalloc_server,
-            remote_spinnaker_url, time_scale_factor,
+            self, placements, machine, version, time_scale_factor,
             pacman_provenance, router_provenance, runtime,
             buffer_manager, mapping_time, load_time, execute_time, dsg_time,
-            extraction_time, machine_allocation_controller=None):
+            extraction_time, spalloc_server=None,
+            remote_spinnaker_url=None, machine_allocation_controller=None):
         """
         :param ~.Placements placements:
         :param ~.Machine machine:
         :param int version:
-        :param str spalloc_server:
-        :param str remote_spinnaker_url:
         :param int time_scale_factor:
         :param list(ProvenanceDataItem) pacman_provenance:
         :param list(ProvenanceDataItem) router_provenance:
@@ -106,6 +104,10 @@ class ComputeEnergyUsed(object):
         :param float execute_time:
         :param float dsg_time:
         :param float extraction_time:
+        :param spalloc_server:
+        :type spalloc_server: str or None
+        :param remote_spinnaker_url:
+        :type remote_spinnaker_url: str of None
         :param MachineAllocationController machine_allocation_controller:
         :rtype: PowerUsed
         """

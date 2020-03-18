@@ -2023,14 +2023,6 @@
                 <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
-                <param_name>spalloc_server</param_name>
-                <param_type>SpallocServer</param_type>
-            </parameter>
-            <parameter>
-                <param_name>remote_spinnaker_url</param_name>
-                <param_type>RemoteSpinnakerUrl</param_type>
-            </parameter>
-            <parameter>
                 <param_name>time_scale_factor</param_name>
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
@@ -2071,6 +2063,14 @@
                 <param_type>ExtractionTimeMs</param_type>
             </parameter>
             <parameter>
+                <param_name>spalloc_server</param_name>
+                <param_type>SpallocServer</param_type>
+            </parameter>
+            <parameter>
+                <param_name>remote_spinnaker_url</param_name>
+                <param_type>RemoteSpinnakerUrl</param_type>
+            </parameter>
+            <parameter>
                 <param_name>machine_allocation_controller</param_name>
 	            <param_type>MachineAllocationController</param_type>
 	        </parameter>
@@ -2079,8 +2079,6 @@
     		<param_name>placements</param_name>
     		<param_name>machine</param_name>
     		<param_name>version</param_name>
-    		<param_name>spalloc_server</param_name>
-    		<param_name>remote_spinnaker_url</param_name>
     		<param_name>time_scale_factor</param_name>
     		<param_name>pacman_provenance</param_name>
     		<param_name>router_provenance</param_name>
@@ -2093,6 +2091,8 @@
     		<param_name>extraction_time</param_name>
     	</required_inputs>
     	<optional_inputs>
+    		<param_name>spalloc_server</param_name>
+    		<param_name>remote_spinnaker_url</param_name>
     		<param_name>machine_allocation_controller</param_name>
     	</optional_inputs>
     	<outputs>
