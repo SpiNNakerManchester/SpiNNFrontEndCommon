@@ -21,6 +21,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.interface.interface_functions import (
     ComputeEnergyUsed)
+from spinn_machine.machine import Machine
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +237,6 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-        # pylint: disable=too-many-arguments
 
         # if not spalloc, then could be any type of board
         if not self.__uses_spalloc:
@@ -296,28 +296,32 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         :return: energy cost
         """
-        # pylint: disable=too-many-arguments
+
+        f.write("\n")
 
         # detailed report print out
-        for core in range(0, 18):
-            vertex = placements.get_vertex_on_processor(chip.x, chip.y, core)
-            label = "" if vertex is None else " (running {})".format(
-                vertex.label)
+        for core in range(Machine.DEFAULT_MAX_CORES_PER_CHIP):
+            if placements.is_processor_occupied(chip.x, chip.y, core):
+                vertex = placements.get_vertex_on_processor(
+                    chip.x, chip.y, core)
+                label = " (running {})".format(vertex.label)
+            else:
+                label = ""
             energy = power_used.get_core_active_energy_joules(
                 chip.x, chip.y, core)
             f.write(
                 "processor {}:{}:{}{} used {} Joules of energy by "
                 "being active during the execution of the simulation\n".format(
-                    chip.x, chip.y, core, label,
-                    energy))
+                    chip.x, chip.y, core, label, energy))
 
         # TAKE INTO ACCOUNT IDLE COST
         idle_cost = (
             runtime_total_ms * ComputeEnergyUsed.MILLIWATTS_PER_IDLE_CHIP)
 
         f.write(
-            "The machine used {} Joules of energy by being idle "
-            "during the execution of the simulation".format(idle_cost))
+            "The chip at {},{} used {} Joules of energy for by being idle "
+            "during the execution of the simulation\n".format(
+                chip.x, chip.y, idle_cost))
 
     @staticmethod
     def _write_load_time_cost(power_used, f):
@@ -326,7 +330,6 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-        # pylint: disable=too-many-arguments
 
         # find time in milliseconds
         total_time_ms = 0.0
@@ -357,7 +360,6 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-        # pylint: disable=too-many-arguments
 
         # find time
         total_time_ms = 0.0

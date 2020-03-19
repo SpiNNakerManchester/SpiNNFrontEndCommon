@@ -182,25 +182,25 @@ class ComputeEnergyUsed(object):
 
         # figure how many frames are using, as this is a constant cost of
         # routers, cooling etc
-        power_used.n_frames = self._calculate_n_frames(machine, job)
+        power_used.num_frames = self._calculate_n_frames(machine, job)
 
         # figure load time cost
         power_used.loading_joules = self._calculate_loading_energy(
             power_used._algorithm_timing_provenance, machine, load_time,
-            active_chips, power_used.n_frames)
+            active_chips, power_used.num_frames)
 
         # figure the down time idle cost for mapping
         power_used.mapping_joules = self._calculate_power_down_energy(
-            mapping_time, machine, job, version, power_used.n_frames)
+            mapping_time, machine, job, version, power_used.num_frames)
 
         # figure the down time idle cost for DSG
         power_used.data_gen_joules = self._calculate_power_down_energy(
-            dsg_time, machine, job, version, power_used.n_frames)
+            dsg_time, machine, job, version, power_used.num_frames)
 
         # figure extraction time cost
         power_used.saving_joules = self._calculate_data_extraction_energy(
             power_used._algorithm_timing_provenance, machine, active_chips,
-            power_used.n_frames)
+            power_used.num_frames)
 
         # figure out active chips cost
         power_used.chip_energy_joules = sum(
@@ -210,7 +210,7 @@ class ComputeEnergyUsed(object):
 
         # figure out cooling/internet router idle cost during runtime
         power_used.baseline_joules = (
-            runtime_total_ms * power_used.n_frames *
+            runtime_total_ms * power_used.num_frames *
             self.MILLIWATTS_FOR_FRAME_IDLE_COST)
 
     @staticmethod
@@ -272,8 +272,8 @@ class ComputeEnergyUsed(object):
             # If we can record this against a particular chip, also do so
             m = re.match(r"router_at_chip_(\d+)_(\d+)", element.names[2])
             if m and this_cost:
-                x = int(m.group[1])
-                y = int(m.group[2])
+                x = int(m.group(1))
+                y = int(m.group(2))
                 power_used.add_router_active_energy(x, y, this_cost)
 
         power_used.packet_joules = energy_cost

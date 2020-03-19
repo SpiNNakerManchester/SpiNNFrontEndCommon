@@ -2090,7 +2090,7 @@
     	</outputs>
     </algorithm>
 	<algorithm name="EnergyProvenanceReporter">
-    	<python_module>spinn_front_end_common.interface.interface_functions.compute_energy_used</python_module>
+    	<python_module>spinn_front_end_common.interface.interface_functions.energy_provenance_reporter</python_module>
     	<python_class>EnergyProvenanceReporter</python_class>
     	<input_definitions>
     		<parameter>

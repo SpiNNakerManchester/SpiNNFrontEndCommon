@@ -2042,6 +2042,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add in the timing finalisation
         algorithms.append("FinaliseTimingData")
 
+        if (self._config.getboolean("Reports", "write_energy_report") and
+                not self._use_virtual_board):
+            algorithms.append("ComputeEnergyUsed")
+            outputs.append("PowerUsed")
+            if write_prov:
+                algorithms.append("EnergyProvenanceReporter")
+
         # add extractor of provenance if needed
         if (write_prov and not self._use_virtual_board and
                 n_machine_time_steps is not None):
@@ -2686,6 +2693,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (self._config.getboolean("Reports", "write_energy_report") and
                 not self._use_virtual_board):
             algorithms.append("ComputeEnergyUsed")
+            outputs.append("PowerUsed")
             if write_prov:
                 algorithms.append("EnergyProvenanceReporter")
 
