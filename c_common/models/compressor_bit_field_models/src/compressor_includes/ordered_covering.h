@@ -747,9 +747,9 @@ static inline bool oc_merge_apply(
             log_info(
                 "merge contains at index %d and insert %d at insert point",
                 remove, insert);
-            //if (attempts2 == 1) {
-             //   rt_error(RTE_SWERR);
-            //}
+            if (attempts2 == 1) {
+                rt_error(RTE_SWERR);
+            }
 
             // Otherwise update the aliases table to account for the entry
             // which is being merged.
