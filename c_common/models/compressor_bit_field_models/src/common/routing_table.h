@@ -141,7 +141,7 @@ void routing_table_print_list_tables(void){
         table_t *table = routing_tables[table_index];
         for (int entry_index = 0; entry_index < table->size; entry_index ++){
             entry_t entry = table->entries[entry_index];
-            log_debug(
+            log_info(
                 "entry %d from table %d index %d has key %x or %d mask %x "
                 "route %x source %x",
                 table_lo_entry[table_index] + entry_index, table_index,
@@ -264,30 +264,41 @@ bool routing_table_sdram_store(table_t *table_format) {
 
     // locate n entries overall and write to struct
     int n_entries = routing_table_sdram_get_n_entries();
-    log_debug("compressed entries = %d", n_entries);
+    log_info("compressed entries = %d", n_entries);
+    log_info("compressed address = %x", table_format);
     table_format->size = n_entries;
     uint32_t main_entry_index = 0;
 
-    // iterate though the entries writing to the struct as we go
-    log_debug("start copy over");
-    for (int rt_index = 0; rt_index < n_tables; rt_index++) {
+    bool check = platform_check(table_format);
+    if (!check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
+    }
 
+    // iterate though the entries writing to the struct as we go
+    log_info("start copy over");
+    for (int rt_index = 0; rt_index < n_tables; rt_index++) {
+        log_info("on index %d of %d", rt_index, n_tables);
         // get how many entries are in this block
         int entries_stored_here = routing_tables[rt_index]->size;
-        log_debug("copying over %d entries", entries_stored_here);
+        log_info("copying over %d entries", entries_stored_here);
         if (entries_stored_here != 0) {
             // take entry and plonk data in right sdram location
-            log_debug("doing sark copy");
+            log_info("doing sark copy");
             sark_mem_cpy(
                 &table_format->entries[main_entry_index],
                 routing_tables[rt_index]->entries,
                 entries_stored_here * sizeof(entry_t));
-            log_debug("finished sark copy");
+            log_info("finished sark copy");
             main_entry_index += entries_stored_here;
-            log_debug("updated the main index to %d", main_entry_index);
+            log_info("updated the main index to %d", main_entry_index);
+            check = platform_check(table_format);
+            if (!check){
+                log_error("failed");
+            }
         }
     }
-    log_debug("finished copy");
+    log_info("finished copy");
     return true;
 }
 

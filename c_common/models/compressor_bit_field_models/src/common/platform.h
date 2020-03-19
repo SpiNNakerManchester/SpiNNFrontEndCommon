@@ -28,7 +28,7 @@ bool safety = true;
 #define EXTRA_BYTES 8
 #define BYTE_TO_WORD 4
 
-void** malloc_points [1000];
+void** malloc_points;
 int malloc_point_index = 0;
 
 
@@ -276,6 +276,11 @@ static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
     // NOTE use if not trusting the heap
     stolen_sdram_heap = sv->sdram_heap;
+    malloc_points = sark_xalloc(
+        sv->sdram_heap, 3000 * 4, 0, ALLOC_LOCK);
+    if (malloc_points == NULL){
+        log_error("FAILED to allocate the tracker code!");
+    }
     return true;
 
     // allocate blocks store for figuring out block order
@@ -361,17 +366,18 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
         bytes = bytes + EXTRA_BYTES;
     }
 
-    int * p= safe_sdram_malloc(bytes);
+    int * p = safe_sdram_malloc(bytes);
 
     if (safety) {
         int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
         malloc_points[malloc_point_index] = (void *)  &p[1];
+        log_info("index %d", malloc_point_index);
         malloc_point_index += 1;
-        log_info("index %d", malloc_point_index - 1);
         return (void *) &p[1];
     }
+    return (void *) p;
 }
 
 //! \brief allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
@@ -387,6 +393,7 @@ static void * safe_malloc(uint bytes) {
     int *p = sark_alloc(bytes, 1);
 
     if (p == NULL) {
+       log_info("went to sdram");
        p = safe_sdram_malloc(bytes);
     }
 
@@ -395,8 +402,8 @@ static void * safe_malloc(uint bytes) {
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
         malloc_points[malloc_point_index] = (void *)  &p[1];
+        log_info("index %d", malloc_point_index);
         malloc_point_index += 1;
-        log_info("index %d", malloc_point_index - 1);
         return (void *) &p[1];
     }
 
@@ -423,7 +430,7 @@ static bool platform_check(void *ptr) {
         int words = int_pointer[0];
         uint32_t flag = int_pointer[words];
         if (flag != SAFETY_FLAG) {
-            log_error("flag is actually %x", flag);
+            log_error("flag is actually %x for ptr %x", flag, ptr);
             return false;
         }
         else {
@@ -433,34 +440,53 @@ static bool platform_check(void *ptr) {
     return true;
 }
 
-void check_all(){
+void check_all(void){
+    bool failed = false;
     for(int index = 0; index < malloc_point_index; index ++){
-        if (!platform_check(malloc_points[index])){
-            log_error("the malloc with index %d has overran", index);
+        if (malloc_points[index] != 0){
+            if (!platform_check(malloc_points[index])){
+                log_error("the malloc with index %d has overran", index);
+                failed = true;
+            }
         }
+    }
+    if (failed){
+        terminate(2);
+        rt_error(RTE_SWERR);
     }
 }
 
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
 static void safe_x_free(void *ptr) {
+    log_info("freeing %x", ptr);
+
     int* int_pointer = (int*) ptr;
     if (safety) {
         if (!platform_check(ptr)) {
             log_error("over ran whatever is being freed");
             terminate(2);
         }
+
+        bool found = false;
+        for (int index = 0; index < malloc_point_index; index ++){
+            if (!found && malloc_points[index] == ptr) {
+                found = true;
+                malloc_points[index] = 0;
+                log_info("freeing index %d", index);
+            }
+        }
     }
 
-    return;
     if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
-        sark_xfree(sark.heap, int_pointer, 0);
+        sark_xfree(sark.heap, int_pointer - 1, ALLOC_LOCK);
     } else {
-        sark_xfree(stolen_sdram_heap, int_pointer, ALLOC_LOCK);
+        sark_xfree(stolen_sdram_heap, int_pointer - 1, ALLOC_LOCK);
     }
 }
 
-#define MALLOC safe_malloc
+//#define MALLOC safe_malloc
+#define MALLOC safe_sdram_malloc_wrapper
 #define FREE   safe_x_free
 #define MALLOC_SDRAM safe_sdram_malloc_wrapper
 

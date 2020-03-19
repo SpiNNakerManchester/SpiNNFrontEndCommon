@@ -637,7 +637,7 @@ static inline bool oc_get_best_merge(
 //! \param[in] merge: the merge to apply to the routing tables
 //! \param[in] aliases: ??????????????
 static inline bool oc_merge_apply(
-        merge_t *merge, aliases_t *aliases, bool *failed_by_malloc) {
+        merge_t *merge, aliases_t *aliases, bool *failed_by_malloc, int attempts2) {
     // Get the new entry
     entry_t new_entry;
     new_entry.key_mask = merge->key_mask;
@@ -648,6 +648,8 @@ static inline bool oc_merge_apply(
         "new entry k %x mask %x route %x source %x x mergable is %d",
         new_entry.key_mask.key, new_entry.key_mask.mask, new_entry.route,
         new_entry.source, merge->entries.count);
+
+    routing_table_print_list_tables();
 
     // Get the insertion point for the new entry
     int insertion_point =
@@ -679,12 +681,18 @@ static inline bool oc_merge_apply(
     // Use two iterators to move through the table copying entries from one
     // position to the other as required.
     int insert = 0;
+
+    log_info(
+        "routing table entries = %d",
+        routing_table_sdram_get_n_entries());
+
     for (int remove = 0; remove < routing_table_sdram_get_n_entries();
             remove++) {
 
         // Grab the current entry before we possibly overwrite it
         entry_t* current = routing_table_sdram_stores_get_entry(remove);
-        log_debug(
+        log_info("bacon");
+        log_info(
             "entry %d being processed has key %x or %d, mask %x route %x "
             "source %x", remove, current->key_mask.key, current->key_mask.key,
             current->key_mask.mask, current->route, current->source);
@@ -698,27 +706,36 @@ static inline bool oc_merge_apply(
                 routing_table_sdram_stores_get_entry(insert);
 
             // move data between entries
-            insert_entry->key_mask.key = new_entry.key_mask.key;
-            insert_entry->key_mask.mask = new_entry.key_mask.mask;
-            insert_entry->route = new_entry.route;
-            insert_entry->source = new_entry.source;
+            //insert_entry->key_mask.key = new_entry.key_mask.key;
+            //insert_entry->key_mask.mask = new_entry.key_mask.mask;
+            //insert_entry->route = new_entry.route;
+            //insert_entry->source = new_entry.source;
             insert++;
         }
+
+        if (attempts2 == 1 && remove == 1) {
+            //routing_table_print_list_tables();
+        }
+
+         if (attempts2 == 1 && remove == 30) {
+                log_info("ssss");
+                rt_error(RTE_SWERR);
+         }
 
         // If this entry is not contained within the merge then copy it from its
         // current position to its new position.
         if (!merge_contains(merge, remove)){
-            log_debug(
+            log_info(
                 "at index %d and insert %d at insert point", remove, insert);
 
             entry_t* insert_entry =
                 routing_table_sdram_stores_get_entry(insert);
 
             // move data between entries
-            insert_entry->key_mask.key = current->key_mask.key;
-            insert_entry->key_mask.mask = current->key_mask.mask;
-            insert_entry->route = current->route;
-            insert_entry->source = current->source;
+            //insert_entry->key_mask.key = current->key_mask.key;
+            //insert_entry->key_mask.mask = current->key_mask.mask;
+            //insert_entry->route = current->route;
+            //insert_entry->source = current->source;
             insert++;
 
         } else {
@@ -726,7 +743,7 @@ static inline bool oc_merge_apply(
             // which is being merged.
             key_mask_t km = current->key_mask;
             uint32_t source = current->source;
-
+            /*
             if (aliases_contains(aliases, km)) {
                 // Join the old list of aliases with the new
                 alias_list_join(new_aliases, aliases_find(aliases, km));
@@ -736,13 +753,13 @@ static inline bool oc_merge_apply(
             } else {
                 // Include the key_mask in the new list of aliases
                 alias_list_append(new_aliases, km, source);
-            }
+            }*/
 
             // Decrement the final table size to account for this entry being
             // removed.
             reduced_size++;
 
-            log_debug(
+            log_info(
                 "at index %d and insert %d not at merge point", remove, insert);
         }
     }
@@ -788,12 +805,12 @@ static inline bool oc_minimise(
         volatile bool *finished_by_control,
         volatile bool *timer_for_compression_attempt,
         bool compress_only_when_needed,
-        bool compress_as_much_as_possible){
+        bool compress_as_much_as_possible, int attempts2){
 
     counter_to_crash += 1;
 
     // check if any compression actually needed
-    log_debug(
+    log_info(
         "n entries before compression is %d",
         routing_table_sdram_get_n_entries());
 
@@ -816,6 +833,7 @@ static inline bool oc_minimise(
     log_debug("after default route removal");
 
     log_debug("before check for remove ");
+
     if (compress_only_when_needed && (length_after_removal < target_length)) {
         remove_default_routes_minimise(&length_after_removal, true);
         return true;
@@ -832,6 +850,7 @@ static inline bool oc_minimise(
     log_info("start compression true attempt");
     log_debug("n entries is %d", routing_table_sdram_get_n_entries());
     int attempts = 0;
+
     while ((routing_table_sdram_get_n_entries() > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control) {
 
@@ -859,7 +878,8 @@ static inline bool oc_minimise(
             //routing_tables_print_out_table_sizes();
             log_debug("merge apply");
             bool malloc_success = oc_merge_apply(
-                &merge, aliases, failed_by_malloc);
+                &merge, aliases, failed_by_malloc, attempts2);
+
             if (!malloc_success){
                 log_error("failed to malloc");
                 return false;

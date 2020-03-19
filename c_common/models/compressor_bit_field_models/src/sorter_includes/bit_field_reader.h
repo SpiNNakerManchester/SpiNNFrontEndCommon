@@ -37,7 +37,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
     log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
 
     if (n_pairs_of_addresses == 0) {
-        log_info("no bitfields to read in, so just return");
+        log_debug("no bitfields to read in, so just return");
         *success = true;
         return NULL;
     }
@@ -50,6 +50,10 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
                   "might as well give up");
         return NULL;
     }
+
+    log_debug("check all");
+    check_all();
+    log_debug("checked all");
 
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
@@ -78,8 +82,13 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
 
         // malloc for bitfield region addresses
         if (core_n_filters != 0) {
+            log_debug(
+                "before malloc of %d bytes",
+                core_n_filters * sizeof(filter_info_t));
+
             bit_field_by_processor[r_id].bit_field_addresses =
-                MALLOC(core_n_filters * sizeof(filter_info_t));
+                MALLOC_SDRAM(core_n_filters * sizeof(filter_info_t));
+            log_debug("after malloc");
             if (bit_field_by_processor[r_id].bit_field_addresses == NULL) {
                 log_error(
                     "failed to allocate memory for bitfield addresses for "
@@ -88,23 +97,64 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
             }
         }
 
-        // populate table for addresses where each bitfield component starts
-        for (int bf_id = 0; bf_id < core_n_filters; bf_id++) {
-            bit_field_by_processor[r_id].bit_field_addresses[bf_id] =
-                filter_region->filters[bf_id];
-        }
+        log_debug("check all");
+        check_all();
+        log_debug("checked all");
 
+        // populate table for addresses where each bitfield component starts
+        log_debug("before populate");
+        for (int bf_id = 0; bf_id < core_n_filters; bf_id++) {
+            if (r_id > 8){
+                check_all();
+                log_debug(
+                    "just try extyracting key %d for cycle %d",
+                    filter_region->filters[bf_id].key, bf_id);
+            }
+            bit_field_by_processor[r_id].bit_field_addresses[bf_id].key =
+                filter_region->filters[bf_id].key;
+            if (r_id > 8){
+                check_all();
+                log_debug("just try extyracting2");
+            }
+            bit_field_by_processor[r_id].bit_field_addresses[bf_id].n_words =
+                filter_region->filters[bf_id].n_words;
+            if (r_id > 8){
+                check_all();
+                log_debug("just try extyracting 3");
+            }
+            bit_field_by_processor[r_id].bit_field_addresses[bf_id].data =
+                filter_region->filters[bf_id].data;
+            if (r_id > 8){
+                check_all();
+                log_debug("just try extyracting4");
+            }
+            check_all();
+        }
+        log_debug("after populate");
+
+        log_debug("check all");
+        check_all();
+        log_debug("checked all");
+
+        log_debug("check specxific address");
         bool check = platform_check(
             bit_field_by_processor[r_id].bit_field_addresses);
         if (!check){
             log_error("failed");
         }
+        log_debug("chekced");
     }
 
+    log_debug("check processor");
     bool check = platform_check(bit_field_by_processor);
     if (!check){
         log_error("failed");
     }
+    log_debug("checked");
+
+    log_debug("check all");
+    check_all();
+    log_debug("checked all");
 
     *success = true;
     return bit_field_by_processor;

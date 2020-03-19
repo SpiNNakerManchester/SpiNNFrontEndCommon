@@ -69,9 +69,9 @@ static inline bool bit_set_init(bit_set_t *b, unsigned int length) {
         n_words++;
     }
 
-    log_debug("before bit set malloc");
+    log_info("before bit set malloc");
     uint32_t *data = (uint32_t *) MALLOC(n_words * sizeof(uint32_t));
-    log_debug("after bit set malloc");
+    log_info("after bit set malloc");
 
     if (data == NULL) {
         b->_data = NULL;

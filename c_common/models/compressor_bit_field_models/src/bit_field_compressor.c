@@ -82,6 +82,8 @@ response_sdp_packet_t* response = (response_sdp_packet_t*) &my_msg.data;
 //! \brief aliases thingy for compression
 aliases_t aliases;
 
+int attempts = 0;
+
 // ---------------------------------------------------------------------
 
 //! \brief sends a sdp message back to the control core
@@ -92,6 +94,7 @@ void send_sdp_message_response(void) {
         log_debug("failed to send. trying again");
         // Empty body
     }
+    attempts += 1;
 }
 
 //! \brief send a failed response due to a malloc issue
@@ -154,9 +157,23 @@ bool store_into_compressed_address(void) {
         return false;
     }
 
-    log_debug("starting store of %d tables", n_tables);
+    log_info(
+        "starting store of %d tables with %d entries",
+        n_tables, routing_table_sdram_get_n_entries());
+
+    bool check = platform_check(sdram_loc_for_compressed_entries);
+    if (!check){
+        log_error("failed");
+    }
+
     bool success = routing_table_sdram_store(
         sdram_loc_for_compressed_entries);
+
+    check = platform_check(sdram_loc_for_compressed_entries);
+    if (!check){
+        log_error("failed");
+    }
+
     log_debug("finished store");
     if (!success) {
         log_error("failed to store entries into sdram.");
@@ -178,24 +195,31 @@ void start_compression_process(uint unused0, uint unused1) {
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
+    bool check = platform_check(sdram_loc_for_compressed_entries);
+    if (!check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
+    }
+
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
         &finished_by_compressor_force,
         &timer_for_compression_attempt, compress_only_when_needed,
-        compress_as_much_as_possible);
+        compress_as_much_as_possible, attempts);
+     check_all();
 
     // turn off timer and set us into pause state
     spin1_pause();
-    log_debug("finished oc minimise with success %d", success);
+    log_info("finished oc minimise with success %d", success);
 
     // check state
     log_debug("success was %d", success);
     if (success) {
-        log_debug("store into compressed");
+        log_info("store into compressed");
         success = store_into_compressed_address();
         if (success) {
-            log_debug("success response");
+            log_info("success response");
             return_success_response_message();
         } else {
             log_debug("failed by space response");
@@ -244,6 +268,12 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // location where to store the compressed table
     sdram_loc_for_compressed_entries = start_cmd->table_data->compressed_table;
 
+    bool check = platform_check(sdram_loc_for_compressed_entries);
+    if (!check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
+    }
+
     log_info("table init");
     bool success = routing_tables_init(
         start_cmd->table_data->n_elements, start_cmd->table_data->elements);
@@ -267,7 +297,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
 void _sdp_handler(uint mailbox, uint port) {
     use(port);
 
-    log_debug("received packet");
+    log_info("received packet");
 
     // get data from the sdp message
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
@@ -278,8 +308,8 @@ void _sdp_handler(uint mailbox, uint port) {
         control_core_id = (msg->srce_port & CPU_MASK);
     }
 
-    log_debug("control core is %d", control_core_id);
-    log_debug("command code is %d", payload->command);
+    log_info("control core is %d", control_core_id);
+    log_info("command code is %d", payload->command);
 
     // get command code
     if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
@@ -297,7 +327,7 @@ void _sdp_handler(uint mailbox, uint port) {
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
             case STOP_COMPRESSION_ATTEMPT:
-                log_debug("been forced to stop by control");
+                log_error("been forced to stop by control");
                 finished_by_compressor_force = true;
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
@@ -332,24 +362,24 @@ void timer_callback(uint unused0, uint unused1) {
 
 //! \brief the callback for setting off the router compressor
 void initialise(void) {
-    log_debug("Setting up stuff to allow bitfield compressor to occur.");
+    log_info("Setting up stuff to allow bitfield compressor to occur.");
 
-    log_debug("reading time_for_compression_attempt");
+    log_info("reading time_for_compression_attempt");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
 
     uint32_t time_for_compression_attempt = this_processor->user1;
-    log_debug("user 1 = %d", time_for_compression_attempt);
+    log_info("user 1 = %d", time_for_compression_attempt);
 
     // bool from int conversion happening here
     uint32_t int_value = this_processor->user2;
-    log_debug("user 2 = %d", int_value);
+    log_info("user 2 = %d", int_value);
     if (int_value == 1) {
         compress_only_when_needed = true;
     }
 
     int_value = this_processor->user3;
-    log_debug("user 3 = %d", int_value);
+    log_info("user 3 = %d", int_value);
     if (int_value == 1) {
         compress_as_much_as_possible = true;
     }
@@ -361,12 +391,12 @@ void initialise(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
     // set up sdp callback
-    log_debug("set up sdp interrupt");
+    log_info("set up sdp interrupt");
     spin1_callback_on(SDP_PACKET_RX, _sdp_handler, SDP_PRIORITY);
-    log_debug("finished sdp interrupt");
+    log_info("finished sdp interrupt");
 
     //set up message static bits
-    log_debug("set up sdp message bits");
+    log_info("set up sdp message bits");
     response->command_code = COMPRESSION_RESPONSE;
     my_msg.flags = REPLY_NOT_EXPECTED;
     my_msg.srce_addr = spin1_get_chip_id();
@@ -374,16 +404,17 @@ void initialise(void) {
     my_msg.srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
     my_msg.length = LENGTH_OF_SDP_HEADER + (sizeof(response_sdp_packet_t));
 
-    log_debug("finished sdp message bits");
-    log_debug("my core id is %d", spin1_get_core_id());
-    log_debug(
+    log_info("finished sdp message bits");
+    log_info("my core id is %d", spin1_get_core_id());
+    log_info(
         "srce_port = %d the core id is %d",
         my_msg.srce_port, my_msg.srce_port & CPU_MASK);
 }
 
 //! \brief the main entrance.
 void c_main(void) {
-    log_debug("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
+    log_info("bacon");
+    log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
 
 
     // set up params

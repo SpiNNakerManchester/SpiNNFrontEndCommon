@@ -503,7 +503,7 @@ static inline int determine_unique_redundant_packets(
 //! \param[in] proc_cov_by_bf: the map of processor to redundant packet count
 //! \param[in] bf_by_processor: the map from processor to bitfields.
 //! \return list of coverage structs.
-static _coverage_t** create_coverage_by_redundant_packet(
+static inline _coverage_t** create_coverage_by_redundant_packet(
         int n_unique_redundant_packets, int* unique_redundant_packets,
         int n_pairs_of_addresses, _proc_cov_by_bitfield_t** proc_cov_by_bf,
         bit_field_by_processor_t* bf_by_processor){
@@ -643,32 +643,32 @@ static _coverage_t** create_coverage_by_redundant_packet(
         for (int region_index = 0; region_index < n_pairs_of_addresses;
                 region_index++) {
 
-            log_info(
+            log_debug(
                 "length of list = %d",
                 proc_cov_by_bf[region_index]->length_of_list);
-            log_info("processor_i = %d", processor_i);
+            log_debug("processor_i = %d", processor_i);
 
             for (int proc_redundant_index = 0;
                     proc_redundant_index <
                         proc_cov_by_bf[region_index]->length_of_list;
                     proc_redundant_index ++) {
 
-                log_info(
+                log_debug(
                     "comparing %d with %d",
                     proc_cov_by_bf[region_index]->redundant_packets[
                         proc_redundant_index],
                     unique_redundant_packets[unique_redundant_index]);
-                log_info("processor_i = %d", processor_i);
+                log_debug("processor_i = %d", processor_i);
 
                 if (proc_cov_by_bf[region_index]->redundant_packets[
                         proc_redundant_index] ==
                             unique_redundant_packets[unique_redundant_index]) {
 
-                    log_info(
+                    log_debug(
                         "found! at %x",
                         bf_by_processor[region_index].bit_field_addresses[
                             proc_redundant_index]);
-                    log_info("processor_i = %d", processor_i);
+                    log_debug("processor_i = %d", processor_i);
 
                     coverage[unique_redundant_index]->bit_field_addresses[
                         processor_i] = &bf_by_processor[
@@ -680,7 +680,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
                             region_index].processor_id;
 
                     processor_i += 1;
-                    log_info("updated processor_i to %d", processor_i);
+                    log_debug("updated processor_i to %d", processor_i);
 
                     passed = platform_check(coverage);
                     if (! passed){
@@ -702,7 +702,7 @@ static _coverage_t** create_coverage_by_redundant_packet(
                 }
             }
         }
-        log_info(
+        log_debug(
             "processor id index = %d and need to fill in %d elements",
             processor_i, n_bf_with_same_r_packets);
         if (processor_i != n_bf_with_same_r_packets){

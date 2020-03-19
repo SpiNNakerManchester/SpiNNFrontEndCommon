@@ -71,7 +71,6 @@ static inline bool store_sdram_addresses_for_compression(
     // space for the routing tables.
     comp_cores_bf_tables[comp_core_index].n_elements = n_rt_addresses;
     comp_cores_bf_tables[comp_core_index].n_bit_fields = mid_point;
-    comp_cores_bf_tables[comp_core_index].compressed_table = compressed_address;
     comp_cores_bf_tables[comp_core_index].elements = bit_field_routing_tables;
     return true;
 }
@@ -89,7 +88,7 @@ static inline void update_mc_message(
     my_msg->flags = REPLY_NOT_EXPECTED;
     log_debug("core id =  %d", spin1_get_id() & 0x1F);
     my_msg->srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
-    log_debug("compressor core = %d", compressor_cores[comp_core_index]);
+    log_info("compressor core = %d", compressor_cores[comp_core_index]);
     my_msg->dest_port =
         (RANDOM_PORT << PORT_SHIFT) | compressor_cores[comp_core_index];
 }
@@ -166,6 +165,10 @@ static bool message_sending_set_off_bit_field_compression(
         int* compressor_cores, int n_compressor_cores, int* comp_core_mid_point,
         int* n_available_compression_cores){
 
+    log_info("ddcbbqqc");
+    check_all();
+    log_info("ddccbbqqcc");
+
     // select compressor core to execute this
     int comp_core_index = select_compressor_core_index(
         mid_point, n_compressor_cores, comp_core_mid_point,
@@ -185,6 +188,10 @@ static bool message_sending_set_off_bit_field_compression(
     if (comp_cores_bf_tables[comp_core_index].compressed_table == NULL){
         compressed_address = MALLOC_SDRAM(
             routing_table_sdram_size_of_table(TARGET_LENGTH));
+        log_info(
+            "size of the compressed in bytes is %d",
+            routing_table_sdram_size_of_table(TARGET_LENGTH));
+        log_info("address of compressed is %x", compressed_address);
         comp_cores_bf_tables[comp_core_index].compressed_table =
             compressed_address;
         if (compressed_address == NULL) {
@@ -192,6 +199,22 @@ static bool message_sending_set_off_bit_field_compression(
                 "failed to allocate sdram for compressed routing entries");
             return false;
         }
+    }
+
+    log_info("ddcbbcs");
+    check_all();
+    log_info("ddccbbccs");
+
+    bool check = platform_check(compressed_address);
+    if (! check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
+    }
+    check = platform_check(
+        comp_cores_bf_tables[comp_core_index].compressed_table);
+    if (! check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
     }
 
     // record addresses for response processing code
@@ -203,8 +226,32 @@ static bool message_sending_set_off_bit_field_compression(
         return false;
     }
 
+    log_info("ddcbbc");
+    check_all();
+    log_info("ddccbbcc");
+
+    check = platform_check(compressed_address);
+    if (! check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
+    }
+    check = platform_check(
+        comp_cores_bf_tables[comp_core_index].compressed_table);
+    if (! check){
+        log_error("failed");
+        rt_error(RTE_SWERR);
+    }
+
+    log_info("ddcc");
+    check_all();
+    log_info("ddcccc");
+
     // update sdp to right destination
     update_mc_message(comp_core_index, my_msg, compressor_cores);
+
+    log_info("ddss");
+    check_all();
+    log_info("ddcss");
 
     // generate the message to send to the compressor core
     set_up_packet(&comp_cores_bf_tables[comp_core_index], my_msg);
@@ -212,6 +259,10 @@ static bool message_sending_set_off_bit_field_compression(
 
     // send sdp packet
     message_sending_send_sdp_message(my_msg);
+
+    log_info("dd");
+    check_all();
+    log_info("ddc");
     return true;
 }
 
