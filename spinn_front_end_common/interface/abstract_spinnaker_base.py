@@ -1529,6 +1529,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                  "Machine", "enable_advanced_monitor_support"))
         inputs['CompressionTargetSize'] = self._config.getint(
             "Mapping", "router_table_compression_target_length")
+        inputs["CompressionAsNeeded"] = self._config.getboolean(
+            "Mapping", "router_table_compress_as_needed")
+        inputs["CompressionAsFarAsPos"] = self._config.getboolean(
+            "Mapping", "router_table_compress_as_far_as_possible")
 
         algorithms = list()
 
