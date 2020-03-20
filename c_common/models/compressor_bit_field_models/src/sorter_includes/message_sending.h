@@ -26,18 +26,50 @@
 
 //! \brief sends the sdp message. assumes all params have already been set
 //! \param[in] my_msg: sdp message to send
-void message_sending_send_sdp_message(sdp_msg_pure_data* my_msg){
+void message_sending_send_sdp_message(
+        sdp_msg_pure_data* my_msg, int processor){
+    // print message completley for proof its working
+    log_info("message address is %x", my_msg);
+    log_info("length = %x", my_msg->length);
+    log_info("checksum = %x", my_msg->checksum);
+    log_info("flags = %u", my_msg->flags);
+    log_info("tag = %u", my_msg->tag);
+    log_info("dest_port = %u", my_msg->dest_port);
+    log_info("srce_port = %u", my_msg->srce_port);
+    log_info("dest_addr = %u", my_msg->dest_addr);
+    log_info("srce_addr = %u", my_msg->srce_addr);
+    log_info("data 0 = %d", my_msg->data[0]);
+    log_info("data 1 = %d", my_msg->data[1]);
+    log_info("data 2 = %d", my_msg->data[2]);
+
+
     uint32_t attempt = 0;
-    log_debug("sending message");
-    while (!spin1_send_sdp_msg((sdp_msg_t *) my_msg, _SDP_TIMEOUT)) {
-        attempt += 1;
-        log_debug("failed to send. trying again");
-        if (attempt >= 30) {
-            rt_error(RTE_SWERR);
-            terminate(EXIT_FAIL);
+    log_info("sending message");
+    bool received = false;
+    while (!received){
+        while (!spin1_send_sdp_msg((sdp_msg_t *) my_msg, _SDP_TIMEOUT)) {
+            attempt += 1;
+            log_info("failed to send. trying again");
+            if (attempt >= 30) {
+                rt_error(RTE_SWERR);
+                terminate(EXIT_FAIL);
+            }
+        }
+
+        // give chance for compressor to read
+        spin1_delay_us(50);
+
+        vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+        vcpu_t *comp_processor = &sark_virtual_processor_info[processor];
+        if (comp_processor->user1 == 1){
+            received = true;
+        }
+        else{
+            log_info("retrying");
+            check_all();
         }
     }
-    log_debug("sent message");
+    log_info("sent message");
 }
 
 //! \brief stores the addresses for freeing when response code is sent
@@ -82,7 +114,7 @@ static inline bool store_sdram_addresses_for_compression(
 //! \param[in] compressor_cores: list of compressor core ids.
 static inline void update_mc_message(
         int comp_core_index, sdp_msg_pure_data* my_msg, int* compressor_cores) {
-    log_debug("chip id = %d", spin1_get_chip_id());
+    log_info("chip id = %d", spin1_get_chip_id());
     my_msg->srce_addr = spin1_get_chip_id();
     my_msg->dest_addr = spin1_get_chip_id();
     my_msg->flags = REPLY_NOT_EXPECTED;
@@ -246,9 +278,6 @@ static bool message_sending_set_off_bit_field_compression(
     check_all();
     log_info("ddcccc");
 
-    // update sdp to right destination
-    update_mc_message(comp_core_index, my_msg, compressor_cores);
-
     log_info("ddss");
     check_all();
     log_info("ddcss");
@@ -257,8 +286,12 @@ static bool message_sending_set_off_bit_field_compression(
     set_up_packet(&comp_cores_bf_tables[comp_core_index], my_msg);
     log_debug("finished setting up compressor packet");
 
+    // update sdp to right destination
+    update_mc_message(comp_core_index, my_msg, compressor_cores);
+
     // send sdp packet
-    message_sending_send_sdp_message(my_msg);
+    message_sending_send_sdp_message(
+        my_msg, compressor_cores[comp_core_index]);
 
     log_info("dd");
     check_all();

@@ -718,7 +718,7 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
 //! \param[in] region_addresses: the sdram that stores data addresses
 //! \param[in] sorted_bit_fields: the sorted bitfields struct pointer
 //! \param[in] bit_field_by_processor: the map of processor to bitfields.
-/*
+
 void just_add_to_list(
         region_addresses_t *region_addresses,
         sorted_bit_fields_t* sorted_bit_fields,
@@ -744,7 +744,7 @@ void just_add_to_list(
             pos_in_sorted += 1;
         }
     }
-}*/
+}
 
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
@@ -789,11 +789,11 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
     // NOTE: THis is if you want to debug / need surplus itcm. as this will
     //put the fields in the list, but without any sorting at all.
-    //log_info("just adding");
-    //just_add_to_list(
-    //    region_addresses, sorted_bit_fields, bit_field_by_processor);
-    //log_info("fin just adding");
-    //return sorted_bit_fields;
+    log_info("just adding");
+    just_add_to_list(
+        region_addresses, sorted_bit_fields, bit_field_by_processor);
+    log_info("fin just adding");
+    return sorted_bit_fields;
 
 
     // populate the bitfield by coverage

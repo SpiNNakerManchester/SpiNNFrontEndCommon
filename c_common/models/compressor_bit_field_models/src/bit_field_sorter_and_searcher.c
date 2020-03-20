@@ -171,7 +171,8 @@ void send_sdp_force_stop_message(int compressor_core_index){
     my_msg.length = LENGTH_OF_SDP_HEADER + sizeof(command_codes_for_sdp_packet);
     
     // send sdp packet
-    message_sending_send_sdp_message(&my_msg);
+    message_sending_send_sdp_message(
+        &my_msg, compressor_cores[compressor_core_index]);
 }
 
 //! \brief sets up the search bitfields.
@@ -323,7 +324,7 @@ bool start_binary_search(void){
         hops_between_compression_cores = 1;
     }
 
-    log_debug("n_bf_addresses is %d", n_bf_addresses);
+    log_info("n_bf_addresses is %d", n_bf_addresses);
     log_debug(
         "n available compression cores is %d", n_available_compression_cores);
     log_debug("hops between attempts is %d", hops_between_compression_cores);
@@ -629,36 +630,50 @@ int mid_point_attempt = 0;
 //! \param[out] int to next midpoint to search
 //! \return bool saying if mallocs failed
 bool locate_next_mid_point(int *new_mid_point) {
-    /*if (mid_point_attempt == 0) {
-        *new_mid_point = 5;
-        mid_point_attempt += 1;
-        return true;
+    if (n_bf_addresses != 0){
+        if (mid_point_attempt == 0) {
+            *new_mid_point = 46;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 0) {
+            *new_mid_point = 69;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 1) {
+            *new_mid_point = 81;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 2) {
+            *new_mid_point = 87;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 3) {
+            *new_mid_point = 90;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 4) {
+            *new_mid_point = 91;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 5) {
+            *new_mid_point = 92;
+            mid_point_attempt += 1;
+            return true;
+        }
+        if (mid_point_attempt == 7) {
+            *new_mid_point = DOING_NOWT;
+            mid_point_attempt += 1;
+            return true;
+        }
+
+
     }
-    if (mid_point_attempt == 1) {
-        *new_mid_point = 6;
-        mid_point_attempt += 1;
-        return true;
-    }
-    if (mid_point_attempt == 2) {
-        *new_mid_point = 7;
-        mid_point_attempt += 1;
-        return true;
-    }
-    if (mid_point_attempt == 3) {
-        *new_mid_point = 8;
-        mid_point_attempt += 1;
-        return true;
-    }
-    if (mid_point_attempt == 4) {
-        *new_mid_point = 9;
-        mid_point_attempt += 1;
-        return true;
-    }
-    if (mid_point_attempt == 1) {
-        *new_mid_point = DOING_NOWT;
-        mid_point_attempt += 1;
-        return true;
-    }*/
 
     // get base line to start searching for new locations to test
     int best_mp_to_date = best_mid_point_to_date();
@@ -1286,6 +1301,7 @@ void start_compression_process(uint unused0, uint unused1) {
             "no bitfields to compress, just try the uncompressed and "
             "quit based on that's result.");
         reading_bit_fields = false;
+        spin1_mode_restore(cpsr);
         return;
     }
 
@@ -1298,6 +1314,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
+        spin1_mode_restore(cpsr);
         terminate(EXIT_MALLOC);
     }
 
@@ -1308,6 +1325,7 @@ void start_compression_process(uint unused0, uint unused1) {
             sorted_bit_fields->bit_fields[bit_field_index];
         if (bf_pointer == NULL) {
             log_info("failed at index %d", bit_field_index);
+            spin1_mode_restore(cpsr);
             terminate(RTE_SWERR);
         }
 
@@ -1336,6 +1354,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     if (!success_start_binary_search) {
         log_error("failed to compress the routing table at all. Failing");
+        spin1_mode_restore(cpsr);
         terminate(EXIT_FAIL);
     }
     spin1_mode_restore(cpsr);
@@ -1483,13 +1502,13 @@ static bool initialise(void) {
     initialise_routing_control_flags();
 
     // build the fake heap for allocating memory
-    log_debug("setting up fake heap for sdram usage");
+    log_info("setting up fake heap for sdram usage");
     bool heap_creation = platform_new_heap_creation(usable_sdram_regions);
     if (!heap_creation){
         log_error("failed to setup stolen heap");
         return false;
     }
-    log_debug("finished setting up fake heap for sdram usage");
+    log_info("finished setting up fake heap for sdram usage");
 
     log_info("test");
     int * test = MALLOC(16);
@@ -1497,6 +1516,7 @@ static bool initialise(void) {
     test[1] = 2;
     test[3] = 4;
     bool test_check = platform_check(test);
+    check_all();
     if (! test_check){
         log_error("failed test");
     }

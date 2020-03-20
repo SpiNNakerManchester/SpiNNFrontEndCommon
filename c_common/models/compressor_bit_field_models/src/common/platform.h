@@ -450,6 +450,7 @@ void check_all(void){
             }
         }
     }
+
     if (failed){
         terminate(2);
         rt_error(RTE_SWERR);

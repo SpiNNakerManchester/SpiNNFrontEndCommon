@@ -82,6 +82,12 @@ response_sdp_packet_t* response = (response_sdp_packet_t*) &my_msg.data;
 //! \brief aliases thingy for compression
 aliases_t aliases;
 
+//! get pointer to this processor user registers
+vcpu_t *this_processor = NULL;
+
+//! n bitfields testing
+int n_bit_fields = -1;
+
 int attempts = 0;
 
 // ---------------------------------------------------------------------
@@ -91,7 +97,7 @@ void send_sdp_message_response(void) {
     my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | control_core_id;
     // send sdp packet
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
-        log_debug("failed to send. trying again");
+        log_info("failed to send. trying again");
         // Empty body
     }
     attempts += 1;
@@ -241,6 +247,7 @@ void start_compression_process(uint unused0, uint unused1) {
             return_failed_by_space_response_message();
         }
     }
+    this_processor->user1 = 0;
 }
 
 //! \brief handle the first message. Will store in the routing table store,
@@ -249,6 +256,15 @@ void start_compression_process(uint unused0, uint unused1) {
 static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // reset states by first turning off timer (puts us in pause state as well)
     spin1_pause();
+
+    log_info("n bitfields = %d", start_cmd->table_data->n_bit_fields);
+    if (n_bit_fields == start_cmd->table_data->n_bit_fields) {
+        log_info("cloned message, ignoring");
+        return;
+    }
+
+    // update current n bitfields
+    n_bit_fields = start_cmd->table_data->n_bit_fields;
 
     // set up fake heap
     log_info("setting up fake heap for sdram usage");
@@ -274,7 +290,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
         rt_error(RTE_SWERR);
     }
 
-    log_info("table init");
+    log_info("table init for %d tables", start_cmd->table_data->n_elements);
     bool success = routing_tables_init(
         start_cmd->table_data->n_elements, start_cmd->table_data->elements);
     log_info("table init finish");
@@ -316,6 +332,7 @@ void _sdp_handler(uint mailbox, uint port) {
         switch (payload->command) {
             case START_DATA_STREAM:
                 log_info("start a stream packet");
+                this_processor->user1 = 1;
                 handle_start_data_stream(&payload->start);
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
@@ -366,7 +383,7 @@ void initialise(void) {
 
     log_info("reading time_for_compression_attempt");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    vcpu_t *this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
+    this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
 
     uint32_t time_for_compression_attempt = this_processor->user1;
     log_info("user 1 = %d", time_for_compression_attempt);
@@ -383,6 +400,11 @@ void initialise(void) {
     if (int_value == 1) {
         compress_as_much_as_possible = true;
     }
+
+    // set user 1,2,3 registers to 0
+    this_processor->user1 = 0;
+    this_processor->user2 = 0;
+    this_processor->user3 = 0;
 
     // sort out timer (this is done in a indirect way due to lack of trust to
     // have timer only fire after full time after pause and resume.
