@@ -95,6 +95,7 @@ class _HBPJobController(MachineAllocationController):
         self._set_power(self._machine_name, power)
         self._power_on = power
 
+    @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
         return self._where_is(self._machine_name, chip_x, chip_y)
 
