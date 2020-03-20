@@ -1527,6 +1527,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             (self._config.getboolean("Machine", "enable_reinjection") and
              self._config.getboolean(
                  "Machine", "enable_advanced_monitor_support"))
+        inputs['CompressionTargetSize'] = self._config.getint(
+            "Mapping", "router_table_compression_target_length")
 
         algorithms = list()
 
