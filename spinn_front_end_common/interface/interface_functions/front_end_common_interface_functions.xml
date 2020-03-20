@@ -196,11 +196,11 @@
             </parameter>
             <parameter>
                 <param_name>compress_only_when_needed</param_name>
-                <param_type>BitFieldRouterCompressorCompAsNeeded</param_type>
+                <param_type>CompressionAsNeeded</param_type>
             </parameter>
             <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
-                <param_type>BitFieldRouterCompressorCompAsFarAsPos</param_type>
+                <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
             <parameter>
                 <param_name>executable_finder</param_name>
@@ -232,7 +232,7 @@
             </parameter>
             <parameter>
                 <param_name>target_length</param_name>
-                <param_type>RouterCompressorBitFieldTargetLength</param_type>
+                <param_type>CompressionTargetSize</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>

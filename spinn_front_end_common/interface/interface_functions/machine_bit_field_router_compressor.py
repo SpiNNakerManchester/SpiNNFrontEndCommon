@@ -197,7 +197,7 @@ class MachineBitFieldRouterCompressor(object):
                     self._handle_failure_for_bit_field_router_compressor,
                     host_chips=on_host_chips, txrx=transceiver),
                 [CPUState.FINISHED], True, no_sync_changes,
-                "bit_field_compressor_on_{}_{}_{}",
+                "bit_field_compressor_on_{}_{}_{}.txt",
                 [bit_field_sorter_executable_path])
         except (SpinnmanException, SpinnFrontEndException):
             self._handle_failure_for_bit_field_router_compressor(
