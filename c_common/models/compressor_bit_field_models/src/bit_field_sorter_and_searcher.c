@@ -851,8 +851,8 @@ void carry_on_binary_search(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    uint cpsr = 0;
-    cpsr = spin1_int_disable();
+    //uint cpsr = 0;
+    //cpsr = spin1_int_disable();
 
     log_info("started carry on");
 
@@ -965,7 +965,7 @@ void carry_on_binary_search(uint unused0, uint unused1) {
 
     check_all();
 
-    spin1_mode_restore(cpsr);
+    //spin1_mode_restore(cpsr);
 }
 
 

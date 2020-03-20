@@ -155,19 +155,19 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
 //! \brief prints out a merge by bit level
 //! \param[in] merge: the merge to print
 void merge_print_merge_bit(merge_t *merge){
-    log_debug(
+    log_info(
         "merge key is %x or %d, mask %x, route %x, source %x",
          merge->key_mask.key, merge->key_mask.key, merge->key_mask.mask,
          merge->route, merge->source);
     //print_bit_set(merge->entries);
-    log_debug("bit set n_elements is %d", merge->entries.n_elements);
+    log_info("bit set n_elements is %d", merge->entries.n_elements);
     for (int table_index = 0; table_index < current_n_tables; table_index++){
         table_t *table = routing_tables[table_index];
         for (int entry_index = 0; entry_index < table->size; entry_index ++){
             entry_t entry = table->entries[entry_index];
             if (merge_contains(
                     merge, table_lo_entry[table_index] + entry_index)){
-                log_debug(
+                log_info(
                     "entry %d has key %x or %d mask %x route %x source %x",
                     table_lo_entry[table_index] + entry_index,
                     entry.key_mask.key, entry.key_mask.key,

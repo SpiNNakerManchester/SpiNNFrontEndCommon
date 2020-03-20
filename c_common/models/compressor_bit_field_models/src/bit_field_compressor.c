@@ -355,7 +355,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if (counter >= max_counter){
         timer_for_compression_attempt = true;
-        log_info("passed timer point");
+        log_debug("passed timer point");
         spin1_pause();
     }
 }

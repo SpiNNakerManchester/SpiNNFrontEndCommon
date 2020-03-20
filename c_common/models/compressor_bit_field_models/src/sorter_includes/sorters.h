@@ -50,12 +50,20 @@ void sorter_sort_by_redundant_packet_count(
 
     // sort by bubble sort so that the most redundant packet count
     // addresses are at the front
+    if (length_of_internal_array == 0) {
+        return;
+    }
+
+    log_info("ss");
     bool moved;
     do {
         moved = false;
+        log_info("ss");
         uint32_t element =
             proc_cov_by_bit_field[worst_core_id]->redundant_packets[0];
+        log_info("length of internal array = %d", length_of_internal_array);
         for (int index = 1; index < length_of_internal_array; index ++) {
+            log_info("bb");
             uint32_t compare_element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
 
@@ -79,6 +87,7 @@ void sorter_sort_by_redundant_packet_count(
                 element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
             }
+            log_info("cc");
         }
     } while (moved);
 }

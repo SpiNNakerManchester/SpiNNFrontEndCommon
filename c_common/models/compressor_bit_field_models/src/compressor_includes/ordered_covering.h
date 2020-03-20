@@ -686,6 +686,9 @@ static inline bool oc_merge_apply(
         "routing table entries = %d",
         routing_table_sdram_get_n_entries());
 
+    //merge_print_merge_bit(merge);
+    //rt_error(RTE_SWERR);
+
     for (int remove = 0; remove < routing_table_sdram_get_n_entries();
             remove++) {
 
@@ -700,7 +703,8 @@ static inline bool oc_merge_apply(
         // so
         if (remove == insertion_point) {
             log_debug(
-                "at index %d and insert %d at insert point", remove, insert);
+                "remove == insert at index %d and insert %d at insert point",
+                remove, insert);
 
             entry_t* insert_entry =
                 routing_table_sdram_stores_get_entry(insert);
@@ -717,16 +721,17 @@ static inline bool oc_merge_apply(
             //routing_table_print_list_tables();
         }
 
-         if (attempts2 == 1 && remove == 30) {
-                log_info("ssss");
-                rt_error(RTE_SWERR);
-         }
+         //if (attempts2 == 1 && remove == 5) {
+         //       log_info("ssss");
+         //       rt_error(RTE_SWERR);
+         //}
 
         // If this entry is not contained within the merge then copy it from its
         // current position to its new position.
         if (!merge_contains(merge, remove)){
             log_info(
-                "at index %d and insert %d at insert point", remove, insert);
+                "not contains at index %d and insert %d at insert point",
+                remove, insert);
 
             entry_t* insert_entry =
                 routing_table_sdram_stores_get_entry(insert);
@@ -739,6 +744,13 @@ static inline bool oc_merge_apply(
             insert++;
 
         } else {
+            log_info(
+                "merge contains at index %d and insert %d at insert point",
+                remove, insert);
+            if (attempts2 == 1) {
+                rt_error(RTE_SWERR);
+            }
+
             // Otherwise update the aliases table to account for the entry
             // which is being merged.
             key_mask_t km = current->key_mask;
