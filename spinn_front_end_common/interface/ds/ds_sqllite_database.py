@@ -98,20 +98,6 @@ class DsSqlliteDatabase(object):
             self._db.close()
             self._db = None
 
-    def __get_ethernet(self, ethernet_x, ethernet_y):
-        """
-        :param int ethernet_x:
-        :param int ethernet_y:
-        :rtype: int
-        """
-        with self._db:
-            for row in self._db.execute(
-                    "SELECT ethernet_id FROM ethernet "
-                    + "WHERE ethernet_x = ? AND ethernet_y = ?",
-                    (ethernet_x, ethernet_y)):
-                return row["ethernet_id"]
-        return self._root_ethernet_id
-
     def clear_ds(self):
         """ Clear all saved data specification data
         """
@@ -129,14 +115,15 @@ class DsSqlliteDatabase(object):
         chip = self._machine.get_chip_at(core_x, core_y)
         with self._db:
             self._db.execute(
-                "INSERT INTO core(x, y, processor, ethernet_id, content) "
-                + "VALUES(?, ?, ?, (SELECT COALESCE(("
-                + "SELECT ethernet_id FROM ethernet "
-                + "WHERE ethernet_x = ? AND ethernet_y = ?"
-                + "), ?)), ?) ",
-                (core_x, core_y, core_p, chip.nearest_ethernet_x,
-                 chip.nearest_ethernet_y, self._root_ethernet_id,
-                 sqlite3.Binary(ds)))
+                "INSERT INTO core(x, y, processor, content, ethernet_id) "
+                + "VALUES(?, ?, ?, ?, ("
+                + "   SELECT COALESCE(("
+                + "      SELECT ethernet_id FROM ethernet "
+                + "      WHERE ethernet_x = ? AND ethernet_y = ?"
+                + "   ), ?))) ",
+                (core_x, core_y, core_p, sqlite3.Binary(ds),
+                 chip.nearest_ethernet_x, chip.nearest_ethernet_y,
+                 self._root_ethernet_id))
 
     def get_ds(self, x, y, p):
         """ Retrieves the data spec as byte code for this core.
@@ -269,13 +256,13 @@ class DsSqlliteDatabase(object):
                 cursor.execute(
                     "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "start_address, memory_used, memory_written) "
-                    + "VALUES(?, ?, ?, (SELECT COALESCE(("
-                    + "SELECT ethernet_id FROM ethernet "
-                    + "WHERE ethernet_x = ? AND ethernet_y = ?"
-                    + "), ?)), ?, ?, ?) ",
-                    (x, y, p, chip.nearest_ethernet_x,
-                     chip.nearest_ethernet_y, self._root_ethernet_id,
-                     start, used, written))
+                    + "VALUES(?, ?, ?, ?, ?, ?, ("
+                    + "   SELECT COALESCE(("
+                    + "      SELECT ethernet_id FROM ethernet "
+                    + "      WHERE ethernet_x = ? AND ethernet_y = ?"
+                    + "   ), ?))) ",
+                    (x, y, p, start, used, written, chip.nearest_ethernet_x,
+                     chip.nearest_ethernet_y, self._root_ethernet_id))
 
     def set_size_info(self, x, y, p, memory_used):
         with self._db:
@@ -289,9 +276,11 @@ class DsSqlliteDatabase(object):
                 chip = self._machine.get_chip_at(x, y)
                 cursor.execute(
                     "INSERT INTO core(x, y, processor, memory_used, "
-                    + "ethernet_id) VALUES(?, ?, ?, ?, (SELECT COALESCE(("
-                    + "  SELECT ethernet_id FROM ethernet "
-                    + "  WHERE ethernet_x = ? AND ethernet_y = ?), ?)))",
+                    + "ethernet_id) VALUES(?, ?, ?, ?, ("
+                    + "  SELECT COALESCE(("
+                    + "     SELECT ethernet_id FROM ethernet "
+                    + "     WHERE ethernet_x = ? AND ethernet_y = ?"
+                    + "  ), ?)))",
                     (x, y, p, int(memory_used),
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y,
                      self._root_ethernet_id))
