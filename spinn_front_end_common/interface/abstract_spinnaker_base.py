@@ -321,6 +321,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # the time takes to execute the simulation
         "_execute_time",
+        # the timer used to log the execute time
+        "_run_timer",
 
         # time takes to do data generation
         "_dsg_time",
@@ -1505,7 +1507,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             inputs['MemoryMachineGraph'] = self._machine_graph
 
         inputs['ReportFolder'] = self._report_default_directory
-        inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
         inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
@@ -1712,6 +1713,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
+        self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
     def _do_data_generation(self, n_machine_time_steps):
         """
@@ -1741,6 +1743,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
+        self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
     def _do_load(self, graph_changed):
         """
@@ -1836,6 +1839,21 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._load_time += convert_time_diff_to_total_milliseconds(
             load_timer.take_sample())
+        self._load_outputs["LoadTimeMs"] = self._load_time
+
+    def _end_of_run_timing(self):
+        """
+        :return:
+            mapping_time, dsg_time, load_time, execute_time, extraction_time
+        :rtype: tuple(float, float, float, float, float)
+        """
+        timer = self._run_timer
+        if timer is not None:
+            self._execute_time += convert_time_diff_to_total_milliseconds(
+                self._run_timer.take_sample())
+        return (
+            self._mapping_time, self._dsg_time, self._load_time,
+            self._execute_time, self._extraction_time)
 
     def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
         """
@@ -1844,8 +1862,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param bool run_until_complete:
         """
         # start timer
-        run_timer = Timer()
-        run_timer.start_timing()
+        self._run_timer = Timer()
+        self._run_timer.start_timing()
 
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
@@ -1861,9 +1879,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 prov_items = list()
                 if self._version_provenance is not None:
                     prov_items.extend(self._version_provenance)
-                if self._pacman_provenance is not None:
-                    if self._pacman_provenance.data_items is not None:
-                        prov_items.extend(self._pacman_provenance.data_items)
+                prov_items.extend(self._pacman_provenance.data_items)
                 prov_item = executor.get_item("GraphProvenanceItems")
                 if prov_item is not None:
                     prov_items.extend(prov_item)
@@ -1871,6 +1887,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 if prov_item is not None:
                     prov_items.extend(prov_item)
                 prov_item = executor.get_item("RouterProvenanceItems")
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
+                prov_item = executor.get_item("PowerProvenanceItems")
                 if prov_item is not None:
                     prov_items.extend(prov_item)
                 self._pacman_provenance.clear()
@@ -1884,9 +1903,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
-
-            self._execute_time += convert_time_diff_to_total_milliseconds(
-                run_timer.take_sample())
 
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
@@ -2012,6 +2028,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             logger.warning(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
+            tokens.append("ApplicationRun")
         else:
             algorithms.append("ApplicationRunner")
 
@@ -2021,7 +2038,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 (run_until_complete or n_machine_time_steps is not None)):
             algorithms.append("BufferExtractor")
 
-        if self._config.getboolean("Reports", "write_provenance_data"):
+        write_prov = self._config.getboolean(
+            "Reports", "write_provenance_data")
+        if write_prov:
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
@@ -2036,9 +2055,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
 
+        # add in the timing finalisation
+        if not self._use_virtual_board:
+            algorithms.append("FinaliseTimingData")
+            if self._config.getboolean("Reports", "write_energy_report"):
+                algorithms.append("ComputeEnergyUsed")
+                if write_prov:
+                    algorithms.append("EnergyProvenanceReporter")
+
         # add extractor of provenance if needed
-        if (self._config.getboolean("Reports", "write_provenance_data") and
-                not self._use_virtual_board and
+        if (write_prov and not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
@@ -2186,9 +2212,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 logger.exception("Could not read provenance")
 
         # Finish getting the provenance
-        if self._pacman_provenance is not None:
-            if self._pacman_provenance.data_items is not None:
-                prov_items.extend(self._pacman_provenance.data_items)
+        prov_items.extend(self._pacman_provenance.data_items)
         self._pacman_provenance.clear()
         self._write_provenance(prov_items)
         self._all_provenance_items.append(prov_items)
@@ -2559,7 +2583,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._state = Simulator_State.SHUTDOWN
 
         try:
-            if "NotificationInterface" in self._last_run_outputs:
+            if self._last_run_outputs and \
+                    "NotificationInterface" in self._last_run_outputs:
                 self._last_run_outputs["NotificationInterface"].close()
         except Exception:
             logger.exception(
@@ -2642,10 +2667,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     prov_items = list()
                     if self._version_provenance is not None:
                         prov_items.extend(self._version_provenance)
-                    if self._pacman_provenance is not None:
-                        if self._pacman_provenance.data_items is not None:
-                            prov_items.extend(
-                                self._pacman_provenance.data_items)
+                    prov_items.extend(self._pacman_provenance.data_items)
                     prov_item = executor.get_item("GraphProvenanceItems")
                     if prov_item is not None:
                         prov_items.extend(prov_item)
@@ -2713,16 +2735,23 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Add the buffer extractor just in case
         algorithms.append("BufferExtractor")
 
+        write_prov = self._config.getboolean("Reports", "writeProvenanceData")
+
         # add extractor of iobuf if needed
         if self._config.getboolean("Reports", "extract_iobuf") and \
                 self._config.getboolean("Reports", "extract_iobuf_during_run"):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
-        if self._config.getboolean("Reports", "writeProvenanceData"):
+        if write_prov:
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
+        if (self._config.getboolean("Reports", "write_energy_report") and
+                not self._use_virtual_board):
+            algorithms.append("ComputeEnergyUsed")
+            if write_prov:
+                algorithms.append("EnergyProvenanceReporter")
 
         # Assemble how to run the algorithms
         return PACMANAlgorithmExecutor(
@@ -2735,31 +2764,25 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_name="stopping")
 
     def _do_energy_report(self):
+        # create energy reporter
+        energy_reporter = EnergyReport(
+            self._report_default_directory,
+            self._read_config_int("Machine", "version"), self._spalloc_server,
+            self._remote_spinnaker_url, self.time_scale_factor)
+
         if self._buffer_manager is None or self._last_run_outputs is None:
             return
-
-        # create energy report
-        energy_report = EnergyReport()
-
         # acquire provenance items
         router_provenance = self._last_run_outputs.get(
             "RouterProvenanceItems", None)
-        if router_provenance is None:
+        power_used = self._last_run_outputs.get("PowerUsed", None)
+        if router_provenance is None or power_used is None:
             return
-        pacman_provenance = self._pacman_provenance.data_items
 
         # run energy report
-        energy_report(
-            self._placements, self._machine,
-            self._report_default_directory,
-            self._read_config_int("Machine", "version"),
-            self._spalloc_server, self._remote_spinnaker_url,
-            self.time_scale_factor, self.machine_time_step,
-            pacman_provenance, router_provenance, self._machine_graph,
-            self._current_run_timesteps, self._buffer_manager,
-            self._mapping_time, self._load_time, self._execute_time,
-            self._dsg_time, self._extraction_time,
-            self._machine_allocation_controller)
+        energy_reporter.write_energy_report(
+            self._placements, self._machine, self._current_run_timesteps,
+            self._buffer_manager, power_used)
 
     def _extract_iobufs(self):
         if self._config.getboolean("Reports", "extract_iobuf_during_run"):

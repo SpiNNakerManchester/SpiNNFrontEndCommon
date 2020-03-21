@@ -43,22 +43,19 @@ class DSGRegionReloader(object):
         the location where reports are stored
     :param bool write_text_specs:
         True if the textual version of the specification is to be written
-    :param str application_data_file_path:
-        Folder where data specifications should be written to
     """
     __slots__ = [
         "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
-            write_text_specs, application_data_file_path):
+            write_text_specs):
         """
         :param ~.Transceiver transceiver:
         :param ~.Placements placements:
         :param str hostname:
         :param str report_directory:
         :param bool write_text_specs:
-        :param str application_data_file_path:
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
@@ -67,7 +64,7 @@ class DSGRegionReloader(object):
 
         # build file paths for reloaded stuff
         app_data_dir = generate_unique_folder_name(
-            application_data_file_path, "reloaded_data_regions", "")
+            report_directory, "reloaded_data_regions", "")
         if not os.path.exists(app_data_dir):
             os.makedirs(app_data_dir)
         self._data_dir = app_data_dir

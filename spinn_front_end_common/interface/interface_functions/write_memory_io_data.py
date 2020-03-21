@@ -66,11 +66,15 @@ class WriteMemoryIOData(object):
     :param ~pacman.model.placements.Placements placements:
         The placements of vertices of the graph
     :param int app_id: The ID of the application
-    :param str app_data_runtime_folder: The location of data files
+    :param str report_folder: The location of data files
     :param str hostname: The host name of the machine
     :param ~spinnman.transceiver.Transceiver transceiver:
-        The transceiver to write data using; if None only data files\
+        The transceiver to write data using; if None only data files
         are written
+    :param extra_monitor_cores_to_ethernet_connection_map:
+        What packet gatherer is located on which ethernet chip
+    :type extra_monitor_cores_to_ethernet_connection_map:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     :param processor_to_app_data_base_address:
         Optional existing dictionary of processor to base address
     :type processor_to_app_data_base_address:
@@ -97,7 +101,7 @@ class WriteMemoryIOData(object):
         self._hostname = ""
 
     def __call__(
-            self, graph, placements, app_id, app_data_runtime_folder, hostname,
+            self, graph, placements, app_id, report_folder, hostname,
             transceiver=None, uses_advanced_monitors=False,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
@@ -105,9 +109,11 @@ class WriteMemoryIOData(object):
         :param ~pacman.model.graphs.AbstractGraph graph:
         :param ~pacman.model.placements.Placements placements:
         :param int app_id:
-        :param str app_data_runtime_folder:
+        :param str report_folder:
         :param str hostname:
         :param ~spinnman.transceiver.Transceiver transceiver:
+        :type extra_monitor_cores_to_ethernet_connection_map:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :type processor_to_app_data_base_address:
             dict(tuple(int,int,int),DataWritten)
         :rtype: dict(tuple(int,int,int),DataWritten)
@@ -121,7 +127,7 @@ class WriteMemoryIOData(object):
         self._txrx = transceiver
         self._use_monitors = uses_advanced_monitors
         self._monitor_map = extra_monitor_cores_to_ethernet_connection_map
-        self._data_folder = app_data_runtime_folder
+        self._data_folder = report_folder
         self._hostname = hostname
         self._app_id = app_id
 

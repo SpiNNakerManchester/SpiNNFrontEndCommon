@@ -35,7 +35,8 @@ class DatabaseInterface(object):
     :param ~pacman.model.placements.Placements placements:
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-    :param str database_directory:
+    :param str report_folder:
+        Where the database will be put.
     :param bool create_atom_to_event_id_mapping:
     :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
     :return: Database interface, where the database is located
@@ -62,7 +63,7 @@ class DatabaseInterface(object):
             self, machine_graph, user_create_database, tags,
             runtime, machine, data_n_timesteps, time_scale_factor,
             machine_time_step, placements, routing_infos, router_tables,
-            database_directory, create_atom_to_event_id_mapping=False,
+            report_folder, create_atom_to_event_id_mapping=False,
             application_graph=None):
         """
         :param ~.MachineGraph machine_graph:
@@ -76,7 +77,7 @@ class DatabaseInterface(object):
         :param ~.Placements placements:
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
-        :param str database_directory:
+        :param str report_folder:
         :param bool create_atom_to_event_id_mapping:
         :param ~.ApplicationGraph application_graph:
         :return: Database interface, where the database is located
@@ -84,7 +85,7 @@ class DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
-        self._writer = DatabaseWriter(database_directory)
+        self._writer = DatabaseWriter(report_folder)
         self._user_create_database = user_create_database
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database(machine_graph)

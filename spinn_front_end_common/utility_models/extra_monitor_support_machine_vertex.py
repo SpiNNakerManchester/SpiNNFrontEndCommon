@@ -527,14 +527,7 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        try:
-            return process.get_reinjection_status_for_core_subsets(
-                core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
-            raise
+        return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
             self, placements, extra_monitor_cores_for_data, transceiver,

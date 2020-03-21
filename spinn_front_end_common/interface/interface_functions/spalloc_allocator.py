@@ -65,6 +65,7 @@ class _SpallocJobController(MachineAllocationController):
         if power:
             self._job.wait_until_ready()
 
+    @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
         """
         :param int chip_x:
