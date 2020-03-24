@@ -425,7 +425,7 @@ class DatabaseWriter(object):
                     vertex_id, event_id, atom_id)
                 VALUES (?, ?, ?)
                 """, (
-                    (self.__vertex_to_id[vtx], key, a_id)
+                    (self.__vertex_to_id[vtx], int(key), int(a_id))
                     for vtx, prtn in vertices_and_partitions
                     if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
                     for a_id, key in vtx.routing_key_partition_atom_mapping(
