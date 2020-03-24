@@ -143,7 +143,7 @@ class DatabaseWriter(object):
                      chip.ip_address,
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                     for chip in machine.chips if not chip.virtual))
-            self._connection.insertmany(
+            self._connection.executemany(
                 """
                 INSERT INTO Processor(
                     chip_x, chip_y, machine_id, available_DTCM,
