@@ -408,28 +408,26 @@ class DatabaseWriter(object):
             vertices_and_partitions = (
                 (graph_mapper.get_application_vertex(vertex), partition)
                 for vertex in machine_graph.vertices
-                for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(vertex))
+                for partition in machine_graph.
+                get_outgoing_edge_partitions_starting_at_vertex(vertex))
         else:
             # We will be asking machine vertices for key/atom mappings
             vertices_and_partitions = (
                 (vertex, partition)
                 for vertex in machine_graph.vertices
-                for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(vertex))
+                for partition in machine_graph.
+                get_outgoing_edge_partitions_starting_at_vertex(vertex))
 
-        vtxids_keys_atomids = (
-            (self.__vertex_to_id[vertex], key, atom_id)
-            for vertex, partition in vertices_and_partitions
-            if isinstance(vertex, AbstractProvidesKeyToAtomMapping)
-            for atom_id, key in vertex.\
-                routing_key_partition_atom_mapping(
-                    routing_infos.get_routing_info_from_partition(
-                        partition), partition))
         with self._connection:
             self._connection.executemany(
                 """
                 INSERT INTO event_to_atom_mapping(
                     vertex_id, event_id, atom_id)
                 VALUES (?, ?, ?)
-                """, vtxids_keys_atomids)
+                """, (
+                    (self.__vertex_to_id[vtx], key, a_id)
+                    for vtx, prtn in vertices_and_partitions
+                    if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
+                    for a_id, key in vtx.routing_key_partition_atom_mapping(
+                        routing_infos.get_routing_info_from_partition(prtn),
+                        prtn)))
