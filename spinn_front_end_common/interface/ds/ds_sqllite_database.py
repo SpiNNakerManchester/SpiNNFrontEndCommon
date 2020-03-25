@@ -42,7 +42,6 @@ class DsSqlliteDatabase(object):
         :type init: bool or None
         """
         self._machine = machine
-        self._root_ethernet_id = None
         database_file = os.path.join(report_folder, DB_NAME)
 
         if init is None:
