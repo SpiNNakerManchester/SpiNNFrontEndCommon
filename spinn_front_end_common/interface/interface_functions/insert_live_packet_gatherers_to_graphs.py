@@ -32,10 +32,10 @@ class InsertLivePacketGatherersToGraphs(object):
         dict(LivePacketGatherParameters,
         list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
     :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
     :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
         the application graph
-    :param ~pacman.model.graphs.machine.MachinGraph machine_graph:
-        the machine graph
     :return: mapping between LPG parameters and LPG vertex
     :rtype: dict(LivePacketGatherParameters,
         dict(tuple(int,int),LivePacketGatherMachineVertex))
@@ -51,8 +51,8 @@ class InsertLivePacketGatherersToGraphs(object):
             dict(LivePacketGatherParameters,
             list(tuple(~.AbstractVertex, list(str))))
         :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
         :param ~.ApplicationGraph application_graph:
-        :param ~.MachinGraph machine_graph:
         :rtype: dict(LivePacketGatherParameters,
             dict(tuple(int,int),LivePacketGatherMachineVertex))
         """
@@ -92,6 +92,8 @@ class InsertLivePacketGatherersToGraphs(object):
             application graph.
 
         :param ~.ApplicationGraph app_graph:
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
         :rtype: LivePacketGatherMachineVertex
         """
         # pylint: disable=too-many-arguments

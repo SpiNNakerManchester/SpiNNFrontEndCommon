@@ -92,8 +92,8 @@ class InsertEdgesToLivePacketGatherers(object):
     def _connect_lpg_vertex_in_application_graph(
             self, app_graph, app_vertex, lpg_params, p_ids):
         """
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-        :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
+        :param ~.ApplicationGraph app_graph:
+        :param ~.ApplicationVertex app_vertex:
         :param LivePacketGatherParameters lpg_params:
         :param list(str) p_ids:
         """
@@ -125,8 +125,8 @@ class InsertEdgesToLivePacketGatherers(object):
     def _connect_lpg_vertex_in_machine_graph(
             self, m_graph, m_vertex, lpg_params, p_ids):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph m_graph:
-        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+        :param ~.MachineGraph m_graph:
+        :param ~.MachineVertex m_vertex:
         :param LivePacketGatherParameters lpg_params:
         :param list(str) p_ids:
         """
@@ -142,7 +142,7 @@ class InsertEdgesToLivePacketGatherers(object):
             machine vertex in question, or the LPG on 0, 0 if a closer one\
             can't be found.
 
-        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+        :param ~.MachineVertex m_vertex:
             the machine vertex to locate the nearest LPG to
         :param LivePacketGatherParameters lpg_params:
             parameters to decide what LPG is to be used

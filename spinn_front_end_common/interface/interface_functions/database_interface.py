@@ -80,7 +80,6 @@ class DatabaseInterface(object):
         :param str report_folder:
         :param bool create_atom_to_event_id_mapping:
         :param ~.ApplicationGraph application_graph:
-        :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
         """
         # pylint: disable=too-many-arguments

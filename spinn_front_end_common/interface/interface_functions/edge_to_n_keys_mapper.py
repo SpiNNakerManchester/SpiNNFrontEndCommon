@@ -42,7 +42,11 @@ class EdgeToNKeysMapper(object):
                 "A machine graph is required for this mapper. "
                 "Please choose and try again")
 
-        if list(machine_graph.vertices)[0].app_vertex is not None:
+        av = None
+        for mv in machine_graph.vertices:
+            av = mv.app_vertex
+            break
+        if av is not None:
             return self._allocate_by_app_graph_simple(machine_graph)
         else:
             return self._allocate_by_machine_graph_only(machine_graph)

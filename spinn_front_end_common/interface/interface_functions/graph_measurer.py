@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class GraphMeasurer(object):
     """ Works out how many chips a machine graph needs.
 
-    :param ~pacman.model.graph.machine.MachineGraph machine_graph:
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         The machine_graph to measure.
     :param ~spinn_machine.Machine machine:
         The machine with respect to which to partition the application graph.

@@ -56,9 +56,9 @@ class GraphBinaryGatherer(object):
     def __get_binary(self, placement, vertex):
         """
         :param ~.Placement placement:
-        :param ~.MachineVertex vertex:
+        :param ~.AbstractVertex vertex:
         """
-        # If we've got junk input, ignore it
+        # If we've got junk input (shouldn't happen), ignore it
         if vertex is None:
             return
         # if the vertex cannot be executed, ignore it

@@ -62,8 +62,8 @@ class WriteMemoryIOData(object):
     """ An algorithm that handles objects implementing the interface\
         :py:class:`AbstractUsesMemoryIO`. **Callable.**
 
-    :param ~pacman.model.graphs.AbstractGraph graph: The graph to process
-    :param ~pacman.model.placements.Placements placements:
+    :param ~pacman.model.graphs.Graph graph: The graph to process
+    :param ~pacman.model.placements Placements placements:
         The placements of vertices of the graph
     :param int app_id: The ID of the application
     :param str report_folder: The location of data files
@@ -71,14 +71,19 @@ class WriteMemoryIOData(object):
     :param ~spinnman.transceiver.Transceiver transceiver:
         The transceiver to write data using; if None only data files
         are written
+    :param bool uses_advanced_monitors:
+        Whether to use the Fast Data In protocol
     :param extra_monitor_cores_to_ethernet_connection_map:
-        What packet gatherer is located on which ethernet chip
+        The mapping from chips to packet gatherer vertices.
+        Only required when `uses_advanced_monitors = True`
     :type extra_monitor_cores_to_ethernet_connection_map:
         dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     :param processor_to_app_data_base_address:
-        Optional existing dictionary of processor to base address
+        Existing dictionary of processor to base address.
+        Only required when `uses_advanced_monitors = True`
     :type processor_to_app_data_base_address:
         dict(tuple(int,int,int),DataWritten)
+    :param ~spinn_machine.Machine machine:
     :return: The mapping between processor and addresses allocated
     :rtype: dict(tuple(int,int,int),DataWritten)
     """
@@ -106,16 +111,20 @@ class WriteMemoryIOData(object):
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
         """
-        :param ~pacman.model.graphs.AbstractGraph graph:
-        :param ~pacman.model.placements.Placements placements:
+        :param ~.Graph graph:
+        :param ~.Placements placements:
         :param int app_id:
         :param str report_folder:
         :param str hostname:
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~.Transceiver transceiver:
+        :param bool uses_advanced_monitors:
+        :param extra_monitor_cores_to_ethernet_connection_map:
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param processor_to_app_data_base_address:
         :type processor_to_app_data_base_address:
             dict(tuple(int,int,int),DataWritten)
+        :param ~.Machine machine:
         :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # pylint: disable=too-many-arguments

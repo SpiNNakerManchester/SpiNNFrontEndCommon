@@ -22,7 +22,7 @@ class TagsLoader(object):
 
     :param ~spinnman.transceiver.Transceiver transceiver:
         the transceiver object
-    :param ~.Tags tags:
+    :param ~pacman.model.tags.Tags tags:
         the tags object which contains IP and reverse IP tags;
         could be `None` if these are being given in separate lists
     :param list(~spinn_machine.tags.IPTag) iptags:
