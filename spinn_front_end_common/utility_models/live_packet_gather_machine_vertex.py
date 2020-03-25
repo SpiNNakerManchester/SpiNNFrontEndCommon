@@ -195,8 +195,10 @@ class LivePacketGatherMachineVertex(
 
         spec.write_value(int(self._lpg_params.use_prefix))
         spec.write_value(self._lpg_params.key_prefix or 0)
-        spec.write_value(self._lpg_params.prefix_type.value or 0)
-        spec.write_value(self._lpg_params.message_type.value)
+        spec.write_value(self._lpg_params.prefix_type.value
+                         if self._lpg_params.prefix_type else 0)
+        spec.write_value(self._lpg_params.message_type.value
+                         if self._lpg_params.message_type else 0)
         spec.write_value(self._lpg_params.right_shift)
         spec.write_value(int(self._lpg_params.payload_as_time_stamps))
         spec.write_value(int(self._lpg_params.use_payload_prefix))
