@@ -19,30 +19,42 @@ PRAGMA main.synchronous = OFF;
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table assigning ids to sourcex names
 CREATE TABLE IF NOT EXISTS source(
-  source_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	source_name STRING NOT NULL);
+    source_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	source_name STRING UNIQUE NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table assigning ids to description names
 CREATE TABLE IF NOT EXISTS description(
-  description_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	description_name STRING NOT NULL);
-
+    description_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	description_name STRING UNIQUE NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values
 CREATE TABLE IF NOT EXISTS provenance(
-  provenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  source_id INTEGER NOT NULL,
-  description_id INTEGER NOT NULL,
+    provenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_id INTEGER NOT NULL,
+    description_id INTEGER NOT NULL,
 	the_value INTEGER NOT NULL);
 
-
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Glue the bits together to show the information that people think is here
 CREATE VIEW IF NOT EXISTS provenance_view AS
     SELECT source_id, description_id, provenance_id, source_name, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance;
 
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Compute some basic statistics over the provenance
 CREATE VIEW IF NOT EXISTS stats_view AS
-    SELECT case count(DISTINCT source_name) when 1 then source_name else "" end as source, description_name, min(the_value) as min, max(the_value) as max, avg(the_value) as avg, sum(the_value) as total, count(the_value) as count
+    SELECT
+    	CASE count(DISTINCT source_name)
+    	    WHEN 1 THEN source_name
+			ELSE ""
+		END AS source,
+    	description_name AS description,
+    	min(the_value) AS min,
+    	max(the_value) AS max,
+    	avg(the_value) AS avg,
+    	sum(the_value) AS total,
+    	count(the_value) AS count
     FROM source NATURAL JOIN description NATURAL JOIN provenance
-    group by description_name
+    GROUP BY description;

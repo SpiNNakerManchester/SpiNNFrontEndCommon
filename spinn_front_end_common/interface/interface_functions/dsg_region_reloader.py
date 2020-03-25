@@ -37,7 +37,7 @@ class DSGRegionReloader(object):
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
-            write_text_specs, application_data_file_path, graph_mapper=None):
+            write_text_specs, graph_mapper=None):
         """
         :param transceiver: SpiNNMan transceiver for communication
         :param placements: the list of placements of the machine graph to cores
@@ -45,8 +45,6 @@ class DSGRegionReloader(object):
         :param report_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
-        :param application_data_file_path:\
-            Folder where data specifications should be written to
         :param graph_mapper:\
             the mapping between application and machine graph
         """
@@ -54,7 +52,7 @@ class DSGRegionReloader(object):
 
         # build file paths for reloaded stuff
         app_data_dir = generate_unique_folder_name(
-            application_data_file_path, "reloaded_data_regions", "")
+            report_directory, "reloaded_data_regions", "")
         if not os.path.exists(app_data_dir):
             os.makedirs(app_data_dir)
 
