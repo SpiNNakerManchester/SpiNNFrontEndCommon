@@ -113,6 +113,8 @@ class InsertLivePacketGatherersToGraphs(object):
             application graph.
 
         :param ~.MachineGraph app_graph:
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
         :rtype: LivePacketGatherMachineVertex
         """
         vtx = self.__create_vertex(
