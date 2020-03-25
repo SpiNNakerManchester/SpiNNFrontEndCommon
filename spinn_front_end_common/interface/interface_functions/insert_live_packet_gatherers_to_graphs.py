@@ -63,14 +63,14 @@ class InsertLivePacketGatherersToGraphs(object):
         # pylint: disable=too-many-arguments
         if app_graph is not None:
             _slice = Slice(0, 0)
-            app_vtx = self._create_vertex(LivePacketGather, params)
+            app_vtx = LivePacketGather(params)
             app_graph.add_vertex(app_vtx)
             resources = app_vtx.get_resources_used_by_atoms(_slice)
             m_vtx = app_vtx.create_machine_vertex(
                 _slice, resources, label=params.label)
             mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
-            m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
+            m_vtx = LivePacketGatherMachineVertex(params)
 
         m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
         m_graph.add_vertex(m_vtx)
