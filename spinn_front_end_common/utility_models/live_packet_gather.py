@@ -96,10 +96,9 @@ class LivePacketGather(
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()),
             iptags=[IPtagResource(
-                ip_address=self._lpg_params.ip_address,
-                port=self._lpg_params.port,
-                strip_sdp=self._lpg_params.strip_sdp, tag=self._lpg_params.tag,
-                traffic_identifier=(
+                ip_address=self._lpg_params.hostname,
+                port=self._lpg_params.port, tag=self._lpg_params.tag,
+                strip_sdp=self._lpg_params.strip_sdp, traffic_identifier=(
                     LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))])
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
