@@ -43,28 +43,27 @@ class DSGRegionReloader(object):
         the location where reports are stored
     :param bool write_text_specs:
         True if the textual version of the specification is to be written
-    :param str application_data_file_path:
-        Folder where data specifications should be written to
+    :param ~pacman.model.graphs.common.GraphMapper graph_mapper:
+            the mapping between application and machine graph
     """
     __slots__ = []
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
-            write_text_specs, application_data_file_path, graph_mapper=None):
+            write_text_specs, graph_mapper=None):
         """
         :param ~.Transceiver transceiver:
         :param ~.Placements placements:
         :param str hostname:
         :param str report_directory:
         :param bool write_text_specs:
-        :param str application_data_file_path:
         :param ~.GraphMapper graph_mapper:
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
         app_data_dir = generate_unique_folder_name(
-            application_data_file_path, "reloaded_data_regions", "")
+            report_directory, "reloaded_data_regions", "")
         if not os.path.exists(app_data_dir):
             os.makedirs(app_data_dir)
 

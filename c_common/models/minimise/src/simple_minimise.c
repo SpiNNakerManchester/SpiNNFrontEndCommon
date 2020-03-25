@@ -229,8 +229,8 @@ static void quicksort_route(int low, int high){
             }
         }
         // Now sort the ones less than or more than the pivot
-        quicksort_table(low, l_write);
-        quicksort_table(check, high);
+        quicksort_route(low, l_write);
+        quicksort_route(check, high);
     }
 }
 

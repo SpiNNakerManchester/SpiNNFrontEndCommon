@@ -66,19 +66,23 @@ class WriteMemoryIOData(object):
     :param ~pacman.model.placements Placements placements:
         The placements of vertices of the graph
     :param int app_id: The ID of the application
-    :param str app_data_runtime_folder: The location of data files
+    :param str report_folder: The location of data files
     :param str hostname: The host name of the machine
     :param ~spinnman.transceiver.Transceiver transceiver:
         The transceiver to write data using; if None only data files
         are written
     :param ~pacman.model.graphs.common.GraphMapper graph_mapper:
         The optional mapping between graphs
-        :param bool uses_advanced_monitors:
-        :param extra_monitor_cores_to_ethernet_connection_map:
-        :type extra_monitor_cores_to_ethernet_connection_map:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+    :param bool uses_advanced_monitors:
+        Whether to use the Fast Data In protocol
+    :param extra_monitor_cores_to_ethernet_connection_map:
+        The mapping from chips to packet gatherer vertices.
+        Only required when `uses_advanced_monitors = True`
+    :type extra_monitor_cores_to_ethernet_connection_map:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     :param processor_to_app_data_base_address:
-        Optional existing dictionary of processor to base address
+        Existing dictionary of processor to base address.
+        Only required when `uses_advanced_monitors = True`
     :type processor_to_app_data_base_address:
         dict(tuple(int,int,int),DataWritten)
     :param ~spinn_machine.Machine machine:
@@ -101,7 +105,7 @@ class WriteMemoryIOData(object):
         self._use_monitors = False
 
     def __call__(
-            self, graph, placements, app_id, app_data_runtime_folder, hostname,
+            self, graph, placements, app_id, report_folder, hostname,
             transceiver=None, graph_mapper=None, uses_advanced_monitors=False,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
@@ -109,7 +113,7 @@ class WriteMemoryIOData(object):
         :param ~.Graph graph:
         :param ~.Placements placements:
         :param int app_id:
-        :param str app_data_runtime_folder:
+        :param str report_folder:
         :param str hostname:
         :param ~.Transceiver transceiver:
         :param ~.GraphMapper graph_mapper:
@@ -132,7 +136,7 @@ class WriteMemoryIOData(object):
         self._txrx = transceiver
         self._use_monitors = uses_advanced_monitors
         self._monitor_map = extra_monitor_cores_to_ethernet_connection_map
-        self._data_folder = app_data_runtime_folder
+        self._data_folder = report_folder
 
         if isinstance(graph, ApplicationGraph):
             for placement in progress.over(placements.placements):
