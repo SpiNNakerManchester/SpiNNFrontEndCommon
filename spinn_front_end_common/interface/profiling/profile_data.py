@@ -167,7 +167,7 @@ class ProfileData(object):
             timestep
 
         :param str tag: The tag to get the data for
-        :param int machine_time_step_ms:
+        :param float machine_time_step_ms:
             The time step of the simulation in microseconds
         :rtype: float
         """
@@ -183,7 +183,7 @@ class ProfileData(object):
             given tag per timestep
 
         :param str tag: The tag to get the data for
-        :param int machine_time_step_ms:
+        :param float machine_time_step_ms:
             The time step of the simulation in microseconds
         :rtype: float
         """

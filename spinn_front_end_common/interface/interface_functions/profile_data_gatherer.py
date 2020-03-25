@@ -15,10 +15,9 @@
 
 import os
 import logging
-
-from spinn_front_end_common.utilities.constants import \
-    MICRO_TO_MILLISECOND_CONVERSION
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.constants import (
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 
 logger = logging.getLogger(__name__)
@@ -75,7 +74,7 @@ class ProfileDataGatherer(object):
         """
         :param ~.Placement p:
         :param ProfileData profile_data:
-        :param int machine_time_step_ms:
+        :param float machine_time_step_ms:
         :param str directory:
         """
         max_tag_len = max(len(tag) for tag in profile_data.tags)
