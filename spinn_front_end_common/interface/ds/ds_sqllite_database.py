@@ -42,6 +42,7 @@ class DsSqlliteDatabase(object):
         :type init: bool or None
         """
         self._machine = machine
+        self._root_ethernet_id = None
         database_file = os.path.join(report_folder, DB_NAME)
 
         if init is None:
@@ -52,6 +53,7 @@ class DsSqlliteDatabase(object):
         self._db.row_factory = sqlite3.Row
         if init:
             self.__init_db()
+        self._root_ethernet_id = self.__find_root_id()
 
     def __init_db(self):
         """ Set up the database if required. """
@@ -59,32 +61,36 @@ class DsSqlliteDatabase(object):
             sql = f.read()
         self._db.executescript(sql)
 
-        first_id = None
-        first_x = None
-        first_y = None
-        self._root_ethernet_id = None
         with self._db:
-            cursor = self._db.cursor()
-            for ethernet in self._machine.ethernet_connected_chips:
-                cursor.execute(
+            self._db.executemany(
+                """
+                INSERT INTO ethernet(
+                    ethernet_x, ethernet_y, ip_address)
+                VALUES(?, ?, ?)
+                """, (
+                    (ethernet.x, ethernet.y, ethernet.ip_address)
+                    for ethernet in self._machine.ethernet_connected_chips))
+
+    def __find_root_id(self):
+        first_x = first_y = root_id = None
+        with self._db:
+            for row in self._db.execute(
                     """
-                    INSERT INTO ethernet(
-                        ethernet_x, ethernet_y, ip_address)
-                    VALUES(?, ?, ?)
-                    """, (ethernet.x, ethernet.y, ethernet.ip_address))
-                if ethernet.x == 0 and ethernet.y == 0:
-                    self._root_ethernet_id = cursor.lastrowid
-                elif first_id is None:
-                    first_id = cursor.lastrowid
-                    first_x = ethernet.x
-                    first_y = ethernet.y
-        if self._root_ethernet_id is None:
-            if first_id is None:
-                raise Exception("No ethernet chip found")
-            self._root_ethernet_id = first_id
+                    SELECT ethernet_id, ethernet_x, ethernet_y FROM ethernet
+                    ORDER BY ethernet_x, ethernet_y
+                    LIMIT 1
+                    """):
+                root_id = row["ethernet_id"]
+                first_x = row["ethernet_x"]
+                first_y = row["ethernet_y"]
+        if root_id is None:
+            # Should only be reachable for an empty machine
+            raise Exception("No ethernet chip found")
+        if first_x or first_y:
             logger.warning(
-                "No Ethernet chip found at 0, 0 using {} : {} "
+                "No Ethernet chip found at 0,0 using {},{} "
                 "for all boards with no IP address.", first_x, first_y)
+        return root_id
 
     def __del__(self):
         self.close()
