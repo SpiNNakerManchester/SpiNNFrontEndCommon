@@ -74,7 +74,7 @@ class ReverseIpTagMultiCastSource(
             The number of keys to be sent via this multicast source
         :param str label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         :param int max_atoms_per_core:
         :param board_address: The IP address of the board on which to place\

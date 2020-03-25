@@ -43,10 +43,10 @@ class MockMachine(Thread):
 
     def __init__(self, responses=None):
         """
-        :param responses:\
-            An optional list of responses to send in the order to be sent. \
-            If not specified, OK responses will be sent for every request. \
-            Note that responses can include "None" which means that no\
+        :param responses:
+            An optional list of responses to send in the order to be sent.
+            If not specified, OK responses will be sent for every request.
+            Note that responses can include "None" which means that no
             response will be sent to that request
         """
         super(MockMachine, self).__init__()

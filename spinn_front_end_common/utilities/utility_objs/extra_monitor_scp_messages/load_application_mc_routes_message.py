@@ -23,7 +23,7 @@ from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
     """ An SCP Request to write the application multicast routes into the\
-    router.
+        router.
     """
 
     __slots__ = (
@@ -31,13 +31,10 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-            0 and 17
-        :type p: int
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
+            The processor running the extra monitor vertex, between 0 and 17
         """
         super(LoadApplicationMCRoutesMessage, self).__init__(
             SDPHeader(

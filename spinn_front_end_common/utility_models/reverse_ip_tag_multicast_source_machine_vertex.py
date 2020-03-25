@@ -241,8 +241,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _max_send_buffer_keys_per_timestep(send_buffer_times, n_keys):
         """
         :param send_buffer_times: When events will be sent
-        :type send_buffer_times: \
-            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+        :type send_buffer_times:
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(numpy.int32)) or None
         :param int n_keys:
         :rtype: int
@@ -381,8 +381,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             receive_rate, n_keys):
         """
         :param send_buffer_times: When events will be sent
-        :type send_buffer_times: \
-            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+        :type send_buffer_times:
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(numpy.int32)) or None
         :param bool recording_enabled: Whether recording is done
         :param int machine_time_step: What the machine timestep is

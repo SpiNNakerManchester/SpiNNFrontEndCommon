@@ -34,7 +34,7 @@ class ChipPowerMonitor(
         """
         :param str label: vertex label
         :param constraints: constraints for the vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         :param int n_samples_per_recording:
             how many samples to take before recording to SDRAM the total

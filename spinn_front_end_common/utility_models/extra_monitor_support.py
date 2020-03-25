@@ -31,7 +31,7 @@ class ExtraMonitorSupport(
     def __init__(self, constraints):
         """
         :param constraints: The constraints on the vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(ExtraMonitorSupport, self).__init__(

@@ -23,14 +23,6 @@ class ClearQueueProcess(AbstractMultiConnectionProcess):
     """ How to send messages to clear the reinjection queue.
     """
 
-    def __init__(self, connection_selector):
-        """
-        :param \
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
-            connection_selector:
-        """
-        super(ClearQueueProcess, self).__init__(connection_selector)
-
     def reset_counters(self, core_subsets):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:

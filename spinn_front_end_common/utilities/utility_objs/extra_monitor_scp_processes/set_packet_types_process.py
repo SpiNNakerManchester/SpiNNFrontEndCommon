@@ -13,23 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         SetReinjectionPacketTypesMessage)
-from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetPacketTypesProcess(AbstractMultiConnectionProcess):
     """ How to send messages to control what messages are reinjected.
     """
-
-    def __init__(self, connection_selector):
-        """
-        :param \
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
-            connection_selector:
-        """
-        super(SetPacketTypesProcess, self).__init__(connection_selector)
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
                          nearest_neighbour, fixed_route):

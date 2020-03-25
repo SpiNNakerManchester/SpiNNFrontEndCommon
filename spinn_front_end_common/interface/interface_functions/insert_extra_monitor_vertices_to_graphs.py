@@ -32,12 +32,12 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
         :param default_report_directory: the directory where reports go
-        :param write_data_speed_up_out_report: \
+        :param write_data_speed_up_out_report:
             determine whether to write the report for data speed up out
-        :param write_data_speed_up_in_report: \
+        :param write_data_speed_up_in_report:
             determine whether to write the report for data speed up in
         :param application_graph: app graph.
-        :return: Ethernet chip to gatherer vertex map, \
+        :return: Ethernet chip to gatherer vertex map,
             list of extra_monitor vertices, vertex_to_chip_map
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init

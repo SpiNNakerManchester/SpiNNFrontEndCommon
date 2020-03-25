@@ -13,11 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
-    import GetReinjectionStatusMessage
-from spinnman.processes import AbstractMultiConnectionProcess
+import functools
 import logging
 import traceback
+from spinnman.processes import AbstractMultiConnectionProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
+    import (
+        GetReinjectionStatusMessage)
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +28,15 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
     """ How to send messages to read the status of extra monitors.
     """
 
-    def __init__(self, connection_selector):
+    @staticmethod
+    def __handle_response(result, response):
         """
-        :param \
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
-            connection_selector:
-        """
-        super(ReadStatusProcess, self).__init__(connection_selector)
-        self._reinjection_status = dict()
-
-    def __handle_reinjection_status_response(self, response):
-        """
+        :param dict result:
         :param GetReinjectionStatusMessageResponse response:
         """
         status = response.reinjection_functionality_status
-        self._reinjection_status[response.sdp_header.source_chip_x,
-                                 response.sdp_header.source_chip_y] = status
+        header = response.sdp_header
+        result[header.source_chip_x, header.source_chip_y] = status
 
     def get_reinjection_status(self, x, y, p):
         """
@@ -50,28 +45,27 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
         :param int p:
         :rtype: ReInjectionStatus
         """
-        self._reinjection_status = dict()
+        status = dict()
         self._send_request(GetReinjectionStatusMessage(x, y, p),
-                           callback=self.__handle_reinjection_status_response)
+                           functools.partial(self.__handle_response, status))
         self._finish()
         self.check_for_error()
-        return self._reinjection_status[x, y]
+        return status[x, y]
 
-    def get_reinjection_status_for_core_subsets(
-            self, core_subsets):
+    def get_reinjection_status_for_core_subsets(self, core_subsets):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
-        self._reinjection_status = dict()
+        status = dict()
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(GetReinjectionStatusMessage(
                     core_subset.x, core_subset.y, processor_id),
-                    callback=self.__handle_reinjection_status_response)
+                    functools.partial(self.__handle_response, status))
         self._finish()
         if self.is_error():
             logger.warning("Error(s) reading reinjection status:")
             for (e, tb) in zip(self._exceptions, self._tracebacks):
                 traceback.print_exception(type(e), e, tb)
-        return self._reinjection_status
+        return status

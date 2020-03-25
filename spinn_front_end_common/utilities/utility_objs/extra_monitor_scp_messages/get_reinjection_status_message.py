@@ -26,20 +26,17 @@ from spinn_utilities.overrides import overrides
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
-    """ An SCP Request to get the status of the dropped packet reinjection
+    """ An SCP Request to get the status of the dropped packet reinjection.
     """
 
     __slots__ = []
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
         """
 
         super(GetReinjectionStatusMessage, self).__init__(

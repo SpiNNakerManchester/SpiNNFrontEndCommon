@@ -246,8 +246,8 @@ class _Compression(object):
     def _load_executables(self):
         """ Loads the router compressor onto the chips.
 
-        :return:\
-            the executable targets that represent all cores/chips which have\
+        :return:
+            the executable targets that represent all cores/chips which have
             active routing tables
         :rtype: ExecutableTargets
         """

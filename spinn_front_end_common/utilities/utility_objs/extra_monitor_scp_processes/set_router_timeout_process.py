@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         SetRouterTimeoutMessage)
-from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
@@ -24,14 +24,6 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
 
     Note that timeouts are specified in a weird fixed point format.
     """
-
-    def __init__(self, connection_selector):
-        """
-        :param \
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
-            connection_selector:
-        """
-        super(SetRouterTimeoutProcess, self).__init__(connection_selector)
 
     def set_timeout(self, mantissa, exponent, core_subsets):
         """

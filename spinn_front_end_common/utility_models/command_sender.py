@@ -35,7 +35,7 @@ class CommandSender(
         """
         :param str label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(CommandSender, self).__init__(label, constraints, 1)

@@ -288,7 +288,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
         :param extra_monitors_by_chip: UNUSED
-        :type extra_monitors_by_chip: \
+        :type extra_monitors_by_chip:
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
@@ -562,7 +562,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             the SpiNNMan instance
         :param extra_monitor_cores_to_ethernet_connection_map:
             mapping between cores and connections
-        :type extra_monitor_cores_to_ethernet_connection_map: \
+        :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :return: a write function of either a LPG or the spinnMan
         :rtype: callable

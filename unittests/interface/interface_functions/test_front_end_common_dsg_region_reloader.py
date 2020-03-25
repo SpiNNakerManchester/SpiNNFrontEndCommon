@@ -105,12 +105,13 @@ class _MockCPUInfo(object):
 class _MockTransceiver(object):
     """ Pretend transceiver
     """
+    # pylint: disable=unused-argument
 
     def __init__(self, user_0_addresses, region_addresses):
         """
 
         :param user_0_addresses: dict of (x, y, p) to user_0_address
-        :param region_addresses:\
+        :param region_addresses:
             list of constants.MAX_MEM_REGIONS addresses to which the\
             base address will be added to each
         """

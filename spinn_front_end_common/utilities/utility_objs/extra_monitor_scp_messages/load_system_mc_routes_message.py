@@ -22,22 +22,17 @@ from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
 class LoadSystemMCRoutesMessage(AbstractSCPRequest):
-    """ An SCP Request to write the system multicast routes into the router
+    """ An SCP Request to write the system multicast routes into the router.
     """
 
     __slots__ = []
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-            0 and 17
-        :type p: int
-        :param command_code: the command code used by the extra monitor \
-            vertex for setting system multicast routes.
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
+            The processor running the extra monitor vertex, between 0 and 17
         """
 
         super(LoadSystemMCRoutesMessage, self).__init__(

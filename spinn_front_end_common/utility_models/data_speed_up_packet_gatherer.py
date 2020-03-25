@@ -37,7 +37,7 @@ class DataSpeedUpPacketGather(
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
         :param extra_monitors_by_chip: UNUSED
-        :type extra_monitors_by_chip: \
+        :type extra_monitors_by_chip:
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
@@ -45,7 +45,7 @@ class DataSpeedUpPacketGather(
         :param bool write_data_speed_up_reports:
             Whether to write low-level reports on data transfer speeds.
         :param constraints:
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super(DataSpeedUpPacketGather, self).__init__(

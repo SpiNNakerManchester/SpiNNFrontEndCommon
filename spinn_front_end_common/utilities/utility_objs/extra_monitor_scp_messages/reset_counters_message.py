@@ -23,20 +23,17 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 class ResetCountersMessage(AbstractSCPRequest):
     """ An SCP Request to reset the statistics counters of the dropped packet\
-        reinjection
+        reinjection.
     """
 
     __slots__ = []
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
         """
 
         super(ResetCountersMessage, self).__init__(

@@ -23,7 +23,7 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
-    """ An SCP Request to set the dropped packet reinjected packet types
+    """ An SCP Request to set the dropped packet reinjected packet types.
     """
 
     __slots__ = []
@@ -31,21 +31,14 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
     def __init__(self, x, y, p, multicast, point_to_point, fixed_route,
                  nearest_neighbour):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
-        :param point_to_point: If point to point should be set
-        :type point_to_point: bool
-        :param multicast: If multicast should be set
-        :type multicast: bool
-        :param nearest_neighbour: If nearest neighbour should be set
-        :type nearest_neighbour: bool
-        :param fixed_route: If fixed route should be set
-        :type fixed_route: bool
+        :param bool point_to_point: If point to point should be set
+        :param bool multicast: If multicast should be set
+        :param bool nearest_neighbour: If nearest neighbour should be set
+        :param bool fixed_route: If fixed route should be set
         """
         # pylint: disable=too-many-arguments
         super(SetReinjectionPacketTypesMessage, self).__init__(

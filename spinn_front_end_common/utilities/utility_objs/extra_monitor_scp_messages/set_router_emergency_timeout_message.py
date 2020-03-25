@@ -23,26 +23,21 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
     """ An SCP Request to set the router emergency timeout for dropped packet\
-        reinjection
+        reinjection.
     """
 
     __slots__ = []
 
     def __init__(self, x, y, p, timeout_mantissa, timeout_exponent):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
-        :param timeout_mantissa: \
+        :param int timeout_mantissa:
             The mantissa of the timeout value, between 0 and 15
-        :type timeout_mantissa: int
-        :param timeout_exponent: \
+        :param int timeout_exponent:
             The exponent of the timeout value, between 0 and 15
-        :type timeout_exponent: int
         """
         # pylint: disable=too-many-arguments
         super(SetRouterEmergencyTimeoutMessage, self).__init__(

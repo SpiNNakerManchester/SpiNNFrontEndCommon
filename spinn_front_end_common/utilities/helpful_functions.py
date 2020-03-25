@@ -36,7 +36,7 @@ _ONE_WORD = struct.Struct("<I")
 def locate_extra_monitor_mc_receiver(
         machine, placement_x, placement_y,
         packet_gather_cores_to_ethernet_connection_map):
-    """ Get the data speed up gatherer that can be used to talk to a
+    """ Get the data speed up gatherer that can be used to talk to a\
         particular chip. This will be on the same board.
 
     :param ~spinn_machine.Machine machine: The machine descriptor
@@ -53,7 +53,7 @@ def locate_extra_monitor_mc_receiver(
 
 
 def read_data(x, y, address, length, data_format, transceiver):
-    """ Reads and converts a single data item from memory
+    """ Reads and converts a single data item from memory.
 
     :param int x: chip x
     :param int y: chip y
@@ -83,7 +83,7 @@ def write_address_to_user0(txrx, x, y, p, address):
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
-    """ Get the address of a region for a placement
+    """ Get the address of a region for a placement.
 
     :param int region: the region to locate the base address of
     :param ~pacman.model.placements.Placement placement:
@@ -221,7 +221,7 @@ def get_ethernet_chip(machine, board_address):
     :param str board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
     :rtype: ~spinn_machine.Chip
-    :raises ConfigurationException:\
+    :raises ConfigurationException:
         when that board address has no chip associated with it
     """
     for chip in machine.ethernet_connected_chips:
@@ -245,7 +245,7 @@ def convert_time_diff_to_total_milliseconds(sample):
 def determine_flow_states(executable_types, no_sync_changes):
     """ Get the start and end states for these executable types.
 
-    :param dict(ExecutableType,any) executable_types: \
+    :param dict(ExecutableType,any) executable_types:
         the execute types to locate start and end states from
     :param int no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.

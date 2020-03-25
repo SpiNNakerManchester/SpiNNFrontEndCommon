@@ -2527,7 +2527,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
         :param ~pacman.model.graphs.application.ApplicationEdge edge_to_add:
-        :param str partition_identifier: \
+        :param str partition_identifier:
             the partition identifier for the outgoing edge partition
         :rtype: None
         """
@@ -2539,7 +2539,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """
         :param ~pacman.model.graphs.machine.MachineEdge edge:
             the edge to add to the graph
-        :param str partition_id: \
+        :param str partition_id:
             the partition identifier for the outgoing edge partition
         :rtype: None
         """

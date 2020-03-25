@@ -254,7 +254,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             How to talk to the machine
         :param ~pacman.model.placements.Placement placement:
             Which vertex are we retrieving from, and where was it
-        :rtype: \
+        :rtype:
             list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """
         provenance_data = self._read_provenance_data(
