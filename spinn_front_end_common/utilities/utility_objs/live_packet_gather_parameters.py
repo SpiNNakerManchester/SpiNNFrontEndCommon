@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.messages.eieio import EIEIOType
+
 
 class LivePacketGatherParameters(object):
     """ Parameter holder for LPGs so that they can be instantiated at a\
@@ -28,10 +30,12 @@ class LivePacketGatherParameters(object):
     ]
 
     def __init__(
-            self, port, hostname, tag, strip_sdp, use_prefix,
-            key_prefix, prefix_type, message_type, right_shift,
-            payload_as_time_stamps, use_payload_prefix, payload_prefix,
-            payload_right_shift, number_of_packets_sent_per_time_step, label,
+            self, port=None, hostname=None, tag=None, strip_sdp=True,
+            use_prefix=False, key_prefix=None, prefix_type=None,
+            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+            payload_as_time_stamps=True, use_payload_prefix=True,
+            payload_prefix=None, payload_right_shift=0,
+            number_of_packets_sent_per_time_step=0, label=None,
             board_address=None):
         # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
