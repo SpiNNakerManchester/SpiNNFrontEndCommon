@@ -56,8 +56,6 @@ class InsertLivePacketGatherersToGraphs(object):
         :rtype: dict(LivePacketGatherParameters,
             dict(tuple(int,int),LivePacketGatherMachineVertex))
         """
-        # pylint: disable=too-many-arguments
-
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,
@@ -96,9 +94,7 @@ class InsertLivePacketGatherersToGraphs(object):
         :param LivePacketGatherParameters params:
         :rtype: LivePacketGatherMachineVertex
         """
-        # pylint: disable=too-many-arguments
-
-        app_vtx = self.__create_vertex(LivePacketGather, params)
+        app_vtx = LivePacketGather(params)
         app_graph.add_vertex(app_vtx)
         resources = app_vtx.get_resources_used_by_atoms(_LPG_SLICE)
         vtx = app_vtx.create_machine_vertex(
@@ -117,36 +113,8 @@ class InsertLivePacketGatherersToGraphs(object):
         :param LivePacketGatherParameters params:
         :rtype: LivePacketGatherMachineVertex
         """
-        vtx = self.__create_vertex(
-            LivePacketGatherMachineVertex, params,
+        vtx = LivePacketGatherMachineVertex(params,
             app_vertex=None, vertex_slice=_LPG_SLICE,
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
         graph.add_vertex(vtx)
         return vtx
-
-    @staticmethod
-    def __create_vertex(lpg_vertex_class, params, **kwargs):
-        """ Creates a Live Packet Gather Vertex
-
-        :param class lpg_vertex_class: the type to create for the vertex
-        :param LivePacketGatherParameters params:
-            the parameters of the vertex
-        :return: the vertex built
-        """
-        return lpg_vertex_class(
-            hostname=params.hostname,
-            port=params.port,
-            tag=params.tag,
-            strip_sdp=params.strip_sdp,
-            use_prefix=params.use_prefix,
-            key_prefix=params.key_prefix,
-            prefix_type=params.prefix_type,
-            message_type=params.message_type,
-            right_shift=params.right_shift,
-            payload_as_time_stamps=params.payload_as_time_stamps,
-            use_payload_prefix=params.use_payload_prefix,
-            payload_prefix=params.payload_prefix,
-            payload_right_shift=params.payload_right_shift,
-            number_of_packets_sent_per_time_step=(
-                params.number_of_packets_sent_per_time_step),
-            label=params.label, **kwargs)

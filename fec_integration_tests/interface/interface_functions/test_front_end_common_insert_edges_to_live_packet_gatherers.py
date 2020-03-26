@@ -71,11 +71,10 @@ class TestInsertLPGEdges(unittest.TestCase):
         # add LPG's (1 for each Ethernet connected chip)
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
-            extended.update({
-                'label': 'test',
-                'app_vertex': None,
-                'vertex_slice': Slice(0, 0)})
-            vertex = LivePacketGatherMachineVertex(**extended)
+            extended["label"] = "test"
+            vertex = LivePacketGatherMachineVertex(
+                LivePacketGatherParameters(**extended),
+                app_vertex=None, vertex_slice=Slice(0, 0))
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -163,11 +162,9 @@ class TestInsertLPGEdges(unittest.TestCase):
         index = 1
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
-            extended.update({
-                'label': 'test',
-                'app_vertex': None,
-                'vertex_slice': Slice(0, 0)})
-            vertex = LivePacketGatherMachineVertex(**extended)
+            vertex = LivePacketGatherMachineVertex(
+                LivePacketGatherParameters(**extended),
+                app_vertex=None, vertex_slice=Slice(0, 0), label='test')
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -181,11 +178,10 @@ class TestInsertLPGEdges(unittest.TestCase):
             default_params_holder2 = LivePacketGatherParameters(**extended)
 
             extended = dict(default_params)
-            extended.update({
-                'label': 'test',
-                'app_vertex': None,
-                'vertex_slice': Slice(0, 0)})
-            vertex = LivePacketGatherMachineVertex(**extended)
+            extended.update({'label': "test"})
+            vertex = LivePacketGatherMachineVertex(
+                LivePacketGatherParameters(**extended),
+                app_vertex=None, vertex_slice=Slice(0, 0))
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2
             placements.add_placement(Placement(
                 x=chip.x, y=chip.y, p=3, vertex=vertex))
@@ -280,7 +276,8 @@ class TestInsertLPGEdges(unittest.TestCase):
         # add LPG's (1 for each Ethernet connected chip
         for chip in machine.ethernet_connected_chips:
             new_params = dict(default_params)
-            vertex = LivePacketGather(**new_params)
+            vertex = LivePacketGather(
+                LivePacketGatherParameters(**new_params))
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(
