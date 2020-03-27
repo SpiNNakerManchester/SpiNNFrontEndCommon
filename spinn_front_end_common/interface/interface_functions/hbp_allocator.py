@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
 import requests
 from spinn_utilities.overrides import overrides
@@ -5,6 +20,7 @@ from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
+from pacman.exceptions import PacmanConfigurationException
 
 
 class _HBPJobController(MachineAllocationController):
@@ -79,6 +95,7 @@ class _HBPJobController(MachineAllocationController):
         self._set_power(self._machine_name, power)
         self._power_on = power
 
+    @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
         return self._where_is(self._machine_name, chip_x, chip_y)
 
@@ -93,19 +110,23 @@ class HBPAllocator(object):
     """
 
     def __call__(
-            self, hbp_server_url, total_run_time, n_chips):
+            self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request
-        :param n_chips: The number of chips required
+        :param n_chips: The number of chips required.
+            Only used if n_boards is None
+        :param n_boards: The number of boards required
+        :raises PacmanConfigurationException:
+            If neither n_chips or n_baords provided
         """
 
         url = hbp_server_url
         if url.endswith("/"):
             url = url[:-1]
 
-        machine = self._get_machine(url, n_chips, total_run_time)
+        machine = self._get_machine(url, n_chips, n_boards, total_run_time)
         hbp_job_controller = _HBPJobController(url, machine["machineName"])
 
         bmp_details = None
@@ -117,8 +138,16 @@ class HBPAllocator(object):
             bmp_details, False, False, None, None,
             hbp_job_controller)
 
-    def _get_machine(self, url, n_chips, total_run_time):
-        get_machine_request = requests.get(
-            url, params={"nChips": n_chips, "runTime": total_run_time})
+    def _get_machine(self, url, n_chips, n_boards, total_run_time):
+        if n_boards:
+            get_machine_request = requests.get(
+                url, params={"nBoards": n_boards, "runTime": total_run_time})
+        elif n_chips:
+            get_machine_request = requests.get(
+                url, params={"nChips": n_chips, "runTime": total_run_time})
+        else:
+            raise PacmanConfigurationException(
+                "At least one of n_chips or n_boards must be provided")
+
         get_machine_request.raise_for_status()
         return get_machine_request.json()

@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from enum import Enum
 from spinnman.model.enums import CPUState
 
@@ -7,18 +22,22 @@ class ExecutableType(Enum):
         are started and controlled.
     """
 
+    #: Runs immediately without waiting for barrier and then exits.
     RUNNING = (
         0,
         [CPUState.RUNNING],
         [CPUState.FINISHED],
         False,
         "Runs immediately without waiting for barrier and then exits")
+    #: Calls ``spin1_start(SYNC_WAIT)`` and then eventually ``spin1_exit()``.
     SYNC = (
         1,
         [CPUState.SYNC0],
         [CPUState.FINISHED],
         False,
         "Calls spin1_start(SYNC_WAIT) and then eventually spin1_exit()")
+    #: Calls ``simulation_run()`` and ``simulation_exit()`` /
+    #: ``simulation_handle_pause_resume()``.
     USES_SIMULATION_INTERFACE = (
         2,
         [CPUState.SYNC0, CPUState.SYNC1, CPUState.PAUSED, CPUState.READY],
@@ -26,6 +45,8 @@ class ExecutableType(Enum):
         True,
         "Calls simulation_run() and simulation_exit() / "
         "simulation_handle_pause_resume()")
+    #: Situation where there user has supplied no application but for some
+    #: reason still wants to run.
     NO_APPLICATION = (
         3,
         [],
@@ -33,6 +54,7 @@ class ExecutableType(Enum):
         True,
         "Situation where there user has supplied no application but for "
         "some reason still wants to run")
+    #: Runs immediately without waiting for barrier and never ends.
     SYSTEM = (
         4,
         [CPUState.RUNNING],

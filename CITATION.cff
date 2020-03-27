@@ -1,0 +1,90 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+authors:
+- affiliation: University Of Manchester
+  email: alan.stokes-2@manchester.ac.uk
+  family-names: Stokes
+  given-names: Alan
+  orcid: https://orcid.org/0000-0002-6110-1484
+  website: http://www.cs.man.ac.uk/~stokesa6/
+- affiliation: University Of Manchester
+  email: Andrew.Rowley@manchester.ac.uk
+  family-names: Rowley
+  given-names: Andrew
+  orcid: https://orcid.org/0000-0002-2646-8520
+  website: https://www.researchgate.net/profile/Andrew_Rowley2
+- affiliation: University Of Manchester
+  email: Andrew.Gait@manchester.ac.uk
+  family-names: Gait
+  given-names: Andrew
+  orcid: http://orcid.org/0000-0001-9349-1096
+  website: https://personalpages.manchester.ac.uk/staff/Andrew.Gait/
+- affiliation: University Of Manchester
+  email: christian.brenninkmeijer@manchester.ac.uk
+  family-names: Brenninkmeijer
+  given-names: Christian Y.
+  orcid: https://orcid.org/0000-0002-2937-7819
+  website: https://www.researchgate.net/profile/Christian_Brenninkmeijer
+- affiliation: University Of Manchester
+  email: donal.k.fellows@manchester.ac.uk
+  family-names: Fellows
+  given-names: Donal
+  orcid: https://orcid.org/0000-0002-9091-5938
+  website: http://www.cs.manchester.ac.uk/about-us/staff/profile/?ea=donal.k.fellows
+- affiliation: University Of Manchester
+  email: david.r.lester@manchester.ac.uk
+  family-names: Lester
+  given-names: David
+  orcid: https://orcid.org/0000-0002-7267-291X
+  website: http://apt.cs.manchester.ac.uk/people/dlester/
+- affiliation: University Of Sussex
+  email: J.C.Knight@sussex.ac.uk
+  family-names: Knight
+  given-names: James
+  website: http://www.sussex.ac.uk/profiles/415734
+- affiliation: University Of Manchester
+  email: oliver.rhodes@manchester.ac.uk
+  family-names: Rhodes
+  given-names: Oliver
+  orcid: https://orcid.org/0000-0003-1728-2828
+  website: http://apt.cs.manchester.ac.uk/people/orhodes/
+- affiliation: University Of Manchester
+  email: paul.gafton@gmail.com
+  family-names: Gafton
+  given-names: Paul
+  website: https://manchester.academia.edu/PaulGafton
+- affiliation: University Of Manchester
+  email: sergio.davies@gmail.com
+  family-names: Davies
+  given-names: Sergio
+  orcid: https://orcid.org/0000-0001-5330-5527
+  website: http://apt.cs.manchester.ac.uk/people/daviess/
+cff-version: 1.0.3
+contact:
+- address: University of Manchester, Oxford Road
+  city: Manchester
+  country: GB
+  name: SpiNNaker Software Team
+  post-code: M13 9PL
+date-released:
+email: spinnakerusers@googlegroups.com
+identifier:
+message: If you use this software, please cite it as below.
+repository: https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon
+title: The Common code for supporting all front ends on mapping applications to run
+  on SpiNNaker machines
+url: http://spinnakermanchester.github.io/
+version:

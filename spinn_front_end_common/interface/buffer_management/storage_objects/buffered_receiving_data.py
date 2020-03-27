@@ -1,12 +1,27 @@
-from collections import defaultdict
-import os
-import sqlite3
-from spinn_storage_handlers import (
-    BufferedBytearrayDataStorage, BufferedTempfileDataStorage)
-from spinn_storage_handlers.abstract_classes import AbstractBufferedDataStorage
-from spinn_utilities.overrides import overrides
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+import logging
+import os
+from collections import defaultdict
+from spinn_utilities.log import FormatAdapter
+from .sqllite_database import SqlLiteDatabase
+
+#: Name of the database in the data folder
+DB_FILE_NAME = "buffer.sqlite3"
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class BufferedReceivingData(object):
@@ -19,50 +34,46 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # the data to store, unless a DB is used
-        "_data",
-
-        # the database holding the data to store, if used
+        #: the AbstractDatabase holding the data to store
         "_db",
 
-        # dict of booleans indicating if a region on a core has been flushed
+        #: the path to the database
+        "_db_file",
+
+        #: dict of booleans indicating if a region on a core has been flushed
         "_is_flushed",
 
-        # dict of last sequence number received by core
+        #: dict of last sequence number received by core
         "_sequence_no",
 
-        # dict of last packet received by core
+        #: dict of last packet received by core
         "_last_packet_received",
 
-        # dict of last packet sent by core
+        #: dict of last packet sent by core
         "_last_packet_sent",
 
-        # dict of end buffer sequence number
+        #: dict of end buffer sequence number
         "_end_buffering_sequence_no",
 
-        # dict of end state by core
+        #: dict of end state by core
         "_end_buffering_state"
     ]
 
-    def __init__(self, store_to_file=False, database_file=None):
+    def __init__(self, report_folder):
         """
-        :param store_to_file: A boolean to identify if the data will be stored\
-            in memory using a byte array or in a temporary file on the disk
-        :type store_to_file: bool
-        :param database_file: The name of a file that contains (or will\
-            contain) an SQLite database holding the data.
-        :type database_file: str
+        :param str report_folder:
+            The directory to write the database used to store some of the data
         """
-        self._data = None
+        self._db_file = os.path.join(report_folder, DB_FILE_NAME)
         self._db = None
-        if database_file is not None:
-            self._db = sqlite3.connect(database_file)
-            self._db.text_factory = memoryview
-            self.__init_db()
-        elif store_to_file:
-            self._data = defaultdict(BufferedTempfileDataStorage)
-        else:
-            self._data = defaultdict(BufferedBytearrayDataStorage)
+        self.reset()
+
+    def reset(self):
+        if os.path.exists(self._db_file):
+            if self._db:
+                self._db.close()
+            os.remove(self._db_file)
+        self._db = SqlLiteDatabase(self._db_file)
         self._is_flushed = defaultdict(lambda: False)
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
@@ -70,96 +81,26 @@ class BufferedReceivingData(object):
         self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
 
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        if self._db is not None:
-            self._db.close()
-            self._db = None
-
-    def __init_db(self):
-        """ Set up the database if required. """
-        self._db.row_factory = sqlite3.Row
-        with open(DDL_FILE) as f:
-            sql = f.read()
-        self._db.executescript(sql)
-
-    def __append_contents(self, cursor, x, y, p, region, contents):
-        cursor.execute(
-            "INSERT INTO storage(x, y, processor, region, content) "
-            + "VALUES(?, ?, ?, ?, ?) "
-            + "ON CONFLICT(x, y, processor, region) DO "
-            + "UPDATE SET content = storage.content || excluded.content",
-            (x, y, p, region, sqlite3.Binary(contents)))
-
-    def __hacky_append(self, cursor, x, y, p, region, contents):
-        """ Used to do an UPSERT when the version of SQLite used by Python\
-            doesn't support the correct syntax for it (because it is older\
-            than 3.24). Not really a problem with Python 3.6 or later.
-        """
-        cursor.execute(
-            "INSERT OR IGNORE INTO storage(x, y, processor, region, content) "
-            + "VALUES(?, ?, ?, ?, ?)",
-            (x, y, p, region, sqlite3.Binary(b"")))
-        cursor.execute(
-            "UPDATE storage SET content = content || ? "
-            + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
-            (sqlite3.Binary(contents), x, y, p, region))
-
-    def _read_contents(self, cursor, x, y, p, region):
-        for row in cursor.execute(
-                "SELECT content FROM storage "
-                + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
-                (x, y, p, region)):
-            return row["content"]
-        return b""
-
-    def __delete_contents(self, cursor, x, y, p, region):
-        cursor.execute(
-            "DELETE FROM storage WHERE " +
-            "x = ? AND y = ? AND processor = ? AND region = ?",
-            (x, y, p, region))
-
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
-            specific chip, core and region
+            specific chip, core and region.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data to be stored
-        :type region: int
-        :param data: data to be stored
-        :type data: bytearray
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be stored
+        :param bytearray data: data to be stored
         """
         # pylint: disable=too-many-arguments
-        if self._db is not None:
-            try:
-                with self._db:
-                    c = self._db.cursor()
-                    self.__append_contents(c, x, y, p, region, data)
-            except sqlite3.Error:
-                with self._db:
-                    c = self._db.cursor()
-                    self.__hacky_append(c, x, y, p, region, data)
-        else:
-            self._data[x, y, p, region].write(data)
+        self._db.store_data_in_region_buffer(x, y, p, region, data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
-        """ Check if the data region has been flushed
+        """ Check if the data region has been flushed.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
         :return: True if the region has been flushed. False otherwise
         :rtype: bool
         """
@@ -167,18 +108,13 @@ class BufferedReceivingData(object):
 
     def flushing_data_from_region(self, x, y, p, region, data):
         """ Store flushed data from a region of a core on a chip, and mark it\
-            as being flushed
+            as being flushed.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data to be stored
-        :type region: int
-        :param data: data to be stored
-        :type data: bytearray
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be stored
+        :param bytearray data: data to be stored
         """
         # pylint: disable=too-many-arguments
         self.store_data_in_region_buffer(x, y, p, region, data)
@@ -186,231 +122,162 @@ class BufferedReceivingData(object):
 
     def store_last_received_packet_from_core(self, x, y, p, packet):
         """ Store the most recent packet received from SpiNNaker for a given\
-            core
+            core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :param packet: SpinnakerRequestReadData packet received
-        :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
+        :type packet:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         """
         self._last_packet_received[x, y, p] = packet
 
     def last_received_packet_from_core(self, x, y, p):
-        """ Get the last packet received for a given core
+        """ Get the last packet received for a given core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :return: SpinnakerRequestReadData packet received
-        :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
+        :rtype:
+            ~spinnman.messages.eieio.command_messages.SpinnakerRequestReadData
         """
         return self._last_packet_received[x, y, p]
 
     def store_last_sent_packet_to_core(self, x, y, p, packet):
-        """ Store the last packet sent to the given core
+        """ Store the last packet sent to the given core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :param packet: last HostDataRead packet sent
-        :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
+        :type packet: ~spinnman.messages.eieio.command_messages.HostDataRead
         """
         self._last_packet_sent[x, y, p] = packet
 
     def last_sent_packet_to_core(self, x, y, p):
-        """ Retrieve the last packet sent to a core
+        """ Retrieve the last packet sent to a core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :return: last HostDataRead packet sent
-        :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
+        :rtype: ~spinnman.messages.eieio.command_messages.HostDataRead
         """
         return self._last_packet_sent[x, y, p]
 
     def last_sequence_no_for_core(self, x, y, p):
-        """ Get the last sequence number for a core
+        """ Get the last sequence number for a core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :return: last sequence number used
         :rtype: int
         """
         return self._sequence_no[x, y, p]
 
     def update_sequence_no_for_core(self, x, y, p, sequence_no):
-        """ Set the last sequence number used
+        """ Set the last sequence number used.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param sequence_no: last sequence number used
-        :type sequence_no: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int sequence_no: last sequence number used
         :rtype: None
         """
         self._sequence_no[x, y, p] = sequence_no
 
     def get_region_data(self, x, y, p, region):
-        """ Get the data stored for a given region of a given core
+        """ Get the data stored for a given region of a given core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
+        :rtype: tuple(memoryview, bool)
         """
-        missing = None
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = (x, y, p, region)
-        if self._db is not None:
-            with self._db:
-                c = self._db.cursor()
-                data = self._read_contents(c, x, y, p, region)
-        else:
-            data = self._data[x, y, p, region].read_all()
-        return data, missing
+        return self._db.get_region_data(x, y, p, region)
 
     def get_region_data_pointer(self, x, y, p, region):
-        """ Get the data received during the simulation for a region of a core
+        """ It is no longer possible to get access to the data pointer.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
-        :return: all the data received during the simulation, and a flag\
-            indicating if any data was lost
-        :rtype: \
-            tuple(:py:class:`spinn_storage_handlers.abstract_classes.AbstractBufferedDataStorage`,\
-            bool)
+        Use :py:meth`get_region_data` to get the data and missing flag
+        directly.
         """
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = True
-        else:
-            missing = self._end_buffering_state[x, y, p, region].missing_info
-        if self._db is not None:
-            data_pointer = DBWrapper(self, x, y, p, region)
-        else:
-            data_pointer = self._data[x, y, p, region]
-        return data_pointer, missing
+        raise NotImplementedError("Use get_region_data instead!.")
 
     def store_end_buffering_state(self, x, y, p, region, state):
-        """ Store the end state of buffering
+        """ Store the end state of buffering.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
         :param state: The end state
         """
         # pylint: disable=too-many-arguments
         self._end_buffering_state[x, y, p, region] = state
 
     def is_end_buffering_state_recovered(self, x, y, p, region):
-        """ Determine if the end state has been stored
+        """ Determine if the end state has been stored.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
         :return: True if the state has been stored
         """
         return (x, y, p, region) in self._end_buffering_state
 
     def get_end_buffering_state(self, x, y, p, region):
-        """ Get the end state of the buffering
+        """ Get the end state of the buffering.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region:
         :return: The end state
         """
         return self._end_buffering_state[x, y, p, region]
 
     def store_end_buffering_sequence_number(self, x, y, p, sequence):
-        """ Store the last sequence number sent by the core
+        """ Store the last sequence number sent by the core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param sequence: The last sequence number
-        :type sequence: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int sequence: The last sequence number
         """
         self._end_buffering_sequence_no[x, y, p] = sequence
 
     def is_end_buffering_sequence_number_stored(self, x, y, p):
-        """ Determine if the last sequence number has been retrieved
+        """ Determine if the last sequence number has been retrieved.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :return: True if the number has been retrieved
         :rtype: bool
         """
         return (x, y, p) in self._end_buffering_sequence_no
 
     def get_end_buffering_sequence_number(self, x, y, p):
-        """ Get the last sequence number sent by the core
+        """ Get the last sequence number sent by the core.
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
         :return: The last sequence number
         :rtype: int
         """
         return self._end_buffering_sequence_no[x, y, p]
 
     def resume(self):
-        """ Resets states so that it can behave in a resumed mode
+        """ Resets states so that it can behave in a resumed mode.
         """
         self._end_buffering_state = dict()
         self._is_flushed = defaultdict(lambda: False)
@@ -419,72 +286,20 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
 
-    def clear(self, x, y, p, region_id):
+    # ToDo Being changed in later PR so currently broken
+    def clear(self, x, y, p, region_id):  # pylint: disable=unused-argument
         """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
-        :param x: placement x coordinate
-        :param y: placement y coordinate
-        :param p: placement p coordinate
-        :param region_id: the recording region ID to clear data from
+        :param int x: placement x coordinate
+        :param int y: placement y coordinate
+        :param int p: placement p coordinate
+        :param int region_id: the recording region ID to clear data from
         :rtype: None
         """
-        del self._end_buffering_state[x, y, p, region_id]
-        if self._db is not None:
-            with self._db:
-                c = self._db.cursor()
-                self.__delete_contents(c, x, y, p, region_id)
-        else:
-            del self._data[x, y, p, region_id]
-        del self._is_flushed[x, y, p, region_id]
-
-
-class DBWrapper(AbstractBufferedDataStorage):
-    def __init__(self, brd, x, y, p, region):
-        self.__brd = brd
-        self.__x = x
-        self.__y = y
-        self.__p = p
-        self.__r = region
-
-    @overrides(AbstractBufferedDataStorage.write)
-    def write(self, data):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.read)
-    def read(self, data_size):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.readinto)
-    def readinto(self, data):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.read_all)
-    def read_all(self):
-        with self.__brd._db.cursor() as c, self.__brd._db:
-            return self.__brd._read_contents(
-                c, self.__x, self.__y, self.__p, self.__region)
-
-    @overrides(AbstractBufferedDataStorage.seek_read)
-    def seek_read(self, offset, whence=os.SEEK_SET):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.seek_write)
-    def seek_write(self, offset, whence=os.SEEK_SET):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.tell_read)
-    def tell_read(self):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.tell_write)
-    def tell_write(self):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.eof)
-    def eof(self):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.close)
-    def close(self):
-        raise NotImplementedError()
+        logger.warning("unimplemented method")
+        # del self._end_buffering_state[x, y, p, region_id]
+        # with self._db:
+        #     c = self._db.cursor()
+        #     self.__delete_contents(c, x, y, p, region_id)
+        # del self._is_flushed[x, y, p, region_id]

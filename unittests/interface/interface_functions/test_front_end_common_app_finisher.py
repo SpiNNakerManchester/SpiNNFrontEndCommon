@@ -1,57 +1,61 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from six import itervalues
 from spinnman.model.enums.cpu_state import CPUState
-from spinn_front_end_common.interface.interface_functions \
-    import ApplicationFinisher
-
-from threading import Thread, RLock
-import time
+from spinn_front_end_common.interface.interface_functions import (
+    ApplicationFinisher)
+from spinnman.model.cpu_infos import CPUInfos
 
 
-class _MockTransceiver(Thread):
+class _MockTransceiver(object):
 
     def __init__(self, core_states, time_between_states):
         super(_MockTransceiver, self).__init__()
         self._core_states = core_states
         self._time_between_states = time_between_states
         self._current_state = 0
-        self._lock = RLock()
         self.sdp_send_count = 0
-        self.start()
-
-    def run(self):
-        while self._current_state < len(self._core_states):
-            time.sleep(self._time_between_states)
-            with self._lock:
-                self._current_state += 1
 
     def get_core_state_count(self, _app_id, state):
-        with self._lock:
-            count = 0
-            for core_state in itervalues(
-                    self._core_states[self._current_state]):
-                if core_state == state:
-                    count += 1
-            return count
+        count = 0
+        for core_state in itervalues(
+                self._core_states[self._current_state]):
+            if core_state == state:
+                count += 1
+        return count
 
     def get_cores_in_state(self, core_subsets, states):
-        with self._lock:
-            cores_in_state = CoreSubsets()
-            core_states = self._core_states[self._current_state]
-            for core_subset in core_subsets:
-                x = core_subset.x
-                y = core_subset.y
+        cores_in_state = CPUInfos()
+        core_states = self._core_states[self._current_state]
+        for core_subset in core_subsets:
+            x = core_subset.x
+            y = core_subset.y
 
-                for p in core_subset.processor_ids:
-                    if (x, y, p) in core_states:
-                        if hasattr(states, "__iter__"):
-                            if core_states[x, y, p] in states:
-                                cores_in_state.add_processor(x, y, p)
-                        elif core_states[x, y, p] == states:
-                            cores_in_state.add_processor(x, y, p)
+            for p in core_subset.processor_ids:
+                if (x, y, p) in core_states:
+                    if hasattr(states, "__iter__"):
+                        if core_states[x, y, p] in states:
+                            cores_in_state.add_processor(x, y, p, None)
+                    elif core_states[x, y, p] == states:
+                        cores_in_state.add_processor(x, y, p, None)
 
-            return cores_in_state
+        self._current_state += 1
+        return cores_in_state
 
     def send_sdp_message(self, message):
         self.sdp_send_count += 1

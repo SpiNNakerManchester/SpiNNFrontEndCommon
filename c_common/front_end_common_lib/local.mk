@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # SPINN_DIRS must be set for this file to be found
 
 # APP_OUTPUT_DIR directory to save a and dict files to (none installed)
@@ -42,18 +57,18 @@ endif
 # sources is copied only once after which all the targets are now available
 define add_source_dir#(src_dir, modified_dir)
 $(2)%.c: $(1)%.c
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
+	@python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
 
 $(2)%.h: $(1)%.h
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
+	@python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
 
 $(2)log_dict.dict: $(1)
-	python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
+	@python -m spinn_utilities.make_tools.converter $(1) $(2) $(2)log_dict.dict
 
 # Build the o files from the modified sources
 $$(BUILD_DIR)%.o: $(2)%.c
 	# local
-	-mkdir -p $$(dir $$@)
+	-@mkdir -p $$(dir $$@)
 	$$(CC) $$(CFLAGS) -o $$@ $$<
 endef
 
@@ -107,10 +122,11 @@ OBJECTS += $(_OBJS)
 include $(SPINN_DIRS)/make/spinnaker_tools.mk
 
 $(APP_DICT_FILE): $(LOG_DICT_FILES)
+	@echo mklogdict -o $(APP_DICT_FILE) $(LOG_DICT_FILES)
     # Add the two header lines once
-	head -2 $(firstword $(LOG_DICT_FILES)) > $(APP_DICT_FILE)
-	# Add the none header lines for each file remembering tail starts counting at 1
-	$(foreach ldf, $(LOG_DICT_FILES), tail -n +3 $(ldf) >> $(APP_DICT_FILE) ;)
+	@head -2 $(firstword $(LOG_DICT_FILES)) > $(APP_DICT_FILE)
+    # Add the none header lines for each file remembering tail starts counting at 1
+	@$(foreach ldf, $(LOG_DICT_FILES), tail -n +3 $(ldf) >> $(APP_DICT_FILE) ;)
 
 # Tidy and cleaning dependencies
 clean:

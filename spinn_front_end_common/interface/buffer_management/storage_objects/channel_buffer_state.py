@@ -1,5 +1,21 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import struct
-from spinn_front_end_common.utilities.constants import BUFFERING_OPERATIONS
+from spinn_front_end_common.utilities.constants import (
+    BUFFERING_OPERATIONS, BYTES_PER_WORD)
 
 _CHANNEL_BUFFER_PATTERN = struct.Struct("<IIIIIBBBx")
 
@@ -11,53 +27,54 @@ class ChannelBufferState(object):
     """
 
     __slots__ = [
-        # start buffering area memory address (32 bits)
+        #: start buffering area memory address (32 bits)
         "_start_address",
 
-        # address where data was last written (32 bits)
+        #: address where data was last written (32 bits)
         "_current_write",
 
-        # address where the DMA write got up to (32 bits)
+        #: address where the DMA write got up to (32 bits)
         "_current_dma_write",
 
-        # address where data was last read (32 bits)
+        #: address where data was last read (32 bits)
         "_current_read",
 
-        # The address of first byte after the buffer (32 bits)
+        #: The address of first byte after the buffer (32 bits)
         "_end_address",
 
-        # The ID of the region (8 bits)
+        #: The ID of the region (8 bits)
         "_region_id",
 
-        # True if the region overflowed during the simulation (8 bits)
+        #: True if the region overflowed during the simulation (8 bits)
         "_missing_info",
 
-        # Last operation performed on the buffer - read or write (8 bits)
+        #: Last operation performed on the buffer - read or write (8 bits)
         "_last_buffer_operation",
 
-        # bool check for if its extracted data from machine
+        #: bool check for if its extracted data from machine
         "_update_completed",
     ]
 
-    # 4 for _start_address, 4 for _current_write, 4 for current_dma_write,
-    # 4 for _current_read, 4 for _end_address, 1 for _region_id,
-    # 1 for _missing_info, 1 for _last_buffer_operation,
-    ChannelBufferStateSize = 24
+    #: 4 bytes for _start_address, 4 for _current_write,
+    #: 4 for current_dma_write,
+    #: 4 for _current_read, 4 for _end_address, 1 for _region_id,
+    #: 1 for _missing_info, 1 for _last_buffer_operation
+    ChannelBufferStateSize = 6 * BYTES_PER_WORD
 
     def __init__(
             self, start_address, current_write, current_dma_write,
             current_read, end_address, region_id, missing_info,
             last_buffer_operation):
         """
-        :param start_address: start buffering area memory address (32 bits)
-        :param current_write: address where data was last written (32 bits)
-        :param current_read: address where data was last read (32 bits)
-        :param end_address: \
+        :param int start_address: start buffering area memory address (32 bits)
+        :param int current_write: address where data was last written (32 bits)
+        :param int current_read: address where data was last read (32 bits)
+        :param int end_address:
             The address of first byte after the buffer (32 bits)
-        :param region_id: The ID of the region (8 bits)
-        :param missing_info: \
+        :param int region_id: The ID of the region (8 bits)
+        :param int missing_info:
             True if the region overflowed during the simulation (8 bits)
-        :param last_buffer_operation: \
+        :param int last_buffer_operation:
             Last operation performed on the buffer - read or write (8 bits)
         """
         # pylint: disable=too-many-arguments
@@ -73,34 +90,43 @@ class ChannelBufferState(object):
 
     @property
     def start_address(self):
+        """ start buffering area memory address """
         return self._start_address
 
     @property
     def current_write(self):
+        """ address where data was last written """
         return self._current_write
 
     @property
     def current_read(self):
+        """ address where data was last read """
         return self._current_read
 
     @property
     def end_address(self):
+        """ The address of first byte after the buffer """
         return self._end_address
 
     @property
     def region_id(self):
+        """ The ID of the region """
         return self._region_id
 
     @property
     def missing_info(self):
+        """ True if the region overflowed during the simulation """
         return self._missing_info
 
     @property
     def last_buffer_operation(self):
+        """ Last operation performed on the buffer - read (0) or write (non-0)
+        """
         return self._last_buffer_operation
 
     @property
     def is_state_updated(self):
+        """ bool check for if its extracted data from machine """
         return self._update_completed
 
     def update_last_operation(self, operation):
@@ -114,6 +140,11 @@ class ChannelBufferState(object):
 
     @staticmethod
     def create_from_bytearray(data):
+        """
+        :param bytearray data:
+            The contents of the buffer state structure on SpiNNaker.
+        :rtype: ChannelBufferState
+        """
         (start_address, current_write, current_dma_write, current_read,
          end_address, region_id, missing_info, last_buffer_operation) = \
             _CHANNEL_BUFFER_PATTERN.unpack_from(data)
@@ -126,6 +157,9 @@ class ChannelBufferState(object):
             end_address, region_id, missing_info, last_buffer_operation)
         return buffer_state
 
-    @staticmethod
-    def size_of_channel_state():
-        return ChannelBufferState.ChannelBufferStateSize
+    @classmethod
+    def size_of_channel_state(cls):
+        """
+        :rtype: int
+        """
+        return cls.ChannelBufferStateSize

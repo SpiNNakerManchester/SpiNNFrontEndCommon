@@ -1,3 +1,21 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from spinnman.messages.eieio import EIEIOType
+
+
 class LivePacketGatherParameters(object):
     """ Parameter holder for LPGs so that they can be instantiated at a\
         later date.
@@ -8,15 +26,17 @@ class LivePacketGatherParameters(object):
         "_use_prefix", "_key_prefix", "_prefix_type", "_message_type",
         "_right_shift", "_payload_as_time_stamps", "_use_payload_prefix",
         "_payload_prefix",  "_payload_right_shift",
-        "_number_of_packets_sent_per_time_step", "_label", "_partition_id"
+        "_number_of_packets_sent_per_time_step", "_label"
     ]
 
     def __init__(
-            self, port, hostname, tag, board_address, strip_sdp, use_prefix,
-            key_prefix, prefix_type, message_type, right_shift,
-            payload_as_time_stamps, use_payload_prefix, payload_prefix,
-            payload_right_shift, number_of_packets_sent_per_time_step,
-            partition_id):
+            self, port=None, hostname=None, tag=None, strip_sdp=True,
+            use_prefix=False, key_prefix=None, prefix_type=None,
+            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+            payload_as_time_stamps=True, use_payload_prefix=True,
+            payload_prefix=None, payload_right_shift=0,
+            number_of_packets_sent_per_time_step=0, label=None,
+            board_address=None):
         # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
         self._hostname = hostname
@@ -34,7 +54,7 @@ class LivePacketGatherParameters(object):
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
-        self._partition_id = partition_id
+        self._label = label
 
     @property
     def port(self):
@@ -97,8 +117,8 @@ class LivePacketGatherParameters(object):
         return self._number_of_packets_sent_per_time_step
 
     @property
-    def partition_id(self):
-        return self._partition_id
+    def label(self):
+        return self._label
 
     def __eq__(self, other):
         return (self._port == other.port and
@@ -118,7 +138,7 @@ class LivePacketGatherParameters(object):
                 self._payload_right_shift == other.payload_right_shift and
                 self._number_of_packets_sent_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
-                self._partition_id == other.partition_id)
+                self._label == other.label)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -130,5 +150,6 @@ class LivePacketGatherParameters(object):
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
-            self._number_of_packets_sent_per_time_step, self._partition_id)
+            self._number_of_packets_sent_per_time_step,
+            self._label)
         return hash(data)

@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.common import Slice
@@ -48,14 +63,14 @@ class InsertLivePacketGatherersToGraphs(object):
         # pylint: disable=too-many-arguments
         if app_graph is not None:
             _slice = Slice(0, 0)
-            app_vtx = self._create_vertex(LivePacketGather, params)
+            app_vtx = LivePacketGather(params)
             app_graph.add_vertex(app_vtx)
             resources = app_vtx.get_resources_used_by_atoms(_slice)
             m_vtx = app_vtx.create_machine_vertex(
-                _slice, resources, label="LivePacketGatherer")
+                _slice, resources, label=params.label)
             mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
-            m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
+            m_vtx = LivePacketGatherMachineVertex(params)
 
         m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
         m_graph.add_vertex(m_vtx)
@@ -67,13 +82,12 @@ class InsertLivePacketGatherersToGraphs(object):
 
         :param lpg_vertex_class: the type to create for the vertex
         :param params: the parameters of the vertex
-        :return the vertex built
+        :return: the vertex built
         """
         return lpg_vertex_class(
             hostname=params.hostname,
             port=params.port,
             tag=params.tag,
-            board_address=params.board_address,
             strip_sdp=params.strip_sdp,
             use_prefix=params.use_prefix,
             key_prefix=params.key_prefix,
@@ -86,4 +100,4 @@ class InsertLivePacketGatherersToGraphs(object):
             payload_right_shift=params.payload_right_shift,
             number_of_packets_sent_per_time_step=(
                 params.number_of_packets_sent_per_time_step),
-            label="LiveSpikeReceiver")
+            label=params.label)

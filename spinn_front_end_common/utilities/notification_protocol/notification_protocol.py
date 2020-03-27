@@ -1,5 +1,20 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import logging
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor, wait
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -16,17 +31,32 @@ class NotificationProtocol(object):
     """ The protocol which hand shakes with external devices about the\
         database and starting execution
     """
+    __slots__ = [
+        "__database_message_connections",
+        "_sent_visualisation_confirmation",
+        "__socket_addresses",
+        "__wait_for_read_confirmation",
+        "__wait_futures",
+        "__wait_pool"]
 
     def __init__(self, socket_addresses, wait_for_read_confirmation):
-        self._socket_addresses = socket_addresses
+        """
+        :param list(~spinn_utilities.socket_address.SocketAddress) \
+                socket_addresses: Where to notify.
+        :param bool wait_for_read_confirmation:
+            Whether to wait for the other side to acknowledge
+        """
+        self.__socket_addresses = socket_addresses
 
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
-        self._wait_for_read_confirmation = wait_for_read_confirmation
-        self._wait_pool = ThreadPool(processes=1)
-        self._data_base_message_connections = list()
+        self.__wait_for_read_confirmation = wait_for_read_confirmation
+        self.__wait_pool = ThreadPoolExecutor(max_workers=1)
+        self.__wait_futures = list()
+        self._sent_visualisation_confirmation = False
+        self.__database_message_connections = list()
         for socket_address in socket_addresses:
-            self._data_base_message_connections.append(EIEIOConnection(
+            self.__database_message_connections.append(EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
                 remote_port=socket_address.notify_port_no))
@@ -37,10 +67,11 @@ class NotificationProtocol(object):
 
         :rtype: None
         """
-        logger.info("** Awaiting for a response from an external source "
-                    "to state its ready for the simulation to start **")
-        self._wait_pool.close()
-        self._wait_pool.join()
+        if self.__wait_for_read_confirmation:
+            logger.info("** Awaiting for a response from an external source "
+                        "to state its ready for the simulation to start **")
+            wait(self.__wait_futures)
+        self.__wait_futures = list()
 
     def send_start_resume_notification(self):
         """ Either waits till all sources have confirmed read the database\
@@ -51,13 +82,13 @@ class NotificationProtocol(object):
         """
         logger.info("** Sending start / resume message to external sources "
                     "to state the simulation has started or resumed. **")
-        if self._wait_for_read_confirmation:
+        if self.__wait_for_read_confirmation:
             self.wait_for_confirmation()
         eieio_command_message = NotificationProtocolStartResume()
-        for c in self._data_base_message_connections:
+        for c in self.__database_message_connections:
             try:
                 c.send_eieio_message(eieio_command_message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to send start/resume notification to external "
                     "application on {}:{} about the simulation ***",
@@ -72,10 +103,10 @@ class NotificationProtocol(object):
         logger.info("** Sending pause / stop message to external sources "
                     "to state the simulation has been paused or stopped. **")
         eieio_command_message = NotificationProtocolPauseStop()
-        for c in self._data_base_message_connections:
+        for c in self.__database_message_connections:
             try:
                 c.send_eieio_message(eieio_command_message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to send stop/pause notification to external "
                     "application on {}:{} about the simulation ***",
@@ -86,27 +117,24 @@ class NotificationProtocol(object):
         """ Sends notifications to all devices which have expressed an\
             interest in when the database has been written
 
-        :param database_path: the path to the database file
-        :rtype: None
+        :param str database_path: the path to the database file
         """
-        if database_path is not None:
-            self._wait_pool.apply_async(self._send_read_notification,
-                                        args=[database_path])
+        notification_thread = self.__wait_pool.submit(
+                self._send_read_notification, database_path)
+        if self.__wait_for_read_confirmation:
+            self.__wait_futures.append(notification_thread)
 
     def _send_read_notification(self, database_path):
         """ Sends notifications to a list of socket addresses that the\
             database has been written. Message also includes the path to the\
             database
 
-        :param database_path: the path to the database
-        :rtype: None
-
+        :param str database_path: the path to the database
         """
         # noinspection PyBroadException
         try:
-            if database_path is not None:
-                self._do_read_notify(database_path)
-        except Exception:
+            self._do_read_notify(database_path)
+        except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
@@ -114,8 +142,8 @@ class NotificationProtocol(object):
         self._sent_visualisation_confirmation = True
 
         # add file path to database into command message.
-        number_of_chars = len(database_path)
-        if number_of_chars > MAX_DATABASE_PATH_LENGTH:
+        if (database_path is not None and
+                len(database_path) > MAX_DATABASE_PATH_LENGTH):
             raise ConfigurationException(
                 "The file path to the database is too large to be transmitted "
                 "via the command packet, please set the file path manually "
@@ -129,24 +157,24 @@ class NotificationProtocol(object):
             "reading **")
 
         # noinspection PyBroadException
-        for c in self._data_base_message_connections:
+        for c in self.__database_message_connections:
             try:
                 c.send_eieio_message(message)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to notify external application on {}:{} "
                     "about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
         # if the system needs to wait, try receiving a packet back
-        for c in self._data_base_message_connections:
+        for c in self.__database_message_connections:
             try:
-                if self._wait_for_read_confirmation:
+                if self.__wait_for_read_confirmation:
                     c.receive_eieio_message()
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "*** Failed to receive notification from external "
                     "application on {}:{} about the database ***",
@@ -155,4 +183,7 @@ class NotificationProtocol(object):
     def close(self):
         """ Closes the thread pool
         """
-        self._wait_pool.close()
+        if self.__wait_pool:
+            self.__wait_pool.shutdown()
+            self.__wait_futures = list()
+            self.__wait_pool = None

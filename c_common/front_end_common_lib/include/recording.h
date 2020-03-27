@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017-2019 The University of Manchester
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /*! \file
  *  \brief interface for recording data into "channels" on the SDRAM in a
  *         standard way, and storing buffers to be extracted during execution
@@ -15,7 +32,7 @@
 #define RECORDING_DMA_COMPLETE_TAG_ID 15
 
 //! \brief Callback for recording completion.
-typedef void (*recording_complete_callback_t) ();
+typedef void (*recording_complete_callback_t)(void);
 
 typedef struct {
     uint16_t eieio_header_command;
@@ -49,42 +66,67 @@ typedef struct {
     uint8_t sequence;
 } host_data_read_ack_packet_header;
 
-//! \brief Determines if the given channel has space assigned for recording.
-//! \param[in] recording_flags The flags as returned by recording_initialize
-//! \param[in] channel The channel to check
-//! \return True if the channel is enabled, false otherwise
-inline bool recording_is_channel_enabled(
-        uint32_t recording_flags, uint8_t channel) {
-    return (recording_flags & (1 << channel)) != 0;
-}
-
-//! \brief records some data into a specific recording channel.
-//! \param[in] channel the channel to store the data into.
-//! \param[in] data the data to store into the channel.
-//! \param[in] size_bytes the number of bytes that this data will take up.
-//! \return boolean which is True if the data has been stored in the channel,
-//!         False otherwise.
-bool recording_record(
-    uint8_t channel, void *data, uint32_t size_bytes);
-
 //! \brief records some data into a specific recording channel, calling a
-//!        callback function once complete
+//!        callback function once complete. DO NOT CALL THIS DIRECTLY. Use
+//!        recording_record() or recording_record_and_notify().
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
 //! \param[in] size_bytes the number of bytes that this data will take up.
 //! \param[in] callback callback to call when the recording has completed
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
-bool recording_record_and_notify(
-    uint8_t channel, void *data, uint32_t size_bytes,
-    recording_complete_callback_t callback);
+bool recording_do_record_and_notify(
+        uint8_t channel, void *data, uint32_t size_bytes,
+        recording_complete_callback_t callback);
+
+//! \brief records some data into a specific recording channel.
+//! \param[in] channel the channel to store the data into.
+//! \param[in] data the data to store into the channel.
+//! \param[in] size_bytes the number of bytes that this data will take up.
+//!            This may be any number of bytes, not just whole words.
+//! \return boolean which is True if the data has been stored in the channel,
+//!         False otherwise.
+static inline bool recording_record(
+        uint8_t channel, void *data, uint32_t size_bytes) {
+    // Because callback is NULL, spin1_memcpy will be used
+    // and that means that non-word transfers are supported.
+    return recording_do_record_and_notify(channel, data, size_bytes, NULL);
+}
+
+//! \brief Prints an error about DMA API abuse and RTEs.
+//! \param[in] data the pointer to the data.
+//! \param[in] size the number of bytes in the data.
+__attribute__((noreturn)) void recording_bad_offset(
+	void *data, uint32_t size);
+
+//! \brief records some data into a specific recording channel, calling a
+//!        callback function once complete
+//! \param[in] channel the channel to store the data into.
+//! \param[in] data the data to store into the channel.
+//! \param[in] size_bytes the number of bytes that this data will take up.
+//!            This must be in whole words if the callback is supplied due to
+//!            limitations in the DMA engine.
+//! \param[in] callback callback to call when the recording has completed, or
+//!            NULL to use direct, immediate copying.
+//! \return boolean which is True if the data has been stored in the channel,
+//!         False otherwise.
+static inline bool recording_record_and_notify(
+        uint8_t channel, void *data, uint32_t size_bytes,
+        recording_complete_callback_t callback) {
+    if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
+	recording_bad_offset(data, size_bytes);
+    }
+    return recording_do_record_and_notify(channel, data, size_bytes, callback);
+}
 
 //! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0
-void recording_finalise();
+void recording_finalise(void);
 
 //! \brief initialises the recording of data
-//! \param[in] recording_data_address The start of the data about the recording
+//! \param[in/out] recording_data_address The start of the data about the
+//!                                       recording, updated to point to just
+//!                                       after the data if return True.
 //!            Data is {
 //!                // number of potential recording regions
 //!                uint32_t n_regions;
@@ -108,16 +150,15 @@ void recording_finalise();
 //!
 //!                // size of each region to be recorded
 //!                uint32_t size_of_region[n_regions];
-//!
 //!            }
 //! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags);
+        void **recording_data_address, uint32_t *recording_flags);
 
 //! \brief resets recording to the state just after initialisation
-void recording_reset();
+void recording_reset(void);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0

@@ -1,0 +1,7 @@
+enum34:enum
+SpiNNUtilities:spinn_utilities
+SpiNNMachine:spinn_machine
+SpiNNStorageHandlers:spinn_storage_handlers
+SpiNNMan:spinnman
+SpiNNaker_PACMAN:pacman
+SpiNNaker_DataSpecification:data_specification

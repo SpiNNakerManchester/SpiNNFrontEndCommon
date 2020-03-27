@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # If SPINN_DIRS is not defined, this is an error!
 ifndef SPINN_DIRS
     $(error SPINN_DIRS is not set.  Please define SPINN_DIRS (possibly by running "source setup" in the spinnaker tools folder))
@@ -19,7 +34,7 @@ OBJS = data_specification.o simulation.o recording.o profiler.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers
-HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h debug.h
+HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h debug.h eieio.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
@@ -43,7 +58,7 @@ MODIFIED_DIR = modified_src/
 
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
-	$(RM) $@
+	@$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
@@ -56,7 +71,7 @@ $(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(LOG_DICT_
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(SPINN_COMMON_BUILD):
-	$(MKDIR) $@
+	@$(MKDIR) $@
 
 # Installing rules
 install: install-libraries install-headers install-makefiles
