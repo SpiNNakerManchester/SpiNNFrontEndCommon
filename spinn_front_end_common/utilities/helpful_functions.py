@@ -15,7 +15,6 @@
 
 import os
 import logging
-import math
 import struct
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
@@ -333,96 +332,121 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 def produce_key_constraint_based_off_outgoing_partitions(
         machine_graph, vertex, mask, virtual_key, partition):
-    """ supports vertices which can support their destinations enforcing
-    their key space.
+    """ Supports vertices which can support their destinations enforcing\
+        their key space.
 
-    :param machine_graph: the machine graph
-    :param vertex: the source vertex (usually a retina or RIPMCS)
-    :param mask: the mask the source expects to transmit with
-    :param virtual_key: the key the source expects to transmit with
-    :param partition: the edge partition to process
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.graphs.machine.MachineVertex vertex:
+        the source vertex (usually a retina or RIPMCS)
+    :param int mask: the mask the source expects to transmit with
+    :param int virtual_key: the key the source expects to transmit with
+    :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+        the edge partition to process
     :return: the constraints the source vertex should use.
+    :rtype: list(~pacman.model.constraints.AbstractConstraint)
+    :raises ConfigurationException:
+        If the key space is not correctly covered.
     """
-    if virtual_key is not None:
-        if len(partition.constraints) == 0:
-            keys_covered, has_tried_to_cover, key_space =  \
-                _verify_if_incoming_constraints_covers_key_space(
-                    machine_graph=machine_graph, vertex=vertex,
-                    mask=mask, virtual_key=virtual_key)
-            if not keys_covered and not has_tried_to_cover:
-                return list([FixedKeyAndMaskConstraint(
-                    [BaseKeyAndMask(virtual_key, mask)])])
-            elif not keys_covered and has_tried_to_cover:
-                key_message = ""
-                for element_space in key_space:
-                    mask, _ = calculate_mask(element_space.size)
-                    key_message += "[start key:{} and mask {}] ".format(
-                        element_space.start_address, mask)
-                raise ConfigurationException(
-                    "the retina key space has not been covered correctly. "
-                    "and so packets will fly uncontrolled. please insert a "
-                    "vertex that covers the following key spaces: {}".format(
-                        key_message))
+    if virtual_key is not None and not partition.constraints:
+        keys_covered, has_tried_to_cover, key_space = \
+            _verify_if_incoming_constraints_covers_key_space(
+                machine_graph=machine_graph, vertex=vertex,
+                mask=mask, virtual_key=virtual_key)
+        if not keys_covered and not has_tried_to_cover:
+            return [FixedKeyAndMaskConstraint([
+                BaseKeyAndMask(virtual_key, mask)])]
+        elif not keys_covered and has_tried_to_cover:
+            key_message = ""
+            for element_space in key_space:
+                mask, _ = calculate_mask(element_space.size)
+                key_message += "[start key:{} mask:{}] ".format(
+                    element_space.start_address, mask)
+            raise ConfigurationException(
+                "the retina key space has not been covered correctly; "
+                "packets will fly uncontrolled. Please insert a vertex "
+                "that covers the following key spaces: {}".format(
+                    key_message.rstrip()))
     return list()
 
 
 def _verify_if_incoming_constraints_covers_key_space(
         machine_graph, vertex, virtual_key, mask):
-    """ checks the partitions going out of the vertex and sees if there's
-    constraints that cover of try to cover the key space of the vertex.
+    """ Checks the partitions going out of the vertex and sees if there's\
+        constraints that cover of try to cover the key space of the vertex.
 
-    :param machine_graph: the machine graph
-    :param vertex: the vertex to worry about
-    :param virtual_key: the key that vertex is to transmit with
-    :param mask: the mask of the key that the vertex will transmit with
-    :return: 2 Booleans, first saying if the key space is covered, the second\
-            saying if the key space was attempted to be covered.
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.graphs.machine.MachineVertex vertex:
+        the vertex to worry about
+    :param int virtual_key: the key that vertex is to transmit with
+    :param int mask: the mask of the key that the vertex will transmit with
+    :return:
+        2 Booleans (first saying if the key space is covered, the second
+        saying if the key space was attempted to be covered), and the list of
+        free spaces that remain.
+    :rtype: tuple(bool, bool, list(ElementFreeSpace))
     """
     tried_to_cover = False
     key_space = ElementAllocatorAlgorithm(
         generate_key_ranges_from_mask(virtual_key, mask))
-    outgoing_partitions = \
-        machine_graph.get_outgoing_edge_partitions_starting_at_vertex(vertex)
-    for outgoing_partition in outgoing_partitions:
-        if outgoing_partition.traffic_type == EdgeTrafficType.MULTICAST:
+    for partition in \
+            machine_graph.get_outgoing_edge_partitions_starting_at_vertex(
+                vertex):
+        if partition.traffic_type == EdgeTrafficType.MULTICAST:
             tried_to_cover = _process_multicast_partition(
-                outgoing_partition, key_space, tried_to_cover)
-    if key_space.space_remaining() != 0:
-        return False, tried_to_cover, key_space.spaces_left()
-    return True, tried_to_cover, key_space.spaces_left()
+                partition, key_space, tried_to_cover)
+    return (not key_space.space_remaining(), tried_to_cover,
+            key_space.spaces_left())
 
 
 def calculate_mask(n_keys):
+    """ Compute a mask and key range for a (continuous) group of keys.
+
+    :param int n_keys: The number of keys to compute a mask for.
+    :return: mask, max_key (min is always 0)
+    :rtype: tuple(int,int)
+    """
     if n_keys == 1:
         return 0xFFFFFFFF, 1
-    temp_value = int(math.ceil(math.log(n_keys, 2)))
-    max_key = (int(math.pow(2, temp_value)) - 1)
+    max_key = (2 ** (n_keys - 1).bit_length()) - 1
     mask = 0xFFFFFFFF - max_key
     return mask, max_key
 
 
-def _process_multicast_partition(
-        outgoing_partition, key_space, tried_to_cover):
-    for edge in outgoing_partition.edges:
-        if isinstance(
-                edge.post_vertex,
-                AbstractProvidesIncomingPartitionConstraints):
-            constraints = edge.post_vertex.\
-                get_incoming_partition_constraints(outgoing_partition)
-            key_constraints = locate_constraints_of_type(
-                constraints, AbstractKeyAllocatorConstraint)
-            if len(key_constraints) > 1:
-                raise ConfigurationException(
-                    "There are too many key constraints. Please rectify "
-                    "and try again")
-            key_constraint = key_constraints[0]
-            if isinstance(key_constraint, FixedKeyAndMaskConstraint):
-                keys_and_masks = key_constraint.keys_and_masks
-                for key_and_mask in keys_and_masks:
-                    for base_key, n_keys in generate_key_ranges_from_mask(
-                            key_and_mask.key, key_and_mask.mask):
-                        key_space.allocate_elements(base_key, n_keys)
-                    tried_to_cover = True
+def _process_multicast_partition(partition, key_space, tried_to_cover):
+    """
+    :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+    :param key_space:
+    :type key_space:
+        ~pacman.utilities.algorithm_utilities.ElementAllocatorAlgorithm
+    :param bool tried_to_cover:
+    :return: tried_to_cover
+    :rtype: bool
+    """
+    relevant_vertices = (
+        edge.post_vertex
+        for edge in partition.edges
+        if isinstance(edge.post_vertex,
+                      AbstractProvidesIncomingPartitionConstraints))
+    for vertex in relevant_vertices:
+        key_constraints = locate_constraints_of_type(
+            vertex.get_incoming_partition_constraints(partition),
+            AbstractKeyAllocatorConstraint)
+        if len(key_constraints) > 1:
+            raise ConfigurationException(
+                "There are too many key constraints. Please rectify "
+                "and try again")
+        elif not key_constraints:
+            # No key constraints... so just skip it
+            continue
+        key_constraint = key_constraints[0]
+        if isinstance(key_constraint, FixedKeyAndMaskConstraint):
+            for key_and_mask in key_constraint.keys_and_masks:
+                for base_key, n_keys in generate_key_ranges_from_mask(
+                        key_and_mask.key, key_and_mask.mask):
+                    key_space.allocate_elements(base_key, n_keys)
+                tried_to_cover = True
     return tried_to_cover
 
 
