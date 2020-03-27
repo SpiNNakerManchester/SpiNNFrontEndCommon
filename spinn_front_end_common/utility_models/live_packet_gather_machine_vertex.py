@@ -19,8 +19,7 @@ from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
-    ResourceContainer)
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine,
     ProvidesProvenanceDataFromMachineImpl)
@@ -71,10 +70,7 @@ class LivePacketGatherMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=ConstantSDRAM(self.get_sdram_usage()),
-            iptags=[IPtagResource(
-                ip_address=lpg_params.hostname, port=lpg_params.port,
-                strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
-                traffic_identifier=self.TRAFFIC_IDENTIFIER)])
+            iptags=[lpg_params.get_iptag_resource()])
 
         # app specific data items
         self._lpg_params = lpg_params
