@@ -13,7 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinnman.messages.eieio import EIEIOType
+from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from pacman.model.resources.iptag_resource import IPtagResource
+
+_HAS_PAYLOAD = (EIEIOType.KEY_PAYLOAD_32_BIT, EIEIOType.KEY_PAYLOAD_16_BIT)
+_NO_PAYLOAD = (EIEIOType.KEY_32_BIT, EIEIOType.KEY_16_BIT)
+#: Used to identify tags involved with the live packet gatherer.
+TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
 
 class LivePacketGatherParameters(object):
@@ -26,7 +33,7 @@ class LivePacketGatherParameters(object):
         "_use_prefix", "_key_prefix", "_prefix_type", "_message_type",
         "_right_shift", "_payload_as_time_stamps", "_use_payload_prefix",
         "_payload_prefix",  "_payload_right_shift",
-        "_number_of_packets_sent_per_time_step", "_label"
+        "_n_packets_per_time_step", "_label"
     ]
 
     def __init__(
@@ -37,7 +44,30 @@ class LivePacketGatherParameters(object):
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, label=None,
             board_address=None):
+        """
+        :raises ConfigurationException:
+            If the parameters passed are known to be an invalid combination.
+        """
         # pylint: disable=too-many-arguments, too-many-locals
+
+        # Sanity checks
+        if (message_type in _HAS_PAYLOAD and use_payload_prefix and
+                payload_as_time_stamps):
+            raise ConfigurationException(
+                "Timestamp can either be included as payload prefix or as "
+                "payload to each key, not both")
+        if (message_type in _NO_PAYLOAD and not use_payload_prefix and
+                payload_as_time_stamps):
+            raise ConfigurationException(
+                "Timestamp can either be included as payload prefix or as "
+                "payload to each key, but current configuration does not "
+                "specify either of these")
+        if (prefix_type is not None and
+                not isinstance(prefix_type, EIEIOPrefix)):
+            raise ConfigurationException(
+                "the type of a prefix type should be of a EIEIOPrefix, "
+                "which can be located in: spinnman.messages.eieio")
+
         self._port = port
         self._hostname = hostname
         self._tag = tag
@@ -52,8 +82,7 @@ class LivePacketGatherParameters(object):
         self._use_payload_prefix = use_payload_prefix
         self._payload_prefix = payload_prefix
         self._payload_right_shift = payload_right_shift
-        self._number_of_packets_sent_per_time_step = \
-            number_of_packets_sent_per_time_step
+        self._n_packets_per_time_step = number_of_packets_sent_per_time_step
         self._label = label
 
     @property
@@ -114,11 +143,22 @@ class LivePacketGatherParameters(object):
 
     @property
     def number_of_packets_sent_per_time_step(self):
-        return self._number_of_packets_sent_per_time_step
+        return self._n_packets_per_time_step
 
     @property
     def label(self):
         return self._label
+
+    def get_iptag_resource(self):
+        """ Get a description of the IPtag that the LPG for these parameters \
+            will require.
+
+        :rtype: ~pacman.model.resources.IPtagResource
+        """
+        return IPtagResource(
+            ip_address=self.hostname, port=self.port,
+            strip_sdp=self.strip_sdp, tag=self.tag,
+            traffic_identifier=TRAFFIC_IDENTIFIER)
 
     def __eq__(self, other):
         return (self._port == other.port and
@@ -136,7 +176,7 @@ class LivePacketGatherParameters(object):
                 self._use_payload_prefix == other.use_payload_prefix and
                 self._payload_prefix == other.payload_prefix and
                 self._payload_right_shift == other.payload_right_shift and
-                self._number_of_packets_sent_per_time_step ==
+                self._n_packets_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
                 self._label == other.label)
 
@@ -150,6 +190,5 @@ class LivePacketGatherParameters(object):
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
-            self._number_of_packets_sent_per_time_step,
-            self._label)
+            self._n_packets_per_time_step, self._label)
         return hash(data)

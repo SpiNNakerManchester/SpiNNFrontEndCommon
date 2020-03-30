@@ -110,9 +110,11 @@ static inline uint32_t double_to_upper(double d) {
 //! \param[in] message The user-defined part of the debug message.
 #define __log_mini(level, message, ...) \
     do {                                                  \
+	    uint _debug_cpsr = spin1_int_disable();           \
 	    if (level <= LOG_LEVEL) {                         \
 	        fprintf(stderr, message "\n", ##__VA_ARGS__); \
 	    }                                                 \
+	    spin1_mode_restore(_debug_cpsr);                  \
     } while (0)
 
 //! \brief This macro logs errors.
