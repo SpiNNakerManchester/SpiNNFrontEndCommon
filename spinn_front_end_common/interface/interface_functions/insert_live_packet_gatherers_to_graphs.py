@@ -96,19 +96,18 @@ class InsertLivePacketGatherersToGraphs(object):
         """
         app_vtx = LivePacketGather(params)
         app_graph.add_vertex(app_vtx)
-        resources = app_vtx.get_resources_used_by_atoms(_LPG_SLICE)
+        # No need to handle resources when allocating; LPG has core to itself
         vtx = app_vtx.create_machine_vertex(
-            _LPG_SLICE, resources, label="LivePacketGatherer",
+            _LPG_SLICE, resources_required=None, label="LivePacketGatherer",
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
-        app_vtx.remember_associated_machine_vertex(vtx)
         app_graph.machine_graph.add_vertex(vtx)
         return vtx
 
-    def _add_mach_lpg_vertex(self, graph, chip, params):
+    def _add_mach_lpg_vertex(self, machine_graph, chip, params):
         """ Adds a LPG vertex to a machine graph without an associated\
             application graph.
 
-        :param ~.MachineGraph app_graph:
+        :param ~.MachineGraph machine_graph:
         :param ~.Chip chip:
         :param LivePacketGatherParameters params:
         :rtype: LivePacketGatherMachineVertex
@@ -116,5 +115,5 @@ class InsertLivePacketGatherersToGraphs(object):
         vtx = LivePacketGatherMachineVertex(params,
             app_vertex=None, vertex_slice=_LPG_SLICE,
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
-        graph.add_vertex(vtx)
+        machine_graph.add_vertex(vtx)
         return vtx

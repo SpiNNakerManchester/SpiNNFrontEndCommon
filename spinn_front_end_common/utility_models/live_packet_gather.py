@@ -14,12 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
-    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
-    ResourceContainer)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
@@ -41,28 +38,6 @@ class LivePacketGather(
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
-        if ((lpg_params.message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
-             lpg_params.message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
-                lpg_params.use_payload_prefix and
-                lpg_params.payload_as_time_stamps):
-            raise ConfigurationException(
-                "Timestamp can either be included as payload prefix or as "
-                "payload to each key, not both")
-        if ((lpg_params.message_type == EIEIOType.KEY_32_BIT or
-             lpg_params.message_type == EIEIOType.KEY_16_BIT) and
-                not lpg_params.use_payload_prefix and
-                lpg_params.payload_as_time_stamps):
-            raise ConfigurationException(
-                "Timestamp can either be included as payload prefix or as"
-                " payload to each key, but current configuration does not "
-                "specify either of these")
-        if (not isinstance(lpg_params.prefix_type, EIEIOPrefix) and
-                lpg_params.prefix_type is not None):
-            raise ConfigurationException(
-                "the type of a prefix type should be of a EIEIOPrefix, "
-                "which can be located in :"
-                "SpinnMan.messages.eieio.eieio_prefix_type")
-
         label = lpg_params.label or "Live Packet Gatherer"
         super(LivePacketGather, self).__init__(label, constraints, 1)
         self._lpg_params = lpg_params
@@ -71,8 +46,10 @@ class LivePacketGather(
     def create_machine_vertex(
             self, vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
-        return LivePacketGatherMachineVertex(
+        m_vtx = LivePacketGatherMachineVertex(
             self._lpg_params, self, vertex_slice, label, constraints)
+        self.remember_associated_machine_vertex(m_vtx)
+        return m_vtx
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -95,11 +72,7 @@ class LivePacketGather(
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()),
-            iptags=[IPtagResource(
-                ip_address=self._lpg_params.hostname,
-                port=self._lpg_params.port, tag=self._lpg_params.tag,
-                strip_sdp=self._lpg_params.strip_sdp, traffic_identifier=(
-                    LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))])
+            iptags=[self._lpg_params.get_iptag_resource()])
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
