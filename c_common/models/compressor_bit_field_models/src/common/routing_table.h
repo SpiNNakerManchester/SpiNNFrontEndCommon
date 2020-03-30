@@ -267,7 +267,6 @@ bool routing_table_sdram_store(table_t *table_format) {
     log_info("compressed entries = %d", n_entries);
     log_info("compressed address = %x", table_format);
     table_format->size = n_entries;
-    uint32_t main_entry_index = 0;
 
     bool check = platform_check(table_format);
     if (!check){
@@ -276,7 +275,9 @@ bool routing_table_sdram_store(table_t *table_format) {
     }
 
     // iterate though the entries writing to the struct as we go
+
     log_info("start copy over");
+    uint32_t main_entry_index = 0;
     for (int rt_index = 0; rt_index < n_tables; rt_index++) {
         log_info("on index %d of %d", rt_index, n_tables);
         // get how many entries are in this block
@@ -285,12 +286,21 @@ bool routing_table_sdram_store(table_t *table_format) {
         if (entries_stored_here != 0) {
             // take entry and plonk data in right sdram location
             log_info("doing sark copy");
-            sark_mem_cpy(
-                &table_format->entries[main_entry_index],
-                routing_tables[rt_index]->entries,
-                entries_stored_here * sizeof(entry_t));
-            log_info("finished sark copy");
-            main_entry_index += entries_stored_here;
+
+            for (int local_index = 0;
+                    local_index < routing_tables[rt_index]->size;
+                    local_index++, main_entry_index++) {
+                log_debug("main index = %d", main_entry_index);
+                table_format->entries[main_entry_index].key_mask.key =
+                    routing_tables[rt_index]->entries[local_index].key_mask.key;
+                table_format->entries[main_entry_index].key_mask.mask =
+                    routing_tables[rt_index]->entries[local_index].key_mask.mask;
+                table_format->entries[main_entry_index].route =
+                    routing_tables[rt_index]->entries[local_index].route;
+                table_format->entries[main_entry_index].source =
+                    routing_tables[rt_index]->entries[local_index].source;
+            }
+
             log_info("updated the main index to %d", main_entry_index);
             check = platform_check(table_format);
             if (!check){
@@ -358,6 +368,21 @@ void routing_table_remove_from_size(int size_to_remove) {
 //! \return the number of bytes needed for this routing table
 static inline uint routing_table_sdram_size_of_table(uint32_t n_entries) {
     return sizeof(uint32_t) + (sizeof(entry_t) * n_entries);
+}
+
+//! \brief copies over the contents of 1 table_t to another table_t safely
+static void routing_table_copy_table(table_t* src, table_t* dest){
+
+    dest->size = src->size;
+    for (int index = 0; index < dest->size; index ++){
+        dest->entries[index].key_mask.key = src->entries[index].key_mask.key;
+        dest->entries[index].key_mask.mask = src->entries[index].key_mask.mask;
+        dest->entries[index].route = src->entries[index].route;
+        dest->entries[index].source = src->entries[index].source;
+    }
+    log_info(
+        "successfully copied table data from %x to %x",
+        src, dest);
 }
 
 #endif  // __ROUTING_TABLE_H__

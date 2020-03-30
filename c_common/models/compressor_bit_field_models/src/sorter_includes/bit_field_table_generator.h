@@ -271,7 +271,7 @@ static inline bool generate_entries_from_bitfields(
     for (uint32_t atom = 0; atom < n_atoms; atom++) {
 
         // reset with filtered routes.
-        sark_mem_cpy(
+        spin1_memcpy(
             atom_processors, processors, size * WORD_TO_BYTE_MULTIPLIER);
 
         // iterate through the bitfield cores and see if they need this atom
@@ -292,7 +292,7 @@ static inline bool generate_entries_from_bitfields(
         new_entry->key_mask.key = original_entry.key_mask.key + atom;
         new_entry->key_mask.mask = NEURON_LEVEL_MASK;
         new_entry->source = original_entry.source;
-        sark_mem_cpy(
+        spin1_memcpy(
             &new_entry->route, atom_processors,
             size * WORD_TO_BYTE_MULTIPLIER);
         log_info(

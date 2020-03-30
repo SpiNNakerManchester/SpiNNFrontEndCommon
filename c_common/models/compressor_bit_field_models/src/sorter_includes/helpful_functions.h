@@ -181,10 +181,10 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
         terminate(2);
     }
 
-    // copy over data
-    sark_mem_cpy(
-        where_was_cloned, &uncompressed_router_table->uncompressed_table,
-        sdram_used);
+    // copy the table data over correctly
+    routing_table_copy_table(
+        &uncompressed_router_table->uncompressed_table,
+        where_was_cloned);
 
     check = platform_check(where_was_cloned);
     if (!check){

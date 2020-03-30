@@ -67,6 +67,10 @@ void message_sending_send_sdp_message(
         else{
             log_info("retrying");
             check_all();
+            log_info("sark markers");
+            log_info("user 1 = %d", comp_processor->user1);
+            log_info("user 2 = %d", comp_processor->user2);
+            log_info("user 3 = %d", comp_processor->user3);
         }
     }
     log_info("sent message");
@@ -99,8 +103,7 @@ static inline bool store_sdram_addresses_for_compression(
         FREE(comp_cores_bf_tables[comp_core_index].elements);
     }
 
-    // store the elements. note need to copy over, as this is a central malloc
-    // space for the routing tables.
+    // store the elements into the tracker.
     comp_cores_bf_tables[comp_core_index].n_elements = n_rt_addresses;
     comp_cores_bf_tables[comp_core_index].n_bit_fields = mid_point;
     comp_cores_bf_tables[comp_core_index].elements = bit_field_routing_tables;
@@ -165,6 +168,7 @@ static int select_compressor_core_index(
         if (comp_core_mid_point[comp_core_index] == DOING_NOWT) {
             comp_core_mid_point[comp_core_index] = midpoint;
             *n_available_compression_cores -= 1;
+            log_info(" n_available_compression_cores is %d", *n_available_compression_cores);
             return comp_core_index;
         }
     }
@@ -211,19 +215,24 @@ static bool message_sending_set_off_bit_field_compression(
         n_entries += bit_field_routing_tables[rt_index]->size;
     }
     log_info(
-        "using core %d for %d rts with %d entries",
-        compressor_cores[comp_core_index], n_rt_addresses, n_entries);
+        "using core %d for %d rts with %d entries for %d bitfields",
+        compressor_cores[comp_core_index], n_rt_addresses, n_entries,
+        mid_point);
 
     // allocate space for the compressed routing entries if required
     table_t *compressed_address =
         comp_cores_bf_tables[comp_core_index].compressed_table;
     if (comp_cores_bf_tables[comp_core_index].compressed_table == NULL){
+        int size_of_malloc = routing_table_sdram_size_of_table(TARGET_LENGTH);
+        log_info("size of malloc is %d", size_of_malloc);
         compressed_address = MALLOC_SDRAM(
             routing_table_sdram_size_of_table(TARGET_LENGTH));
         log_info(
             "size of the compressed in bytes is %d",
             routing_table_sdram_size_of_table(TARGET_LENGTH));
-        log_info("address of compressed is %x", compressed_address);
+        log_info(
+            "address of compressed for core %d is %x",
+            compressor_cores[comp_core_index], compressed_address);
         comp_cores_bf_tables[comp_core_index].compressed_table =
             compressed_address;
         if (compressed_address == NULL) {
@@ -341,6 +350,7 @@ bool message_sending_set_off_no_bit_field_compression(
             "failed to allocate memory for the bit_field_routing tables");
         return false;
     }
+
     log_debug("allocate to array");
     bit_field_routing_tables[0] = sdram_clone_of_routing_table;
     log_debug("allocated bf routing tables");
