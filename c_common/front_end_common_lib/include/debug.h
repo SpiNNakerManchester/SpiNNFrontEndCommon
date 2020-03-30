@@ -104,7 +104,6 @@ static inline uint32_t double_to_upper(double d) {
     return dat.ints.upper;
 }
 
-{code}
 uint debug___cpsr;
 
 //! \brief This macro prints a debug message if level is less than or equal
@@ -119,7 +118,6 @@ uint debug___cpsr;
 	    }                                                 \
     } while (0); \
     spin1_mode_restore(debug___cpsr)
-{code}
 
 //! \brief This macro logs errors.
 //! \param[in] message The user-defined part of the error message.
