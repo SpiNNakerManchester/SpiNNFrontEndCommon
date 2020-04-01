@@ -71,6 +71,9 @@ typedef void (*resume_callback_t)(void);
 //! is sent and models want to do cleaning up
 typedef void (*exit_callback_t)(void);
 
+//! the definition of the callback used to call a function once at start
+typedef resume_callback_t start_callback_t;
+
 //! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
 //!        which is formatted as:
@@ -121,6 +124,11 @@ void simulation_set_provenance_function(
 //!            simulation to exit. Executed before API exit.
 void simulation_set_exit_function(exit_callback_t exit_function);
 
+//! \brief Set an additional function to call before starting the binary
+//! \param[in] start_function: function to call when the host tells the
+//!            simulation to start.  Executed before "synchronisation".
+void simulation_set_start_function(start_callback_t start_function);
+
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.  Note that
 //!        following this function, the code should call
@@ -162,5 +170,12 @@ bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback);
 //! \brief turns off a registered callback for a given DMA transfer done tag
 //! \param[in] tag: the DMA transfer tag to de-register
 void simulation_dma_transfer_done_callback_off(uint tag);
+
+//! \brief set whether the simulation uses the timer.  By default it will
+//!        be assumed that simulations use the timer unless this function is
+//!        called.
+//! \param[in] sim_uses_timer: Whether the simulation uses the timer (1)
+//!                            or not (0)
+void simulation_set_uses_timer(uint sim_uses_timer);
 
 #endif // _SIMULATION_H_

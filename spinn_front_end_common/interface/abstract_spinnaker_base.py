@@ -746,10 +746,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
-    def run_until_complete(self):
+    def run_until_complete(self, n_steps=None):
         """ Run a simulation until it completes
+
+        :param n_steps: If not None, this specifies that the simulation should\
+            be requested to run for the given number of steps.  The host will\
+            still wait until the simulation itself says it has completed
         """
-        self._run(None, run_until_complete=True)
+        self._run(n_steps, run_until_complete=True)
 
     @overrides(SimulatorInterface.run)
     def run(self, run_time):

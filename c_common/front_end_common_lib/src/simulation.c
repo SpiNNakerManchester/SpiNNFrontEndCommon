@@ -54,6 +54,9 @@ static callback_t sdp_callback[NUM_SDP_PORTS];
 //! the list of DMA callbacks for DMA complete callbacks
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
+//! Whether the simulation uses the timer or not (default true)
+static uint32_t uses_timer = 1;
+
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
@@ -94,7 +97,9 @@ void simulation_run(void) {
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback) {
     // Pause the simulation
-    spin1_pause();
+    if (uses_timer) {
+        spin1_pause();
+    }
 
     stored_resume_function = callback;
 
@@ -172,8 +177,10 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
             stored_resume_function();
             stored_resume_function = NULL;
         }
-        log_info("Resuming");
-        spin1_resume(SYNC_WAIT);
+        if (uses_timer) {
+            log_info("Resuming");
+            spin1_resume(SYNC_WAIT);
+        }
 
         // If we are told to send a response, send it now
         if (msg->data[0] == 1) {
@@ -332,4 +339,12 @@ void simulation_set_provenance_function(
 
 void simulation_set_exit_function(exit_callback_t exit_function) {
     stored_exit_function = exit_function;
+}
+
+void simulation_set_start_function(start_callback_t start_function) {
+    stored_resume_function = start_function;
+}
+
+void simulation_set_uses_timer(uint sim_uses_timer) {
+    uses_timer = sim_uses_timer;
 }
