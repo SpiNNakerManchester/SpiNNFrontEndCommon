@@ -27,6 +27,10 @@
 #include <spin1_api_params.h>
 #include <spin1_api.h>
 
+// Import things from spin1_api that are not explicitly exposed
+extern void spin1_wfi(void);
+extern uint resume_wait(void);
+
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
@@ -44,6 +48,9 @@ static exit_callback_t stored_exit_function = NULL;
 
 //! the function call to run just before resuming a simulation
 static resume_callback_t stored_resume_function = NULL;
+
+//! the function call to run at the start of simulation
+static start_callback_t stored_start_function = NULL;
 
 //! the region ID for storing provenance data from the chip
 static struct simulation_provenance *prov = NULL;
@@ -132,6 +139,19 @@ static void send_ok_response(sdp_msg_t *msg) {
     spin1_send_sdp_msg(msg, 10);
 }
 
+static void synchronise_start(uint unused0, uint unused1) {
+    while (!resume_wait()) {
+        log_info("Waiting for sync event");
+        spin1_wfi();
+    }
+    stored_start_function();
+
+    // If we are not using the timer, no-one else resets the event, so do it now
+    if (!uses_timer) {
+        event.wait ^= 1;
+    }
+}
+
 //! \brief handles the new commands needed to resume the binary with a new
 //! runtime counter, as well as switching off the binary when it truly needs
 //! to be stopped.
@@ -177,10 +197,21 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
             stored_resume_function();
             stored_resume_function = NULL;
         }
+
+        if (stored_start_function != NULL) {
+            spin1_schedule_callback(synchronise_start, 0, 0, 1);
+        }
         if (uses_timer) {
             log_info("Resuming");
             spin1_resume(SYNC_WAIT);
+        } else {
+            if (event.wait) {
+                sark_cpu_state(CPU_STATE_SYNC1);
+            } else {
+                sark_cpu_state(CPU_STATE_SYNC0);
+            }
         }
+
 
         // If we are told to send a response, send it now
         if (msg->data[0] == 1) {
@@ -342,7 +373,7 @@ void simulation_set_exit_function(exit_callback_t exit_function) {
 }
 
 void simulation_set_start_function(start_callback_t start_function) {
-    stored_resume_function = start_function;
+    stored_start_function = start_function;
 }
 
 void simulation_set_uses_timer(uint sim_uses_timer) {
