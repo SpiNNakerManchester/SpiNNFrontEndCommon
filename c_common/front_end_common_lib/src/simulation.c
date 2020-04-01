@@ -140,10 +140,10 @@ static void send_ok_response(sdp_msg_t *msg) {
 }
 
 static void synchronise_start(uint unused0, uint unused1) {
-    while (!resume_wait()) {
-        log_info("Waiting for sync event");
+    while (resume_wait()) {
         spin1_wfi();
     }
+    sark_cpu_state(CPU_STATE_RUN);
     stored_start_function();
 
     // If we are not using the timer, no-one else resets the event, so do it now
