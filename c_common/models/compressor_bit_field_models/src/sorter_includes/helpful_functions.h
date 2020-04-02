@@ -161,14 +161,30 @@ bool helpful_functions_free_sdram_from_compression_attempt(
 //! \brief clones the un compressed routing table, to another sdram location
 //! \param[in] uncompressed_router_table: sdram location for uncompressed table
 //! \return: address of new clone, or null if it failed to clone
+int attempts2 = 0;
 table_t* helpful_functions_clone_un_compressed_routing_table(
         uncompressed_table_region_data_t *uncompressed_router_table){
 
     uint32_t sdram_used = routing_table_sdram_size_of_table(
         uncompressed_router_table->uncompressed_table.size);
+    log_info("sdram used is %d", sdram_used);
 
     // allocate sdram for the clone
-    table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
+    //if (attempts2 < 1){
+    //    log_info("mallocing********************");
+        //table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
+        /*uint32_t* cast = (uint32_t*) where_was_cloned;
+        for(int index = 0; index < (sdram_used + 200) / 4; index++){
+            cast[index] = 0xDEADBEEF;
+        }*/
+        //log_info("address of clone is %x", where_was_cloned);
+    //    attempts2 = 1;
+    //}
+
+    return &uncompressed_router_table->uncompressed_table;
+    /*
+
+    where_was_cloned->size = 111;
     if (where_was_cloned == NULL) {
         log_error("failed to allocate sdram for the cloned routing table for "
                   "uncompressed compression attempt of bytes %d", sdram_used);
@@ -185,6 +201,7 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
     routing_table_copy_table(
         &uncompressed_router_table->uncompressed_table,
         where_was_cloned);
+    log_info("cloned routing table entries is %d", where_was_cloned->size);
 
     check = platform_check(where_was_cloned);
     if (!check){
@@ -192,7 +209,7 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
         terminate(2);
     }
 
-    return where_was_cloned;
+    return where_was_cloned;*/
 }
 
 //! \brief secret stealth function for saving ITCM. use sparingly.

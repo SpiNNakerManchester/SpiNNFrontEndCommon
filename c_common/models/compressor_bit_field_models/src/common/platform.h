@@ -25,8 +25,10 @@
 //! debug flag to lock in safety features
 bool safety = true;
 #define SAFETY_FLAG 0xDEADBEEF
-#define EXTRA_BYTES 8
+#define EXTRA_BYTES 64
+#define MINUS_POINT 60
 #define BYTE_TO_WORD 4
+#define BUFFER_WORDS 15
 
 void** malloc_points;
 int malloc_point_index = 0;
@@ -61,6 +63,11 @@ static heap_t *stolen_sdram_heap = NULL;
 #define MIN_SIZE_HEAP 32
 
 // ===========================================================================
+
+heap_t* platform_get_stolen_heap(void){
+    return stolen_sdram_heap;
+}
+
 
 //! \brief cycles through the true heap and figures how many blocks there are
 //! to steal.
@@ -369,11 +376,14 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
     int * p = safe_sdram_malloc(bytes);
 
     if (safety) {
-        int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
+        int n_words = (int) ((bytes - MINUS_POINT) / BYTE_TO_WORD);
         p[0] = n_words;
-        p[n_words] = SAFETY_FLAG;
+        for (int buffer_word = 0; buffer_word < BUFFER_WORDS; buffer_word++){
+            p[n_words + buffer_word] = SAFETY_FLAG;
+        }
         malloc_points[malloc_point_index] = (void *)  &p[1];
         log_info("index %d", malloc_point_index);
+        log_info("address is %x", &p[1]);
         malloc_point_index += 1;
         return (void *) &p[1];
     }
@@ -428,14 +438,15 @@ static bool platform_check(void *ptr) {
     if (safety) {
         int_pointer = int_pointer - 1;
         int words = int_pointer[0];
-        uint32_t flag = int_pointer[words];
-        if (flag != SAFETY_FLAG) {
-            log_error("flag is actually %x for ptr %x", flag, ptr);
-            return false;
+
+        for (int buffer_index = 0; buffer_index < BUFFER_WORDS; buffer_index++){
+            uint32_t flag = int_pointer[words + buffer_index];
+            if (flag != SAFETY_FLAG) {
+                log_error("flag is actually %x for ptr %x", flag, ptr);
+                return false;
+            }
         }
-        else {
-            return true;
-        }
+        return true;
     }
     return true;
 }
