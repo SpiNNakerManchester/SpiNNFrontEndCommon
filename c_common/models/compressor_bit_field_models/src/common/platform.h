@@ -29,9 +29,9 @@ bool safety = true;
 #define MINUS_POINT 60
 #define BYTE_TO_WORD 4
 #define BUFFER_WORDS 15
+#define MALLOC_POINTS_SIZE 3000
 
 void** malloc_points;
-int malloc_point_index = 0;
 
 
 //! a sdram block outside the heap
@@ -85,10 +85,26 @@ static inline int available_mallocs(heap_t *sdram_heap){
     return n_available_true_malloc;
 }
 
+//! \brief builds a tracker for mallocs. for debug purposes
+void build_malloc_tracker(void) {
+    // malloc tracker
+    malloc_points = sark_xalloc(
+        sv->sdram_heap, MALLOC_POINTS_SIZE * sizeof(void*), 0, ALLOC_LOCK);
+    // set tracker.
+    for(int index = 0; index < MALLOC_POINTS_SIZE; index ++){
+        malloc_points[index] = 0;
+    }
+    if (malloc_points == NULL){
+        log_error("FAILED to allocate the tracker code!");
+        rt_error(RTE_SWERR);
+    }
+}
+
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
 static inline bool platform_new_heap_update(heap_t *heap_location){
     stolen_sdram_heap = heap_location;
+    build_malloc_tracker();
     return true;
 }
 
@@ -274,6 +290,7 @@ void print_free_sizes_in_heap(void){
     log_debug("total free size is %d", total_size);
 }
 
+
 //! \brief builds a new heap based off stolen sdram blocks from cores
 //! synaptic matrix's. Needs to merge in the true sdram free heap, as
 //! otherwise its impossible to free the block properly.
@@ -283,11 +300,7 @@ static inline bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
     // NOTE use if not trusting the heap
     stolen_sdram_heap = sv->sdram_heap;
-    malloc_points = sark_xalloc(
-        sv->sdram_heap, 3000 * 4, 0, ALLOC_LOCK);
-    if (malloc_points == NULL){
-        log_error("FAILED to allocate the tracker code!");
-    }
+    build_malloc_tracker();
     return true;
 
     // allocate blocks store for figuring out block order
@@ -341,6 +354,15 @@ static inline bool platform_new_heap_creation(
     return true;
 }
 
+int find_free_malloc_index(void){
+    for (int index = 0; index < MALLOC_POINTS_SIZE; index ++){
+        if (malloc_points[index] == 0){
+            return index;
+        }
+    }
+    return -1;
+}
+
 //static inline void terminate(uint result_code) __attribute__((noreturn));
 //! \brief stops a binary dead
 //! \param[in] code to put in user 1
@@ -381,10 +403,14 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
         for (int buffer_word = 0; buffer_word < BUFFER_WORDS; buffer_word++){
             p[n_words + buffer_word] = SAFETY_FLAG;
         }
+        int malloc_point_index = find_free_malloc_index();
+        if (malloc_point_index == -1){
+            log_error("cant track this malloc. failing");
+            rt_error(RTE_SWERR);
+        }
         malloc_points[malloc_point_index] = (void *)  &p[1];
         log_info("index %d", malloc_point_index);
         log_info("address is %x", &p[1]);
-        malloc_point_index += 1;
         return (void *) &p[1];
     }
     return (void *) p;
@@ -411,9 +437,13 @@ static void * safe_malloc(uint bytes) {
         int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
         p[0] = n_words;
         p[n_words] = SAFETY_FLAG;
+        int malloc_point_index = find_free_malloc_index();
+        if (malloc_point_index == -1){
+            log_error("cant track this malloc. failing");
+            rt_error(RTE_SWERR);
+        }
         malloc_points[malloc_point_index] = (void *)  &p[1];
         log_info("index %d", malloc_point_index);
-        malloc_point_index += 1;
         return (void *) &p[1];
     }
 
@@ -453,7 +483,7 @@ static bool platform_check(void *ptr) {
 
 void check_all(void){
     bool failed = false;
-    for(int index = 0; index < malloc_point_index; index ++){
+    for(int index = 0; index < MALLOC_POINTS_SIZE; index ++){
         if (malloc_points[index] != 0){
             if (!platform_check(malloc_points[index])){
                 log_error("the malloc with index %d has overran", index);
@@ -481,7 +511,7 @@ static void safe_x_free(void *ptr) {
         }
 
         bool found = false;
-        for (int index = 0; index < malloc_point_index; index ++){
+        for (int index = 0; index < MALLOC_POINTS_SIZE; index ++){
             if (!found && malloc_points[index] == ptr) {
                 found = true;
                 malloc_points[index] = 0;

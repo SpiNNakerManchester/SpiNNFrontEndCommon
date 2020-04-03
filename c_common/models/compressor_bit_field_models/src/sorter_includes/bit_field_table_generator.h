@@ -161,6 +161,9 @@ static inline bool generate_entries_from_bitfields(
     log_info("done check");
 
     // get processors by bitfield
+    log_info(
+        "mallocing %d bytes for bit_field_processors",
+        n_bit_fields_for_key * sizeof(uint32_t));
     uint32_t *bit_field_processors =
         MALLOC(n_bit_fields_for_key * sizeof(uint32_t));
     if (bit_field_processors == NULL) {
@@ -187,7 +190,7 @@ static inline bool generate_entries_from_bitfields(
     log_info("done check");
 
     // create sdram holder for the table we're going to generate
-    log_debug("looking for atoms");
+    log_info("looking for atoms");
     uint32_t n_atoms = helpful_functions_locate_key_atom_map(
         original_entry.key_mask.key, region_addresses);
 
@@ -230,16 +233,8 @@ static inline bool generate_entries_from_bitfields(
         return false;
     }
 
-    log_info("after malloc of bitfield.");
-    check_all();
-    log_info("done check");
-
     // ensure its clear
     clear_bit_field(processors, size);
-
-    log_info("after clear bitfield.");
-    check_all();
-    log_info("done check");
 
     // create memory holder for atom based route
     bit_field_t atom_processors = (bit_field_t) MALLOC(size * sizeof(bit_field_t));
@@ -253,19 +248,11 @@ static inline bool generate_entries_from_bitfields(
         return false;
     }
 
-    log_info("after atom processors bitfield.");
-    check_all();
-    log_info("done check");
-
     // update the processors so that the fixed none filtered processors
     // are set
     set_new_route_with_fixed_processors(
         processors, original_entry, bit_field_processors,
         n_bit_fields_for_key);
-
-    log_info("after set new route.");
-    check_all();
-    log_info("done check");
 
     // iterate though each atom and set the route when needed
     for (uint32_t atom = 0; atom < n_atoms; atom++) {
@@ -437,7 +424,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         region_addresses_t *region_addresses,
         uncompressed_table_region_data_t *uncompressed_router_table,
         bit_field_by_processor_t *bit_field_by_processor,
-        sorted_bit_fields_t *sorted_bit_fields, int attempts){
+        sorted_bit_fields_t *sorted_bit_fields){
 
     // get n keys that exist
     log_info("midpoint = %d", mid_point);
@@ -458,12 +445,6 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
     log_info("n rts is %d", *n_rt_addresses);
-
-    if (attempts == 66){
-
-        rt_error(RTE_SWERR);
-    }
-
 
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.

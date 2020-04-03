@@ -343,32 +343,18 @@ void _sdp_handler(uint mailbox, uint port) {
     log_info("my core id at reception is %d", spin1_get_core_id());
     log_info("received packet");
 
-    if (m_recied == 1){
-        return;
-    }
-    control_core_id = 3;
-    this_processor->user1 = 1;
-    m_recied = 1;
-    return_success_response_message();
 
-    /*
     // get data from the sdp message
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
     compressor_payload_t *payload = (compressor_payload_t *) msg->data;
 
-
     // record control core.
-
     if (control_core_id == -1) {
         control_core_id = (msg->srce_port & CPU_MASK);
     }
 
-
-
     log_info("control core is %d", control_core_id);
     log_info("command code is %d", payload->command);
-
-
 
     // get command code
     if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
@@ -389,6 +375,7 @@ void _sdp_handler(uint mailbox, uint port) {
             case STOP_COMPRESSION_ATTEMPT:
                 log_error("been forced to stop by control");
                 finished_by_compressor_force = true;
+                this_processor->user1 = 1;
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
             default:
@@ -403,7 +390,7 @@ void _sdp_handler(uint mailbox, uint port) {
             msg->srce_port >> PORT_SHIFT);
         sark_msg_free((sdp_msg_t*) msg);
     }
-    */
+
 }
 
 //! \brief timer interrupt for controlling time taken to try to compress table
