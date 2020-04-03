@@ -49,7 +49,7 @@ typedef struct {
 typedef struct {
     uint source : 5;
     uint enable : 1;
-    const uint _padding : 27;
+    uint : 27;
 } vic_vector_control_t;
 
 // ---------------------------------------------------------------------
@@ -58,11 +58,11 @@ typedef struct {
     uint one_shot : 1;
     uint size : 1;
     uint pre_divide : 2;
-    const uint _padding1 : 1;
+    uint : 1;
     uint interrupt_enable : 1;
     uint periodic_mode : 1;
     uint enable : 1;
-    const uint _padding2 : 24;
+    uint : 24;
 } timer_control_t;
 
 enum timer_pre_divide {
@@ -73,7 +73,7 @@ enum timer_pre_divide {
 
 typedef struct {
     uint status : 1;
-    const uint _padding : 31;
+    uint : 31;
 } timer_interrupt_status_t;
 
 typedef struct {
@@ -85,14 +85,14 @@ typedef struct {
     const timer_interrupt_status_t masked_interrupt_status;
     uint background_load_value;
     uint _dummy;
-} timer_t;
+} timer_controller_t;
 
 // ---------------------------------------------------------------------
 
 typedef struct {
     uint _zeroes : 2;
     uint length_words : 15;
-    const uint _padding : 2;
+    uint : 2;
     uint direction : 1; // 0 = write to TCM, 1 = write to SDRAM
     uint crc : 1;
     uint burst : 3;
@@ -108,7 +108,7 @@ typedef struct {
     uint clear_done_int : 1;
     uint clear_timeout_int : 1;
     uint clear_write_buffer_int : 1;
-    const uint _padding : 26;
+    uint : 26;
 } dma_control_t;
 
 typedef struct {
@@ -117,7 +117,7 @@ typedef struct {
     uint queued : 1;
     uint write_buffer_full : 1;
     uint write_buffer_active : 1;
-    const uint _padding1 : 5;
+    uint : 5;
     uint transfer_done : 1;
     uint transfer2_done : 1;
     uint timeout : 1;
@@ -126,15 +126,15 @@ typedef struct {
     uint axi_error : 1;
     uint user_abort : 1;
     uint soft_reset : 1;
-    const uint _padding2 : 2;
+    uint : 2;
     uint write_buffer_error : 1;
-    const uint _padding3 : 3;
+    uint : 3;
     uint processor_id : 8;
 } dma_status_t;
 
 typedef struct {
     uint bridge_buffer_enable : 1;
-    const uint _padding1 : 9;
+    uint : 9;
     uint transfer_done_interrupt : 1;
     uint transfer2_done_interrupt : 1;
     uint timeout_interrupt : 1;
@@ -143,22 +143,22 @@ typedef struct {
     uint axi_error_interrupt : 1;
     uint user_abort_interrupt : 1;
     uint soft_reset_interrupt : 1;
-    const uint _padding2 : 2;
+    uint : 2;
     uint write_buffer_error_interrupt : 1;
-    const uint _padding3 : 10;
+    uint : 10;
     uint timer : 1;
 } dma_global_control_t;
 
 typedef struct {
     uint _zeroes : 5;
     uint value : 5;
-    const uint _padding : 22;
+    uint : 22;
 } dma_timeout_t;
 
 typedef struct {
     uint enable : 1;
     uint clear : 1;
-    const uint _padding : 30;
+    uint : 30;
 } dma_stats_control_t;
 
 typedef struct {
@@ -181,35 +181,35 @@ typedef struct {
 // ---------------------------------------------------------------------
 
 typedef struct {
-    const uint _padding1 : 16;
+    uint : 16;
     uint control_byte : 8;
-    const uint _padding2 : 4;
-    const uint not_full : 1;
+    uint : 4;
+    uint const not_full : 1;
     uint overrun : 1;
     uint full : 1;
-    const uint empty : 1;
+    uint const empty : 1;
 } comms_tx_control_t;
 
 typedef struct {
-    const uint multicast : 1;
-    const uint point_to_point : 1;
-    const uint nearest_neighbour : 1;
-    const uint fixed_route : 1;
-    const uint _padding1 : 12;
-    const uint control_byte : 8;
-    const uint route : 3;
-    const uint _padding2 : 1;
-    const uint error_free : 1;
+    uint const multicast : 1;
+    uint const point_to_point : 1;
+    uint const nearest_neighbour : 1;
+    uint const fixed_route : 1;
+    uint : 12;
+    uint const control_byte : 8;
+    uint const route : 3;
+    uint : 1;
+    uint const error_free : 1;
     uint framing_error : 1;
     uint parity_error : 1;
-    const uint received : 1;
+    uint const received : 1;
 } comms_rx_status_t;
 
 typedef struct {
     uint p2p_source_id : 16;
-    const uint _padding1 : 8;
+    uint : 8;
     uint route : 3;
-    const uint _padding2 : 5;
+    uint : 5;
 } comms_source_addr_t;
 
 typedef struct {
@@ -234,7 +234,7 @@ typedef struct {
     uint count_parity_errors : 1;
     uint time_phase : 2;
     uint monitor_processor : 5;
-    const uint _padding : 2;
+    uint : 2;
     uint reinit_wait_counters : 1;
     uint emergency_wait_time : 8;
     uint drop_wait_time : 8;
@@ -243,9 +243,9 @@ typedef struct {
 typedef struct {
     uint interrupt_active_for_diagnostic_counter : 16;
     uint busy : 1;
-    const uint _padding1 : 7;
+    uint : 7;
     uint output_stage : 2;
-    const uint _padding2 : 3;
+    uint : 3;
     uint interrupt_active_dump : 1;
     uint interrupt_active_error : 1;
     uint interrupt_active : 1;
@@ -260,20 +260,20 @@ enum output_stage {
 
 typedef union {
     struct {
-        const uint _padding1 : 6;
+        uint : 6;
         uint time_phase : 2;
-        const uint _padding2 : 8;
+        uint : 8;
         uint control : 8;
         uint route : 3;
         uint time_phase_error : 1;
         uint framing_error : 1;
         uint parity_error : 1;
-        const uint _padding3 : 2;
+        uint : 2;
     };
     struct {
-        const uint _padding4 : 17;
+        uint : 17;
         uint payload : 1;
-        const uint _padding5 : 4;
+        uint : 4;
         uint type : 2;
     };
     uint word;
@@ -281,7 +281,7 @@ typedef union {
 
 typedef struct {
     uint error_count : 16;
-    const uint _padding : 11;
+    uint : 11;
     uint time_phase_error : 1;
     uint framing_error : 1;
     uint parity_error : 1;
@@ -292,13 +292,13 @@ typedef struct {
 typedef struct {
     uint link : 6;
     uint processor : 18;
-    const uint _padding : 8;
+    uint : 8;
 } router_dump_outputs_t;
 
 typedef struct {
     uint link : 6;
     uint processor : 18;
-    const uint _padding : 6;
+    uint : 6;
     uint overflow : 1;
     uint dumped : 1;
 } router_dump_status_t;
@@ -312,11 +312,11 @@ typedef struct {
     uint enable_cycle_count : 1;
     uint enable_emergency_active_count : 1;
     uint enable_histogram : 1;
-    const uint _padding1 : 13;
+    uint : 13;
     uint reset_cycle_count : 1;
     uint reset_emergency_active_count : 1;
     uint reset_histogram : 1;
-    const uint _padding2 : 13;
+    uint : 13;
 } router_timing_counter_ctrl_t;
 
 typedef struct {
@@ -326,12 +326,12 @@ typedef struct {
     uint L3 : 2;
     uint L4 : 2;
     uint L5 : 2;
-    const uint _padding : 20;
+    uint : 20;
 } router_diversion_t;
 
 typedef struct {
     uint fixed_route_vector : 24;
-    const uint _padding : 2;
+    uint : 2;
     uint nearest_neighbour_broadcast : 6;
 } router_fixed_route_routing_t;
 
@@ -384,12 +384,12 @@ typedef struct {
     uint type : 4;
     uint emergency_routing : 4;
     uint emergency_routing_mode : 1;
-    const uint _padding1 : 1;
+    uint : 1;
     uint pattern_default : 2;
     uint pattern_payload : 2;
     uint pattern_local : 2;
     uint pattern_destination : 9;
-    const uint _padding2 : 4;
+    uint : 4;
     uint counter_event_occurred : 1;
     uint enable_counter_event_interrupt : 1;
     uint counter_event_interrupt_active : 1;
@@ -399,35 +399,35 @@ typedef struct {
 
 typedef struct {
     uint select : 18;
-    const uint _padding : 2;
+    uint : 2;
     uint security_code : 12; // NB: see documentation!
 } sc_magic_proc_map_t;
 
 typedef struct {
     uint reset_code : 3;
-    const uint _padding : 29;
+    uint : 29;
 } sc_reset_code_t;
 
 typedef struct {
     uint monitor_id : 5;
-    const uint _padding1 : 3;
+    uint : 3;
     uint arbitrate_request : 1;
-    const uint _padding2 : 7;
+    uint : 7;
     uint reset_on_watchdog : 1;
-    const uint _padding3 : 3;
+    uint : 3;
     uint security_code : 12; // NB: see documentation!
 } sc_monitor_id_t;
 
 typedef struct {
     uint boot_area_map : 1;
-    const uint _padding1 : 14;
+    uint : 14;
     uint jtag_on_chip : 1;
-    const uint test : 1;
-    const uint ethermux : 1;
-    const uint clk32 : 1;
-    const uint jtag_tdo : 1;
-    const uint jtag_rtck : 1;
-    const uint _padding2 : 11;
+    uint const test : 1;
+    uint const ethermux : 1;
+    uint const clk32 : 1;
+    uint const jtag_tdo : 1;
+    uint const jtag_rtck : 1;
+    uint : 11;
 } sc_misc_control_t;
 
 typedef struct {
@@ -474,8 +474,10 @@ static volatile vic_interrupt_handler_t *const vic_interrupt_vectors =
 static volatile vic_vector_control_t *const vic_interrupt_control =
         (vic_vector_control_t *) (VIC_BASE + 0x200);
 
-static volatile timer_t *const timer1 = (timer_t *) TIMER1_BASE;
-static volatile timer_t *const timer2 = (timer_t *) TIMER2_BASE;
+static volatile timer_controller_t *const timer1 =
+        (timer_controller_t *) TIMER1_BASE;
+static volatile timer_controller_t *const timer2 =
+        (timer_controller_t *) TIMER2_BASE;
 
 static volatile dma_t *const dma_controller = (dma_t *) DMA_BASE;
 

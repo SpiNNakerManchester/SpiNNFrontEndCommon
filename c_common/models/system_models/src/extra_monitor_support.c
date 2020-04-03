@@ -230,14 +230,6 @@ enum missing_seq_num_sdp_data_positions {
     START_OF_MISSING_SEQ_NUMS = 3,
 };
 
-//! flag positions for packet types being reinjected
-enum reinjection_flag_positions {
-    DPRI_PACKET_TYPE_MC = 1 << PKT_TYPE_MC,
-    DPRI_PACKET_TYPE_PP = 1 << PKT_TYPE_PP,
-    DPRI_PACKET_TYPE_NN = 1 << PKT_TYPE_NN,
-    DPRI_PACKET_TYPE_FR = 1 << PKT_TYPE_FR
-};
-
 //! defintion of response packet for reinjector status
 typedef struct reinjector_status_response_packet_t {
     uint router_timeout;
