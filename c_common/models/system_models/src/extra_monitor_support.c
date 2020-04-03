@@ -94,9 +94,6 @@ typedef enum data_out_sdp_commands {
 // speed up Data in stuff
 //-----------------------------------------------------------------------------
 
-//! max router entries
-#define N_ROUTER_ENTRIES           1024
-
 //! hardcoded invalud router entry state for key
 #define INVALID_ROUTER_ENTRY_KEY   0xFFFFFFFF
 
@@ -112,9 +109,12 @@ typedef enum data_out_sdp_commands {
 //! offset for getting app id from free
 #define APP_ID_OFFSET_FROM_FREE    24
 
-#define N_BASIC_SYSTEM_ROUTER_ENTRIES 1
-
-#define N_USABLE_ROUTER_ENTRIES    (N_ROUTER_ENTRIES - N_BASIC_SYSTEM_ROUTER_ENTRIES)
+enum {
+    //! max router entries
+    N_ROUTER_ENTRIES = 1024,
+    N_BASIC_SYSTEM_ROUTER_ENTRIES = 1,
+    N_USABLE_ROUTER_ENTRIES = (N_ROUTER_ENTRIES - N_BASIC_SYSTEM_ROUTER_ENTRIES)
+};
 
 //-----------------------------------------------------------------------------
 // reinjection functionality magic numbers
@@ -409,12 +409,12 @@ static inline uint sdram_max_block_size(void) {
 
 static inline void vic_set_callback(
         uint8_t slot, uint type, vic_interrupt_handler_t callback) {
-    const vic_vector_control_t ctl = {
-           .source = type,
-           .enable = 1
-    };
     vic_interrupt_vectors[slot] = callback;
-    vic_interrupt_control[slot] = ctl;
+    vic_interrupt_control[slot] = (vic_vector_control_t) {
+        // Enable a particular interrupt source
+        .source = type,
+        .enable = 1
+    };
 }
 
 /* From the SpiNNaker Data Sheet:
@@ -450,7 +450,7 @@ static inline bool router_unblocked(void) {
 
 //! \brief the plugin callback for the timer
 static INT_HANDLER reinjection_timer_callback(void) {
-    // tell VIC tht we've started to handle the interrupt
+    // tell VIC that we've started to handle the interrupt
     vic_signal_interrupt_start();
 
     // clear interrupt in timer,
@@ -482,7 +482,7 @@ static INT_HANDLER reinjection_timer_callback(void) {
 static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
-    // tell VIC tht we've started to handle the interrupt
+    // tell VIC that we've started to handle the interrupt
     vic_signal_interrupt_start();
 
     // check if router not blocked
@@ -874,7 +874,7 @@ static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
 #if 0
         uint written_words = data_in_write_address - first_write_address;
-        io_printf(IO_BUF, "Wrote %u words\n", written_words);
+        //io_printf(IO_BUF, "Wrote %u words\n", written_words);
 #endif
         data_in_write_address = NULL;
     }
@@ -1073,7 +1073,7 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
         break;
     default:
         io_printf(IO_BUF,
-                "Received unknown SDP packet in data in speed up port with"
+                "Received unknown SDP packet in data in speed up port with "
                 "command id %d\n", msg->cmd_rc);
     }
     return 0;
@@ -1565,11 +1565,11 @@ void __wrap_sark_int(void *pc) {
     // interrupt again
     sdp_msg_t *msg = get_message_from_mailbox();
     //io_printf(IO_BUF, "seq is %d\n", msg->seq);
-    const sc_magic_proc_map_t clear_my_irq = {
-            .security_code = 0x5ec, // SYSTEM CONTROLLER MAGIC NUMBER
-            .select = 1 << sark.phys_cpu
+    system_controller->clear_cpu_irq = (sc_magic_proc_map_t) {
+        // Clear this interrupt; we've assumed control now
+        .security_code = SYSTEM_CONTROLLER_MAGIC_NUMBER,
+        .select = 1 << sark.phys_cpu
     };
-    system_controller->clear_cpu_irq = clear_my_irq;
     if (msg == NULL) {
         return;
     }
@@ -1620,7 +1620,10 @@ static void reinjection_initialise(void) {
     reinjection_read_packet_types(dsg_block(CONFIG_REINJECTION));
 
     // Setup the CPU interrupt for WDOG
-    vic_interrupt_control[sark_vec->sark_slot] = 0;
+    vic_interrupt_control[sark_vec->sark_slot] = (vic_vector_control_t) {
+        .source = 0,
+        .enable = 0
+    };
     vic_set_callback(CPU_SLOT, CPU_INT, sark_int_han);
 
     // Setup the communications controller interrupt
@@ -1657,35 +1660,32 @@ static void data_out_initialise(void) {
     // configuration for the DMA's by the speed data loader
 
     // Abort pending and active transfers
-    const dma_control_t abort_all = {
-            .uncommit = 1,
-            .abort = 1,
-            .restart = 1,
-            .clear_done_int = 1,
-            .clear_timeout_int = 1,
-            .clear_write_buffer_int = 1
+    dma_controller->control = (dma_control_t) {
+        .uncommit = 1,
+        .abort = 1,
+        .restart = 1,
+        .clear_done_int = 1,
+        .clear_timeout_int = 1,
+        .clear_write_buffer_int = 1
     };
-    dma_controller->control = abort_all;
     // clear possible transfer done and restart
-    const dma_control_t clear_flags = {
-            .uncommit = 1,
-            .restart = 1,
-            .clear_done_int = 1
+    dma_controller->control = (dma_control_t) {
+        .uncommit = 1,
+        .restart = 1,
+        .clear_done_int = 1
     };
-    dma_controller->control = clear_flags;
     // enable DMA done and error interrupt
-    const dma_global_control_t enable_dma_interrupts = {
-            .transfer_done_interrupt = 1,
-            .transfer2_done_interrupt = 1,
-            .timeout_interrupt = 1,
-            .crc_error_interrupt = 1,
-            .tcm_error_interrupt = 1,
-            .axi_error_interrupt = 1,
-            .user_abort_interrupt = 1,
-            .soft_reset_interrupt = 1,
-            .write_buffer_error_interrupt = 1
+    dma_controller->global_control = (dma_global_control_t) {
+        .transfer_done_interrupt = 1,
+        .transfer2_done_interrupt = 1,
+        .timeout_interrupt = 1,
+        .crc_error_interrupt = 1,
+        .tcm_error_interrupt = 1,
+        .axi_error_interrupt = 1, // SDRAM error?
+        .user_abort_interrupt = 1,
+        .soft_reset_interrupt = 1,
+        .write_buffer_error_interrupt = 1
     };
-    dma_controller->global_control = enable_dma_interrupts;
 }
 
 //! \brief sets up data required by the data in speed up functionality
@@ -1749,13 +1749,12 @@ void c_main(void) {
 
     // Enable interrupts and timer
     vic_control->int_enable = int_select;
-    const timer_control_t timer_control = {
-            .size = 1,             // 32-bit mode
-            .interrupt_enable = 1, // we want to be interrupted
-            .periodic_mode = 1,    // repeat countdown
-            .enable = 1            // turn on!
+    timer1->control = (timer_control_t) {
+        .size = 1,             // 32-bit mode
+        .interrupt_enable = 1, // we want to be interrupted
+        .periodic_mode = 1,    // repeat countdown
+        .enable = 1            // turn on!
     };
-    timer1->control = timer_control;
 
     // Run until told to exit
     while (run) {

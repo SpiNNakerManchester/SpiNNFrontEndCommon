@@ -465,6 +465,10 @@ typedef struct {
     uint link_disable;
 } system_controller_t;
 
+enum {
+    SYSTEM_CONTROLLER_MAGIC_NUMBER = 0x5ec
+};
+
 // ---------------------------------------------------------------------
 
 static volatile vic_control_t *const vic_control =
