@@ -78,7 +78,7 @@ enum {
 #define ALL_MISSING_FLAG 0xFFFFFFFE
 
 // mask needed by router timeout
-#define ROUTER_TIMEOUT_MASK 0xFF
+#define ROUTER_TIMEOUT_MAX 0xFF
 
 enum {
     //! offset with just command transaction id and seq in bytes
@@ -212,7 +212,7 @@ typedef struct data_in_config_t {
 
 //! \brief writes the updated transaction id to the user1
 static void set_transaction_id_to_user_1(int transaction_id) {
-// Get pointer to 1st virtual processor info struct in SRAM
+    // Get pointer to 1st virtual processor info struct in SRAM
     vcpu_t *virtual_processor_table = (vcpu_t*) SV_VCPU;
 
     // Get the address this core's DTCM data starts at from the user data
@@ -576,7 +576,7 @@ static void data_in_receive_sdp_data(sdp_msg_pure_data *msg) {
 //! \param[in] key: the mc key to use here
 //! \return the length of extra data put into the message for return
 static void send_timeout(sdp_msg_t* msg, uint32_t key) {
-    if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
+    if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return;
     }

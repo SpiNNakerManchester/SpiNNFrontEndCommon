@@ -21,9 +21,9 @@
 //
 // ------------------------------------------------------------------------
 
-#ifndef __COMMON_H__
-#define __COMMON_H__
-#include "common-typedefs.h"
+#ifndef __FEC_COMMON_H__
+#define __FEC_COMMON_H__
+#include <common-typedefs.h>
 
 // Dropped packet re-injection internal control commands (RC of SCP message)
 enum reinjector_command_codes {
@@ -44,10 +44,10 @@ typedef enum {
     REINJECTOR_CLEAR_QUEUE_OFFSET = 2,
 } reinjector_key_offsets;
 
-enum {
+typedef enum {
     //! How many payload words are in an SDP packet.
     ITEMS_PER_DATA_PACKET = 68
-};
+} packet_sizes;
 
 // ------------------------------------------------------------------------
 // structs used in system
@@ -116,4 +116,4 @@ static inline void reflect_sdp_message(sdp_msg_t *msg, uint body_length) {
     msg->srce_addr = dest_addr;
 }
 
-#endif  // __COMMON_H__
+#endif  // __FEC_COMMON_H__
