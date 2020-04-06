@@ -428,16 +428,16 @@ static inline void vic_signal_interrupt_done(void) {
 // reinjector main functions
 // ------------------------------------------------------------------------
 
-static const vic_mask_t may_transmit_packet = (vic_mask_t) {
-    .cc_tx_not_full = true
-};
-
-static inline void enable_comms_interrupt(void) {
-    vic_control->int_enable = may_transmit_packet;
+static inline void enable_comms_ready_to_send_interrupt(void) {
+    vic_control->int_enable = (vic_mask_t) {
+        .cc_tx_not_full = true
+    };
 }
 
-static inline void disable_comms_interrupt(void) {
-    vic_control->int_disable = may_transmit_packet;
+static inline void disable_comms_ready_to_send_interrupt(void) {
+    vic_control->int_disable = (vic_mask_t) {
+        .cc_tx_not_full = true
+    };
 }
 
 static inline bool router_unblocked(void) {
@@ -464,7 +464,7 @@ static INT_HANDLER reinjection_timer_callback(void) {
             cpu_int_restore(cpsr);
 
             // enable communications controller. interrupt to bounce packets
-            enable_comms_interrupt();
+            enable_comms_ready_to_send_interrupt();
         } else {
             // restore FIQ after queue access
             cpu_int_restore(cpsr);
@@ -519,11 +519,11 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
             cpu_int_restore(cpsr);
 
             // and disable communications controller interrupts
-            disable_comms_interrupt();
+            disable_comms_ready_to_send_interrupt();
         }
     } else {
         // disable communications controller interrupts
-        disable_comms_interrupt();
+        disable_comms_ready_to_send_interrupt();
     }
 
     // and tell VIC we're done
@@ -742,12 +742,11 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
 }
 
 static inline int reinjection_exit(sdp_msg_t *msg) {
-    static const vic_mask_t disable_timer_and_dump = (vic_mask_t) {
+    vic_control->int_disable = (vic_mask_t) {
         .timer1 = true,
         .router_dump = true
     };
-    vic_control->int_disable = disable_timer_and_dump;
-    disable_comms_interrupt();
+    disable_comms_ready_to_send_interrupt();
     vic_control->int_select.value = 0;
     run = false;
 
@@ -765,7 +764,7 @@ static void reinjection_clear(void) {
     // restore FIQ after queue access,
     cpu_int_restore(cpsr);
     // and disable communications controller interrupts
-    disable_comms_interrupt();
+    disable_comms_ready_to_send_interrupt();
 }
 
 static inline int reinjection_clear_message(sdp_msg_t *msg) {
@@ -1095,9 +1094,12 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
     while (!comms_control->tx_control.not_full) {
         // Empty body; comms_controller is volatile
     }
-    const spinnaker_packet_control_byte_t fixed_route_payload =
+    spinnaker_packet_control_byte_t fixed_route_payload =
             (spinnaker_packet_control_byte_t) {
+        .parity = 0,
         .payload = true,
+        .timestamp = 0,
+        .fr.emergency_routing = 0,
         .type = SPINNAKER_PACKET_TYPE_FR
     };
     comms_control->tx_control.control_byte = fixed_route_payload.value;
@@ -1750,7 +1752,7 @@ void c_main(void) {
         .cc_rx_mc = true
     };
     vic_control->int_disable = interrupts;
-    disable_comms_interrupt();
+    disable_comms_ready_to_send_interrupt();
 
     // set up reinjection functionality
     reinjection_initialise();
