@@ -415,6 +415,7 @@ static void safe_x_free(void *ptr) {
         if (!platform_check(ptr)) {
             log_error("over ran whatever is being freed");
             terminate(2);
+            rt_error(RTE_SWERR);
         }
 
         bool found = false;

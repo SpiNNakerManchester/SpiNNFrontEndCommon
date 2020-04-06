@@ -286,7 +286,7 @@ static bool oc_down_check(
                 i < routing_table_sdram_get_n_entries() && stringency > 0;
                 i++) {
 
-             // safety check for timing limits
+            // safety check for timing limits
             if (*timer_for_compression_attempt){
                 log_error("failed due to timing");
                 return false;
@@ -351,7 +351,7 @@ static bool oc_down_check(
         }
 
         // Determine which entries could be removed from the merge and then
-        //pick the smallest number of entries to remove.
+        // pick the smallest number of entries to remove.
         __sets_t sets;
 
         // allocate and free accordingly
@@ -685,9 +685,6 @@ static inline bool oc_merge_apply(
     log_info(
         "routing table entries = %d",
         routing_table_sdram_get_n_entries());
-
-    //merge_print_merge_bit(merge);
-    //rt_error(RTE_SWERR);
 
     for (int remove = 0; remove < routing_table_sdram_get_n_entries();
             remove++) {

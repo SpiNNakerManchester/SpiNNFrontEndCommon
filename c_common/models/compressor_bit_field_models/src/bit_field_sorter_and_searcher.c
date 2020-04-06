@@ -1371,7 +1371,7 @@ void start_compression_process(uint unused0, uint unused1) {
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
     log_info("finished sorting bitfields");
-    platform_turn_on_print();
+    //platform_turn_on_print();
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
