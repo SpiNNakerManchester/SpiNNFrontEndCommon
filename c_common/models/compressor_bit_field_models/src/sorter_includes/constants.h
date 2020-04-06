@@ -21,4 +21,10 @@
 //! flag for saying compression core doing nowt
 #define DOING_NOWT -1
 
+//! \brief move for core id in the circular queue
+#define CORE_MOVE 16
+
+//! \brief mask to get the finished state
+#define FINISHED_STATE_MASK 0x0000FFFF
+
 #endif  // __SORTER_CONSTANTS_H__

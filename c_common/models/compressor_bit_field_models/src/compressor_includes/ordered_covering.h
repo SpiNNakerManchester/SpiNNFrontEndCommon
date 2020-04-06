@@ -637,7 +637,7 @@ static inline bool oc_get_best_merge(
 //! \param[in] merge: the merge to apply to the routing tables
 //! \param[in] aliases: ??????????????
 static inline bool oc_merge_apply(
-        merge_t *merge, aliases_t *aliases, bool *failed_by_malloc, int attempts2) {
+        merge_t *merge, aliases_t *aliases, bool *failed_by_malloc) {
     // Get the new entry
     entry_t new_entry;
     new_entry.key_mask = merge->key_mask;
@@ -717,15 +717,6 @@ static inline bool oc_merge_apply(
             insert++;
         }
 
-        if (attempts2 == 1 && remove == 1) {
-            //routing_table_print_list_tables();
-        }
-
-         //if (attempts2 == 1 && remove == 5) {
-         //       log_info("ssss");
-         //       rt_error(RTE_SWERR);
-         //}
-
         // If this entry is not contained within the merge then copy it from its
         // current position to its new position.
         if (!merge_contains(merge, remove)){
@@ -747,9 +738,6 @@ static inline bool oc_merge_apply(
             log_info(
                 "merge contains at index %d and insert %d at insert point",
                 remove, insert);
-            if (attempts2 == 1) {
-                rt_error(RTE_SWERR);
-            }
 
             // Otherwise update the aliases table to account for the entry
             // which is being merged.
@@ -817,7 +805,7 @@ static inline bool oc_minimise(
         volatile bool *finished_by_control,
         volatile bool *timer_for_compression_attempt,
         bool compress_only_when_needed,
-        bool compress_as_much_as_possible, int attempts2){
+        bool compress_as_much_as_possible){
 
     counter_to_crash += 1;
 
@@ -890,7 +878,7 @@ static inline bool oc_minimise(
             //routing_tables_print_out_table_sizes();
             log_debug("merge apply");
             bool malloc_success = oc_merge_apply(
-                &merge, aliases, failed_by_malloc, attempts2);
+                &merge, aliases, failed_by_malloc);
 
             if (!malloc_success){
                 log_error("failed to malloc");
