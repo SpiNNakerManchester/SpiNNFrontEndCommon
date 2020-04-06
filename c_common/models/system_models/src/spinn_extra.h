@@ -25,6 +25,13 @@
 #ifndef __SPINN_EXTRA_H__
 #define __SPINN_EXTRA_H__
 
+#include <spinnaker.h>
+#if defined(__GNUC__) && __GNUC__ < 6
+// This particular warning (included in -Wextra) is retarded wrong for client
+// code of this file. Only really a problem on Travis.
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif // __GNUC__
+
 // ---------------------------------------------------------------------
 // 1. Chip Organization
 
@@ -38,7 +45,6 @@
 // ---------------------------------------------------------------------
 // 3. ARM968 Processing Subsystem
 
-#include <spinnaker.h>
 // No registers
 
 // ---------------------------------------------------------------------
