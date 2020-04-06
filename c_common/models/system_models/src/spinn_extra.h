@@ -636,9 +636,9 @@ typedef struct {
     uint incing : 1;
     uint locked : 1;
     uint : 1;
-    uint r : 1;
-    uint m : 1;
-    uint l : 1;
+    uint R : 1;
+    uint M : 1;
+    uint L : 1;
     uint : 9;
 } sdram_dll_status_t;
 
@@ -654,9 +654,9 @@ typedef struct {
     uint test_incing : 1;
     uint enable_force_inc_dec : 1;
     uint test_5 : 1;
-    uint r : 1;
-    uint m : 1;
-    uint l : 1;
+    uint R : 1;
+    uint M : 1;
+    uint L : 1;
     uint enable_force_lmr : 1;
     uint enable : 1;
     uint : 7;

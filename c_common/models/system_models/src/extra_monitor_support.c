@@ -406,7 +406,7 @@ static inline void vic_set_callback(
     vic_interrupt_control[slot] = (vic_vector_control_t) {
         // Enable a particular interrupt source
         .source = type,
-        .enable = true
+        .enable = true,
     };
 }
 
@@ -430,13 +430,13 @@ static inline void vic_signal_interrupt_done(void) {
 
 static inline void enable_comms_ready_to_send_interrupt(void) {
     vic_control->int_enable = (vic_mask_t) {
-        .cc_tx_not_full = true
+        .cc_tx_not_full = true,
     };
 }
 
 static inline void disable_comms_ready_to_send_interrupt(void) {
     vic_control->int_disable = (vic_mask_t) {
-        .cc_tx_not_full = true
+        .cc_tx_not_full = true,
     };
 }
 
@@ -1094,13 +1094,12 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
     while (!comms_control->tx_control.not_full) {
         // Empty body; comms_controller is volatile
     }
-    spinnaker_packet_control_byte_t fixed_route_payload =
-            (spinnaker_packet_control_byte_t) {
+    spinnaker_packet_control_byte_t fixed_route_payload = {
         .parity = 0,
         .payload = true,
         .timestamp = 0,
         .fr.emergency_routing = 0,
-        .type = SPINNAKER_PACKET_TYPE_FR
+        .type = SPINNAKER_PACKET_TYPE_FR,
     };
     comms_control->tx_control.control_byte = fixed_route_payload.value;
     comms_control->tx_data = data;
@@ -1133,10 +1132,10 @@ static void data_out_send_data_block(
 static inline void data_out_dma_read(
         uint32_t dma_tag, void *source, void *destination, uint n_words) {
     dma_description_t desc = {
-            .width = DMA_WIDTH,
-            .burst = DMA_BURST_SIZE,
-            .direction = DMA_READ,
-            .length_words = n_words
+        .width = DMA_WIDTH,
+        .burst = DMA_BURST_SIZE,
+        .direction = DMA_READ,
+        .length_words = n_words,
     };
     dma_port_last_used = dma_tag;
     dma_controller->sdram_address = source;
@@ -1574,7 +1573,7 @@ void __wrap_sark_int(void *pc) {
     system_control->clear_cpu_irq = (sc_magic_proc_map_t) {
         // Clear this interrupt; we've assumed control now
         .security_code = SYSTEM_CONTROLLER_MAGIC_NUMBER,
-        .select = 1 << sark.phys_cpu
+        .select = 1 << sark.phys_cpu,
     };
     if (msg == NULL) {
         return;
@@ -1628,7 +1627,7 @@ static void reinjection_initialise(void) {
     // Setup the CPU interrupt for WDOG
     vic_interrupt_control[sark_vec->sark_slot] = (vic_vector_control_t) {
         .source = 0,
-        .enable = false
+        .enable = false,
     };
     vic_set_callback(CPU_SLOT, CPU_INT, sark_int_han);
 
@@ -1640,8 +1639,8 @@ static void reinjection_initialise(void) {
 
     // Setup the router interrupt as a fast interrupt
     sark_vec->fiq_vec = reinjection_dropped_packet_callback;
-    const vic_mask_t fast_router_dump = (vic_mask_t) {
-        .router_dump = true
+    const vic_mask_t fast_router_dump = {
+        .router_dump = true,
     };
     vic_control->int_select = fast_router_dump;
 }
@@ -1675,7 +1674,7 @@ static void data_out_initialise(void) {
         .restart = true,
         .clear_done_int = true,
         .clear_timeout_int = true,
-        .clear_write_buffer_int = true
+        .clear_write_buffer_int = true,
     };
     // clear possible transfer done and restart
     dma_controller->control = (dma_control_t) {
@@ -1693,7 +1692,7 @@ static void data_out_initialise(void) {
         .axi_error_interrupt = true, // SDRAM error?
         .user_abort_interrupt = true,
         .soft_reset_interrupt = true,
-        .write_buffer_error_interrupt = true
+        .write_buffer_error_interrupt = true,
     };
 }
 
@@ -1743,7 +1742,7 @@ void c_main(void) {
 
     // set up VIC callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for WDOG)
-    const vic_mask_t interrupts = (vic_mask_t) {
+    const vic_mask_t interrupts = {
         .timer1 = true,
         .router_dump = true,
         .dma_done = true,
@@ -1768,7 +1767,7 @@ void c_main(void) {
         .size = 1,                // 32-bit mode
         .interrupt_enable = true, // we want to be interrupted
         .periodic_mode = true,    // repeat countdown
-        .enable = true            // turn on!
+        .enable = true,           // turn on!
     };
 
     // Run until told to exit
