@@ -35,6 +35,8 @@ void** malloc_points = NULL;
 
 int malloc_points_size = 6000;
 
+bool to_print = true;
+
 //! a sdram block outside the heap
 typedef struct sdram_block {
     // the base address of where the sdram block starts
@@ -65,6 +67,18 @@ static heap_t *stolen_sdram_heap = NULL;
 
 // ===========================================================================
 
+//! \brief turn on printing
+void platform_turn_on_print(void) {
+    to_print = true;
+}
+
+//! \brief turn off printing
+void platform_turn_off_print(void) {
+    to_print = false;
+}
+
+//! \brief get the pointer to the stolen heap
+//! \return the heap pointer.
 heap_t* platform_get_stolen_heap(void){
     return stolen_sdram_heap;
 }
@@ -391,7 +405,10 @@ static inline void terminate(uint result_code) {
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
 static void safe_x_free(void *ptr) {
-    log_info("freeing %x", ptr);
+    // only print if its currently set to print (saves iobuf)
+    if(to_print) {
+        log_info("freeing %x", ptr);
+    }
 
     int* int_pointer = (int*) ptr;
     if (safety) {
@@ -405,7 +422,10 @@ static void safe_x_free(void *ptr) {
             if (!found && malloc_points[index] == ptr) {
                 found = true;
                 malloc_points[index] = 0;
-                log_info("freeing index %d", index);
+                // only print if its currently set to print (saves iobuf)
+                if(to_print) {
+                    log_info("freeing index %d", index);
+                }
             }
         }
     }
@@ -487,8 +507,12 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
             rt_error(RTE_SWERR);
         }
         malloc_points[malloc_point_index] = (void *)  &p[1];
-        log_info("index %d", malloc_point_index);
-        log_info("address is %x", &p[1]);
+
+        // only print if its currently set to print (saves iobuf)
+        if(to_print) {
+            log_info("index %d", malloc_point_index);
+            log_info("address is %x", &p[1]);
+        }
         return (void *) &p[1];
     }
     return (void *) p;
@@ -520,8 +544,14 @@ static void * safe_malloc(uint bytes) {
             log_error("cant track this malloc. failing");
             rt_error(RTE_SWERR);
         }
+
         malloc_points[malloc_point_index] = (void *)  &p[1];
-        log_info("index %d", malloc_point_index);
+
+        // only print if its currently set to print (saves iobuf)
+        if(to_print) {
+            log_info("index %d", malloc_point_index);
+            log_info("address is %x", &p[1]);
+        }
         return (void *) &p[1];
     }
 
@@ -540,12 +570,16 @@ static inline uint platform_max_available_block_size(void) {
     }
 }
 
-void check_all(void){
+
+//! \brief checks all malloc's with a given marker. to allow easier tracking
+//! from application code (probably should be a string. but meh)
+void platform_check_all_marked(int marker){
     bool failed = false;
     for(int index = 0; index < malloc_points_size; index ++){
         if (malloc_points[index] != 0){
             if (!platform_check(malloc_points[index])){
                 log_error("the malloc with index %d has overran", index);
+                log_error("this test is marked by marker %d", marker);
                 failed = true;
             }
         }
@@ -556,6 +590,12 @@ void check_all(void){
         rt_error(RTE_SWERR);
     }
 }
+
+//! \brief checks all malloc's for overwrites with no marker
+void platform_check_all(void){
+    platform_check_all_marked(-1);
+}
+
 
 //#define MALLOC safe_malloc
 #define MALLOC safe_sdram_malloc_wrapper

@@ -710,10 +710,10 @@ static inline bool oc_merge_apply(
                 routing_table_sdram_stores_get_entry(insert);
 
             // move data between entries
-            //insert_entry->key_mask.key = new_entry.key_mask.key;
-            //insert_entry->key_mask.mask = new_entry.key_mask.mask;
-            //insert_entry->route = new_entry.route;
-            //insert_entry->source = new_entry.source;
+            insert_entry->key_mask.key = new_entry.key_mask.key;
+            insert_entry->key_mask.mask = new_entry.key_mask.mask;
+            insert_entry->route = new_entry.route;
+            insert_entry->source = new_entry.source;
             insert++;
         }
 
@@ -728,10 +728,10 @@ static inline bool oc_merge_apply(
                 routing_table_sdram_stores_get_entry(insert);
 
             // move data between entries
-            //insert_entry->key_mask.key = current->key_mask.key;
-            //insert_entry->key_mask.mask = current->key_mask.mask;
-            //insert_entry->route = current->route;
-            //insert_entry->source = current->source;
+            insert_entry->key_mask.key = current->key_mask.key;
+            insert_entry->key_mask.mask = current->key_mask.mask;
+            insert_entry->route = current->route;
+            insert_entry->source = current->source;
             insert++;
 
         } else {
@@ -743,7 +743,7 @@ static inline bool oc_merge_apply(
             // which is being merged.
             key_mask_t km = current->key_mask;
             uint32_t source = current->source;
-            /*
+
             if (aliases_contains(aliases, km)) {
                 // Join the old list of aliases with the new
                 alias_list_join(new_aliases, aliases_find(aliases, km));
@@ -753,7 +753,7 @@ static inline bool oc_merge_apply(
             } else {
                 // Include the key_mask in the new list of aliases
                 alias_list_append(new_aliases, km, source);
-            }*/
+            }
 
             // Decrement the final table size to account for this entry being
             // removed.

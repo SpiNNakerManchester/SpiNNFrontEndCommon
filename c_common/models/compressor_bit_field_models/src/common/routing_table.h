@@ -139,7 +139,8 @@ void routing_table_reset(void) {
 void routing_table_print_list_tables(void){
     for (int table_index = 0; table_index < current_n_tables; table_index++){
         table_t *table = routing_tables[table_index];
-        for (int entry_index = 0; entry_index < table->size; entry_index ++){
+        for (uint32_t entry_index = 0; entry_index < table->size;
+                entry_index ++){
             entry_t entry = table->entries[entry_index];
             log_info(
                 "entry %d from table %d index %d has key %x or %d mask %x "
@@ -287,7 +288,7 @@ bool routing_table_sdram_store(table_t *table_format) {
             // take entry and plonk data in right sdram location
             log_info("doing sark copy");
 
-            for (int local_index = 0;
+            for (uint32_t local_index = 0;
                     local_index < routing_tables[rt_index]->size;
                     local_index++, main_entry_index++) {
                 log_debug("main index = %d", main_entry_index);
@@ -333,7 +334,7 @@ void routing_table_print_table_lo_atom(void){
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
-void routing_table_remove_from_size(int size_to_remove) {
+void routing_table_remove_from_size(uint32_t size_to_remove) {
     // update dtcm tracker
     table_lo_entry[n_tables] = table_lo_entry[n_tables] - size_to_remove;
 
@@ -371,11 +372,11 @@ static inline uint routing_table_sdram_size_of_table(uint32_t n_entries) {
 }
 
 //! \brief copies over the contents of 1 table_t to another table_t safely
-static void routing_table_copy_table(table_t* src, table_t* dest){
+void routing_table_copy_table(table_t* src, table_t* dest){
 
     log_info("src size is %d", src->size);
     dest->size = src->size;
-    for (int index = 0; index < dest->size; index ++){
+    for (uint32_t index = 0; index < dest->size; index ++){
         dest->entries[index].key_mask.key = src->entries[index].key_mask.key;
         dest->entries[index].key_mask.mask = src->entries[index].key_mask.mask;
         dest->entries[index].route = src->entries[index].route;

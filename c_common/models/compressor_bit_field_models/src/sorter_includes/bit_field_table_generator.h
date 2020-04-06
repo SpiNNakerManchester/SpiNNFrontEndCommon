@@ -48,7 +48,7 @@ static inline void extract_and_remove_entry_from_table(
     bool found = false;
 
     // iterate through all entries
-    for (int entry_id=0; entry_id < table->size; entry_id++) {
+    for (uint32_t entry_id=0; entry_id < table->size; entry_id++) {
 
         // if key matches, sort entry (assumes only 1 entry, otherwise boomed)
         if (table->entries[entry_id].key_mask.key == master_pop_key) {
@@ -157,8 +157,7 @@ static inline bool generate_entries_from_bitfields(
         bit_field_by_processor_t* bit_field_by_processor){
 
     log_debug("entered generate_entries_from_bitfields.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(3);
 
     // get processors by bitfield
     log_debug(
@@ -182,8 +181,7 @@ static inline bool generate_entries_from_bitfields(
     }
 
     log_debug("after locate proc from bf address.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(4);
 
     // create sdram holder for the table we're going to generate
     log_debug("looking for atoms");
@@ -191,15 +189,13 @@ static inline bool generate_entries_from_bitfields(
         original_entry.key_mask.key, region_addresses);
 
     log_debug("after locate key atom map.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(5);
 
     *sdram_table = MALLOC_SDRAM(routing_table_sdram_size_of_table(n_atoms));
     log_debug("%x for sdram table", sdram_table);
 
     log_debug("after malloc of sdram table.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(6);
 
     if (*sdram_table == NULL) {
         FREE(bit_field_processors);
@@ -214,8 +210,7 @@ static inline bool generate_entries_from_bitfields(
     log_debug(" n atoms is %d, size %d", n_atoms, table->size);
 
     log_debug("after set n atoms on sdram table.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(7);
 
     // set up the new route process
     uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
@@ -282,25 +277,18 @@ static inline bool generate_entries_from_bitfields(
             "key is %x route in entry %d is %x",
              table->entries[atom].key_mask.key, atom,
              table->entries[atom].route);
-
-        log_debug("end of element");
-        check_all();
-        log_debug("done check");
+        platform_check_all_marked(8);
 
     }
 
-    log_debug("after all entries.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(9);
 
     // do not remove sdram store, as that's critical to how this stuff works
     FREE(bit_field_processors);
     FREE(processors);
     FREE(atom_processors);
 
-    log_debug("bewfore return.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(10);
     return true;
 
 }
@@ -331,10 +319,7 @@ static inline bool generate_rt_from_bit_field(
         return false;
     }
 
-    log_debug("after malloc of n bfs for key.");
-    check_all();
-    log_debug("done check");
-
+    platform_check_all_marked(11);
 
     int index = 0;
     for (int bit_field_index = 0; bit_field_index < mid_point;
@@ -350,9 +335,7 @@ static inline bool generate_rt_from_bit_field(
         }
     }
 
-    log_debug("after setting bitfields for a given key.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(12);
 
     bool passed = platform_check(filters);
     if (! passed){
@@ -362,13 +345,16 @@ static inline bool generate_rt_from_bit_field(
 
     // extract original routing entry from uncompressed table
     entry_t original_entry;
+    // init the original entry
+    original_entry.source = 0;
+    original_entry.route = 0;
+    original_entry.key_mask.key = 0;
+    original_entry.key_mask.mask = 0;
 
     extract_and_remove_entry_from_table(
         uncompressed_table, master_pop_key, &original_entry);
 
-    log_debug("after extracting orginal entry.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(13);
 
     passed = platform_check(filters);
     if (! passed){
@@ -381,9 +367,7 @@ static inline bool generate_rt_from_bit_field(
         filters, n_bfs_for_key, original_entry, sdram_table,
         region_addresses, bit_field_by_processor);
 
-    log_debug("after generating bitfield entries.");
-    check_all();
-    log_debug("done check");
+    platform_check_all_marked(14);
 
     table_t *table = *sdram_table;
     log_debug("sdram table n atoms = %d", table->size);
@@ -396,10 +380,6 @@ static inline bool generate_rt_from_bit_field(
     }
 
     FREE(filters);
-
-    //log_debug("before returning.");
-    //check_all();
-    //log_debug("done check");
     return true;
 }
 
@@ -494,10 +474,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     log_debug("starting the generation of tables by key");
     for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
 
-
-        log_debug("starting the generation of table %d", key_index);
-        check_all();
-        log_debug("done check");
+        platform_check_all_marked(1);
 
         // holder for the rt address
         table_t *table = NULL;
@@ -509,11 +486,6 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
             region_addresses, bit_field_by_processor, sorted_bit_fields);
 
         log_debug("%x for sdram table", table);
-
-        //log_debug("did table %d", key_index);
-        //check_all();
-        //log_debug("finished check");
-
         log_debug(" n atoms is %d", table->size);
 
         // if failed, free stuff and tell above it failed
@@ -529,9 +501,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         bit_field_routing_tables[key_index] = table;
         table = NULL;
 
-        log_debug("did table %d allocated", key_index);
-        check_all();
-        log_debug("finished check 2");
+        platform_check_all_marked(2);
     }
 
     // free stuff

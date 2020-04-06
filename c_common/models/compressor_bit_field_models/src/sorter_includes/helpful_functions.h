@@ -97,7 +97,7 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         sorted_bit_fields_t* sorted_bit_fields){
 
     int n_keys = 0;
-    log_info("in population_master_pop_bit_field_ts");
+    log_debug("in population_master_pop_bit_field_ts");
     // check each bitfield to see if the key been recorded already
     for (int bit_field_index = 0; bit_field_index < mid_point;
             bit_field_index++) {
@@ -127,7 +127,7 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
             n_keys++;
         }
     }
-    log_info("out population_master_pop_bit_field_ts");
+    log_debug("out population_master_pop_bit_field_ts");
     return n_keys;
 }
 

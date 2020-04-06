@@ -163,7 +163,8 @@ void merge_print_merge_bit(merge_t *merge){
     log_info("bit set n_elements is %d", merge->entries.n_elements);
     for (int table_index = 0; table_index < current_n_tables; table_index++){
         table_t *table = routing_tables[table_index];
-        for (int entry_index = 0; entry_index < table->size; entry_index ++){
+        for (uint32_t entry_index = 0; entry_index < table->size;
+                entry_index ++){
             entry_t entry = table->entries[entry_index];
             if (merge_contains(
                     merge, table_lo_entry[table_index] + entry_index)){

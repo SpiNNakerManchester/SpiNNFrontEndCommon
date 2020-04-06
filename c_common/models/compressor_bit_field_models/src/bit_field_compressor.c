@@ -234,7 +234,7 @@ void start_compression_process(uint unused0, uint unused1) {
         &finished_by_compressor_force,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
-    check_all();
+    platform_check_all();
 
     // turn off timer and set us into pause state
     spin1_pause();

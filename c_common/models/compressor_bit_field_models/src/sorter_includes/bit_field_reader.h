@@ -102,7 +102,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
                 filter_region->filters[bf_id].n_words;
             bit_field_by_processor[r_id].bit_field_addresses[bf_id].data =
                 filter_region->filters[bf_id].data;
-            check_all();
+            platform_check_all();
         }
         log_debug("after populate");
     }

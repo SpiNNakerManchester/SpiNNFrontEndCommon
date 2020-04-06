@@ -153,7 +153,8 @@ bool load_routing_table_into_router(void) {
     // application ID we also need to include it as the most significant
     // byte in the route (see `sark_hw.c`).
     log_debug("loading %d entries into router", last_compressed_table->size);
-    for (int entry_id = 0; entry_id < last_compressed_table->size; entry_id++) {
+    for (uint32_t entry_id = 0; entry_id < last_compressed_table->size;
+            entry_id++) {
         entry_t entry = last_compressed_table->entries[entry_id];
         uint32_t route = entry.route | (app_id << ROUTE_APP_ID_BIT_SHIFT);
         rtr_mc_set(
@@ -206,7 +207,7 @@ bool set_up_search_bitfields(void) {
         mid_points_successes = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
     }
 
-    check_all();
+    platform_check_all();
 
     // check the malloc worked
     if (tested_mid_points == NULL) {
@@ -221,7 +222,7 @@ bool set_up_search_bitfields(void) {
     clear_bit_field(tested_mid_points, words);
     clear_bit_field(mid_points_successes, words);
 
-    check_all();
+    platform_check_all();
 
     // return if successful
     return true;
@@ -278,7 +279,7 @@ bool create_tables_and_set_off_bit_compressor(int mid_point) {
     log_info("finished creating bit field router tables");
 
     log_info("bbqqc");
-    check_all();
+    platform_check_all();
     log_info("bbqqcc");
 
     // if successful, try setting off the bitfield compression
@@ -350,10 +351,10 @@ bool start_binary_search(void){
             (new_mid_point <= n_bf_addresses)) {
 
         log_info("next mid point to consider = %d", new_mid_point);
-        check_all();
+        platform_check_all();
 
         bool success = create_tables_and_set_off_bit_compressor(new_mid_point);
-        check_all();
+        platform_check_all();
         log_info("success is %d", success);
 
         if (success) {
@@ -627,7 +628,7 @@ int *find_spaces_high_than_point(
     log_debug("found best is %d", found_best);
 
     // malloc the spaces
-    check_all();
+    platform_check_all();
     log_debug("size is %d", length * sizeof(int));
     int* testing_cores = MALLOC((length + 1) * sizeof(int));
     log_debug("malloc-ed");
@@ -651,7 +652,7 @@ int *find_spaces_high_than_point(
         }
     }
     log_debug("cccc");
-    check_all();
+    platform_check_all();
     log_debug("c");
 
     // return success
@@ -683,7 +684,7 @@ bool locate_next_mid_point(int *new_mid_point) {
     }
 
     // fill in the locations bigger than best that are being tested
-    check_all();
+    platform_check_all();
     log_debug("find spaces");
     int * higher_testers = NULL;
     int length = 1;
@@ -691,7 +692,7 @@ bool locate_next_mid_point(int *new_mid_point) {
     bool has_higher_locs = is_there_higher_points(
         best_mp_to_date, next_tested_point);
     log_debug("aftger hihger %d", has_higher_locs);
-    check_all();
+    platform_check_all();
 
     // if theres something to find. go find it
     if (has_higher_locs) {
@@ -700,15 +701,15 @@ bool locate_next_mid_point(int *new_mid_point) {
             best_mp_to_date, next_tested_point);
         int length = how_many_are_executing_between_these_points(
             best_mp_to_date, next_tested_point);
-        check_all();
+        platform_check_all();
         log_debug("sss");
         higher_testers = find_spaces_high_than_point(
             best_mp_to_date, length, next_tested_point);
         log_debug("sssss");
-        check_all();
+        platform_check_all();
     }
     log_debug("populated higher testers");
-    check_all();
+    platform_check_all();
 
     // exit if best found
     if (found_best) {
@@ -889,7 +890,7 @@ void carry_on_binary_search() {
         // locate next midpoint to test
         int mid_point;
         bool success = locate_next_mid_point(&mid_point);
-        check_all();
+        platform_check_all();
         log_info("using midpoint %d", mid_point);
 
         // check for not needing to do things but wait
@@ -918,15 +919,15 @@ void carry_on_binary_search() {
         } else{
             // not found best, so try to set off compression if memory done
             log_info("trying with midpoint %d", mid_point);
-            check_all();
+            platform_check_all();
             if (!success) {
                 failed_to_malloc = true;
             } else {  // try a compression run
                 log_info("dl");
-                check_all();
+                platform_check_all();
                 log_info("dll");
                 success = create_tables_and_set_off_bit_compressor(mid_point);
-                check_all();
+                platform_check_all();
                 // failed to set off the run for a memory reason
                 if (!success){
                     failed_to_malloc = true;
@@ -940,7 +941,7 @@ void carry_on_binary_search() {
     }
 
     log_info("aaa");
-    check_all();
+    platform_check_all();
     log_info("checking state");
 
     // if failed to malloc, limit exploration to the number of cores running.
@@ -978,7 +979,7 @@ void carry_on_binary_search() {
     // set flag for handling responses to bounce back in here
     still_trying_to_carry_on = false;
 
-    check_all();
+    platform_check_all();
 
     spin1_mode_restore(cpsr);
 }
@@ -1219,12 +1220,12 @@ void sdp_handler(uint mailbox, uint port) {
                 log_info("data 0 = %d", msg->data[0]);
                 log_info("data 1 = %d", msg->data[1]);
                 log_info("data 2 = %d", msg->data[2]);
-                check_all();
+                platform_check_all();
                 log_info("finished checkall");
                 rt_error(RTE_SWERR);
                 break;
             case COMPRESSION_RESPONSE:
-                check_all();
+                platform_check_all();
 
                 // locate the compressor core id that responded
                 log_info("response packet");
@@ -1303,6 +1304,9 @@ bool setup_the_uncompressed_attempt() {
 //! \param[in] unused0: api
 //! \param[in] unused1: api
 void check_buffer_queue(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+
     // iterate over the circular buffer until we have the finished state
     while(!found_best) {
         // get the next element if it has one
@@ -1329,6 +1333,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     log_info("read in bitfields");
     bool read_success = false;
+    platform_turn_off_print();
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             &n_bf_addresses, region_addresses, &read_success);
     log_info("finished reading in bitfields");
@@ -1366,6 +1371,7 @@ void start_compression_process(uint unused0, uint unused1) {
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
     log_info("finished sorting bitfields");
+    platform_turn_on_print();
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
