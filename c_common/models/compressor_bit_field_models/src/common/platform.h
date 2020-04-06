@@ -29,10 +29,11 @@ bool safety = true;
 #define MINUS_POINT 60
 #define BYTE_TO_WORD 4
 #define BUFFER_WORDS 15
-#define MALLOC_POINTS_SIZE 3000
+#define MALLOC_POINTS_SIZE 6000
 
-void** malloc_points;
+void** malloc_points = NULL;
 
+int malloc_points_size = 6000;
 
 //! a sdram block outside the heap
 typedef struct sdram_block {
@@ -89,9 +90,9 @@ static inline int available_mallocs(heap_t *sdram_heap){
 void build_malloc_tracker(void) {
     // malloc tracker
     malloc_points = sark_xalloc(
-        sv->sdram_heap, MALLOC_POINTS_SIZE * sizeof(void*), 0, ALLOC_LOCK);
+        stolen_sdram_heap, malloc_points_size * sizeof(void*), 0, ALLOC_LOCK);
     // set tracker.
-    for(int index = 0; index < MALLOC_POINTS_SIZE; index ++){
+    for(int index = 0; index < malloc_points_size; index ++){
         malloc_points[index] = 0;
     }
     if (malloc_points == NULL){
@@ -104,7 +105,9 @@ void build_malloc_tracker(void) {
 //! \param[in] heap_location: address where heap is location
 static inline bool platform_new_heap_update(heap_t *heap_location){
     stolen_sdram_heap = heap_location;
-    build_malloc_tracker();
+    if (malloc_points == NULL) {
+        build_malloc_tracker();
+    }
     return true;
 }
 
@@ -354,13 +357,23 @@ static inline bool platform_new_heap_creation(
     return true;
 }
 
-int find_free_malloc_index(void){
-    for (int index = 0; index < MALLOC_POINTS_SIZE; index ++){
-        if (malloc_points[index] == 0){
-            return index;
+static bool platform_check(void *ptr) {
+
+    int* int_pointer = (int*) ptr;
+    if (safety) {
+        int_pointer = int_pointer - 1;
+        int words = int_pointer[0];
+
+        for (int buffer_index = 0; buffer_index < BUFFER_WORDS; buffer_index++){
+            uint32_t flag = int_pointer[words + buffer_index];
+            if (flag != SAFETY_FLAG) {
+                log_error("flag is actually %x for ptr %x", flag, ptr);
+                return false;
+            }
         }
+        return true;
     }
-    return -1;
+    return true;
 }
 
 //static inline void terminate(uint result_code) __attribute__((noreturn));
@@ -373,6 +386,71 @@ static inline void terminate(uint result_code) {
     sark_virtual_processor_info[core].user1 = result_code;
     spin1_pause();
     spin1_exit(0);
+}
+
+//! \brief frees the sdram allocated from whatever heap it came from
+//! \param[in] ptr: the address to free. could be DTCM or SDRAM
+static void safe_x_free(void *ptr) {
+    log_info("freeing %x", ptr);
+
+    int* int_pointer = (int*) ptr;
+    if (safety) {
+        if (!platform_check(ptr)) {
+            log_error("over ran whatever is being freed");
+            terminate(2);
+        }
+
+        bool found = false;
+        for (int index = 0; index < malloc_points_size; index ++){
+            if (!found && malloc_points[index] == ptr) {
+                found = true;
+                malloc_points[index] = 0;
+                log_info("freeing index %d", index);
+            }
+        }
+    }
+
+    if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
+        sark_xfree(sark.heap, int_pointer - 1, ALLOC_LOCK);
+    } else {
+        sark_xfree(stolen_sdram_heap, int_pointer - 1, ALLOC_LOCK);
+    }
+}
+
+//! \brief doubles the size of the sdram malloc tracker
+void build_bigger_size(void){
+    // make twice as big tracker
+    int new_malloc_points_size = malloc_points_size * 2;
+
+    // make new tracker
+    void ** temp_pointer = sark_xalloc(
+        stolen_sdram_heap, new_malloc_points_size * sizeof(void*), 0,
+        ALLOC_LOCK);
+    // check for null
+    if (temp_pointer == NULL) {
+        log_error("failed to allocate space for next range.");
+        rt_error(RTE_SWERR);
+    }
+
+    // move from old to new
+    for (int index = 0; index < malloc_points_size; index ++) {
+        temp_pointer[index] = malloc_points[index];
+    }
+
+    safe_x_free(malloc_points);
+    malloc_points = temp_pointer;
+}
+
+int find_free_malloc_index(void){
+    int index;
+    for (index = 0; index < malloc_points_size; index ++){
+        if (malloc_points[index] == 0){
+            return index;
+        }
+    }
+    // full. rebuild twice as big
+    build_bigger_size();
+    return index + 1;
 }
 
 //! \brief allows a search of the SDRAM heap.
@@ -462,28 +540,9 @@ static inline uint platform_max_available_block_size(void) {
     }
 }
 
-static bool platform_check(void *ptr) {
-
-    int* int_pointer = (int*) ptr;
-    if (safety) {
-        int_pointer = int_pointer - 1;
-        int words = int_pointer[0];
-
-        for (int buffer_index = 0; buffer_index < BUFFER_WORDS; buffer_index++){
-            uint32_t flag = int_pointer[words + buffer_index];
-            if (flag != SAFETY_FLAG) {
-                log_error("flag is actually %x for ptr %x", flag, ptr);
-                return false;
-            }
-        }
-        return true;
-    }
-    return true;
-}
-
 void check_all(void){
     bool failed = false;
-    for(int index = 0; index < MALLOC_POINTS_SIZE; index ++){
+    for(int index = 0; index < malloc_points_size; index ++){
         if (malloc_points[index] != 0){
             if (!platform_check(malloc_points[index])){
                 log_error("the malloc with index %d has overran", index);
@@ -495,35 +554,6 @@ void check_all(void){
     if (failed){
         terminate(2);
         rt_error(RTE_SWERR);
-    }
-}
-
-//! \brief frees the sdram allocated from whatever heap it came from
-//! \param[in] ptr: the address to free. could be DTCM or SDRAM
-static void safe_x_free(void *ptr) {
-    log_info("freeing %x", ptr);
-
-    int* int_pointer = (int*) ptr;
-    if (safety) {
-        if (!platform_check(ptr)) {
-            log_error("over ran whatever is being freed");
-            terminate(2);
-        }
-
-        bool found = false;
-        for (int index = 0; index < MALLOC_POINTS_SIZE; index ++){
-            if (!found && malloc_points[index] == ptr) {
-                found = true;
-                malloc_points[index] = 0;
-                log_info("freeing index %d", index);
-            }
-        }
-    }
-
-    if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
-        sark_xfree(sark.heap, int_pointer - 1, ALLOC_LOCK);
-    } else {
-        sark_xfree(stolen_sdram_heap, int_pointer - 1, ALLOC_LOCK);
     }
 }
 
