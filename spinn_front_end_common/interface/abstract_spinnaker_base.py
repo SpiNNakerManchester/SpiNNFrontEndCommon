@@ -1974,7 +1974,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("SdramUsageReportPerChip")
 
         # clear iobuf if we are in multirun mode
-        if (self._has_ran and not graph_changed and
+        if (self._has_ran and graph_changed and
                 not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
