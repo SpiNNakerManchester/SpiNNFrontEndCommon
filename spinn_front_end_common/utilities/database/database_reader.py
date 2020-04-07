@@ -65,8 +65,10 @@ class DatabaseReader(object):
         """
         return {row["event"]: row["atom"]
                 for row in self.__exec_all(
-                    "SELECT * FROM label_event_atom_view"
-                    " WHERE label = ?", label)}
+                    """
+                    SELECT * FROM label_event_atom_view
+                    WHERE label = ?
+                    """, label)}
 
     def get_atom_id_to_key_mapping(self, label):
         """ Get a mapping of atom ID to event key for a given vertex
@@ -77,22 +79,26 @@ class DatabaseReader(object):
         """
         return {row["atom"]: row["event"]
                 for row in self.__exec_all(
-                    "SELECT * FROM label_event_atom_view"
-                    " WHERE label = ?", label)}
+                    """
+                    SELECT * FROM label_event_atom_view
+                    WHERE label = ?
+                    """, label)}
 
     def get_live_output_details(self, label, receiver_label):
         """ Get the IP address, port and whether the SDP headers are to be\
             stripped from the output from a vertex
 
         :param str label: The label of the vertex
-        :return: tuple of (IP address, port, strip SDP)
-        :rtype: tuple(str, int, bool)
+        :return: tuple of (IP address, port, strip SDP, board address, tag)
+        :rtype: tuple(str, int, bool, str, int)
         """
         return self.__r2t(
             self.__exec_one(
-                "SELECT * FROM app_output_tag_view"
-                " WHERE pre_vertex_label = ? AND post_vertex_label LIKE ?",
-                label, str(receiver_label) + "%"),
+                """
+                SELECT * FROM app_output_tag_view
+                WHERE pre_vertex_label = ?
+                    AND post_vertex_label LIKE ?
+                """, label, str(receiver_label) + "%"),
             "ip_address", "port", "strip_sdp", "board_address", "tag")
 
     def get_live_input_details(self, label):
@@ -105,8 +111,10 @@ class DatabaseReader(object):
         """
         return self.__r2t(
             self.__exec_one(
-                "SELECT * FROM app_input_tag_view"
-                " WHERE application_label = ?", label),
+                """
+                SELECT * FROM app_input_tag_view
+                WHERE application_label = ?
+                """, label),
             "board_address", "port")
 
     def get_machine_live_output_details(self, label, receiver_label):
@@ -115,14 +123,16 @@ class DatabaseReader(object):
 
         :param str label: The label of the vertex
         :param str receiver_label:
-        :return: tuple of (IP address, port, strip SDP)
-        :rtype: tuple(str, int, bool)
+        :return: tuple of (IP address, port, strip SDP, board address, tag)
+        :rtype: tuple(str, int, bool, str, int)
         """
         return self.__r2t(
             self.__exec_one(
-                "SELECT * FROM machine_output_tag_view"
-                " WHERE pre_vertex_label = ? AND post_vertex_label LIKE ?",
-                label, str(receiver_label) + "%"),
+                """
+                SELECT * FROM machine_output_tag_view
+                WHERE pre_vertex_label = ?
+                    AND post_vertex_label LIKE ?
+                """, label, str(receiver_label) + "%"),
             "ip_address", "port", "strip_sdp", "board_address", "tag")
 
     def get_machine_live_input_details(self, label):
@@ -135,8 +145,10 @@ class DatabaseReader(object):
         """
         return self.__r2t(
             self.__exec_one(
-                "SELECT * FROM machine_input_tag_view"
-                " WHERE machine_label = ?", label),
+                """
+                SELECT * FROM machine_input_tag_view
+                WHERE machine_label = ?
+                """, label),
             "board_address", "port")
 
     def get_machine_live_output_key(self, label, receiver_label):
@@ -147,9 +159,11 @@ class DatabaseReader(object):
         """
         return self.__r2t(
             self.__exec_one(
-                "SELECT * FROM machine_edge_key_view"
-                " WHERE pre_vertex_label = ? AND post_vertex_label LIKE ?",
-                label, str(receiver_label) + "%"),
+                """
+                SELECT * FROM machine_edge_key_view
+                WHERE pre_vertex_label = ?
+                    AND post_vertex_label LIKE ?
+                """, label, str(receiver_label) + "%"),
             "key", "mask")
 
     def get_machine_live_input_key(self, label):
@@ -159,8 +173,10 @@ class DatabaseReader(object):
         """
         return self.__r2t(
             self.__exec_one(
-                "SELECT * FROM machine_edge_key_view"
-                " WHERE pre_vertex_label = ?", label),
+                """
+                SELECT * FROM machine_edge_key_view
+                WHERE pre_vertex_label = ?
+                """, label),
             "key", "mask")
 
     def get_n_atoms(self, label):
@@ -171,8 +187,10 @@ class DatabaseReader(object):
         :rtype: int
         """
         row = self.__exec_one(
-            "SELECT no_atoms FROM Application_vertices "
-            "WHERE vertex_label = ?", label)
+            """
+            SELECT no_atoms FROM Application_vertices
+            WHERE vertex_label = ?
+            """, label)
         return 0 if row is None else row["no_atoms"]
 
     def get_configuration_parameter_value(self, parameter_name):
@@ -183,8 +201,10 @@ class DatabaseReader(object):
         :rtype: float or None
         """
         row = self.__exec_one(
-            "SELECT value FROM configuration_parameters"
-            " WHERE parameter_id = ?", parameter_name)
+            """
+            SELECT value FROM configuration_parameters
+            WHERE parameter_id = ?
+            """, parameter_name)
         return None if row is None else float(row["value"])
 
     @staticmethod
@@ -199,8 +219,10 @@ class DatabaseReader(object):
         :rtype: tuple(int, int, int)
         """
         row = self.__exec_one(
-            "SELECT x, y, p FROM machine_vertex_placement"
-            " WHERE vertex_label = ?", label)
+            """
+            SELECT x, y, p FROM machine_vertex_placement
+            WHERE vertex_label = ?
+            """, label)
         return (None, None, None) if row is None else self.__xyp(row)
 
     def get_placements(self, label):
@@ -212,8 +234,10 @@ class DatabaseReader(object):
         """
 
         return [self.__xyp(row) for row in self.__exec_all(
-            "SELECT x, y, p FROM application_vertex_placements"
-            " WHERE vertex_label = ?", label)]
+            """
+            SELECT x, y, p FROM application_vertex_placements
+            WHERE vertex_label = ?
+            """, label)]
 
     def get_ip_address(self, x, y):
         """ Get an IP address to contact a chip
@@ -224,9 +248,11 @@ class DatabaseReader(object):
         :rtype: str or None
         """
         row = self.__exec_one(
-            "SELECT eth_ip_address FROM chip_eth_info"
-            " WHERE x = ? AND y = ? OR x = 0 AND y = 0"
-            " ORDER BY x DESC", x, y)
+            """
+            SELECT eth_ip_address FROM chip_eth_info
+            WHERE x = ? AND y = ? OR x = 0 AND y = 0
+            ORDER BY x DESC
+            """, x, y)
         # Should only fail if no machine is present!
         return None if row is None else row["eth_ip_address"]
 

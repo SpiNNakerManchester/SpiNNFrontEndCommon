@@ -20,6 +20,7 @@ from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.timer import Timer
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -37,6 +38,7 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
@@ -640,16 +642,19 @@ class BufferManager(object):
         if self._java_caller is not None:
             self._java_caller.set_placements(placements, self._transceiver)
 
-        with self._thread_lock_buffer_out:
-            if self._java_caller is not None:
-                self._java_caller.get_all_data()
-                if progress:
-                    progress.end()
-            elif self._uses_advanced_monitors:
-                self.__old_get_data_for_placements_with_monitors(
-                    placements, progress)
-            else:
-                self.__old_get_data_for_placements(placements, progress)
+        timer = Timer()
+        with timer:
+            with self._thread_lock_buffer_out:
+                if self._java_caller is not None:
+                    self._java_caller.get_all_data()
+                    if progress:
+                        progress.end()
+                elif self._uses_advanced_monitors:
+                    self.__old_get_data_for_placements_with_monitors(
+                        placements, progress)
+                else:
+                    self.__old_get_data_for_placements(placements, progress)
+        get_simulator().add_extraction_timing(timer.measured_interval)
 
     def __old_get_data_for_placements_with_monitors(
             self, placements, progress):
