@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2019-2020 The University of Manchester
  *
- * This program is free software: you can redistribute it and/or modify
+ * This program is FREE_MARKED software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the FREE_MARKED Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -198,7 +198,7 @@ static inline bool generate_entries_from_bitfields(
     platform_check_all_marked(6);
 
     if (*sdram_table == NULL) {
-        FREE(bit_field_processors);
+        FREE_MARKED(bit_field_processors, 999991);
         log_error("can not allocate sdram for the sdram routing table");
         return false;
     }
@@ -219,8 +219,8 @@ static inline bool generate_entries_from_bitfields(
         log_error(
             "could not allocate memory for the processor tracker when "
             "making entries from bitfields");
-        FREE(bit_field_processors);
-        FREE(*sdram_table);
+        FREE_MARKED(bit_field_processors, 999990);
+        FREE_MARKED(*sdram_table, 999989);
         return false;
     }
 
@@ -233,9 +233,9 @@ static inline bool generate_entries_from_bitfields(
         log_error(
             "could not allocate memory for the atom processor tracker when "
             "making entries from bitfields");
-        FREE(bit_field_processors);
-        FREE(sdram_table);
-        FREE(processors);
+        FREE_MARKED(bit_field_processors, 999988);
+        FREE_MARKED(sdram_table, 999987);
+        FREE_MARKED(processors, 999986);
         return false;
     }
 
@@ -284,9 +284,9 @@ static inline bool generate_entries_from_bitfields(
     platform_check_all_marked(9);
 
     // do not remove sdram store, as that's critical to how this stuff works
-    FREE(bit_field_processors);
-    FREE(processors);
-    FREE(atom_processors);
+    FREE_MARKED(bit_field_processors, 999985);
+    FREE_MARKED(processors, 999984);
+    FREE_MARKED(atom_processors, 999983);
 
     platform_check_all_marked(10);
     return true;
@@ -375,11 +375,11 @@ static inline bool generate_rt_from_bit_field(
         log_error(
             "can not create entries for key %d with %d bitfields.",
             master_pop_key, n_bfs_for_key);
-        FREE(filters);
+        FREE_MARKED(filters, 999982);
         return false;
     }
 
-    FREE(filters);
+    FREE_MARKED(filters, 999981);
     return true;
 }
 
@@ -437,7 +437,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     if (uncompressed_table == NULL) {
         log_error(
             "failed to clone uncompressed tables for attempt %d", mid_point);
-        FREE(keys);
+        FREE_MARKED(keys, 999980);
         return NULL;
     }
 
@@ -448,8 +448,8 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         MALLOC_SDRAM(*n_rt_addresses * sizeof(table_t*));
     if (bit_field_routing_tables == NULL) {
         log_error("failed to allocate memory for bitfield routing tables");
-        FREE(keys);
-        FREE(uncompressed_table);
+        FREE_MARKED(keys, 999979);
+        FREE_MARKED(uncompressed_table, 999978);
         return NULL;
     }
 
@@ -488,12 +488,12 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         log_debug("%x for sdram table", table);
         log_debug(" n atoms is %d", table->size);
 
-        // if failed, free stuff and tell above it failed
+        // if failed, FREE_MARKED stuff and tell above it failed
         if (!success){
             log_error("failed to allocate memory for rt table");
-            FREE(keys);
-            FREE(bit_field_routing_tables);
-            FREE(uncompressed_table);
+            FREE_MARKED(keys, 999977);
+            FREE_MARKED(bit_field_routing_tables, 999976);
+            FREE_MARKED(uncompressed_table, 999975);
             return NULL;
         }
 
@@ -504,8 +504,8 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         platform_check_all_marked(2);
     }
 
-    // free stuff
-    FREE(keys);
+    // FREE_MARKED stuff
+    FREE_MARKED(keys, 999974);
 
     check = platform_check(bit_field_routing_tables);
     if (!check){

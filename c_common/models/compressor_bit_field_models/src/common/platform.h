@@ -404,7 +404,7 @@ static inline void terminate(uint result_code) {
 
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
-static void safe_x_free(void *ptr) {
+static void safe_x_free_marked(void *ptr, int marker) {
     // only print if its currently set to print (saves iobuf)
     if(to_print) {
         log_info("freeing %x", ptr);
@@ -414,6 +414,7 @@ static void safe_x_free(void *ptr) {
     if (safety) {
         if (!platform_check(ptr)) {
             log_error("over ran whatever is being freed");
+            log_error("marker is %d", marker);
             terminate(2);
             rt_error(RTE_SWERR);
         }
@@ -436,6 +437,10 @@ static void safe_x_free(void *ptr) {
     } else {
         sark_xfree(stolen_sdram_heap, int_pointer - 1, ALLOC_LOCK);
     }
+}
+
+static void safe_x_free(void *ptr) {
+    safe_x_free_marked(ptr, -1);
 }
 
 //! \brief doubles the size of the sdram malloc tracker
@@ -601,6 +606,7 @@ void platform_check_all(void){
 //#define MALLOC safe_malloc
 #define MALLOC safe_sdram_malloc_wrapper
 #define FREE   safe_x_free
+#define FREE_MARKED safe_x_free_marked
 #define MALLOC_SDRAM safe_sdram_malloc_wrapper
 
 #endif  // __PLATFORM_H__

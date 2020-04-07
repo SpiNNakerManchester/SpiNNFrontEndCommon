@@ -374,7 +374,7 @@ static inline uint routing_table_sdram_size_of_table(uint32_t n_entries) {
 //! \brief copies over the contents of 1 table_t to another table_t safely
 void routing_table_copy_table(table_t* src, table_t* dest){
 
-    log_info("src size is %d", src->size);
+    log_debug("src size is %d", src->size);
     dest->size = src->size;
     for (uint32_t index = 0; index < dest->size; index ++){
         dest->entries[index].key_mask.key = src->entries[index].key_mask.key;
@@ -382,10 +382,10 @@ void routing_table_copy_table(table_t* src, table_t* dest){
         dest->entries[index].route = src->entries[index].route;
         dest->entries[index].source = src->entries[index].source;
     }
-    log_info(
+    log_debug(
         "successfully copied table data from %x to %x",
         src, dest);
-    log_info("size in dest is %d, src size is %d", dest->size, src->size);
+    log_debug("size in dest is %d, src size is %d", dest->size, src->size);
 }
 
 #endif  // __ROUTING_TABLE_H__

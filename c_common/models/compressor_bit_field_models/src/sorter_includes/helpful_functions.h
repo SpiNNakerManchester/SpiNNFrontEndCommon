@@ -144,12 +144,12 @@ bool helpful_functions_free_sdram_from_compression_attempt(
 
     for (int core_bit_field_id = 0; core_bit_field_id < elements;
             core_bit_field_id++) {
-        FREE(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id]);
+        FREE_MARKED(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id], 999994);
     }
 
     // only try freeing if its not been freed already. (safety feature)
     if (comp_cores_bf_tables[comp_core_index].elements != NULL){
-        FREE(comp_cores_bf_tables[comp_core_index].elements);
+        FREE_MARKED(comp_cores_bf_tables[comp_core_index].elements, 999993);
     }
 
     comp_cores_bf_tables[comp_core_index].elements = NULL;
@@ -167,7 +167,7 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
 
     uint32_t sdram_used = routing_table_sdram_size_of_table(
         uncompressed_router_table->uncompressed_table.size);
-    log_info("sdram used is %d", sdram_used);
+    log_debug("sdram used is %d", sdram_used);
 
     // allocate sdram for the clone
     table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
@@ -187,7 +187,7 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
     routing_table_copy_table(
         &uncompressed_router_table->uncompressed_table,
         where_was_cloned);
-    log_info("cloned routing table entries is %d", where_was_cloned->size);
+    log_debug("cloned routing table entries is %d", where_was_cloned->size);
 
     check = platform_check(where_was_cloned);
     if (!check){

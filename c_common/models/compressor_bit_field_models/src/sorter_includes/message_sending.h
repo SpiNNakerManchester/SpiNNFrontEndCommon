@@ -101,7 +101,7 @@ static inline bool store_sdram_addresses_for_compression(
             log_error("failed to free compressor core elements.");
             return false;
         }
-        FREE(comp_cores_bf_tables[comp_core_index].elements);
+        FREE_MARKED(comp_cores_bf_tables[comp_core_index].elements, 999973);
     }
 
     // store the elements into the tracker.
@@ -147,7 +147,7 @@ static void set_up_packet(
 
     my_msg->length = (LENGTH_OF_SDP_HEADER + sizeof(start_sdp_packet_t));
 
-    log_debug(
+    log_info(
         "table size of table 1 is %d",
         data->table_data->elements[0]->size);
 
@@ -217,7 +217,7 @@ static bool message_sending_set_off_bit_field_compression(
         n_entries += bit_field_routing_tables[rt_index]->size;
     }
 
-    log_debug(
+    log_info(
         "using core %d for %d rts with %d entries for %d bitfields",
         compressor_cores[comp_core_index], n_rt_addresses, n_entries,
         mid_point);
@@ -290,12 +290,12 @@ bool message_sending_set_off_no_bit_field_compression(
         int* n_available_compression_cores){
 
     // allocate and clone uncompressed entry
-    log_debug("start cloning of uncompressed table");
+    log_info("start cloning of uncompressed table");
     table_t *sdram_clone_of_routing_table =
         helpful_functions_clone_un_compressed_routing_table(
             uncompressed_router_table);
 
-    log_debug(
+    log_info(
         "size of clone is %d, orginal size is %d",
         sdram_clone_of_routing_table->size,
         uncompressed_router_table->uncompressed_table.size);
@@ -304,7 +304,7 @@ bool message_sending_set_off_no_bit_field_compression(
                   "bit field compression attempt.");
         return false;
     }
-    log_debug("finished cloning of uncompressed table");
+    log_info("finished cloning of uncompressed table");
 
     // set up the bitfield routing tables so that it'll map down below
     log_debug("allocating bf routing tables");
@@ -317,18 +317,17 @@ bool message_sending_set_off_no_bit_field_compression(
     }
 
     log_debug("allocate to array");
-    bit_field_routing_tables[0] =
-        &uncompressed_router_table->uncompressed_table;
-    log_debug("allocated bf routing tables");
-    log_debug(
-        "size of the first table is %d",
-        bit_field_routing_tables[0]->size);
+    bit_field_routing_tables[0] = sdram_clone_of_routing_table;
+    log_info("allocated bf routing tables");
+    log_info(
+        "size of the first table is %d", bit_field_routing_tables[0]->size);
 
     // run the allocation and set off of a compressor core
     return message_sending_set_off_bit_field_compression(
         N_UNCOMPRESSED_TABLE, 0, comp_cores_bf_tables,
-        NULL, my_msg, compressor_cores,
-        n_compressor_cores, comp_core_mid_point, n_available_compression_cores);
+        bit_field_routing_tables, my_msg, compressor_cores,
+        n_compressor_cores, comp_core_mid_point,
+        n_available_compression_cores);
 }
 
 #endif  // __MESSAGE_SENDING_H__

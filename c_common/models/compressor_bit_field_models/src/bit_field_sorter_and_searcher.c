@@ -214,7 +214,7 @@ bool set_up_search_bitfields(void) {
         return false;
     }
     if (mid_points_successes == NULL) {
-        FREE(tested_mid_points);
+        FREE_MARKED(tested_mid_points, 999995);
         return false;
     }
 
@@ -507,13 +507,13 @@ bool remove_merged_bitfields_from_cores(void) {
     for (int core_index = 0; core_index < region_addresses->n_pairs;
             core_index++) {
         if (sorted_bf_key_proc[core_index].key_list->length_of_list != 0) {
-            FREE(sorted_bf_key_proc[core_index].key_list->master_pop_keys);
-            FREE(sorted_bf_key_proc[core_index].key_list);
+            FREE_MARKED(sorted_bf_key_proc[core_index].key_list->master_pop_keys, 999997);
+            FREE_MARKED(sorted_bf_key_proc[core_index].key_list, 999996);
         }
     }
 
 
-    FREE(sorted_bf_key_proc);
+    FREE_MARKED(sorted_bf_key_proc, 999998);
     // return we successfully removed merged bitfields
     return true;
 }
@@ -811,7 +811,7 @@ bool locate_next_mid_point(int *new_mid_point) {
         }
     }
     log_debug("left cycle with new mid point of %d", *new_mid_point);
-    FREE(higher_testers);
+    FREE_MARKED(higher_testers, 999999);
     return true;
 }
 

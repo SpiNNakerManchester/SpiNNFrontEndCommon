@@ -371,6 +371,7 @@ static bool oc_down_check(
             *failed_by_malloc = true;
 
             // free stuff already malloc
+            bit_set_delete(sets.best);
             FREE(&sets.best);
             return false;
         }
@@ -381,6 +382,8 @@ static bool oc_down_check(
             *failed_by_malloc = true;
 
             // free stuff already malloc
+            bit_set_delete(sets.best);
+            bit_set_delete(sets.working);
             FREE(&sets.best);
             FREE(&sets.working);
             return false;
@@ -392,6 +395,8 @@ static bool oc_down_check(
             *failed_by_malloc = true;
 
             // free stuff already malloc
+            bit_set_delete(sets.best);
+            bit_set_delete(sets.working);
             FREE(&sets.best);
             FREE(&sets.working);
             return false;
@@ -406,6 +411,8 @@ static bool oc_down_check(
             // safety check for timing limits
             if (*timer_for_compression_attempt) {
                 log_error("failed due to timing");
+                bit_set_delete(sets.best);
+                bit_set_delete(sets.working);
                 FREE(&sets.best);
                 FREE(&sets.working);
                 return false;
