@@ -32,6 +32,14 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif // __GNUC__
 
+// Generates valid code if the named type is one word long, and invalid code
+// otherwise. It would be simpler if we used _Static_assert, but Eclipse seems
+// to hate that.
+#define ASSERT_WORD_SIZED(type_ident) \
+    struct __static_word_sized_assert_ ## type_ident { \
+        char _dummy[2 * (sizeof(type_ident) == sizeof(uint)) - 1]; \
+    }
+
 // ---------------------------------------------------------------------
 // 1. Chip Organization
 
@@ -116,6 +124,10 @@ typedef struct {
     uint : 26;
 } vic_vector_control_t;
 
+ASSERT_WORD_SIZED(vic_mask_t);
+ASSERT_WORD_SIZED(vic_interrupt_handler_t);
+ASSERT_WORD_SIZED(vic_vector_control_t);
+
 // ---------------------------------------------------------------------
 // 6. Counter/Timer
 
@@ -151,6 +163,9 @@ typedef struct {
     uint background_load_value;
     uint _dummy;
 } timer_controller_t;
+
+ASSERT_WORD_SIZED(timer_control_t);
+ASSERT_WORD_SIZED(timer_interrupt_status_t);
 
 // ---------------------------------------------------------------------
 // 7. DMA Controller
@@ -250,6 +265,13 @@ typedef struct {
     uint crc_polynomial[32];
 } dma_t;
 
+ASSERT_WORD_SIZED(dma_description_t);
+ASSERT_WORD_SIZED(dma_control_t);
+ASSERT_WORD_SIZED(dma_status_t);
+ASSERT_WORD_SIZED(dma_global_control_t);
+ASSERT_WORD_SIZED(dma_timeout_t);
+ASSERT_WORD_SIZED(dma_stats_control_t);
+
 // ---------------------------------------------------------------------
 // 8. Communications controller
 
@@ -334,6 +356,10 @@ typedef struct {
     comms_source_addr_t source_addr;
     const uint _test;
 } comms_ctl_t;
+
+ASSERT_WORD_SIZED(comms_tx_control_t);
+ASSERT_WORD_SIZED(comms_rx_status_t);
+ASSERT_WORD_SIZED(comms_source_addr_t);
 
 // ---------------------------------------------------------------------
 // 9. Communications NoC
@@ -424,7 +450,7 @@ typedef struct {
 typedef struct {
     ushort enable;
     ushort reset;
-} diagnostic_counter_ctrl_t;
+} router_diagnostic_counter_ctrl_t;
 
 typedef struct {
     uint enable_cycle_count : 1;
@@ -481,7 +507,7 @@ typedef struct {
         const router_dump_status_t status;
     } dump;
     // r11
-    diagnostic_counter_ctrl_t diagnostic_counter_control;
+    router_diagnostic_counter_ctrl_t diagnostic_counter_control;
     // r12
     router_timing_counter_ctrl_t timing_counter_control;
     // r13
@@ -512,6 +538,17 @@ typedef struct {
     uint enable_counter_event_interrupt : 1;
     uint counter_event_interrupt_active : 1;
 } router_diagnostic_filter_t;
+
+ASSERT_WORD_SIZED(router_control_t);
+ASSERT_WORD_SIZED(router_packet_header_t);
+ASSERT_WORD_SIZED(router_error_status_t);
+ASSERT_WORD_SIZED(router_dump_outputs_t);
+ASSERT_WORD_SIZED(router_dump_status_t);
+ASSERT_WORD_SIZED(router_diagnostic_counter_ctrl_t);
+ASSERT_WORD_SIZED(router_timing_counter_ctrl_t);
+ASSERT_WORD_SIZED(router_diversion_t);
+ASSERT_WORD_SIZED(router_fixed_route_routing_t);
+ASSERT_WORD_SIZED(router_diagnostic_filter_t);
 
 // ---------------------------------------------------------------------
 // 11. Inter-chip transmit and receive interfaces
@@ -692,6 +729,17 @@ typedef struct {
     sdram_dll_user_config1_t config1;
 } sdram_dll_t;
 
+ASSERT_WORD_SIZED(sdram_status_t);
+ASSERT_WORD_SIZED(sdram_command_t);
+ASSERT_WORD_SIZED(sdram_direct_command_t);
+ASSERT_WORD_SIZED(sdram_ram_config_t);
+ASSERT_WORD_SIZED(sdram_refresh_t);
+ASSERT_WORD_SIZED(sdram_qos_t);
+ASSERT_WORD_SIZED(sdram_chip_t);
+ASSERT_WORD_SIZED(sdram_dll_status_t);
+ASSERT_WORD_SIZED(sdram_dll_user_config0_t);
+ASSERT_WORD_SIZED(sdram_dll_user_config1_t);
+
 // ---------------------------------------------------------------------
 // 14. System Controller
 
@@ -844,6 +892,18 @@ enum {
     SYSTEM_CONTROLLER_MAGIC_NUMBER = 0x5ec
 };
 
+ASSERT_WORD_SIZED(sc_magic_proc_map_t);
+ASSERT_WORD_SIZED(sc_reset_code_t);
+ASSERT_WORD_SIZED(sc_monitor_id_t);
+ASSERT_WORD_SIZED(sc_misc_control_t);
+ASSERT_WORD_SIZED(sc_io_t);
+ASSERT_WORD_SIZED(sc_pll_control_t);
+ASSERT_WORD_SIZED(sc_clock_mux_t);
+ASSERT_WORD_SIZED(sc_sleep_status_t);
+ASSERT_WORD_SIZED(sc_temperature_t);
+ASSERT_WORD_SIZED(sc_mutex_bit_t);
+ASSERT_WORD_SIZED(sc_link_disable_t);
+
 // ---------------------------------------------------------------------
 // 15. Ethernet MII Interface
 
@@ -890,13 +950,13 @@ typedef struct {
     uint ptr : 12;
     uint rollover : 1;
     uint : 19;
-} receive_pointer_t;
+} ethernet_receive_pointer_t;
 
 typedef struct {
     uint ptr : 6;
     uint rollover : 1;
     uint : 25;
-} receive_descriptor_pointer_t;
+} ethernet_receive_descriptor_pointer_t;
 
 typedef struct {
     ethernet_general_command_t command;
@@ -907,10 +967,10 @@ typedef struct {
     uint64 mac_address; // Low 48 bits only
     ethernet_phy_control_t phy_control;
     ethernet_interrupt_clear_t interrupt_clear;
-    const receive_pointer_t receive_read;
-    const receive_pointer_t receive_write;
-    const receive_descriptor_pointer_t receive_desc_read;
-    const receive_descriptor_pointer_t receive_desc_write;
+    const ethernet_receive_pointer_t receive_read;
+    const ethernet_receive_pointer_t receive_write;
+    const ethernet_receive_descriptor_pointer_t receive_desc_read;
+    const ethernet_receive_descriptor_pointer_t receive_desc_write;
 } ethernet_controller_t;
 
 // Cannot find description of rest of this structure; SCAMP only uses one field
@@ -918,6 +978,14 @@ typedef struct {
     uint length : 11;
     uint : 21; // ???
 } ethernet_receive_descriptor_t;
+
+ASSERT_WORD_SIZED(ethernet_general_command_t);
+ASSERT_WORD_SIZED(ethernet_general_status_t);
+ASSERT_WORD_SIZED(ethernet_phy_control_t);
+ASSERT_WORD_SIZED(ethernet_interrupt_clear_t);
+ASSERT_WORD_SIZED(ethernet_receive_pointer_t);
+ASSERT_WORD_SIZED(ethernet_receive_descriptor_pointer_t);
+ASSERT_WORD_SIZED(ethernet_receive_descriptor_t);
 
 // ---------------------------------------------------------------------
 // 16. Watchdog timer
@@ -955,6 +1023,10 @@ typedef struct {
     const uint _padding[0x2fa]; // Lots of padding!
     watchdog_lock_t lock;
 } watchdog_controller_t;
+
+ASSERT_WORD_SIZED(watchdog_control_t);
+ASSERT_WORD_SIZED(watchdog_status_t);
+ASSERT_WORD_SIZED(watchdog_lock_t);
 
 // ---------------------------------------------------------------------
 // 17. System RAM

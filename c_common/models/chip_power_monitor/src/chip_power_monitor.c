@@ -16,15 +16,17 @@
  */
 
 #include <spin1_api.h>
+#include <spinn_extra.h>
 #include <simulation.h>
 #include <spinnaker.h>
 #include <recording.h>
 #include <debug.h>
 #include <data_specification.h>
 
+
 #define NUM_CORES 18
 
-#define NUM_RANDOM_BITS 12
+#define NUM_RANDOM_BITS 8
 
 typedef enum {
     SYSTEM = 0,
@@ -58,21 +60,21 @@ static uint32_t recording_flags;
 static uint32_t sample_frequency;
 
 //! \brief Read which cores on the chip are asleep right now.
-static uint32_t get_sample(void) {
-    return sc[SC_SLEEP] & ((1 << NUM_CORES) - 1);
+static inline uint32_t get_sample(void) {
+    return system_control->cpu_sleep.status;
 }
 
 // Length of busy loop used to break up chance periodicities in sampling
-static uint32_t get_random_busy(void) {
+static inline uint32_t get_random_busy(void) {
     return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
 }
 
-static void record_aggregate_sample(void) {
+static inline void record_aggregate_sample(void) {
     recording_record(
             RECORDING_REGION_ID, core_counters, sizeof(core_counters));
 }
 
-static void reset_core_counters(void) {
+static inline void reset_core_counters(void) {
     for (uint32_t i = 0 ; i < NUM_CORES ; i++) {
         core_counters[i] = 0;
     }
@@ -93,7 +95,7 @@ static void resume_callback(void) {
     }
 }
 
-static void count_core_states(void) {
+static inline void count_core_states(void) {
     uint32_t sample = get_sample();
 
     for (uint32_t i = 0, j = 1 ; i < NUM_CORES ; i++, j <<= 1) {
@@ -127,14 +129,11 @@ static void sample_in_slot(uint unused0, uint unused1) {
         simulation_ready_to_read();
     }
 
-    uint32_t sc = ++sample_count;
-    uint32_t offset = get_random_busy();
-    while (offset --> 0) {
-        // Do nothing; FIXME how to be sure to delay a random amount of time
-    }
+    uint32_t count = ++sample_count;
+    sark_delay_us(get_random_busy());
 
     count_core_states();
-    if (sc >= sample_count_limit) {
+    if (count >= sample_count_limit) {
         record_aggregate_sample();
         reset_core_counters();
     }
