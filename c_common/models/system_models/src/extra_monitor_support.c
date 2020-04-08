@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <common-typedefs.h>
 #include "common.h"
+#include <spinn_extra.h>
 
 extern void spin1_wfi(void);
 extern INT_HANDLER sark_int_han(void);
@@ -197,7 +198,7 @@ enum {
 
 //! dumped packet type
 typedef struct dumped_packet_t {
-    uint hdr;
+    router_packet_header_t hdr;
     uint key;
     uint pld;
 } dumped_packet_t;
@@ -325,7 +326,7 @@ enum callback_priorities {
 // ------------------------------------------------------------------------
 
 // The content of the communications controller SAR register
-static uint cc_sar;
+static comms_source_addr_t cc_sar;
 
 // dumped packet queue
 static pkt_queue_t pkt_queue;
@@ -443,25 +444,33 @@ static inline uint sdram_max_block_size(void) {
     return sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
 }
 
+static inline void vic_interrupt_complete(void) {
+    vic_control->vector_address = (vic_interrupt_handler_t) vic;
+}
+
 // ------------------------------------------------------------------------
 // reinjector main functions
 // ------------------------------------------------------------------------
 
 static inline void enable_comms_interrupt(void) {
-    vic[VIC_ENABLE] = 1 << CC_TNF_INT;
+    vic_control->int_enable = (vic_mask_t) {
+        .cc_tx_not_full = true
+    };
 }
 
 static inline void disable_comms_interrupt(void) {
-    vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+    vic_control->int_disable = (vic_mask_t) {
+        .cc_tx_not_full = true
+    };
 }
 
 //! \brief the plugin callback for the timer
 static INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
-    tc[T1_INT_CLR] = 1;
+    timer1_control->interrupt_clear = true;
 
     // check if router not blocked
-    if ((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) == 0) {
+    if (router_control->status.output_stage == output_stage_empty) {
         // access packet queue with FIQ disabled,
         uint cpsr = cpu_fiq_disable();
 
@@ -479,7 +488,7 @@ static INT_HANDLER reinjection_timer_callback(void) {
     }
 
     // and tell VIC we're done
-    vic[VIC_VADDR] = (uint) vic;
+    vic_interrupt_complete();
 }
 
 //! \brief the plugin callback for sending packets????
@@ -487,16 +496,14 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
-    if ((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) == 0) {
+    if (router_control->status.output_stage == output_stage_empty) {
         // access packet queue with FIQ disabled,
         uint cpsr = cpu_fiq_disable();
 
         // if queue not empty bounce packet,
         if (pkt_queue.tail != pkt_queue.head) {
             // dequeue packet,
-            uint hdr = pkt_queue.queue[pkt_queue.head].hdr;
-            uint pld = pkt_queue.queue[pkt_queue.head].pld;
-            uint key = pkt_queue.queue[pkt_queue.head].key;
+            dumped_packet_t dumped = pkt_queue.queue[pkt_queue.head];
 
             // update queue pointer,
             pkt_queue.head = (pkt_queue.head + 1) % PKT_QUEUE_SIZE;
@@ -505,16 +512,22 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
             cpu_int_restore(cpsr);
 
             // write header and route,
-            cc[CC_TCR] = hdr & PKT_CONTROL_MASK;
-            cc[CC_SAR] = cc_sar | (hdr & PKT_ROUTE_MASK);
+            comms_control->tx_control = (comms_tx_control_t) {
+                .control_byte = dumped.hdr.control
+            };
+            comms_source_addr_t source_addr = cc_sar;
+            source_addr.route = dumped.hdr.route;
+            comms_control->source_addr = source_addr;
 
             // maybe write payload,
-            if (hdr & PKT_PLD_MASK) {
-                cc[CC_TXDATA] = pld;
+            spinnaker_packet_control_byte_t control =
+                    (spinnaker_packet_control_byte_t) dumped.hdr.control;
+            if (control.payload) {
+                comms_control->tx_data = dumped.pld;
             }
 
             // write key to fire packet,
-            cc[CC_TXKEY] = key;
+            comms_control->tx_key = dumped.key;
 
             // Add to statistics
             n_reinjected_packets++;
@@ -531,51 +544,50 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
     }
 
     // and tell VIC we're done
-    vic[VIC_VADDR] = (uint) vic;
+    vic_interrupt_complete();
 }
 
 //! \brief the callback plugin for handling dropped packets
 static INT_HANDLER reinjection_dropped_packet_callback(void) {
     // get packet from router,
-    uint hdr = rtr[RTR_DHDR];
-    uint pld = rtr[RTR_DDAT];
-    uint key = rtr[RTR_DKEY];
+    router_packet_header_t hdr = router_control->dump.header;
+    uint pld = router_control->dump.payload;
+    uint key = router_control->dump.key;
 
     // clear dump status and interrupt in router,
-    uint rtr_dstat = rtr[RTR_DSTAT];
-    uint rtr_dump_outputs = rtr[RTR_DLINK];
-    uint is_processor_dump = (rtr_dump_outputs >> 6) & RTR_FPE_MASK;
-    uint is_link_dump = rtr_dump_outputs & RTR_LE_MASK;
+    router_dump_status_t rtr_dstat = router_control->dump.status;
+    router_dump_outputs_t rtr_dump_outputs = router_control->dump.outputs;
 
     // only reinject if configured
-    uint packet_type = (hdr & PKT_TYPE_MASK);
-    if (((packet_type == PKT_TYPE_MC) && reinject_mc) ||
-            ((packet_type == PKT_TYPE_PP) && reinject_pp) ||
-            ((packet_type == PKT_TYPE_NN) && reinject_nn) ||
-            ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
+
+    uint packet_type = ((spinnaker_packet_control_byte_t) hdr.control).type;
+    if (((packet_type == SPINNAKER_PACKET_TYPE_MC) && reinject_mc) ||
+            ((packet_type == SPINNAKER_PACKET_TYPE_P2P) && reinject_pp) ||
+            ((packet_type == SPINNAKER_PACKET_TYPE_NN) && reinject_nn) ||
+            ((packet_type == SPINNAKER_PACKET_TYPE_FR) && reinject_fr)) {
 
         // check for overflow from router
-        if (rtr_dstat & RTR_DOVRFLW_MASK) {
+        if (rtr_dstat.overflow) {
             n_missed_dropped_packets++;
         } else {
             // Note that the processor_dump and link_dump flags are sticky
             // so you can only really count these if you *haven't* missed a
             // dropped packet - hence this being split out
 
-            if (is_processor_dump > 0) {
+            if (rtr_dump_outputs.processor > 0) {
                 // add to the count the number of active bits from this dumped
                 // packet, as this indicates how many processors this packet
                 // was meant to go to.
                 n_processor_dumped_packets +=
-                        __builtin_popcount(is_processor_dump);
+                        __builtin_popcount(rtr_dump_outputs.processor);
             }
 
-            if (is_link_dump > 0) {
+            if (rtr_dump_outputs.link > 0) {
                 // add to the count the number of active bits from this dumped
                 // packet, as this indicates how many links this packet was
                 // meant to go to.
                 n_link_dumped_packets +=
-                        __builtin_popcount(is_link_dump);
+                        __builtin_popcount(rtr_dump_outputs.link);
             }
         }
 
@@ -644,13 +656,11 @@ static void reinjection_read_packet_types(reinject_config_t *config) {
 }
 
 static inline void reinjection_set_timeout(uint payload) {
-    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
-            | ((payload & ROUTER_TIMEOUT_MASK) << 16);
+    router_control->control.begin_emergency_wait_time = payload;
 }
 
 static inline void reinjection_set_emergency_timeout(uint payload) {
-    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
-            | ((payload & ROUTER_TIMEOUT_MASK) << 24);
+    router_control->control.drop_wait_time = payload;
 }
 
 //! \brief Set the router wait1 timeout.
@@ -660,7 +670,9 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
-    reinjection_set_timeout(msg->arg1);
+
+    router_control->control.begin_emergency_wait_time = msg->arg1;
+
     // set SCP command to OK , as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
@@ -674,7 +686,7 @@ static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
         return 0;
     }
 
-    reinjection_set_emergency_timeout(msg->arg1);
+    router_control->control.drop_wait_time = msg->arg1;
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
@@ -699,9 +711,9 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
             (reinjector_status_response_packet_t *) &msg->arg1;
 
     // Put the router timeouts in the packet
-    uint control = (uint) (rtr[RTR_CONTROL] & 0xFFFF0000);
-    data->router_timeout = (control >> 16) & ROUTER_TIMEOUT_MASK;
-    data->router_emergency_timeout = (control >> 24) & ROUTER_TIMEOUT_MASK;
+    router_control_t control = router_control->control;
+    data->router_timeout = control.begin_emergency_wait_time;
+    data->router_emergency_timeout = control.drop_wait_time;
 
     // Put the statistics in the packet
     data->n_dropped_packets = n_dropped_packets;
@@ -746,10 +758,15 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
 }
 
 static inline int reinjection_exit(sdp_msg_t *msg) {
-    uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
-    vic[VIC_DISABLE] = int_select;
+    vic_control->int_disable = (vic_mask_t) {
+        .timer1 = true,
+        .router_dump = true
+    };
     disable_comms_interrupt();
-    vic[VIC_SELECT] = 0;
+    vic_control->int_select = (vic_mask_t) {
+        // Also all the rest are not FIQ
+        .router_dump = false
+    };
     run = false;
 
     // set SCP command to OK, as successfully completed
@@ -814,33 +831,41 @@ static uint reinjection_sdp_command(sdp_msg_t *msg) {
 // \brief SARK level timer interrupt setup
 static void reinjection_configure_timer(void) {
     // Clear the interrupt
-    tc[T1_CONTROL] = 0;
-    tc[T1_INT_CLR] = 1;
+    timer1_control->control = (timer_control_t) {
+        .enable = false,
+        .interrupt_enable = false
+    };
+    timer1_control->interrupt_clear = true;
 
     // Set the timer times
-    tc[T1_LOAD] = sv->cpu_clk * TICK_PERIOD;
-    tc[T1_BG_LOAD] = sv->cpu_clk * TICK_PERIOD;
+    timer1_control->load_value = sv->cpu_clk * TICK_PERIOD;
+    timer1_control->background_load_value = sv->cpu_clk * TICK_PERIOD;
 }
 
 // \brief pass, not a clue.
 static void reinjection_configure_comms_controller(void) {
     // remember SAR register contents (p2p source ID)
-    cc_sar = cc[CC_SAR] & 0x0000ffff;
+    cc_sar = (comms_source_addr_t) {
+        .p2p_source_id = comms_control->source_addr.p2p_source_id
+    };
 }
 
 // \brief sets up SARK and router to have a interrupt when a packet is dropped
 static void reinjection_configure_router(void) {
     // re-configure wait values in router
-    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
+    router_control_t control = router_control->control;
+    control.begin_emergency_wait_time = 0x4f;
+    control.drop_wait_time = 0;
+    router_control->control = control;
 
     // clear router interrupts,
-    (void) rtr[RTR_STATUS];
+    (void) router_control->status;
 
     // clear router dump status,
-    (void) rtr[RTR_DSTAT];
+    (void) router_control->dump.status;
 
     // and enable router interrupts when dumping packets
-    rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
+    router_control->control.dump_interrupt_enable = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -913,8 +938,8 @@ static void data_in_process_mc_payload_packet(uint key, uint data) {
 
 static INT_HANDLER process_mc_payload_packet(void) {
     // get data from comm controller
-    uint data = cc[CC_RXDATA];
-    uint key = cc[CC_RXKEY];
+    uint data = comms_control->rx_data;
+    uint key = comms_control->rx_key;
     //io_printf(IO_BUF, "recieved key %d payload %d\n", key, data);
 
     if (key == reinjection_timeout_mc_key) {
@@ -931,7 +956,7 @@ static INT_HANDLER process_mc_payload_packet(void) {
     }
 
     // and tell VIC we're done
-    vic[VIC_VADDR] = (uint) vic;
+    vic_interrupt_complete();
 }
 
 //! \brief private method for writing router entries to the router.
@@ -1080,12 +1105,19 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
     }
 
     // Wait for a router slot
-    while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
+    while (!comms_control->tx_control.not_full) {
         // Empty body; CC array is volatile
     }
-    cc[CC_TCR] = PKT_FR_PL;
-    cc[CC_TXDATA] = data;
-    cc[CC_TXKEY] = key;
+    const spinnaker_packet_control_byte_t fixed_route_with_payload = {
+        .payload = true,
+        .type = SPINNAKER_PACKET_TYPE_FR
+    };
+    comms_control->source_addr = cc_sar;
+    comms_control->tx_control = (comms_tx_control_t) {
+        .control_byte = fixed_route_with_payload.value
+    };
+    comms_control->tx_data = data;
+    comms_control->tx_key = key;
 }
 
 //! \brief takes a DMA'ed block and transmits its contents as multicast packets.
@@ -1113,12 +1145,15 @@ static void data_out_send_data_block(
 
 static inline void data_out_dma_read(
         uint32_t dma_tag, void *source, void *destination, uint n_words) {
-    uint desc = DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-            (n_words * sizeof(uint));
     dma_port_last_used = dma_tag;
-    dma[DMA_ADRS] = (uint) source;
-    dma[DMA_ADRT] = (uint) destination;
-    dma[DMA_DESC] = desc;
+    dma_control->sdram_address = source;
+    dma_control->tcm_address = destination;
+    dma_control->description = (dma_description_t) {
+        .width = DMA_WIDTH,
+        .burst = DMA_BURST_SIZE,
+        .direction = DMA_READ,
+        .length_words = n_words
+    };
 }
 
 //! \brief sets off a DMA reading a block of SDRAM
@@ -1473,7 +1508,9 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
 //! \brief the handler for all DMAs complete
 static INT_HANDLER data_out_dma_complete(void) {
     // reset the interrupt.
-    dma[DMA_CTRL] = 0x8;
+    dma_control->control = (dma_control_t) {
+        .clear_done_int = true
+    };
     if (!stop) {
         // Only do something if we have not been told to stop
         switch (dma_port_last_used) {
@@ -1496,22 +1533,27 @@ static INT_HANDLER data_out_dma_complete(void) {
         }
     }
     // and tell VIC we're done
-    vic[VIC_VADDR] = (uint) vic;
+    vic_interrupt_complete();
 }
 
 //! \brief the handler for DMA errors
 static INT_HANDLER data_out_dma_error(void) {
-    io_printf(IO_BUF, "DMA failed: 0x%08x\n", dma[DMA_STAT]);
-    dma[DMA_CTRL] = 0x4;
-    vic[VIC_VADDR] = (uint) vic;
+    io_printf(IO_BUF, "DMA failed: 0x%08x\n", dma_control->status);
+    dma_control->control = (dma_control_t) {
+        // Clear the error
+        .restart = true
+    };
+    vic_interrupt_complete();
     rt_error(RTE_DABT);
 }
 
 //! \brief the handler for DMA timeouts (hopefully unlikely...)
 static INT_HANDLER data_out_dma_timeout(void) {
-    io_printf(IO_BUF, "DMA timeout: 0x%08x\n", dma[DMA_STAT]);
-    dma[DMA_CTRL] = 0x10;
-    vic[VIC_VADDR] = (uint) vic;
+    io_printf(IO_BUF, "DMA timeout: 0x%08x\n", dma_control->status);
+    dma_control->control = (dma_control_t) {
+        .clear_timeout_int = true
+    };
+    vic_interrupt_complete();
 }
 
 //-----------------------------------------------------------------------------
@@ -1543,7 +1585,10 @@ void __wrap_sark_int(void *pc) {
     // interrupt again
     sdp_msg_t *msg = get_message_from_mailbox();
     //io_printf(IO_BUF, "seq is %d\n", msg->seq);
-    sc[SC_CLR_IRQ] = SC_CODE + (1 << sark.phys_cpu);
+    system_control->clear_cpu_irq = (sc_magic_proc_map_t) {
+        .security_code = SYSTEM_CONTROLLER_MAGIC_NUMBER,
+        .select = 1 << sark.phys_cpu,
+    };
     if (msg == NULL) {
         return;
     }
@@ -1614,7 +1659,9 @@ static void reinjection_initialise(void) {
 
     // Setup the router interrupt as a fast interrupt
     sark_vec->fiq_vec = reinjection_dropped_packet_callback;
-    vic[VIC_SELECT] = 1 << RTR_DUMP_INT;
+    vic_control->int_select = (vic_mask_t) {
+        .router_dump = true
+    };
 }
 
 //! \brief sets up data required by the data speed up functionality
@@ -1638,9 +1685,35 @@ static void data_out_initialise(void) {
     set_vic_callback(DMA_TIMEOUT_SLOT, DMA_TO_INT, data_out_dma_timeout);
 
     // configuration for the DMA's by the speed data loader
-    dma[DMA_CTRL] = 0x3f; // Abort pending and active transfers
-    dma[DMA_CTRL] = 0x0d; // clear possible transfer done and restart
-    dma[DMA_GCTL] = 0x1ffc00; // enable DMA done and error interrupt
+    dma_control->control = (dma_control_t) {
+        // Abort pending and active transfers
+        .uncommit = true,
+        .abort = true,
+        .restart = true,
+        .clear_done_int = true,
+        .clear_timeout_int = true,
+        .clear_write_buffer_int = true
+    };
+    dma_control->control = (dma_control_t) {
+        // clear possible transfer done and restart
+        .uncommit = true,
+        .restart = true,
+        .clear_done_int = true
+    };
+    dma_control->global_control = (dma_global_control_t) {
+        // enable DMA done and error interrupt
+        .transfer_done_interrupt = true,
+        .transfer2_done_interrupt = true,
+        .timeout_interrupt = true,
+        .crc_error_interrupt = true,
+        .tcm_error_interrupt = true,
+        .axi_error_interrupt = true, // SDRAM error
+        .user_abort_interrupt = true,
+        .soft_reset_interrupt = true,
+        .unknown1 = true, // ???
+        .unknown2 = true, // ???
+        .write_buffer_error_interrupt = true
+    };
 }
 
 //! \brief sets up data required by the data in speed up functionality
@@ -1689,10 +1762,15 @@ void c_main(void) {
 
     // set up VIC callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for WDOG)
-    uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT) |
-            (1 << DMA_DONE_INT) | (1 << CC_MC_INT) |
-            (1 << DMA_ERR_INT) | (1 << DMA_TO_INT);
-    vic[VIC_DISABLE] = int_select;
+    const vic_mask_t int_select = {
+        .timer1 = true,
+        .router_dump = true,
+        .dma_done = true,
+        .dma_error = true,
+        .dma_timeout = true,
+        .cc_rx_mc = true,
+    };
+    vic_control->int_disable = int_select;
     disable_comms_interrupt();
 
     // set up reinjection functionality
@@ -1703,8 +1781,13 @@ void c_main(void) {
     data_in_initialise();
 
     // Enable interrupts and timer
-    vic[VIC_ENABLE] = int_select;
-    tc[T1_CONTROL] = 0xe2;
+    vic_control->int_enable = int_select;
+    timer1_control->control = (timer_control_t) {
+        .size = 1,
+        .interrupt_enable = true,
+        .periodic_mode = true,
+        .enable = true
+    };
 
     // Run until told to exit
     while (run) {
