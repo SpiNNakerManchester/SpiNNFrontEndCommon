@@ -19,8 +19,8 @@
 #include <sark.h>
 #include <stdbool.h>
 #include <common-typedefs.h>
-#include "common.h"
 #include <spinn_extra.h>
+#include "common.h"
 
 extern void spin1_wfi(void);
 extern INT_HANDLER sark_int_han(void);
@@ -124,7 +124,7 @@ typedef enum data_out_sdp_commands {
 #define TDMA_WAIT_PERIOD   0
 
 // The initial timeout of the router
-#define ROUTER_INITIAL_TIMEOUT 0x004f0000
+#define ROUTER_INITIAL_TIMEOUT 0x4f
 
 // Amount to call the timer callback
 #define TICK_PERIOD        10
@@ -154,43 +154,8 @@ enum {
 };
 
 enum {
-    RTR_DOVRFLW_BIT = 30,
-    RTR_BLOCKED_BIT = 25,
-    RTR_FPE_BIT = 17,
-    RTR_LE_BIT = 6,
-    RTR_DENABLE_BIT = 2
+    ROUTER_TIMEOUT_MAX = 0xFF
 };
-
-enum {
-    RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT,   // router blocked
-    RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT,   // router dump overflow
-    RTR_DENABLE_MASK = 1 << RTR_DENABLE_BIT,   // enable dump interrupts
-    RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,     // if the dumped packet was a processor failure
-    RTR_LE_MASK = (1 << RTR_LE_BIT) - 1        // if the dumped packet was a link failure
-};
-
-enum {
-    PKT_CONTROL_SHFT = 16,
-    PKT_PLD_SHFT = 17,
-    PKT_TYPE_SHFT = 22,
-    PKT_ROUTE_SHFT = 24
-};
-
-enum {
-    PKT_CONTROL_MASK = 0xff << PKT_CONTROL_SHFT,
-    PKT_PLD_MASK = 1 << PKT_PLD_SHFT,
-    PKT_TYPE_MASK = 3 << PKT_TYPE_SHFT,
-    PKT_ROUTE_MASK = 7 << PKT_ROUTE_SHFT
-};
-
-enum {
-    PKT_TYPE_MC = 0 << PKT_TYPE_SHFT,
-    PKT_TYPE_PP = 1 << PKT_TYPE_SHFT,
-    PKT_TYPE_NN = 2 << PKT_TYPE_SHFT,
-    PKT_TYPE_FR = 3 << PKT_TYPE_SHFT
-};
-
-#define ROUTER_TIMEOUT_MASK 0xFF
 
 // ------------------------------------------------------------------------
 // structs used in system
@@ -326,7 +291,7 @@ enum callback_priorities {
 // ------------------------------------------------------------------------
 
 // The content of the communications controller SAR register
-static comms_source_addr_t cc_sar;
+static uint p2p_source_id;
 
 // dumped packet queue
 static pkt_queue_t pkt_queue;
@@ -515,9 +480,10 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
             comms_control->tx_control = (comms_tx_control_t) {
                 .control_byte = dumped.hdr.control
             };
-            comms_source_addr_t source_addr = cc_sar;
-            source_addr.route = dumped.hdr.route;
-            comms_control->source_addr = source_addr;
+            comms_control->source_addr = (comms_source_addr_t) {
+                .p2p_source_id = p2p_source_id,
+                .route = dumped.hdr.route
+            };
 
             // maybe write payload,
             spinnaker_packet_control_byte_t control =
@@ -666,7 +632,7 @@ static inline void reinjection_set_emergency_timeout(uint payload) {
 //! \brief Set the router wait1 timeout.
 static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
     io_printf(IO_BUF, "setting router timeouts via sdp\n");
-    if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
+    if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
@@ -681,7 +647,7 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
 //! \brief Set the router wait2 timeout.
 static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
     io_printf(IO_BUF, "setting router emergency timeouts via sdp\n");
-    if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
+    if (msg->arg1 > ROUTER_TIMEOUT_MAX) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
@@ -845,16 +811,14 @@ static void reinjection_configure_timer(void) {
 // \brief pass, not a clue.
 static void reinjection_configure_comms_controller(void) {
     // remember SAR register contents (p2p source ID)
-    cc_sar = (comms_source_addr_t) {
-        .p2p_source_id = comms_control->source_addr.p2p_source_id
-    };
+    p2p_source_id = comms_control->source_addr.p2p_source_id;
 }
 
 // \brief sets up SARK and router to have a interrupt when a packet is dropped
 static void reinjection_configure_router(void) {
     // re-configure wait values in router
     router_control_t control = router_control->control;
-    control.begin_emergency_wait_time = 0x4f;
+    control.begin_emergency_wait_time = ROUTER_INITIAL_TIMEOUT;
     control.drop_wait_time = 0;
     router_control->control = control;
 
@@ -1112,7 +1076,6 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
         .payload = true,
         .type = SPINNAKER_PACKET_TYPE_FR
     };
-    comms_control->source_addr = cc_sar;
     comms_control->tx_control = (comms_tx_control_t) {
         .control_byte = fixed_route_with_payload.value
     };
