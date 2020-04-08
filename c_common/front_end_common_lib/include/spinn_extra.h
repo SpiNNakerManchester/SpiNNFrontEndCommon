@@ -113,7 +113,7 @@ typedef struct {
 typedef struct {
     uint source : 5;
     uint enable : 1;
-    uint : 27;
+    uint : 26;
 } vic_vector_control_t;
 
 // ---------------------------------------------------------------------
@@ -990,10 +990,10 @@ typedef struct {
 
 static volatile vic_control_t *const vic_control =
         (vic_control_t *) VIC_BASE_UNBUF; // NB unbuffered!
-static volatile vic_interrupt_handler_t *const vic_interrupt_vectors =
-        (vic_interrupt_handler_t *) (VIC_BASE_UNBUF + 0x100);
+static volatile vic_interrupt_handler_t *const vic_interrupt_vector =
+        (vic_interrupt_handler_t *) (VIC_BASE + 0x100);
 static volatile vic_vector_control_t *const vic_interrupt_control =
-        (vic_vector_control_t *) (VIC_BASE_UNBUF + 0x200);
+        (vic_vector_control_t *) (VIC_BASE + 0x200);
 
 static volatile timer_controller_t *const timer1_control =
         (timer_controller_t *) TIMER1_BASE;

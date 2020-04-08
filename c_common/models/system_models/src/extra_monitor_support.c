@@ -311,11 +311,6 @@ static bool reinject_nn;
 static bool reinject_fr;
 static bool run = true;
 
-// VIC
-typedef void (*isr_t) (void);
-static volatile isr_t* const vic_vectors = (isr_t *) (VIC_BASE + 0x100);
-static volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
-
 // ------------------------------------------------------------------------
 // global variables for data speed up in functionality
 // ------------------------------------------------------------------------
@@ -1595,13 +1590,13 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
-#ifndef VIC_ENABLE_VECTOR
-#define VIC_ENABLE_VECTOR (0x20)
-#endif //VIC_ENABLE_VECTOR
-
-static inline void set_vic_callback(uint8_t slot, uint type, isr_t callback) {
-    vic_vectors[slot] = callback;
-    vic_controls[slot] = VIC_ENABLE_VECTOR | type;
+static inline void set_vic_callback(
+        uint8_t slot, uint type, vic_interrupt_handler_t callback) {
+    vic_interrupt_vector[slot] = callback;
+    vic_interrupt_control[slot] = (vic_vector_control_t) {
+        .source = type,
+        .enable = true
+    };
 }
 
 //! \brief sets up data required by the reinjection functionality
@@ -1611,7 +1606,9 @@ static void reinjection_initialise(void) {
     reinjection_read_packet_types(dsg_block(CONFIG_REINJECTION));
 
     // Setup the CPU interrupt for WDOG
-    vic_controls[sark_vec->sark_slot] = 0;
+    vic_interrupt_control[sark_vec->sark_slot] = (vic_vector_control_t) {
+        .enable = false
+    };
     set_vic_callback(CPU_SLOT, CPU_INT, sark_int_han);
 
     // Setup the communications controller interrupt
