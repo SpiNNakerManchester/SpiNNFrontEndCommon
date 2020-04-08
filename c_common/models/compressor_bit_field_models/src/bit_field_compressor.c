@@ -101,26 +101,26 @@ void send_sdp_message_response(void) {
 
     // send sdp packet
     int id = spin1_get_core_id();
-    log_info("processor %d", id);
+    log_debug("processor %d", id);
     //if (id == 5){
-        log_info("actually sending");
+        log_debug("actually sending");
         while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
-            log_info("failed to send. trying again");
+            log_debug("failed to send. trying again");
             // Empty body
         }
    //}
 
-    log_info("length = %x", my_msg.length);
-    log_info("checksum = %x", my_msg.checksum);
-    log_info("flags = %u", my_msg.flags);
-    log_info("tag = %u", my_msg.tag);
-    log_info("dest_port = %u", my_msg.dest_port);
-    log_info("srce_port = %u", my_msg.srce_port);
-    log_info("dest_addr = %u", my_msg.dest_addr);
-    log_info("srce_addr = %u", my_msg.srce_addr);
-    log_info("data 0 = %d", my_msg.data[0]);
-    log_info("data 1 = %d", my_msg.data[1]);
-    log_info("data 2 = %d", my_msg.data[2]);
+    log_debug("length = %x", my_msg.length);
+    log_debug("checksum = %x", my_msg.checksum);
+    log_debug("flags = %u", my_msg.flags);
+    log_debug("tag = %u", my_msg.tag);
+    log_debug("dest_port = %u", my_msg.dest_port);
+    log_debug("srce_port = %u", my_msg.srce_port);
+    log_debug("dest_addr = %u", my_msg.dest_addr);
+    log_debug("srce_addr = %u", my_msg.srce_addr);
+    log_debug("data 0 = %d", my_msg.data[0]);
+    log_debug("data 1 = %d", my_msg.data[1]);
+    log_debug("data 2 = %d", my_msg.data[2]);
     attempts += 1;
 }
 
@@ -142,7 +142,7 @@ void return_success_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_info("send success ack");
+    log_debug("send success ack");
 }
 
 //! \brief send a failed response due to the control forcing it to stop
@@ -185,7 +185,7 @@ bool store_into_compressed_address(void) {
         return false;
     }
 
-    log_info(
+    log_debug(
         "starting store of %d tables with %d entries",
         n_tables, routing_table_sdram_get_n_entries());
 
@@ -238,15 +238,15 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // turn off timer and set us into pause state
     spin1_pause();
-    log_info("finished oc minimise with success %d", success);
+    log_debug("finished oc minimise with success %d", success);
 
     // check state
     log_debug("success was %d", success);
     if (success) {
-        log_info("store into compressed");
+        log_debug("store into compressed");
         success = store_into_compressed_address();
         if (success) {
-            log_info("success response");
+            log_debug("success response");
             return_success_response_message();
         } else {
             log_debug("failed by space response");
@@ -279,9 +279,9 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     spin1_pause();
 
 
-    log_info("n bitfields = %d", start_cmd->table_data->n_bit_fields);
+    log_debug("n bitfields = %d", start_cmd->table_data->n_bit_fields);
     if (n_bit_fields == start_cmd->table_data->n_bit_fields) {
-        log_info("cloned message, ignoring");
+        log_debug("cloned message, ignoring");
         return;
     }
 
@@ -289,9 +289,9 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     n_bit_fields = start_cmd->table_data->n_bit_fields;
 
     // set up fake heap
-    log_info("setting up fake heap for sdram usage");
+    log_debug("setting up fake heap for sdram usage");
     platform_new_heap_update(start_cmd->fake_heap_data);
-    log_info("finished setting up fake heap for sdram usage");
+    log_debug("finished setting up fake heap for sdram usage");
 
 
 
@@ -314,10 +314,10 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
         rt_error(RTE_SWERR);
     }
 
-    log_info("table init for %d tables", start_cmd->table_data->n_elements);
+    log_debug("table init for %d tables", start_cmd->table_data->n_elements);
     bool success = routing_tables_init(
         start_cmd->table_data->n_elements, start_cmd->table_data->elements);
-    log_info("table init finish");
+    log_debug("table init finish");
 
     if (!success) {
         log_error("failed to allocate memory for routing table.h state");
@@ -325,9 +325,9 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
         return;
     }
 
-    log_info("starting compression attempt");
+    log_debug("starting compression attempt");
 
-    log_info("my core id at start comp is %d", spin1_get_core_id());
+    log_debug("my core id at start comp is %d", spin1_get_core_id());
     // start compression process
     spin1_schedule_callback(
         start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
@@ -340,8 +340,8 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
 int m_recied = 0;
 void _sdp_handler(uint mailbox, uint port) {
     use(port);
-    log_info("my core id at reception is %d", spin1_get_core_id());
-    log_info("received packet");
+    log_debug("my core id at reception is %d", spin1_get_core_id());
+    log_debug("received packet");
 
 
     // get data from the sdp message
@@ -353,14 +353,14 @@ void _sdp_handler(uint mailbox, uint port) {
         control_core_id = (msg->srce_port & CPU_MASK);
     }
 
-    log_info("control core is %d", control_core_id);
-    log_info("command code is %d", payload->command);
+    log_debug("control core is %d", control_core_id);
+    log_debug("command code is %d", payload->command);
 
     // get command code
     if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
         switch (payload->command) {
             case START_DATA_STREAM:
-                log_info("start a stream packet");
+                log_debug("start a stream packet");
                 this_processor->user1 = 1;
                 handle_start_data_stream(&payload->start);
                 sark_msg_free((sdp_msg_t*) msg);

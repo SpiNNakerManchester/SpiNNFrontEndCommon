@@ -43,7 +43,6 @@ void message_sending_send_sdp_message(
     log_debug("data 1 = %d", my_msg->data[1]);
     log_debug("data 2 = %d", my_msg->data[2]);
 
-
     uint32_t attempt = 0;
     log_debug("sending message");
     bool received = false;
@@ -64,14 +63,6 @@ void message_sending_send_sdp_message(
         vcpu_t *comp_processor = &sark_virtual_processor_info[processor];
         if (comp_processor->user1 == 1){
             received = true;
-        }
-        else{
-            log_debug("retrying");
-            platform_check_all();
-            log_debug("sark markers");
-            log_debug("user 1 = %d", comp_processor->user1);
-            log_debug("user 2 = %d", comp_processor->user2);
-            log_debug("user 3 = %d", comp_processor->user3);
         }
     }
     log_debug("sent message");
@@ -94,7 +85,6 @@ static inline bool store_sdram_addresses_for_compression(
     //free previous if there is any
 
     if (comp_cores_bf_tables[comp_core_index].elements != NULL) {
-        log_debug("freeing elements");
         bool success = helpful_functions_free_sdram_from_compression_attempt(
             comp_core_index, comp_cores_bf_tables);
         if (!success) {
@@ -118,13 +108,10 @@ static inline bool store_sdram_addresses_for_compression(
 //! \param[in] compressor_cores: list of compressor core ids.
 static inline void update_mc_message(
         int comp_core_index, sdp_msg_pure_data* my_msg, int* compressor_cores) {
-    log_debug("chip id = %d", spin1_get_chip_id());
     my_msg->srce_addr = spin1_get_chip_id();
     my_msg->dest_addr = spin1_get_chip_id();
     my_msg->flags = REPLY_NOT_EXPECTED;
-    log_debug("core id =  %d", spin1_get_id() & 0x1F);
     my_msg->srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
-    log_debug("compressor core = %d", compressor_cores[comp_core_index]);
     my_msg->dest_port =
         (RANDOM_PORT << PORT_SHIFT) | compressor_cores[comp_core_index];
 }
@@ -141,21 +128,9 @@ static void set_up_packet(
 
     // fill in
     data->command_code = START_DATA_STREAM;
-    log_debug("stolen sdram heap is %x", platform_get_stolen_heap());
     data->fake_heap_data = stolen_sdram_heap;
     data->table_data = data_store;
-
     my_msg->length = (LENGTH_OF_SDP_HEADER + sizeof(start_sdp_packet_t));
-
-    log_info(
-        "table size of table 1 is %d",
-        data->table_data->elements[0]->size);
-
-    log_debug(
-        "message contains command code %d, fake heap data address %x "
-        "table data address %x",
-        data->command_code, data->fake_heap_data, data->table_data);
-    log_debug("message length = %d", my_msg->length);
 }
 
 //! \brief selects a compression core's index that's not doing anything yet
@@ -174,7 +149,6 @@ static int select_compressor_core_index(
         if (comp_core_mid_point[comp_core_index] == DOING_NOWT) {
             comp_core_mid_point[comp_core_index] = midpoint;
             *n_available_compression_cores -= 1;
-            log_debug(" n_available_compression_cores is %d", *n_available_compression_cores);
             return comp_core_index;
         }
     }
@@ -224,17 +198,8 @@ static bool message_sending_set_off_bit_field_compression(
 
     // allocate space for the compressed routing entries if required
     if (comp_cores_bf_tables[comp_core_index].compressed_table == NULL){
-        int size_of_malloc = routing_table_sdram_size_of_table(TARGET_LENGTH);
-        log_debug("size of malloc is %d", size_of_malloc);
         comp_cores_bf_tables[comp_core_index].compressed_table = MALLOC_SDRAM(
             routing_table_sdram_size_of_table(TARGET_LENGTH));
-        log_debug(
-            "size of the compressed in bytes is %d",
-            routing_table_sdram_size_of_table(TARGET_LENGTH));
-        log_debug(
-            "address of compressed for core %d is %x",
-            compressor_cores[comp_core_index],
-            comp_cores_bf_tables[comp_core_index].compressed_table);
         if (comp_cores_bf_tables[comp_core_index].compressed_table == NULL) {
             log_error(
                 "failed to allocate sdram for compressed routing entries");
@@ -253,7 +218,6 @@ static bool message_sending_set_off_bit_field_compression(
 
     // generate the message to send to the compressor core
     set_up_packet(&comp_cores_bf_tables[comp_core_index], my_msg);
-    log_debug("finished setting up compressor packet");
 
     // update sdp to right destination
     update_mc_message(comp_core_index, my_msg, compressor_cores);
@@ -261,10 +225,6 @@ static bool message_sending_set_off_bit_field_compression(
     // send sdp packet
     message_sending_send_sdp_message(
         my_msg, compressor_cores[comp_core_index]);
-
-    log_debug("dd");
-    platform_check_all();
-    log_debug("ddc");
     return true;
 }
 
@@ -295,10 +255,6 @@ bool message_sending_set_off_no_bit_field_compression(
         helpful_functions_clone_un_compressed_routing_table(
             uncompressed_router_table);
 
-    log_info(
-        "size of clone is %d, orginal size is %d",
-        sdram_clone_of_routing_table->size,
-        uncompressed_router_table->uncompressed_table.size);
     if (sdram_clone_of_routing_table == NULL){
         log_error("could not allocate memory for uncompressed table for no "
                   "bit field compression attempt.");
@@ -307,16 +263,13 @@ bool message_sending_set_off_no_bit_field_compression(
     log_info("finished cloning of uncompressed table");
 
     // set up the bitfield routing tables so that it'll map down below
-    log_debug("allocating bf routing tables");
     table_t **bit_field_routing_tables = MALLOC_SDRAM(sizeof(table_t*));
-    log_debug("malloc finished");
     if (bit_field_routing_tables == NULL){
         log_error(
             "failed to allocate memory for the bit_field_routing tables");
         return false;
     }
 
-    log_debug("allocate to array");
     bit_field_routing_tables[0] = sdram_clone_of_routing_table;
     log_info("allocated bf routing tables");
     log_info(

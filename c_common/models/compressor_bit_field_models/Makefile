@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-APPS = compressor.mk sorter.mk
+APPS = sorter.mk compressor.mk
 
 all: $(APPS)
 	for f in $(APPS); do $(MAKE) -f $$f || exit $$?; done

@@ -40,14 +40,6 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
             }
         }
     }
-    log_error("failed to find the bitfield address %x anywhere.", filter.data);
-    for (int bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
-        bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
-        for (int addr_i = 0; addr_i < element.length_of_list; addr_i++) {
-            log_info("address %x", element.bit_field_addresses[addr_i].data);
-        }
-    }
-
     terminate(EXIT_FAIL);
     return 0;
 }
@@ -62,7 +54,6 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
         uint32_t key, region_addresses_t *region_addresses){
     // locate n address pairs
     uint32_t n_address_pairs = region_addresses->n_pairs;
-    log_debug("key is %x", key);
 
     // cycle through key to atom regions to locate key
     for (uint32_t r_id = 0; r_id < n_address_pairs; r_id++){
@@ -76,7 +67,6 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
         for (uint32_t i = 0; i < n_key_atom_pairs; i++) {
             // if key is correct, return atoms
             if (key_atom_map->pairs[i].key == key) {
-                log_debug("n atoms is %d", key_atom_map->pairs[i].n_atoms);
                 return key_atom_map->pairs[i].n_atoms;
             }
         }
@@ -115,13 +105,6 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
         }
 
         if (!found) {
-            //log_info("bf pointer address = %x", bf_pointer);
-            //log_info(
-            //    " bf pointer key = %d, n keys = %d",
-            //    bf_pointer->key, n_keys);
-            //log_info(
-            //    "address of keys = %x, address pf keys[n_keys] = %x",
-            //    &keys, &keys[n_keys]);
             keys[n_keys].master_pop_key = bf_pointer->key;
             keys[n_keys].n_bitfields_with_key = 1;
             n_keys++;

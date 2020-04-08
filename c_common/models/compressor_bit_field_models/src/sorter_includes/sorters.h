@@ -248,14 +248,16 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
                     "processor %d in the sorting of successful bitfields to "
                     "remove.", region_proc_id);
                 for (int free_id =0; free_id < r_id; free_id++) {
-                    FREE(sorted_bf_by_processor[free_id].key_list->
-                         master_pop_keys);
+                    FREE_MARKED(
+                        sorted_bf_by_processor[free_id].key_list->master_pop_keys,
+                        999688);
                 }
                 for (int free_id = 0; free_id < region_addresses->n_pairs;
                         free_id++){
-                    FREE(sorted_bf_by_processor[free_id].key_list);
+                    FREE_MARKED(
+                        sorted_bf_by_processor[free_id].key_list, 999687);
                 }
-                FREE(sorted_bf_by_processor);
+                FREE_MARKED(sorted_bf_by_processor, 999686);
                 return NULL;
             }
 

@@ -828,7 +828,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
     // free the redundant packet tracker, as now tailored ones are in the dict
     log_debug("freeing unique_redundant_packets");
-    FREE(unique_redundant_packets);
+    FREE_MARKED(unique_redundant_packets, 999788);
     log_debug("freed unique_redundant_packets");
 
     // order the bitfields based off the impact to cores redundant packet
@@ -845,11 +845,11 @@ sorted_bit_fields_t* bit_field_sorter_sort(
             unique_redundant_index < n_unique_redundant_packets;
             unique_redundant_index++) {
         _coverage_t* cov_element = coverage[unique_redundant_index];
-        FREE(cov_element->bit_field_addresses);
+        FREE_MARKED(cov_element->bit_field_addresses, 999787);
         cov_element->bit_field_addresses = NULL;
-        FREE(cov_element->processor_ids);
+        FREE_MARKED(cov_element->processor_ids, 999786);
         cov_element->processor_ids = NULL;
-        FREE(cov_element);
+        FREE_MARKED(cov_element, 999785);
         cov_element = NULL;
     }
     log_debug("free part 1");
@@ -862,18 +862,18 @@ sorted_bit_fields_t* bit_field_sorter_sort(
             proc_cov_by_bf[region_index];
 
         if (proc_cov_element->length_of_list != 0) {
-            FREE(proc_cov_element->redundant_packets);
+            FREE_MARKED(proc_cov_element->redundant_packets, 999784);
             proc_cov_element->redundant_packets = NULL;
         }
-        FREE(proc_cov_element);
+        FREE_MARKED(proc_cov_element, 999783);
         proc_cov_element = NULL;
 
     }
     log_debug("free part 2");
-    FREE(coverage);
+    FREE_MARKED(coverage, 999782);
     coverage = NULL;
     log_debug("free part 3");
-    FREE(proc_cov_by_bf);
+    FREE_MARKED(proc_cov_by_bf, 999781);
     proc_cov_by_bf = NULL;
     log_debug("free part 4");
     return sorted_bit_fields;

@@ -372,7 +372,7 @@ static bool oc_down_check(
 
             // free stuff already malloc
             bit_set_delete(sets.best);
-            FREE(&sets.best);
+            FREE(sets.best);
             return false;
         }
 
@@ -384,8 +384,8 @@ static bool oc_down_check(
             // free stuff already malloc
             bit_set_delete(sets.best);
             bit_set_delete(sets.working);
-            FREE(&sets.best);
-            FREE(&sets.working);
+            FREE(sets.best);
+            FREE(sets.working);
             return false;
         }
 
@@ -397,8 +397,8 @@ static bool oc_down_check(
             // free stuff already malloc
             bit_set_delete(sets.best);
             bit_set_delete(sets.working);
-            FREE(&sets.best);
-            FREE(&sets.working);
+            FREE(sets.best);
+            FREE(sets.working);
             return false;
         }
 
@@ -413,8 +413,8 @@ static bool oc_down_check(
                 log_error("failed due to timing");
                 bit_set_delete(sets.best);
                 bit_set_delete(sets.working);
-                FREE(&sets.best);
-                FREE(&sets.working);
+                FREE(sets.best);
+                FREE(sets.working);
                 return false;
             }
 
@@ -462,10 +462,8 @@ static inline bool oc_get_best_merge(
 
     // Keep track of which entries have been considered as part of merges.
     bit_set_t considered;
-    log_debug("bitset");
     bool success = bit_set_init(
         &considered, routing_table_sdram_get_n_entries());
-    log_debug("bitset");
     if (!success) {
         log_info("failed to initialise the bit_set. throwing response malloc");
         *failed_by_malloc = true;
@@ -474,9 +472,8 @@ static inline bool oc_get_best_merge(
 
     // Keep track of the current best merge and also provide a working merge
     merge_t working;
-    log_debug("bitset");
+
     success = merge_init(best, routing_table_sdram_get_n_entries());
-    log_debug("bitset");
     if (!success) {
         log_info("failed to init the merge best. throw response malloc");
         *failed_by_malloc = true;
@@ -487,9 +484,8 @@ static inline bool oc_get_best_merge(
         // return false
         return false;
     }
-    log_debug("merge init");
+
     success = merge_init(&working, routing_table_sdram_get_n_entries());
-    log_debug("merge init");
     if (!success) {
         log_info("failed to init the merge working. throw response malloc");
         *failed_by_malloc = true;
@@ -689,7 +685,7 @@ static inline bool oc_merge_apply(
     // position to the other as required.
     int insert = 0;
 
-    log_info(
+    log_debug(
         "routing table entries = %d",
         routing_table_sdram_get_n_entries());
 
@@ -698,8 +694,8 @@ static inline bool oc_merge_apply(
 
         // Grab the current entry before we possibly overwrite it
         entry_t* current = routing_table_sdram_stores_get_entry(remove);
-        log_info("bacon");
-        log_info(
+        log_debug("bacon");
+        log_debug(
             "entry %d being processed has key %x or %d, mask %x route %x "
             "source %x", remove, current->key_mask.key, current->key_mask.key,
             current->key_mask.mask, current->route, current->source);
@@ -724,7 +720,7 @@ static inline bool oc_merge_apply(
         // If this entry is not contained within the merge then copy it from its
         // current position to its new position.
         if (!merge_contains(merge, remove)){
-            log_info(
+            log_debug(
                 "not contains at index %d and insert %d at insert point",
                 remove, insert);
 
@@ -739,7 +735,7 @@ static inline bool oc_merge_apply(
             insert++;
 
         } else {
-            log_info(
+            log_debug(
                 "merge contains at index %d and insert %d at insert point",
                 remove, insert);
 
@@ -763,7 +759,7 @@ static inline bool oc_merge_apply(
             // removed.
             reduced_size++;
 
-            log_info(
+            log_debug(
                 "at index %d and insert %d not at merge point", remove, insert);
         }
     }
@@ -814,7 +810,7 @@ static inline bool oc_minimise(
     counter_to_crash += 1;
 
     // check if any compression actually needed
-    log_info(
+    log_debug(
         "n entries before compression is %d",
         routing_table_sdram_get_n_entries());
 
@@ -851,14 +847,14 @@ static inline bool oc_minimise(
     }
 
     // start the merger process
-    log_info("start compression true attempt");
+    log_debug("start compression true attempt");
     log_debug("n entries is %d", routing_table_sdram_get_n_entries());
     int attempts = 0;
 
     while ((routing_table_sdram_get_n_entries() > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control) {
 
-        log_info("n entries is %d", routing_table_sdram_get_n_entries());
+        log_debug("n entries is %d", routing_table_sdram_get_n_entries());
 
         // Get the best possible merge, if this merge is empty then break out
         // of the loop.

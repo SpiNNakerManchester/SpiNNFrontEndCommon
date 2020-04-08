@@ -155,10 +155,6 @@ static inline bool generate_entries_from_bitfields(
         entry_t original_entry, table_t **sdram_table,
         region_addresses_t *region_addresses,
         bit_field_by_processor_t* bit_field_by_processor){
-
-    log_debug("entered generate_entries_from_bitfields.");
-    platform_check_all_marked(3);
-
     // get processors by bitfield
     log_debug(
         "mallocing %d bytes for bit_field_processors",
@@ -180,25 +176,16 @@ static inline bool generate_entries_from_bitfields(
                 bit_field_by_processor);
     }
 
-    log_debug("after locate proc from bf address.");
-    platform_check_all_marked(4);
-
     // create sdram holder for the table we're going to generate
     log_debug("looking for atoms");
     uint32_t n_atoms = helpful_functions_locate_key_atom_map(
         original_entry.key_mask.key, region_addresses);
 
-    log_debug("after locate key atom map.");
-    platform_check_all_marked(5);
-
     *sdram_table = MALLOC_SDRAM(routing_table_sdram_size_of_table(n_atoms));
     log_debug("%x for sdram table", sdram_table);
 
-    log_debug("after malloc of sdram table.");
-    platform_check_all_marked(6);
-
     if (*sdram_table == NULL) {
-        FREE_MARKED(bit_field_processors, 999991);
+        FREE(bit_field_processors);
         log_error("can not allocate sdram for the sdram routing table");
         return false;
     }
@@ -209,9 +196,6 @@ static inline bool generate_entries_from_bitfields(
     table->size = n_atoms;
     log_debug(" n atoms is %d, size %d", n_atoms, table->size);
 
-    log_debug("after set n atoms on sdram table.");
-    platform_check_all_marked(7);
-
     // set up the new route process
     uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
     bit_field_t processors = (bit_field_t) MALLOC(size * sizeof(bit_field_t));
@@ -219,8 +203,8 @@ static inline bool generate_entries_from_bitfields(
         log_error(
             "could not allocate memory for the processor tracker when "
             "making entries from bitfields");
-        FREE_MARKED(bit_field_processors, 999990);
-        FREE_MARKED(*sdram_table, 999989);
+        FREE(bit_field_processors);
+        FREE(*sdram_table);
         return false;
     }
 
@@ -233,9 +217,9 @@ static inline bool generate_entries_from_bitfields(
         log_error(
             "could not allocate memory for the atom processor tracker when "
             "making entries from bitfields");
-        FREE_MARKED(bit_field_processors, 999988);
-        FREE_MARKED(sdram_table, 999987);
-        FREE_MARKED(processors, 999986);
+        FREE(bit_field_processors);
+        FREE(sdram_table);
+        FREE(processors);
         return false;
     }
 
@@ -277,18 +261,13 @@ static inline bool generate_entries_from_bitfields(
             "key is %x route in entry %d is %x",
              table->entries[atom].key_mask.key, atom,
              table->entries[atom].route);
-        platform_check_all_marked(8);
 
     }
 
-    platform_check_all_marked(9);
-
     // do not remove sdram store, as that's critical to how this stuff works
-    FREE_MARKED(bit_field_processors, 999985);
-    FREE_MARKED(processors, 999984);
-    FREE_MARKED(atom_processors, 999983);
-
-    platform_check_all_marked(10);
+    FREE(bit_field_processors);
+    FREE(processors);
+    FREE(atom_processors);
     return true;
 
 }
@@ -319,8 +298,6 @@ static inline bool generate_rt_from_bit_field(
         return false;
     }
 
-    platform_check_all_marked(11);
-
     int index = 0;
     for (int bit_field_index = 0; bit_field_index < mid_point;
             bit_field_index++) {
@@ -335,16 +312,9 @@ static inline bool generate_rt_from_bit_field(
         }
     }
 
-    platform_check_all_marked(12);
-
-    bool passed = platform_check(filters);
-    if (! passed){
-        log_error("failed");
-        terminate(2);
-    }
-
     // extract original routing entry from uncompressed table
     entry_t original_entry;
+
     // init the original entry
     original_entry.source = 0;
     original_entry.route = 0;
@@ -354,20 +324,10 @@ static inline bool generate_rt_from_bit_field(
     extract_and_remove_entry_from_table(
         uncompressed_table, master_pop_key, &original_entry);
 
-    platform_check_all_marked(13);
-
-    passed = platform_check(filters);
-    if (! passed){
-        log_error("failed");
-        terminate(2);
-    }
-
     // create table entries with bitfields
     bool success = generate_entries_from_bitfields(
         filters, n_bfs_for_key, original_entry, sdram_table,
         region_addresses, bit_field_by_processor);
-
-    platform_check_all_marked(14);
 
     table_t *table = *sdram_table;
     log_debug("sdram table n atoms = %d", table->size);
@@ -375,11 +335,11 @@ static inline bool generate_rt_from_bit_field(
         log_error(
             "can not create entries for key %d with %d bitfields.",
             master_pop_key, n_bfs_for_key);
-        FREE_MARKED(filters, 999982);
+        FREE(filters);
         return false;
     }
 
-    FREE_MARKED(filters, 999981);
+    FREE(filters);
     return true;
 }
 
@@ -410,12 +370,6 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         log_error("cannot allocate memory for keys");
         return NULL;
     }
-    bool check = platform_check(keys);
-    if (!check){
-        log_error("failed");
-        terminate(2);
-        rt_error(RTE_SWERR);
-    }
 
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
@@ -428,16 +382,10 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     table_t* uncompressed_table =
         helpful_functions_clone_un_compressed_routing_table(
             uncompressed_router_table);
-    check = platform_check(uncompressed_table);
-    if (!check){
-        log_error("failed");
-        terminate(2);
-        rt_error(RTE_SWERR);
-    }
     if (uncompressed_table == NULL) {
         log_error(
             "failed to clone uncompressed tables for attempt %d", mid_point);
-        FREE_MARKED(keys, 999980);
+        FREE(keys);
         return NULL;
     }
 
@@ -448,33 +396,21 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         MALLOC_SDRAM(*n_rt_addresses * sizeof(table_t*));
     if (bit_field_routing_tables == NULL) {
         log_error("failed to allocate memory for bitfield routing tables");
-        FREE_MARKED(keys, 999979);
-        FREE_MARKED(uncompressed_table, 999978);
+        FREE(keys);
+        FREE(uncompressed_table);
         return NULL;
     }
 
     // add clone to back of list, to ensure its easily accessible (plus its
     // part of the expected logic)
-    check = platform_check(bit_field_routing_tables);
-    if (!check){
-        log_error("failed");
-        terminate(2);
-        rt_error(RTE_SWERR);
-    }
     bit_field_routing_tables[*n_rt_addresses - 1] = uncompressed_table;
-    check = platform_check(bit_field_routing_tables);
-    if (!check){
-        log_error("failed");
-        terminate(2);
-        rt_error(RTE_SWERR);
-    }
 
     // iterate through the keys, accumulating bitfields and turn into routing
     // table entries.
     log_debug("starting the generation of tables by key");
     for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
 
-        platform_check_all_marked(1);
+        platform_check_all_marked(1888888);
 
         // holder for the rt address
         table_t *table = NULL;
@@ -485,34 +421,22 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
             keys[key_index].n_bitfields_with_key, mid_point, &table,
             region_addresses, bit_field_by_processor, sorted_bit_fields);
 
-        log_debug("%x for sdram table", table);
-        log_debug(" n atoms is %d", table->size);
-
-        // if failed, FREE_MARKED stuff and tell above it failed
+        // if failed, FREE stuff and tell above it failed
         if (!success){
             log_error("failed to allocate memory for rt table");
-            FREE_MARKED(keys, 999977);
-            FREE_MARKED(bit_field_routing_tables, 999976);
-            FREE_MARKED(uncompressed_table, 999975);
+            FREE(keys);
+            FREE(bit_field_routing_tables);
+            FREE(uncompressed_table);
             return NULL;
         }
 
         // store the rt address for this master pop key
         bit_field_routing_tables[key_index] = table;
         table = NULL;
-
-        platform_check_all_marked(2);
     }
 
-    // FREE_MARKED stuff
-    FREE_MARKED(keys, 999974);
-
-    check = platform_check(bit_field_routing_tables);
-    if (!check){
-        log_error("failed");
-        terminate(2);
-        rt_error(RTE_SWERR);
-    }
+    // FREE stuff
+    FREE(keys);
     return bit_field_routing_tables;
 }
 

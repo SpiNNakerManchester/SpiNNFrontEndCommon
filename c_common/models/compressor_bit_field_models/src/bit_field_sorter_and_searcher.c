@@ -186,9 +186,25 @@ void send_sdp_force_stop_message(int compressor_core_index){
         &my_msg, compressor_cores[compressor_core_index]);
 }
 
+//! \brief returns the best mid point tested to date. NOTE its only safe to call
+//! this after the first attempt finished. which is acceptable
+//! \return the best bf midpoint tested and success
+int best_mid_point_to_date(void) {
+    // go backwards to find the first passed value
+    for (int n_bf = n_bf_addresses; n_bf >= 0; n_bf --) {
+        if (bit_field_test(mid_points_successes, n_bf)) {
+            log_info("returning %d", n_bf);
+            return n_bf;
+        }
+    }
+    // not officially correct, but best place to start search from
+    //if no other value has worked. and as the 0 fails will force a complete
+    //failure. safe
+    return 0;
+}
+
 //! \brief sets up the search bitfields.
 //! \return bool saying success or failure of the setup
-
 bool set_up_search_bitfields(void) {
     // if there's no bitfields to read, then just set stuff to NULL. let that
     // be the check in future usages for this path.
@@ -199,7 +215,7 @@ bool set_up_search_bitfields(void) {
     }
 
     log_info("n bf addresses is %d", n_bf_addresses);
-    uint32_t words = get_bit_field_size(n_bf_addresses);
+    uint32_t words = get_bit_field_size(n_bf_addresses + 1);
     if (tested_mid_points == NULL) {
         tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
     }
@@ -221,6 +237,12 @@ bool set_up_search_bitfields(void) {
     // clear the bitfields
     clear_bit_field(tested_mid_points, words);
     clear_bit_field(mid_points_successes, words);
+
+    int best_point_seen = best_mid_point_to_date();
+    log_info("best seen = %d", best_point_seen);
+    if (best_point_seen != 0){
+        rt_error(RTE_SWERR);
+    }
 
     platform_check_all();
 
@@ -349,6 +371,8 @@ bool start_binary_search(void){
     // the setup of a core or when gone too far
     while ((n_available_compression_cores != 0) && !failed_to_malloc &&
             (new_mid_point <= n_bf_addresses)) {
+        int best_point_seen = best_mid_point_to_date();
+        log_info("best seen = %d", best_point_seen);
 
         log_info("next mid point to consider = %d", new_mid_point);
         platform_check_all();
@@ -369,6 +393,9 @@ bool start_binary_search(void){
 
         //update to next new mid point
         new_mid_point = hops_between_compression_cores * multiplier;
+
+        best_point_seen = best_mid_point_to_date();
+        log_info("best seen = %d", best_point_seen);
     }
 
     log_debug("finished the start of compression core allocation");
@@ -533,24 +560,6 @@ bool already_being_processed(int mid_point) {
         }
     }
     return false;
-}
-
-//! \brief returns the best mid point tested to date. NOTE its only safe to call
-//! this after the first attempt finished. which is acceptable
-//! \return the best bf midpoint tested and success
-
-int best_mid_point_to_date(void) {
-    // go backwards to find the first passed value
-    for (int n_bf = n_bf_addresses; n_bf >= 0; n_bf --) {
-        if (bit_field_test(mid_points_successes, n_bf)) {
-            log_debug("returning %d", n_bf);
-            return n_bf;
-        }
-    }
-    // not officially correct, but best place to start search from
-    //if no other value has worked. and as the 0 fails will force a complete
-    //failure. safe
-    return 0;
 }
 
 //! \brief returns the next midpoint which has been tested
@@ -1021,8 +1030,10 @@ void process_compressor_response(int comp_core_index, int finished_state) {
             compressor_cores[comp_core_index],
             comp_core_mid_point[comp_core_index]);
         bit_field_set(tested_mid_points, comp_core_mid_point[comp_core_index]);
+        platform_check_all_marked(11111111);
         bit_field_set(
             mid_points_successes, comp_core_mid_point[comp_core_index]);
+        platform_check_all_marked(11111112);
 
         // set tracker if its the best seen so far
         int best_point_seen = best_mid_point_to_date();
@@ -1052,6 +1063,10 @@ void process_compressor_response(int comp_core_index, int finished_state) {
         }
         log_debug("finished process of successful compression");
     } else if (finished_state == FAILED_MALLOC) {
+        // NOTE should probabily stop from losing all by only
+        // doing this once before another attempt on the same attempt cycle.
+        // track all 17 previous messages
+
         log_info(
             "failed by malloc from core %d doing mid point %d",
             compressor_cores[comp_core_index],
@@ -1351,6 +1366,9 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
 
+    int best_point_seen = best_mid_point_to_date();
+    log_info("best seen = %d", best_point_seen);
+
 
     // check there are bitfields to merge, if not don't start search
     if (n_bf_addresses == 0){
@@ -1364,6 +1382,9 @@ void start_compression_process(uint unused0, uint unused1) {
             check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
         return;
     }
+
+    best_point_seen = best_mid_point_to_date();
+    log_info("best seen = %d", best_point_seen);
 
     // if there are bitfields to merge
     // sort the bitfields into order of best impact on worst cores.
@@ -1418,6 +1439,9 @@ void start_compression_process(uint unused0, uint unused1) {
         spin1_mode_restore(cpsr);
         terminate(EXIT_FAIL);
     }
+
+    best_point_seen = best_mid_point_to_date();
+    log_info("best seen = %d", best_point_seen);
     spin1_mode_restore(cpsr);
 
     // set off checker

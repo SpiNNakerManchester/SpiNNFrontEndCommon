@@ -129,7 +129,7 @@ void routing_table_reset(void) {
     current_n_tables = 0;
     current_low_entry = 0;
     if (table_lo_entry != NULL){
-        FREE(table_lo_entry);
+        FREE_MARKED(table_lo_entry, 12345678);
         table_lo_entry = NULL;
     }
     log_debug("finished reset");
@@ -202,12 +202,12 @@ int find_index_of_table_for_entry(int entry_id) {
 static inline bool routing_tables_init(
         int total_n_tables, table_t **elements) {
     n_tables = total_n_tables;
-    log_info("n tables = %d", n_tables);
+    log_debug("n tables = %d", n_tables);
 
     // set up addresses data holder
     routing_tables = elements;
 
-    log_info(
+    log_debug(
         "allocating %d bytes for table lo entry",
         (n_tables + 1) * sizeof(int));
     table_lo_entry = MALLOC((n_tables + 1) * sizeof(int));
@@ -220,7 +220,7 @@ static inline bool routing_tables_init(
 
     // update the lo entry map
     for (int rt_index = 0; rt_index < total_n_tables; rt_index++) {
-        log_info("n table entries is %d", routing_tables[rt_index]->size);
+        log_debug("n table entries is %d", routing_tables[rt_index]->size);
 
         // store low entry tracker (reduces sdram requirements)
         table_lo_entry[current_n_tables] = current_low_entry;
@@ -265,8 +265,8 @@ bool routing_table_sdram_store(table_t *table_format) {
 
     // locate n entries overall and write to struct
     int n_entries = routing_table_sdram_get_n_entries();
-    log_info("compressed entries = %d", n_entries);
-    log_info("compressed address = %x", table_format);
+    log_debug("compressed entries = %d", n_entries);
+    log_debug("compressed address = %x", table_format);
     table_format->size = n_entries;
 
     bool check = platform_check(table_format);
@@ -277,16 +277,16 @@ bool routing_table_sdram_store(table_t *table_format) {
 
     // iterate though the entries writing to the struct as we go
 
-    log_info("start copy over");
+    log_debug("start copy over");
     uint32_t main_entry_index = 0;
     for (int rt_index = 0; rt_index < n_tables; rt_index++) {
-        log_info("on index %d of %d", rt_index, n_tables);
+        log_debug("on index %d of %d", rt_index, n_tables);
         // get how many entries are in this block
         int entries_stored_here = routing_tables[rt_index]->size;
-        log_info("copying over %d entries", entries_stored_here);
+        log_debug("copying over %d entries", entries_stored_here);
         if (entries_stored_here != 0) {
             // take entry and plonk data in right sdram location
-            log_info("doing sark copy");
+            log_debug("doing sark copy");
 
             for (uint32_t local_index = 0;
                     local_index < routing_tables[rt_index]->size;
@@ -302,14 +302,14 @@ bool routing_table_sdram_store(table_t *table_format) {
                     routing_tables[rt_index]->entries[local_index].source;
             }
 
-            log_info("updated the main index to %d", main_entry_index);
+            log_debug("updated the main index to %d", main_entry_index);
             check = platform_check(table_format);
             if (!check){
                 log_error("failed");
             }
         }
     }
-    log_info("finished copy");
+    log_debug("finished copy");
     return true;
 }
 
