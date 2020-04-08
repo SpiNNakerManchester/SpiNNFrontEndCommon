@@ -45,6 +45,9 @@
 //! \brief time step for safety timer tick interrupt
 #define TIME_STEP 10000
 
+//! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
+#define ADD_INCLUSIVE_BIT 1
+
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
@@ -215,7 +218,7 @@ bool set_up_search_bitfields(void) {
     }
 
     log_info("n bf addresses is %d", n_bf_addresses);
-    uint32_t words = get_bit_field_size(n_bf_addresses + 1);
+    uint32_t words = get_bit_field_size(n_bf_addresses + ADD_INCLUSIVE_BIT);
     if (tested_mid_points == NULL) {
         tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
     }
@@ -567,7 +570,8 @@ bool already_being_processed(int mid_point) {
 //! \return the next tested bf midpoint from midpoint
 
 int next_tested_mid_point_from(int mid_point) {
-     for (int n_bf = mid_point + 1; n_bf < n_bf_addresses; n_bf++) {
+     for (int n_bf = mid_point + ADD_INCLUSIVE_BIT;
+            n_bf < n_bf_addresses; n_bf++) {
         if (bit_field_test(tested_mid_points, n_bf)) {
             log_debug("returns %d", n_bf);
             return n_bf;
