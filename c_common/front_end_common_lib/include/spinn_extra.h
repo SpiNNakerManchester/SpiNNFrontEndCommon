@@ -26,6 +26,7 @@
 #define __SPINN_EXTRA_H__
 
 #include <spinnaker.h>
+#include <stdbool.h>
 #if defined(__GNUC__) && __GNUC__ < 6
 // This particular warning (included in -Wextra) is retarded wrong for client
 // code of this file. Only really a problem on Travis.
