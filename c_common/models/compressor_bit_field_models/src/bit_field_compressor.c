@@ -373,7 +373,7 @@ void _sdp_handler(uint mailbox, uint port) {
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
             case STOP_COMPRESSION_ATTEMPT:
-                log_error("been forced to stop by control");
+                log_info("been forced to stop by control");
                 finished_by_compressor_force = true;
                 this_processor->user1 = 1;
                 sark_msg_free((sdp_msg_t*) msg);
