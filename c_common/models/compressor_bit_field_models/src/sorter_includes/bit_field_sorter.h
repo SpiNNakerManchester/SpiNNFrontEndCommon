@@ -718,7 +718,7 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
 //! \param[in] region_addresses: the sdram that stores data addresses
 //! \param[in] sorted_bit_fields: the sorted bitfields struct pointer
 //! \param[in] bit_field_by_processor: the map of processor to bitfields.
-
+/*
 void just_add_to_list(
         region_addresses_t *region_addresses,
         sorted_bit_fields_t* sorted_bit_fields,
@@ -744,7 +744,7 @@ void just_add_to_list(
             pos_in_sorted += 1;
         }
     }
-}
+}*/
 
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
@@ -789,11 +789,11 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
     // NOTE: THis is if you want to debug / need surplus itcm. as this will
     //put the fields in the list, but without any sorting at all.
-    log_debug("just adding");
-    just_add_to_list(
-        region_addresses, sorted_bit_fields, bit_field_by_processor);
-    log_debug("fin just adding");
-    return sorted_bit_fields;
+    //log_debug("just adding");
+    //just_add_to_list(
+    //    region_addresses, sorted_bit_fields, bit_field_by_processor);
+    //log_debug("fin just adding");
+    //return sorted_bit_fields;
 
 
     // populate the bitfield by coverage
@@ -828,7 +828,7 @@ sorted_bit_fields_t* bit_field_sorter_sort(
 
     // free the redundant packet tracker, as now tailored ones are in the dict
     log_debug("freeing unique_redundant_packets");
-    FREE_MARKED(unique_redundant_packets, 999788);
+    FREE(unique_redundant_packets);
     log_debug("freed unique_redundant_packets");
 
     // order the bitfields based off the impact to cores redundant packet
@@ -845,11 +845,11 @@ sorted_bit_fields_t* bit_field_sorter_sort(
             unique_redundant_index < n_unique_redundant_packets;
             unique_redundant_index++) {
         _coverage_t* cov_element = coverage[unique_redundant_index];
-        FREE_MARKED(cov_element->bit_field_addresses, 999787);
+        FREE(cov_element->bit_field_addresses);
         cov_element->bit_field_addresses = NULL;
-        FREE_MARKED(cov_element->processor_ids, 999786);
+        FREE(cov_element->processor_ids);
         cov_element->processor_ids = NULL;
-        FREE_MARKED(cov_element, 999785);
+        FREE(cov_element);
         cov_element = NULL;
     }
     log_debug("free part 1");
@@ -862,18 +862,18 @@ sorted_bit_fields_t* bit_field_sorter_sort(
             proc_cov_by_bf[region_index];
 
         if (proc_cov_element->length_of_list != 0) {
-            FREE_MARKED(proc_cov_element->redundant_packets, 999784);
+            FREE(proc_cov_element->redundant_packets);
             proc_cov_element->redundant_packets = NULL;
         }
-        FREE_MARKED(proc_cov_element, 999783);
+        FREE(proc_cov_element);
         proc_cov_element = NULL;
 
     }
     log_debug("free part 2");
-    FREE_MARKED(coverage, 999782);
+    FREE(coverage);
     coverage = NULL;
     log_debug("free part 3");
-    FREE_MARKED(proc_cov_by_bf, 999781);
+    FREE(proc_cov_by_bf);
     proc_cov_by_bf = NULL;
     log_debug("free part 4");
     return sorted_bit_fields;

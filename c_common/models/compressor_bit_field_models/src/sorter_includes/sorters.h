@@ -54,16 +54,12 @@ void sorter_sort_by_redundant_packet_count(
         return;
     }
 
-    log_info("ss");
     bool moved;
     do {
         moved = false;
-        log_info("ss");
         uint32_t element =
             proc_cov_by_bit_field[worst_core_id]->redundant_packets[0];
-        log_info("length of internal array = %d", length_of_internal_array);
         for (int index = 1; index < length_of_internal_array; index ++) {
-            log_info("bb");
             uint32_t compare_element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
 
@@ -87,7 +83,6 @@ void sorter_sort_by_redundant_packet_count(
                 element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
             }
-            log_info("cc");
         }
     } while (moved);
 }
@@ -135,20 +130,6 @@ void sorter_sort_by_n_bit_fields(
 //! \param[in] length_of_array: length of array of structs
 void sorter_sort_bitfields_so_most_impact_at_front(
         _coverage_t **coverage, int length_of_array) {
-    // print for sanity
-    //int added = 0;
-    //for (int index = 0; index < length_of_array; index ++){
-    //    _coverage_t* element = coverage[index];
-    //    for (int in_index = 1; in_index < element->length_of_list;
-    //            in_index ++){
-    //        log_info(
-    //            "before address of element %d, in list %d is %x",
-    //            index, in_index, element->bit_field_addresses[in_index]);
-    //        added += 1;
-    //    }
-    //}
-    //log_info("has %d bitfields", added);
-
     bool moved;
     do {
         moved = false;
@@ -174,20 +155,6 @@ void sorter_sort_bitfields_so_most_impact_at_front(
             }
         }
     } while (moved);
-
-    // print for sanity
-    //added = 0;
-    //for (int index = 0; index < length_of_array; index ++){
-    //    _coverage_t* element = coverage[index];
-    //    for (int in_index = 1; in_index < element->length_of_list;
-    //            in_index ++){
-    //        log_info(
-    //            "after address of element %d, in list %d is %x",
-    //            index, in_index, element->bit_field_addresses[in_index]);
-    //        added += 1;
-    //    }
-    //}
-    //log_info("has %d bitfields", added);
 }
 
 
@@ -248,16 +215,13 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
                     "processor %d in the sorting of successful bitfields to "
                     "remove.", region_proc_id);
                 for (int free_id =0; free_id < r_id; free_id++) {
-                    FREE_MARKED(
-                        sorted_bf_by_processor[free_id].key_list->master_pop_keys,
-                        999688);
+                    FREE(sorted_bf_by_processor[free_id].key_list->master_pop_keys);
                 }
                 for (int free_id = 0; free_id < region_addresses->n_pairs;
                         free_id++){
-                    FREE_MARKED(
-                        sorted_bf_by_processor[free_id].key_list, 999687);
+                    FREE(sorted_bf_by_processor[free_id].key_list);
                 }
-                FREE_MARKED(sorted_bf_by_processor, 999686);
+                FREE(sorted_bf_by_processor);
                 return NULL;
             }
 

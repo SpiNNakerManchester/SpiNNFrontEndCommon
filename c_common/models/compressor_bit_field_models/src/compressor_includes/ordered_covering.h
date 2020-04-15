@@ -652,8 +652,6 @@ static inline bool oc_merge_apply(
         new_entry.key_mask.key, new_entry.key_mask.mask, new_entry.route,
         new_entry.source, merge->entries.count);
 
-    routing_table_print_list_tables();
-
     // Get the insertion point for the new entry
     int insertion_point =
         oc_get_insertion_point(key_mask_count_xs(merge->key_mask));
@@ -848,7 +846,7 @@ static inline bool oc_minimise(
 
     // start the merger process
     log_debug("start compression true attempt");
-    log_debug("n entries is %d", routing_table_sdram_get_n_entries());
+    log_info("n entries is %d", routing_table_sdram_get_n_entries());
     int attempts = 0;
 
     while ((routing_table_sdram_get_n_entries() > target_length) &&

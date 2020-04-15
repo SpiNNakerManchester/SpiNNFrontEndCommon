@@ -466,7 +466,6 @@ void initialise(void) {
 
 //! \brief the main entrance.
 void c_main(void) {
-    log_info("bacon");
     log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
 
     // set up params

@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2019-2020 The University of Manchester
  *
- * This program is FREE_MARKED software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the FREE_MARKED Software Foundation, either version 3 of the License, or
+ * the free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,

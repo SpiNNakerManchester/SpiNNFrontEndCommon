@@ -129,7 +129,7 @@ void routing_table_reset(void) {
     current_n_tables = 0;
     current_low_entry = 0;
     if (table_lo_entry != NULL){
-        FREE_MARKED(table_lo_entry, 12345678);
+        FREE(table_lo_entry);
         table_lo_entry = NULL;
     }
     log_debug("finished reset");

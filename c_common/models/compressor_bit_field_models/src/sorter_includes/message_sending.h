@@ -91,7 +91,7 @@ static inline bool store_sdram_addresses_for_compression(
             log_error("failed to free compressor core elements.");
             return false;
         }
-        FREE_MARKED(comp_cores_bf_tables[comp_core_index].elements, 999973);
+        FREE(comp_cores_bf_tables[comp_core_index].elements);
     }
 
     // store the elements into the tracker.

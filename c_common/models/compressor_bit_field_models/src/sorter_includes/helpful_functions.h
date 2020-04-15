@@ -127,12 +127,12 @@ bool helpful_functions_free_sdram_from_compression_attempt(
 
     for (int core_bit_field_id = 0; core_bit_field_id < elements;
             core_bit_field_id++) {
-        FREE_MARKED(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id], 999994);
+        FREE(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id]);
     }
 
     // only try freeing if its not been freed already. (safety feature)
     if (comp_cores_bf_tables[comp_core_index].elements != NULL){
-        FREE_MARKED(comp_cores_bf_tables[comp_core_index].elements, 999993);
+        FREE(comp_cores_bf_tables[comp_core_index].elements);
     }
 
     comp_cores_bf_tables[comp_core_index].elements = NULL;
