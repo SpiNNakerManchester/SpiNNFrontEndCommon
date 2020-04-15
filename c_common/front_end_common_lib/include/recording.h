@@ -25,6 +25,7 @@
 #ifndef _RECORDING_H_
 #define _RECORDING_H_
 
+#include <stdbool.h>
 #include <common-typedefs.h>
 #include <spin1_api.h>
 #include <buffered_eieio_defs.h>
@@ -97,7 +98,15 @@ static inline bool recording_record(
 //! \param[in] data the pointer to the data.
 //! \param[in] size the number of bytes in the data.
 __attribute__((noreturn)) void recording_bad_offset(
-	void *data, uint32_t size);
+        void *data, uint32_t size);
+
+//! \brief Tests if a value is not word aligned. That is to say if the value
+//! has either of the bottom two bits set (as words are 4 bytes on SpiNNaker).
+//! \param[in] value The value to test
+//! \return True if the value is not word aligned.
+static inline bool _not_word_aligned(uint32_t value) {
+    return (value & 3) != 0;
+}
 
 //! \brief records some data into a specific recording channel, calling a
 //!        callback function once complete
@@ -113,8 +122,9 @@ __attribute__((noreturn)) void recording_bad_offset(
 static inline bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
-    if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
-	recording_bad_offset(data, size_bytes);
+    if ((_not_word_aligned(size_bytes) || _not_word_aligned((uint32_t) data))
+            && callback != NULL) {
+        recording_bad_offset(data, size_bytes);
     }
     return recording_do_record_and_notify(channel, data, size_bytes, callback);
 }
