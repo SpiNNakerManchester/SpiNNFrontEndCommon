@@ -831,7 +831,12 @@ void handle_best_cleanup(void){
 //! \param[in] unused1: not used, tied to api
 
 void carry_on_binary_search() {
+
+    uint cpsr = 0;
+    cpsr = spin1_int_disable();
+
     log_debug("started carry on");
+
     bool failed_to_malloc = false;
     bool nothing_to_do = false;
 
@@ -918,6 +923,8 @@ void carry_on_binary_search() {
             handle_best_cleanup();
         }
     }
+
+    spin1_mode_restore(cpsr);
 }
 
 
