@@ -15,16 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <spin1_api.h>
-#include <debug.h>
-#include <common-typedefs.h>
-#include "platform.h"
-#include "unordered_remove_default_routes.h"
-#include "minimise.h"
-/*****************************************************************************/
-/* SpiNNaker routing table minimisation.
+/**
+ * \file
  *
- * Minimise a routing table loaded into SDRAM and load the minimised table into
+ * \brief SpiNNaker routing table minimisation.
+ *
+ * Minimises a routing table loaded into SDRAM and load the minimised table into
  * the router using the specified application ID.
  *
  * the exit code is stored in the user0 register
@@ -32,6 +28,13 @@
  * The memory address with tag "1" is expected contain the following struct
  * (entry_t is defined in `routing_table.h` but is described below).
  */
+
+#include <spin1_api.h>
+#include <debug.h>
+#include <common-typedefs.h>
+#include "platform.h"
+#include "unordered_remove_default_routes.h"
+#include "minimise.h"
 
 static int write_index, previous_index, remaining_index, max_index;
 static uint32_t routes[1023];

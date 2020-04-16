@@ -15,6 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief The implementation of the Live Packet Gatherer.
+//!
+//! The purpose of this application is to allow recorded information to be
+//! streamed out of SpiNNaker in real time. It does not scale very well, as
+//! SpiNNaker's aggregate internal state can change with a much higher
+//! bandwidth than its external networking can handle.
+
 #include <common-typedefs.h>
 #include <circular_buffer.h>
 #include <data_specification.h>

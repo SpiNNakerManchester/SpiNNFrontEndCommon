@@ -15,31 +15,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief Wrapped access to memory management functions in SARK.
+
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
-static inline void * safe_malloc(uint bytes)
+//! \brief Allocates memory, from DTCM if possible, from SDRAM otherwise.
+//!
+//! Note that this function will RTE if the memory cannot be allocated.
+//!
+//! \param[in] bytes: The number of bytes to allocate.
+//! \return The allocated memory block. _Never equal to NULL._
+static inline void *safe_malloc(uint bytes)
 {
-  void* p = sark_xalloc(sark.heap, bytes, 0, 0);
-  if (p != NULL) {
-      return p;
-  }
-  p = sark_xalloc(sv->sdram_heap, bytes, 0, ALLOC_LOCK);
-  if (p == NULL)
-  {
-    io_printf(IO_BUF, "Failed to malloc %u bytes.\n", bytes);
-    rt_error(RTE_MALLOC);
-  }
-  return p;
+    void* p = sark_xalloc(sark.heap, bytes, 0, 0);
+    if (p != NULL) {
+        return p;
+    }
+    p = sark_xalloc(sv->sdram_heap, bytes, 0, ALLOC_LOCK);
+    if (p == NULL) {
+        io_printf(IO_BUF, "Failed to malloc %u bytes.\n", bytes);
+        rt_error(RTE_MALLOC);
+    }
+    return p;
 }
 
-static inline void safe_xfree(void *ptr){
-  uint ptr_int = (uint) ptr;
-  if (ptr_int >= DTCM_BASE && ptr_int <= DTCM_TOP) {
-      sark_xfree(sark.heap, ptr, 0);
-  } else {
-      sark_xfree(sv->sdram_heap, ptr, ALLOC_LOCK);
-  }
+//! \brief Frees memory allocated with safe_malloc().
+//!
+//! \param[in] ptr: The pointer to the start of the allocated block.
+static inline void safe_xfree(void *ptr)
+{
+    uint ptr_int = (uint) ptr;
+    if (ptr_int >= DTCM_BASE && ptr_int <= DTCM_TOP) {
+        sark_xfree(sark.heap, ptr, 0);
+    } else {
+        sark_xfree(sv->sdram_heap, ptr, ALLOC_LOCK);
+    }
 }
 
 #define MALLOC safe_malloc

@@ -15,6 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief The implementation of the Reverse IP tag Multicast Source.
+//!
+//! The purpose of this application is to inject SpiNNaker packets into the
+//! on-chip network dynamically.
+
 #include <common-typedefs.h>
 #include <data_specification.h>
 #include <debug.h>

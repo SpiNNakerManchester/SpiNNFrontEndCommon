@@ -15,6 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief The implementation of the Extra Monitor.
+//!
+//! The purpose of this application is to provide extra monitor functions (such
+//! as reinjection control) that do not fit in SCAMP, and to provide an
+//! endpoint on each chip for streaming data in and out at high speed (while
+//! the main user application is not running).
+
 // SARK-based program
 #include <sark.h>
 #include <stdbool.h>

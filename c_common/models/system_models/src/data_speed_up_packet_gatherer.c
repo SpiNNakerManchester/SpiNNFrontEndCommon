@@ -15,7 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//! imports
+//! \file
+//!
+//! \brief The implementation of the Data Speed Up Packet Gatherer.
+//!
+//! The purpose of this application is to allow data to be streamed in and out
+//! of SpiNNaker at very high speed while other applications are not running.
+//! It is designed to only run on chips with an active Ethernet port.
+
+// imports
 #include "spin1_api.h"
 #include "common-typedefs.h"
 #include "common.h"

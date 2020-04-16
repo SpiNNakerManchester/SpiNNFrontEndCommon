@@ -22,8 +22,9 @@
 #ifndef __MINIMISE_H__
 #define __MINIMISE_H__
 
-/*****************************************************************************/
-/* SpiNNaker routing table minimisation.
+/**
+ * \file
+ * \brief SpiNNaker routing table minimisation.
  *
  * Minimise a routing table loaded into SDRAM and load the minimised table into
  * the router using the specified application ID.

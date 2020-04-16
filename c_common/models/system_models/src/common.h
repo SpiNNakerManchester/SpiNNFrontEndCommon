@@ -15,17 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// ------------------------------------------------------------------------
-//
-// Common definitions for the non-SCAMP system binaries.
-//
-// ------------------------------------------------------------------------
+/**
+ * \file
+ * \brief Common definitions for the non-SCAMP system binaries.
+ */
 
 #ifndef __COMMON_H__
 #define __COMMON_H__
 #include "common-typedefs.h"
 
-// Dropped packet re-injection internal control commands (RC of SCP message)
+//! Dropped packet re-injection internal control commands (RC of SCP message)
 enum reinjector_command_codes {
     CMD_DPRI_SET_ROUTER_TIMEOUT = 0,
     CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
@@ -53,7 +52,7 @@ enum {
 // structs used in system
 // ------------------------------------------------------------------------
 
-//! struct for a SDP message with pure data, no SCP header
+//! An SDP message with pure data, no SCP header
 typedef struct sdp_msg_pure_data {  // SDP message (=292 bytes)
     struct sdp_msg *next;           // Next in free list
     uint16_t length;                // length
@@ -98,9 +97,10 @@ static void initialise_reinjection_mc_api(uint32_t base_mc_key) {
             base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
 }
 
+//! Number of bytes in an SDP header.
 #define SDP_REPLY_HEADER_LEN 12
 
-// flag for cap on transaction id
+//! flag for cap on transaction id
 #define TRANSACTION_CAP 0xFFFFFFF
 
 //! does the setting of the msg to reflect back.
