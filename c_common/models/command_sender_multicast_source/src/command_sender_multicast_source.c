@@ -15,62 +15,108 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief The implementation of the Command Sender Multicast Source.
+//!
+//! The purpose of this application is to inject SpiNNaker packets into the
+//! on-chip network at specified times. It is used (among other things) to
+//! implement the SpikeSourceArray model in sPyNNaker.
+
 #include <common-typedefs.h>
 #include <data_specification.h>
 #include <debug.h>
 #include <simulation.h>
 #include <stdbool.h>
 
-// Command structure
+//! \brief Command structure, describing a SpiNNaker multicast packet to be
+//! sent at some point.
+//!
+//! Note that the delay actually comes after sending each mandated packet when
+//! repeats are requested rather than just between packets.
 typedef struct command {
+    //! The key of the packet.
     uint32_t key;
+    //! Whether to send a payload with the packet.
     bool has_payload;
+    //! The payload for the packet.
     uint32_t payload;
+    //! \brief The number of times to repeat the packet.
+    //!
+    //! If zero, the packet is only sent once.
     uint32_t repeats;
+    //! The time (in microseconds) to delay between sending each repeat.
     uint32_t delay;
 } command;
 
+//! A command that happens at a particular simulation time.
 typedef struct timed_command {
-    uint32_t time;
-    command command;
+    uint32_t time;   //!< The simulation time to send a packet.
+    command command; //!< What to send.
 } timed_command;
 
-typedef struct {
-    uint32_t size;
-    command commands[];
+//! \brief A collection of commands to be sent in response to an event.
+//!
+//! This is used for SDRAM only.
+typedef struct command_list {
+    uint32_t size;      //!< The number of commands to send.
+    command commands[]; //!< The commands to send.
 } command_list;
 
-typedef struct {
-    uint32_t size;
-    timed_command commands[];
+//! \brief A collection of commands to be sent at particular simulation times.
+//!
+//! This is used for SDRAM only.
+typedef struct timed_command_list {
+    uint32_t size;            //!< The number of commands to send.
+    timed_command commands[]; //!< The commands to send, sorted in time order.
 } timed_command_list;
 
 // Globals
+//! The simulation timer.
 static uint32_t time;
+//! The number of ticks to run for.
 static uint32_t simulation_ticks;
+//! Whether the simulation is running "forever" (robotics mode).
 static uint32_t infinite_run;
+//! The commands to send at particular times.
 static timed_command *timed_commands;
+//! The commands to run when a simulation starts or resumes after pause.
 static command *start_resume_commands;
+//! The commands to run when a simulation stops or pauses.
 static command *pause_stop_commands;
+//! The number of timed commands.
 static uint32_t n_timed_commands;
+//! The number of commands to send on start/resume.
 static uint32_t n_start_resume_commands;
+//! The number of commands to send on stop/pause.
 static uint32_t n_pause_stop_commands;
+//! The index of the next timed command to run.
 static uint32_t next_timed_command;
+//! Whether we are in the state where the next run will be a start/resume.
 static bool resume = true;
 
 //! values for the priority for each callback
 typedef enum callback_priorities {
-    SDP = 0,
-    DMA = 1,
-    TIMER = 2
+    SDP = 0,   //!< Responding to network traffic is highest priority
+    DMA = 1,   //!< Handling memory transfers is next highest
+    TIMER = 2  //!< Responding to timers is lowest priority, and most common
 } callback_priorities;
 
 //! region identifiers
 typedef enum region_identifiers {
+    //! Where simulation system information is stored.
     SYSTEM_REGION = 0,
+    //! Where to read timed commands from. The region is formatted as a
+    //! timed_command_list.
     COMMANDS_WITH_ARBITRARY_TIMES,
+    //! Where to read start/resume commands from. The region is formatted as a
+    //! command_list.
     COMMANDS_AT_START_RESUME,
+    //! Where to read stop/pause commands from. The region is formatted as a
+    //! command_list.
     COMMANDS_AT_STOP_PAUSE,
+    //! Where to record provenance data. (This model does not record any custom
+    //! provenance data.)
     PROVENANCE_REGION
 } region_identifiers;
 
@@ -79,6 +125,9 @@ enum {
     FIRST_TIME = 0
 };
 
+//! \brief Immediately sends SpiNNaker multicast packets in response to a
+//! command.
+//! \param[in] command_to_send: The command to send.
 static void transmit_command(command *command_to_send) {
     // check for repeats
     if (command_to_send->repeats != 0) {
@@ -122,6 +171,8 @@ static void transmit_command(command *command_to_send) {
     }
 }
 
+//! \brief Sends all the commands registered for sending on simulation stop or
+//! pause.
 static void run_stop_pause_commands(void) {
     log_info("Transmit pause/stop commands");
     for (uint32_t i = 0; i < n_pause_stop_commands; i++) {
@@ -129,6 +180,8 @@ static void run_stop_pause_commands(void) {
     }
 }
 
+//! \brief Sends all the commands registered for sending on simulation start or
+//! resume.
 static void run_start_resume_commands(void) {
     log_info("Transmit start/resume commands");
     for (uint32_t i = 0; i < n_start_resume_commands; i++) {
@@ -136,6 +189,10 @@ static void run_start_resume_commands(void) {
     }
 }
 
+//! \brief Copy the list of commands to run at particular times into DTCM.
+//! \param[in] sdram_timed_commands The memory region containing the
+//! description of what commands to send and when.
+//! \return True if we succeeded, false if we failed (due to memory problems)
 static bool read_scheduled_parameters(timed_command_list *sdram_timed_commands) {
     n_timed_commands = sdram_timed_commands->size;
     log_info("%d timed commands", n_timed_commands);
@@ -161,6 +218,10 @@ static bool read_scheduled_parameters(timed_command_list *sdram_timed_commands) 
     return true;
 }
 
+//! \brief Copy the list of commands to run on start or resume into DTCM.
+//! \param[in] sdram_commands The memory region containing the
+//! description of what commands to send.
+//! \return True if we succeeded, false if we failed (due to memory problems)
 static bool read_start_resume_commands(command_list *sdram_commands) {
     n_start_resume_commands = sdram_commands->size;
     log_info("%u start/resume commands", n_start_resume_commands);
@@ -182,6 +243,10 @@ static bool read_start_resume_commands(command_list *sdram_commands) {
     return true;
 }
 
+//! \brief Copy the list of commands to run on stop or pause into DTCM.
+//! \param[in] sdram_commands The memory region containing the
+//! description of what commands to send.
+//! \return True if we succeeded, false if we failed (due to memory problems)
 static bool read_pause_stop_commands(command_list *sdram_commands) {
     n_pause_stop_commands = sdram_commands->size;
     log_info("%u pause/stop commands", n_pause_stop_commands);
@@ -204,6 +269,11 @@ static bool read_pause_stop_commands(command_list *sdram_commands) {
 }
 
 // Callbacks
+//! \brief The timer tick callback. Sends those commands that are due in the
+//! current simulation state and time.
+//!
+//! \param unused0 unused
+//! \param unused1 unused
 static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -238,6 +308,9 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
+//! \brief Initialises the core.
+//! \param[out] timer_period The timer tick period.
+//! \return True if initialisation succeeded.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -260,16 +333,17 @@ static bool initialize(uint32_t *timer_period) {
     simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
-    read_scheduled_parameters(data_specification_get_region(
+    bool success;
+    success = read_scheduled_parameters(data_specification_get_region(
             COMMANDS_WITH_ARBITRARY_TIMES, ds_regions));
-    read_start_resume_commands(data_specification_get_region(
+    success &= read_start_resume_commands(data_specification_get_region(
             COMMANDS_AT_START_RESUME, ds_regions));
-    read_pause_stop_commands(data_specification_get_region(
+    success &= read_pause_stop_commands(data_specification_get_region(
             COMMANDS_AT_STOP_PAUSE, ds_regions));
-    return true;
+    return success;
 }
 
-// Entry point
+//! Entry point
 void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;

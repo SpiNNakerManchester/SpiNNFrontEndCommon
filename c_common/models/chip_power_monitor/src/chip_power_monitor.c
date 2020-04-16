@@ -15,6 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief The implementation of the Chip Power Monitor.
+//!
+//! The purpose of this application is to monitor the activity of the other CPU
+//! cores on the chip on which it runs. It does this using the SpiNNaker System
+//! Controller, enabling it to run with just the overhead due to using a core;
+//! it does _not_ change the individual performance of the other cores on the
+//! chip.
+
 #include <spin1_api.h>
 #include <simulation.h>
 #include <spinnaker.h>
