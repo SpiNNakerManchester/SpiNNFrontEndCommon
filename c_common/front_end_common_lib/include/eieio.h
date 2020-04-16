@@ -22,18 +22,20 @@
 #ifndef INCLUDE_FEC_EIEIO_H
 #define INCLUDE_FEC_EIEIO_H
 
+#include <common-typedefs.h>
+
 //! Offsets into the eieio_header_bitfields structure.
 //!
 //! These are bit offsets into a 16 bit unsigned integer.
 enum eieio_bit_offsets {
-    APPLY_PREFIX = 15,        //!< eieio_header_bitfields::apply_prefix
-    PREFIX_UPPER = 14,        //!< eieio_header_bitfields::prefix_upper
-    APPLY_PAYLOAD_PREFIX = 13,//!< eieio_header_bitfields::apply_payload_prefix
-    PAYLOAD_IS_TIMESTAMP = 12,//!< eieio_header_bitfields::payload_is_timestamp
-    PACKET_TYPE = 10,         //!< eieio_header_bitfields::packet_type
-    COUNT = 0,                //!< eieio_header_bitfields::count
-    PACKET_CLASS = 14,        //!< eieio_header_bitfields::packet_class
-    PACKET_COMMAND = 0        //!< eieio_header_bitfields::packet_command
+    APPLY_PREFIX = 15,         //!< eieio_header_bitfields::apply_prefix
+    PREFIX_UPPER = 14,         //!< eieio_header_bitfields::prefix_upper
+    APPLY_PAYLOAD_PREFIX = 13, //!< eieio_header_bitfields::apply_payload_prefix
+    PAYLOAD_IS_TIMESTAMP = 12, //!< eieio_header_bitfields::payload_is_timestamp
+    PACKET_TYPE = 10,          //!< eieio_header_bitfields::packet_type
+    COUNT = 0,                 //!< eieio_header_bitfields::count
+    PACKET_CLASS = 14,         //!< eieio_header_bitfields::packet_class
+    PACKET_COMMAND = 0         //!< eieio_header_bitfields::packet_command
 };
 
 //! Masks for the eieio_header_bitfields structure.
@@ -41,14 +43,14 @@ enum eieio_bit_offsets {
 //! These apply after the value has been shifted into the low bits by the
 //! offset.
 enum eieio_bit_masks {
-    APPLY_PREFIX_MASK = 0x1,        //!< eieio_header_bitfields::apply_prefix
-    PREFIX_UPPER_MASK = 0x1,        //!< eieio_header_bitfields::prefix_upper
-    APPLY_PAYLOAD_PREFIX_MASK = 0x1,//!< eieio_header_bitfields::apply_payload_prefix
-    PAYLOAD_IS_TIMESTAMP_MASK = 0x3,//!< eieio_header_bitfields::payload_is_timestamp
-    PACKET_TYPE_MASK = 0x3,         //!< eieio_header_bitfields::packet_type
-    COUNT_MASK = 0xFF,              //!< eieio_header_bitfields::count
-    PACKET_CLASS_MASK = 0x3,        //!< eieio_header_bitfields::packet_class
-    PACKET_COMMAND_MASK = 0x3FFF    //!< eieio_header_bitfields::packet_command
+    APPLY_PREFIX_MASK = 0x1,         //!< eieio_header_bitfields::apply_prefix
+    PREFIX_UPPER_MASK = 0x1,         //!< eieio_header_bitfields::prefix_upper
+    APPLY_PAYLOAD_PREFIX_MASK = 0x1, //!< eieio_header_bitfields::apply_payload_prefix
+    PAYLOAD_IS_TIMESTAMP_MASK = 0x3, //!< eieio_header_bitfields::payload_is_timestamp
+    PACKET_TYPE_MASK = 0x3,          //!< eieio_header_bitfields::packet_type
+    COUNT_MASK = 0xFF,               //!< eieio_header_bitfields::count
+    PACKET_CLASS_MASK = 0x3,         //!< eieio_header_bitfields::packet_class
+    PACKET_COMMAND_MASK = 0x3FFF     //!< eieio_header_bitfields::packet_command
 };
 
 // Bitfields go from LSB to MSB; SpiNNaker is little-endian, and making them all
