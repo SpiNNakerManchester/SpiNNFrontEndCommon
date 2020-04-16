@@ -101,7 +101,6 @@ static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
     return (a.key & b.mask) == (b.key & a.mask);
 }
 
-
 //! \brief Generate a new key-mask which is a combination of two other key_masks
 //! \brief c := a | b
 //! \param[in] a: the key mask struct a
@@ -114,12 +113,6 @@ static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b) {
     c.key = (a.key | b.key) & c.mask;
 
     return c;
-}
-
-//! \brief hands back total n tables
-//! \return total n tables.
-int routing_tables_n_tables(){
-    return n_tables;
 }
 
 //! \brief resets a routing table set
@@ -136,8 +129,8 @@ void routing_table_reset(void) {
 }
 
 //! \brief prints out table fully from list
-void routing_table_print_list_tables(void){
-    for (int table_index = 0; table_index < current_n_tables; table_index++){
+void routing_table_print_list_tables(void) {
+    for (int table_index = 0; table_index < current_n_tables; table_index++) {
         table_t *table = routing_tables[table_index];
         for (uint32_t entry_index = 0; entry_index < table->size;
                 entry_index ++){
