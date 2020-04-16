@@ -29,6 +29,7 @@ addons:
       - libnewlib-arm-none-eabi
       - openjdk-8-jre-headless
       - ant
+      - doxygen
 cache: pip
 
 before_install:
@@ -82,6 +83,7 @@ script:
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -q -T -b json -d _build/doctrees-json -D language=en . _build/json
   - support/travis-sphinx.sh singlehtml -q -T -b singlehtml -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
+  - (cd c_common; exec doxygen)
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
