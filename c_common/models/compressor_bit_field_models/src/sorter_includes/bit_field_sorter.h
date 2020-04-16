@@ -794,7 +794,6 @@ sorted_bit_fields_t* bit_field_sorter_sort(
     log_debug("fin just adding");
     return sorted_bit_fields;
 
-
     // populate the bitfield by coverage
     log_debug("create proc cov by bitfield");
     _proc_cov_by_bitfield_t** proc_cov_by_bf = create_coverage_by_bit_field(
