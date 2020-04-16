@@ -38,7 +38,7 @@ CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 
 OUTPUT_LANGUAGE        = English
-OUTPUT_TEXT_DIRECTION  = None
+# OUTPUT_TEXT_DIRECTION  = None
 
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
@@ -61,7 +61,7 @@ STRIP_FROM_PATH        =
 STRIP_FROM_INC_PATH    =
 SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
-JAVADOC_BANNER         = NO
+# JAVADOC_BANNER         = NO
 QT_AUTOBRIEF           = NO
 
 MULTILINE_CPP_IS_BRIEF = NO
@@ -77,12 +77,12 @@ OPTIMIZE_OUTPUT_FOR_C  = YES
 OPTIMIZE_OUTPUT_JAVA   = NO
 OPTIMIZE_FOR_FORTRAN   = NO
 OPTIMIZE_OUTPUT_VHDL   = NO
-OPTIMIZE_OUTPUT_SLICE  = NO
+# OPTIMIZE_OUTPUT_SLICE  = NO
 
 EXTENSION_MAPPING      = h=C c=C
 
 MARKDOWN_SUPPORT       = YES
-TOC_INCLUDE_HEADINGS   = 5
+# TOC_INCLUDE_HEADINGS   = 5
 
 AUTOLINK_SUPPORT       = YES
 
@@ -106,7 +106,7 @@ LOOKUP_CACHE_SIZE      = 0
 EXTRACT_STATIC         = YES
 
 EXTRACT_PRIVATE        = NO
-EXTRACT_PRIV_VIRTUAL   = NO
+# EXTRACT_PRIV_VIRTUAL   = NO
 EXTRACT_PACKAGE        = NO
 EXTRACT_LOCAL_CLASSES  = NO
 EXTRACT_LOCAL_METHODS  = NO
@@ -215,9 +215,6 @@ IGNORE_PREFIX          =
 # Configuration options related to the HTML output
 #---------------------------------------------------------------------------
 
-# If the GENERATE_HTML tag is set to YES, doxygen will generate HTML output
-# The default value is: YES.
-
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
@@ -231,13 +228,6 @@ HTML_EXTRA_FILES       =
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 80
-
-# If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
-# page will contain the date and time when the page was generated. Setting this
-# to YES can help to show when doxygen was last run and thus if the
-# documentation is up to date.
-# The default value is: NO.
-# This tag requires that the tag GENERATE_HTML is set to YES.
 
 HTML_TIMESTAMP         = NO
 
@@ -280,7 +270,7 @@ EXT_LINKS_IN_WINDOW    = NO
 
 FORMULA_FONTSIZE       = 10
 FORMULA_TRANSPARENT    = YES
-FORMULA_MACROFILE      =
+# FORMULA_MACROFILE      =
 
 USE_MATHJAX            = NO
 MATHJAX_FORMAT         = HTML-CSS
@@ -304,7 +294,7 @@ GENERATE_LATEX         = NO
 LATEX_OUTPUT           = latex
 LATEX_CMD_NAME         =
 MAKEINDEX_CMD_NAME     = makeindex
-LATEX_MAKEINDEX_CMD    = makeindex
+# LATEX_MAKEINDEX_CMD    = makeindex
 COMPACT_LATEX          = NO
 PAPER_TYPE             = a4
 EXTRA_PACKAGES         =
@@ -319,7 +309,7 @@ LATEX_HIDE_INDICES     = NO
 LATEX_SOURCE_CODE      = NO
 LATEX_BIB_STYLE        = plain
 LATEX_TIMESTAMP        = NO
-LATEX_EMOJI_DIRECTORY  =
+# LATEX_EMOJI_DIRECTORY  =
 
 #---------------------------------------------------------------------------
 # Configuration options related to the RTF output
@@ -350,7 +340,7 @@ MAN_LINKS              = NO
 GENERATE_XML           = NO
 XML_OUTPUT             = xml
 XML_PROGRAMLISTING     = YES
-XML_NS_MEMB_FILE_SCOPE = NO
+# XML_NS_MEMB_FILE_SCOPE = NO
 
 #---------------------------------------------------------------------------
 # Configuration options related to the DOCBOOK output
@@ -434,7 +424,7 @@ DOTFILE_DIRS           =
 MSCFILE_DIRS           =
 DIAFILE_DIRS           =
 PLANTUML_JAR_PATH      =
-PLANTUML_CFG_FILE      =
+# PLANTUML_CFG_FILE      =
 PLANTUML_INCLUDE_PATH  =
 DOT_GRAPH_MAX_NODES    = 50
 MAX_DOT_GRAPH_DEPTH    = 0
