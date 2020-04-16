@@ -100,7 +100,9 @@ static inline bool recording_record(
 //! \brief Prints an error about DMA API abuse and RTEs.
 //! \param[in] data the pointer to the data.
 //! \param[in] size the number of bytes in the data.
-__attribute__((noreturn)) void _recording_bad_offset(
+//!
+//! Do not call directly.
+__attribute__((noreturn)) void recording_bad_offset(
         void *data, size_t size);
 
 //! \brief Tests if a value is not word aligned. That is to say if the value
@@ -127,7 +129,7 @@ static inline bool recording_record_and_notify(
         recording_complete_callback_t callback) {
     if ((_not_word_aligned(size_bytes) || _not_word_aligned((uint32_t) data))
             && callback != NULL) {
-        _recording_bad_offset(data, size_bytes);
+        recording_bad_offset(data, size_bytes);
     }
     return recording_do_record_and_notify(channel, data, size_bytes, callback);
 }
