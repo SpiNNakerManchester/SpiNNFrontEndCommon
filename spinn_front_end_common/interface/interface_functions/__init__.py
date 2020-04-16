@@ -21,11 +21,14 @@ from .chip_iobuf_extractor import ChipIOBufExtractor
 from .buffer_manager_creator import BufferManagerCreator
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
+from .compute_energy_used import ComputeEnergyUsed
 from .database_interface import DatabaseInterface
 from .system_multicast_routing_generator import (
     SystemMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
+from .energy_provenance_reporter import EnergyProvenanceReporter
+from .finalise_timing_data import FinaliseTimingData
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
     GraphDataSpecificationWriter)
@@ -51,7 +54,7 @@ from .locate_executable_start_type import LocateExecutableStartType
 from .machine_bit_field_router_compressor import (
     MachineBitFieldRouterCompressor)
 from .machine_generator import MachineGenerator
-from .notification_protocol import NotificationProtocol
+from .create_notification_protocol import CreateNotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
 from .pre_allocate_for_bit_field_router_compressor import (
     PreAllocateForBitFieldRouterCompressor)
@@ -81,9 +84,11 @@ __all__ = [
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "DatabaseInterface",
+    "ChipRuntimeUpdater", "CreateNotificationProtocol",
+    "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
+    "EnergyProvenanceReporter", "FinaliseTimingData",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HostBasedBitFieldRouterCompressor",
@@ -93,10 +98,9 @@ __all__ = [
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
-    "InsertLivePacketGatherersToGraphs",
-    "LoadExecutableImages", "LocateExecutableStartType",
-    "MachineBitFieldRouterCompressor", "LoadFixedRoutes",
-    "MachineGenerator",
+    "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
+    "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
+    "LoadFixedRoutes", "MachineGenerator",
     "NotificationProtocol", "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",

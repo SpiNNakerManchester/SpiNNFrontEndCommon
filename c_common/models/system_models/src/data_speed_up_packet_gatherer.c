@@ -224,7 +224,7 @@ static void set_transaction_id_to_user_1(int transaction_id) {
 static inline void send_sdp_message(void) {
     log_debug("sending message of length %u", my_msg.length);
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
-        log_error("failed to send SDP message");
+        log_debug("failed to send SDP message");
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
     }
 }
@@ -332,7 +332,7 @@ static void process_address_data(
         const receive_data_to_location_msg_t *receive_data_cmd) {
     // if received when doing a stream. ignore as either clone or oddness
     if (received_seq_nums_store != NULL) {
-        log_error(
+        log_debug(
                 "received location message with transaction id %d when "
                 "already processing stream with transaction id %d",
                 receive_data_cmd->transaction_id, transaction_id);
@@ -348,7 +348,7 @@ static void process_address_data(
     // if transaction id is not as expected. ignore it as its from the past.
     // and worthless
     if (receive_data_cmd->transaction_id != transaction_id + 1) {
-        log_error(
+        log_debug(
                 "received location message with unexpected "
                 "transaction id %d; mine is %d",
                 receive_data_cmd->transaction_id, transaction_id + 1);
@@ -413,7 +413,7 @@ static void process_missing_seq_nums_and_request_retransmission(
     uint this_message_transaction_id = msg->data[TRANSACTION_ID];
     if (received_seq_nums_store == NULL &&
             this_message_transaction_id != transaction_id) {
-        log_error(
+        log_debug(
             "received missing seq numbers before a location with a "
             "transaction id which is stale.");
         return;
@@ -503,11 +503,11 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
 
     // check for bad states
     if (received_seq_nums_store == NULL) {
-        log_error("received data before being given a location");
+        log_debug("received data before being given a location");
         return;
     }
     if (receive_data_cmd->transaction_id != transaction_id) {
-        log_error("received data from a different transaction");
+        log_debug("received data from a different transaction");
         return;
     }
 
@@ -628,7 +628,7 @@ static void reinjection_sdp_command(sdp_msg_t *msg) {
     reflect_sdp_message(msg, 0);
 
     while (!spin1_send_sdp_msg(msg, SDP_TIMEOUT)) {
-        log_error("failed to send SDP message");
+        log_debug("failed to send SDP message");
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
     }
 }

@@ -37,3 +37,14 @@ class AbstractMachineAllocationController(object):
     def close(self):
         """ Indicate that the use of the machine is complete.
         """
+
+    @abstractmethod
+    def where_is_machine(self, chip_x, chip_y):
+        """ Locates and returns cabinet, frame, board for a given chip in a\
+            machine allocated to this job.
+
+        :param int chip_x: chip x location
+        :param int chip_y: chip y location
+        :return: (cabinet, frame, board)
+        :rtype: tuple(int,int,int)
+        """

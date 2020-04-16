@@ -13,17 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .data_written import DataWritten
-from .dpri_flags import DPRIFlags
-from .executable_finder import ExecutableFinder
-from .executable_targets import ExecutableTargets
-from .executable_type import ExecutableType
-from .live_packet_gather_parameters import LivePacketGatherParameters
-from .power_used import PowerUsed
-from .provenance_data_item import ProvenanceDataItem
-from .reinjection_status import ReInjectionStatus
+import logging
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol)
 
-__all__ = [
-    "DataWritten", "DPRIFlags", "ExecutableFinder", "ExecutableTargets",
-    "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
-    "ProvenanceDataItem", "ReInjectionStatus"]
+logger = logging.getLogger(__name__)
+
+
+class CreateNotificationProtocol(object):
+    """ The notification protocol for external device interaction
+    """
+
+    __slots__ = []
+
+    def __call__(
+            self, wait_for_read_confirmation,
+            socket_addresses, database_file_path):
+
+        # notification protocol
+        notification_protocol = NotificationProtocol(
+            socket_addresses, wait_for_read_confirmation)
+        notification_protocol.send_read_notification(database_file_path)
+
+        return notification_protocol

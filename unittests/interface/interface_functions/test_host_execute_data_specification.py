@@ -16,8 +16,9 @@
 import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
-from data_specification.constants import MAX_MEM_REGIONS, \
-    APP_PTR_TABLE_BYTE_SIZE
+from pacman.model.placements import Placement
+from data_specification.constants import (
+    MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
@@ -105,8 +106,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # Execute the spec
         targets = ExecutableTargets()
-        targets.add_processor("text.aplx", 0, 0, 0,
-                              ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.place_binary("text.aplx", Placement(None, 0, 0, 0),
+                             ExecutableType.USES_SIMULATION_INTERFACE)
         infos = executor.execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, False, targets,
             report_folder=tempdir, region_sizes=region_sizes)

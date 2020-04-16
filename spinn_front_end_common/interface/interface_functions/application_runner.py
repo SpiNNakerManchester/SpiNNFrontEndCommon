@@ -23,24 +23,6 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class _NotificationWrapper(object):
-    def __init__(self, notification_interface, wait_on_confirmation):
-        self._notifier = notification_interface
-        self._wait = wait_on_confirmation and self._notifier is not None
-
-    def wait_for_confirmation(self):
-        if self._wait:
-            self._notifier.wait_for_confirmation()
-
-    def send_start_resume_notification(self):
-        if self._notifier is not None:
-            self._notifier.send_start_resume_notification()
-
-    def send_stop_pause_notification(self):
-        if self._notifier is not None:
-            self._notifier.send_stop_pause_notification()
-
-
 class ApplicationRunner(object):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
@@ -50,26 +32,22 @@ class ApplicationRunner(object):
 
     # Wraps up as a PACMAN algorithm
     def __call__(
-            self, buffer_manager, wait_on_confirmation, notification_interface,
-            executable_types, app_id, txrx, runtime, time_scale_factor,
-            no_sync_changes, time_threshold, run_until_complete=False):
+            self, buffer_manager, notification_interface, executable_types,
+            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete=False):
         # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
 
-        # Simplify the notifications
-        notifier = _NotificationWrapper(
-            notification_interface, wait_on_confirmation)
-
         return self.run_application(
-            buffer_manager, notifier, executable_types, app_id, txrx, runtime,
-            time_scale_factor, no_sync_changes, time_threshold,
-            run_until_complete)
+            buffer_manager, notification_interface, executable_types,
+            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete)
 
     # The actual runner
     def run_application(
-            self, buffer_manager, notifier, executable_types, app_id, txrx,
-            runtime, time_scale_factor, no_sync_changes, time_threshold,
-            run_until_complete):
+            self, buffer_manager, notification_interface, executable_types,
+            app_id, txrx, runtime, time_scale_factor, no_sync_changes,
+            time_threshold, run_until_complete):
         # pylint: disable=too-many-arguments
 
         # wait for all cores to be ready
@@ -83,7 +61,7 @@ class ApplicationRunner(object):
         buffer_manager.load_initial_buffers()
 
         # wait till external app is ready for us to start if required
-        notifier.wait_for_confirmation()
+        notification_interface.wait_for_confirmation()
 
         # set off the executables that are in sync state
         # (sending to all is just as safe)
@@ -98,7 +76,7 @@ class ApplicationRunner(object):
             txrx.send_signal(app_id, sync_signal)
 
         # Send start notification to external applications
-        notifier.send_start_resume_notification()
+        notification_interface.send_start_resume_notification()
 
         # Wait for the application to finish
         if runtime is None and not run_until_complete:
@@ -115,7 +93,7 @@ class ApplicationRunner(object):
 
         # Send stop notification
         if runtime is not None:
-            notifier.send_stop_pause_notification()
+            notification_interface.send_stop_pause_notification()
 
         return no_sync_changes
 
