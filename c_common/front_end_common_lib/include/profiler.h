@@ -50,8 +50,9 @@ struct profiler_region {
     //! \brief The samples.
     //!
     //! Each sample is the timestamp (taken from a free-running timer) at the
-    //! point a sample was taken.
-    timer_t samples[];
+    //! point a sample was taken, and a tag identifying what the sample point
+    //! was. (Two words. Not formed into a structure for historical reasons.)
+    uint32_t samples[];
 };
 
 //! \brief The internal state of the profiler
