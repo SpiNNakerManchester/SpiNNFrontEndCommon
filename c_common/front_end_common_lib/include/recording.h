@@ -35,6 +35,9 @@
 //! \brief Callback for recording completion.
 typedef void (*recording_complete_callback_t)(void);
 
+//! \brief The type of channel indices.
+typedef uint8_t channel_index_t;
+
 typedef struct {
     uint16_t eieio_header_command;
     uint16_t chip_id;
@@ -77,7 +80,7 @@ typedef struct {
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_do_record_and_notify(
-        uint8_t channel, void *data, uint32_t size_bytes,
+        channel_index_t channel, void *data, size_t size_bytes,
         recording_complete_callback_t callback);
 
 //! \brief records some data into a specific recording channel.
@@ -88,7 +91,7 @@ bool recording_do_record_and_notify(
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 static inline bool recording_record(
-        uint8_t channel, void *data, uint32_t size_bytes) {
+        channel_index_t channel, void *data, size_t size_bytes) {
     // Because callback is NULL, spin1_memcpy will be used
     // and that means that non-word transfers are supported.
     return recording_do_record_and_notify(channel, data, size_bytes, NULL);
@@ -98,7 +101,7 @@ static inline bool recording_record(
 //! \param[in] data the pointer to the data.
 //! \param[in] size the number of bytes in the data.
 __attribute__((noreturn)) void _recording_bad_offset(
-        void *data, uint32_t size);
+        void *data, size_t size);
 
 //! \brief Tests if a value is not word aligned. That is to say if the value
 //! has either of the bottom two bits set (as words are 4 bytes on SpiNNaker).
@@ -120,7 +123,7 @@ static inline bool _not_word_aligned(uint32_t value) {
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 static inline bool recording_record_and_notify(
-        uint8_t channel, void *data, uint32_t size_bytes,
+        channel_index_t channel, void *data, size_t size_bytes,
         recording_complete_callback_t callback) {
     if ((_not_word_aligned(size_bytes) || _not_word_aligned((uint32_t) data))
             && callback != NULL) {
@@ -161,7 +164,7 @@ void recording_finalise(void);
 //!                // size of each region to be recorded
 //!                uint32_t size_of_region[n_regions];
 //!            }
-//! \param[out] recording_flags Output of flags which can be used to check if
+//! \param[out] recording_flags: Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
@@ -172,6 +175,6 @@ void recording_reset(void);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0
-void recording_do_timestep_update(uint32_t time);
+void recording_do_timestep_update(timer_t time);
 
 #endif // _RECORDING_H_

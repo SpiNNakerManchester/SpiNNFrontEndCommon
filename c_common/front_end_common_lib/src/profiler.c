@@ -15,9 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//!
+//! \brief Implementation of profiler.h
+
 #include <stdint.h>
 #include <debug.h>
 #include <profiler.h>
+#include <spinnaker.h>
 
 //---------------------------------------
 // Globals
