@@ -101,7 +101,7 @@ __all__ = [
     "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
     "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
     "LoadFixedRoutes", "MachineGenerator",
-    "NotificationProtocol", "PlacementsProvenanceGatherer",
+    "PlacementsProvenanceGatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
