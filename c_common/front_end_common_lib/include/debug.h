@@ -116,6 +116,9 @@ extern void log_debug(const char *message, ...);
 //! \brief Type-pun a float as a 32-bit unsigned integer.
 //!
 //! Defeats unwanted casting.
+//!
+//! \param[in] f The floating point number
+//! \return The integer that is the bits of the float
 static inline uint32_t float_to_int(float f) {
     union {
         float f;
@@ -134,6 +137,9 @@ typedef struct {
 //! \brief Type-pun the lower 32 bits of a double as a 32-bit unsigned integer.
 //!
 //! Defeats unwanted casting.
+//!
+//! \param[in] d The floating point number
+//! \return The integer that is the lower bits of the double
 static inline uint32_t double_to_lower(double d) {
     union {
         double d;
@@ -144,9 +150,12 @@ static inline uint32_t double_to_lower(double d) {
     return dat.ints.lower;
 }
 
-//! \brief Type-pun the lower 32 bits of a double as a 32-bit unsigned integer.
+//! \brief Type-pun the higher 32 bits of a double as a 32-bit unsigned integer.
 //!
 //! Defeats unwanted casting.
+//!
+//! \param[in] d The floating point number
+//! \return The integer that is the higher bits of the double
 static inline uint32_t double_to_upper(double d) {
     union {
         double d;

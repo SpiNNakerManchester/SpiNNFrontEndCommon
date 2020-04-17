@@ -59,61 +59,77 @@
  * will be freed on exit by this application.
  */
 
+//! \brief The table being manipulated.
+//!
+//! This is common across all the functions in this file.
 table_t *table;
 
-static inline int Routing_table_sdram_get_n_entries(){
+//! Gets the size of the table
+static inline int routing_table_sdram_get_n_entries(void)
+{
     return table->size;
 }
 
-static inline void routing_table_remove_from_size(int size_to_remove){
+//! \brief Decreases the size of the table
+//! \param[in] size_to_remove The number of entries to trim off the end
+static inline void routing_table_remove_from_size(int size_to_remove)
+{
     table->size -= size_to_remove;
 }
 
-static inline entry_t* routing_table_sdram_stores_get_entry(int index){
+//! Gets a pointer to a specific entry
+static inline entry_t* routing_table_sdram_stores_get_entry(int index)
+{
     return &table->entries[index];
 }
 
-static inline void put_entry(entry_t* entry, int index){
+//! Writes an entry to a specific index
+static inline void put_entry(entry_t* entry, int index)
+{
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(index);
     e_ptr->keymask = entry->keymask;
     e_ptr->route = entry->route;
     e_ptr->source = entry->source;
 }
 
-static inline void copy_entry(int new_index, int old_index){
+//! Copies an entry from one index to another
+static inline void copy_entry(int new_index, int old_index)
+{
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(old_index);
     put_entry(e_ptr, new_index);
 }
 
-static inline void swap_entries(int a, int b){
+//! \brief swaps a pair of entries at the given indices
+static inline void swap_entries(int a, int b)
+{
     log_debug("swap %u %u", a, b);
     entry_t temp = *routing_table_sdram_stores_get_entry(a);
-    log_debug("before %u %u %u %u", temp.keymask.key, temp.keymask.mask,
-        temp.route, temp.source);
+    log_debug("before %u %u %u %u",
+            temp.keymask.key, temp.keymask.mask, temp.route, temp.source);
     put_entry(routing_table_sdram_stores_get_entry(b), a);
     put_entry(&temp, b);
     entry_t temp2 = *routing_table_sdram_stores_get_entry(b);
-    log_debug("before %u %u %u %u", temp2.keymask.key, temp2.keymask.mask,
-        temp2.route, temp2.source);
+    log_debug("before %u %u %u %u",
+            temp2.keymask.key, temp2.keymask.mask, temp2.route, temp2.source);
 }
 
 //! \brief prints the header object for debug purposes
 //! \param[in] header: the header to print
-void print_header(header_t *header) {
+void print_header(header_t *header)
+{
     log_info("app_id = %d", header->app_id);
-    log_info(
-        "compress_only_when_needed = %d",
-        header->compress_only_when_needed);
-    log_info(
-        "compress_as_much_as_possible = %d",
-        header->compress_as_much_as_possible);
+    log_info("compress_only_when_needed = %d",
+            header->compress_only_when_needed);
+    log_info("compress_as_much_as_possible = %d",
+            header->compress_as_much_as_possible);
     log_info("table_size = %d", header->table_size);
 }
 
 //! \brief Read a new copy of the routing table from SDRAM.
 //! \param[in] table : the table containing router table entries
 //! \param[in] header: the header object
-static void read_table(header_t *header) {
+static void read_table(header_t *header)
+{
     // Copy the size of the table
     table->size = header->table_size;
 
@@ -126,12 +142,11 @@ static void read_table(header_t *header) {
 }
 
 //! \brief Load a routing table to the router.
-//! \param[in] table: the table containing router table entries
 //! \param[in] app_id: the app id for the routing table entries to be loaded
 //! under
 //! \return bool saying if the table was loaded into the router or not
-bool load_routing_table(uint32_t app_id) {
-
+bool load_routing_table(uint32_t app_id)
+{
     // Try to allocate sufficient room for the routing table.
     uint32_t entry_id = rtr_alloc_id(table->size, app_id);
     if (entry_id == 0) {
@@ -158,7 +173,8 @@ bool load_routing_table(uint32_t app_id) {
 //! error code correctly.
 //! \param[in] header the header object
 //! \param[in] table the data object holding the routing table entries
-void cleanup_and_exit(header_t *header) {
+void cleanup_and_exit(header_t *header)
+{
     // Free the memory used by the routing table.
     log_debug("free sdram blocks which held router tables");
     FREE(table->entries);
@@ -170,10 +186,12 @@ void cleanup_and_exit(header_t *header) {
     spin1_exit(0);
 }
 
+// Forward declaration...
 void minimise(uint32_t target_length);
 
 //! \brief the callback for setting off the router compressor
-void compress_start() {
+void compress_start(void)
+{
     uint32_t size_original;
 
     log_info("Starting on chip router compressor");
@@ -193,24 +211,24 @@ void compress_start() {
     log_debug("finished reading table");
 
     // Store intermediate sizes for later reporting (if we fail to minimise)
-    size_original = Routing_table_sdram_get_n_entries();
+    size_original = routing_table_sdram_get_n_entries();
 
     // Try to load the table
     log_debug("check if compression is needed and compress if needed");
-    if (header->compress_only_when_needed == 1){
-        if (load_routing_table(header->app_id)){
+    if (header->compress_only_when_needed == 1) {
+        if (load_routing_table(header->app_id)) {
             cleanup_and_exit(header);
         } else {
             // Otherwise remove default routes.
             log_debug("remove default routes from minimiser");
             remove_default_routes_minimise(table);
-            if (load_routing_table(header->app_id)){
+            if (load_routing_table(header->app_id)) {
                 cleanup_and_exit(header);
             } else {
-                //Opps we need the defaults back before trying compression
+                //Oops we need the defaults back before trying compression
                 log_debug("free the tables entries");
                 FREE(table->entries);
-               read_table(header);
+                read_table(header);
             }
         }
     }
@@ -230,7 +248,7 @@ void compress_start() {
 
     // report size to the host for provenance aspects
     log_info("has compressed the router table to %d entries",
-        Routing_table_sdram_get_n_entries());
+            routing_table_sdram_get_n_entries());
 
     // Try to load the routing table
     log_debug("try loading tables");
@@ -238,10 +256,10 @@ void compress_start() {
         cleanup_and_exit(header);
     } else {
         // Otherwise give up and exit with an error
-        log_error(
-            "Failed to minimise routing table to fit %u entries. "
-            "(Original table: %u after compression: %u).",
-            rtr_alloc_max(), size_original, Routing_table_sdram_get_n_entries());
+        log_error("Failed to minimise routing table to fit %u entries. "
+                "(Original table: %u after compression: %u).",
+                rtr_alloc_max(), size_original,
+                routing_table_sdram_get_n_entries());
 
         // Free the block of SDRAM used to load the routing table.
         log_debug("free sdram blocks which held router tables");

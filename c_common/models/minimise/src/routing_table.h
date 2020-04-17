@@ -65,6 +65,7 @@ static inline keymask_t keymask_merge(keymask_t a, keymask_t b)
     return c;
 }
 
+//! A routing entry that knows where it came from, goes to, and when it enables.
 typedef struct {
     keymask_t keymask;  //!< Key and mask
     uint32_t route;     //!< Routing direction
@@ -73,6 +74,7 @@ typedef struct {
                         //!< defaulted.
 } entry_t;
 
+//! A routing table is made of an ordered list of entries.
 typedef struct {
     uint32_t size;      //!< Number of entries in the table
     entry_t *entries;   //!< Entries in the table
@@ -88,6 +90,9 @@ static inline void entry_copy(
 }
 #endif
 
+//! \brief The header of the routing table information in the input data block.
+//!
+//! This is found looking for a memory block with the right tag.
 typedef struct {
     //! Application ID to use to load the routing table. This can be left as `0`
     //! to load routing entries with the same application ID that was used to

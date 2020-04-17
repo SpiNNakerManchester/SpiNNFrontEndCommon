@@ -36,16 +36,24 @@
 #include "unordered_remove_default_routes.h"
 #include "minimise.h"
 
-static int write_index, previous_index, remaining_index, max_index;
+static int write_index;
+static int previous_index;
+static int remaining_index;
+static int max_index;
 static uint32_t routes[1023];
 static uint32_t routes_frequency[1023] = {0};
 static uint32_t routes_count;
 
-static inline entry_t merge(entry_t* entry1, entry_t* entry2) {
+//! \brief Merges a single pair of route entries.
+//! \param[in] entry1 The first route to merge.
+//! \param[in] entry2 The second route to merge.
+//! \return A new merged route that will eventually replace the two inputs.
+static inline entry_t merge(entry_t* entry1, entry_t* entry2)
+{
     entry_t result;
     result.keymask = keymask_merge(entry1->keymask, entry2->keymask);
     result.route = entry1->route;
-    if (entry1->source == entry2->source){
+    if (entry1->source == entry2->source) {
         result.source = entry1->source;
     } else {
         result.source = 0;
@@ -53,18 +61,28 @@ static inline entry_t merge(entry_t* entry1, entry_t* entry2) {
     return result;
 }
 
-static inline bool find_merge(int left, int index) {
+//! \brief Finds if two routes can be merged.
+//! \param[in] left The index of the first route to consider.
+//! \param[in] index The index of the second route to consider.
+//! \return True if the entries were merged. If they are merged, the entry at
+//! the index of left is also replaced with the merged route.
+static inline bool find_merge(int left, int index)
+{
     entry_t* entry1 = routing_table_sdram_stores_get_entry(left);
     entry_t* entry2 = routing_table_sdram_stores_get_entry(index);
 
     entry_t merged = merge(entry1, entry2);
-    //for (int check = 0; check < previous_index; check++) {
-    //    entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
-    //    if (keymask_intersect(check_entry->keymask, merged.keymask)) {
-    //        return false;
-    //    }
-    //}
-    for (int check = remaining_index; check < Routing_table_sdram_get_n_entries(); check++) {
+#if 0
+    for (int check = 0; check < previous_index; check++) {
+        entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
+        if (keymask_intersect(check_entry->keymask, merged.keymask)) {
+            return false;
+        }
+    }
+#endif
+    for (int check = remaining_index;
+            check < routing_table_sdram_get_n_entries();
+            check++) {
         entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
         if (keymask_intersect(check_entry->keymask, merged.keymask)) {
             return false;
@@ -74,21 +92,21 @@ static inline bool find_merge(int left, int index) {
     return true;
 }
 
-static inline void compress_by_route(int left, int right){
-    int index;
-    bool merged;
-    merged = false;
-
+//! \brief Does the actual routing compression
+//! \param[in] left The start of the section of table to compress
+//! \param[in] right The end of the section of table to compress
+static inline void compress_by_route(int left, int right)
+{
     while (left < right) {
-        index = left + 1;
-        while (index <= right){
+        bool merged = false;
+
+        for (int index = left + 1; index <= right; index++) {
             merged = find_merge(left, index);
             if (merged) {
                 copy_entry(index, right);
                 right -= 1;
                 break;
             }
-            index += 1;
         }
         if (!merged) {
             copy_entry(write_index, left);
@@ -96,21 +114,26 @@ static inline void compress_by_route(int left, int right){
             left += 1;
         }
     }
-    if (left == right){
+    if (left == right) {
         copy_entry(write_index, left);
         write_index += 1;
     }
 }
 
-static inline int compare_routes(uint32_t route_a, uint32_t route_b){
+//! \brief Compare routes based on their index
+//! \param[in] route_a The first route
+//! \param[in] route_b The second route
+//! \return Ordering term (-1, 0, 1)
+static inline int compare_routes(uint32_t route_a, uint32_t route_b)
+{
     if (route_a == route_b) {
         return 0;
     }
     for (uint i = 0; i < routes_count; i++) {
-        if (routes[i] == route_a){
+        if (routes[i] == route_a) {
             return 1;
         }
-        if (routes[i] == route_b){
+        if (routes[i] == route_b) {
             return -1;
         }
     }
@@ -122,7 +145,11 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b){
     return 0;
 }
 
-static void quicksort_table(int low, int high){
+//! \brief Implementation of quicksort for routes based on route information
+//! \param[in] low the first index into the array of the section to sort
+//! \param[in] high the second index into the array of the section to sort
+static void quicksort_table(int low, int high)
+{
     // Sorts the entries in place based on route
     // param low: Inclusive lowest index to consider
     // param high: Exclusive highest index to consider
@@ -151,10 +178,10 @@ static void quicksort_table(int low, int high){
         // if we find any higher swap with last entry in the sort section
         h_write = high -1;
 
-        while (check <= h_write){
+        while (check <= h_write) {
             uint32_t check_route = routing_table_sdram_stores_get_entry(check)->route;
             int compare = compare_routes(check_route, pivot);
-            if (compare < 0){
+            if (compare < 0) {
                 // swap the check to the left
                 swap_entries(l_write, check);
                 l_write++;
@@ -176,8 +203,15 @@ static void quicksort_table(int low, int high){
     }
 }
 
-static inline void swap_routes(int index_a, int index_b){
-    uint32_t  temp = routes_frequency[index_a];
+//! \brief Swap two routes
+//!
+//! Also swaps the corresponding information in routes_frequency
+//!
+//! \param[in] index_a The index of the first route
+//! \param[in] index_b The index of the second route
+static inline void swap_routes(int index_a, int index_b)
+{
+    uint32_t temp = routes_frequency[index_a];
     routes_frequency[index_a] = routes_frequency[index_b];
     routes_frequency[index_b] = temp;
     temp = routes[index_a];
@@ -185,7 +219,14 @@ static inline void swap_routes(int index_a, int index_b){
     routes[index_b] = temp;
 }
 
-static void quicksort_route(int low, int high){
+//! \brief Implementation of quicksort for routes based on frequency.
+//!
+//! The routes must be non-overlapping pre-minimisation routes.
+//!
+//! \param[in] low the first index into the array of the section to sort
+//! \param[in] high the second index into the array of the section to sort
+static void quicksort_route(int low, int high)
+{
     // Sorts the routes and frequencies in place based on frequency
     // param low: Inclusive lowest index to consider
     // param high: Exclusive highest index to consider
@@ -214,8 +255,8 @@ static void quicksort_route(int low, int high){
         // if we find any higher swap with last entry in the sort section
         h_write = high -1;
 
-        while (check <= h_write){
-            if (routes_frequency[check] < pivot){
+        while (check <= h_write) {
+            if (routes_frequency[check] < pivot) {
                 // swap the check to the left
                 swap_routes(l_write, check);
                 l_write++;
@@ -237,7 +278,8 @@ static void quicksort_route(int low, int high){
     }
 }
 
-static inline void update_frequency(int index){
+//! Computes route histogram
+static inline void update_frequency(int index) {
     uint32_t route = routing_table_sdram_stores_get_entry(index)->route;
     for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route) {
@@ -256,11 +298,13 @@ static inline void update_frequency(int index){
     }
 }
 
-static inline void simple_minimise(uint32_t target_length){
+//! Implementation of minimise()
+static inline void simple_minimise(uint32_t target_length)
+{
 	use(target_length);
     int left, right;
 
-    int table_size = Routing_table_sdram_get_n_entries();
+    int table_size = routing_table_sdram_get_n_entries();
 
     routes_count = 0;
 
@@ -288,13 +332,12 @@ static inline void simple_minimise(uint32_t target_length){
     previous_index = 0;
     left = 0;
 
-    while (left <= max_index){
-
+    while (left <= max_index) {
         right = left;
         uint32_t left_route = routing_table_sdram_stores_get_entry(left)->route;
         log_info("A %u %u %u %u", left, max_index, right, left_route);
         while (right < (table_size -1) &&
-                routing_table_sdram_stores_get_entry(right+1)->route == left_route){
+                routing_table_sdram_stores_get_entry(right+1)->route == left_route) {
             right += 1;
         }
         remaining_index = right + 1;
@@ -307,16 +350,19 @@ static inline void simple_minimise(uint32_t target_length){
     log_info("done %u %u", table_size, write_index);
 
     routing_table_remove_from_size(table_size-write_index);
-    log_info("now %u", Routing_table_sdram_get_n_entries());
+    log_info("now %u", routing_table_sdram_get_n_entries());
 
 }
 
-void minimise(uint32_t target_length){
+//! Minimises the routing table.
+void minimise(uint32_t target_length)
+{
     simple_minimise(target_length);
 }
 
 //! \brief the main entrance.
-void c_main(void) {
+void c_main(void)
+{
     log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
 
     // kick-start the process
