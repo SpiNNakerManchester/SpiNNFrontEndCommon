@@ -633,8 +633,8 @@ class HostBasedBitFieldRouterCompressor(object):
         # try first just uncompressed. so see if its possible
         try:
             self._best_routing_table = self._run_algorithm(
-                [router_table], target_length, router_table.x, router_table.y,
-                time_to_try_for_each_iteration, use_timer_cut_off)
+                [router_table], target_length, time_to_try_for_each_iteration,
+                use_timer_cut_off)
             self._best_bit_fields_by_processor = []
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(

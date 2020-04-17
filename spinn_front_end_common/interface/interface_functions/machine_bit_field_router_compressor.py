@@ -32,6 +32,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
     ExecutableType
 from spinn_machine import CoreSubsets, Router
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
     SpinnmanUnexpectedResponseCodeException, SpinnmanException
@@ -43,7 +44,7 @@ from spinn_front_end_common.utilities.exceptions import \
     CantFindSDRAMToUseException
 from spinn_front_end_common.utilities import system_control_logic
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # sdram allocation for addresses
 SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
