@@ -21,6 +21,37 @@
 #include <filter_info.h>
 #include <key_atom_map.h>
 
+//! \brief struct holding key and mask
+typedef struct key_mask_t {
+    // Key for the key_mask
+    uint32_t key;
+
+    // Mask for the key_mask
+    uint32_t mask;
+} key_mask_t;
+
+//! \brief struct holding routing table entry data
+typedef struct entry_t {
+    // Key and mask
+    key_mask_t key_mask;
+
+    // Routing direction
+    uint32_t route;
+
+    // Source of packets arriving at this entry
+    uint32_t source;
+} entry_t;
+
+//! \brief struct for holding table entries
+typedef struct table_t {
+
+    // Number of entries in the table
+    uint32_t size;
+
+    // Entries in the table
+    entry_t entries[];
+} table_t;
+
 //! holds data for each compressor core, used to free stuff properly when
 //! required
 typedef struct comp_core_store_t{
@@ -113,5 +144,61 @@ typedef struct region_addresses_t {
     int n_pairs;
     pairs_t pairs[];
 } region_addresses_t;
+
+//! \brief the acceptable finish states
+typedef enum finish_states {
+    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
+    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
+} finish_states;
+
+//! \brief the command codes in human readable form
+typedef enum command_codes_for_sdp_packet {
+    START_DATA_STREAM = 20,
+    COMPRESSION_RESPONSE = 21,
+    STOP_COMPRESSION_ATTEMPT = 22
+} command_codes_for_sdp_packet;
+
+//! \brief the elements in the sdp packet (control for setting off a minimise
+//! attempt)
+typedef struct start_sdp_packet_t {
+    uint32_t command_code;
+    heap_t *fake_heap_data;
+    comp_core_store_t *table_data;
+} start_sdp_packet_t;
+
+//! \brief the elements in the sdp packet when response to compression attempt.
+typedef struct response_sdp_packet_t {
+    uint32_t command_code;
+    uint32_t response_code;
+} response_sdp_packet_t;
+
+//! \brief all the types of SDP messages that we receive, as one
+typedef union {
+    command_codes_for_sdp_packet command;
+    start_sdp_packet_t start;
+    response_sdp_packet_t response;
+} compressor_payload_t;
+
+//! \brief struct for processor coverage by bitfield
+typedef struct _proc_cov_by_bitfield_t{
+    // processor id
+    int processor_id;
+    // length of the list
+    int length_of_list;
+    // list of the number of redundant packets from a bitfield
+    int* redundant_packets;
+} _proc_cov_by_bitfield_t;
+
+//! \brief struct for n redundant packets and the bitfield addresses of it
+typedef struct _coverage_t{
+    // n redundant packets
+    int n_redundant_packets;
+    // length of list
+    int length_of_list;
+    // list of corresponding processor id to the bitfield addresses list
+    int* processor_ids;
+    // list of addresses of bitfields with this x redundant packets
+    filter_info_t** bit_field_addresses;
+} _coverage_t;
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__

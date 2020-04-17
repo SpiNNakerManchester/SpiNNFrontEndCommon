@@ -18,9 +18,8 @@
 #ifndef __MESSAGE_SENDING_H__
 #define __MESSAGE_SENDING_H__
 
-#include "constants.h"
-#include "../common/sdp_formats.h"
 #include "../common/platform.h"
+#include "../common/constants.h"
 
 //! how many tables the uncompressed router table entries is
 #define N_UNCOMPRESSED_TABLE 1
