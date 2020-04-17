@@ -190,8 +190,10 @@ void cleanup_and_exit(header_t *header)
 void minimise(uint32_t target_length);
 
 //! \brief the callback for setting off the router compressor
-void compress_start(void)
+void compress_start(uint _unused0, uint _unused1)
 {
+    use(_unused0);
+    use(_unused1);
     uint32_t size_original;
 
     log_info("Starting on chip router compressor");

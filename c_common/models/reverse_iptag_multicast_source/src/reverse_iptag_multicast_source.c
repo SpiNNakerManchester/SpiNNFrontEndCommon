@@ -32,10 +32,10 @@
 #include "recording.h"
 
 // Declare wfi function
+//! Wait for interrupt (semi-public part of Spin1API)
 extern void spin1_wfi(void);
 
 #ifndef APPLICATION_NAME_HASH
-#define APPLICATION_NAME_HASH 0
 #error APPLICATION_NAME_HASH must be defined
 #endif
 
@@ -46,33 +46,36 @@ enum interrupt_priorities {
     TIMER = 2
 };
 
-enum eieio_data_message_types {
-    KEY_16_BIT,
-    KEY_PAYLOAD_16_BIT,
-    KEY_32_BIT,
-    KEY_PAYLOAD_32_bIT
-};
-
-//! The EIEIO prefix types
-typedef enum {
-    PREFIX_TYPE_LOWER_HALF_WORD,
-    PREFIX_TYPE_UPPER_HALF_WORD
-} eieio_prefix_types;
-
-//! The parameters
+//! The configuration parameters for the application
 struct config {
+    //! Whether to always apply a prefix
     uint32_t apply_prefix;
+    //! The prefix to apply
     uint32_t prefix;
+    //! The type of prefix that is supplied
     uint32_t prefix_type;
+    //! Whether only packets with keys in the masked key space should be sent
     uint32_t check_keys;
+    //! Whether a key is provided
     uint32_t has_key;
+    //! The key space used for packet selection
     uint32_t key_space;
+    //! The mask used for packet selection
     uint32_t mask;
+    //! The size of the buffer region.
     uint32_t buffer_region_size;
+    //! The point where we ask for the host to clear up space.
     uint32_t space_before_data_request;
+    //! The SDP tag for sending messages to host
     uint32_t return_tag_id;
+    //! The SDP destination for sending messages to host
     uint32_t return_tag_dest;
+    //! The SDP port that we buffer messages in on.
     uint32_t buffered_in_sdp_port;
+    //! \brief The timer offset to use for transmissions.
+    //!
+    //! Used to ensure we don't send all messages at the same time and overload
+    //! SpiNNaker routers.
     uint32_t tx_offset;
 };
 
@@ -87,15 +90,16 @@ enum region_ids {
 
 //! The provenance data items
 struct provenance_t {
-    uint32_t received_packets;
-    uint32_t sent_packets;
-    uint32_t incorrect_keys;
-    uint32_t incorrect_packets;
-    uint32_t late_packets;
+    uint32_t received_packets;  //!< How many EIEIO packets were received
+    uint32_t sent_packets;      //!< How many MC packets were sent
+    uint32_t incorrect_keys;    //!< Number of bad keys
+    uint32_t incorrect_packets; //!< Number of bad packets (in non-debug mode)
+    uint32_t late_packets;      //!< Number of packets dropped for being late
 };
 
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
+//! The recording channel used to track the history of what spikes were sent
 #define SPIKE_HISTORY_CHANNEL 0
 
 //! the minimum space required for a buffer to work
@@ -109,25 +113,22 @@ struct provenance_t {
 
 #pragma pack(1)
 
+//! \brief What information is recorded about a packet.
 typedef struct {
-    uint32_t length;
-    uint32_t time;
-    uint8_t data[MAX_PACKET_SIZE];
+    uint32_t length;               //!< The real length of recorded_packet_t::data
+    uint32_t time;                 //!< The timestamp of this recording event
+    uint8_t data[MAX_PACKET_SIZE]; //!< The content of the packet
 } recorded_packet_t;
 
+//! \brief An EIEIO request-for-more-space message
 typedef struct {
-    uint16_t event;
-    uint16_t payload;
-} event16_t;
-
-typedef struct {
-    uint16_t eieio_header_command;
-    uint16_t chip_id;
-    uint8_t processor;
-    uint8_t pad1;
-    uint8_t region;
-    uint8_t sequence;
-    uint32_t space_available;
+    uint16_t eieio_header_command; //!< The command header
+    uint16_t chip_id;              //!< What chip is making the request
+    uint8_t processor;             //!< What core is making the request
+    uint8_t _pad1;
+    uint8_t region;                //!< What region is full
+    uint8_t sequence;              //!< What sequence number we expect
+    uint32_t space_available;      //!< How much space is available
 } req_packet_sdp_t;
 
 #pragma pack()
@@ -153,6 +154,7 @@ static struct provenance_t provenance = {0};
 //! keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
 
+//! Points to the buffer used to store data being collected to transfer out.
 static uint8_t *buffer_region;
 static uint8_t *end_of_buffer_region;
 static uint8_t *write_pointer;
@@ -182,6 +184,9 @@ static recorded_packet_t *recorded_packet;
 #define BITS(value, shift, mask) \
     (((value) >> (shift)) & (mask))
 
+//! What is the size of a command message?
+//! \param[in] eieio_msg_ptr Pointer to the message
+//! \return The size of the command message, in bytes
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -209,6 +214,9 @@ static inline uint16_t calculate_eieio_packet_command_size(
     return 0;
 }
 
+//! \brief What is the size of an event message?
+//! \param[in] eieio_msg_ptr Pointer to the message
+//! \return The size of the event message, in bytes
 static inline uint16_t calculate_eieio_packet_event_size(
         eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -248,6 +256,9 @@ static inline uint16_t calculate_eieio_packet_event_size(
     return total_size;
 }
 
+//! \brief What is the size of a message?
+//! \param[in] eieio_msg_ptr Pointer to the message
+//! \return The size of the message, in bytes
 static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
     uint8_t pkt_class = BITS(data_hdr_value, PACKET_CLASS, 0x03);
@@ -259,6 +270,9 @@ static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     }
 }
 
+//! \brief Dumps a message to IOBUF if debug messages are enabled
+//! \param[in] eieio_msg_ptr Pointer to the message to print
+//! \param[in] length Length of the message
 static inline void print_packet_bytes(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
@@ -278,6 +292,11 @@ static inline void print_packet_bytes(
 #endif
 }
 
+//! \brief Dumps a message to IOBUF if debug messages are enabled
+//!
+//! Combines calculate_eieio_packet_size() and print_packet_bytes()
+//!
+//! \param[in] eieio_msg_ptr Pointer to the message to print
 static inline void print_packet(eieio_msg_t eieio_msg_ptr) {
     use(eieio_msg_ptr);
 #if LOG_LEVEL >= LOG_DEBUG
@@ -286,6 +305,12 @@ static inline void print_packet(eieio_msg_t eieio_msg_ptr) {
 #endif
 }
 
+//! \brief Flags up that bad input was received.
+//!
+//! This triggers an RTE, but only in debug mode.
+//!
+//! \param[in] eieio_msg_ptr: The bad message
+//! \param[in] length: The length of the message
 static inline void signal_software_error(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
@@ -296,6 +321,8 @@ static inline void signal_software_error(
 #endif
 }
 
+//! \brief Computes how much space is available in the buffer.
+//! \return The number of available bytes.
 static inline uint32_t get_sdram_buffer_space_available(void) {
     if (read_pointer < write_pointer) {
         uint32_t final_space =
@@ -314,6 +341,8 @@ static inline uint32_t get_sdram_buffer_space_available(void) {
     }
 }
 
+//! \brief Whether we have a packet in the buffer.
+//! \return True if the buffer is in use.
 static inline bool is_eieio_packet_in_buffer(void) {
     // If there is no buffering being done, there are no packets
     if (buffer_region_size == 0) {
@@ -326,6 +355,10 @@ static inline bool is_eieio_packet_in_buffer(void) {
             (last_buffer_operation != BUFFER_OPERATION_READ);
 }
 
+//! \brief Get the time from a message.
+//! \param[in] eieio_msg_ptr: The EIEIO message.
+//! \return The timestamp from the message, or the current time if the message
+//! did not have a timestamp.
 static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
     bool pkt_has_timestamp = (bool)
@@ -389,6 +422,9 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
     return time;
 }
 
+//! \brief Places a packet into the buffer.
+//! \param[in] eieio_msg_ptr: The EIEIO message to store.
+//! \param[in] length: The size of the message.
 static inline bool add_eieio_packet_to_sdram(
         eieio_msg_t eieio_msg_ptr, uint32_t length) {
     uint8_t *msg_ptr = (uint8_t *) eieio_msg_ptr;
@@ -459,8 +495,17 @@ static inline bool add_eieio_packet_to_sdram(
     return false;
 }
 
+//! \brief Handle an SDP message containing 16 bit events. The events are
+//! converted into SpiNNaker multicast packets and sent.
+//! \param[in] event_pointer: Where the events start
+//! \param[in] pkt_prefix_upper: True if the prefix is an upper prefix.
+//! \param[in] pkt_count: The number of events.
+//! \param[in] pkt_key_prefix: The prefix for keys.
+//! \param[in] pkt_payload_prefix: The prefix for payloads.
+//! \param[in] pkt_has_payload: Whether there is a payload.
+//! \param[in] pkt_payload_is_timestamp: Whether the payload is a timestamp.
 static inline void process_16_bit_packets(
-        void* event_pointer, bool pkt_prefix_upper, uint32_t pkt_count,
+        uint16_t* event_pointer, bool pkt_prefix_upper, uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool pkt_has_payload, bool pkt_payload_is_timestamp) {
     log_debug("process_16_bit_packets");
@@ -471,15 +516,14 @@ static inline void process_16_bit_packets(
     log_debug("payload on: %d", pkt_has_payload);
     log_debug("pkt_format: %d", pkt_prefix_upper);
 
-    uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = (uint32_t) next_event[0];
+        uint32_t key = (uint32_t) event_pointer[0];
         log_debug("Packet key = %d", key);
-        next_event++;
+        event_pointer++;
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = (uint32_t) next_event[0];
-            next_event++;
+            payload = (uint32_t) event_pointer[0];
+            event_pointer++;
         }
 
         if (!pkt_prefix_upper) {
@@ -515,10 +559,19 @@ static inline void process_16_bit_packets(
     }
 }
 
+//! \brief Handle an SDP message containing 32 bit events. The events are
+//! converted into SpiNNaker multicast packets and sent.
+//! \param[in] event_pointer: Where the events start
+//! \param[in] pkt_count: The number of events.
+//! \param[in] pkt_key_prefix: The prefix for keys.
+//! \param[in] pkt_payload_prefix: The prefix for payloads.
+//! \param[in] pkt_has_payload: Whether there is a payload.
+//! \param[in] pkt_payload_is_timestamp: Whether the payload is a timestamp.
 static inline void process_32_bit_packets(
-        void* event_pointer, uint32_t pkt_count,
+        uint16_t* event_pointer, uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool pkt_has_payload, bool pkt_payload_is_timestamp) {
+    // Careful! event_pointer is not necessarily word aligned!
     log_debug("process_32_bit_packets");
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     log_debug("count: %d", pkt_count);
@@ -526,15 +579,14 @@ static inline void process_32_bit_packets(
     log_debug("pkt_payload_prefix: %08x", pkt_payload_prefix);
     log_debug("payload on: %d", pkt_has_payload);
 
-    uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = (next_event[1] << 16) | next_event[0];
+        uint32_t key = (event_pointer[1] << 16) | event_pointer[0];
         log_debug("Packet key = 0x%08x", key);
-        next_event += 2;
+        event_pointer += 2;
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = (next_event[1] << 16) | next_event[0];
-            next_event += 2;
+            payload = (event_pointer[1] << 16) | event_pointer[0];
+            event_pointer += 2;
         }
 
         key |= pkt_key_prefix;
@@ -547,7 +599,7 @@ static inline void process_32_bit_packets(
             if (!check || (key & mask) == key_space) {
                 provenance.sent_packets++;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 32-bit key=0x%08x , payload=0x%08x",
+                    log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
                             key, payload);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
@@ -565,10 +617,13 @@ static inline void process_32_bit_packets(
     }
 }
 
-static void recording_done_callback(void) {
+static void _recording_done_callback(void) {
     recording_in_progress = false;
 }
 
+//! \brief Asynchronously record an EIEIO message.
+//! \param[in] eieio_msg_ptr: The message to record.
+//! \param[in] length: The length of the message.
 static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
     if (recording_flags > 0) {
         while (recording_in_progress) {
@@ -577,7 +632,7 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
 
         // Ensure that the recorded data size is a multiple of 4
         uint32_t recording_length = 4 * ((length + 3) / 4);
-        log_debug("recording a eieio message with length %u",
+        log_debug("recording a EIEIO message with length %u",
                 recording_length);
         recording_in_progress = true;
         recorded_packet->length = recording_length;
@@ -591,10 +646,18 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
         // whatever reads the data.
         recording_record_and_notify(
                 SPIKE_HISTORY_CHANNEL, recorded_packet, recording_length + 8,
-                recording_done_callback);
+                _recording_done_callback);
     }
 }
 
+//! \brief Parses an EIEIO message.
+//!
+//! This may cause the message to be saved for later, or may cause SpiNNaker
+//! multicast messages to be sent at once.
+//!
+//! \param[in] eieio_msg_ptr: the message to handle
+//! \param[in] length: the length of the message
+//! \return True if the packet was successfully handled.
 static inline bool eieio_data_parse_packet(
         eieio_msg_t eieio_msg_ptr, uint32_t length) {
     log_debug("eieio_data_process_data_packet");
@@ -622,6 +685,7 @@ static inline bool eieio_data_parse_packet(
     uint8_t pkt_type = (uint8_t) BITS(data_hdr_value, PACKET_TYPE, 0x3);
     uint8_t pkt_count = (uint8_t) BITS(data_hdr_value, COUNT, 0xFF);
     bool pkt_has_payload = (bool) (pkt_type & 0x1);
+    bool pkt_is_32bit = (bool) (pkt_type & 0x2);
 
     uint32_t pkt_key_prefix = 0;
     uint32_t pkt_payload_prefix = 0;
@@ -658,15 +722,14 @@ static inline bool eieio_data_parse_packet(
     }
 
     if (pkt_payload_apply_prefix) {
-        if (!(pkt_type & 0x2)) {
+        if (!pkt_is_32bit) {
             // If there is a payload prefix and the payload is 16-bit
             pkt_payload_prefix = (uint32_t) hdr_pointer[0];
             hdr_pointer++;
         } else {
             // If there is a payload prefix and the payload is 32-bit
             pkt_payload_prefix =
-                    ((uint32_t) hdr_pointer[1] << 16) |
-                    (uint32_t) hdr_pointer[0];
+                    ((uint32_t) hdr_pointer[1] << 16) | hdr_pointer[0];
             hdr_pointer += 2;
         }
     }
@@ -686,21 +749,23 @@ static inline bool eieio_data_parse_packet(
         return false;
     }
 
-    if (pkt_type <= 1) {
+    if (!pkt_is_32bit) {
         process_16_bit_packets(
                 event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
                 pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        record_packet(eieio_msg_ptr, length);
-        return true;
     } else {
         process_32_bit_packets(
                 event_pointer, pkt_count, pkt_key_prefix,
                 pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        record_packet(eieio_msg_ptr, length);
-        return false;
     }
+    record_packet(eieio_msg_ptr, length);
+    return true;
 }
 
+//! \brief Handle the command to stop parsing requests.
+//!
+//! \param[in] eieio_msg_ptr: The command message
+//! \param[in] length: The length of the message
 static inline void eieio_command_parse_stop_requests(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
@@ -710,6 +775,10 @@ static inline void eieio_command_parse_stop_requests(
     last_stop_notification_request = time;
 }
 
+//! \brief Handle the command to start parsing requests.
+//!
+//! \param[in] eieio_msg_ptr: The command message
+//! \param[in] length: The length of the message
 static inline void eieio_command_parse_start_requests(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
@@ -718,6 +787,10 @@ static inline void eieio_command_parse_start_requests(
     send_packet_reqs = true;
 }
 
+//! \brief Handle the command to store a request for later processing.
+//!
+//! \param[in] eieio_msg_ptr: The command message
+//! \param[in] length: The length of the message
 static inline void eieio_command_parse_sequenced_data(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     uint16_t sequence_value_region_id = eieio_msg_ptr[1];
@@ -756,6 +829,11 @@ static inline void eieio_command_parse_sequenced_data(
     }
 }
 
+//! \brief Handle a command message.
+//!
+//! \param[in] eieio_msg_ptr: The command message
+//! \param[in] length: The length of the message
+//! \return True if the message was handled
 static inline bool eieio_commmand_parse_packet(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -785,6 +863,11 @@ static inline bool eieio_commmand_parse_packet(
     return true;
 }
 
+//! \brief Handle an EIEIO message, which can either be a command or an event
+//! description message.
+//!
+//! \param[in] eieio_msg_ptr: The message
+//! \param[in] length: The length of the message
 static inline bool packet_handler_selector(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
@@ -801,6 +884,7 @@ static inline bool packet_handler_selector(
     }
 }
 
+//! \brief Process a stored packet.
 static void fetch_and_process_packet(void) {
     uint32_t last_len = 2;
 
@@ -887,6 +971,7 @@ static void fetch_and_process_packet(void) {
     }
 }
 
+//! \brief Sends a message saying what our state is.
 static void send_buffer_request_pkt(void) {
     uint32_t space = get_sdram_buffer_space_available();
     if ((space >= space_before_data_request) &&
@@ -903,6 +988,9 @@ static void send_buffer_request_pkt(void) {
     }
 }
 
+//! \brief Reads our configuration region.
+//! \param[in] config: The address of the configuration region.
+//! \return True (always) if the data validates.
 static bool read_parameters(struct config *config) {
     // Get the configuration data
     apply_prefix = config->apply_prefix;
@@ -955,7 +1043,7 @@ static bool read_parameters(struct config *config) {
     req_ptr->eieio_header_command = (1 << 14) | SPINNAKER_REQUEST_BUFFERS;
     req_ptr->chip_id = spin1_get_chip_id();
     req_ptr->processor = spin1_get_core_id() << 3;
-    req_ptr->pad1 = 0;
+    req_ptr->_pad1 = 0;
     req_ptr->region = BUFFER_REGION & 0x0F;
 
     log_info("apply_prefix: %d", apply_prefix);
@@ -971,6 +1059,8 @@ static bool read_parameters(struct config *config) {
     return true;
 }
 
+//! \brief Initialises the buffer region.
+//! \param[in] region_address: The location of the region.
 static bool setup_buffer_region(uint8_t *region_address) {
     buffer_region = region_address;
     read_pointer = buffer_region;
@@ -999,6 +1089,8 @@ static bool initialise_recording(void) {
     return success;
 }
 
+//! \brief Writes our provenance data into the provenance region.
+//! \param[in] address: Where to write
 static void provenance_callback(address_t address) {
     struct provenance_t *prov = (void *) address;
 
@@ -1009,6 +1101,9 @@ static void provenance_callback(address_t address) {
     prov->late_packets = provenance.late_packets;
 }
 
+//! \brief Initialises the application
+//! \param[out] timer_period: What to configure the timer with.
+//! \return True if initialisation succeeded.
 static bool initialise(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -1052,6 +1147,7 @@ static bool initialise(uint32_t *timer_period) {
     return true;
 }
 
+//! \brief Reinitialises the application after it was paused.
 static void resume_callback(void) {
     data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();
@@ -1071,6 +1167,9 @@ static void resume_callback(void) {
     stopped = false;
 }
 
+//! \brief The fundamental operation loop for the application.
+//! \param unused0 unused
+//! \param unused1 unused
 static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -1126,6 +1225,12 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
+//! \brief Handles an incoming SDP message.
+//!
+//! Delegates to packet_handler_selector()
+//!
+//! \param[in] mailbox: The address of the message.
+//! \param port: The SDP port of the message. Ignored.
 static void sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -1140,7 +1245,7 @@ static void sdp_packet_callback(uint mailbox, uint port) {
     spin1_msg_free(msg);
 }
 
-// Entry point
+//! Entry point
 void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;

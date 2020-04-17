@@ -69,7 +69,7 @@ union eieio_header_bitfields {
         uint16_t count : 8;
         // Padding
         uint16_t : 2;
-        //! \brief The type of the packet (see enum eieio_command_messages)
+        //! \brief The type of the packet (see eieio_data_message_types)
         uint16_t packet_type : 2;
         //! \brief Whether the payload is a timestamp
         uint16_t payload_is_timestamp : 1;
@@ -89,5 +89,23 @@ union eieio_header_bitfields {
     };
     uint16_t overall_value;
 };
+
+//! The EIEIO basic message types
+typedef enum {
+    //! Message is just a key, 16 bits long
+    KEY_16_BIT,
+    //! Message is a key and a payload, each 16 bits long
+    KEY_PAYLOAD_16_BIT,
+    //! Message is just a key, 32 bits long
+    KEY_32_BIT,
+    //! Message is a key and a payload, each 32 bits long
+    KEY_PAYLOAD_32_bIT
+} eieio_data_message_types;
+
+//! The EIEIO prefix types
+typedef enum {
+    PREFIX_TYPE_LOWER_HALF_WORD,
+    PREFIX_TYPE_UPPER_HALF_WORD
+} eieio_prefix_types;
 
 #endif //INCLUDE_FEC_EIEIO_H
