@@ -22,42 +22,13 @@
 #include <stdint.h>
 #include <debug.h>
 #include "platform.h"
+#include "compressor_sorter_structs.h"
 
 //! enum covering top level entries for routing tables in sdram
 typedef enum routing_table_top_elements {
     N_TABLE_ENTRIES = 0, START_OF_SDRAM_ENTRIES = 1
 } routing_table_top_elements;
 
-//! \brief struct holding key and mask
-typedef struct key_mask_t {
-    // Key for the key_mask
-    uint32_t key;
-
-    // Mask for the key_mask
-    uint32_t mask;
-} key_mask_t;
-
-//! \brief struct holding routing table entry data
-typedef struct entry_t {
-    // Key and mask
-    key_mask_t key_mask;
-
-    // Routing direction
-    uint32_t route;
-
-    // Source of packets arriving at this entry
-    uint32_t source;
-} entry_t;
-
-//! \brief struct for holding table entries
-typedef struct table_t {
-
-    // Number of entries in the table
-    uint32_t size;
-
-    // Entries in the table
-    entry_t entries[];
-} table_t;
 
 //=============================================================================
 //state for reduction in parameters being passed around

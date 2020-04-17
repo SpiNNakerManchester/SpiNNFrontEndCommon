@@ -41,4 +41,13 @@ typedef enum exit_states_for_user_one {
     EXITED_CLEANLY = 0, EXIT_FAIL = 1, EXIT_MALLOC = 2, EXIT_SWERR = 3
 } exit_states_for_user_one;
 
+//! flag for saying compression core doing nowt
+#define DOING_NOWT -1
+
+//! \brief move for core id in the circular queue
+#define CORE_MOVE 16
+
+//! \brief mask to get the finished state
+#define FINISHED_STATE_MASK 0x0000FFFF
+
 #endif  // __CONSTANTS_H__

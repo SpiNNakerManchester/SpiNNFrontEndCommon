@@ -21,7 +21,6 @@
 #include <sdp_no_scp.h>
 #include "common/platform.h"
 #include "common/routing_table.h"
-#include "common/sdp_formats.h"
 #include "common/constants.h"
 
 #include "common-typedefs.h"

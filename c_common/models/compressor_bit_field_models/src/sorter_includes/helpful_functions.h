@@ -18,7 +18,7 @@
 #ifndef __HELPFUL_FUNCTIONS_H__
 #define __HELPFUL_FUNCTIONS_H__
 
-#include "constants.h"
+#include "../common/constants.h"
 #include <filter_info.h>
 
 //! \brief finds the processor id of a given bitfield address (search though

@@ -19,7 +19,7 @@
 #define __BIT_FIELD_TABLE_GENERATOR_H__
 
 #include "helpful_functions.h"
-#include "constants.h"
+#include "../common/constants.h"
 #include "../common/routing_table.h"
 #include <filter_info.h>
 
