@@ -205,8 +205,7 @@ class MachineBitFieldRouterCompressor(object):
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
-            logger.warning(
-                self._ON_HOST_WARNING_MESSAGE.format(len(on_host_chips)))
+            logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
 
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
@@ -405,7 +404,7 @@ class MachineBitFieldRouterCompressor(object):
                 host_chips.append((core_subset.x, core_subset.y))
         cores = txrx.get_cores_in_state(
             executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
-        logger.info("failed on cores {}".format(cores))
+        logger.info("failed on cores {}", cores)
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
