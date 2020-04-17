@@ -407,7 +407,6 @@ class MachineBitFieldRouterCompressor(object):
             executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
         logger.info("failed on cores {}".format(cores))
 
-
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
             routing_tables, app_id, compress_only_when_needed, machine,
