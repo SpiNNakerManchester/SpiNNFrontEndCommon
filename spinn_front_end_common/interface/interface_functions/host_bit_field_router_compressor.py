@@ -449,17 +449,8 @@ class HostBasedBitFieldRouterCompressor(object):
         """
         word_id = int(neuron_id // self._BITS_IN_A_WORD)
         bit_in_word = neuron_id % self._BITS_IN_A_WORD
-        try:
-            flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
-            return flag
-        except Exception:
-            print(
-                "failed to read word {} and shifting {} bits as words "
-                "length is {} neuron id {} for n neurons of {}".format(
-                    word_id, bit_in_word, len(bit_field), neuron_id,
-                    len(bit_field) * self._BITS_IN_A_WORD))
-            import sys
-            sys.exit()
+        flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
+        return flag
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,
@@ -494,7 +485,7 @@ class HostBasedBitFieldRouterCompressor(object):
             reading_address = bit_field_base_address + self._BYTES_PER_WORD
 
             # read in each bitfield
-            for bit_field_index in range(0, n_bit_field_entries):
+            for _ in range(0, n_bit_field_entries):
                 # master pop key, n words and read pointer
                 (master_pop_key, n_words_to_read, read_pointer) = \
                     struct.unpack(
@@ -642,8 +633,8 @@ class HostBasedBitFieldRouterCompressor(object):
         # try first just uncompressed. so see if its possible
         try:
             self._best_routing_table = self._run_algorithm(
-                [router_table], target_length, router_table.x, router_table.y,
-                time_to_try_for_each_iteration, use_timer_cut_off)
+                [router_table], target_length, time_to_try_for_each_iteration,
+                use_timer_cut_off)
             self._best_bit_fields_by_processor = []
         except MinimisationFailedError:
             raise PacmanAlgorithmFailedToGenerateOutputsException(
@@ -689,9 +680,8 @@ class HostBasedBitFieldRouterCompressor(object):
         try:
             self._best_routing_table = \
                 self._run_algorithm(
-                    bit_field_router_tables, target_length, routing_table.x,
-                    routing_table.y, time_to_try_for_each_iteration,
-                    use_timer_cut_off)
+                    bit_field_router_tables, target_length,
+                    time_to_try_for_each_iteration, use_timer_cut_off)
             self._best_bit_fields_by_processor = \
                 new_bit_field_by_processor
             return True
@@ -701,7 +691,7 @@ class HostBasedBitFieldRouterCompressor(object):
             return False
 
     def _run_algorithm(
-            self, router_tables, target_length, chip_x, chip_y,
+            self, router_tables, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off):
         """ attempts to covert the mega router tables into 1 router table. will\
         raise a MinimisationFailedError exception if it fails to compress to \
@@ -710,8 +700,6 @@ class HostBasedBitFieldRouterCompressor(object):
         :param router_tables: the set of router tables that together need to \
         be merged into 1 router table
         :param target_length: the number
-        :param chip_x:  chip x
-        :param chip_y: chip y
         :param time_to_try_for_each_iteration: time for compressor to run for
         :param use_timer_cut_off: bool flag for using timer cutoff
         :return: compressor router table

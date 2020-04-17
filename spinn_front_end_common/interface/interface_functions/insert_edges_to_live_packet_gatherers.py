@@ -90,7 +90,7 @@ class InsertEdgesToLivePacketGatherers(object):
                     n_keys_map, m_graph)
         else:
             # add a edge between the closest LPG and the vertex
-            m_edges, m_lpg = self._process_m_vertex(
+            m_edges, _ = self._process_m_vertex(
                 vertex, m_lpgs, machine, placements,
                 m_graph, partition_ids)
 

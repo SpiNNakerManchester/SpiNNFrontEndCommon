@@ -32,6 +32,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
     ExecutableType
 from spinn_machine import CoreSubsets, Router
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
     SpinnmanUnexpectedResponseCodeException, SpinnmanException
@@ -43,7 +44,7 @@ from spinn_front_end_common.utilities.exceptions import \
     CantFindSDRAMToUseException
 from spinn_front_end_common.utilities import system_control_logic
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # sdram allocation for addresses
 SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
@@ -205,8 +206,7 @@ class MachineBitFieldRouterCompressor(object):
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
-            logger.warning(
-                self._ON_HOST_WARNING_MESSAGE.format(len(on_host_chips)))
+            logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
 
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
@@ -405,8 +405,7 @@ class MachineBitFieldRouterCompressor(object):
                 host_chips.append((core_subset.x, core_subset.y))
         cores = txrx.get_cores_in_state(
             executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
-        logger.info("failed on cores {}".format(cores))
-
+        logger.info("failed on cores {}", cores)
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
