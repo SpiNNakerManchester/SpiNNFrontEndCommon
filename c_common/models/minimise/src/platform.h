@@ -22,24 +22,35 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
 
+#include <sark.h>
+
 //! \brief Allocates memory, from DTCM if possible, from SDRAM otherwise.
 //!
 //! Note that this function will RTE if the memory cannot be allocated.
 //!
 //! \param[in] bytes: The number of bytes to allocate.
-//! \return The allocated memory block. _Never equal to NULL._
+//! \return The allocated memory block. _Never equal to NULL._ Always aligned
+//! to at least a word boundary.
 static inline void *safe_malloc(uint bytes)
 {
-    void* p = sark_xalloc(sark.heap, bytes, 0, 0);
+    void *p = sark_xalloc(sark.heap, bytes, 0, 0);
     if (p != NULL) {
+#ifdef __GNUC__
+        return __builtin_assume_aligned(p, sizeof(uint));
+#else
         return p;
+#endif // __GNUC__
     }
     p = sark_xalloc(sv->sdram_heap, bytes, 0, ALLOC_LOCK);
     if (p == NULL) {
         io_printf(IO_BUF, "Failed to malloc %u bytes.\n", bytes);
         rt_error(RTE_MALLOC);
     }
+#ifdef __GNUC__
+    return __builtin_assume_aligned(p, sizeof(uint));
+#else
     return p;
+#endif // __GNUC__
 }
 
 //! \brief Frees memory allocated with safe_malloc().
