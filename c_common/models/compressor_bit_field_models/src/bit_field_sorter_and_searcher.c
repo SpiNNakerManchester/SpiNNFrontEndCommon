@@ -28,8 +28,7 @@
 #include "common/compressor_sorter_structs.h"
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
-#include "sorter_includes/bit_field_reader.h"
-#include "sorter_includes/bit_field_sorter.h"
+#include "sorter_includes/bit_field_creator.h"
 #include "sorter_includes/message_sending.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control core.
@@ -815,19 +814,7 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    log_info("read in bitfields");
-    bool read_success = false;
     platform_turn_off_print();
-    bit_field_by_processor = bit_field_reader_read_in_bit_fields(
-            &n_bf_addresses, region_addresses, &read_success);
-    log_info("finished reading in bitfields");
-    lowest_failure = n_bf_addresses;
-
-    // check state
-    if (bit_field_by_processor == NULL && !read_success){
-        log_error("failed to read in bitfields, quitting");
-        terminate(EXIT_MALLOC);
-    }
 
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_no_bitfeilds_attempt();
@@ -836,31 +823,19 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
 
-    // check there are bitfields to merge, if not don't start search
-    if (n_bf_addresses == 0){
-        log_info(
-            "no bitfields to compress, just try the uncompressed and "
-            "quit based on that's result.");
-        // set off checker
-        spin1_schedule_callback(
-            check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
-        return;
+    log_info("read in bitfields");
+    sorted_bit_fields = bit_field_creater_read_in_bit_fields(&n_bf_addresses,
+        region_addresses);
+    // check state
+    if (sorted_bit_fields == NULL){
+        log_error("failed to read in bitfields, quitting");
+        terminate(EXIT_MALLOC);
     }
-
-    // if there are bitfields to merge
-    // sort the bitfields into order of best impact on worst cores.
-    log_info("sorting");
-    sorted_bit_fields = bit_field_sorter_sort(
-        n_bf_addresses, region_addresses, bit_field_by_processor);
-    log_info("finished sorting bitfields");
+    lowest_failure = n_bf_addresses;
+    log_info("finished reading bitfields");
     //platform_turn_on_print();
 
-    if (sorted_bit_fields == NULL) {
-        log_error("failed to read in bitfields, failing");
-        terminate(EXIT_MALLOC);
-        return;
-    }
-
+    //TODO: safety code to be removed
     for (int bit_field_index = 0; bit_field_index < n_bf_addresses;
             bit_field_index++) {
         // get key
