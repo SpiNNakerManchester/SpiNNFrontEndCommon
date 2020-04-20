@@ -111,9 +111,6 @@ comp_core_store_t* cores_bf_tables;
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
-//! \brief stores which mid points have successes or failed
-bit_field_t mid_points_successes;
-
 //! tracker for what each compressor core is doing (in terms of midpoints)
 int* core_status;
 
@@ -181,55 +178,21 @@ void send_sdp_force_stop_message(int core_index){
     message_sending_send_sdp_message(&my_msg, core_index);
 }
 
-//! \brief returns the best mid point tested to date. NOTE its only safe to call
-//! this after the first attempt finished. which is acceptable
-//! \return the best bf midpoint tested and success
-int best_mid_point_to_date(void) {
-    // go backwards to find the first passed value
-    for (int n_bf = n_bf_addresses; n_bf >= 0; n_bf --) {
-        if (bit_field_test(mid_points_successes, n_bf)) {
-            log_debug("returning %d", n_bf);
-            return n_bf;
-        }
-    }
-    // not officially correct, but best place to start search from
-    //if no other value has worked. and as the 0 fails will force a complete
-    //failure. safe
-    return 0;
-}
-
 //! \brief sets up the search bitfields.
 //! \return bool saying success or failure of the setup
-bool set_up_search_bitfields(void) {
-    // if there's no bitfields to read, then just set stuff to NULL. let that
-    // be the check in future usages for this path.
-    if (n_bf_addresses == 0){
-        tested_mid_points = NULL;
-        mid_points_successes = NULL;
-        return true;
-    }
-
-    log_info("n bf addresses is %d", n_bf_addresses);
+bool set_up_tested_mid_points(void) {
+    log_info("set_up_tested_mid_point n bf addresses is %d", n_bf_addresses);
     uint32_t words = get_bit_field_size(n_bf_addresses + ADD_INCLUSIVE_BIT);
     if (tested_mid_points == NULL) {
         tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
     }
-    if (mid_points_successes == NULL){
-        mid_points_successes = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
-    }
-
     // check the malloc worked
     if (tested_mid_points == NULL) {
-        return false;
-    }
-    if (mid_points_successes == NULL) {
-        FREE(tested_mid_points);
         return false;
     }
 
     // clear the bitfields
     clear_bit_field(tested_mid_points, words);
-    clear_bit_field(mid_points_successes, words);
 
     // return if successful
     return true;
@@ -398,11 +361,12 @@ int locate_next_mid_point() {
     if (!bit_field_test(tested_mid_points, n_bf_addresses)){
         new_mid_point = n_bf_addresses;
     } else {
+        log_info("n_bf_addresses %d tested_mid_points %d", n_bf_addresses, bit_field_test(tested_mid_points, n_bf_addresses));
         int best_end = -1;
         int best_length = 0;
         int current_length = 0;
         // check lowest_failure (false) to triggers a final else block
-        log_debug("best_success %d lowest_failure %d", best_success, lowest_failure);
+        log_info("best_success %d lowest_failure %d", best_success, lowest_failure);
         for (int index = best_success + 1; index <= lowest_failure; index++) {
             log_debug("index: %d, value: %u current_length: %d", index, bit_field_test(tested_mid_points, index), current_length);
             if (bit_field_test(tested_mid_points, index)){
@@ -760,17 +724,6 @@ void sdp_handler(uint mailbox, uint port) {
 }
 
 bool setup_no_bitfeilds_attempt(){
-    // sort out teh searcher bitfields. as now first time where can do so
-    // NOTE: by doing it here, the response from the uncompressed can be
-    // handled correctly.
-    log_debug("setting up search bitfields");
-    bool success = set_up_search_bitfields();
-    if (!success) {
-        log_error("can not allocate memory for search fields.");
-        return false;
-    }
-    log_debug("finish setting up search bitfields");
-
     int core_index = find_compressor_core(0);
     if (core_index < 0){
         log_error("No core available for no bitfeild attempt");
@@ -824,7 +777,7 @@ void start_compression_process(uint unused0, uint unused1) {
     }
 
     log_info("read in bitfields %d", timesteps);
-    sorted_bit_fields = bit_field_creater_read_in_bit_fields(&n_bf_addresses,
+    sorted_bit_fields = bit_field_creator_read_in_bit_fields(&n_bf_addresses,
         region_addresses);
     // check state
     if (sorted_bit_fields == NULL){
@@ -833,6 +786,8 @@ void start_compression_process(uint unused0, uint unused1) {
     }
     lowest_failure = n_bf_addresses;
     log_info("finished reading bitfields %d", timesteps);
+
+    set_up_tested_mid_points();
     //platform_turn_on_print();
 
     //TODO: safety code to be removed
@@ -846,22 +801,6 @@ void start_compression_process(uint unused0, uint unused1) {
             terminate(RTE_SWERR);
             return;
         }
-
-       //log_info("bf pointer address = %x", bf_pointer);
-       log_debug("bf pointer %d is = %d",  bit_field_index, bf_pointer->key);
-    }
-
-    for (int s_bf_i = 0; s_bf_i < n_bf_addresses; s_bf_i++){
-        log_debug(
-            "address for index %d is %x",
-            s_bf_i, sorted_bit_fields->bit_fields[s_bf_i]->data);
-        log_debug(
-            "for address in index %d, it targets processor %d with key %d "
-            "and the redundant packet count is %d",
-            s_bf_i, sorted_bit_fields->processor_ids[s_bf_i],
-            sorted_bit_fields->bit_fields[s_bf_i]->key,
-            detect_redundant_packet_count(
-                *sorted_bit_fields->bit_fields[s_bf_i], region_addresses));
     }
 
     // set off checker which in turn sets of the other compressor cores

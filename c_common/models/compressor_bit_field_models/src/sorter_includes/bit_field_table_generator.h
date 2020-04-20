@@ -363,7 +363,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         sorted_bit_fields_t *sorted_bit_fields){
 
     // get n keys that exist
-    log_debug("midpoint = %d", mid_point);
+    log_info("midpoint = %d", mid_point);
     master_pop_bit_field_t *keys =
         MALLOC(mid_point * sizeof(master_pop_bit_field_t));
     if (keys == NULL) {
@@ -374,7 +374,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
-    log_debug("n rts is %d", *n_rt_addresses);
+    log_info("n rts is %d", *n_rt_addresses);
 
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
@@ -389,7 +389,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         return NULL;
     }
 
-    log_debug(
+    log_info(
         "looking for %d bytes from %d tables",
         *n_rt_addresses * sizeof(table_t*), *n_rt_addresses);
     table_t** bit_field_routing_tables =
@@ -407,7 +407,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
 
     // iterate through the keys, accumulating bitfields and turn into routing
     // table entries.
-    log_debug("starting the generation of tables by key");
+    log_info("starting the generation of tables by key");
     for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
 
         platform_check_all_marked(1888888);

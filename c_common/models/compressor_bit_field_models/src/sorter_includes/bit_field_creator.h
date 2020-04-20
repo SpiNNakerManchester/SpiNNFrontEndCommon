@@ -126,7 +126,7 @@ uint32_t _detect_redundant_packet_count(
 //! \param[in/out] success: bool that helps decide if method finished
 //! successfully or not
 //! \return bool that states if it succeeded or not.
-sorted_bit_fields_t* bit_field_creater_read_in_bit_fields(int* n_bf_pointer,
+sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
     region_addresses_t *region_addresses){
 
     int n_bf_addresses = 0;
