@@ -39,7 +39,7 @@
 // ------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-//! stuff to do with SARK DMA
+// stuff to do with SARK DMA
 //-----------------------------------------------------------------------------
 
 //! \brief Use DMA bursts of 16 words (2<sup>16</sup>)
@@ -76,10 +76,14 @@ enum {
 #define END_FLAG      0xFFFFFFFF
 
 enum {
+    //! Size of the sequence number, in words
     SEQUENCE_NUMBER_SIZE = 1,
+    //! Size of the transaction ID, in words
     TRANSACTION_ID_SIZE = 1,
+    //! Effective size of the SDP packet payload, in words of actual content
     SDP_PAYLOAD_WORDS =
             ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE - TRANSACTION_ID_SIZE,
+    //! Effective size of the SDP packet payload, in bytes of actual content
     SDP_PAYLOAD_BYTES = SDP_PAYLOAD_WORDS * sizeof(uint)
 };
 
@@ -1178,6 +1182,15 @@ static inline void data_in_process_data(uint data) {
 }
 
 //! \brief Process a multicast packet with payload.
+//!
+//! Shared between the reinjection and data in code paths. Calls one of:
+//!
+//! * reinjection_set_timeout()
+//! * reinjection_set_emergency_timeout()
+//! * reinjection_clear()
+//! * data_in_process_address()
+//! * data_in_process_data()
+//! * data_in_process_boundary()
 static INT_HANDLER process_mc_payload_packet(void) {
     // get data from comm controller
     uint data = cc[CC_RXDATA];
