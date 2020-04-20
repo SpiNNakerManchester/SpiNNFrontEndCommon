@@ -403,6 +403,7 @@ int locate_next_mid_point() {
         int best_length = 0;
         int current_length = 0;
         // check lowest_failure (false) to triggers a final else block
+        log_debug("best_success %d lowest_failure %d", best_success, lowest_failure);
         for (int index = best_success + 1; index <= lowest_failure; index++) {
             log_debug("index: %d, value: %u current_length: %d", index, bit_field_test(tested_mid_points, index), current_length);
             if (bit_field_test(tested_mid_points, index)){
@@ -820,6 +821,7 @@ void start_compression_process(uint unused0, uint unused1) {
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             &n_bf_addresses, region_addresses, &read_success);
     log_info("finished reading in bitfields");
+    lowest_failure = n_bf_addresses;
 
     // check state
     if (bit_field_by_processor == NULL && !read_success){
