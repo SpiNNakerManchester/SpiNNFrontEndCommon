@@ -78,23 +78,22 @@ typedef struct sdp_msg_pure_data {  // SDP message (=292 bytes)
 // ------------------------------------------------------------------------
 
 //! the mc key used for basic timeouts to all extra monitors
-static uint reinjection_timeout_mc_key = 0;
+static uint reinject_timeout_mc_key = 0;
 
 //! the mc key used for emergency timeouts to all extra monitors
-static uint reinjection_emergency_timeout_mc_key = 0;
+static uint reinject_emergency_timeout_mc_key = 0;
 
 //! the mc key used for clear reinjector queue to all extra monitors
-static uint reinjection_clear_mc_key = 0;
+static uint reinject_clear_mc_key = 0;
 
 //! \brief sets up the mc keys for the reinjection mc api
 //! \param[in] base_mc_key: the base key for the api.
 static void initialise_reinjection_mc_api(uint32_t base_mc_key) {
     // set the router timeout keys
-    reinjection_timeout_mc_key = base_mc_key + ROUTER_TIMEOUT_OFFSET;
-    reinjection_emergency_timeout_mc_key =
+    reinject_timeout_mc_key = base_mc_key + ROUTER_TIMEOUT_OFFSET;
+    reinject_emergency_timeout_mc_key =
             base_mc_key + ROUTER_EMERGENCY_TIMEOUT_OFFSET;
-    reinjection_clear_mc_key =
-            base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
+    reinject_clear_mc_key = base_mc_key + REINJECTOR_CLEAR_QUEUE_OFFSET;
 }
 
 //! Number of bytes in an SDP header.

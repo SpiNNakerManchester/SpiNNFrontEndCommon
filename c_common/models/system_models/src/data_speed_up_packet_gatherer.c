@@ -597,7 +597,7 @@ static void send_timeout(sdp_msg_t* msg, uint32_t key) {
 //! \brief sends the clear message to all extra mons on this board
 static void send_clear_message(sdp_msg_t* msg) {
     while (spin1_send_mc_packet(
-            reinjection_clear_mc_key, 0, WITH_PAYLOAD) == 0) {
+            reinject_clear_mc_key, 0, WITH_PAYLOAD) == 0) {
         spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
     }
     msg->cmd_rc = RC_OK;
@@ -611,11 +611,11 @@ static void reinjection_sdp_command(sdp_msg_t *msg) {
     // handle the key conversion
     switch (msg->cmd_rc) {
     case CMD_DPRI_SET_ROUTER_TIMEOUT:
-        send_timeout(msg, reinjection_timeout_mc_key);
+        send_timeout(msg, reinject_timeout_mc_key);
         log_debug("sent reinjection timeout mc");
         break;
     case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
-        send_timeout(msg, reinjection_emergency_timeout_mc_key);
+        send_timeout(msg, reinject_emergency_timeout_mc_key);
         log_debug("sent reinjection emergency timeout mc");
         break;
     case CMD_DPRI_CLEAR:
