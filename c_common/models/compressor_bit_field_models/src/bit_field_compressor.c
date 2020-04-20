@@ -188,17 +188,11 @@ bool store_into_compressed_address(void) {
         "starting store of %d tables with %d entries",
         n_tables, routing_table_sdram_get_n_entries());
 
-    bool check = platform_check(sdram_loc_for_compressed_entries);
-    if (!check){
-        log_error("failed");
-    }
+    platform_check_all_marked(50003);
 
     bool success = routing_table_sdram_store(
         sdram_loc_for_compressed_entries);
-    check = platform_check(sdram_loc_for_compressed_entries);
-    if (!check){
-        log_error("failed");
-    }
+    platform_check_all_marked(50004);
 
     log_debug("finished store");
     if (!success) {
@@ -221,19 +215,27 @@ void start_compression_process(uint unused0, uint unused1) {
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
-    bool check = platform_check(sdram_loc_for_compressed_entries);
-    if (!check){
-        log_error("failed");
-        rt_error(RTE_SWERR);
-    }
+    platform_check_all_marked(50004);
 
     // run compression
-    bool success = oc_minimise(
+    bool success;
+    if (n_bit_fields <= 6){
+        success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
         &finished_by_compressor_force,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
-    platform_check_all();
+        if (success) {
+            log_info("Passed oc minimise with success %d", success);
+        } else {
+            log_info("Failed oc minimise with success %d", success);
+        }
+    } else {
+        success = false;
+        log_info("skipped oc minimise with success %d", success);
+    }
+
+    platform_check_all_marked(50001);
 
     // turn off timer and set us into pause state
     spin1_pause();
@@ -307,11 +309,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // location where to store the compressed table
     sdram_loc_for_compressed_entries = start_cmd->table_data->compressed_table;
 
-    bool check = platform_check(sdram_loc_for_compressed_entries);
-    if (!check){
-        log_error("failed");
-        rt_error(RTE_SWERR);
-    }
+    platform_check_all_marked(50002);
 
     log_debug("table init for %d tables", start_cmd->table_data->n_elements);
     bool success = routing_tables_init(

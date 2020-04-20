@@ -117,6 +117,16 @@ static bool platform_check(void *ptr) {
     return true;
 }
 
+int platform_malloc_size(void *ptr) {
+    int* int_pointer = (int*) ptr;
+    if (safety) {
+        int_pointer = int_pointer - 1;
+        return int_pointer[0];
+    }
+    //Not know so return 0
+    return 0;
+}
+
 //! \brief checks all malloc's with a given marker. to allow easier tracking
 //! from application code (probably should be a string. but meh)
 void platform_check_all_marked(int marker){

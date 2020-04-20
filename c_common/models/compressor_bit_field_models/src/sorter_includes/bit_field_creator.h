@@ -22,6 +22,23 @@
 #include "common/platform.h"
 #include "common/compressor_sorter_structs.h"
 
+void _log_bitfield(bit_field_t bit_field){
+    log_info("0:%u 1:%u 2:%u 3:%u 4:%u 5:%u 6:%u 7:%u 8:%u 9:%u 10:%u 11:%u 12:%u",
+        bit_field_test(bit_field, 0),
+        bit_field_test(bit_field, 1),
+        bit_field_test(bit_field, 2),
+        bit_field_test(bit_field, 3),
+        bit_field_test(bit_field, 4),
+        bit_field_test(bit_field, 5),
+        bit_field_test(bit_field, 6),
+        bit_field_test(bit_field, 7),
+        bit_field_test(bit_field, 8),
+        bit_field_test(bit_field, 9),
+        bit_field_test(bit_field, 10),
+        bit_field_test(bit_field, 11),
+        bit_field_test(bit_field, 12));
+}
+
 sorted_bit_fields_t* _malloc_sorted_bit_fields(uint32_t n_bf_addresses){
     sorted_bit_fields_t* sorted_bit_fields =
        MALLOC(sizeof(sorted_bit_fields_t));
@@ -91,7 +108,14 @@ uint32_t _detect_redundant_packet_count(
             n_filtered_packets += 1;
         }
     }
-    log_debug("n filtered packets = %d", n_filtered_packets);
+    int count = count_bit_field(filter_info.data, filter_info.n_words);
+    int calc = filter_info.n_words * 32 - count;
+    if (n_filtered_packets!= calc){
+        log_info("n filtered packets = %d out of %d", n_filtered_packets,  n_neurons);
+        _log_bitfield(filter_info.data);
+        log_info("count = %d words = %d calc = %d", count, filter_info.n_words, calc);
+    }
+
     return n_filtered_packets;
 }
 
@@ -125,9 +149,9 @@ sorted_bit_fields_t* bit_field_creater_read_in_bit_fields(int* n_bf_pointer,
 
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
-    uint32_t index = 0;
+    int index = 0;
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
-        log_info("%d %u %u %u %u %u", r_id,
+        log_debug("%d %u %u %u %u %u", r_id,
             platform_check(sorted_bit_fields->bit_fields),
             platform_check(sorted_bit_fields->processor_ids),
             platform_check(sorted_bit_fields->sort_order),
@@ -137,24 +161,25 @@ sorted_bit_fields_t* bit_field_creater_read_in_bit_fields(int* n_bf_pointer,
         // locate data for malloc memory calcs
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
         key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
-        log_info("index %u %u", index, filter_region->n_filters);
+        log_debug("index %u %u", index, filter_region->n_filters);
         for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
-            sorted_bit_fields->processor_ids[index] =
+             sorted_bit_fields->processor_ids[index] =
                 region_addresses->pairs[r_id].processor;
-            filter_info_t filter_info = filter_region->filters[bf_id];
-            sorted_bit_fields->bit_fields[index]->key = filter_info.key;
-            sorted_bit_fields->bit_fields[index]->n_words = filter_info.n_words;
-            sorted_bit_fields->bit_fields[index]->data = filter_info.data;
+            log_debug("index: %d, key %u words %u data %u" , index, filter_region->filters[bf_id].key, filter_region->filters[bf_id].n_words, filter_region->filters[bf_id].data);
+            sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
+            log_debug("index: %d, key %u words %u data %u pointer %u" , index, sorted_bit_fields->bit_fields[index]->key, sorted_bit_fields->bit_fields[index]->n_words, sorted_bit_fields->bit_fields[index]->data, sorted_bit_fields->bit_fields[index]);
+            if (index > 0){
+                log_debug("index: %d, key %u words %u data %u pointer %u" , index-1, sorted_bit_fields->bit_fields[index-1]->key, sorted_bit_fields->bit_fields[index-1]->n_words, sorted_bit_fields->bit_fields[index-1]->data, sorted_bit_fields->bit_fields[index-1]);
+            }
             redundant[index] = _detect_redundant_packet_count(
-                filter_info, key_atom_map);
-            log_info("bf_id %u redundant %u" , bf_id, redundant[index]);
+                filter_region->filters[bf_id], key_atom_map);
             platform_check_all_marked(60001);
             index++;
         }
     }
-    log_info("readin");
+    log_info("read in");
     for (index = 0; index < n_bf_addresses; index++) {
-        log_info("processor: %u, key: %u, redundant %u",
+        log_info("index %u processor: %u, key: %u, redundant %u", index,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
             redundant[index]);
@@ -258,5 +283,6 @@ proc_bit_field_keys_t* sorter_sort_sorted_to_cores(
 
     return sorted_bf_by_processor;
 }
+
 
 #endif  // __BIT_FIELD_CREATER_H__

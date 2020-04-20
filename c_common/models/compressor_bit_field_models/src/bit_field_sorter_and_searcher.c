@@ -560,7 +560,7 @@ void timer_callback(uint unused0, uint unused1) {
     timesteps+=1;
     //TODO remove this debug line
     if ((timesteps & 1023) == 0){
-        log_info("%u", timesteps);
+        log_info("timesteps: %u", timesteps);
     }
     if (timesteps > KILL_TIME){
         log_error("timer overran %u", timesteps);
@@ -756,7 +756,7 @@ void sdp_handler(uint mailbox, uint port) {
         sark_msg_free((sdp_msg_t *) msg);
     }
 
-    log_debug("finish sdp process");
+    log_info("finish sdp process");
 }
 
 bool setup_no_bitfeilds_attempt(){
@@ -823,7 +823,7 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
 
-    log_info("read in bitfields");
+    log_info("read in bitfields %d", timesteps);
     sorted_bit_fields = bit_field_creater_read_in_bit_fields(&n_bf_addresses,
         region_addresses);
     // check state
@@ -832,7 +832,7 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
     lowest_failure = n_bf_addresses;
-    log_info("finished reading bitfields");
+    log_info("finished reading bitfields %d", timesteps);
     //platform_turn_on_print();
 
     //TODO: safety code to be removed
