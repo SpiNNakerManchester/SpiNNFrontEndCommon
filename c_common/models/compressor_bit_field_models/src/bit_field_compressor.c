@@ -219,7 +219,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // run compression
     bool success;
-    if (n_bit_fields <= 6){
+    //if (n_bit_fields <= 6){
         success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
         &finished_by_compressor_force,
@@ -230,10 +230,10 @@ void start_compression_process(uint unused0, uint unused1) {
         } else {
             log_info("Failed oc minimise with success %d", success);
         }
-    } else {
-        success = false;
-        log_info("skipped oc minimise with success %d", success);
-    }
+    //} else {
+    //    success = false;
+    //    log_info("skipped oc minimise with success %d", success);
+    //}
 
     platform_check_all_marked(50001);
 

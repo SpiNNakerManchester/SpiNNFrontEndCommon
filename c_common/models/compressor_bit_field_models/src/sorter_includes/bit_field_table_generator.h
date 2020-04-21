@@ -292,7 +292,7 @@ static inline bool generate_rt_from_bit_field(
         bit_field_by_processor_t* bit_field_by_processor,
         sorted_bit_fields_t* sorted_bit_fields){
 
-    log_info("generate_rt_from_bit_field key %u n_bfs_for_key %u", master_pop_key, n_bfs_for_key);
+    log_debug("generate_rt_from_bit_field key %u n_bfs_for_key %u", master_pop_key, n_bfs_for_key);
     // reduce future iterations, by finding the exact bitfield filter
     filter_info_t **filters = MALLOC(n_bfs_for_key * sizeof(filter_info_t*));
     if (filters == NULL) {
