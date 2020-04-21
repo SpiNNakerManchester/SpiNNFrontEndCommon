@@ -34,43 +34,48 @@
 
 //! Provenance data store
 struct provenance_data_struct {
+    //! Count of overflows when no payload was sent
     uint32_t number_of_overflows_no_payload;
+    //! Count of overflows when a payload was sent
     uint32_t number_of_overflows_with_payload;
 };
 
 //! Definitions of each element in the configuration; this is copied from SDRAM
 //! into DTCM for speed.
 struct lpg_config {
-    // P bit
+    //! P bit
     uint32_t apply_prefix;
-    // Prefix data
+    //! Prefix data
     uint32_t prefix;
-    // Type bits
+    //! Type bits
     uint32_t prefix_type;
-    // F bit (for the receiver)
+    //! F bit (for the receiver)
     uint32_t packet_type;
-    // Right payload shift (for the sender)
+    //! Right payload shift (for the sender)
     uint32_t key_right_shift;
-    // T bit
+    //! T bit
     uint32_t payload_timestamp;
-    // D bit
+    //! D bit
     uint32_t payload_apply_prefix;
-    // Payload prefix data (for the receiver)
+    //! Payload prefix data (for the receiver)
     uint32_t payload_prefix;
-    // Right payload shift (for the sender)
+    //! Right payload shift (for the sender)
     uint32_t payload_right_shift;
+    //! SDP tag to use when sending
     uint32_t sdp_tag;
+    //! SDP destination to use when sending
     uint32_t sdp_dest;
+    //! Maximum number of packets expected per timestep
     uint32_t packets_per_timestamp;
 };
 
 //! values for the priority for each callback
 enum {
-    MC_PACKET = -1,
-    SDP = 0,
-    USER = 1,
-    DMA = 2,
-    TIMER = 3
+    MC_PACKET = -1, //!< Multicast packet interrupt uses FIQ (super high prio)
+    SDP = 0,        //!< SDP interrupt is highest priority
+    USER = 1,       //!<
+    DMA = 2,        //!< DMA complete interrupt is low priority
+    TIMER = 3       //!< Timer interrupt is lowest priority
 };
 
 //! human readable definitions of each region in SDRAM
@@ -80,6 +85,7 @@ enum {
     PROVENANCE_REGION
 };
 
+//! EIEIO packet types
 enum packet_types {
     NO_PAYLOAD_16,
     PAYLOAD_16,
@@ -88,40 +94,85 @@ enum packet_types {
 };
 
 // Globals
+//! The SDP message that we will send.
 static sdp_msg_t g_event_message;
+
+//! The location of the EIEIO header in the message.
 static uint16_t *sdp_msg_aer_header;
+
+//! The location of the key prefix in the message. `NULL` if no prefix.
 static uint16_t *sdp_msg_aer_key_prefix;
+
+//! The location of the payload prefix in the message. `NULL` if no prefix.
 static void *sdp_msg_aer_payload_prefix;
+
+//! Pointer to outbound message data. _Might only be half-word aligned!_
 static void *sdp_msg_aer_data;
+
+//! Current simulation time
 static uint32_t time;
+
+//! Count of packets sent
 static uint32_t packets_sent;
+
+//! Index into our buffer in ::sdp_msg_aer_data
 static uint32_t buffer_index;
-static uint16_t temp_header;
+
+//! Part of the generic EIEIO header that is constant
+static uint16_t eieio_constant_header;
+
+//! The size of an individual event
 static uint8_t event_size;
+
+//! The length of the header, in bytes
 static uint8_t header_len;
+
+//! When we will run until
 static uint32_t simulation_ticks = 0;
-static uint32_t infinite_run = 0;
+
+//! \brief TRUE if we're running without bound.
+//! FALSE if we're only running for a limited period of time.
+static uint32_t infinite_run = FALSE;
+
+//! Circular buffer of incoming multicast packets that lack payloads
 static circular_buffer without_payload_buffer;
+
+//! Circular buffer of incoming multicast packets that have payloads
 static circular_buffer with_payload_buffer;
+
+//! Whether we are processing events (or discarding them).
 static bool processing_events = false;
+
+//! The provenance information that we are collecting.
 static struct provenance_data_struct provenance_data;
+
+//! The configuration data of the application.
 static struct lpg_config config;
 
 //! How to test if a bit flag is set
 #define FLAG_IS_SET(flags, bit)		(((flags) & (bit)) != 0)
+
 //! How to use just the low 8 bits of an integer value
 #define CLAMP8(value)				((value) & 0xFF)
+
 //! How to use just the low 16 bits of an integer value
 #define CLAMP16(value)				((value) & 0xFFFF)
+
 //! Does the packet type include a payload?
 #define HAVE_PAYLOAD(pkt_type)		FLAG_IS_SET(pkt_type, 0x1)
+
 //! Does the packet type include a double-width payload?
 #define HAVE_WIDE_LOAD(pkt_type)	FLAG_IS_SET(pkt_type, 0x2)
 
+//! The size of the circular buffers.
 #define BUFFER_CAPACITY 256
 
-//! \brief Because WHY OH WHY would you use aligned memory? At least with this
+//! \brief Because _WHY OH WHY_ would you use aligned memory? At least with this
 //! we don't get data aborts.
+//! \param[out] base: Buffer to write in.
+//!     _Only guaranteed to be half-word aligned._
+//! \param[in] index: Offset in count of _words_ into the buffer.
+//! \param[in] value: Value to write in (as little-endian).
 static inline void write_unaligned(
         void *base, uint32_t index, uint32_t value) {
     uint16_t *ary = base;
@@ -130,6 +181,7 @@ static inline void write_unaligned(
     ary[idx] = CLAMP16(value >> 16);
 }
 
+//! \brief Send buffered events to host and clear internal buffers.
 static void flush_events(void) {
     // Send the event message only if there is data
     if (buffer_index > 0) {
@@ -145,7 +197,7 @@ static void flush_events(void) {
             }
 
             // insert appropriate header
-            sdp_msg_aer_header[0] = temp_header | CLAMP8(event_count);
+            sdp_msg_aer_header[0] = eieio_constant_header | CLAMP8(event_count);
 
             g_event_message.length =
                     sizeof(sdp_hdr_t) + header_len + event_count * event_size;
@@ -174,7 +226,9 @@ static void flush_events(void) {
     buffer_index = 0;
 }
 
-//! \brief function to store provenance data elements into SDRAM
+//! \brief Store provenance data elements into SDRAM
+//! \param[out] provenance_region_address:
+//!     Where the provenance data will be written
 static void record_provenance_data(address_t provenance_region_address) {
     struct provenance_data_struct *sdram = (void *) provenance_region_address;
     // Copy provenance data into SDRAM region
@@ -182,6 +236,13 @@ static void record_provenance_data(address_t provenance_region_address) {
 }
 
 // Callbacks
+//! \brief Periodic timer callback
+//!
+//! Forces all events to be sent at least on the timer tick (calling
+//! flush_events()) and handles pausing as required.
+//!
+//! \param unused0: unused
+//! \param unused1: unused
 static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -205,6 +266,10 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
+//! \brief Flush events to the outside world if our internal buffers are now
+//! full.
+//!
+//! Calls flush_events() to do the flush.
 static void flush_events_if_full(void) {
     uint8_t event_count;
 
@@ -219,7 +284,8 @@ static void flush_events_if_full(void) {
     }
 }
 
-// processes an incoming multicast packet without payload
+//! \brief Processes an incoming multicast packet without payload.
+//! \param[in] key: The key of the packet.
 static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
@@ -251,7 +317,9 @@ static void process_incoming_event(uint key) {
     flush_events_if_full();
 }
 
-// processes an incoming multicast packet with payload
+//! \brief Processes an incoming multicast packet with payload.
+//! \param[in] key: The key of the packet.
+//! \param[in] payload: The payload word of the packet.
 static void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 
@@ -283,6 +351,19 @@ static void process_incoming_event_payload(uint key, uint payload) {
     flush_events_if_full();
 }
 
+//! \brief Handler for processing incoming packets that have been locally queued
+//!
+//! Triggered by calling spin1_trigger_user_event() in incoming_event_callback()
+//! and incoming_event_payload_callback(), which (being attached to the FIQ)
+//! just enqueue messages for later handling. Delegates to
+//! process_incoming_event() and process_incoming_event_payload() for actual
+//! processing.
+//!
+//! Packets without payload are slightly higher priority than packets with
+//! payload.
+//!
+//! \param unused0: Ignored
+//! \param unused1: Ignored
 static void incoming_event_process_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -301,6 +382,13 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
     } while (processing_events);
 }
 
+//! \brief Handler for incoming packets without payload
+//!
+//! Just enqueues them for later handling by incoming_event_process_callback(),
+//! which will hand off to process_incoming_event().
+//!
+//! \param[in] key: The key of the incoming packet.
+//! \param unused: unused
 static void incoming_event_callback(uint key, uint unused) {
     use(unused);
     log_debug("Received key %x", key);
@@ -315,6 +403,13 @@ static void incoming_event_callback(uint key, uint unused) {
     }
 }
 
+//! \brief Handler for incoming packets with payload
+//!
+//! Just enqueues them for later handling by incoming_event_process_callback(),
+//! which will hand off to process_incoming_event_payload().
+//!
+//! \param[in] key: The key of the incoming packet.
+//! \param[in] payload: The payload word of the incoming packet.
 static void incoming_event_payload_callback(uint key, uint payload) {
     log_debug("Received key %x, payload %x", key, payload);
 
@@ -329,9 +424,12 @@ static void incoming_event_payload_callback(uint key, uint payload) {
     }
 }
 
+//! \brief Copies the application configuration from DSG SDRAM to DTCM.
+//!
+//! Note that it's faster to copy by field than to use spin1_memcpy()!
+//!
+//! \param[in] sdram_config: Where to copy from
 static void read_parameters(struct lpg_config *sdram_config) {
-    // Faster to copy by field than to use spin1_memcpy()!
-
     // P bit
     config.apply_prefix = sdram_config->apply_prefix;
     // Prefix data
@@ -368,6 +466,9 @@ static void read_parameters(struct lpg_config *sdram_config) {
     log_info("packets_per_timestamp: %d", config.packets_per_timestamp);
 }
 
+//! \brief Initialise the application.
+//! \param[out] timer_period: Value for programming the timer ticks.
+//! \result True if initialisation succeeds.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -400,65 +501,10 @@ static bool initialize(uint32_t *timer_period) {
     return true;
 }
 
-static bool configure_sdp_msg(void) {
-    log_info("configure_sdp_msg");
-
-    switch (config.packet_type) {
-    case NO_PAYLOAD_16:
-        event_size = 2;
-        break;
-    case PAYLOAD_16:
-        event_size = 4;
-        break;
-    case NO_PAYLOAD_32:
-        event_size = 4;
-        break;
-    case PAYLOAD_32:
-        event_size = 8;
-        break;
-    default:
-        log_error("unknown packet type: %d", config.packet_type);
-        return false;
-    }
-
-    // initialise SDP header
-    g_event_message.tag = config.sdp_tag;
-    // No reply required
-    g_event_message.flags = 0x07;
-    // Chip 0,0
-    g_event_message.dest_addr = config.sdp_dest;
-    // Dump through Ethernet
-    g_event_message.dest_port = PORT_ETH;
-    // Set up monitoring address and port
-    g_event_message.srce_addr = spin1_get_chip_id();
-    g_event_message.srce_port = (3 << PORT_SHIFT) | spin1_get_core_id();
-
-    // check incompatible options
-    if (config.payload_timestamp && config.payload_apply_prefix
-            && HAVE_PAYLOAD(config.packet_type)) {
-        log_error("Timestamp can either be included as payload prefix or as"
-                "payload to each key, not both");
-        return false;
-    }
-    if (config.payload_timestamp && !config.payload_apply_prefix
-            && !HAVE_PAYLOAD(config.packet_type)) {
-        log_error("Timestamp can either be included as payload prefix or as"
-                "payload to each key, but current configuration does not"
-                "specify either of these");
-        return false;
-    }
-
-    // initialise AER header
-    // pointer to data space
-    sdp_msg_aer_header = &g_event_message.cmd_rc;
-
-    temp_header = 0;
-    temp_header |= config.apply_prefix << APPLY_PREFIX;
-    temp_header |= config.prefix_type << PREFIX_UPPER;
-    temp_header |= config.payload_apply_prefix << APPLY_PAYLOAD_PREFIX;
-    temp_header |= config.payload_timestamp << PAYLOAD_IS_TIMESTAMP;
-    temp_header |= config.packet_type << PACKET_TYPE;
-
+//! \brief Sets up the header of the AER EIEIO data message.
+//! \return The address of the message content.
+//!     _Might be only half-word aligned._
+static void *init_aer_header(void) {
     header_len = 2;
 
     // pointers for AER packet header, prefix and data
@@ -508,14 +554,76 @@ static bool configure_sdp_msg(void) {
         sdp_msg_aer_payload_prefix = NULL;
     }
 
-    // pointer to write data
-    sdp_msg_aer_data = temp_ptr;
+    return temp_ptr;
+}
+
+//! \brief Configures the system for SDP message sending.
+//! \return False if the system fails sanity checking. True on success.
+static bool configure_sdp_msg(void) {
+    log_info("configure_sdp_msg");
+
+    switch (config.packet_type) {
+    case NO_PAYLOAD_16:
+        event_size = 2;
+        break;
+    case PAYLOAD_16:
+        event_size = 4;
+        break;
+    case NO_PAYLOAD_32:
+        event_size = 4;
+        break;
+    case PAYLOAD_32:
+        event_size = 8;
+        break;
+    default:
+        log_error("unknown packet type: %d", config.packet_type);
+        return false;
+    }
+
+    // initialise SDP header
+    g_event_message.tag = config.sdp_tag;
+    // No reply required
+    g_event_message.flags = 0x07;
+    // Chip 0,0
+    g_event_message.dest_addr = config.sdp_dest;
+    // Dump through Ethernet
+    g_event_message.dest_port = PORT_ETH;
+    // Set up monitoring address and port
+    g_event_message.srce_addr = spin1_get_chip_id();
+    g_event_message.srce_port = (3 << PORT_SHIFT) | spin1_get_core_id();
+
+    // check incompatible options
+    if (config.payload_timestamp && config.payload_apply_prefix
+            && HAVE_PAYLOAD(config.packet_type)) {
+        log_error("Timestamp can either be included as payload prefix or as"
+                "payload to each key, not both");
+        return false;
+    }
+    if (config.payload_timestamp && !config.payload_apply_prefix
+            && !HAVE_PAYLOAD(config.packet_type)) {
+        log_error("Timestamp can either be included as payload prefix or as"
+                "payload to each key, but current configuration does not"
+                "specify either of these");
+        return false;
+    }
+
+    // initialise AER header
+    // pointer to data space of containing SDP message
+    sdp_msg_aer_header = &g_event_message.cmd_rc;
+
+    eieio_constant_header = 0;
+    eieio_constant_header |= config.apply_prefix << APPLY_PREFIX;
+    eieio_constant_header |= config.prefix_type << PREFIX_UPPER;
+    eieio_constant_header |= config.payload_apply_prefix << APPLY_PAYLOAD_PREFIX;
+    eieio_constant_header |= config.payload_timestamp << PAYLOAD_IS_TIMESTAMP;
+    eieio_constant_header |= config.packet_type << PACKET_TYPE;
+
+    // pointer to write data; beware of alignment hazards!
+    sdp_msg_aer_data = init_aer_header();
 
     log_debug("sdp_msg_aer_header: %08x", sdp_msg_aer_header);
-    log_debug("sdp_msg_aer_key_prefix: %08x",
-            sdp_msg_aer_key_prefix);
-    log_debug("sdp_msg_aer_payload_prefix: %08x",
-            sdp_msg_aer_payload_prefix);
+    log_debug("sdp_msg_aer_key_prefix: %08x", sdp_msg_aer_key_prefix);
+    log_debug("sdp_msg_aer_payload_prefix: %08x", sdp_msg_aer_payload_prefix);
     log_debug("sdp_msg_aer_data: %08x", sdp_msg_aer_data);
 
     packets_sent = 0;
@@ -524,7 +632,7 @@ static bool configure_sdp_msg(void) {
     return true;
 }
 
-// Entry point
+//! Entry point
 void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
