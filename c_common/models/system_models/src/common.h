@@ -55,6 +55,7 @@ typedef enum {
     REINJECTOR_CLEAR_QUEUE_OFFSET = 2,
 } reinjector_key_offsets;
 
+//! Misc constants
 enum {
     //! How many payload words are in an SDP packet.
     ITEMS_PER_DATA_PACKET = 68

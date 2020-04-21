@@ -59,6 +59,7 @@
 //! the number of DMA buffers to build
 #define N_DMA_BUFFERS 2
 
+//! Flags for the type of DMA to request
 enum {
     //! marker for doing a DMA read
     DMA_READ = 0,
@@ -75,6 +76,7 @@ enum {
 //! flag for saying stuff has ended
 #define END_FLAG      0xFFFFFFFF
 
+//! Sizes of things to do with data speed up out message sizes
 enum {
     //! Size of the sequence number, in words
     SEQUENCE_NUMBER_SIZE = 1,
@@ -157,6 +159,7 @@ typedef enum data_out_sdp_commands {
 // VIC stuff
 //-----------------------------------------------------------------------------
 
+//! VIC slot definitions
 enum {
     //! CPU VIC slot (WDOG and SDP; message from SCAMP for SARK)
     CPU_SLOT = SLOT_0,
@@ -174,6 +177,7 @@ enum {
     MC_PAYLOAD_SLOT = SLOT_6
 };
 
+//! Positions of fields in the router status and control registers
 enum {
     RTR_DOVRFLW_BIT = 30, //!< router dump overflow
     RTR_BLOCKED_BIT = 25, //!< router blocked
@@ -182,6 +186,7 @@ enum {
     RTR_DENABLE_BIT = 2   //!< enable dump interrupts
 };
 
+//! Masks for fields in the router status and control registers
 enum {
     RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT, //!< router blocked
     RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT, //!< router dump overflow
@@ -190,6 +195,7 @@ enum {
     RTR_LE_MASK = (1 << RTR_LE_BIT) - 1      //!< if the dumped packet was a link failure
 };
 
+//! Positions of fields in communications controller registers
 enum {
     //! control field of packet control word
     PKT_CONTROL_SHFT = 16,
@@ -201,6 +207,7 @@ enum {
     PKT_ROUTE_SHFT = 24
 };
 
+//! Masks for fields in communications controller registers
 enum {
     //! control field of packet control word
     PKT_CONTROL_MASK = 0xff << PKT_CONTROL_SHFT,
@@ -461,7 +468,7 @@ static address_t data_in_write_address = NULL;
 //! Where we wrote the first word in the stream. `NULL` if not in a stream.
 static address_t data_in_first_write_address = NULL;
 
-//! The size of the ::saved_application_router_table
+//! The size of the ::data_in_saved_application_router_table
 static int data_in_application_table_n_valid_entries = 0;
 
 //! Do we have the system router table loaded?
@@ -849,9 +856,9 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
     }
 }
 
-//! \brief reads a memory location to set packet types for reinjection
-//! \param[in] address: memory address to read the reinjection packet types
-static void reinjection_read_packet_types(reinject_config_t *config) {
+//! \brief reads a DSG memory region to set packet types for reinjection
+//! \param[in] config: where to read the reinjection packet types from
+static void reinjection_read_packet_types(const reinject_config_t *config) {
     // process multicast reinject flag
     if (config->multicast_flag == 1) {
         reinject_mc = false;

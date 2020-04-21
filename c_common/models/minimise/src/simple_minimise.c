@@ -45,11 +45,10 @@ static uint32_t routes_frequency[1023] = {0};
 static uint32_t routes_count;
 
 //! \brief Merges a single pair of route entries.
-//! \param[in] entry1 The first route to merge.
-//! \param[in] entry2 The second route to merge.
+//! \param[in] entry1: The first route to merge.
+//! \param[in] entry2: The second route to merge.
 //! \return A new merged route that will eventually replace the two inputs.
-static inline entry_t merge(entry_t* entry1, entry_t* entry2)
-{
+static inline entry_t merge(entry_t* entry1, entry_t* entry2) {
     entry_t result;
     result.keymask = keymask_merge(entry1->keymask, entry2->keymask);
     result.route = entry1->route;
@@ -62,8 +61,8 @@ static inline entry_t merge(entry_t* entry1, entry_t* entry2)
 }
 
 //! \brief Finds if two routes can be merged.
-//! \param[in] left The index of the first route to consider.
-//! \param[in] index The index of the second route to consider.
+//! \param[in] left: The index of the first route to consider.
+//! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged. If they are merged, the entry at
 //! the index of left is also replaced with the merged route.
 static inline bool find_merge(int left, int index)
@@ -93,8 +92,8 @@ static inline bool find_merge(int left, int index)
 }
 
 //! \brief Does the actual routing compression
-//! \param[in] left The start of the section of table to compress
-//! \param[in] right The end of the section of table to compress
+//! \param[in] left: The start of the section of table to compress
+//! \param[in] right: The end of the section of table to compress
 static inline void compress_by_route(int left, int right)
 {
     while (left < right) {
@@ -121,8 +120,8 @@ static inline void compress_by_route(int left, int right)
 }
 
 //! \brief Compare routes based on their index
-//! \param[in] route_a The first route
-//! \param[in] route_b The second route
+//! \param[in] route_a: The first route
+//! \param[in] route_b: The second route
 //! \return Ordering term (-1, 0, 1)
 static inline int compare_routes(uint32_t route_a, uint32_t route_b)
 {
@@ -139,15 +138,14 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b)
     }
     log_error("Routes not found %u %u", route_a, route_b);
     // set the failed flag and exit
-    sark.vcpu->user0 = 1;
-    spin1_exit(0);
+    app_exit(1);
 
     return 0;
 }
 
 //! \brief Implementation of quicksort for routes based on route information
-//! \param[in] low the first index into the array of the section to sort
-//! \param[in] high the second index into the array of the section to sort
+//! \param[in] low: the first index into the array of the section to sort
+//! \param[in] high: the second index into the array of the section to sort
 static void quicksort_table(int low, int high)
 {
     // Sorts the entries in place based on route
@@ -207,10 +205,9 @@ static void quicksort_table(int low, int high)
 //!
 //! Also swaps the corresponding information in routes_frequency
 //!
-//! \param[in] index_a The index of the first route
-//! \param[in] index_b The index of the second route
-static inline void swap_routes(int index_a, int index_b)
-{
+//! \param[in] index_a: The index of the first route
+//! \param[in] index_b: The index of the second route
+static inline void swap_routes(int index_a, int index_b) {
     uint32_t temp = routes_frequency[index_a];
     routes_frequency[index_a] = routes_frequency[index_b];
     routes_frequency[index_b] = temp;
@@ -223,10 +220,9 @@ static inline void swap_routes(int index_a, int index_b)
 //!
 //! The routes must be non-overlapping pre-minimisation routes.
 //!
-//! \param[in] low the first index into the array of the section to sort
-//! \param[in] high the second index into the array of the section to sort
-static void quicksort_route(int low, int high)
-{
+//! \param[in] low: the first index into the array of the section to sort
+//! \param[in] high: the second index into the array of the section to sort
+static void quicksort_route(int low, int high) {
     // Sorts the routes and frequencies in place based on frequency
     // param low: Inclusive lowest index to consider
     // param high: Exclusive highest index to consider
@@ -278,7 +274,8 @@ static void quicksort_route(int low, int high)
     }
 }
 
-//! Computes route histogram
+//! \brief Computes route histogram
+//! \param[in] index: The index of the cell to update
 static inline void update_frequency(int index) {
     uint32_t route = routing_table_sdram_stores_get_entry(index)->route;
     for (uint i = 0; i < routes_count; i++) {
@@ -293,14 +290,13 @@ static inline void update_frequency(int index) {
     if (routes_count >= 1023) {
         log_error("1024 Unigue routes compression IMPOSSIBLE");
         // set the failed flag and exit
-        sark.vcpu->user0 = 1;
-        spin1_exit(0);
+        app_exit(0);
     }
 }
 
-//! Implementation of minimise()
-static inline void simple_minimise(uint32_t target_length)
-{
+//! \brief Implementation of minimise()
+//! \param[in] target_length: ignored
+static inline void simple_minimise(uint32_t target_length) {
 	use(target_length);
     int left, right;
 
@@ -354,7 +350,9 @@ static inline void simple_minimise(uint32_t target_length)
 
 }
 
-//! Minimises the routing table.
+//! \brief Minimises the routing table.
+//! \param[in] target_length: How many entries we want the table to have after
+//! minimisation
 void minimise(uint32_t target_length)
 {
     simple_minimise(target_length);

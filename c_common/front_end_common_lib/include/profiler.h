@@ -25,6 +25,7 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
+//! Number of words in profile region not filled with actual profile data
 #define PROFILER_N_HEADER_WORDS 1
 
 //---------------------------------------
@@ -83,6 +84,8 @@ enum profiler_event {
 //---------------------------------------
 // Externals
 //---------------------------------------
+
+//! \brief The concrete profiler state
 extern struct profiler_state profiler_state;
 
 //---------------------------------------

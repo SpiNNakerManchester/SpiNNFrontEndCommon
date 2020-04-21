@@ -95,6 +95,7 @@ enum {
 //! mask needed by router timeout
 #define ROUTER_TIMEOUT_MASK 0xFF
 
+//! Misc constants for Data In
 enum {
     //! offset with just command transaction id and seq in bytes
     SEND_SEQ_DATA_HEADER_WORDS = 3,
@@ -106,13 +107,15 @@ enum {
     ABSOLUTE_MAX_SIZE_OF_SDP_IN_BYTES = 280
 };
 
+//! Counts of items in a packet
 enum {
-    //! size of data stored in packet with command and seq
-    //! defined from calculation:
+    //! \brief size of data stored in packet with command and seq
+    //!
+    //! defined from calculation
     DATA_IN_NORMAL_PACKET_WORDS =
             ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS,
-    //! size of payload for a packet describing the batch of missing inbound
-    //! seqs
+    //! \brief size of payload for a packet describing the batch of missing
+    //! inbound seqs
     ITEMS_PER_MISSING_PACKET =
             ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
 };
@@ -504,8 +507,9 @@ static void send_finished_response(void) {
     log_debug("Sent end flag");
 }
 
-//! \brief searches through received seq nums and transmits missing ones back
-//! to host for retransmission
+//! \brief searches through received sequence numbers and transmits missing ones
+//! back to host for retransmission
+//! \param[in] msg: The message asking for the missed seq nums
 static void process_missing_seq_nums_and_request_retransmission(
         const sdp_msg_pure_data *msg) {
     // verify in right state

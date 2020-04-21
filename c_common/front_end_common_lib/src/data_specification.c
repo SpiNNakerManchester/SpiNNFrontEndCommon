@@ -16,9 +16,7 @@
  */
 
 /*! \file
- *
- *  \brief implementation of data_specification.h
- *
+ * \brief implementation of data_specification.h
  */
 
 #include "data_specification.h"
@@ -26,6 +24,7 @@
 #include <sark.h>
 #include <debug.h>
 
+//! Misc constants
 enum {
     //! A magic number that identifies the start of an executed data
     //! specification

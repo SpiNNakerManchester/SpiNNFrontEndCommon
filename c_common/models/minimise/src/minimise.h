@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <spin1_api.h>
 #include <debug.h>
+#include "platform.h"
 
 #ifndef __MINIMISE_H__
 #define __MINIMISE_H__
@@ -64,27 +65,32 @@
 //! This is common across all the functions in this file.
 table_t *table;
 
-//! Gets the size of the table
+//! \brief Gets the size of the table
+//! \return The number of entries in the table.
 static inline int routing_table_sdram_get_n_entries(void)
 {
     return table->size;
 }
 
 //! \brief Decreases the size of the table
-//! \param[in] size_to_remove The number of entries to trim off the end
+//! \param[in] size_to_remove: The number of entries to trim off the end
 static inline void routing_table_remove_from_size(int size_to_remove)
 {
     table->size -= size_to_remove;
 }
 
-//! Gets a pointer to a specific entry
+//! \brief Gets a pointer to a specific entry
+//! \param[in] index: Which index to get
+//! \return A reference to the index
 static inline entry_t* routing_table_sdram_stores_get_entry(int index)
 {
     return &table->entries[index];
 }
 
-//! Writes an entry to a specific index
-static inline void put_entry(entry_t* entry, int index)
+//! \brief Writes an entry to a specific index
+//! \param[in] entry: The entry to write
+//! \param[in] index: Where to write it.
+static inline void put_entry(const entry_t* entry, int index)
 {
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(index);
     e_ptr->keymask = entry->keymask;
@@ -92,7 +98,9 @@ static inline void put_entry(entry_t* entry, int index)
     e_ptr->source = entry->source;
 }
 
-//! Copies an entry from one index to another
+//! \brief Copies an entry from one index to another
+//! \param[in] new_index: Where to copy to
+//! \param[in] old_index: Where to copy from
 static inline void copy_entry(int new_index, int old_index)
 {
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(old_index);
@@ -100,6 +108,8 @@ static inline void copy_entry(int new_index, int old_index)
 }
 
 //! \brief swaps a pair of entries at the given indices
+//! \param[in] a: The first index where an entry is
+//! \param[in] b: The second index where an entry is
 static inline void swap_entries(int a, int b)
 {
     log_debug("swap %u %u", a, b);
@@ -126,7 +136,7 @@ void print_header(header_t *header)
 }
 
 //! \brief Read a new copy of the routing table from SDRAM.
-//! \param[in] table : the table containing router table entries
+//! \param[in] table: the table containing router table entries
 //! \param[in] header: the header object
 static void read_table(header_t *header)
 {
@@ -137,7 +147,7 @@ static void read_table(header_t *header)
     table->entries = MALLOC(table->size * sizeof(entry_t));
 
     // Copy in the routing table entries
-    spin1_memcpy((void *) table->entries, (void *) header->entries,
+    spin1_memcpy(table->entries, header->entries,
             sizeof(entry_t) * table->size);
 }
 
@@ -171,8 +181,7 @@ bool load_routing_table(uint32_t app_id)
 
 //! \brief frees memory allocated and calls spin1 exit and sets the user0
 //! error code correctly.
-//! \param[in] header the header object
-//! \param[in] table the data object holding the routing table entries
+//! \param[in] header: the header object
 void cleanup_and_exit(header_t *header)
 {
     // Free the memory used by the routing table.
@@ -182,18 +191,18 @@ void cleanup_and_exit(header_t *header)
     sark_xfree(sv->sdram_heap, (void *) header, ALLOC_LOCK);
 
     log_info("completed router compressor");
-    sark.vcpu->user0 = 0;
-    spin1_exit(0);
+    app_exit(0);
 }
 
 // Forward declaration...
 void minimise(uint32_t target_length);
 
 //! \brief the callback for setting off the router compressor
-void compress_start(uint _unused0, uint _unused1)
-{
-    use(_unused0);
-    use(_unused1);
+//! \param[in] unused0: unused
+//! \param[in] unused1: unused
+void compress_start(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
     uint32_t size_original;
 
     log_info("Starting on chip router compressor");
@@ -204,7 +213,7 @@ void compress_start(uint _unused0, uint _unused1)
     log_debug("reading data from 0x%08x", (uint32_t) header);
     print_header(header);
 
-    // set the flag to something none useful
+    // set the flag to something non-useful
     sark.vcpu->user0 = 20;
 
     // Load the routing table
@@ -268,8 +277,7 @@ void compress_start(uint _unused0, uint _unused1)
         FREE((void *) header);
 
         // set the failed flag and exit
-        sark.vcpu->user0 = 1;
-        spin1_exit(0);
+        app_exit(1);
     }
 }
 

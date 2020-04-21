@@ -30,6 +30,7 @@
 #include <spin1_api.h>
 #include <buffered_eieio_defs.h>
 
+//! \brief DMA tag for data recording
 #define RECORDING_DMA_COMPLETE_TAG_ID 15
 
 //! \brief Callback for recording completion.
@@ -38,11 +39,13 @@ typedef void (*recording_complete_callback_t)(void);
 //! \brief The type of channel indices.
 typedef uint8_t channel_index_t;
 
+//! \brief Describes a request to read
 typedef struct {
     uint16_t eieio_header_command;
     uint16_t chip_id;
 } read_request_packet_header;
 
+//! \brief Describes a request to fetch a particular buffer
 typedef struct {
     uint8_t processor_and_request;
     uint8_t sequence;
@@ -52,12 +55,14 @@ typedef struct {
     uint32_t space_to_be_read;
 } read_request_packet_data;
 
+//! \brief Describes the header of a chunk of read data
 typedef struct {
     uint16_t eieio_header_command;
     uint8_t request;
     uint8_t sequence;
 } host_data_read_packet_header;
 
+//! \brief Describes an acknowledgement of what data was read
 typedef struct {
     uint16_t zero;
     uint8_t channel;
@@ -65,6 +70,7 @@ typedef struct {
     uint32_t space_read;
 } host_data_read_packet_data;
 
+//! \brief Describes an acknowledgement of a read
 typedef struct {
     uint16_t eieio_header_command;
     uint8_t sequence;
@@ -139,33 +145,36 @@ static inline bool recording_record_and_notify(
 void recording_finalise(void);
 
 //! \brief initialises the recording of data
-//! \param[in/out] recording_data_address The start of the data about the
+//! \param[in,out] recording_data_address The start of the data about the
 //!                                       recording, updated to point to just
 //!                                       after the data if return True.
-//!            Data is {
-//!                // number of potential recording regions
-//!                uint32_t n_regions;
+//!                                       Data is:
+//! ```
+//! {
+//!    // number of potential recording regions
+//!    uint32_t n_regions;
 //!
-//!                // tag for live buffer control messages
-//!                uint32_t buffering_output_tag;
+//!    // tag for live buffer control messages
+//!    uint32_t buffering_output_tag;
 //!
-//!                // size of buffer before a read request is sent
-//!                uint32_t buffer_size_before_request;
+//!    // size of buffer before a read request is sent
+//!    uint32_t buffer_size_before_request;
 //!
-//!                // minimum time between sending read requests
-//!                uint32_t time_between_triggers;
+//!    // minimum time between sending read requests
+//!    uint32_t time_between_triggers;
 //!
-//!                // space that will hold the last sequence number once
-//!                // recording is complete
-//!                uint32_t last_sequence_number
+//!    // space that will hold the last sequence number once
+//!    // recording is complete
+//!    uint32_t last_sequence_number
 //!
-//!                // pointer to each region to be filled in (can be read
-//!                // after recording is complete)
-//!                uint32_t* pointer_to_address_of_region[n_regions]
+//!    // pointer to each region to be filled in (can be read
+//!    // after recording is complete)
+//!    uint32_t* pointer_to_address_of_region[n_regions]
 //!
-//!                // size of each region to be recorded
-//!                uint32_t size_of_region[n_regions];
-//!            }
+//!    // size of each region to be recorded
+//!    uint32_t size_of_region[n_regions];
+//! }
+//! ```
 //! \param[out] recording_flags: Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
@@ -177,6 +186,7 @@ void recording_reset(void);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0
+//! \param[in] time: the current simulation time
 void recording_do_timestep_update(timer_t time);
 
 #endif // _RECORDING_H_

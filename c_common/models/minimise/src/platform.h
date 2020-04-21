@@ -17,7 +17,7 @@
 
 //! \file
 //!
-//! \brief Wrapped access to memory management functions in SARK.
+//! \brief Wrapped access to functions in SARK.
 
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
@@ -66,7 +66,20 @@ static inline void safe_xfree(void *ptr)
     }
 }
 
+//! Selects the correct malloc implementation
 #define MALLOC safe_malloc
+//! Selects the correct free implementation
 #define FREE   safe_xfree
+
+//! \brief Request that the app terminate with result code.
+//!
+//! Note that this isn't considered a total failure; this is a _soft_ exit.
+//! Note that this function _may_ return.
+//!
+//! \param[in] result: the result code
+static inline void app_exit(uint result) {
+    sark.vcpu->user0 = result;
+    spin1_exit(0);
+}
 
 #endif  // __PLATFORN_H__

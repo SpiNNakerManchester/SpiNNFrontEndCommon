@@ -35,8 +35,8 @@
 //! well)
 #define MAX_DMA_CALLBACK_TAG 16
 
-//! the position and human readable terms for each element from the region
-//! containing the timing details.
+//! \brief the position and human readable terms for each element from the
+//! region containing the timing details.
 struct simulation_config {
     uint32_t application_magic_number;
     uint32_t timer_period;
@@ -54,6 +54,7 @@ struct simulation_provenance {
     uint32_t provenance_data_elements[];
 };
 
+//! the commands that the simulation control protocol may send
 typedef enum simulation_commands {
     //! Asks the simulation loop to stop as soon as possible
     CMD_STOP = 6,

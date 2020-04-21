@@ -181,14 +181,20 @@ static bool stopped = false;
 static bool recording_in_progress = false;
 static recorded_packet_t *recorded_packet;
 
+//! \brief Extract a field from a bitfield value.
+//! \param[in] value: the bitfield value
+//! \param[in] shift: the index of the start of the LSB of the field
+//! \param[in] mask: the mask for the value, once shifted to the bottom of the
+//!                  word
+//! \return The actual field value
 #define BITS(value, shift, mask) \
     (((value) >> (shift)) & (mask))
 
-//! What is the size of a command message?
+//! \brief What is the size of a command message?
 //! \param[in] eieio_msg_ptr Pointer to the message
 //! \return The size of the command message, in bytes
 static inline uint16_t calculate_eieio_packet_command_size(
-        eieio_msg_t eieio_msg_ptr) {
+        const eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
     uint16_t command_number = data_hdr_value & ~0xC000;
 
@@ -215,10 +221,10 @@ static inline uint16_t calculate_eieio_packet_command_size(
 }
 
 //! \brief What is the size of an event message?
-//! \param[in] eieio_msg_ptr Pointer to the message
+//! \param[in] eieio_msg_ptr: Pointer to the message
 //! \return The size of the event message, in bytes
 static inline uint16_t calculate_eieio_packet_event_size(
-        eieio_msg_t eieio_msg_ptr) {
+        const eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
     bool pkt_apply_prefix = (bool) BITS(data_hdr_value, APPLY_PREFIX, 0x1);
     bool pkt_payload_prefix_apply = (bool)
@@ -257,7 +263,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
 }
 
 //! \brief What is the size of a message?
-//! \param[in] eieio_msg_ptr Pointer to the message
+//! \param[in] eieio_msg_ptr: Pointer to the message
 //! \return The size of the message, in bytes
 static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -271,8 +277,8 @@ static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
 }
 
 //! \brief Dumps a message to IOBUF if debug messages are enabled
-//! \param[in] eieio_msg_ptr Pointer to the message to print
-//! \param[in] length Length of the message
+//! \param[in] eieio_msg_ptr: Pointer to the message to print
+//! \param[in] length: Length of the message
 static inline void print_packet_bytes(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
@@ -297,7 +303,7 @@ static inline void print_packet_bytes(
 //! Combines calculate_eieio_packet_size() and print_packet_bytes()
 //!
 //! \param[in] eieio_msg_ptr Pointer to the message to print
-static inline void print_packet(eieio_msg_t eieio_msg_ptr) {
+static inline void print_packet(const eieio_msg_t eieio_msg_ptr) {
     use(eieio_msg_ptr);
 #if LOG_LEVEL >= LOG_DEBUG
     uint32_t len = calculate_eieio_packet_size(eieio_msg_ptr);
@@ -312,7 +318,7 @@ static inline void print_packet(eieio_msg_t eieio_msg_ptr) {
 //! \param[in] eieio_msg_ptr: The bad message
 //! \param[in] length: The length of the message
 static inline void signal_software_error(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
 #if LOG_LEVEL >= LOG_DEBUG
@@ -359,7 +365,8 @@ static inline bool is_eieio_packet_in_buffer(void) {
 //! \param[in] eieio_msg_ptr: The EIEIO message.
 //! \return The timestamp from the message, or the current time if the message
 //! did not have a timestamp.
-static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
+static inline uint32_t extract_time_from_eieio_msg(
+        const eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
     bool pkt_has_timestamp = (bool)
             BITS(data_hdr_value, PAYLOAD_IS_TIMESTAMP, 0x1);
@@ -426,7 +433,7 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
 //! \param[in] eieio_msg_ptr: The EIEIO message to store.
 //! \param[in] length: The size of the message.
 static inline bool add_eieio_packet_to_sdram(
-        eieio_msg_t eieio_msg_ptr, uint32_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     uint8_t *msg_ptr = (uint8_t *) eieio_msg_ptr;
 
     log_debug("read_pointer = 0x%.8x, write_pointer= = 0x%.8x,"
@@ -505,7 +512,8 @@ static inline bool add_eieio_packet_to_sdram(
 //! \param[in] pkt_has_payload: Whether there is a payload.
 //! \param[in] pkt_payload_is_timestamp: Whether the payload is a timestamp.
 static inline void process_16_bit_packets(
-        uint16_t* event_pointer, bool pkt_prefix_upper, uint32_t pkt_count,
+        const uint16_t* event_pointer, bool pkt_prefix_upper,
+        uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool pkt_has_payload, bool pkt_payload_is_timestamp) {
     log_debug("process_16_bit_packets");
@@ -568,7 +576,7 @@ static inline void process_16_bit_packets(
 //! \param[in] pkt_has_payload: Whether there is a payload.
 //! \param[in] pkt_payload_is_timestamp: Whether the payload is a timestamp.
 static inline void process_32_bit_packets(
-        uint16_t* event_pointer, uint32_t pkt_count,
+        const uint16_t* event_pointer, uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool pkt_has_payload, bool pkt_payload_is_timestamp) {
     // Careful! event_pointer is not necessarily word aligned!
@@ -624,7 +632,8 @@ static void _recording_done_callback(void) {
 //! \brief Asynchronously record an EIEIO message.
 //! \param[in] eieio_msg_ptr: The message to record.
 //! \param[in] length: The length of the message.
-static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
+static inline void record_packet(
+        const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     if (recording_flags > 0) {
         while (recording_in_progress) {
             spin1_wfi();
@@ -659,12 +668,12 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
 //! \param[in] length: the length of the message
 //! \return True if the packet was successfully handled.
 static inline bool eieio_data_parse_packet(
-        eieio_msg_t eieio_msg_ptr, uint32_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     log_debug("eieio_data_process_data_packet");
     print_packet_bytes(eieio_msg_ptr, length);
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    void *event_pointer = (void *) &eieio_msg_ptr[1];
+    const void *event_pointer = (const void *) &eieio_msg_ptr[1];
 
     if (data_hdr_value == 0) {
         // Count is 0, so no data
@@ -699,7 +708,7 @@ static inline bool eieio_data_parse_packet(
     log_debug("pkt_count: %d", pkt_count);
     log_debug("payload_on: %d", pkt_has_payload);
 
-    uint16_t *hdr_pointer = (uint16_t *) event_pointer;
+    const uint16_t *hdr_pointer = (const uint16_t *) event_pointer;
 
     if (pkt_apply_prefix) {
         // Key prefix in the packet
@@ -735,7 +744,7 @@ static inline bool eieio_data_parse_packet(
     }
 
     // Take the event pointer to start at the header pointer
-    event_pointer = (void *) hdr_pointer;
+    event_pointer = (const void *) hdr_pointer;
 
     // If the packet has a payload that is a timestamp, but the timestamp
     // is not the current time, buffer it
@@ -767,7 +776,7 @@ static inline bool eieio_data_parse_packet(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_stop_requests(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
     log_debug("Stopping packet requests - parse_stop_packet_reqs");
@@ -780,7 +789,7 @@ static inline void eieio_command_parse_stop_requests(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_start_requests(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
     log_debug("Starting packet requests - parse_start_packet_reqs");
@@ -792,7 +801,7 @@ static inline void eieio_command_parse_start_requests(
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_sequenced_data(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     uint16_t sequence_value_region_id = eieio_msg_ptr[1];
     uint16_t region_id = BITS(sequence_value_region_id, 0, 0xFF);
     uint16_t sequence_value = BITS(sequence_value_region_id, 8, 0xFF);
@@ -835,7 +844,7 @@ static inline void eieio_command_parse_sequenced_data(
 //! \param[in] length: The length of the message
 //! \return True if the message was handled
 static inline bool eieio_commmand_parse_packet(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
     uint16_t pkt_command = BITS(data_hdr_value, PACKET_COMMAND, ~0xC000);
 
@@ -869,7 +878,7 @@ static inline bool eieio_commmand_parse_packet(
 //! \param[in] eieio_msg_ptr: The message
 //! \param[in] length: The length of the message
 static inline bool packet_handler_selector(
-        eieio_msg_t eieio_msg_ptr, uint16_t length) {
+        const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -1061,6 +1070,7 @@ static bool read_parameters(struct config *config) {
 
 //! \brief Initialises the buffer region.
 //! \param[in] region_address: The location of the region.
+//! \return True if we succeed.
 static bool setup_buffer_region(uint8_t *region_address) {
     buffer_region = region_address;
     read_pointer = buffer_region;

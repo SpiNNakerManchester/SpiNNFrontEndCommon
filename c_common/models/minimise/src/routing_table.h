@@ -34,27 +34,38 @@ typedef struct {
     uint32_t mask;  //!< Mask for the keymask
 } keymask_t;
 
-//! Get a mask of the Xs in a keymask
+//! \brief Get a mask of the Xs in a keymask
+//! \param[in] km: The keymask
+//! \return the ignored bits
 static inline uint32_t keymask_get_xs(keymask_t km)
 {
     return ~km.key & ~km.mask;
 }
 
-//! Get a count of the Xs in a keymask
+//! \brief Get a count of the Xs in a keymask
+//! \param[in] km: The keymask
+//! \return Count of ignored bits
 static inline unsigned int keymask_count_xs(keymask_t km)
 {
     return __builtin_popcount(keymask_get_xs(km));
 }
 
-//! Determine if two keymasks would match any of the same keys
+//! \brief Determine if two keymasks would match any of the same keys
+//! \param[in] a: The first keymask
+//! \param[in] b: The second keymask
+//! \return True if the keymasks intersect
 static inline bool keymask_intersect(keymask_t a, keymask_t b)
 {
     return (a.key & b.mask) == (b.key & a.mask);
 }
 
-//! Generate a new key-mask which is a combination of two other keymasks
+//! \brief Generate a new key-mask which is a combination of two other keymasks
 //!
 //!     c := a | b
+//!
+//! \param[in] a: The first keymask
+//! \param[in] b: The second keymask
+//! \return The merged keymask
 static inline keymask_t keymask_merge(keymask_t a, keymask_t b)
 {
     keymask_t c;
@@ -65,7 +76,8 @@ static inline keymask_t keymask_merge(keymask_t a, keymask_t b)
     return c;
 }
 
-//! A routing entry that knows where it came from, goes to, and when it enables.
+//! \brief A routing entry that knows where it came from, goes to, and when it
+//! enables.
 typedef struct {
     keymask_t keymask;  //!< Key and mask
     uint32_t route;     //!< Routing direction

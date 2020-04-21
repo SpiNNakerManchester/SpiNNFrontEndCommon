@@ -88,10 +88,6 @@ void simulation_run(void) {
     spin1_start_paused();
 }
 
-//! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
-//! \param[in] resume_function The function to call just before the simulation
-//!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback) {
     // Pause the simulation
     spin1_pause();
@@ -130,9 +126,8 @@ static void send_ok_response(sdp_msg_t *msg) {
 //! \brief handles the new commands needed to resume the binary with a new
 //! runtime counter, as well as switching off the binary when it truly needs
 //! to be stopped.
-//! \param[in] mailbox The mailbox containing the SDP packet received
-//! \param[in] port The port on which the packet was received
-//! \return does not return anything
+//! \param[in] mailbox: The mailbox containing the SDP packet received
+//! \param[in] port: The port on which the packet was received
 static void simulation_control_scp_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -221,6 +216,8 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
 }
 
 //! \brief handles the SDP callbacks interface.
+//! \param[in,out] mailbox: The pointer to the received message
+//! \param[in] port: What port the message was received on
 static void simulation_sdp_callback_handler(uint mailbox, uint port) {
     if (sdp_callback[port] != NULL) {
         // if a callback is associated with the port, process it
@@ -247,6 +244,8 @@ void simulation_sdp_callback_off(uint sdp_port) {
 }
 
 //! \brief handles the DMA transfer done callbacks interface.
+//! \param[in] unused: unused
+//! \param[in] tag: the tag of the DMA that completed
 static void simulation_dma_transfer_done_callback(uint unused, uint tag) {
     if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
         dma_complete_callbacks[tag](unused, tag);
