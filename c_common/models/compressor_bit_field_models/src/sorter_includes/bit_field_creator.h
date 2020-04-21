@@ -118,6 +118,29 @@ uint32_t _detect_redundant_packet_count(
 
     return n_filtered_packets;
 }
+//! \brief sorts a selection of bit-fields based on reduanancy.
+//!      The assumptionb is that they all are from the same processor_id
+//! \param[in] bit_fields: A list of pointers to filter infos
+//! \param[in] redundant: A matching (by index) list of the redunancy factor
+//! \param[in] start: Inclusive start of range to sort
+//! \param[in] end: Exclusive end of range to sort
+//! \return how many redundant packets there are
+void _sort_by_redundant(filter_info_t** bit_fields, uint32_t* redundant,
+    int start, int end){
+    for (int i = start; i < end -1; i++){
+        for (int j = i + 1; j < end; j++){
+            if (redundant[i] < redundant[j]) {
+                uint32_t redundant_temp = redundant[i];
+                redundant[i] = redundant[j];
+                redundant[j] = redundant_temp;
+                filter_info_t* bit_field_temp = bit_fields[i];
+                bit_fields[i] = bit_fields[j];
+                bit_fields[j] = bit_field_temp;
+                platform_check_all_marked(60010);
+            }
+        }
+    }
+}
 
 //! \brief reads in bitfields
 //! \param[out] n_bf_pointer: the pointer to store how many bf addresses
@@ -162,26 +185,32 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
         key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
         log_debug("index %u %u", index, filter_region->n_filters);
+        int before = index;
         for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
              sorted_bit_fields->processor_ids[index] =
                 region_addresses->pairs[r_id].processor;
             log_debug("index: %d, key %u words %u data %u" , index, filter_region->filters[bf_id].key, filter_region->filters[bf_id].n_words, filter_region->filters[bf_id].data);
             sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
-            log_debug("index: %d, key %u words %u data %u pointer %u" , index, sorted_bit_fields->bit_fields[index]->key, sorted_bit_fields->bit_fields[index]->n_words, sorted_bit_fields->bit_fields[index]->data, sorted_bit_fields->bit_fields[index]);
-            if (index > 0){
-                log_debug("index: %d, key %u words %u data %u pointer %u" , index-1, sorted_bit_fields->bit_fields[index-1]->key, sorted_bit_fields->bit_fields[index-1]->n_words, sorted_bit_fields->bit_fields[index-1]->data, sorted_bit_fields->bit_fields[index-1]);
-            }
             redundant[index] = _detect_redundant_packet_count(
                 filter_region->filters[bf_id], key_atom_map);
+            log_info("index %u processor: %u, key: %u, data %u redundant %u", index,
+                sorted_bit_fields->processor_ids[index],
+                sorted_bit_fields->bit_fields[index]->key,
+                sorted_bit_fields->bit_fields[index]->data,
+                redundant[index]);
             platform_check_all_marked(60001);
             index++;
         }
+        _sort_by_redundant(
+            sorted_bit_fields->bit_fields, redundant, before, index);
     }
+
     log_info("read in");
     for (index = 0; index < n_bf_addresses; index++) {
-        log_info("index %u processor: %u, key: %u, redundant %u", index,
+        log_info("index %u processor: %u, key: %u, data %u redundant %u", index,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
+            sorted_bit_fields->bit_fields[index]->data,
             redundant[index]);
     }
     log_info("printed");
