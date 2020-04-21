@@ -109,7 +109,7 @@ uint32_t _detect_redundant_packet_count(
         }
     }
     int count = count_bit_field(filter_info.data, filter_info.n_words);
-    int calc = filter_info.n_words * 32 - count;
+    uint32_t calc = filter_info.n_words * 32 - count;
     if (n_filtered_packets!= calc){
         log_info("n filtered packets = %d out of %d", n_filtered_packets,  n_neurons);
         _log_bitfield(filter_info.data);
