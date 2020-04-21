@@ -40,8 +40,9 @@ struct provenance_data_struct {
     uint32_t number_of_overflows_with_payload;
 };
 
-//! Definitions of each element in the configuration; this is copied from SDRAM
-//! into DTCM for speed.
+//! \brief Definitions of each element in the configuration.
+//!
+//! This is copied from SDRAM into DTCM for speed.
 struct lpg_config {
     //! P bit
     uint32_t apply_prefix;
@@ -73,7 +74,7 @@ struct lpg_config {
 enum {
     MC_PACKET = -1, //!< Multicast packet interrupt uses FIQ (super high prio)
     SDP = 0,        //!< SDP interrupt is highest priority
-    USER = 1,       //!<
+    USER = 1,       //!< Interrupt for enqueued list of received packets
     DMA = 2,        //!< DMA complete interrupt is low priority
     TIMER = 3       //!< Timer interrupt is lowest priority
 };

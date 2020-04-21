@@ -35,6 +35,8 @@
 //! Wait for interrupt (semi-public part of Spin1API)
 extern void spin1_wfi(void);
 
+// ------------------------------------------------------------------------
+
 #ifndef APPLICATION_NAME_HASH
 #error APPLICATION_NAME_HASH must be defined
 #endif
@@ -133,53 +135,125 @@ typedef struct {
 
 #pragma pack()
 
+// ------------------------------------------------------------------------
 // Globals
+
+//! Current simulation time
 static uint32_t time;
+
+//! The time that the simulation is scheduled to stop at
 static uint32_t simulation_ticks;
+
+//! True if the simulation will "run forever" (until user interrupt).
 static uint32_t infinite_run;
+
+//! If a prefix should be applied
 static bool apply_prefix;
-static bool check;
+
+//! Whether only packets with keys in the masked key space should be sent
+static bool check_key_in_space;
+
+//! The prefix to apply
 static uint32_t prefix;
+
+//! Whether a key is present; _nothing_ is sent if no key is present
 static bool has_key;
+
+//! Pattern of keys that must be matched when ::check_key_in_space is true
 static uint32_t key_space;
+
+//! Mask for keys to determine if the key matches the ::key_space
 static uint32_t mask;
 
+//! DEBUG: time of last stop notification
 static uint32_t last_stop_notification_request;
+
+//! How to apply the ::prefix
 static eieio_prefix_types prefix_type;
+
+//! Size of buffer in ::buffer_region
 static uint32_t buffer_region_size;
+
+//! Threshold at which we ask for buffers to be cleared
 static uint32_t space_before_data_request;
 
+//! The provenance information that we're collecting
 static struct provenance_t provenance = {0};
 
-//! keeps track of which types of recording should be done to this model.
+//! Keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
 
 //! Points to the buffer used to store data being collected to transfer out.
 static uint8_t *buffer_region;
+
+//! Points to the end of the buffer (to first byte that must not be written)
 static uint8_t *end_of_buffer_region;
+
+//! Points to next byte to write in ::buffer_region
 static uint8_t *write_pointer;
+
+//! Points to next byte to read in ::buffer_region
 static uint8_t *read_pointer;
 
-static sdp_msg_t req;
+//! An SDP message ready to send to host
+static sdp_msg_t sdp_host_req;
+
+//! Payload part of ::sdp_host_req
 static req_packet_sdp_t *req_ptr;
+
+//! DTCM buffer holding message copied from ::buffer_region
 static eieio_msg_t msg_from_sdram;
+
+//! Does ::msg_from_sdram currently contain a message being processed?
 static bool msg_from_sdram_in_use;
+
+//! Length of ::msg_from_sdram
 static int msg_from_sdram_length;
+
+//! Simulation time associated with message in ::msg_from_sdram
 static uint32_t next_buffer_time;
+
+//! Most recently seen message sequence number
 static uint8_t pkt_last_sequence_seen;
+
+//! Whether request packets should be sent.
 static bool send_packet_reqs;
-static bool last_buffer_operation;
+
+//! What the last operation done on ::buffer_region was
+static buffered_operations last_buffer_operation;
+
+//! The SDP tag for sending messages to host
 static uint8_t return_tag_id;
+
+//! The SDP destination for sending messages to host
 static uint32_t return_tag_dest;
+
+//! The SDP port that we buffer messages in on.
 static uint32_t buffered_in_sdp_port;
+
+//! \brief The timer offset to use for transmissions.
+//!
+//! Used to ensure we don't send all messages at the same time and overload
+//! SpiNNaker routers.
 static uint32_t tx_offset;
+
+//! \brief Last value of result of get_sdram_buffer_space_available() in
+//! send_buffer_request_pkt()
 static uint32_t last_space;
+
+//! \brief Last (sim) time we forced the buffers clear from timer_callback()
 static uint32_t last_request_tick;
 
+//! Whether this app has been asked to stop running
 static bool stopped = false;
 
+//! True while a recording by record_packet() is busy
 static bool recording_in_progress = false;
+
+//! Buffer used for recording inbound packets
 static recorded_packet_t *recorded_packet;
+
+// ------------------------------------------------------------------------
 
 //! \brief Extract a field from a bitfield value.
 //! \param[in] value: the bitfield value
@@ -432,6 +506,8 @@ static inline uint32_t extract_time_from_eieio_msg(
 //! \brief Places a packet into the buffer.
 //! \param[in] eieio_msg_ptr: The EIEIO message to store.
 //! \param[in] length: The size of the message.
+//! \return True if the packet was added, false if it was dropped due to the
+//!         buffer being full.
 static inline bool add_eieio_packet_to_sdram(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     uint8_t *msg_ptr = (uint8_t *) eieio_msg_ptr;
@@ -540,13 +616,13 @@ static inline void process_16_bit_packets(
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
-                " key_space=%d: %d",
-                check, key, mask, key_space,
-                (!check || (key & mask) == key_space));
+        log_debug("check before send packet: check_key_in_space=%d, key=0x%08x,"
+                " mask=0x%08x, key_space=%d: %d",
+                check_key_in_space, key, mask, key_space,
+                (!check_key_in_space || (key & mask) == key_space));
 
         if (has_key) {
-            if (!check || (key & mask) == key_space) {
+            if (!check_key_in_space || (key & mask) == key_space) {
                 provenance.sent_packets++;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug("mc packet 16-bit key=%d, payload=%d",
@@ -601,10 +677,10 @@ static inline void process_32_bit_packets(
         payload |= pkt_payload_prefix;
 
         log_debug("check before send packet: %d",
-                (!check || (key & mask) == key_space));
+                (!check_key_in_space || (key & mask) == key_space));
 
         if (has_key) {
-            if (!check || (key & mask) == key_space) {
+            if (!check_key_in_space || (key & mask) == key_space) {
                 provenance.sent_packets++;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
@@ -772,7 +848,6 @@ static inline bool eieio_data_parse_packet(
 }
 
 //! \brief Handle the command to stop parsing requests.
-//!
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_stop_requests(
@@ -785,7 +860,6 @@ static inline void eieio_command_parse_stop_requests(
 }
 
 //! \brief Handle the command to start parsing requests.
-//!
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_start_requests(
@@ -797,7 +871,6 @@ static inline void eieio_command_parse_start_requests(
 }
 
 //! \brief Handle the command to store a request for later processing.
-//!
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 static inline void eieio_command_parse_sequenced_data(
@@ -839,7 +912,6 @@ static inline void eieio_command_parse_sequenced_data(
 }
 
 //! \brief Handle a command message.
-//!
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
 //! \return True if the message was handled
@@ -874,9 +946,9 @@ static inline bool eieio_commmand_parse_packet(
 
 //! \brief Handle an EIEIO message, which can either be a command or an event
 //! description message.
-//!
 //! \param[in] eieio_msg_ptr: The message
 //! \param[in] length: The length of the message
+//! \return True if the message was handled.
 static inline bool packet_handler_selector(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
@@ -991,7 +1063,7 @@ static void send_buffer_request_pkt(void) {
         last_space = space;
         req_ptr->sequence |= pkt_last_sequence_seen;
         req_ptr->space_available = space;
-        spin1_send_sdp_msg(&req, 1);
+        spin1_send_sdp_msg(&sdp_host_req, 1);
         req_ptr->sequence = 0;
         req_ptr->space_available = 0;
     }
@@ -1005,7 +1077,7 @@ static bool read_parameters(struct config *config) {
     apply_prefix = config->apply_prefix;
     prefix = config->prefix;
     prefix_type = (eieio_prefix_types) config->prefix_type;
-    check = config->check_keys;
+    check_key_in_space = config->check_keys;
     has_key = config->has_key;
     key_space = config->key_space;
     mask = config->mask;
@@ -1041,14 +1113,14 @@ static bool read_parameters(struct config *config) {
     msg_from_sdram = spin1_malloc(MAX_PACKET_SIZE);
     recorded_packet = spin1_malloc(sizeof(recorded_packet_t));
 
-    req.length = 8 + sizeof(req_packet_sdp_t);
-    req.flags = 0x7;
-    req.tag = return_tag_id;
-    req.dest_port = 0xFF;
-    req.srce_port = (1 << 5) | spin1_get_core_id();
-    req.dest_addr = return_tag_dest;
-    req.srce_addr = spin1_get_chip_id();
-    req_ptr = (req_packet_sdp_t *) &req.cmd_rc;
+    sdp_host_req.length = 8 + sizeof(req_packet_sdp_t);
+    sdp_host_req.flags = 0x7;
+    sdp_host_req.tag = return_tag_id;
+    sdp_host_req.dest_port = 0xFF;
+    sdp_host_req.srce_port = (1 << 5) | spin1_get_core_id();
+    sdp_host_req.dest_addr = return_tag_dest;
+    sdp_host_req.srce_addr = spin1_get_chip_id();
+    req_ptr = (req_packet_sdp_t *) &sdp_host_req.cmd_rc;
     req_ptr->eieio_header_command = (1 << 14) | SPINNAKER_REQUEST_BUFFERS;
     req_ptr->chip_id = spin1_get_chip_id();
     req_ptr->processor = spin1_get_core_id() << 3;
@@ -1058,7 +1130,7 @@ static bool read_parameters(struct config *config) {
     log_info("apply_prefix: %d", apply_prefix);
     log_info("prefix: %d", prefix);
     log_info("prefix_type: %d", prefix_type);
-    log_info("check: %d", check);
+    log_info("check_key_in_space: %d", check_key_in_space);
     log_info("key_space: 0x%08x", key_space);
     log_info("mask: 0x%08x", mask);
     log_info("space_before_read_request: %d", space_before_data_request);
