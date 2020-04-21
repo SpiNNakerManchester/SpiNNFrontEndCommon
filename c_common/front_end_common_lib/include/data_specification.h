@@ -17,12 +17,10 @@
 
 /*! \file
  *
- *  \brief Data Specification Header File
+ * \brief Data Specification region access API.
  *
- *    Specifies functions that can be used to read an executed Data
- *    Specification, including checking the header and extracting the
- *    regions.
- *
+ * Specifies functions that can be used to read an executed Data
+ * Specification, including checking the header and extracting the regions.
  */
 
 #ifndef _DATA_SPECIFICATION_H_
@@ -45,20 +43,14 @@ typedef struct data_specification_metadata_t {
     void *regions[];
 } data_specification_metadata_t;
 
-//! \brief Gets the location of the data for this core using the user0 entry
-//!        of the SARK VCPU structure
-//! \return The address of the generated data
 data_specification_metadata_t *data_specification_get_data_address(void);
 
-//! \brief Reads the header from the address given and checks if the parameters
-//! are of the correct values
-//! \param[in] ds_regions: The address of the start of the data generated
-//! \return true if a valid header was found, or false if was not
 bool data_specification_read_header(data_specification_metadata_t *ds_regions);
 
 //! \brief Gets the address of a region
 //! \param[in] region: the ID of the region, starting at 0
-//! \param[in] ds_regions: The address of the start of the data generated
+//! \param[in] ds_regions: The address of the start of the data generated; it
+//!                        is the caller's job to validate this first.
 //! \return The address of the specified region. This function does not know
 //! the actual type of the region.
 static inline void *data_specification_get_region(

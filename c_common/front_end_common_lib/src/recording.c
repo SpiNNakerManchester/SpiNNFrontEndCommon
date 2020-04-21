@@ -27,37 +27,50 @@
 #include <sark.h>
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
+#include <debug.h>
 
 // Declare wfi function
 //! Wait For Interrupt
 extern void spin1_wfi(void);
 
-// Standard includes
-#include <debug.h>
-
 //---------------------------------------
 // Structures
 //---------------------------------------
-//! structure that defines a channel in memory.
+//! \brief Structure that defines a channel in memory.
+//!
+//! Channels are implemented using a circular buffer.
 typedef struct recording_channel_t {
-    uint8_t *start;
-    uint8_t *current_write;
-    uint8_t *dma_current_write;
-    uint8_t *current_read;
-    uint8_t *end;
-    uint8_t region_id;
+    uint8_t *start;             //!< The first byte of the buffer
+    uint8_t *current_write;     //!< Where the next write to the buffer will go
+    uint8_t *dma_current_write; //!< Where DMAs into the buffer go
+    uint8_t *current_read;      //!< Where we read from next
+    uint8_t *end;               //!< One byte past the end of the buffer
+    uint8_t region_id;          //!< The recording region's ID
+    //! Flag to say if recordings were lost due to buffer overflow
     uint8_t missing_info;
+    //! \brief Whether the most recent operation on the buffer was a read or a
+    //! write.
+    //!
+    //! This allows the read and write pointer to overlap sensibly.
     buffered_operations last_buffer_operation;
 } recording_channel_t;
 
 //! header of general structure describing all recordings
 typedef struct recording_data_t {
+    //! The number of recording regions
     uint32_t n_regions;
+    //! The SDP tag to send messages to when sending to host
     uint32_t tag;
+    //! The SDP destination to use with the tag
     uint32_t tag_destination;
+    //! The SDP port number to use for receiving messages
     uint32_t sdp_port;
+    //! \brief The threshold on remaining space in a channel when a read out
+    //! should be triggered
     uint32_t buffer_size_before_request;
+    //! \brief The time between read outs when not triggered by sizes
     uint32_t time_between_triggers;
+    //! The last sequence number
     uint32_t last_sequence_number;
 } recording_data_t;
 
@@ -65,22 +78,39 @@ typedef struct recording_data_t {
 // Globals
 //---------------------------------------
 
-//! circular queue for DMA complete addresses
+//! Circular queue for DMA complete addresses
 static circular_buffer dma_complete_buffer;
 
-//! array containing all possible channels. In DTCM.
+//! Array containing all possible channels. In DTCM.
 static recording_channel_t *g_recording_channels = NULL;
 
-//! array containing all possible channels. In SDRAM.
+//! Array containing all possible channels. In SDRAM.
 static recording_channel_t **region_addresses = NULL;
 
+//! Array containing the sizes of buffers. In DTCM.
 static uint32_t *region_sizes = NULL;
+
+//! The number of recording regions
 static uint32_t n_recording_regions = 0;
+
+//! SDP port for communicating with host
 static uint32_t sdp_port = 0;
+
+//! Sequence number for host communications
 static uint32_t sequence_number = 0;
+
+//! Whether we've received a (valid) ::HOST_DATA_READ_ACK
 static bool sequence_ack = false;
+
+//! The previous timestamp when recording_do_timestep_update() was called
 static uint32_t last_time_buffering_trigger = 0;
+
+//! Threshold on space remaining when a host offload is triggered.
 static uint32_t buffer_size_before_trigger = 0;
+
+//! Threshold on time when a host offload is triggered.
+//!
+//! Independent of ::buffer_size_before_trigger
 static uint32_t time_between_triggers = 0;
 
 //! A pointer to the last sequence number to write once recording is complete
@@ -105,8 +135,6 @@ static read_request_packet_data *read_request_data;
 #define WORD_TO_BYTE_CONVERSION 4
 
 //---------------------------------------
-// Private method
-//---------------------------------------
 //! \brief checks that a channel has been initialised
 //! \param[in] channel the channel to check
 //! \return True if the channel has been initialised or false otherwise
@@ -114,8 +142,6 @@ static inline bool has_been_initialised(uint8_t channel) {
     return g_recording_channels[channel].start != NULL;
 }
 
-//----------------------------------------
-//  Private method
 //----------------------------------------
 //! \brief closes a channel
 //! \param[in] channel the channel to close
@@ -400,15 +426,13 @@ static inline void recording_send_buffering_out_trigger_message(
     uint n_requests = 0;
 
     for (uint channel = 0; channel < n_recording_regions; channel++) {
-        uint32_t channel_space_total = (uint32_t) (
+        uint32_t space_total = (uint32_t) (
                 g_recording_channels[channel].end -
                 g_recording_channels[channel].start);
-        uint32_t channel_space_available =
-                compute_available_space_in_channel(channel);
+        uint32_t space_available = compute_available_space_in_channel(channel);
 
         if (has_been_initialised(channel) && (flush_all ||
-                (channel_space_total - channel_space_available) >=
-                     buffer_size_before_trigger)) {
+                space_total - space_available >= buffer_size_before_trigger)) {
             uint8_t *buffer_region = g_recording_channels[channel].start;
             uint8_t *end_of_buffer_region = g_recording_channels[channel].end;
             uint8_t *write_pointer =
@@ -752,7 +776,7 @@ void recording_reset(void) {
 
 void recording_do_timestep_update(uint32_t time) {
     if (!sequence_ack &&
-            ((time - last_time_buffering_trigger) > time_between_triggers)) {
+            (time - last_time_buffering_trigger > time_between_triggers)) {
         log_debug("Sending buffering trigger message");
         recording_send_buffering_out_trigger_message(0);
         last_time_buffering_trigger = time;
