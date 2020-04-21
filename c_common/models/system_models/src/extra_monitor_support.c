@@ -1602,7 +1602,7 @@ static void data_out_store_missing_seq_nums(
         // write data to SDRAM and update packet counter
         data_out_write_missing_seq_nums_into_sdram(
                 data, length, start_reading_offset);
-        data_out_n_missing_seq_packets -= 1;
+        data_out_n_missing_seq_packets--;
     } else {
         io_printf(IO_BUF, "Unable to save missing sequence number\n");
     }
