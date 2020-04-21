@@ -187,16 +187,16 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
         return NULL;
     }
 
-    uint32_t* core_total = MALLOC(n_bf_addresses * sizeof(uint32_t));
+    uint32_t* core_total = MALLOC(N_CORES * sizeof(uint32_t));
     if (core_total  == NULL){
         log_error("cannot allocate memory for core_total");
         return NULL;
     }
 
-    //for (int i = 0; i < N_CORES; i++){
-    //    processor_heads[i] = -1;
-    //    core_total[i] = 0;
-    //}
+    for (int i = 0; i < N_CORES; i++){
+        processor_heads[i] = -1;
+        core_total[i] = 0;
+    }
 
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.

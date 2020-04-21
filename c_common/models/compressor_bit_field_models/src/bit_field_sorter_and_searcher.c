@@ -359,6 +359,9 @@ bool remove_merged_bitfields_from_cores(void) {
 //! \return int which is the midpoint or -1 if no midpoints left
 int locate_next_mid_point() {
     int new_mid_point;
+    if (n_bf_addresses == 0){
+        return -1;
+    }
     if (!bit_field_test(tested_mid_points, n_bf_addresses)){
         new_mid_point = n_bf_addresses;
     } else {
@@ -489,15 +492,18 @@ void carry_on_binary_search() {
         for (int core_index = 0; core_index < N_CORES; core_index++) {
             if (core_status[core_index] == DOING_NOWT) {
                 core_status[core_index] = DO_NOT_USE;
+            } else if (core_status[core_index] > DOING_NOWT) {
+                log_info("waitig for core %d doing midpoint %u",
+                    core_index, core_status[core_index]);
             }
         }
         return;
     }
     int core_index = find_compressor_core(mid_point);
-    log_info("start create %u", timesteps);
+    log_info("start create at timestep: %u", timesteps);
     bool success = create_tables_and_set_off_bit_compressor(
         mid_point, core_index);
-    log_info("end create %u", timesteps);
+    log_info("end create at timestep: %u", timesteps);
     if (!success) {
         // Ok lets turn this and all ready cores off to save space.
         // At least defualt no birfeild handled elsewhere so of to reduce.
@@ -787,7 +793,7 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
 
-    log_info("read in bitfields %d", timesteps);
+    log_info("reading bitfields at timestep: %d", timesteps);
     sorted_bit_fields = bit_field_creator_read_in_bit_fields(&n_bf_addresses,
         region_addresses);
     // check state
@@ -796,7 +802,7 @@ void start_compression_process(uint unused0, uint unused1) {
         terminate(EXIT_MALLOC);
     }
     lowest_failure = n_bf_addresses;
-    log_info("finished reading bitfields %d", timesteps);
+    log_info("finished reading bitfields at timestep: %d", timesteps);
 
     set_up_tested_mid_points();
     //platform_turn_on_print();
