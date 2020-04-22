@@ -778,7 +778,6 @@ void start_compression_process(uint unused0, uint unused1) {
 
     //TODO REMOVE
     log_info("OLD read in bitfields");
-    bool read_success = false;
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             region_addresses);
     if (bit_field_by_processor == NULL){

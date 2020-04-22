@@ -57,7 +57,7 @@ sorted_bit_fields_t* _malloc_sorted_bit_fields(uint32_t n_bf_addresses){
     }
 
     sorted_bit_fields->processor_ids =
-        MALLOC(n_bf_addresses * sizeof(uint32_t));
+        MALLOC(n_bf_addresses * sizeof(int));
     if (sorted_bit_fields->processor_ids == NULL){
         log_error("cannot allocate memory for the sorted bitfields with "
                   "processors ids");
@@ -152,7 +152,7 @@ int _count_bitfeilds_with_redundancy(region_addresses_t *region_addresses){
 //! \param[in] start: Inclusive start of range to sort
 //! \param[in] end: Exclusive end of range to sort
 //! \return how many redundant packets there are
-void _sort_by_redundant(filter_info_t** bit_fields, int* redundants,
+void _sort_by_redundant(filter_info_t** bit_fields, uint32_t* redundants,
     int start, int end){
     for (int i = start; i < end -1; i++){
         for (int j = i + 1; j < end; j++){
@@ -170,17 +170,17 @@ void _sort_by_redundant(filter_info_t** bit_fields, int* redundants,
 }
 
 void _order_bitfields(sorted_bit_fields_t* sorted_bit_fields,
-        uint32_t* redundants,  int* processor_heads, int* core_totals,
+        uint32_t* redundants,  int* processor_heads, uint32_t* core_totals,
         int n_bf_addresses) {
     // Semantic sugar to avoid extra lookup all the time
-    uint32_t* processor_ids = sorted_bit_fields->processor_ids;
+    int* processor_ids = sorted_bit_fields->processor_ids;
     uint32_t*  sort_order =  sorted_bit_fields->sort_order;
 
     // To label each row in sort order
     for (int i = 0; i < n_bf_addresses; i++) {
         // Find the processor with highest number of packets coming in
         int worst_core = 0;
-        int highest_neurons = -1;
+        uint32_t highest_neurons = 0;
         for (int c = 0; c < N_CORES; c++) {
             if (core_totals[c] > highest_neurons){
                 worst_core = c;
