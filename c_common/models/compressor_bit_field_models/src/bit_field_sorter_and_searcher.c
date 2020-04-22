@@ -480,8 +480,8 @@ void carry_on_binary_search() {
     if (all_compressor_cores_busy()){
         return;  //Pass back to check_buffer_queue
     }
-    log_info("start carry_on_binary_search");
-    log_core_status();
+    log_debug("start carry_on_binary_search");
+    //log_core_status();
 
     int mid_point = locate_next_mid_point();
     log_info("available with midpoint %d", mid_point);
@@ -516,7 +516,7 @@ void carry_on_binary_search() {
         bit_field_clear(tested_mid_points, mid_point);
         return;
     }
-    log_info("done carry_on_binary_search");
+    log_debug("done carry_on_binary_search");
     //log_core_status();    //spin1_mode_restore(cpsr);
     platform_check_all_marked(1002);
 }
@@ -528,14 +528,13 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     timesteps+=1;
-    //TODO remove this debug line
-    if ((timesteps & 1023) == 0){
-        log_info("timesteps: %u", timesteps);
-    }
-    if (timesteps > KILL_TIME){
-        log_error("timer overran %u", timesteps);
-        rt_error(RTE_SWERR);
-    }
+    //if ((timesteps & 1023) == 0){
+    //    log_info("timesteps: %u", timesteps);
+    //}
+    //if (timesteps > KILL_TIME){
+    //   log_error("timer overran %u", timesteps);
+    //    rt_error(RTE_SWERR);
+    //}
 }
 
 void process_failed(int midpoint){

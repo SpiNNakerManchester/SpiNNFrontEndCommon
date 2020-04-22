@@ -74,8 +74,8 @@ sorted_bit_fields_t* _malloc_sorted_bit_fields(){
     }
 
     sorted_bit_fields->sort_order =
-        MALLOC(n_bf_addresses * sizeof(uint32_t));
-    if (sorted_bit_fields->processor_ids == NULL){
+        MALLOC(n_bf_addresses * sizeof(int));
+    if (sorted_bit_fields->sort_order == NULL){
         log_error("cannot allocate memory for the sorted bitfields with "
                   "sort_order");
         return NULL;
@@ -183,7 +183,7 @@ void _order_bitfields(
         sorted_bit_fields_t* sorted_bit_fields, uint32_t* redundants) {
     // Semantic sugar to avoid extra lookup all the time
     int* processor_ids = sorted_bit_fields->processor_ids;
-    uint32_t*  sort_order =  sorted_bit_fields->sort_order;
+    int*  sort_order =  sorted_bit_fields->sort_order;
 
     // To label each row in sort order
     for (int i = 0; i < n_bf_addresses; i++) {
@@ -228,7 +228,7 @@ void _sort_by_order(sorted_bit_fields_t* sorted_bit_fields){
     //        up to one more for each row about to be moved to the correct place.
 
     int* processor_ids = sorted_bit_fields->processor_ids;
-    uint32_t* sort_order = sorted_bit_fields->sort_order;
+    int* sort_order = sorted_bit_fields->sort_order;
     filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     // Check each row in the lists
     for (int i = 0; i < n_bf_addresses; i++) {
