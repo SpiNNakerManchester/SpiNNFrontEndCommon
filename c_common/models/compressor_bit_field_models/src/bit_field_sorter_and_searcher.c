@@ -42,8 +42,10 @@
 
 //! \brief time step for safety timer tick interrupt
 #define TIME_STEP 10
+
 //! \brief counter of how many timesteps have passed
 uint32_t timesteps = 0;
+
 //! \brief After how many timesteps to kill the process
 #define KILL_TIME 200000
 
@@ -98,9 +100,6 @@ table_t* last_compressed_table;
 
 //! \brief the compressor app id
 uint32_t app_id = 0;
-
-// \brief how many bitfields there are
-int n_bf_addresses = 0;
 
 //! \brief the list of bitfields in sorted order based off best effect, and
 //! processor ids.
@@ -793,8 +792,7 @@ void start_compression_process(uint unused0, uint unused1) {
     }
 
     log_info("reading bitfields at timestep: %d", timesteps);
-    sorted_bit_fields = bit_field_creator_read_in_bit_fields(&n_bf_addresses,
-        region_addresses);
+    sorted_bit_fields = bit_field_creator_read_in_bit_fields(region_addresses);
     // check state
     if (sorted_bit_fields == NULL){
         log_error("failed to read in bitfields, quitting");
