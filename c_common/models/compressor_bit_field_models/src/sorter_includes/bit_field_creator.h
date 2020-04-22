@@ -97,28 +97,52 @@ static inline uint32_t _locate_key_atom_map(
 
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
-//! \param[in] the addresses of the regions to read
+//! \param[in] key_atom_map: A mapping of kets to how many atoms in each
+//! \param[out] atom_pointer: Total atoms including redundant
 //! \return how many redundant packets there are
 uint32_t _detect_redundant_packet_count(
     filter_info_t filter_info, key_atom_data_t *key_atom_map,
-    uint32_t* core_total_pointer){
+    uint32_t *atom_pointer){
     uint32_t n_filtered_packets = 0;
     uint32_t n_neurons = _locate_key_atom_map(filter_info.key, key_atom_map);
-    *core_total_pointer += n_neurons;
+    *atom_pointer = n_neurons;
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
         if (!bit_field_test(filter_info.data, neuron_id)) {
             n_filtered_packets += 1;
         }
     }
-    int count = count_bit_field(filter_info.data, filter_info.n_words);
-    uint32_t calc = filter_info.n_words * 32 - count;
-        log_info("n filtered packets = %d out of %d", n_filtered_packets,  n_neurons);
-    if (n_filtered_packets!= calc){
-        _log_bitfield(filter_info.data);
-        log_info("count = %d words = %d calc = %d", count, filter_info.n_words, calc);
-    }
 
     return n_filtered_packets;
+}
+
+int _count_bitfeilds_with_redundancy(region_addresses_t *region_addresses){
+    int n_bf_addresses = 0;
+    int n_pairs_of_addresses = region_addresses->n_pairs;
+    uint32_t atoms = 0;  // Needed as passing even without stats
+    for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
+        int processor = region_addresses->pairs[r_id].processor;
+        // Three processor variables are purely for log stats
+        int processor_count = 0;
+        int processor_redundant = 0;
+        int processor_packets = 0;
+        filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
+        key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
+        for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
+            int redundant = _detect_redundant_packet_count(
+                filter_region->filters[bf_id], key_atom_map, &atoms);
+            processor_packets += atoms;
+            processor_redundant += redundant;
+            if (redundant > 0){
+                processor_count ++;
+                n_bf_addresses ++;
+            }
+        }
+        log_info("processor %u has %d bitfields of which %d have reduandancy. "
+            "%d out of %d packets are redundant",
+            processor, filter_region->n_filters, processor_count,
+            processor_redundant, processor_packets);
+    }
+    return n_bf_addresses;
 }
 
 //! \brief sorts a selection of bit-fields based on reduanancy.
@@ -128,14 +152,14 @@ uint32_t _detect_redundant_packet_count(
 //! \param[in] start: Inclusive start of range to sort
 //! \param[in] end: Exclusive end of range to sort
 //! \return how many redundant packets there are
-void _sort_by_redundant(filter_info_t** bit_fields, int* redundant,
+void _sort_by_redundant(filter_info_t** bit_fields, int* redundants,
     int start, int end){
     for (int i = start; i < end -1; i++){
         for (int j = i + 1; j < end; j++){
-            if (redundant[i] < redundant[j]) {
-                uint32_t redundant_temp = redundant[i];
-                redundant[i] = redundant[j];
-                redundant[j] = redundant_temp;
+            if (redundants[i] < redundants[j]) {
+                uint32_t redundant_temp = redundants[i];
+                redundants[i] = redundants[j];
+                redundants[j] = redundant_temp;
                 filter_info_t* bit_field_temp = bit_fields[i];
                 bit_fields[i] = bit_fields[j];
                 bit_fields[j] = bit_field_temp;
@@ -146,17 +170,16 @@ void _sort_by_redundant(filter_info_t** bit_fields, int* redundant,
 }
 
 void _order_bitfields(sorted_bit_fields_t* sorted_bit_fields,
-        uint32_t* redundant,  int* processor_heads, int* core_totals,
+        uint32_t* redundants,  int* processor_heads, int* core_totals,
         int n_bf_addresses) {
     // Semantic sugar to avoid extra lookup all the time
     uint32_t* processor_ids = sorted_bit_fields->processor_ids;
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     uint32_t*  sort_order =  sorted_bit_fields->sort_order;
 
     // To label each row in sort order
     for (int i = 0; i < n_bf_addresses; i++) {
         // Find the processor with highest number of packets coming in
-        int worst_core = -1;
+        int worst_core = 0;
         int highest_neurons = -1;
         for (int c = 0; c < N_CORES; c++) {
             if (core_totals[c] > highest_neurons){
@@ -166,22 +189,22 @@ void _order_bitfields(sorted_bit_fields_t* sorted_bit_fields,
         }
         // Label the row pointer to bu the header as next
         int index = processor_heads[worst_core];
-        log_info("core %u index %u total %u", worst_core, index, core_totals[worst_core]);
+        log_debug("core %u index %u total %u", worst_core, index, core_totals[worst_core]);
         sort_order[index] = i;
 
         // If there is another row with te same processor
         if ((index < n_bf_addresses -1) &&
                 (processor_ids[index] == processor_ids[index+1])) {
-            log_info("i %u core %u index %u more %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
+            log_debug("i %u core %u index %u more %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
             // reduce the packet count bu redunancy
-            core_totals[worst_core] -= redundant[index];
+            core_totals[worst_core] -= redundants[index];
             // move the prointer
             processor_heads[worst_core] += 1;
         } else {
             // otherwise set the counters to ignore this processor
-            log_info("i %u core %u index %u last %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
-            core_totals[worst_core] = -1;
-            processor_heads[worst_core] += 1;
+            log_debug("i %u core %u index %u last %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
+            core_totals[worst_core] = 0;
+            processor_heads[worst_core] = -1;
         }
     }
 }
@@ -201,10 +224,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
     int n_pairs_of_addresses = region_addresses->n_pairs;
     log_info("n pairs of addresses = %d", n_pairs_of_addresses);
 
-    // find out how many bit_fields there are
-    for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
-        n_bf_addresses += region_addresses->pairs[r_id].filter->n_filters;
-    }
+    n_bf_addresses =_count_bitfeilds_with_redundancy(region_addresses);
     log_info("Number of bitfields found is %u", n_bf_addresses);
 
     sorted_bit_fields_t* sorted_bit_fields = _malloc_sorted_bit_fields(
@@ -213,8 +233,8 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
         return NULL;
     }
 
-    uint32_t* redundant = MALLOC(n_bf_addresses * sizeof(uint32_t));
-    if (redundant  == NULL){
+    uint32_t* redundants = MALLOC(n_bf_addresses * sizeof(uint32_t));
+    if (redundants  == NULL){
         log_error("cannot allocate memory for redundant");
         return NULL;
     }
@@ -225,7 +245,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
         return NULL;
     }
 
-    int* core_totals = MALLOC(N_CORES * sizeof(int));
+    uint32_t* core_totals = MALLOC(N_CORES * sizeof(uint32_t));
     if (core_totals  == NULL){
         log_error("cannot allocate memory for core_total");
         return NULL;
@@ -239,48 +259,51 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
     int index = 0;
+    uint32_t atoms = 0;
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
         // locate data for malloc memory calcs
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
         key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
-        log_debug("index %u %u", index, filter_region->n_filters);
+        int processor = region_addresses->pairs[r_id].processor;
         int before = index;
         for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
-            int processor = region_addresses->pairs[r_id].processor;
-            if (processor_heads[processor] == -1){
-                processor_heads[processor] = index;
+            int redundant = _detect_redundant_packet_count(
+                filter_region->filters[bf_id], key_atom_map, &atoms);
+            if (redundant > 0){
+                if (processor_heads[processor] == -1){
+                    processor_heads[processor] = index;
+                }
+                sorted_bit_fields->processor_ids[index] = processor;
+                sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
+                redundants[index] = redundant;
+                core_totals[processor] += atoms;
+                log_debug("index %u processor: %u, key: %u, data %u redundant %u", index,
+                    sorted_bit_fields->processor_ids[index],
+                    sorted_bit_fields->bit_fields[index]->key,
+                    sorted_bit_fields->bit_fields[index]->data,
+                    redundants[index]);
+                platform_check_all_marked(60001);
+                index++;
             }
-            sorted_bit_fields->processor_ids[index] = processor;
-            sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
-            redundant[index] = _detect_redundant_packet_count(
-                filter_region->filters[bf_id], key_atom_map, &core_totals[processor]);
-            log_info("index %u processor: %u, key: %u, data %u redundant %u", index,
-                sorted_bit_fields->processor_ids[index],
-                sorted_bit_fields->bit_fields[index]->key,
-                sorted_bit_fields->bit_fields[index]->data,
-                redundant[index]);
-            platform_check_all_marked(60001);
-            index++;
         }
         _sort_by_redundant(
-            sorted_bit_fields->bit_fields, redundant, before, index);
+            sorted_bit_fields->bit_fields, redundants, before, index);
     }
 
     for (int i = 0; i < N_CORES; i++){
-        log_info("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
+        log_debug("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
     }
-    log_info("read in");
     for (index = 0; index < n_bf_addresses; index++) {
         log_info("index %u processor: %u, key: %u, data %u redundant %u "
             "order %u", index,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
             sorted_bit_fields->bit_fields[index]->data,
-            redundant[index],
+            redundants[index],
             sorted_bit_fields->sort_order[index]
             );
     }
-    _order_bitfields(sorted_bit_fields, redundant, processor_heads, core_totals,
+    _order_bitfields(sorted_bit_fields, redundants, processor_heads, core_totals,
         n_bf_addresses);
     for (index = 0; index < n_bf_addresses; index++) {
         log_info("index %u processor: %u, key: %u, data %u redundant %u "
@@ -288,22 +311,13 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
             sorted_bit_fields->bit_fields[index]->data,
-            redundant[index],
+            redundants[index],
             sorted_bit_fields->sort_order[index]
             );
     }
-    log_info("printed");
-    log_info("%u %u %u %u %u",
-        platform_check(sorted_bit_fields->bit_fields),
-        platform_check(sorted_bit_fields->processor_ids),
-        platform_check(sorted_bit_fields->sort_order),
-        platform_check(sorted_bit_fields),
-        platform_check(redundant)
-        );
-    FREE(redundant);
+    FREE(redundants);
     FREE(processor_heads);
     FREE(core_totals);
-    log_info("freed redundant");
 
     *n_bf_pointer = n_bf_addresses;
     return sorted_bit_fields;
