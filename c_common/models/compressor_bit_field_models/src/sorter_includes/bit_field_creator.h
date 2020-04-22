@@ -166,18 +166,21 @@ void _order_bitfields(sorted_bit_fields_t* sorted_bit_fields,
         }
         // Label the row pointer to bu the header as next
         int index = processor_heads[worst_core];
+        log_info("core %u index %u total %u", worst_core, index, core_totals[worst_core]);
         sort_order[index] = i;
 
         // If there is another row with te same processor
         if ((index < n_bf_addresses -1) &&
                 (processor_ids[index] == processor_ids[index+1])) {
+            log_info("i %u core %u index %u more %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
             // reduce the packet count bu redunancy
             core_totals[worst_core] -= redundant[index];
             // move the prointer
             processor_heads[worst_core] += 1;
         } else {
             // otherwise set the counters to ignore this processor
-            core_totals[worst_core] -= -1;
+            log_info("i %u core %u index %u last %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
+            core_totals[worst_core] = -1;
             processor_heads[worst_core] += 1;
         }
     }
@@ -245,7 +248,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
         for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
             int processor = region_addresses->pairs[r_id].processor;
             if (processor_heads[processor] == -1){
-                processor_heads[processor] == processor;
+                processor_heads[processor] = index;
             }
             sorted_bit_fields->processor_ids[index] = processor;
             sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
@@ -267,6 +270,16 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(int* n_bf_pointer,
         log_info("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
     }
     log_info("read in");
+    for (index = 0; index < n_bf_addresses; index++) {
+        log_info("index %u processor: %u, key: %u, data %u redundant %u "
+            "order %u", index,
+            sorted_bit_fields->processor_ids[index],
+            sorted_bit_fields->bit_fields[index]->key,
+            sorted_bit_fields->bit_fields[index]->data,
+            redundant[index],
+            sorted_bit_fields->sort_order[index]
+            );
+    }
     _order_bitfields(sorted_bit_fields, redundant, processor_heads, core_totals,
         n_bf_addresses);
     for (index = 0; index < n_bf_addresses; index++) {
