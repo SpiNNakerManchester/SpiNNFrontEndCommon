@@ -280,8 +280,8 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
                 index++;
             }
         }
-        _sort_by_redundant(
-            sorted_bit_fields->bit_fields, redundants, before, index);
+        //_sort_by_redundant(
+        //    sorted_bit_fields->bit_fields, redundants, before, index);
     }
 
     for (int i = 0; i < N_CORES; i++){
