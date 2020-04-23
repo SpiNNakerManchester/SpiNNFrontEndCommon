@@ -144,19 +144,23 @@ void malloc_extras_check_marked(void *ptr, int marker) {
 //! (probably should be a string. but meh)
 void platform_check_all_marked(int marker) {
     // only check if safety turned on. else pointless.
-    bool failed = false;
-    for(int index = 0; index < malloc_points_size; index ++) {
-        if (malloc_points[index] != 0) {
-            if (!platform_check(malloc_points[index])) {
-                log_error("the malloc with index %d has overran", index);
-                log_error("this test is marked by marker %d", marker);
-                failed = true;
+    if (safety) {
+        bool failed = false;
+        for(int index = 0; index < malloc_points_size; index ++) {
+            if (malloc_points[index] != 0) {
+                if (!platform_check(malloc_points[index])) {
+                    log_error("the malloc with index %d has overran", index);
+                    log_error("this test is marked by marker %d", marker);
+                    failed = true;
+                }
             }
         }
-    }
 
-    if (failed) {
-        terminate(DETECTED_MALLOC_FAILURE);
+        if (failed) {
+            terminate(DETECTED_MALLOC_FAILURE);
+        }
+    } else {
+        log_error("cannot do checks with safety turned off");
     }
 }
 
