@@ -30,6 +30,13 @@
 #define BUFFER_WORDS 15
 #define MIN_SIZE_HEAP 32
 
+//! enum for the different states to report through the user1 address.
+typedef enum exit_states_for_user_one {
+    EXITED_CLEANLY = 0, EXIT_FAIL = 1, EXIT_MALLOC = 2, EXIT_SWERR = 3,
+    DETECTED_MALLOC_FAILURE = 4
+} exit_states_for_user_one;
+
+
 //! a sdram block outside the heap
 typedef struct sdram_block {
     // the base address of where the sdram block starts

@@ -36,11 +36,6 @@
 //! bits in a word
 #define BITS_IN_A_WORD 32
 
-//! enum for the different states to report through the user1 address.
-typedef enum exit_states_for_user_one {
-    EXITED_CLEANLY = 0, EXIT_FAIL = 1, EXIT_MALLOC = 2, EXIT_SWERR = 3
-} exit_states_for_user_one;
-
 //! flag for saying compression core doing nowt
 #define DOING_NOWT -1
 
