@@ -592,23 +592,7 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
 
     // if safety, add the len and buffers and return location for app code.
     if (safety) {
-        int n_words = (int) ((bytes - MINUS_POINT) / BYTE_TO_WORD);
-        p[0] = n_words;
-        for (int buffer_word = 0; buffer_word < BUFFER_WORDS; buffer_word++){
-            p[n_words + buffer_word] = SAFETY_FLAG;
-        }
-        int malloc_point_index = find_free_malloc_index();
-        if (malloc_point_index == -1){
-            log_error("cant track this malloc. failing");
-            rt_error(RTE_SWERR);
-        }
-        malloc_points[malloc_point_index] = (void *)  &p[1];
-
-        // only print if its currently set to print (saves iobuf)
-        if(to_print) {
-            log_info("index %d", malloc_point_index);
-            log_info("address is %x", &p[1]);
-        }
+        add_safety_len_and_padding(p, bytes);
 
         // return the point were user code can use from.
         return (void *) &p[1];
