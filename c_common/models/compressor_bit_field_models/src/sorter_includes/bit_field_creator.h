@@ -84,52 +84,22 @@ sorted_bit_fields_t* _malloc_sorted_bit_fields(){
     return sorted_bit_fields;
 }
 
-static inline uint32_t _locate_key_atom_map(
-        uint32_t key, key_atom_data_t *key_atom_map){
-
-    // read how many keys atom pairs there are
-    uint32_t n_key_atom_pairs = key_atom_map->n_pairs;
-
-    // cycle through keys in this region looking for the key find atoms of
-    for (uint32_t i = 0; i < n_key_atom_pairs; i++) {
-        // if key is correct, return atoms
-        if (key_atom_map->pairs[i].key == key) {
-            log_debug("n atoms is %d", key_atom_map->pairs[i].n_atoms);
-            return key_atom_map->pairs[i].n_atoms;
-        }
-    }
-
-    log_error("cannot find the key %d at all?! WTF", key);
-    terminate(EXIT_FAIL);
-    return 0;
-}
-
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
-//! \param[in] key_atom_map: A mapping of kets to how many atoms in each
-//! \param[out] atom_pointer: Total atoms including redundant
 //! \return how many redundant packets there are
-uint32_t _detect_redundant_packet_count(
-    filter_info_t filter_info, key_atom_data_t *key_atom_map,
-    uint32_t *atom_pointer){
+uint32_t _detect_redundant_packet_count(filter_info_t filter_info){
     uint32_t n_filtered_packets = 0;
-    uint32_t n_neurons = _locate_key_atom_map(filter_info.key, key_atom_map);
-    *atom_pointer = n_neurons;
-    if (n_neurons != filter_info.n_atoms) {
-        log_error("n_neuron filter_&u info.n_atoms &u", n_neuron, filter_info.n_atoms);
-    }
+    uint32_t n_neurons = filter_info.n_atoms;
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
         if (!bit_field_test(filter_info.data, neuron_id)) {
             n_filtered_packets += 1;
         }
     }
-
     return n_filtered_packets;
 }
 
 void _count_bitfeilds_with_redundancy(region_addresses_t *region_addresses){
     int n_pairs_of_addresses = region_addresses->n_pairs;
-    uint32_t atoms = 0;  // Needed as passing even without stats
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
         int processor = region_addresses->pairs[r_id].processor;
         // Three processor variables are purely for log stats
@@ -137,11 +107,10 @@ void _count_bitfeilds_with_redundancy(region_addresses_t *region_addresses){
         int processor_redundant = 0;
         int processor_packets = 0;
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
-        key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
         for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
             int redundant = _detect_redundant_packet_count(
-                filter_region->filters[bf_id], key_atom_map, &atoms);
-            processor_packets += atoms;
+                filter_region->filters[bf_id]);
+            processor_packets += filter_region->filters[bf_id].n_atoms;
             processor_redundant += redundant;
             if (redundant > 0){
                 processor_count ++;
@@ -286,16 +255,14 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
     int index = 0;
-    uint32_t atoms = 0;
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
         // locate data for malloc memory calcs
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
-        key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
         int processor = region_addresses->pairs[r_id].processor;
         int before = index;
         for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
             int redundant = _detect_redundant_packet_count(
-                filter_region->filters[bf_id], key_atom_map, &atoms);
+                filter_region->filters[bf_id]);
             if (redundant > 0){
                 if (processor_heads[processor] == -1){
                     processor_heads[processor] = index;
@@ -303,7 +270,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
                 sorted_bit_fields->processor_ids[index] = processor;
                 sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
                 redundants[index] = redundant;
-                core_totals[processor] += atoms;
+                core_totals[processor] += filter_region->filters[bf_id].n_atoms;
                 log_debug("index %u processor: %u, key: %u, data %u redundant %u", index,
                     sorted_bit_fields->processor_ids[index],
                     sorted_bit_fields->bit_fields[index]->key,
