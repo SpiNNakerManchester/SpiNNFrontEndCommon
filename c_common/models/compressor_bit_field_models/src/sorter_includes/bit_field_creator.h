@@ -115,6 +115,9 @@ uint32_t _detect_redundant_packet_count(
     uint32_t n_filtered_packets = 0;
     uint32_t n_neurons = _locate_key_atom_map(filter_info.key, key_atom_map);
     *atom_pointer = n_neurons;
+    if (n_neurons != filter_info.n_atoms) {
+        log_error("n_neuron filter_&u info.n_atoms &u", n_neuron, filter_info.n_atoms);
+    }
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
         if (!bit_field_test(filter_info.data, neuron_id)) {
             n_filtered_packets += 1;
@@ -318,11 +321,11 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
         log_debug("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
     }
     for (index = 0; index < n_bf_addresses; index++) {
-        log_debug("index %u processor: %u, key: %u, data %u redundant %u "
+        log_info("index %u processor: %u, key: %u, n_atoms %u redundant %u "
             "order %u", index,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
-            sorted_bit_fields->bit_fields[index]->data,
+            sorted_bit_fields->bit_fields[index]->n_atoms,
             redundants[index],
             sorted_bit_fields->sort_order[index]
             );

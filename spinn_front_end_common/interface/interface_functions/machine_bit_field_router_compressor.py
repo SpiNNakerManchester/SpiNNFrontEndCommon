@@ -207,7 +207,7 @@ class MachineBitFieldRouterCompressor(object):
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
-
+            pop = 1/0
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 

@@ -92,8 +92,8 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
         for (int bf_id = 0; bf_id < core_n_filters; bf_id++) {
             bit_field_by_processor[r_id].bit_field_addresses[bf_id].key =
                 filter_region->filters[bf_id].key;
-            bit_field_by_processor[r_id].bit_field_addresses[bf_id].n_words =
-                filter_region->filters[bf_id].n_words;
+            bit_field_by_processor[r_id].bit_field_addresses[bf_id].n_atoms =
+                filter_region->filters[bf_id].n_atoms;
             bit_field_by_processor[r_id].bit_field_addresses[bf_id].data =
                 filter_region->filters[bf_id].data;
             platform_check_all_marked(4004);

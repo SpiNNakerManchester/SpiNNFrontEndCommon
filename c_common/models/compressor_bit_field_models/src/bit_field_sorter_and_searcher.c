@@ -326,7 +326,7 @@ bool remove_merged_bitfields_from_cores(void) {
                     // write the data in the current write positions, if it
                     // isn't where we're currently reading from
                     if (write_index != read_index) {
-                        // copy the key, n_words and bitfield pointer over to
+                        // copy the key, n_atoms and bitfield pointer over to
                         // the new location
                         sark_mem_cpy(
                             write_index, read_index, sizeof(filter_info_t));
