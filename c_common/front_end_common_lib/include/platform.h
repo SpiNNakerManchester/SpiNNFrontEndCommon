@@ -83,37 +83,9 @@ void platform_check_all_marked(int marker);
 //! \brief checks all malloc's for overwrites with no marker
 void platform_check_all(void);
 
-
-//! \brief cycles through the true heap and figures how many blocks there are
-//! to steal.
-//! \param[in] sdram_heap: the true sdram heap
-//! \return the number of sdram blocks to utilise
-int available_mallocs(heap_t *sdram_heap);
-
-//! \brief builds a tracker for mallocs. for debug purposes
-void build_malloc_tracker(void);
-
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
 bool platform_new_heap_update(heap_t *heap_location);
-
-//! \brief count how much space available given expected block costs
-//! \param[in] sizes_region: the sdram loc where addresses to steal are located
-uint free_space_available(available_sdram_blocks *sizes_region);
-
-//! \brief steals all sdram spaces from true heap
-//! \param[in] list_of_available_blocks: loc for stolen heap bits to go
-bool add_heap_to_collection(sdram_block *list_of_available_blocks);
-
-//! \brief builds the new heap struct over our stolen and proper claimed
-//! sdram spaces.
-void make_heap_structure(
-        available_sdram_blocks *sizes_region, int n_mallocs,
-        sdram_block *list_of_available_blocks);
-
-//! \brief prints out the fake heap as if the spin1 alloc was operating over it
-void print_free_sizes_in_heap(void);
-
 
 //! \brief builds a new heap based off stolen sdram blocks from cores
 //! synaptic matrix's. Needs to merge in the true sdram free heap, as
@@ -127,17 +99,9 @@ bool platform_new_heap_creation(
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
 void safe_x_free_marked(void *ptr, int marker);
 
+//! \brief frees a pointer without any marker for application code
+//! \param[in] ptr: the pointer to free.
 void safe_x_free(void *ptr);
-
-//! \brief doubles the size of the sdram malloc tracker
-void build_bigger_size(void);
-
-int find_free_malloc_index(void);
-
-//! \brief allows a search of the SDRAM heap.
-//! \param[in] bytes: the number of bytes to allocate.
-//! \return: the address of the block of memory to utilise.
-void * safe_sdram_malloc(uint bytes);
 
 void * safe_sdram_malloc_wrapper(uint bytes);
 

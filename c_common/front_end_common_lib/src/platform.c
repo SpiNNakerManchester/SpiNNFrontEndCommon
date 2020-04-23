@@ -175,7 +175,7 @@ void platform_check_all(void){
 //! to steal.
 //! \param[in] sdram_heap: the true SDRAM heap
 //! \return the number of SDRAM blocks to utilise
-int available_mallocs(heap_t *sdram_heap){
+static inline int available_mallocs(heap_t *sdram_heap){
     int n_available_true_malloc = 0;
     block_t *free_blk = sdram_heap->free;
 
@@ -188,7 +188,7 @@ int available_mallocs(heap_t *sdram_heap){
 }
 
 //! \brief builds a tracker for mallocs. for debug purposes
-void build_malloc_tracker(void) {
+static void build_malloc_tracker(void) {
     // malloc tracker
     malloc_points = sark_xalloc(
         stolen_sdram_heap, malloc_points_size * sizeof(void*), 0, ALLOC_LOCK);
@@ -216,7 +216,7 @@ bool platform_new_heap_update(heap_t *heap_location) {
 //! \brief count how much space available given expected block costs
 //! \param[in] sizes_region: the SDRAM loc where addresses to steal are located
 //! \return size available given expected block costs
-uint free_space_available(available_sdram_blocks *sizes_region){
+static inline uint free_space_available(available_sdram_blocks *sizes_region){
     uint free = 0;
     for (int index =0; index < sizes_region->n_blocks; index++){
         free += sizes_region->blocks[index].size - sizeof(block_t);
@@ -227,7 +227,7 @@ uint free_space_available(available_sdram_blocks *sizes_region){
 //! \brief steals all SDRAM spaces from true heap
 //! \param[in] list_of_available_blocks: loc for stolen heap bits to go
 //! \return true if successful. false otherwise
-bool add_heap_to_collection(
+static inline bool add_heap_to_collection(
         sdram_block *list_of_available_blocks) {
     // go through true heap and allocate and add to end of list.
     int position = 0;
@@ -262,7 +262,7 @@ bool add_heap_to_collection(
 //! have already been allocated, but which we can use.
 //! \param[in] n_mallocs: the number of mallocs expected to be done.
 //! \param[in] list_of_available_blocks: the mallocs from the original heap.
-void make_heap_structure(
+static inline void make_heap_structure(
         available_sdram_blocks *sizes_region, int n_mallocs,
         sdram_block *list_of_available_blocks) {
 
@@ -355,7 +355,7 @@ void make_heap_structure(
 }
 
 //! \brief prints out the fake heap as if the spin1 alloc was operating over it
-void print_free_sizes_in_heap(void) {
+static inline void print_free_sizes_in_heap(void) {
     block_t *free_blk = stolen_sdram_heap->free;
     uint total_size = 0;
     uint index = 0;
@@ -488,7 +488,7 @@ void safe_x_free(void *ptr) {
 }
 
 //! \brief doubles the size of the SDRAM malloc tracker
-void build_bigger_size(void) {
+static inline void build_bigger_size(void) {
     // make twice as big tracker
     int new_malloc_points_size = malloc_points_size * 2;
 
@@ -523,7 +523,7 @@ void build_bigger_size(void) {
 //! allocation of malloc markers if full already.
 //! \return the index in the current malloc tracker to put this new malloc
 //! pointer.
-int find_free_malloc_index(void) {
+static inline int find_free_malloc_index(void) {
     int index;
     for (index = 0; index < malloc_points_size; index ++) {
         if (malloc_points[index] == 0) {
@@ -538,7 +538,7 @@ int find_free_malloc_index(void) {
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-void * safe_sdram_malloc(uint bytes) {
+static void * safe_sdram_malloc(uint bytes) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
@@ -551,7 +551,7 @@ void * safe_sdram_malloc(uint bytes) {
 
 //! \brief adds the len and buffers to a given malloc pointer. Stores in the
 //! malloc tracker and prints index if required.
-void add_safety_len_and_padding(int* p, uint bytes) {
+static void add_safety_len_and_padding(int* p, uint bytes) {
     // add len
     int n_words = (int) ((bytes - MINUS_POINT) / BYTE_TO_WORD);
     p[0] = n_words;
