@@ -19,7 +19,7 @@
 #include <debug.h>
 #include <bit_field.h>
 #include <sdp_no_scp.h>
-#include "common/platform.h"
+#include <platform.h>
 #include "common/routing_table.h"
 #include "common/constants.h"
 

@@ -18,7 +18,7 @@
 #ifndef __MESSAGE_SENDING_H__
 #define __MESSAGE_SENDING_H__
 
-#include "../common/platform.h"
+#include <platform.h>
 #include "../common/constants.h"
 
 //! how many tables the uncompressed router table entries is
@@ -127,7 +127,7 @@ static void set_up_packet(
 
     // fill in
     data->command_code = START_DATA_STREAM;
-    data->fake_heap_data = stolen_sdram_heap;
+    data->fake_heap_data = platform_get_stolen_heap();
     data->table_data = data_store;
     my_msg->length = (LENGTH_OF_SDP_HEADER + sizeof(start_sdp_packet_t));
 }

@@ -22,7 +22,7 @@
 #include <circular_buffer.h>
 #include <data_specification.h>
 #include "common-typedefs.h"
-#include "common/platform.h"
+#include <platform.h>
 #include "common/routing_table.h"
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"

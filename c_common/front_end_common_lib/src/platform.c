@@ -15,20 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__
-
 #include <sark.h>
 #include <common-typedefs.h>
 #include <debug.h>
+#include <platform.h>
 
 //! debug flag to lock in safety features
 bool safety = true;
-#define SAFETY_FLAG 0xDEADBEEF
-#define EXTRA_BYTES 64
-#define MINUS_POINT 60
-#define BYTE_TO_WORD 4
-#define BUFFER_WORDS 15
 
 //! \brief tracker for mallocs
 void** malloc_points = NULL;
@@ -39,33 +32,12 @@ int malloc_points_size = 4;
 //! \brief bool flag to help with debugging
 bool to_print = false;
 
-//! a sdram block outside the heap
-typedef struct sdram_block {
-    // the base address of where the sdram block starts
-    uchar *sdram_base_address;
-
-    // size of block in bytes
-    uint size;
-
-} sdram_block;
-
-//! the struct for holding host based sdram blocks outside the heap
-typedef struct available_sdram_blocks {
-    // the number of blocks of sdram which can be utilised outside of alloc
-    int n_blocks;
-
-    // VLA of sdram blocks
-    sdram_block blocks [];
-} available_sdram_blocks;
-
 // ===========================================================================
 
 //! a extra heap, that exploits sdram which can be easily regenerated.
 static heap_t *stolen_sdram_heap = NULL;
 
 // ===========================================================================
-
-#define MIN_SIZE_HEAP 32
 
 // ===========================================================================
 
@@ -88,7 +60,7 @@ heap_t* platform_get_stolen_heap(void) {
 //static inline void terminate(uint result_code) __attribute__((noreturn));
 //! \brief stops a binary dead
 //! \param[in] code to put in user 1
-static inline void terminate(uint result_code) {
+void terminate(uint result_code) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint core = spin1_get_core_id();
 
@@ -98,7 +70,7 @@ static inline void terminate(uint result_code) {
 }
 
 //! \brief checks a pointer for safety stuff
-static bool platform_check(void *ptr) {
+bool platform_check(void *ptr) {
 
     int* int_pointer = (int*) ptr;
     if (safety) {
@@ -147,7 +119,7 @@ void platform_check_all(void){
 //! to steal.
 //! \param[in] sdram_heap: the true sdram heap
 //! \return the number of sdram blocks to utilise
-static inline int available_mallocs(heap_t *sdram_heap){
+int available_mallocs(heap_t *sdram_heap){
     int n_available_true_malloc = 0;
     block_t *free_blk = sdram_heap->free;
 
@@ -176,7 +148,7 @@ void build_malloc_tracker(void) {
 
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
-static inline bool platform_new_heap_update(heap_t *heap_location){
+bool platform_new_heap_update(heap_t *heap_location){
     stolen_sdram_heap = heap_location;
     if (malloc_points == NULL) {
         build_malloc_tracker();
@@ -186,7 +158,7 @@ static inline bool platform_new_heap_update(heap_t *heap_location){
 
 //! \brief count how much space available given expected block costs
 //! \param[in] sizes_region: the sdram loc where addresses to steal are located
-static inline uint free_space_available(available_sdram_blocks *sizes_region){
+uint free_space_available(available_sdram_blocks *sizes_region){
     uint free = 0;
     for (int index =0; index < sizes_region->n_blocks; index++){
         free += sizes_region->blocks[index].size - sizeof(block_t);
@@ -196,7 +168,7 @@ static inline uint free_space_available(available_sdram_blocks *sizes_region){
 
 //! \brief steals all sdram spaces from true heap
 //! \param[in] list_of_available_blocks: loc for stolen heap bits to go
-static inline bool add_heap_to_collection(
+bool add_heap_to_collection(
         sdram_block *list_of_available_blocks){
     // go through true heap and allocate and add to end of list.
     int position = 0;
@@ -229,7 +201,7 @@ static inline bool add_heap_to_collection(
 
 //! \brief builds the new heap struct over our stolen and proper claimed
 //! sdram spaces.
-static inline void make_heap_structure(
+void make_heap_structure(
         available_sdram_blocks *sizes_region, int n_mallocs,
         sdram_block *list_of_available_blocks){
 
@@ -348,7 +320,7 @@ void print_free_sizes_in_heap(void){
 //! otherwise its impossible to free the block properly.
 //! \param[in] sizes_region; the sdram address where the free regions exist
 //! \return None
-static inline bool platform_new_heap_creation(
+bool platform_new_heap_creation(
         available_sdram_blocks *sizes_region) {
     // NOTE use if not trusting the heap
     stolen_sdram_heap = sv->sdram_heap;
@@ -386,7 +358,7 @@ static inline bool platform_new_heap_creation(
 
     // determine how much spare space there is.
     stolen_sdram_heap->free_bytes = free_space_available(sizes_region);
-    
+
     // go through true heap and allocate and add to end of list.
     bool success = add_heap_to_collection(list_of_available_blocks);
     if (!success){
@@ -410,7 +382,7 @@ static inline bool platform_new_heap_creation(
 
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
-static void safe_x_free_marked(void *ptr, int marker) {
+void safe_x_free_marked(void *ptr, int marker) {
     // only print if its currently set to print (saves iobuf)
     if(to_print) {
         log_info("freeing %x", ptr);
@@ -445,7 +417,7 @@ static void safe_x_free_marked(void *ptr, int marker) {
     }
 }
 
-static void safe_x_free(void *ptr) {
+void safe_x_free(void *ptr) {
     safe_x_free_marked(ptr, -1);
 }
 
@@ -496,7 +468,7 @@ int find_free_malloc_index(void){
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-static void * safe_sdram_malloc(uint bytes) {
+void * safe_sdram_malloc(uint bytes) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
@@ -585,7 +557,7 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
 
 //! \brief locates the biggest block of available memory from the heaps
 //! \return the biggest block size in the heaps.
-static inline uint platform_max_available_block_size(void) {
+uint platform_max_available_block_size(void) {
     uint max_dtcm_block = sark_heap_max(sark.heap, ALLOC_LOCK);
     uint max_sdram_block = sark_heap_max(stolen_sdram_heap, ALLOC_LOCK);
     if (max_dtcm_block > max_sdram_block) {
@@ -602,5 +574,3 @@ static inline uint platform_max_available_block_size(void) {
 #define FREE   safe_x_free
 #define FREE_MARKED safe_x_free_marked
 #define MALLOC_SDRAM safe_sdram_malloc_wrapper
-
-#endif  // __PLATFORM_H__

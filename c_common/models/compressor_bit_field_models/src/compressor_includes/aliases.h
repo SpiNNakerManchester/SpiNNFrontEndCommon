@@ -22,7 +22,7 @@
  * rebalancing at the cost of more memory.
  */
 
-#include "../common/platform.h"
+#include <platform.h>
 #include "../common/routing_table.h"
 #include <debug.h>
 

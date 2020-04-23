@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <debug.h>
-#include "platform.h"
+#include <platform.h>
 #include "compressor_sorter_structs.h"
 
 //! enum covering top level entries for routing tables in sdram
