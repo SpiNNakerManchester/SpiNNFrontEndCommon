@@ -832,6 +832,8 @@ static void initialise_user_register_tracker(void) {
         (data_specification_metadata_t *) this_vcpu_info->user0;
     uncompressed_router_table =
         (uncompressed_table_region_data_t *) this_vcpu_info->user1;
+    sort_table_by_key(&uncompressed_router_table->uncompressed_table);
+    //log_table(&uncompressed_router_table->uncompressed_table);
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
     usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
 

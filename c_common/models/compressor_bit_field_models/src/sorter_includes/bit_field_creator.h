@@ -173,6 +173,31 @@ void _sort_by_order(sorted_bit_fields_t* sorted_bit_fields){
     }
 }
 
+void _sort_by_key(sorted_bit_fields_t* sorted_bit_fields) {
+    platform_check_all_marked(60031);
+    int* processor_ids = sorted_bit_fields->processor_ids;
+    int* sort_order = sorted_bit_fields->sort_order;
+    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
+
+    for (int i = 0; i < n_bf_addresses - 1; i++) {
+        for (int j = i + 1; j < n_bf_addresses; j++) {
+           if (bit_fields[i]->key > bit_fields[j]->key){
+                // If not swap the data there into the correct place
+                int temp_processor_id = processor_ids[i];
+                processor_ids[i] = processor_ids[j];
+                processor_ids[j] = temp_processor_id;
+                uint32_t temp_sort_order = sort_order[i];
+                sort_order[i] = sort_order[j];
+                sort_order[j] = temp_sort_order;
+                filter_info_t* bit_field_temp = bit_fields[i];
+                bit_fields[i] = bit_fields[j];
+                bit_fields[j] = bit_field_temp;
+            }
+        }
+    }
+    platform_check_all_marked(60032);
+}
+
 //! \brief reads in bitfields
 // \param[in] region_addresses: the addresses of the regions to read
 //! \param[in/out] success: bool that helps decide if method finished
@@ -226,11 +251,11 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
     platform_check_all_marked(60012);
 
     for (int i = 0; i < N_CORES; i++){
-        log_info("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
+        log_debug("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
     }
     platform_check_all_marked(60013);
     for (index = 0; index < n_bf_addresses; index++) {
-        log_info("index %u processor: %u, key: %u, n_atoms %u redundant %u "
+        log_debug("index %u processor: %u, key: %u, n_atoms %u redundant %u "
             "order %u", index,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
@@ -255,10 +280,10 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
             sorted_bit_fields->sort_order[index]
             );
     }
-     _sort_by_order(sorted_bit_fields);
+     _sort_by_key(sorted_bit_fields);
 
     for (index = 0; index < n_bf_addresses; index++) {
-        log_debug("index %u processor: %u, key: %u, data %u redundant %u "
+        log_info("index %u processor: %u, key: %u, data %u redundant %u "
             "order %u", index,
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,

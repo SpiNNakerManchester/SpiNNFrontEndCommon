@@ -439,4 +439,59 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     return bit_field_routing_tables;
 }
 
+void log_table(table_t* table){
+   entry_t* entries = table->entries;
+   for (uint32_t i = 0; i < table->size; i++){
+        log_info("i %u, key %u, mask %u, route %u, source %u",
+        i, entries[i].key_mask.key, entries[i].key_mask.mask,
+        entries[i].route, entries[i].source);
+   }
+}
+
+void sort_table_by_key(table_t* table) {
+    uint32_t size = table->size;
+    entry_t* entries = table->entries;
+    for (uint32_t i = 0; i < size - 1; i++){
+        for (uint32_t j = i + 1; j < size; j++) {
+            if (entries[i].key_mask.key > entries[j].key_mask.key) {
+                uint32_t temp = entries[i].key_mask.key;
+                entries[i].key_mask.key = entries[j].key_mask.key;
+                entries[j].key_mask.key = temp;
+                temp = entries[i].key_mask.mask;
+                entries[i].key_mask.mask = entries[j].key_mask.mask;
+                entries[j].key_mask.mask = temp;
+                temp = entries[i].route;
+                entries[i].route = entries[j].route;
+                entries[j].route = temp;
+                temp = entries[i].source;
+                entries[i].source = entries[j].source;
+                entries[j].source = temp;
+            }
+        }
+    }
+}
+
+void sort_table_by_route(table_t* table) {
+    uint32_t size = table->size;
+    entry_t* entries = table->entries;
+    for (uint32_t i = 0; i < size - 1; i++){
+        for (uint32_t j = i + 1; j < size; j++) {
+            if (entries[i].route > entries[j].route) {
+                uint32_t temp = entries[i].key_mask.key;
+                entries[i].key_mask.key = entries[j].key_mask.key;
+                entries[j].key_mask.key = temp;
+                temp = entries[i].key_mask.mask;
+                entries[i].key_mask.mask = entries[j].key_mask.mask;
+                entries[j].key_mask.mask = temp;
+                temp = entries[i].route;
+                entries[i].route = entries[j].route;
+                entries[j].route = temp;
+                temp = entries[i].source;
+                entries[i].source = entries[j].source;
+                entries[j].source = temp;
+            }
+        }
+    }
+}
+
 #endif  // __BIT_FIELD_TABLE_GENERATOR_H__
