@@ -292,8 +292,6 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     malloc_extras_initialise_with_fake_heap(start_cmd->fake_heap_data);
     log_debug("finished setting up fake heap for sdram usage");
 
-
-
     failed_by_malloc = false;
     finished_by_compressor_force = false;
     timer_for_compression_attempt = false;
