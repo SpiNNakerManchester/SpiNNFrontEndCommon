@@ -111,44 +111,7 @@ void * safe_sdram_malloc_wrapper(uint bytes);
 //! below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-/*static void * safe_malloc(uint bytes) {
-
-    if (safety) {
-        bytes = bytes + EXTRA_BYTES;
-    }
-
-    // try DTCM
-    int *p = sark_alloc(bytes, 1);
-
-    if (p == NULL) {
-       if(to_print) {
-           log_info("went to sdram");
-       }
-       p = safe_sdram_malloc(bytes);
-    }
-
-    if (safety) {
-        int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
-        p[0] = n_words;
-        p[n_words] = SAFETY_FLAG;
-        int malloc_point_index = find_free_malloc_index();
-        if (malloc_point_index == -1){
-            log_error("cant track this malloc. failing");
-            rt_error(RTE_SWERR);
-        }
-
-        malloc_points[malloc_point_index] = (void *)  &p[1];
-
-        // only print if its currently set to print (saves iobuf)
-        if(to_print) {
-            log_info("index %d", malloc_point_index);
-            log_info("address is %x", &p[1]);
-        }
-        return (void *) &p[1];
-    }
-
-    return (void *) p;
-}*/
+void * safe_malloc(uint bytes);
 
 //! \brief locates the biggest block of available memory from the heaps
 //! \return the biggest block size in the heaps.

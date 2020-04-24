@@ -166,7 +166,7 @@ void platform_check_all_marked(int marker) {
 
 //! \brief checks all malloc's for overwrites with no marker. This does not
 //! \provide a easy marker to track back to the application user code.
-void platform_check_all(void){
+void platform_check_all(void) {
     platform_check_all_marked(-1);
 }
 
@@ -175,7 +175,7 @@ void platform_check_all(void){
 //! to steal.
 //! \param[in] sdram_heap: the true SDRAM heap
 //! \return the number of SDRAM blocks to utilise
-static inline int available_mallocs(heap_t *sdram_heap){
+static inline int available_mallocs(heap_t *sdram_heap) {
     int n_available_true_malloc = 0;
     block_t *free_blk = sdram_heap->free;
 
@@ -216,9 +216,9 @@ bool platform_new_heap_update(heap_t *heap_location) {
 //! \brief count how much space available given expected block costs
 //! \param[in] sizes_region: the SDRAM loc where addresses to steal are located
 //! \return size available given expected block costs
-static inline uint free_space_available(available_sdram_blocks *sizes_region){
+static inline uint free_space_available(available_sdram_blocks *sizes_region) {
     uint free = 0;
-    for (int index =0; index < sizes_region->n_blocks; index++){
+    for (int index =0; index < sizes_region->n_blocks; index++) {
         free += sizes_region->blocks[index].size - sizeof(block_t);
     }
     return free;
@@ -244,7 +244,7 @@ static inline bool add_heap_to_collection(
         // make life easier by saying blocks have to be bigger than the heap.
         // so all spaces can be used for heaps
         uchar* b_address = sark_xalloc(sv->sdram_heap, size, 0, ALLOC_LOCK);
-        if (b_address == NULL){
+        if (b_address == NULL) {
             log_error("failed to allocate %d", size);
             return false;
         }
@@ -375,6 +375,23 @@ static inline void print_free_sizes_in_heap(void) {
     log_info("total free size is %d", total_size);
 }
 
+//! \brief stores a generated heap pointer. sets up trackers for this
+//! core if asked. DOES NOT REBUILD THE FAKE HEAP!
+//! \param[in] heap_location: address where heap is location
+//! \return bool where true states the initialisation was successful or not
+bool malloc_extras_initialise_with_fake_heap(
+        heap_t *heap_location) {
+    stolen_sdram_heap = heap_location;
+
+    // if no real stolen SDRAM heap. point at the original SDRAM heap.
+    if (stolen_sdram_heap == NULL){
+        stolen_sdram_heap = sv->sdram_heap;
+    }
+    if (malloc_points == NULL) {
+        build_malloc_tracker();
+    }
+    return true;
+}
 
 //! \brief builds a new heap based off stolen SDRAM blocks from cores
 //! synaptic matrix's. Needs to merge in the true SDRAM free heap, as
@@ -442,6 +459,13 @@ bool platform_new_heap_creation(
     return true;
 }
 
+//! \brief builds a new heap with no stolen SDRAM and sets up the malloc
+//! tracker.
+//! \return bool where true is a successful initialisation and false otherwise.
+bool malloc_extras_initialise_no_fake_heap_data(void) {
+    return platform_new_heap_creation(NULL);
+}
+
 //! \brief frees the SDRAM allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
 void safe_x_free_marked(void *ptr, int marker) {
@@ -461,15 +485,20 @@ void safe_x_free_marked(void *ptr, int marker) {
         }
 
         bool found = false;
-        for (int index = 0; index < malloc_points_size; index ++){
-            if (!found && malloc_points[index] == ptr) {
+        int index = 0;
+        while (!found && index < malloc_points_size) {
+            if (malloc_points[index] == ptr) {
                 found = true;
                 malloc_points[index] = 0;
-                // only print if its currently set to print (saves iobuf)
-                if(to_print) {
-                    log_info("freeing index %d", index);
-                }
             }
+            else{
+                index ++;
+            }
+        }
+
+        // if set to print and there was a free index, print it
+        if (found && to_print) {
+            log_info("freeing index %d", index);
         }
     }
 
@@ -608,44 +637,43 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
 //! below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-/*static void * safe_malloc(uint bytes) {
+void * safe_malloc(uint bytes) {
 
     if (safety) {
         bytes = bytes + EXTRA_BYTES;
     }
 
-    // try DTCM
-    int *p = sark_alloc(bytes, 1);
+    // try DTCM if allowed (not safe if overused, due to stack overflows)
+    int *p = NULL;
+    if (use_dtcm) {
+        p = sark_alloc(bytes, 1);
 
-    if (p == NULL) {
-       if(to_print) {
-           log_info("went to sdram");
-       }
-       p = safe_sdram_malloc(bytes);
+        // if DTCM failed to malloc, go to SDRAM.
+        if (p == NULL) {
+           if(to_print) {
+               log_info("went to SDRAM");
+           }
+           p = safe_sdram_malloc(bytes);
+        }
+    // only use SDRAM. (safer to avoid stack overflows)
+    } else {
+        if(to_print) {
+            log_info("went to SDRAM without checking DTCM. as requested");
+        }
+        p = safe_sdram_malloc(bytes);
     }
 
+    // if safety, add the len and buffers and return location for app code.
     if (safety) {
-        int n_words = (int) ((bytes - 4) / BYTE_TO_WORD);
-        p[0] = n_words;
-        p[n_words] = SAFETY_FLAG;
-        int malloc_point_index = find_free_malloc_index();
-        if (malloc_point_index == -1){
-            log_error("cant track this malloc. failing");
-            rt_error(RTE_SWERR);
-        }
+        add_safety_len_and_padding(p, bytes);
 
-        malloc_points[malloc_point_index] = (void *)  &p[1];
-
-        // only print if its currently set to print (saves iobuf)
-        if(to_print) {
-            log_info("index %d", malloc_point_index);
-            log_info("address is %x", &p[1]);
-        }
+        // return the point were user code can use from.
         return (void *) &p[1];
     }
 
+    // if no safety, the point is the point used by the application code.
     return (void *) p;
-}*/
+}
 
 /* this is commented out to stop utilising DTCM. if deemed safe, could be
  turned back on
