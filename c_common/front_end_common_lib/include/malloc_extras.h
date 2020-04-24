@@ -59,51 +59,56 @@ typedef struct available_sdram_blocks {
 // ===========================================================================
 
 //! \brief turn on printing
-void platform_turn_on_print(void);
+void malloc_extras_turn_on_print(void);
 
 //! \brief turn off printing
-void platform_turn_off_print(void);
+void malloc_extras_turn_off_print(void);
 
 //! \brief get the pointer to the stolen heap
 //! \return the heap pointer.
-heap_t* platform_get_stolen_heap(void);
+heap_t* malloc_extras_get_stolen_heap(void);
 
 //static inline void terminate(uint result_code) __attribute__((noreturn));
 //! \brief stops a binary dead
 //! \param[in] code to put in user 1
-void terminate(uint result_code);
+void malloc_extras_terminate(uint result_code);
 
 //! \brief checks a pointer for safety stuff
-bool platform_check(void *ptr);
+bool malloc_extras_check(void *ptr);
 
 //! \brief checks all malloc's with a given marker. to allow easier tracking
 //! from application code (probably should be a string. but meh)
-void platform_check_all_marked(int marker);
+void malloc_extras_check_all_marked(int marker);
 
 //! \brief checks all malloc's for overwrites with no marker
-void platform_check_all(void);
+void malloc_extras_check_all(void);
 
 //! \brief update heap
 //! \param[in] heap_location: address where heap is location
-bool platform_new_heap_update(heap_t *heap_location);
+bool malloc_extras_initialise_with_fake_heap(heap_t *heap_location);
 
 //! \brief builds a new heap based off stolen sdram blocks from cores
 //! synaptic matrix's. Needs to merge in the true sdram free heap, as
 //! otherwise its impossible to free the block properly.
 //! \param[in] sizes_region; the sdram address where the free regions exist
 //! \return None
-bool platform_new_heap_creation(
+bool malloc_extras_initialise_and_build_fake_heap(
         available_sdram_blocks *sizes_region);
+
+//! \brief builds a new heap with no stolen SDRAM and sets up the malloc
+//! tracker.
+//! \return bool where true is a successful initialisation and false otherwise.
+bool malloc_extras_initialise_no_fake_heap_data(void);
 
 //! \brief frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
-void safe_x_free_marked(void *ptr, int marker);
+void malloc_extras_free_marked(void *ptr, int marker);
 
 //! \brief frees a pointer without any marker for application code
 //! \param[in] ptr: the pointer to free.
-void safe_x_free(void *ptr);
+void malloc_extras_free(void *ptr);
 
-void * safe_sdram_malloc_wrapper(uint bytes);
+void * malloc_extras_sdram_malloc_wrapper(uint bytes);
 
 //! \brief allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
 //! NOTE: commented out as this can cause stack overflow issues quickly.
@@ -111,18 +116,15 @@ void * safe_sdram_malloc_wrapper(uint bytes);
 //! below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-void * safe_malloc(uint bytes);
+void * malloc_extras_malloc(uint bytes);
 
 //! \brief locates the biggest block of available memory from the heaps
 //! \return the biggest block size in the heaps.
-uint platform_max_available_block_size(void) ;
+uint malloc_extras_max_available_block_size(void) ;
 
-/* this is commented out to stop utilising DTCM. if deemed safe, could be
- turned back on
-#define MALLOC safe_malloc*/
-#define MALLOC safe_sdram_malloc_wrapper
-#define FREE   safe_x_free
-#define FREE_MARKED safe_x_free_marked
-#define MALLOC_SDRAM safe_sdram_malloc_wrapper
+#define MALLOC malloc_extras_malloc
+#define FREE   malloc_extras_free
+#define FREE_MARKED malloc_extras_free_marked
+#define MALLOC_SDRAM malloc_extras_sdram_malloc_wrapper
 
 #endif  // __PLATFORM_H__

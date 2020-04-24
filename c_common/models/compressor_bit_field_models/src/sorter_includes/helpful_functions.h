@@ -20,6 +20,7 @@
 
 #include "../common/constants.h"
 #include <filter_info.h>
+#include <malloc_extras.h>
 
 //! \brief finds the processor id of a given bitfield address (search though
 //! the bit field by processor
@@ -40,7 +41,7 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
             }
         }
     }
-    terminate(EXIT_FAIL);
+    malloc_extras_terminate(EXIT_FAIL);
     return 0;
 }
 
@@ -73,7 +74,7 @@ static inline uint32_t helpful_functions_locate_key_atom_map(
     }
 
     log_error("cannot find the key %d at all?! WTF", key);
-    terminate(EXIT_FAIL);
+    malloc_extras_terminate(EXIT_FAIL);
     return 0;
 }
 
@@ -160,10 +161,10 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
         return NULL;
     }
 
-    bool check = platform_check(where_was_cloned);
+    bool check = malloc_extras_check(where_was_cloned);
     if (!check){
         log_info("failed");
-        terminate(2);
+        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
     }
 
     // copy the table data over correctly
@@ -172,10 +173,10 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
         where_was_cloned);
     log_debug("cloned routing table entries is %d", where_was_cloned->size);
 
-    check = platform_check(where_was_cloned);
+    check = malloc_extras_check(where_was_cloned);
     if (!check){
         log_info("failed");
-        terminate(2);
+        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
     }
 
     return where_was_cloned;

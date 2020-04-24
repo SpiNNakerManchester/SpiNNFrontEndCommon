@@ -19,7 +19,7 @@
 #include <debug.h>
 #include <bit_field.h>
 #include <sdp_no_scp.h>
-#include <platform.h>
+#include <malloc_extras.h>
 #include "common/routing_table.h"
 #include "common/constants.h"
 
@@ -188,14 +188,14 @@ bool store_into_compressed_address(void) {
         "starting store of %d tables with %d entries",
         n_tables, routing_table_sdram_get_n_entries());
 
-    bool check = platform_check(sdram_loc_for_compressed_entries);
+    bool check = malloc_extras_check(sdram_loc_for_compressed_entries);
     if (!check){
         log_error("failed");
     }
 
     bool success = routing_table_sdram_store(
         sdram_loc_for_compressed_entries);
-    check = platform_check(sdram_loc_for_compressed_entries);
+    check = malloc_extras_check(sdram_loc_for_compressed_entries);
     if (!check){
         log_error("failed");
     }
@@ -221,7 +221,7 @@ void start_compression_process(uint unused0, uint unused1) {
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
-    bool check = platform_check(sdram_loc_for_compressed_entries);
+    bool check = malloc_extras_check(sdram_loc_for_compressed_entries);
     if (!check){
         log_error("failed");
         rt_error(RTE_SWERR);
@@ -233,7 +233,7 @@ void start_compression_process(uint unused0, uint unused1) {
         &finished_by_compressor_force,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
-    platform_check_all();
+    malloc_extras_check_all();
 
     // turn off timer and set us into pause state
     spin1_pause();
@@ -289,7 +289,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
 
     // set up fake heap
     log_debug("setting up fake heap for sdram usage");
-    platform_new_heap_update(start_cmd->fake_heap_data);
+    malloc_extras_initialise_with_fake_heap(start_cmd->fake_heap_data);
     log_debug("finished setting up fake heap for sdram usage");
 
 
@@ -307,7 +307,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     // location where to store the compressed table
     sdram_loc_for_compressed_entries = start_cmd->table_data->compressed_table;
 
-    bool check = platform_check(sdram_loc_for_compressed_entries);
+    bool check = malloc_extras_check(sdram_loc_for_compressed_entries);
     if (!check){
         log_error("failed");
         rt_error(RTE_SWERR);

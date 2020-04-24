@@ -18,7 +18,7 @@
 #include <sark.h>
 #include <common-typedefs.h>
 #include <debug.h>
-#include <platform.h>
+#include <malloc_extras.h>
 
 //============================================================================
 //! control flags
@@ -48,25 +48,25 @@ int malloc_points_size = 4;
 //! functions
 
 //! \brief turn on printing of logs. can reduce output significantly
-void platform_turn_on_print(void) {
+void malloc_extras_turn_on_print(void) {
     to_print = true;
 }
 
 //! \brief turn off printing of logs. can reduce output significantly
-void platform_turn_off_print(void) {
+void malloc_extras_turn_off_print(void) {
     to_print = false;
 }
 
 //! \brief get the pointer to the stolen heap
 //! \return the heap pointer.
-heap_t* platform_get_stolen_heap(void) {
+heap_t* malloc_extras_get_stolen_heap(void) {
     return stolen_sdram_heap;
 }
 
 //static inline void terminate(uint result_code) __attribute__((noreturn));
 //! \brief stops a binary dead, 1 way or another
 //! \param[in] result_code: to put in user 1
-void terminate(uint result_code) {
+void malloc_extras_terminate(uint result_code) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint core = spin1_get_core_id();
     sark_virtual_processor_info[core].user1 = result_code;
@@ -83,7 +83,7 @@ void terminate(uint result_code) {
 //! \param[in] ptr: the malloc pointer to check for memory overwrites
 //! \return true if nothing is broken, false if there was detected overwrites.
 //! \rtype: bool
-bool platform_check(void *ptr) {
+bool malloc_extras_check(void *ptr) {
     // only check if safety is turned on. else its not possible to check.
     if (safety) {
         int* int_pointer = (int*) ptr;
@@ -128,9 +128,9 @@ int malloc_extras_malloc_size(void *ptr) {
 void malloc_extras_check_marked(void *ptr, int marker) {
     // only check if safety turned on
     if (safety) {
-        if (!platform_check(ptr)) {
+        if (!malloc_extras_check(ptr)) {
             log_error("test failed with marker %d", marker);
-            terminate(DETECTED_MALLOC_FAILURE);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
     } else {
         log_error("check cannot operate with safety turned off.");
@@ -142,13 +142,13 @@ void malloc_extras_check_marked(void *ptr, int marker) {
 //! \param[in] marker: the numerical marker for this test. allowing easier
 //! tracking of where this check was called in the user application code
 //! (probably should be a string. but meh)
-void platform_check_all_marked(int marker) {
+void malloc_extras_check_all_marked(int marker) {
     // only check if safety turned on. else pointless.
     if (safety) {
         bool failed = false;
         for(int index = 0; index < malloc_points_size; index ++) {
             if (malloc_points[index] != 0) {
-                if (!platform_check(malloc_points[index])) {
+                if (!malloc_extras_check(malloc_points[index])) {
                     log_error("the malloc with index %d has overran", index);
                     log_error("this test is marked by marker %d", marker);
                     failed = true;
@@ -157,7 +157,7 @@ void platform_check_all_marked(int marker) {
         }
 
         if (failed) {
-            terminate(DETECTED_MALLOC_FAILURE);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
     } else {
         log_error("cannot do checks with safety turned off");
@@ -166,16 +166,15 @@ void platform_check_all_marked(int marker) {
 
 //! \brief checks all malloc's for overwrites with no marker. This does not
 //! \provide a easy marker to track back to the application user code.
-void platform_check_all(void) {
-    platform_check_all_marked(-1);
+void malloc_extras_check_all(void) {
+    malloc_extras_check_all_marked(-1);
 }
-
 
 //! \brief cycles through the true heap and figures how many blocks there are
 //! to steal.
 //! \param[in] sdram_heap: the true SDRAM heap
 //! \return the number of SDRAM blocks to utilise
-static inline int available_mallocs(heap_t *sdram_heap) {
+static inline int find_n_available_mallocs(heap_t *sdram_heap) {
     int n_available_true_malloc = 0;
     block_t *free_blk = sdram_heap->free;
 
@@ -203,20 +202,11 @@ static void build_malloc_tracker(void) {
     }
 }
 
-//! \brief update heap
-//! \param[in] heap_location: address where heap is location
-bool platform_new_heap_update(heap_t *heap_location) {
-    stolen_sdram_heap = heap_location;
-    if (malloc_points == NULL) {
-        build_malloc_tracker();
-    }
-    return true;
-}
-
 //! \brief count how much space available given expected block costs
 //! \param[in] sizes_region: the SDRAM loc where addresses to steal are located
 //! \return size available given expected block costs
-static inline uint free_space_available(available_sdram_blocks *sizes_region) {
+static inline uint find_free_space_available(
+        available_sdram_blocks *sizes_region) {
     uint free = 0;
     for (int index =0; index < sizes_region->n_blocks; index++) {
         free += sizes_region->blocks[index].size - sizeof(block_t);
@@ -229,6 +219,7 @@ static inline uint free_space_available(available_sdram_blocks *sizes_region) {
 //! \return true if successful. false otherwise
 static inline bool add_heap_to_collection(
         sdram_block *list_of_available_blocks) {
+
     // go through true heap and allocate and add to end of list.
     int position = 0;
 
@@ -387,7 +378,9 @@ bool malloc_extras_initialise_with_fake_heap(
     if (stolen_sdram_heap == NULL){
         stolen_sdram_heap = sv->sdram_heap;
     }
-    if (malloc_points == NULL) {
+
+    // only build tracker if not already built and its expected
+    if (malloc_points == NULL && safety) {
         build_malloc_tracker();
     }
     return true;
@@ -398,7 +391,7 @@ bool malloc_extras_initialise_with_fake_heap(
 //! otherwise its impossible to free the block properly.
 //! \param[in] sizes_region; the SDRAM address where the free regions exist
 //! \return None
-bool platform_new_heap_creation(
+bool malloc_extras_initialise_and_build_fake_heap(
         available_sdram_blocks *sizes_region) {
 
     // hard set stolen sdram heap to the default heap. in case no fake heap
@@ -416,7 +409,7 @@ bool platform_new_heap_creation(
     }
 
     // allocate blocks store for figuring out block order
-    uint n_mallocs = available_mallocs(sv->sdram_heap);
+    uint n_mallocs = find_n_available_mallocs(sv->sdram_heap);
     sdram_block *list_of_available_blocks = sark_alloc(
         n_mallocs * sizeof(sdram_block), 1);
 
@@ -445,7 +438,7 @@ bool platform_new_heap_creation(
     }
 
     // determine how much spare space there is.
-    stolen_sdram_heap->free_bytes = free_space_available(sizes_region);
+    stolen_sdram_heap->free_bytes = find_free_space_available(sizes_region);
 
     // go through true heap and allocate and add to end of list.
     bool success = add_heap_to_collection(list_of_available_blocks);
@@ -469,15 +462,15 @@ bool platform_new_heap_creation(
 }
 
 //! \brief builds a new heap with no stolen SDRAM and sets up the malloc
-//! tracker.
+//! tracker if required.
 //! \return bool where true is a successful initialisation and false otherwise.
 bool malloc_extras_initialise_no_fake_heap_data(void) {
-    return platform_new_heap_creation(NULL);
+    return malloc_extras_initialise_and_build_fake_heap(NULL);
 }
 
 //! \brief frees the SDRAM allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
-void safe_x_free_marked(void *ptr, int marker) {
+void malloc_extras_free_marked(void *ptr, int marker) {
     // only print if its currently set to print (saves iobuf)
     if(to_print) {
         log_info("freeing %x", ptr);
@@ -487,10 +480,10 @@ void safe_x_free_marked(void *ptr, int marker) {
     // only possible if safety been turned on
     int* int_pointer = (int*) ptr;
     if (safety) {
-        if (!platform_check(ptr)) {
+        if (!malloc_extras_check(ptr)) {
             log_error("over ran whatever is being freed");
             log_error("marker is %d", marker);
-            terminate(DETECTED_MALLOC_FAILURE);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
 
         bool found = false;
@@ -521,8 +514,8 @@ void safe_x_free_marked(void *ptr, int marker) {
 
 //! \brief frees a pointer without any marker for application code
 //! \param[in] ptr: the pointer to free.
-void safe_x_free(void *ptr) {
-    safe_x_free_marked(ptr, -1);
+void malloc_extras_free(void *ptr) {
+    malloc_extras_free_marked(ptr, -1);
 }
 
 //! \brief doubles the size of the SDRAM malloc tracker
@@ -618,7 +611,7 @@ static void add_safety_len_and_padding(int* p, uint bytes) {
 //! allocates more SDRAM to support buffers and size recordings.
 //! \parma[in] bytes: the number of bytes to allocate from SDRAM.
 //! \return the pointer to the location in SDRAM to use in application code.
-void * safe_sdram_malloc_wrapper(uint bytes) {
+void * malloc_extras_sdram_malloc_wrapper(uint bytes) {
 
     // if using safety. add the extra bytes needed for buffer and len.
     if (safety) {
@@ -646,7 +639,7 @@ void * safe_sdram_malloc_wrapper(uint bytes) {
 //! below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-void * safe_malloc(uint bytes) {
+void * malloc_extras_malloc(uint bytes) {
 
     if (safety) {
         bytes = bytes + EXTRA_BYTES;
@@ -687,7 +680,7 @@ void * safe_malloc(uint bytes) {
 /* this is commented out to stop utilising DTCM. if deemed safe, could be
  turned back on
 #define MALLOC safe_malloc*/
-#define MALLOC safe_sdram_malloc_wrapper
-#define FREE   safe_x_free
-#define FREE_MARKED safe_x_free_marked
-#define MALLOC_SDRAM safe_sdram_malloc_wrapper
+#define MALLOC malloc_extras_malloc
+#define FREE   malloc_extras_free
+#define FREE_MARKED malloc_extras_free_marked
+#define MALLOC_SDRAM malloc_extras_sdram_malloc_wrapper

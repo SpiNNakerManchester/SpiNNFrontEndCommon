@@ -21,8 +21,8 @@
 #include <sdp_no_scp.h>
 #include <circular_buffer.h>
 #include <data_specification.h>
+#include <malloc_extras.h>
 #include "common-typedefs.h"
-#include <platform.h>
 #include "common/routing_table.h"
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"
@@ -259,7 +259,7 @@ static inline int get_core_index_from_id(int processor_id) {
             return comp_core_index;
         }
     }
-    terminate(EXIT_FAIL);
+    malloc_extras_terminate(EXIT_FAIL);
     return 0;
 }
 
@@ -406,7 +406,7 @@ static inline filter_region_t* find_processor_bit_field_region(
 
     // if not found
     log_error("failed to find the right region. WTF");
-    terminate(EXIT_SWERR);
+    malloc_extras_terminate(EXIT_SWERR);
     return NULL;
 }
 
@@ -820,7 +820,7 @@ void handle_best_cleanup(void){
     uint core = spin1_get_core_id();
     sark_virtual_processor_info[core].user2 = best_search_point;
 
-    terminate(EXITED_CLEANLY);
+    malloc_extras_terminate(EXITED_CLEANLY);
 }
 
 
@@ -908,7 +908,7 @@ void carry_on_binary_search() {
                 log_error(
                     "failed to compress enough bitfields for threshold "
                     "percentage.");
-                terminate(EXIT_FAIL);
+                malloc_extras_terminate(EXIT_FAIL);
             }
             // passed QoS threshold
             found_best = true;
@@ -1139,12 +1139,12 @@ void sdp_handler(uint mailbox, uint port) {
                 log_info("data 0 = %d", msg->data[0]);
                 log_info("data 1 = %d", msg->data[1]);
                 log_info("data 2 = %d", msg->data[2]);
-                platform_check_all();
+                malloc_extras_check_all();
                 log_info("finished checkall");
                 rt_error(RTE_SWERR);
                 break;
             case COMPRESSION_RESPONSE:
-                platform_check_all();
+                malloc_extras_check_all();
 
                 // locate the compressor core id that responded
                 log_debug("response packet");
@@ -1251,7 +1251,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     log_info("read in bitfields");
     bool read_success = false;
-    platform_turn_off_print();
+    malloc_extras_turn_off_print();
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             &n_bf_addresses, region_addresses, &read_success);
     log_info("finished reading in bitfields");
@@ -1259,14 +1259,14 @@ void start_compression_process(uint unused0, uint unused1) {
     // check state
     if (bit_field_by_processor == NULL && !read_success){
         log_error("failed to read in bitfields, quitting");
-        terminate(EXIT_MALLOC);
+        malloc_extras_terminate(EXIT_MALLOC);
     }
 
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_the_uncompressed_attempt();
     if (!success){
         log_error("failed to set up uncompressed attempt");
-        terminate(EXIT_MALLOC);
+        malloc_extras_terminate(EXIT_MALLOC);
     }
 
     // check there are bitfields to merge, if not don't start search
@@ -1292,7 +1292,7 @@ void start_compression_process(uint unused0, uint unused1) {
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
         spin1_mode_restore(cpsr);
-        terminate(EXIT_MALLOC);
+        malloc_extras_terminate(EXIT_MALLOC);
         return;
     }
 
@@ -1304,7 +1304,7 @@ void start_compression_process(uint unused0, uint unused1) {
         if (bf_pointer == NULL) {
             log_info("failed at index %d", bit_field_index);
             spin1_mode_restore(cpsr);
-            terminate(RTE_SWERR);
+            malloc_extras_terminate(RTE_SWERR);
             return;
         }
 
@@ -1332,7 +1332,7 @@ void start_compression_process(uint unused0, uint unused1) {
     if (!success_start_binary_search) {
         log_error("failed to compress the routing table at all. Failing");
         spin1_mode_restore(cpsr);
-        terminate(EXIT_FAIL);
+        malloc_extras_terminate(EXIT_FAIL);
     }
     spin1_mode_restore(cpsr);
 
@@ -1456,7 +1456,8 @@ static bool initialise(void) {
 
     // build the fake heap for allocating memory
     log_info("setting up fake heap for sdram usage");
-    bool heap_creation = platform_new_heap_creation(usable_sdram_regions);
+    bool heap_creation = malloc_extras_initialise_and_build_fake_heap(
+            usable_sdram_regions);
     if (!heap_creation){
         log_error("failed to setup stolen heap");
         return false;
@@ -1495,7 +1496,7 @@ void c_main(void) {
     bool success_init = initialise();
     if (!success_init){
         log_error("failed to init");
-        terminate(EXIT_FAIL);
+        malloc_extras_terminate(EXIT_FAIL);
     }
 
     spin1_callback_on(SDP_PACKET_RX, sdp_handler, SDP_PRIORITY);

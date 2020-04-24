@@ -19,6 +19,7 @@
 #define __BIT_FIELD_READER_H__
 
 #include "helpful_functions.h"
+#include <malloc_extras.h>
 
 //! \brief reads in bitfields
 //! \param[in/out] n_bf_pointer: the pointer to store how many bf addresses
@@ -102,7 +103,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
                 filter_region->filters[bf_id].n_words;
             bit_field_by_processor[r_id].bit_field_addresses[bf_id].data =
                 filter_region->filters[bf_id].data;
-            platform_check_all();
+            malloc_extras_check_all();
         }
         log_debug("after populate");
     }

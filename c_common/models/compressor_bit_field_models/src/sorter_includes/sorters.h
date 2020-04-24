@@ -18,6 +18,8 @@
 #ifndef __SORTERS_H__
 #define __SORTERS_H__
 
+#include <malloc_extras.h>
+
 //! \brief sorter for redundant packet counts
 //! \param[in/out] proc_cov_by_bit_field: the array of struct to be sorted
 //! \param[in] length_of_internal_array: length of internal array

@@ -19,6 +19,7 @@
 #define __BIT_FIELD_SORTER_H__
 
 #include "sorters.h"
+#include <malloc_extras.h>
 
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
@@ -531,10 +532,10 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
         coverage[unique_redundant_index] = NULL;
     }
 
-    bool passed = platform_check(coverage);
+    bool passed = malloc_extras_check(coverage);
     if (! passed){
         log_error("failed");
-        terminate(2);
+        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
     }
 
     // go through the unique x redundant packets and build the list of
@@ -549,10 +550,10 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
         _coverage_t *element = MALLOC(sizeof(_coverage_t));
 
         // update the redundant packet pointer
-        passed = platform_check(coverage);
+        passed = malloc_extras_check(coverage);
         if (! passed){
             log_error("failed");
-            terminate(2);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
 
         coverage[unique_redundant_index] = element;
@@ -564,20 +565,20 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
         }
 
         // update the redundant packet pointer
-        platform_check_all();
-        passed = platform_check(coverage);
+        malloc_extras_check_all();
+        passed = malloc_extras_check(coverage);
         if (! passed){
             log_error("failed");
-            terminate(2);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
 
         // update the number of redundant packets for this coverage
         coverage[unique_redundant_index]->n_redundant_packets =
             unique_redundant_packets[unique_redundant_index];
-        passed = platform_check(coverage);
+        passed = malloc_extras_check(coverage);
         if (! passed){
             log_error("failed");
-            terminate(2);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
 
         // search to see how long the list is going to be.
@@ -602,10 +603,10 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
         coverage[unique_redundant_index]->length_of_list =
             n_bf_with_same_r_packets;
 
-        passed = platform_check(coverage);
+        passed = malloc_extras_check(coverage);
         if (! passed){
             log_error("failed");
-            terminate(2);
+            malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
         }
 
         // malloc list size for these addresses of bitfields with same
@@ -682,22 +683,22 @@ static inline _coverage_t** create_coverage_by_redundant_packet(
                     processor_i += 1;
                     log_debug("updated processor_i to %d", processor_i);
 
-                    passed = platform_check(coverage);
+                    passed = malloc_extras_check(coverage);
                     if (! passed){
                         log_error("failed");
-                        terminate(2);
+                        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
                     }
-                    passed = platform_check(
+                    passed = malloc_extras_check(
                         coverage[unique_redundant_index]->processor_ids);
                     if (! passed){
                         log_error("failed");
-                        terminate(2);
+                        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
                     }
-                    passed = platform_check(
+                    passed = malloc_extras_check(
                         coverage[unique_redundant_index]->bit_field_addresses);
                     if (! passed){
                         log_error("failed");
-                        terminate(2);
+                        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
                     }
                 }
             }

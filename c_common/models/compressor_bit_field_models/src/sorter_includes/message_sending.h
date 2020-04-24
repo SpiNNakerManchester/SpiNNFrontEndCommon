@@ -18,7 +18,7 @@
 #ifndef __MESSAGE_SENDING_H__
 #define __MESSAGE_SENDING_H__
 
-#include <platform.h>
+#include <malloc_extras.h>
 #include "../common/constants.h"
 
 //! how many tables the uncompressed router table entries is
@@ -51,7 +51,7 @@ void message_sending_send_sdp_message(
             log_debug("failed to send. trying again");
             if (attempt >= 30) {
                 rt_error(RTE_SWERR);
-                terminate(EXIT_FAIL);
+                malloc_extras_terminate(EXIT_FAIL);
             }
         }
 
@@ -127,7 +127,7 @@ static void set_up_packet(
 
     // fill in
     data->command_code = START_DATA_STREAM;
-    data->fake_heap_data = platform_get_stolen_heap();
+    data->fake_heap_data = malloc_extras_get_stolen_heap();
     data->table_data = data_store;
     my_msg->length = (LENGTH_OF_SDP_HEADER + sizeof(start_sdp_packet_t));
 }
@@ -153,7 +153,7 @@ static int select_compressor_core_index(
     }
 
     log_error("cant find a core to allocate to you");
-    terminate(EXIT_FAIL);
+    malloc_extras_terminate(EXIT_FAIL);
     return 0;
 }
 
