@@ -403,8 +403,17 @@ bool platform_new_heap_creation(
 
     // hard set stolen sdram heap to the default heap. in case no fake heap
     stolen_sdram_heap = sv->sdram_heap;
-    build_malloc_tracker();
-    return true;
+
+    /* if planning to track all mallocs and frees to verify no
+     overwrites/corruption. build the initial malloc tracker*/
+    if (safety) {
+        build_malloc_tracker();
+    }
+
+    // only build the fake heap if there's bits to build with
+    if (sizes_region == NULL) {
+        return true;
+    }
 
     // allocate blocks store for figuring out block order
     uint n_mallocs = available_mallocs(sv->sdram_heap);
