@@ -293,7 +293,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
             sorted_bit_fields->sort_order[index]
             );
     }
-
+    sorted_bit_fields->n_bit_fields = n_bf_addresses;
     return sorted_bit_fields;
 }
 

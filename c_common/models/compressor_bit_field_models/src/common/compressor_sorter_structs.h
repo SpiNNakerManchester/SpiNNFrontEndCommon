@@ -126,6 +126,7 @@ typedef struct sorted_bit_fields_t{
     //! list of bitfield associated processor ids. sorted order based off best
     //! effort linked to sorted_bit_fields, but separate to avoid sdram
     //! rewrites
+    int n_bit_fields;
     int* processor_ids;
     //! the list of bitfields in sorted order based off best effect.
     filter_info_t** bit_fields;
