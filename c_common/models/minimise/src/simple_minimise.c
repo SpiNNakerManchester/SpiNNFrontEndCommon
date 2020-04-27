@@ -18,7 +18,7 @@
 #include <spin1_api.h>
 #include <debug.h>
 #include <common-typedefs.h>
-#include "platform.h"
+#include <malloc_extras.h>
 #include "unordered_remove_default_routes.h"
 #include "minimise.h"
 /*****************************************************************************/

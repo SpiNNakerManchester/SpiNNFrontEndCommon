@@ -123,6 +123,8 @@ typedef struct compressor_cores_region_data_t{
 
 //! \brief holder for the bitfield addresses and the processor ids
 typedef struct sorted_bit_fields_t{
+    //! len of the arrays
+    int n_bit_fields;
     //! list of bitfield associated processor ids. sorted order based off best
     //! effort linked to sorted_bit_fields, but separate to avoid sdram
     //! rewrites

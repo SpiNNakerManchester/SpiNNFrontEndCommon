@@ -328,7 +328,7 @@ bool remove_merged_bitfields_from_cores(void) {
                     // write the data in the current write positions, if it
                     // isn't where we're currently reading from
                     if (write_index != read_index) {
-                        // copy the key, n_words and bitfield pointer over to
+                        // copy the key, n_atoms and bitfield pointer over to
                         // the new location
                         sark_mem_cpy(
                             write_index, read_index, sizeof(filter_info_t));
@@ -358,41 +358,92 @@ bool remove_merged_bitfields_from_cores(void) {
 
 //! \brief locates the next valid midpoint to test
 //! \return int which is the midpoint or -1 if no midpoints left
-int locate_next_mid_point() {
+int locate_next_mid_point(void) {
     int new_mid_point;
-    if (n_bf_addresses == 0){
+    if (n_bf_addresses == 0) {
         return -1;
     }
+
+    // if not tested yet, test all
     if (!bit_field_test(tested_mid_points, n_bf_addresses)){
         new_mid_point = n_bf_addresses;
-    } else {
-        log_info("n_bf_addresses %d tested_mid_points %d", n_bf_addresses, bit_field_test(tested_mid_points, n_bf_addresses));
-        int best_end = -1;
-        int best_length = 0;
-        int current_length = 0;
-        // check lowest_failure (false) to triggers a final else block
-        log_info("best_success %d lowest_failure %d", best_success, lowest_failure);
-        for (int index = best_success + 1; index <= lowest_failure; index++) {
-            log_debug("index: %d, value: %u current_length: %d", index, bit_field_test(tested_mid_points, index), current_length);
-            if (bit_field_test(tested_mid_points, index)){
-               if (current_length > best_length){
-                    best_length = current_length;
-                    best_end = index - 1;
-                    log_debug("found best_length: %d best_end %d", best_length, best_end);
-                    current_length = 0;
-               } else {
-                    log_debug("not best: %d best_end %d", best_length, best_end);
-               }
-            } else {
-               current_length+= 1;
-            }
-        }
-        // use the best less half (shifted) of the best length
-        new_mid_point = best_end - (best_length >> 1);
+        bit_field_set(tested_mid_points, new_mid_point);
+        return new_mid_point;
     }
-    if (new_mid_point >= 0){
+
+    // need to find a midpoint
+    log_debug(
+        "n_bf_addresses %d tested_mid_points %d",
+        n_bf_addresses, bit_field_test(tested_mid_points, n_bf_addresses));
+
+    // the last point of the longest space
+    int best_end = -1;
+
+    // the length of the longest space to test
+    int best_length = 0;
+
+    // the current length of the currently detected space
+    int current_length = 0;
+
+    log_debug(
+        "best_success %d lowest_failure %d", best_success, lowest_failure);
+
+    // iterate over the range to binary search, looking for biggest block to
+    // explore, then take the middle of that block
+
+    // NOTE: if there are no available bitfields, this will result in best end
+    // being still set to -1, as every bit is set, so there is no blocks with
+    // any best length, and so best end is never set and lengths will still be
+    // 0 at the end of the for loop. -1 is a special midpoint which higher
+    // code knows to recognise as no more exploration needed.
+    for (int index = best_success + 1; index <= lowest_failure; index++) {
+        log_debug(
+            "index: %d, value: %u current_length: %d",
+            index, bit_field_test(tested_mid_points, index),
+            current_length);
+
+        // verify that the index has been used before
+        if (bit_field_test(tested_mid_points, index)) {
+
+           // if used before and is the end of the biggest block seen so far.
+           // Record and repeat.
+           if (current_length > best_length) {
+                best_length = current_length;
+                best_end = index - 1;
+                log_debug(
+                    "found best_length: %d best_end %d",
+                    best_length, best_end);
+           // if not the end of the biggest block, ignore (log for debugging)
+           } else {
+                log_debug(
+                    "not best: %d best_end %d", best_length, best_end);
+           }
+           // if its seen a set we're at the end of a block. so reset the
+           // current block len, as we're about to start another block.
+           current_length = 0;
+        // not set, so still within a block, increase len.
+        } else {
+           current_length += 1;
+        }
+    }
+
+    // use the best less half (shifted) of the best length
+    new_mid_point = best_end - (best_length >> 1);
+    log_debug("returning mid point %d", new_mid_point);
+
+    // set the mid point to be tested. (safe as we de-set if we fail later on)
+    if (new_mid_point >= 0) {
+        log_debug("setting new mid point %d", new_mid_point);
+
+        // just a safety check, as this has caught us before.
+        if (bit_field_test(tested_mid_points, new_mid_point)){
+            log_info("HOW THE HELL DID YOU GET HERE!");
+            malloc_extras_terminate(EXIT_SWERR);
+        }
+        // set the tracker.
         bit_field_set(tested_mid_points, new_mid_point);
     }
+
     return new_mid_point;
 }
 
@@ -406,7 +457,7 @@ void handle_best_cleanup(void){
 
     // clear away bitfields that were merged into the router from
     //their lists.
-    log_debug("remove merged bitfields");
+    log_info("remove merged bitfields");
     remove_merged_bitfields_from_cores();
 
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
@@ -490,7 +541,7 @@ void carry_on_binary_search() {
     log_info("available with midpoint %d", mid_point);
     if (mid_point < 0) {
         // Ok lets turn all ready cores off as done.
-        // At least defualt no bitfeild handled elsewhere so safe here.
+        // At least default no bitfield handled elsewhere so safe here.
         for (int core_index = 0; core_index < N_CORES; core_index++) {
             if (core_status[core_index] == DOING_NOWT) {
                 core_status[core_index] = DO_NOT_USE;
@@ -502,10 +553,10 @@ void carry_on_binary_search() {
         return;
     }
     int core_index = find_compressor_core(mid_point);
-    log_info("start create at timestep: %u", timesteps);
+    log_debug("start create at timestep: %u", timesteps);
     bool success = create_tables_and_set_off_bit_compressor(
         mid_point, core_index);
-    log_info("end create at timestep: %u", timesteps);
+    log_debug("end create at timestep: %u", timesteps);
     if (!success) {
         // Ok lets turn this and all ready cores off to save space.
         // At least defualt no birfeild handled elsewhere so of to reduce.
@@ -521,7 +572,7 @@ void carry_on_binary_search() {
     }
     log_debug("done carry_on_binary_search");
     //log_core_status();    //spin1_mode_restore(cpsr);
-    platform_check_all_marked(1002);
+    malloc_extras_check_all_marked(1002);
 }
 
 //! \brief timer interrupt for controlling time taken to try to compress table
@@ -544,7 +595,8 @@ void process_failed(int midpoint){
     log_info("lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
     if (lowest_failure > midpoint){
         lowest_failure = midpoint;
-        log_info("Now lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
+        log_info(
+            "Now lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
     }
     // tell all compression cores trying midpoints above this one
     // to stop, as its highly likely a waste of time.
@@ -566,8 +618,8 @@ void process_compressor_response(int core_index, int finished_state) {
 
     // safety check to ensure we dont go on if the uncompressed failed
     if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION){
-        log_error("The no bitfeilds attempted failed! Giving up");
-        terminate(EXIT_FAIL);
+        log_error("The no bitfields attempted failed! Giving up");
+        malloc_extras_terminate(EXIT_FAIL);
     }
 
     // free the core for future processing
@@ -580,7 +632,7 @@ void process_compressor_response(int core_index, int finished_state) {
 
         if (best_success <= mid_point){
             best_success = mid_point;
-            log_debug(
+            log_info(
                 "copying to %x from %x for compressed table",
                 last_compressed_table,
                 cores_bf_tables[core_index].compressed_table);
@@ -621,7 +673,7 @@ void process_compressor_response(int core_index, int finished_state) {
             "failed by time from core %d doing mid point %d",
             core_index, mid_point);
         process_failed(mid_point);
-    } else if (finished_state == FORCED_BY_COMPRESSOR_CONTROL){
+    } else if (finished_state == FORCED_BY_COMPRESSOR_CONTROL) {
         log_info(
             "ack from forced from core %d doing mid point %d",
             core_index, mid_point);
@@ -704,7 +756,7 @@ void sdp_handler(uint mailbox, uint port) {
                 store = store | finished_state;
 
                 // store holder
-                log_info(
+                log_debug(
                     "finished state %d, index %d, store %d",
                     finished_state, core_index, store);
                 circular_buffer_add(sdp_circular_queue, store);
@@ -779,7 +831,7 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    platform_turn_off_print();
+    malloc_extras_turn_off_print();
 
     //TODO REMOVE
     log_info("OLD read in bitfields");
@@ -809,7 +861,6 @@ void start_compression_process(uint unused0, uint unused1) {
     log_info("finished reading bitfields at timestep: %d", timesteps);
 
     set_up_tested_mid_points();
-    //platform_turn_on_print();
 
     //TODO: safety code to be removed
     for (int bit_field_index = 0; bit_field_index < n_bf_addresses;
@@ -840,6 +891,10 @@ static void initialise_user_register_tracker(void) {
         (data_specification_metadata_t *) this_vcpu_info->user0;
     uncompressed_router_table =
         (uncompressed_table_region_data_t *) this_vcpu_info->user1;
+
+
+    sort_table_by_key(&uncompressed_router_table->uncompressed_table);
+
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
     usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
 

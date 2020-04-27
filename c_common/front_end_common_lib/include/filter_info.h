@@ -22,7 +22,7 @@ typedef struct filter_info_t{
     // bit field master pop key
     uint32_t key;
     // n words representing the bitfield
-    int n_words;
+    uint32_t n_atoms;
     // the words of the bitfield
     bit_field_t data;
 } filter_info_t;
