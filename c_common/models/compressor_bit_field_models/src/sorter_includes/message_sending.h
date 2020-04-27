@@ -220,7 +220,6 @@ static bool message_sending_set_off_bit_field_compression(
 
     // update sdp to right destination
     update_mc_message(comp_core_index, my_msg, compressor_cores);
-
     // send sdp packet
     message_sending_send_sdp_message(
         my_msg, compressor_cores[comp_core_index]);

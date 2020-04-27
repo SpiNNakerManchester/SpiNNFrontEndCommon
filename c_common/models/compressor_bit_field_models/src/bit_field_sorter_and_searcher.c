@@ -1251,7 +1251,6 @@ void start_compression_process(uint unused0, uint unused1) {
 
     log_info("read in bitfields");
     bool read_success = false;
-    malloc_extras_turn_off_print();
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
             &n_bf_addresses, region_addresses, &read_success);
     log_info("finished reading in bitfields");
@@ -1287,7 +1286,6 @@ void start_compression_process(uint unused0, uint unused1) {
     sorted_bit_fields = bit_field_sorter_sort(
         n_bf_addresses, region_addresses, bit_field_by_processor);
     log_info("finished sorting bitfields");
-    //platform_turn_on_print();
 
     if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, failing");
@@ -1422,7 +1420,7 @@ bool initialise_compressor_cores(void) {
     // compressor to solve transmission faffs)
     log_info("malloc for table trackers");
     comp_cores_bf_tables =
-        MALLOC(n_compression_cores * sizeof(comp_core_store_t));
+        MALLOC_SDRAM(n_compression_cores * sizeof(comp_core_store_t));
     if (comp_cores_bf_tables == NULL) {
         log_error(
             "failed to allocate memory for the holding of bitfield "

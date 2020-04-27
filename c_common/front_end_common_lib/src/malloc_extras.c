@@ -30,7 +30,8 @@ bool safety = true;
 bool to_print = false;
 
 //! \brief use DTCM at all?
-bool use_dtcm = false;
+//! NOTE: ONLY TURN THIS ON IF YOUR SURE STACK OVERFLOWS WILL NOT HAPPEN
+bool use_dtcm = true;
 
 //============================================================================
 //! global variables
@@ -502,13 +503,16 @@ void malloc_extras_free_marked(void *ptr, int marker) {
         if (found && to_print) {
             log_info("freeing index %d", index);
         }
+
+        // shift pointer if in safety
+        int_pointer = int_pointer - 1;
     }
 
     // if safe to free, free from the correct heap based off position.
     if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
-        sark_xfree(sark.heap, int_pointer - 1, ALLOC_LOCK);
+        sark_xfree(sark.heap, int_pointer, ALLOC_LOCK);
     } else {
-        sark_xfree(stolen_sdram_heap, int_pointer - 1, ALLOC_LOCK);
+        sark_xfree(stolen_sdram_heap, int_pointer, ALLOC_LOCK);
     }
 }
 
@@ -676,11 +680,3 @@ void * malloc_extras_malloc(uint bytes) {
     // if no safety, the point is the point used by the application code.
     return (void *) p;
 }
-
-/* this is commented out to stop utilising DTCM. if deemed safe, could be
- turned back on
-#define MALLOC safe_malloc*/
-#define MALLOC malloc_extras_malloc
-#define FREE   malloc_extras_free
-#define FREE_MARKED malloc_extras_free_marked
-#define MALLOC_SDRAM malloc_extras_sdram_malloc_wrapper
