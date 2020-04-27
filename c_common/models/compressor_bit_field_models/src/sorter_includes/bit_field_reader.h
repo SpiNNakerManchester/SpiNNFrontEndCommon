@@ -29,19 +29,10 @@
 //! successfully or not
 //! \return bool that states if it succeeded or not.
 bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
-        int* n_bf_pointer, region_addresses_t *region_addresses,
-        bool* success){
+        region_addresses_t *region_addresses){
 
-    // count how many bitfields there are in total
-    *n_bf_pointer = 0;
     int n_pairs_of_addresses = region_addresses->n_pairs;
     log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
-
-    if (n_pairs_of_addresses == 0) {
-        log_debug("no bitfields to read in, so just return");
-        *success = true;
-        return NULL;
-    }
 
     // malloc the bt fields by processor
     bit_field_by_processor_t* bit_field_by_processor = MALLOC(
@@ -51,6 +42,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
                   "might as well give up");
         return NULL;
     }
+    malloc_extras_check_all_marked(4001);
 
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
@@ -65,14 +57,14 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
 
         // locate data for malloc memory calcs
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
-        log_debug("bit_field_region = %x", filter_region);
+        log_debug("r_id = %d, bit_field_region = %x", r_id, filter_region);
 
         int core_n_filters = filter_region->n_filters;
         log_debug("there are %d core bit fields", core_n_filters);
-        *n_bf_pointer += core_n_filters;
 
         // track lengths
         bit_field_by_processor[r_id].length_of_list = core_n_filters;
+        malloc_extras_check_all_marked(4002);
         log_debug(
             "bit field by processor with region %d, has length of %d",
             r_id, core_n_filters);
@@ -86,6 +78,7 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
             bit_field_by_processor[r_id].bit_field_addresses =
                 MALLOC_SDRAM(core_n_filters * sizeof(filter_info_t));
             log_debug("after malloc");
+            malloc_extras_check_all_marked(4003);
             if (bit_field_by_processor[r_id].bit_field_addresses == NULL) {
                 log_error(
                     "failed to allocate memory for bitfield addresses for "
@@ -103,12 +96,11 @@ bit_field_by_processor_t* bit_field_reader_read_in_bit_fields(
                 filter_region->filters[bf_id].n_words;
             bit_field_by_processor[r_id].bit_field_addresses[bf_id].data =
                 filter_region->filters[bf_id].data;
-            malloc_extras_check_all();
+            malloc_extras_check_all_marked(4004);
         }
         log_debug("after populate");
     }
 
-    *success = true;
     return bit_field_by_processor;
 }
 

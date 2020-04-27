@@ -29,7 +29,7 @@
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
 #include "sorter_includes/bit_field_reader.h"
-#include "sorter_includes/bit_field_sorter.h"
+#include "sorter_includes/bit_field_creator.h"
 #include "sorter_includes/message_sending.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control core.
@@ -39,9 +39,13 @@
  */
 
 //============================================================================
+//! #defines and enums
 
 //! \brief time step for safety timer tick interrupt
-#define TIME_STEP 10000
+#define TIME_STEP 10
+
+//! \brief After how many timesteps to kill the process
+#define KILL_TIME 200000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
@@ -54,10 +58,14 @@
 
 //! \brief callback priorities
 typedef enum priorities{
-    COMPRESSION_START_PRIORITY = 3, SDP_PRIORITY = -1, TIMER_TICK_PRIORITY = 2
+    COMPRESSION_START_PRIORITY = 3, SDP_PRIORITY = -1, TIMER_TICK_PRIORITY = 0
 }priorities;
 
 //============================================================================
+//! global params
+
+//! \brief counter of how many timesteps have passed
+uint32_t timesteps = 0;
 
 //! \brief bool flag for saying found the best stopping position
 volatile bool found_best = false;
@@ -71,11 +79,17 @@ uint32_t finish_compression_flag = 0;
 //! \brief easier programming tracking of the user registers
 uncompressed_table_region_data_t *uncompressed_router_table; // user1
 
-//! \brief
+//! \brief stores the locations of bitfields from app cores
 region_addresses_t *region_addresses; // user2
 
-//! \brief
+//! \brief stores of sdram blocks the fake heap can use
 available_sdram_blocks *usable_sdram_regions; // user3
+
+// Best midpoint that record a success
+int best_success = -1;
+
+// Lowest midpoint that record failure
+int lowest_failure;
 
 //! \brief best routing table position in the search
 int best_search_point = 0;
@@ -89,30 +103,18 @@ table_t* last_compressed_table;
 //! \brief the compressor app id
 uint32_t app_id = 0;
 
-// \brief how many bitfields there are
-int n_bf_addresses = 0;
-
 //! \brief the list of bitfields in sorted order based off best effect, and
 //! processor ids.
 sorted_bit_fields_t* sorted_bit_fields;
 
 // \brief the list of compressor cores to bitfield routing table sdram addresses
-comp_core_store_t* comp_cores_bf_tables;
-
-//! \brief list of processor ids which will be running the compressor binary
-int* compressor_cores;
-
-//! \brief how many compression cores there are
-int n_compression_cores;
-
-//! \brief how many compression cores are available
-int n_available_compression_cores;
+comp_core_store_t* cores_bf_tables;
 
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
-//! \brief stores which mid points have successes or failed
-bit_field_t mid_points_successes;
+//! tracker for what each compressor core is doing (in terms of midpoints)
+int* core_status;
 
 //! \brief tracker for what each compressor core is doing (in terms of midpoints)
 int* comp_core_mid_point;
@@ -165,117 +167,51 @@ bool load_routing_table_into_router(void) {
 //! attempt
 //! \param[in] processor_id: the processor to force stop compression attempt
 //! \return bool saying successfully sent the message
-void send_sdp_force_stop_message(int compressor_core_index){
+void send_sdp_force_stop_message(int core_index){
     // set message params
     log_debug(
-        "sending stop to core %d", compressor_cores[compressor_core_index]);
-    my_msg.dest_port =
-        (RANDOM_PORT << PORT_SHIFT) | compressor_cores[compressor_core_index];
+        "sending stop to core %d", core_index);
+    my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | core_index;
     compressor_payload_t* data = (compressor_payload_t*) &my_msg.data;
     data->command = STOP_COMPRESSION_ATTEMPT;
     my_msg.length = LENGTH_OF_SDP_HEADER + sizeof(command_codes_for_sdp_packet);
 
     // send sdp packet
-    message_sending_send_sdp_message(
-        &my_msg, compressor_cores[compressor_core_index]);
-}
-
-//! \brief returns the best mid point tested to date. NOTE its only safe to call
-//! this after the first attempt finished. which is acceptable
-//! \return the best bf midpoint tested and success
-int best_mid_point_to_date(void) {
-    // go backwards to find the first passed value
-    for (int n_bf = n_bf_addresses; n_bf >= 0; n_bf --) {
-        if (bit_field_test(mid_points_successes, n_bf)) {
-            log_debug("returning %d", n_bf);
-            return n_bf;
-        }
-    }
-    // not officially correct, but best place to start search from
-    //if no other value has worked. and as the 0 fails will force a complete
-    //failure. safe
-    return 0;
+    message_sending_send_sdp_message(&my_msg, core_index);
 }
 
 //! \brief sets up the search bitfields.
 //! \return bool saying success or failure of the setup
-bool set_up_search_bitfields(void) {
-    // if there's no bitfields to read, then just set stuff to NULL. let that
-    // be the check in future usages for this path.
-    if (n_bf_addresses == 0){
-        tested_mid_points = NULL;
-        mid_points_successes = NULL;
-        return true;
-    }
-
-    log_info("n bf addresses is %d", n_bf_addresses);
+bool set_up_tested_mid_points(void) {
+    log_info("set_up_tested_mid_point n bf addresses is %d", n_bf_addresses);
     uint32_t words = get_bit_field_size(n_bf_addresses + ADD_INCLUSIVE_BIT);
     if (tested_mid_points == NULL) {
         tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
     }
-    if (mid_points_successes == NULL){
-        mid_points_successes = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
-    }
-
     // check the malloc worked
     if (tested_mid_points == NULL) {
-        return false;
-    }
-    if (mid_points_successes == NULL) {
-        FREE(tested_mid_points);
         return false;
     }
 
     // clear the bitfields
     clear_bit_field(tested_mid_points, words);
-    clear_bit_field(mid_points_successes, words);
 
     // return if successful
     return true;
 }
 
-
-//! \brief counts how many cores are actually doing something.
-//! \return the number of compressor cores doing something at the moment.
-
-int count_many_on_going_compression_attempts_are_running(void) {
-    int count = 0;
-    for (int c_core_index = 0; c_core_index < n_compression_cores;
-            c_core_index++) {
-        if (comp_core_mid_point[c_core_index] != DOING_NOWT) {
-            count ++;
-        }
-    }
-    return count;
-}
-
-//! \brief locate the core index for this processor id.
-//! \param[in] processor_id: the processor id to find index for.
-//! \return the index in the compressor cores for this processor id
-static inline int get_core_index_from_id(int processor_id) {
-    for (int comp_core_index = 0; comp_core_index < n_compression_cores;
-            comp_core_index++) {
-        if (compressor_cores[comp_core_index] == processor_id) {
-            return comp_core_index;
-        }
-    }
-    malloc_extras_terminate(EXIT_FAIL);
-    return 0;
-}
-
 //! builds tables and tries to set off a compressor core based off midpoint
 //! \param[in] mid_point: the mid point to start at
+//! \param[in] core_index: the core/processor to run the compression on
 //! \return bool fag if it fails for memory issues
-
-bool create_tables_and_set_off_bit_compressor(int mid_point) {
+bool create_tables_and_set_off_bit_compressor(int mid_point, int core_index) {
     int n_rt_addresses = 0;
-    log_debug("started create bit field router tables");
+    //log_info("started create bit field router tables");
     table_t **bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
             mid_point, &n_rt_addresses, region_addresses,
             uncompressed_router_table, bit_field_by_processor,
             sorted_bit_fields);
-
     if (bit_field_routing_tables == NULL){
         log_info(
             "failed to create bitfield tables for midpoint %d", mid_point);
@@ -284,12 +220,11 @@ bool create_tables_and_set_off_bit_compressor(int mid_point) {
 
     log_debug("finished creating bit field router tables");
 
+    malloc_extras_check_all_marked(1001);
     // if successful, try setting off the bitfield compression
     bool success = message_sending_set_off_bit_field_compression(
-        n_rt_addresses, mid_point, comp_cores_bf_tables,
-        bit_field_routing_tables, &my_msg, compressor_cores,
-        n_compression_cores, comp_core_mid_point,
-        &n_available_compression_cores);
+        n_rt_addresses, mid_point, cores_bf_tables, bit_field_routing_tables,
+        &my_msg, core_index);
 
     // if successful, move to next search point.
     if (!success){
@@ -300,92 +235,6 @@ bool create_tables_and_set_off_bit_compressor(int mid_point) {
         return true;
     }
 }
-
-//! \brief try running compression on just the uncompressed (attempt to check
-//!     that without bitfields compression will work).
-//! \return bool saying success or failure of the compression
-bool start_binary_search(void){
-
-    // if there's only there's no available, but cores still attempting. just
-    // return. it'll bounce back when a response is received
-    if (n_available_compression_cores == 0 &&
-            count_many_on_going_compression_attempts_are_running() > 0) {
-        log_debug(
-            "not got any extra cores, but cores are running. so waiting "
-            "for their responses");
-        return true;
-    }
-
-    // deduce how far to space these testers
-    int hops_between_compression_cores =
-        n_bf_addresses / n_available_compression_cores;
-    int multiplier = 1;
-
-    // safety check for floored to 0.
-    if (hops_between_compression_cores == 0) {
-        hops_between_compression_cores = 1;
-    }
-
-    log_info("n_bf_addresses is %d", n_bf_addresses);
-    log_debug(
-        "n available compression cores is %d", n_available_compression_cores);
-    log_debug("hops between attempts is %d", hops_between_compression_cores);
-
-    bool failed_to_malloc = false;
-    int new_mid_point = hops_between_compression_cores * multiplier;
-
-    for (int index = 0; index < n_bf_addresses; index++) {
-        log_debug(
-            "sorted bitfields address at index %d is %x",
-            index, sorted_bit_fields->bit_fields[index]);
-        log_debug(
-            "sorted bitfield processor at index %d is %d",
-            index, sorted_bit_fields->processor_ids[index]);
-    }
-
-
-
-    // iterate till either ran out of cores, or failed to malloc sdram during
-    // the setup of a core or when gone too far
-    while ((n_available_compression_cores != 0) && !failed_to_malloc &&
-            (new_mid_point <= n_bf_addresses)) {
-        log_debug("next mid point to consider = %d", new_mid_point);
-
-        bool success = create_tables_and_set_off_bit_compressor(new_mid_point);
-        if (success) {
-            multiplier++;
-        }
-        else {
-            log_info(
-                "failed to malloc when setting up compressor with multiplier"
-                " %d", multiplier);
-            failed_to_malloc = true;
-        }
-
-        //update to next new mid point
-        new_mid_point = hops_between_compression_cores * multiplier;
-    }
-
-    log_debug("finished the start of compression core allocation");
-
-    // if it did not set off 1 compression. fail fully. coz it wont ever get
-    // anything done. host will pick up the slack
-    if (multiplier == 1) {
-        log_info("failed at first bitfield");
-        return false;
-    }
-
-    // set off at least one compression, but at some point failed to malloc
-    // sdram. assume this is the cap on how many cores can be ran at any
-    // given time
-    if (failed_to_malloc) {
-        n_available_compression_cores = 0;
-    }
-
-    // say we've started
-    return true;
-}
-
 
 //! \brief finds the region id in the region addresses for this processor id
 //! \param[in] processor_id: the processor id to find the region id in the
@@ -414,7 +263,6 @@ static inline filter_region_t* find_processor_bit_field_region(
 //! \param[in] sorted_bf_key_proc: the key store
 //! \param[in] key: the key to locate a entry for
 //! \return true if found, false otherwise
-
 bool has_entry_in_sorted_keys(
         proc_bit_field_keys_t sorted_bf_key_proc, uint32_t key) {
     for (int element_index = 0;
@@ -434,7 +282,6 @@ bool has_entry_in_sorted_keys(
 //! \brief removes the merged bitfields from the application cores bitfield
 //!        regions
 //! \return bool if was successful or not
-
 bool remove_merged_bitfields_from_cores(void) {
     // only try if there are bitfields to remove
     if (n_bf_addresses == 0){
@@ -504,312 +351,58 @@ bool remove_merged_bitfields_from_cores(void) {
         }
     }
 
-
     FREE(sorted_bf_key_proc);
     // return we successfully removed merged bitfields
     return true;
 }
 
-//! \brief tells ya if a compressor is already doing a mid point
-//! \param[in] mid_point: the mid point to look for
-//! \return bool saying true if there is a compressor running this right now
-
-bool already_being_processed(int mid_point) {
-
-    for (int c_index = 0; c_index < n_compression_cores; c_index++) {
-        log_debug(
-            "midpoint for c %d is %d. compared to %d",
-            c_index, comp_core_mid_point[c_index], mid_point);
-        if (comp_core_mid_point[c_index] == mid_point) {
-            return true;
-        }
+//! \brief locates the next valid midpoint to test
+//! \return int which is the midpoint or -1 if no midpoints left
+int locate_next_mid_point() {
+    int new_mid_point;
+    if (n_bf_addresses == 0){
+        return -1;
     }
-    return false;
-}
-
-//! \brief returns the next midpoint which has been tested
-//! \param[in] mid_point: the midpoint to start from.
-//! \return the next tested bf midpoint from midpoint
-
-int next_tested_mid_point_from(int mid_point) {
-     for (int n_bf = mid_point + ADD_INCLUSIVE_BIT;
-            n_bf < n_bf_addresses; n_bf++) {
-        if (bit_field_test(tested_mid_points, n_bf)) {
-            log_debug("returns %d", n_bf);
-            return n_bf;
-        }
-    }
-    return n_bf_addresses;
-}
-
-//! \brief checks if there's anything higher to find
-//! \param[in] point: the point to look from
-//! \param[in] next_tested_point: top level to search to.
-//! \return bool stating if theres owt to find
-
-bool is_there_higher_points(int point, int next_tested_point){
-    // if the diff between the best tested and next tested is 1, then the
-    // best is the overall best
-    if (next_tested_point - point == 1 && bit_field_test(
-            tested_mid_points, next_tested_point)) {
-        found_best = true;
-        log_info("found best by no higher point");
-        return false;
-    }
-    return true;
-}
-
-//! \brief how many to track
-//! \param[in] point: the point to look from
-//! \param[in] next_tested_point: top level to search to.
-//! \return how many compressors are running between these values.
-
-int how_many_are_executing_between_these_points(
-        int next_tested_point, int point) {
-    int length = 1;
-    int low_end = next_tested_point;
-    int high_end = point;
-
-    // switch if in the wrong way around for the loop
-    if (point < next_tested_point){
-        low_end = point;
-        high_end = next_tested_point;
-    }
-
-    log_debug("going from %d to %d", low_end, high_end);
-    for (int n_bf = low_end; n_bf <= high_end; n_bf++) {
-        log_debug("n bf = %d", n_bf);
-        if (already_being_processed(n_bf)) {
-            log_debug("add to tracker %d", n_bf);
-            length += 1;
-        }
-    }
-    log_debug("legnth is going to be %d", length);
-    return length;
-}
-
-
-//! \brief return the spaces higher than me which could be tested
-//! \param[in] point: the point to look from
-//! \param[in] length: the length of the testing cores.
-//! \param[in] next_tested_point: top level to search to.
-//! \return bool stating if it was successful or not in memory alloc
-
-int *find_spaces_high_than_point(
-        int point, int length, int next_tested_point) {
-    log_debug("found best is %d", found_best);
-
-    // malloc the spaces
-    log_debug("size is %d", length * sizeof(int));
-    int* testing_cores = MALLOC((length + 1) * sizeof(int));
-    log_debug("malloc-ed");
-    if (testing_cores == NULL) {
-        log_error(
-            "failed to allocate memory for the locate next midpoint searcher");
-        return NULL;
-    }
-
-    // populate list
-    testing_cores[0] = point;
-    int testing_core_index = 1;
-    log_debug(
-        "point is %d and next tested poitn is %d",
-        point, next_tested_point);
-    for (int n_bf = point; n_bf <= next_tested_point; n_bf++) {
-        if (already_being_processed(n_bf)) {
-            log_debug("dumped");
-            testing_cores[testing_core_index] = n_bf;
-            testing_core_index += 1;
-        }
-    }
-
-    // return success
-    return testing_cores;
-
-}
-
-//! \brief locates the next valid midpoint which has not been tested or being
-//! tested and has a chance of working/ improving the space
-//! \param[out] int to next midpoint to search
-//! \return bool saying if mallocs failed
-bool locate_next_mid_point(int *new_mid_point) {
-
-    // get base line to start searching for new locations to test
-    int best_mp_to_date = best_mid_point_to_date();
-
-    int next_tested_point = next_tested_mid_point_from(best_mp_to_date);
-
-    log_debug(
-        "next tested point from %d is %d",
-        best_mp_to_date, next_tested_point);
-
-    if (best_mp_to_date == next_tested_point) {
-        found_best = true;
-        best_search_point = best_mp_to_date;
-        *new_mid_point = DOING_NOWT;
-        log_debug("best search point is %d", best_mp_to_date);
-        return true;
-    }
-
-    // fill in the locations bigger than best that are being tested
-    log_debug("find spaces");
-    int * higher_testers = NULL;
-    int length = 1;
-
-    bool has_higher_locs = is_there_higher_points(
-        best_mp_to_date, next_tested_point);
-    log_debug("after higher %d", has_higher_locs);
-
-    // if theres something to find. go find it
-    if (has_higher_locs) {
-        log_debug(
-            "locate stuff between %d and %d",
-            best_mp_to_date, next_tested_point);
-        int length = how_many_are_executing_between_these_points(
-            best_mp_to_date, next_tested_point);
-        higher_testers = find_spaces_high_than_point(
-            best_mp_to_date, length, next_tested_point);
-    }
-    log_debug("populated higher testers");
-
-    // exit if best found
-    if (found_best) {
-        log_debug("found best");
-        best_search_point = best_mp_to_date;
-        return true;
-    }
-    log_debug("passed test");
-
-
-    // failed to find next point due to malloc issues
-    if (higher_testers == NULL){
-        log_error("failed to find spaces higher than point");
-        return false;
-    }
-
-    // got spaces, find one with the biggest difference
-    log_debug("looking for biggest dif with length %d", length);
-    int biggest_dif = 0;
-    for (int test_base_index = 0; test_base_index < length - 1;
-            test_base_index++) {
-
-        // will be going from low to high, for that's how its been searched
-        int diff = higher_testers[test_base_index + 1] -
-            higher_testers[test_base_index];
-        log_debug("diff is %d", diff);
-        if (diff > biggest_dif) {
-            biggest_dif = diff;
-        }
-    }
-    log_debug("best dif is %d", biggest_dif);
-
-    // handle case of no split between best and last tested
-    // NOTE this only happens with n compression cores of 1.
-    if (length == 1) {
-        log_debug(
-            "next tested point = %d, best_mp_to_date = %d",
-            next_tested_point, best_mp_to_date);
-        int hop = (next_tested_point - best_mp_to_date) / 2;
-        if (hop == 0) {
-            hop = 1;
-        }
-        *new_mid_point = best_mp_to_date + hop;
-        log_debug("new midpoint is %d", *new_mid_point);
-        return true;
-    }
-
-    // locate the first with biggest dif, split in middle and return that as
-    // new mid point to test
-    for (int test_base_index = 0; test_base_index < length; test_base_index++) {
-        log_debug("entered");
-
-        // will be going from high to low, for that's how its been searched
-        int diff = higher_testers[test_base_index + 1] -
-            higher_testers[test_base_index];
-        log_debug("located diff %d, looking for b diff %d", diff, biggest_dif);
-
-        // if the right diff, figure the midpoint of these points.
-        if (diff == biggest_dif) {
-            // deduce hop
-            int hop = biggest_dif / 2;
-            log_debug("hop is %d", hop);
-            if (hop == 0){
-                hop = 1;
-            }
-
-            // deduce new mid point
-            *new_mid_point = higher_testers[test_base_index] + hop;
-            log_debug("next mid point to test is %d", *new_mid_point);
-
-            // check if we're testing this already, coz if we are. do nowt
-            if (already_being_processed(*new_mid_point)) {
-                log_debug(
-                    "already testing mid point %d, so do nothing",
-                    *new_mid_point);
-                *new_mid_point = DOING_NOWT;
-                return true;
-            }
-
-            // if hitting the bottom. check that uncompressed worked or not
-            if (*new_mid_point == 0) {
-                // check that it worked (it might not have finished, in some
-                // odd flow
-                if (bit_field_test(mid_points_successes, *new_mid_point)) {
-                    best_search_point = *new_mid_point;
-                    found_best = true;
-                    log_debug("found best by hitting bottom");
-                    return true;
-                }
-                // if we got here its odd. but put this here for completeness
-                if (bit_field_test(tested_mid_points, *new_mid_point)) {
-                    log_error(
-                        "got to the point of searching for mid point 0."
-                        " And 0 has been tested and failed. therefore complete"
-                        " failure has occurred.");
-                    return false;
-                }
+    if (!bit_field_test(tested_mid_points, n_bf_addresses)){
+        new_mid_point = n_bf_addresses;
+    } else {
+        log_info("n_bf_addresses %d tested_mid_points %d", n_bf_addresses, bit_field_test(tested_mid_points, n_bf_addresses));
+        int best_end = -1;
+        int best_length = 0;
+        int current_length = 0;
+        // check lowest_failure (false) to triggers a final else block
+        log_info("best_success %d lowest_failure %d", best_success, lowest_failure);
+        for (int index = best_success + 1; index <= lowest_failure; index++) {
+            log_debug("index: %d, value: %u current_length: %d", index, bit_field_test(tested_mid_points, index), current_length);
+            if (bit_field_test(tested_mid_points, index)){
+               if (current_length > best_length){
+                    best_length = current_length;
+                    best_end = index - 1;
+                    log_debug("found best_length: %d best_end %d", best_length, best_end);
+                    current_length = 0;
+               } else {
+                    log_debug("not best: %d best_end %d", best_length, best_end);
+               }
+            } else {
+               current_length+= 1;
             }
         }
+        // use the best less half (shifted) of the best length
+        new_mid_point = best_end - (best_length >> 1);
     }
-    log_debug("left cycle with new mid point of %d", *new_mid_point);
-    FREE(higher_testers);
-    return true;
+    if (new_mid_point >= 0){
+        bit_field_set(tested_mid_points, new_mid_point);
+    }
+    return new_mid_point;
 }
-
 
 //! \brief handles the freeing of memory from compressor cores, waiting for
 //! compressor cores to finish and removing merged bitfields from the bitfield
 //! regions.
-
 void handle_best_cleanup(void){
-    // tell all compression cores trying midpoints to stop, as pointless.
-    for (int check_core_id = 0;
-            check_core_id < n_compression_cores; check_core_id++) {
-        if (comp_core_mid_point[check_core_id] != DOING_NOWT) {
-            send_sdp_force_stop_message(check_core_id);
-        }
-    }
-
     // load routing table into router
     load_routing_table_into_router();
     log_debug("finished loading table");
-
-    //hang till the compressor cores have all responded saying stopped
-    //(thereby freeing as much sdram/ dtcm as possible before trying to
-    //allocate memory for remove merged bitfields. (will be interrupted by sdp
-    // packet reception, so safe to do
-
-    // IT SEEMS YOU CAN LOSE SDP MESSAGES HERE. SO COMMENTING OUT
-    //int n_cores_doing_things = n_compression_cores;
-    //while (n_cores_doing_things != 0){
-    //    n_cores_doing_things = 0;
-    //    for(int c_index = 0; c_index < n_compression_cores; c_index++){
-    //        if (comp_core_mid_point[c_index] != DOING_NOWT) {
-    //            n_cores_doing_things += 1;
-    //            log_debug("waiting on %d", compressor_cores[c_index]);
-    //        }
-    //    }
-    //}
 
     // clear away bitfields that were merged into the router from
     //their lists.
@@ -820,287 +413,233 @@ void handle_best_cleanup(void){
     uint core = spin1_get_core_id();
     sark_virtual_processor_info[core].user2 = best_search_point;
 
+    // Safety to break out of loop in check_buffer_queue
+    found_best = true;
+
     malloc_extras_terminate(EXITED_CLEANLY);
 }
 
-
-//! \brief compress the bitfields from the best location
-//! \param[in] unused0: not used, tied to api
-//! \param[in] unused1: not used, tied to api
-
-void carry_on_binary_search() {
-
-    uint cpsr = 0;
-    cpsr = spin1_int_disable();
-
-    log_debug("started carry on");
-
-    bool failed_to_malloc = false;
-    bool nothing_to_do = false;
-
-    // iterate till either ran out of cores, or failed to malloc sdram during
-    // the setup of a core or found best or no other mid points need to be
-    // tested
-    log_debug("start while");
-    while (n_available_compression_cores != 0 && !failed_to_malloc &&
-            !found_best && !nothing_to_do) {
-        log_debug("try a carry on core");
-
-        // locate next midpoint to test
-        int mid_point;
-        bool success = locate_next_mid_point(&mid_point);
-
-        // check for not needing to do things but wait
-        if (mid_point == DOING_NOWT && !found_best) {
-            log_info("no need to cycle, as nowt to do but wait");
-            for (int c_core_index = 0;
-                    c_core_index < n_compression_cores; c_core_index++) {
-                 if (comp_core_mid_point[c_core_index] != DOING_NOWT) {
-                    log_debug(
-                        "core %d is doing mid point %d",
-                        compressor_cores[c_core_index],
-                        comp_core_mid_point[c_core_index]);
-                 }
-            }
-            nothing_to_do = true;
-        } else if (found_best){
-            // if finished search, load best into table
-            log_info(
-                "finished search successfully best mid point was %d",
-                best_search_point);
-
-            // stop compressor cores, load entries and report success
-            handle_best_cleanup();
-
+//! \brief prints out the status of the cores.
+void log_core_status(){
+    for (int i = 0; i < 18; i++){
+        if (core_status[i] < -3 || core_status[i] > n_bf_addresses){
+            log_error("Weird status %d: %d", i, core_status[i]);
             return;
-        } else{
-            // not found best, so try to set off compression if memory done
-            log_debug("trying with midpoint %d", mid_point);
-            if (!success) {
-                failed_to_malloc = true;
-            } else {  // try a compression run
-                success = create_tables_and_set_off_bit_compressor(mid_point);
-                // failed to set off the run for a memory reason
-                if (!success){
-                    failed_to_malloc = true;
-                    log_debug("failed to send due to malloc");
-                }
-                else{
-                    log_debug("success sending");
-                }
-            }
         }
+        //log_info("core: %d, status: %d", i, core_status[i]);
     }
-
-    // if failed to malloc, limit exploration to the number of cores running.
-    if (failed_to_malloc) {
-        log_info("in failed to malloc");
-        n_available_compression_cores = 0;
-
-        // if the current running number of cores is 0, then we cant generate
-        // the next midpoint,
-        if (count_many_on_going_compression_attempts_are_running() == 0) {
-            int best_mid_point_tested = best_mid_point_to_date();
-
-            // check if current reach is enough to count as a success
-            if ((n_bf_addresses / best_mid_point_tested) <
-                    region_addresses->threshold){
-                log_error(
-                    "failed to compress enough bitfields for threshold "
-                    "percentage.");
-                malloc_extras_terminate(EXIT_FAIL);
-            }
-            // passed QoS threshold
-            found_best = true;
-            best_search_point = best_mid_point_tested;
-            log_info(
-                "finished search by end user QoS, best search point is %d",
-                best_search_point);
-
-            // stop compressor cores, load entries and report success
-            handle_best_cleanup();
-        }
-    }
-
-    spin1_mode_restore(cpsr);
+    log_info("0:%d 1:%d 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d "
+        "12:%d 13:%d 14:%d 15:%d 16:%d 17:%d", core_status[0],
+        core_status[1], core_status[2], core_status[3], core_status[4],
+        core_status[5], core_status[6], core_status[7], core_status[8],
+        core_status[9], core_status[10], core_status[11], core_status[12],
+        core_status[13], core_status[14], core_status[15], core_status[16],
+        core_status[17]);
 }
 
+//! \brief Returns the next core which is ready to run a compression
+//! \param[in] mid_point: the mid point this core will use
+//! \return the core_index/processor id of the next available core or -1 if none
+int find_compressor_core(int midpoint){
+    for (int core_index = 0; core_index < N_CORES; core_index++) {
+        if (core_status[core_index] == DOING_NOWT){
+            core_status[core_index] = midpoint ;
+            return core_index;
+        }
+    }
+    return -1;
+}
 
+//! \brief Check if a compressor core is available
+//! \return true if at least one core is ready to compress
+bool all_compressor_cores_busy(){
+    for (int core_index = 0; core_index < N_CORES; core_index++) {
+        if (core_status[core_index] == DOING_NOWT){
+            return false;
+        }
+    }
+    return true;
+}
+
+//! \brief Check to see if all compressor cores are done and not ready
+//! \return true if all cores are done and not set ready
+bool all_compressor_cores_done(){
+    for (int core_index = 0; core_index < N_CORES; core_index++) {
+        if (core_status[core_index] >= DOING_NOWT){
+            return false;
+        }
+    }
+    return true;
+}
+
+//! \brief Start the binary search on another compressor if one available
+
+void carry_on_binary_search() {
+     if (all_compressor_cores_done()){
+        log_info("carry_on_binary_search detected done");
+        handle_best_cleanup();
+        // Above method has a terminate so no worry about carry on here
+    }
+    if (all_compressor_cores_busy()){
+        return;  //Pass back to check_buffer_queue
+    }
+    log_debug("start carry_on_binary_search");
+    //log_core_status();
+
+    int mid_point = locate_next_mid_point();
+    log_info("available with midpoint %d", mid_point);
+    if (mid_point < 0) {
+        // Ok lets turn all ready cores off as done.
+        // At least defualt no bitfeild handled elsewhere so safe here.
+        for (int core_index = 0; core_index < N_CORES; core_index++) {
+            if (core_status[core_index] == DOING_NOWT) {
+                core_status[core_index] = DO_NOT_USE;
+            } else if (core_status[core_index] > DOING_NOWT) {
+                log_info("waitig for core %d doing midpoint %u",
+                    core_index, core_status[core_index]);
+            }
+        }
+        return;
+    }
+    int core_index = find_compressor_core(mid_point);
+    log_info("start create at timestep: %u", timesteps);
+    bool success = create_tables_and_set_off_bit_compressor(
+        mid_point, core_index);
+    log_info("end create at timestep: %u", timesteps);
+    if (!success) {
+        // Ok lets turn this and all ready cores off to save space.
+        // At least defualt no birfeild handled elsewhere so of to reduce.
+        core_status[core_index] = DO_NOT_USE;
+        for (int core_index = 0; core_index < N_CORES; core_index++) {
+            if (core_status[core_index] == DOING_NOWT) {
+                core_status[core_index] = DO_NOT_USE;
+            }
+        }
+        // Ok that midpoint did not work so need to try it again
+        bit_field_clear(tested_mid_points, mid_point);
+        return;
+    }
+    log_debug("done carry_on_binary_search");
+    //log_core_status();    //spin1_mode_restore(cpsr);
+    platform_check_all_marked(1002);
+}
 
 //! \brief timer interrupt for controlling time taken to try to compress table
 //! \param[in] unused0: not used
 //! \param[in] unused1: not used
-int timer_iteration = 0;
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
+    timesteps+=1;
+    //if ((timesteps & 1023) == 0){
+    //    log_info("timesteps: %u", timesteps);
+    //}
+    //if (timesteps > KILL_TIME){
+    //   log_error("timer overran %u", timesteps);
+    //    rt_error(RTE_SWERR);
+    //}
 }
+
+void process_failed(int midpoint){
+    log_info("lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
+    if (lowest_failure > midpoint){
+        lowest_failure = midpoint;
+        log_info("Now lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
+    }
+    // tell all compression cores trying midpoints above this one
+    // to stop, as its highly likely a waste of time.
+    for (int check_core_id = 0; check_core_id < N_CORES; check_core_id++) {
+        if (core_status[check_core_id] > midpoint) {
+            send_sdp_force_stop_message(check_core_id);
+        }
+    }
+}
+
 
 //! \brief processes the response from the compressor attempt
 //! \param[in] comp_core_index: the compressor core id
 //! \param[in] the response code / finished state
-void process_compressor_response(int comp_core_index, int finished_state) {
-    // filter off finished state
+void process_compressor_response(int core_index, int finished_state) {
+    int mid_point = core_status[core_index];
+    log_debug("received response %d from core %d doing %d midpoint",
+        finished_state, core_index, mid_point);
 
-    log_debug(
-        "core index %d, finished_state = %d",
-        comp_core_index, finished_state);
+    // safety check to ensure we dont go on if the uncompressed failed
+    if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION){
+        log_error("The no bitfeilds attempted failed! Giving up");
+        terminate(EXIT_FAIL);
+    }
+
+    // free the core for future processing
+    core_status[core_index] = DOING_NOWT;
 
     if (finished_state == SUCCESSFUL_COMPRESSION) {
         log_info(
             "successful from core %d doing mid point %d",
-            compressor_cores[comp_core_index],
-            comp_core_mid_point[comp_core_index]);
-        bit_field_set(tested_mid_points, comp_core_mid_point[comp_core_index]);
-        bit_field_set(
-            mid_points_successes, comp_core_mid_point[comp_core_index]);
+            core_index, mid_point);
 
-        // set tracker if its the best seen so far
-        if (best_mid_point_to_date() == comp_core_mid_point[comp_core_index]) {
-            log_info("this is better than previous best");
-            best_search_point = comp_core_mid_point[comp_core_index];
+        if (best_success <= mid_point){
+            best_success = mid_point;
             log_debug(
                 "copying to %x from %x for compressed table",
                 last_compressed_table,
-                comp_cores_bf_tables[comp_core_index].compressed_table);
-            routing_table_copy_table(
-                comp_cores_bf_tables[comp_core_index].compressed_table,
-                last_compressed_table);
-            log_info("n entries is %d", last_compressed_table->size);
+                cores_bf_tables[core_index].compressed_table);
+            sark_mem_cpy(
+                last_compressed_table,
+                cores_bf_tables[core_index].compressed_table,
+                routing_table_sdram_size_of_table(TARGET_LENGTH));
+            log_debug("n entries is %d", last_compressed_table->size);
         }
 
-        // release for next set
-        comp_core_mid_point[comp_core_index] = DOING_NOWT;
-        n_available_compression_cores++;
-
-        // free the sdram associated with this compressor core.
-        bool success = helpful_functions_free_sdram_from_compression_attempt(
-            comp_core_index, comp_cores_bf_tables);
-        if (!success) {
-            log_error("failed to free sdram for compressor core %d. WTF",
-                      compressor_cores[comp_core_index]);
-        }
-        log_debug("finished process of successful compression");
-    } else if (finished_state == FAILED_MALLOC) {
-        // NOTE should probabily stop from losing all by only
-        // doing this once before another attempt on the same attempt cycle.
-        // track all 17 previous messages
-
-        log_info(
-            "failed by malloc from core %d doing mid point %d",
-            compressor_cores[comp_core_index],
-            comp_core_mid_point[comp_core_index]);
-        // this will threshold the number of compressor cores that
-        // can be ran at any given time.
-        comp_core_mid_point[comp_core_index] = DOING_NOWT;
-
-        // free the sdram associated with this compressor core.
-        bool success = helpful_functions_free_sdram_from_compression_attempt(
-            comp_core_index, comp_cores_bf_tables);
-        if (!success) {
-            log_error("failed to free sdram for compressor core %d. WTF",
-                      compressor_cores[comp_core_index]);
-        }
-    }
-    else if (finished_state == FAILED_TO_COMPRESS){
-        log_info(
-            "failed to compress from core %d doing mid point %d",
-            compressor_cores[comp_core_index],
-            comp_core_mid_point[comp_core_index]);
-
-        // it failed to compress, so it was successful in malloc.
-        // so mark the midpoint as tested, and free the core for another
-        // attempt
-        int compression_mid_point = comp_core_mid_point[comp_core_index];
-        bit_field_set(tested_mid_points, compression_mid_point);
-        comp_core_mid_point[comp_core_index] = DOING_NOWT;
-        n_available_compression_cores ++;
-
-        // set all indices above this one to false, as this one failed
-        for (int test_index = compression_mid_point;
-                test_index < n_bf_addresses; test_index++) {
-            bit_field_set(tested_mid_points, test_index);
-        }
-
-        // tell all compression cores trying midpoints above this one
-        // to stop, as its highly likely a waste of time.
-        for (int check_core_id = 0;
-                check_core_id < n_compression_cores; check_core_id++) {
-            if (comp_core_mid_point[check_core_id] > compression_mid_point) {
+        // kill any search below this point, as they all redundant as
+        // this is a better search.
+        for (int check_core_id = 0; check_core_id < N_CORES; check_core_id++) {
+            if (core_status[check_core_id] >= 0 &&
+                    core_status[check_core_id] < mid_point) {
                 send_sdp_force_stop_message(check_core_id);
             }
         }
 
-        // free the sdram associated with this compressor core.
-        bool success = helpful_functions_free_sdram_from_compression_attempt(
-            comp_core_index, comp_cores_bf_tables);
-        if (!success) {
-            log_error("failed to free sdram for compressor core %d. WTF",
-                      compressor_cores[comp_core_index]);
-        }
+        log_debug("finished process of successful compression");
+    } else if (finished_state == FAILED_MALLOC) {
+        log_info(
+            "failed by malloc from core %d doing mid point %d",
+            core_index, mid_point);
+        // this will threshold the number of compressor cores that
+        // can be ran at any given time.
+        core_status[core_index] = DO_NOT_USE;
+        // Remove the flag that say this midpoint has been checked
+        bit_field_clear(tested_mid_points, mid_point);
+    }
+    else if (finished_state == FAILED_TO_COMPRESS) {
+        log_info(
+            "failed to compress from core %d doing mid point %d",
+            core_index, mid_point);
+        process_failed(mid_point);
     } else if (finished_state == RAN_OUT_OF_TIME) {
         log_info(
             "failed by time from core %d doing mid point %d",
-            compressor_cores[comp_core_index],
-            comp_core_mid_point[comp_core_index]);
-
-        // if failed to compress by the end user considered QoS. So it
-        // was successful in malloc. So mark the midpoint as tested,
-        // and free the core for another attempt
-        int compression_mid_point = comp_core_mid_point[comp_core_index];
-        bit_field_set(tested_mid_points, compression_mid_point);
-        comp_core_mid_point[comp_core_index] = DOING_NOWT;
-        n_available_compression_cores++;
-
-        // tell all compression cores trying midpoints above this one
-        // to stop, as its highly likely a waste of time.
-        for (int check_core_id = 0;
-                check_core_id < n_compression_cores; check_core_id++){
-            if (comp_core_mid_point[check_core_id] > compression_mid_point){
-                send_sdp_force_stop_message(check_core_id);
-            }
-        }
-
-        // free the sdram associated with this compressor core.
-        bool success = helpful_functions_free_sdram_from_compression_attempt(
-            comp_core_index, comp_cores_bf_tables);
-        if (!success) {
-            log_error("failed to free sdram for compressor core %d. WTF",
-                      compressor_cores[comp_core_index]);
-        }
+            core_index, mid_point);
+        process_failed(mid_point);
     } else if (finished_state == FORCED_BY_COMPRESSOR_CONTROL){
         log_info(
             "ack from forced from core %d doing mid point %d",
-            compressor_cores[comp_core_index],
-            comp_core_mid_point[comp_core_index]);
-
-        // free the sdram associated with this compressor core.
-        bool success = helpful_functions_free_sdram_from_compression_attempt(
-            comp_core_index, comp_cores_bf_tables);
-        if (!success) {
-            log_error(
-                "failed to free sdram for compressor core %d. WTF",
-                compressor_cores[comp_core_index]);
-        }
-
-        // this gives no context of why the control killed it. just
-        // free the core for another attempt
-        comp_core_mid_point[comp_core_index] = DOING_NOWT;
-        n_available_compression_cores++;
-
+            core_index, mid_point);
     } else {
         log_error(
             "no idea what to do with finished state %d, from core %d ignoring",
-            finished_state, compressor_cores[comp_core_index]);
+            finished_state, core_index);
     }
 
-    // having processed the packet, and there are spare cores for compression
-    // attempts, try to set off another search.  (this encapsulates the
-    // finish state as well.
-    if (n_available_compression_cores > 0) {
-        carry_on_binary_search();
+    // free the sdram associated with this compressor core.
+    bool success = helpful_functions_free_sdram_from_compression_attempt(
+        core_index, cores_bf_tables);
+    if (!success) {
+        log_error("failed to free sdram for compressor core %d. WTF",
+                  core_index);
     }
 }
+
 
 //! \brief the sdp control entrance.
 //! \param[in] mailbox: the message
@@ -1148,8 +687,7 @@ void sdp_handler(uint mailbox, uint port) {
 
                 // locate the compressor core id that responded
                 log_debug("response packet");
-                int comp_core_index = get_core_index_from_id(
-                    (msg->srce_port & CPU_MASK));
+                int core_index = msg->srce_port & CPU_MASK;
 
                 // response code just has one value, so being lazy and not
                 // casting
@@ -1162,13 +700,13 @@ void sdp_handler(uint mailbox, uint port) {
 
                 // create holder
 
-                uint32_t store = comp_core_index << CORE_MOVE;
+                uint32_t store = core_index << CORE_MOVE;
                 store = store | finished_state;
 
                 // store holder
-                log_debug(
+                log_info(
                     "finished state %d, index %d, store %d",
-                    finished_state, comp_core_index, store);
+                    finished_state, core_index, store);
                 circular_buffer_add(sdp_circular_queue, store);
                 break;
             case STOP_COMPRESSION_ATTEMPT:
@@ -1194,28 +732,20 @@ void sdp_handler(uint mailbox, uint port) {
         sark_msg_free((sdp_msg_t *) msg);
     }
 
-    log_debug("finish sdp process");
+    log_info("finish sdp process");
 }
 
-bool setup_the_uncompressed_attempt() {
-    // sort out teh searcher bitfields. as now first time where can do so
-    // NOTE: by doing it here, the response from the uncompressed can be
-    // handled correctly.
-    log_debug("setting up search bitfields");
-    bool success = set_up_search_bitfields();
-    if (!success) {
-        log_error("can not allocate memory for search fields.");
-        return false;
+bool setup_no_bitfeilds_attempt(){
+    int core_index = find_compressor_core(0);
+    if (core_index < 0){
+        log_error("No core available for no bitfeild attempt");
+        rt_error(RTE_SWERR);
     }
-    log_debug("finish setting up search bitfields");
-
+    bit_field_set(tested_mid_points, 0);
     // set off a none bitfield compression attempt, to pipe line work
-    log_debug("sets off the uncompressed version of the search");
-    message_sending_set_off_no_bit_field_compression(
-        comp_cores_bf_tables, compressor_cores, &my_msg,
-        uncompressed_router_table, n_compression_cores, comp_core_mid_point,
-        &n_available_compression_cores);
-    return true;
+    log_info("sets off the no bitfeild version of the search on %u", core_index);
+    return message_sending_set_off_no_bit_field_compression(
+        cores_bf_tables, &my_msg, uncompressed_router_table, core_index);
 }
 
 //! \brief check sdp buffer till its finished
@@ -1234,6 +764,9 @@ void check_buffer_queue(uint unused0, uint unused1) {
             int finished_state = next_element & FINISHED_STATE_MASK;
             log_debug("processing packet from circular buffer");
             process_compressor_response(core_index, finished_state);
+        } else {
+            // Check if another processor could be started or even done
+            carry_on_binary_search();
         }
     }
     // if i get here. something fucked up. blow up spectacularly
@@ -1246,54 +779,39 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    uint cpsr = 0;
-    cpsr = spin1_int_disable();
+    platform_turn_off_print();
 
-    log_info("read in bitfields");
-    bool read_success = false;
+    //TODO REMOVE
+    log_info("OLD read in bitfields");
     bit_field_by_processor = bit_field_reader_read_in_bit_fields(
-            &n_bf_addresses, region_addresses, &read_success);
-    log_info("finished reading in bitfields");
-
-    // check state
-    if (bit_field_by_processor == NULL && !read_success){
+            region_addresses);
+    if (bit_field_by_processor == NULL){
         log_error("failed to read in bitfields, quitting");
         malloc_extras_terminate(EXIT_MALLOC);
     }
 
     // set off the first compression attempt (aka no bitfields).
-    bool success = setup_the_uncompressed_attempt();
+    bool success = setup_no_bitfeilds_attempt();
     if (!success){
         log_error("failed to set up uncompressed attempt");
         malloc_extras_terminate(EXIT_MALLOC);
     }
 
-    // check there are bitfields to merge, if not don't start search
-    if (n_bf_addresses == 0){
-        log_info(
-            "no bitfields to compress, just try the uncompressed and "
-            "quit based on that's result.");
-        spin1_mode_restore(cpsr);
-        // set off checker
-        spin1_schedule_callback(
-            check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
-        return;
-    }
+    log_info("reading bitfields at timestep: %d", timesteps);
+    sorted_bit_fields = bit_field_creator_read_in_bit_fields(region_addresses);
 
-    // if there are bitfields to merge
-    // sort the bitfields into order of best impact on worst cores.
-    log_info("sorting");
-    sorted_bit_fields = bit_field_sorter_sort(
-        n_bf_addresses, region_addresses, bit_field_by_processor);
-    log_info("finished sorting bitfields");
-
-    if (sorted_bit_fields == NULL) {
-        log_error("failed to read in bitfields, failing");
-        spin1_mode_restore(cpsr);
+    // check state
+    if (sorted_bit_fields == NULL){
+        log_error("failed to read in bitfields, quitting");
         malloc_extras_terminate(EXIT_MALLOC);
-        return;
     }
+    lowest_failure = n_bf_addresses;
+    log_info("finished reading bitfields at timestep: %d", timesteps);
 
+    set_up_tested_mid_points();
+    //platform_turn_on_print();
+
+    //TODO: safety code to be removed
     for (int bit_field_index = 0; bit_field_index < n_bf_addresses;
             bit_field_index++) {
         // get key
@@ -1301,40 +819,12 @@ void start_compression_process(uint unused0, uint unused1) {
             sorted_bit_fields->bit_fields[bit_field_index];
         if (bf_pointer == NULL) {
             log_info("failed at index %d", bit_field_index);
-            spin1_mode_restore(cpsr);
             malloc_extras_terminate(RTE_SWERR);
             return;
         }
-
-       //log_info("bf pointer address = %x", bf_pointer);
-       log_debug("bf pointer %d is = %d",  bit_field_index, bf_pointer->key);
     }
 
-    for (int s_bf_i = 0; s_bf_i < n_bf_addresses; s_bf_i++){
-        log_debug(
-            "address for index %d is %x",
-            s_bf_i, sorted_bit_fields->bit_fields[s_bf_i]->data);
-        log_debug(
-            "for address in index %d, it targets processor %d with key %d "
-            "and the redundant packet count is %d",
-            s_bf_i, sorted_bit_fields->processor_ids[s_bf_i],
-            sorted_bit_fields->bit_fields[s_bf_i]->key,
-            detect_redundant_packet_count(
-                *sorted_bit_fields->bit_fields[s_bf_i], region_addresses));
-    }
-
-    log_info("starting the binary search");
-    bool success_start_binary_search = start_binary_search();
-    log_info("finish starting of the binary search");
-
-    if (!success_start_binary_search) {
-        log_error("failed to compress the routing table at all. Failing");
-        spin1_mode_restore(cpsr);
-        malloc_extras_terminate(EXIT_FAIL);
-    }
-    spin1_mode_restore(cpsr);
-
-    // set off checker
+    // set off checker which in turn sets of the other compressor cores
     spin1_schedule_callback(
         check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
 }
@@ -1375,53 +865,37 @@ bool initialise_compressor_cores(void) {
     int n_region_pairs = region_addresses->n_pairs;
     log_debug("n region pairs = %d", n_region_pairs);
 
-    // get n compression cores and update trackers
-    compressor_cores_top_t *compressor_cores_top =
-        (compressor_cores_top_t*) &region_addresses->pairs[n_region_pairs];
-    n_compression_cores = compressor_cores_top->n_cores;
-    //n_compression_cores = 1;
-
-    n_available_compression_cores = n_compression_cores;
-    log_info("%d comps cores available", n_available_compression_cores);
-
-    // malloc dtcm for this
-    log_info("allocate for compressor core trackers");
-    compressor_cores = MALLOC(n_compression_cores * sizeof(int));
-    // verify malloc worked
-    if (compressor_cores == NULL) {
-        log_error("failed to allocate memory for the compressor cores");
-        return false;
-    }
-
-    // populate with compressor cores
-    log_info("start populate compression cores");
-    for (int core=0; core < n_compression_cores; core++) {
-        compressor_cores[core] = compressor_cores_top->core_id[core];
-    }
-    log_info("finished populate compression cores");
-
-    // allocate memory for the trackers
-    log_info("allocate for compressor core midpoints");
-    comp_core_mid_point = MALLOC(n_compression_cores * sizeof(int));
-    if (comp_core_mid_point == NULL) {
+    // allocate DTCM memory for the core status trackers
+    log_info("allocate and step compressor core status");
+    core_status = MALLOC(N_CORES * sizeof(int));
+    if (core_status == NULL) {
         log_error(
             "failed to allocate memory for tracking what the "
             "compression cores are doing");
         return false;
     }
-
-    log_info("setting midpoints to DOING_NOWT");
-    // set the trackers all to -1 as starting point. to ensure completeness
-    for (int core = 0; core < n_compression_cores; core++) {
-        comp_core_mid_point[core] = DOING_NOWT;
+    // Unless a core is found mark as not a compressor
+    for (int core = 0; core < N_CORES; core++) {
+        core_status[core] = NOT_COMPRESSOR;
     }
+    // Switch compressor cores to DOING_NOWT
+    compressor_cores_top_t *compressor_cores_top =
+        (void *) &region_addresses->pairs[n_region_pairs];
+    for (uint32_t core=0; core < compressor_cores_top->n_cores; core++) {
+        core_status[compressor_cores_top->core_id[core]] = DOING_NOWT;
+    }
+    //core_status[4] = DOING_NOWT;
+    log_core_status();
 
     // set up addresses tracker (use sdram so that this can be handed to the
     // compressor to solve transmission faffs)
     log_info("malloc for table trackers");
-    comp_cores_bf_tables =
-        MALLOC_SDRAM(n_compression_cores * sizeof(comp_core_store_t));
-    if (comp_cores_bf_tables == NULL) {
+    // set up addresses tracker (use sdram so that this can be handed to the
+    // compressor to solve transmission faffs)
+    log_info("malloc for table trackers");
+    cores_bf_tables =
+        MALLOC_SDRAM(N_CORES * sizeof(comp_core_store_t));
+    if (cores_bf_tables == NULL) {
         log_error(
             "failed to allocate memory for the holding of bitfield "
             "addresses per compressor core");
@@ -1430,13 +904,12 @@ bool initialise_compressor_cores(void) {
 
     // ensure all bits set properly as init
     log_info("setting up table trackers.");
-    for (int c_core = 0; c_core < n_compression_cores; c_core++) {
-        comp_cores_bf_tables[c_core].n_elements = 0;
-        comp_cores_bf_tables[c_core].n_bit_fields = 0;
-        comp_cores_bf_tables[c_core].compressed_table = NULL;
-        comp_cores_bf_tables[c_core].elements = NULL;
+    for (int c_core = 0; c_core < N_CORES; c_core++) {
+        cores_bf_tables[c_core].n_elements = 0;
+        cores_bf_tables[c_core].n_bit_fields = 0;
+        cores_bf_tables[c_core].compressed_table = NULL;
+        cores_bf_tables[c_core].elements = NULL;
     }
-
     return true;
 }
 
@@ -1473,7 +946,7 @@ static bool initialise(void) {
     // init the circular queue to handle the size of sdp messages expected
     // at any given point
     sdp_circular_queue = circular_buffer_initialize(
-        n_compression_cores * N_MSGS_EXPECTED_FROM_COMPRESSOR);
+        N_CORES * N_MSGS_EXPECTED_FROM_COMPRESSOR);
 
     // set up the best compressed table
     log_info(
@@ -1486,6 +959,7 @@ static bool initialise(void) {
         return false;
     }
 
+    malloc_extras_check_all_marked(1005);
     return true;
 }
 

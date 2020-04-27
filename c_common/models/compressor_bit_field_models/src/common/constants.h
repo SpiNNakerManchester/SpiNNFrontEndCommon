@@ -36,13 +36,25 @@
 //! bits in a word
 #define BITS_IN_A_WORD 32
 
+//! flag for saying core is not a compressor
+#define NOT_COMPRESSOR -3
+
+//! flag for saying core compression core should not be used any more
+#define DO_NOT_USE - 2
+
 //! flag for saying compression core doing nowt
 #define DOING_NOWT -1
+// 0 or higher is doing that midpoint
+
+#define ADD_INCLUSIVE_BIT 1
 
 //! \brief move for core id in the circular queue
 #define CORE_MOVE 16
 
 //! \brief mask to get the finished state
 #define FINISHED_STATE_MASK 0x0000FFFF
+
+//! \brief The maximum number of cores on any chip
+#define N_CORES 18
 
 #endif  // __CONSTANTS_H__

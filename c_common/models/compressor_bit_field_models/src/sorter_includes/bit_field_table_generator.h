@@ -293,6 +293,7 @@ static inline bool generate_rt_from_bit_field(
         bit_field_by_processor_t* bit_field_by_processor,
         sorted_bit_fields_t* sorted_bit_fields){
 
+    log_debug("generate_rt_from_bit_field key %u n_bfs_for_key %u", master_pop_key, n_bfs_for_key);
     // reduce future iterations, by finding the exact bitfield filter
     filter_info_t **filters = MALLOC(n_bfs_for_key * sizeof(filter_info_t*));
     if (filters == NULL) {
@@ -375,7 +376,6 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     // populate the master pop bit field
     *n_rt_addresses = helpful_functions_population_master_pop_bit_field_ts(
         keys, mid_point, sorted_bit_fields);
-    log_debug("n rts is %d", *n_rt_addresses);
 
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
@@ -408,7 +408,6 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
 
     // iterate through the keys, accumulating bitfields and turn into routing
     // table entries.
-    log_debug("starting the generation of tables by key");
     for (int key_index = 0; key_index < *n_rt_addresses - 1; key_index++) {
 
         malloc_extras_check_all_marked(1888888);
