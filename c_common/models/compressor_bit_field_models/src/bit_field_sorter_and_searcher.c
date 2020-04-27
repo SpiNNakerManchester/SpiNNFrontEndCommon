@@ -28,7 +28,6 @@
 #include "common/compressor_sorter_structs.h"
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
-#include "sorter_includes/bit_field_reader.h"
 #include "sorter_includes/bit_field_creator.h"
 #include "sorter_includes/message_sending.h"
 /*****************************************************************************/
@@ -117,9 +116,6 @@ int* core_status;
 //! \brief tracker for what each compressor core is doing (in terms of midpoints)
 int* comp_core_mid_point;
 
-//! \brief the bitfield by processor global holder
-bit_field_by_processor_t* bit_field_by_processor;
-
 //! \brief sdp message to send control messages to compressors cores
 sdp_msg_pure_data my_msg;
 
@@ -207,8 +203,7 @@ bool create_tables_and_set_off_bit_compressor(int mid_point, int core_index) {
     //log_info("started create bit field router tables");
     table_t **bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
-            mid_point, &n_rt_addresses, region_addresses,
-            uncompressed_router_table, bit_field_by_processor,
+            mid_point, &n_rt_addresses, uncompressed_router_table,
             sorted_bit_fields);
     if (bit_field_routing_tables == NULL){
         log_info(
@@ -377,10 +372,10 @@ int locate_next_mid_point() {
                     best_length = current_length;
                     best_end = index - 1;
                     log_debug("found best_length: %d best_end %d", best_length, best_end);
-                    current_length = 0;
                } else {
                     log_debug("not best: %d best_end %d", best_length, best_end);
                }
+               current_length = 0;
             } else {
                current_length+= 1;
             }
@@ -773,15 +768,6 @@ void start_compression_process(uint unused0, uint unused1) {
     use(unused1);
 
     platform_turn_off_print();
-
-    //TODO REMOVE
-    log_info("OLD read in bitfields");
-    bit_field_by_processor = bit_field_reader_read_in_bit_fields(
-            region_addresses);
-    if (bit_field_by_processor == NULL){
-        log_error("failed to read in bitfields, quitting");
-        terminate(EXIT_MALLOC);
-    }
 
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_no_bitfeilds_attempt();
