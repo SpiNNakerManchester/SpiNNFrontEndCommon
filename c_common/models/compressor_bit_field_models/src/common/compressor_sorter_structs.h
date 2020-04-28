@@ -71,9 +71,9 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
-//! holds data for each compressor core, used to free stuff properly when
+//! holds data for each compressor processor, used to free stuff properly when
 //! required
-typedef struct comp_core_store_t{
+typedef struct comp_processor_store_t{
     // how many rt tables used here
     int n_elements;
     // how many bit fields were used to make those tables
@@ -82,13 +82,13 @@ typedef struct comp_core_store_t{
     table_t *compressed_table;
     // elements
     table_t **elements;
-} comp_core_store_t;
+} comp_processor_store_t;
 
-//! \brief the compressor cores data elements in sdram
-typedef struct compressor_cores_top_t {
+//! \brief the compressor processor data elements in SDRAM
+typedef struct compressor_processors_top_t {
     uint32_t n_processors;
-    uint32_t core_id[];
-} compressor_cores_top_t;
+    uint32_t processor_id[];
+} compressor_processors_top_t;
 
 //! \brief struct to hide the VLA'ness of the proc bit field keys.
 typedef struct master_pop_key_list_t {
@@ -132,13 +132,13 @@ typedef struct uncompressed_table_region_data_t{
     table_t uncompressed_table;
 } uncompressed_table_region_data_t;
 
-//! \brief compressor core data region
-typedef struct compressor_cores_region_data_t{
-    // how many compressor cores
-    int n_compressor_cores;
+//! \brief compressor processor data region
+typedef struct compressor_processors_region_data_t{
+    // how many compressor processors
+    int n_compressor_processors;
     // the processor ids
     int *processor_ids;
-} compressor_cores_region_data_t;
+} compressor_processors_region_data_t;
 
 //! \brief holder for the list of bitfield associated processor ids.
 //! sorted order based off best effort linked to sorted_bit_fields,
@@ -173,7 +173,7 @@ typedef struct region_addresses_t {
 typedef struct start_sdp_packet_t {
     uint32_t command_code;
     heap_t *fake_heap_data;
-    comp_core_store_t *table_data;
+    comp_processor_store_t *table_data;
 } start_sdp_packet_t;
 
 //! \brief the elements in the sdp packet when response to compression attempt.

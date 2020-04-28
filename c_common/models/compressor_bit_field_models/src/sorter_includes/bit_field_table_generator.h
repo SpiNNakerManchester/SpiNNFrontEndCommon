@@ -95,8 +95,8 @@ static inline void set_new_route_with_fixed_processors(
         }
     }
 
-    // only set entries in the new route from the old route if the core has not
-    // got a bitfield associated with it.
+    // only set entries in the new route from the old route if the processor
+    // has not got a bitfield associated with it.
     for (uint32_t processor_id = 0; processor_id < MAX_PROCESSORS;
             processor_id++) {
 
@@ -117,8 +117,8 @@ static inline void set_new_route_with_fixed_processors(
                 }
             }
 
-            // if not a bitfield core, add to new route, as cant filter this
-            // away.
+            // if not a bitfield processor, add to new route, as cant filter
+            // this away.
             if (!found) {
                 log_debug("never found proc %d", processor_id);
                 bit_field_set(processors, MAX_LINKS_PER_ROUTER + processor_id);
@@ -233,7 +233,8 @@ static inline bool generate_entries_from_bitfields(
         spin1_memcpy(
             atom_processors, processors, size * WORD_TO_BYTE_MULTIPLIER);
 
-        // iterate through the bitfield cores and see if they need this atom
+        // iterate through the bitfield processors and see if they need this
+        // atom
         for (int bf_index = 0; bf_index < n_bit_fields_for_key; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
             if (bit_field_test(filters[bf_index]->data, atom)){
@@ -289,7 +290,9 @@ static inline bool generate_rt_from_bit_field(
         bit_field_by_processor_t* bit_field_by_processor,
         sorted_bit_fields_t* sorted_bit_fields){
 
-    log_debug("generate_rt_from_bit_field key %u n_bfs_for_key %u", master_pop_key, n_bfs_for_key);
+    log_debug(
+        "generate_rt_from_bit_field key %u n_bfs_for_key %u",
+        master_pop_key, n_bfs_for_key);
     // reduce future iterations, by finding the exact bitfield filter
     filter_info_t **filters = MALLOC(n_bfs_for_key * sizeof(filter_info_t*));
     if (filters == NULL) {
@@ -356,9 +359,15 @@ int count_unigue_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
     return count;
 }
 
+//! Generates a routing tables by merging an entry and a list of bitfields
+//! by processor
+//! \param[in] original_entry: The Routing Table entry in the original table
+//! \param[in] filters: List of the bitfields to me merged in
+//! \param[in] bit_field_processor: List of the processors for each bitfield
+//! \param[in] bf_found: Number of bitfields found.
 table_t* generate_table(
-    entry_t original_entry, filter_info_t** filters,  uint32_t* bit_field_processors,
-    int bf_found) {
+    entry_t original_entry, filter_info_t** filters,
+    uint32_t* bit_field_processors, int bf_found) {
 
     uint32_t n_atoms = filters[0]->n_atoms;
 
@@ -378,19 +387,22 @@ table_t* generate_table(
     uint32_t stripped_route = original_entry.route;
     bit_field_t stripped_bf = &stripped_route;
     for (int i =0; i < bf_found; i++) {
-        if (!bit_field_test(stripped_bf, bit_field_processors[i] + MAX_LINKS_PER_ROUTER)){
+        if (!bit_field_test(
+                stripped_bf, bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
             log_error("WHAT THE FUCK!");
         }
-        bit_field_clear(stripped_bf, bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
+        bit_field_clear(
+            stripped_bf, bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
     }
 
     // iterate though each atom and set the route when needed
     for (uint32_t atom = 0; atom < n_atoms; atom++) {
         // Assigning to a uint32 creates a copy
         uint32_t new_route = stripped_route;
-        bit_field_t new_bf = &stripped_route;
+        bit_field_t new_bf = &new_route;
 
-        // iterate through the bitfield cores and see if they need this atom
+        // iterate through the bitfield processor's and see if they need this
+        // atom
         for (int bf_index = 0; bf_index < bf_found; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
             if (bit_field_test(filters[bf_index]->data, atom)){
@@ -432,7 +444,7 @@ void insert_entry(entry_t original_entry, table_t* no_bitfield_table) {
 
 //! takes a midpoint and reads the sorted bitfields up to that point generating
 //! bitfield routing tables and loading them into sdram for transfer to a
-//! compressor core
+//! compressor processor
 //! \param[in] mid_point: where in the sorted bitfields to go to
 //! \param[out] n_rt_addresses: how many addresses are needed for the
 //! tables

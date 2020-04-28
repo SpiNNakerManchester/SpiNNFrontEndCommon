@@ -39,19 +39,19 @@
 //! bits in a word
 #define BITS_IN_A_WORD 32
 
-//! flag for saying core is not a compressor
+//! flag for saying processor is not a compressor
 #define NOT_COMPRESSOR -3
 
-//! flag for saying core compression core should not be used any more
+//! flag for saying compression processor should not be used any more
 #define DO_NOT_USE - 2
 
-//! flag for saying compression core doing nowt
+//! flag for saying compression processor doing nowt
 #define DOING_NOWT -1
 // 0 or higher is doing that midpoint
 
 #define ADD_INCLUSIVE_BIT 1
 
-//! \brief move for core id in the circular queue
+//! \brief move for processor id in the circular queue
 #define CORE_MOVE 16
 
 //! \brief mask to get the finished state

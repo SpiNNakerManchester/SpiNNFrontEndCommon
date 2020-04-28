@@ -69,10 +69,10 @@ bool compress_as_much_as_possible = false;
 //! \brief the sdram location to write the compressed router table into
 table_t *sdram_loc_for_compressed_entries;
 
-//! \brief the control core id for sending responses to
-int control_core_id = -1;
+//! \brief the control processor id for sending responses to
+int control_processor_id = -1;
 
-//! \brief sdp message to send acks to the control core with
+//! \brief sdp message to send acks to the control processor with
 sdp_msg_pure_data my_msg;
 
 //! \brief sdp message data as a response packet (reducing casts)
@@ -91,9 +91,9 @@ int attempts = 0;
 
 // ---------------------------------------------------------------------
 
-//! \brief sends a sdp message back to the control core
+//! \brief sends a sdp message back to the control processor
 void send_sdp_message_response(void) {
-    my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | control_core_id;
+    my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | control_processor_id;
 
      // give chance for compressor to read
      spin1_delay_us(500);
@@ -151,7 +151,7 @@ void return_failed_by_force_response_message(void) {
 
     // send message
     send_sdp_message_response();
-    log_debug("send forced ack");
+    log_info("send forced ack");
 }
 
 //! \brief sends a failed response due to running out of time
@@ -316,7 +316,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
 
     log_debug("starting compression attempt");
 
-    log_debug("my core id at start comp is %d", spin1_get_core_id());
+    log_debug("my processor id at start comp is %d", spin1_get_core_id());
     // start compression process
     spin1_schedule_callback(
         start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
@@ -329,7 +329,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
 int m_recied = 0;
 void _sdp_handler(uint mailbox, uint port) {
     use(port);
-    log_debug("my core id at reception is %d", spin1_get_core_id());
+    log_debug("my processor id at reception is %d", spin1_get_core_id());
     log_debug("received packet");
 
 
@@ -337,12 +337,12 @@ void _sdp_handler(uint mailbox, uint port) {
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
     compressor_payload_t *payload = (compressor_payload_t *) msg->data;
 
-    // record control core.
-    if (control_core_id == -1) {
-        control_core_id = (msg->srce_port & CPU_MASK);
+    // record control processor.
+    if (control_processor_id == -1) {
+        control_processor_id = (msg->srce_port & CPU_MASK);
     }
 
-    log_debug("control core is %d", control_core_id);
+    log_debug("control processor is %d", control_processor_id);
     log_debug("command code is %d", payload->command);
 
     // get command code
@@ -357,7 +357,7 @@ void _sdp_handler(uint mailbox, uint port) {
             case COMPRESSION_RESPONSE:
                 log_error("I really should not be receiving this!!! WTF");
                 log_error(
-                    "came from core %d with code %d",
+                    "came from processor %d with code %d",
                     msg->srce_port & CPU_MASK, payload->response.response_code);
                 sark_msg_free((sdp_msg_t*) msg);
                 break;
@@ -447,9 +447,9 @@ void initialise(void) {
     my_msg.length = LENGTH_OF_SDP_HEADER + (sizeof(response_sdp_packet_t));
 
     log_info("finished sdp message bits");
-    log_info("my core id is %d", spin1_get_core_id());
+    log_info("my processor id is %d", spin1_get_core_id());
     log_info(
-        "srce_port = %d the core id is %d",
+        "srce_port = %d the processor id is %d",
         my_msg.srce_port, my_msg.srce_port & CPU_MASK);
 }
 

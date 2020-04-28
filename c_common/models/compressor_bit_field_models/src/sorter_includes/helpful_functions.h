@@ -115,30 +115,31 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
     return n_keys;
 }
 
-//! \brief frees sdram from the compressor core.
-//! \param[in] comp_core_index: the compressor core index to clear sdram usage
-//! from
-//! \param[in] comp_cores_bf_tables: the map of what tables that core used
-//! \return bool stating that it was successful in clearing sdram
+//! \brief frees SDRAM from the compressor processor.
+//! \param[in] processor_index: the compressor processor index to clear
+//! SDRAM usage from
+//! \param[in] processor_bf_tables: the map of what tables that processor used
+//! \return bool stating that it was successful in clearing SDRAM
 bool helpful_functions_free_sdram_from_compression_attempt(
-        int comp_core_index, comp_core_store_t* comp_cores_bf_tables){
-    int elements = comp_cores_bf_tables[comp_core_index].n_elements;
+        int processor_id, comp_processor_store_t* processor_bf_tables) {
+    int elements = processor_bf_tables[processor_id].n_elements;
 
+    log_error("method needs checking and not surigually removed");
     return true;
 
-    for (int core_bit_field_id = 0; core_bit_field_id < elements;
-            core_bit_field_id++) {
-        FREE(comp_cores_bf_tables[comp_core_index].elements[core_bit_field_id]);
+    // free the individual elements
+    for (int bit_field_id = 0; bit_field_id < elements; bit_field_id++) {
+        FREE(processor_bf_tables[processor_id].elements[bit_field_id]);
     }
 
     // only try freeing if its not been freed already. (safety feature)
-    if (comp_cores_bf_tables[comp_core_index].elements != NULL){
-        FREE(comp_cores_bf_tables[comp_core_index].elements);
+    if (processor_bf_tables[processor_id].elements != NULL){
+        FREE(processor_bf_tables[processor_id].elements);
     }
 
-    comp_cores_bf_tables[comp_core_index].elements = NULL;
-    comp_cores_bf_tables[comp_core_index].n_elements = 0;
-    comp_cores_bf_tables[comp_core_index].n_bit_fields = 0;
+    processor_bf_tables[processor_id].elements = NULL;
+    processor_bf_tables[processor_id].n_elements = 0;
+    processor_bf_tables[processor_id].n_bit_fields = 0;
     return true;
 }
 
@@ -156,8 +157,10 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
     // allocate sdram for the clone
     table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
     if (where_was_cloned == NULL) {
-        log_error("failed to allocate sdram for the cloned routing table for "
-                  "uncompressed compression attempt of bytes %d", sdram_used);
+        log_error(
+            "failed to allocate sdram for the cloned routing table for "
+            "uncompressed compression attempt of bytes %d",
+            sdram_used);
         return NULL;
     }
 
@@ -169,8 +172,7 @@ table_t* helpful_functions_clone_un_compressed_routing_table(
 
     // copy the table data over correctly
     routing_table_copy_table(
-        &uncompressed_router_table->uncompressed_table,
-        where_was_cloned);
+        &uncompressed_router_table->uncompressed_table, where_was_cloned);
     log_debug("cloned routing table entries is %d", where_was_cloned->size);
 
     check = malloc_extras_check(where_was_cloned);
