@@ -209,8 +209,8 @@ bool create_tables_and_set_off_bit_compressor(int mid_point, int core_index) {
     //log_info("started create bit field router tables");
     table_t **bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
-            mid_point, &n_rt_addresses, region_addresses,
-            uncompressed_router_table, bit_field_by_processor,
+            mid_point, &n_rt_addresses,
+            uncompressed_router_table,
             sorted_bit_fields);
     if (bit_field_routing_tables == NULL){
         log_info(
