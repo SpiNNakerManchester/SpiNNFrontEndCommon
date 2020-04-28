@@ -24,10 +24,10 @@
 #include "common/compressor_sorter_structs.h"
 
 // For each possible core the first index of a row for that core
-int processor_heads[N_CORES];
+int processor_heads[MAX_PROCESSORS];
 
 // Sum of packets per core for bitfields with redundancy not yet ordered
-uint32_t core_totals[N_CORES];
+uint32_t core_totals[MAX_PROCESSORS];
 
 // Number of bitfields with redundancy
 int n_bf_addresses = 0;
@@ -111,7 +111,7 @@ void _order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
         // Find the processor with highest number of packets coming in
         int worst_core = 0;
         uint32_t highest_neurons = 0;
-        for (int c = 0; c < N_CORES; c++) {
+        for (int c = 0; c < MAX_PROCESSORS; c++) {
             if (core_totals[c] > highest_neurons){
                 worst_core = c;
                 highest_neurons = core_totals[c];
@@ -226,7 +226,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
         return NULL;
     }
 
-    for (int i = 0; i < N_CORES; i++){
+    for (int i = 0; i < MAX_PROCESSORS; i++){
         processor_heads[i] = -1;
         core_totals[i] = 0;
     }
@@ -258,7 +258,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
 
     malloc_extras_check_all_marked(60012);
 
-    for (int i = 0; i < N_CORES; i++){
+    for (int i = 0; i < MAX_PROCESSORS; i++){
         log_debug("i: %d, head: %d count: %d", i, processor_heads[i], core_totals[i]);
     }
     malloc_extras_check_all_marked(60013);

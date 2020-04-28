@@ -18,6 +18,9 @@
 #ifndef __CONSTANTS_H__
 #define __CONSTANTS_H__
 
+//! max number of processors on chip used for app purposes
+#define MAX_PROCESSORS 18
+
 //! max length of the router table entries
 #define TARGET_LENGTH 1023
 
@@ -53,8 +56,5 @@
 
 //! \brief mask to get the finished state
 #define FINISHED_STATE_MASK 0x0000FFFF
-
-//! \brief The maximum number of cores on any chip
-#define N_CORES 18
 
 #endif  // __CONSTANTS_H__

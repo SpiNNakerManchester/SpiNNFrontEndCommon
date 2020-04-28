@@ -21,6 +21,25 @@
 #include <filter_info.h>
 #include <key_atom_map.h>
 
+//!===========================================================================
+//! enums
+
+//! \brief the acceptable finish states
+typedef enum finish_states {
+    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
+    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
+} finish_states;
+
+//! \brief the command codes in human readable form
+typedef enum command_codes_for_sdp_packet {
+    START_DATA_STREAM = 20,
+    COMPRESSION_RESPONSE = 21,
+    STOP_COMPRESSION_ATTEMPT = 22
+} command_codes_for_sdp_packet;
+
+//!=========================================================================
+//! structs
+
 //! \brief struct holding key and mask
 typedef struct key_mask_t {
     // Key for the key_mask
@@ -67,7 +86,7 @@ typedef struct comp_core_store_t{
 
 //! \brief the compressor cores data elements in sdram
 typedef struct compressor_cores_top_t {
-    uint32_t n_cores;
+    uint32_t n_processors;
     uint32_t core_id[];
 } compressor_cores_top_t;
 
@@ -148,19 +167,6 @@ typedef struct region_addresses_t {
     int n_pairs;
     pairs_t pairs[];
 } region_addresses_t;
-
-//! \brief the acceptable finish states
-typedef enum finish_states {
-    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
-    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
-} finish_states;
-
-//! \brief the command codes in human readable form
-typedef enum command_codes_for_sdp_packet {
-    START_DATA_STREAM = 20,
-    COMPRESSION_RESPONSE = 21,
-    STOP_COMPRESSION_ATTEMPT = 22
-} command_codes_for_sdp_packet;
 
 //! \brief the elements in the sdp packet (control for setting off a minimise
 //! attempt)

@@ -492,7 +492,7 @@ void log_core_status(){
 //! \param[in] mid_point: the mid point this core will use
 //! \return the core_index/processor id of the next available core or -1 if none
 int find_compressor_core(int midpoint){
-    for (int core_index = 0; core_index < N_CORES; core_index++) {
+    for (int core_index = 0; core_index < MAX_PROCESSORS; core_index++) {
         if (core_status[core_index] == DOING_NOWT){
             core_status[core_index] = midpoint ;
             return core_index;
@@ -504,7 +504,7 @@ int find_compressor_core(int midpoint){
 //! \brief Check if a compressor core is available
 //! \return true if at least one core is ready to compress
 bool all_compressor_cores_busy(){
-    for (int core_index = 0; core_index < N_CORES; core_index++) {
+    for (int core_index = 0; core_index < MAX_PROCESSORS; core_index++) {
         if (core_status[core_index] == DOING_NOWT){
             return false;
         }
@@ -515,7 +515,7 @@ bool all_compressor_cores_busy(){
 //! \brief Check to see if all compressor cores are done and not ready
 //! \return true if all cores are done and not set ready
 bool all_compressor_cores_done(){
-    for (int core_index = 0; core_index < N_CORES; core_index++) {
+    for (int core_index = 0; core_index < MAX_PROCESSORS; core_index++) {
         if (core_status[core_index] >= DOING_NOWT){
             return false;
         }
@@ -542,7 +542,7 @@ void carry_on_binary_search() {
     if (mid_point < 0) {
         // Ok lets turn all ready cores off as done.
         // At least default no bitfield handled elsewhere so safe here.
-        for (int core_index = 0; core_index < N_CORES; core_index++) {
+        for (int core_index = 0; core_index < MAX_PROCESSORS; core_index++) {
             if (core_status[core_index] == DOING_NOWT) {
                 core_status[core_index] = DO_NOT_USE;
             } else if (core_status[core_index] > DOING_NOWT) {
@@ -561,7 +561,7 @@ void carry_on_binary_search() {
         // Ok lets turn this and all ready cores off to save space.
         // At least defualt no birfeild handled elsewhere so of to reduce.
         core_status[core_index] = DO_NOT_USE;
-        for (int core_index = 0; core_index < N_CORES; core_index++) {
+        for (int core_index = 0; core_index < MAX_PROCESSORS; core_index++) {
             if (core_status[core_index] == DOING_NOWT) {
                 core_status[core_index] = DO_NOT_USE;
             }
@@ -600,7 +600,8 @@ void process_failed(int midpoint){
     }
     // tell all compression cores trying midpoints above this one
     // to stop, as its highly likely a waste of time.
-    for (int check_core_id = 0; check_core_id < N_CORES; check_core_id++) {
+    for (int check_core_id = 0; check_core_id < MAX_PROCESSORS;
+            check_core_id++) {
         if (core_status[check_core_id] > midpoint) {
             send_sdp_force_stop_message(check_core_id);
         }
@@ -645,7 +646,8 @@ void process_compressor_response(int core_index, int finished_state) {
 
         // kill any search below this point, as they all redundant as
         // this is a better search.
-        for (int check_core_id = 0; check_core_id < N_CORES; check_core_id++) {
+        for (int check_core_id = 0; check_core_id < MAX_PROCESSORS;
+                check_core_id++) {
             if (core_status[check_core_id] >= 0 &&
                     core_status[check_core_id] < mid_point) {
                 send_sdp_force_stop_message(check_core_id);
@@ -922,7 +924,7 @@ bool initialise_compressor_cores(void) {
 
     // allocate DTCM memory for the core status trackers
     log_info("allocate and step compressor core status");
-    core_status = MALLOC(N_CORES * sizeof(int));
+    core_status = MALLOC(MAX_PROCESSORS * sizeof(int));
     if (core_status == NULL) {
         log_error(
             "failed to allocate memory for tracking what the "
@@ -930,13 +932,13 @@ bool initialise_compressor_cores(void) {
         return false;
     }
     // Unless a core is found mark as not a compressor
-    for (int core = 0; core < N_CORES; core++) {
+    for (int core = 0; core < MAX_PROCESSORS; core++) {
         core_status[core] = NOT_COMPRESSOR;
     }
     // Switch compressor cores to DOING_NOWT
     compressor_cores_top_t *compressor_cores_top =
         (void *) &region_addresses->pairs[n_region_pairs];
-    for (uint32_t core=0; core < compressor_cores_top->n_cores; core++) {
+    for (uint32_t core=0; core < compressor_cores_top->n_processors; core++) {
         core_status[compressor_cores_top->core_id[core]] = DOING_NOWT;
     }
     //core_status[4] = DOING_NOWT;
@@ -949,7 +951,7 @@ bool initialise_compressor_cores(void) {
     // compressor to solve transmission faffs)
     log_info("malloc for table trackers");
     cores_bf_tables =
-        MALLOC_SDRAM(N_CORES * sizeof(comp_core_store_t));
+        MALLOC_SDRAM(MAX_PROCESSORS * sizeof(comp_core_store_t));
     if (cores_bf_tables == NULL) {
         log_error(
             "failed to allocate memory for the holding of bitfield "
@@ -959,7 +961,7 @@ bool initialise_compressor_cores(void) {
 
     // ensure all bits set properly as init
     log_info("setting up table trackers.");
-    for (int c_core = 0; c_core < N_CORES; c_core++) {
+    for (int c_core = 0; c_core < MAX_PROCESSORS; c_core++) {
         cores_bf_tables[c_core].n_elements = 0;
         cores_bf_tables[c_core].n_bit_fields = 0;
         cores_bf_tables[c_core].compressed_table = NULL;
@@ -1001,7 +1003,7 @@ static bool initialise(void) {
     // init the circular queue to handle the size of sdp messages expected
     // at any given point
     sdp_circular_queue = circular_buffer_initialize(
-        N_CORES * N_MSGS_EXPECTED_FROM_COMPRESSOR);
+        MAX_PROCESSORS * N_MSGS_EXPECTED_FROM_COMPRESSOR);
 
     // set up the best compressed table
     log_info(

@@ -24,10 +24,6 @@
 #include <filter_info.h>
 #include <malloc_extras.h>
 
-
-//! max number of processors on chip used for app purposes
-#define MAX_PROCESSORS 18
-
 //! max number of links on a router
 #define MAX_LINKS_PER_ROUTER 6
 
@@ -486,8 +482,8 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     bit_field_routing_tables[*n_rt_addresses - 1] = no_bitfield_table;
     malloc_extras_check_all_marked(7002);
 
-    filter_info_t* filters[N_CORES];
-    uint32_t bit_field_processors[N_CORES];
+    filter_info_t* filters[MAX_PROCESSORS];
+    uint32_t bit_field_processors[MAX_PROCESSORS];
     int bf_i = 0;
     int key_index =0;
     for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
