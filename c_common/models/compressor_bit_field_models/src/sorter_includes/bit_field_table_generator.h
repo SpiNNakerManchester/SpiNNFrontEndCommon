@@ -385,21 +385,20 @@ table_t* generate_table(
     log_debug(" n atoms is %d, size %d", n_atoms, sdram_table->size);
 
     uint32_t stripped_route = original_entry.route;
-    bit_field_t stripped_bf = &stripped_route;
     for (int i =0; i < bf_found; i++) {
         if (!bit_field_test(
-                stripped_bf, bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
+                &stripped_route,
+                bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
             log_error("WHAT THE FUCK!");
         }
         bit_field_clear(
-            stripped_bf, bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
+            &stripped_route, bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
     }
 
     // iterate though each atom and set the route when needed
     for (uint32_t atom = 0; atom < n_atoms; atom++) {
         // Assigning to a uint32 creates a copy
         uint32_t new_route = stripped_route;
-        bit_field_t new_bf = &new_route;
 
         // iterate through the bitfield processor's and see if they need this
         // atom
@@ -410,7 +409,7 @@ table_t* generate_table(
                     "setting for atom %d from bitfield index %d so proc %d",
                     atom, bf_index, bit_field_processors[bf_index]);
                 bit_field_set(
-                    new_bf,
+                    &new_route,
                     MAX_LINKS_PER_ROUTER + bit_field_processors[bf_index]);
             }
         }

@@ -189,26 +189,5 @@ typedef union {
     response_sdp_packet_t response;
 } compressor_payload_t;
 
-//! \brief struct for processor coverage by bitfield
-typedef struct _proc_cov_by_bitfield_t{
-    // processor id
-    int processor_id;
-    // length of the list
-    int length_of_list;
-    // list of the number of redundant packets from a bitfield
-    int* redundant_packets;
-} _proc_cov_by_bitfield_t;
-
-//! \brief struct for n redundant packets and the bitfield addresses of it
-typedef struct _coverage_t{
-    // n redundant packets
-    int n_redundant_packets;
-    // length of list
-    int length_of_list;
-    // list of corresponding processor id to the bitfield addresses list
-    int* processor_ids;
-    // list of addresses of bitfields with this x redundant packets
-    filter_info_t** bit_field_addresses;
-} _coverage_t;
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__
