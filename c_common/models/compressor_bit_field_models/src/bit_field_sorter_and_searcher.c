@@ -44,7 +44,7 @@
 //! \brief time step for safety timer tick interrupt
 #define TIME_STEP 10
 
-//! \brief After how many timesteps to kill the process
+//! \brief After how many time steps to kill the process
 #define KILL_TIME 2000000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
@@ -64,8 +64,8 @@ typedef enum priorities{
 //============================================================================
 //! global params
 
-//! \brief counter of how many timesteps have passed
-uint32_t timesteps = 0;
+//! \brief counter of how many time steps have passed
+uint32_t time_steps = 0;
 
 //! \brief bool flag for saying found the best stopping position
 volatile bool found_best = false;
@@ -507,7 +507,7 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 
 //! \brief Check if a compressor processor is available
 //! \return true if at least one processor is ready to compress
-bool all_compressor_processors_busy(void){
+bool all_compressor_processors_busy(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (processor_status[processor_id] == DOING_NOWT) {
             return false;
@@ -518,7 +518,7 @@ bool all_compressor_processors_busy(void){
 
 //! \brief Check to see if all compressor processor are done and not ready
 //! \return true if all processors are done and not set ready
-bool all_compressor_processors_done(void){
+bool all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (processor_status[processor_id] >= DOING_NOWT){
             return false;
@@ -529,13 +529,13 @@ bool all_compressor_processors_done(void){
 
 //! \brief Start the binary search on another compressor if one available
 
-void carry_on_binary_search() {
-     if (all_compressor_processors_done()){
+void carry_on_binary_search(void) {
+     if (all_compressor_processors_done()) {
         log_info("carry_on_binary_search detected done");
         handle_best_cleanup();
         // Above method has a terminate so no worry about carry on here
     }
-    if (all_compressor_processors_busy()){
+    if (all_compressor_processors_busy()) {
         return;  //Pass back to check_buffer_queue
     }
     log_debug("start carry_on_binary_search");
@@ -543,7 +543,8 @@ void carry_on_binary_search() {
 
     int mid_point = locate_next_mid_point();
     log_info("available with midpoint %d", mid_point);
-    if (mid_point < 0) {
+
+    if (mid_point == FAILED_TO_FIND) {
         // Ok lets turn all ready processors off as done.
         // At least default no bitfield handled elsewhere so safe here.
         for (int processor_id = 0; processor_id < MAX_PROCESSORS;
@@ -558,10 +559,11 @@ void carry_on_binary_search() {
         return;
     }
     int processor_id = find_compressor_processor_and_set_tracker(mid_point);
-    log_debug("start create at timestep: %u", timesteps);
+    log_debug("start create at time step: %u", time_steps);
     bool success =
         create_tables_and_set_off_bit_compressor(mid_point, processor_id);
-    log_debug("end create at timestep: %u", timesteps);
+    log_debug("end create at time step: %u", time_steps);
+
     if (!success) {
         // Ok lets turn this and all ready processors off to save space.
         // At least default no bitfield handled elsewhere so of to reduce.
@@ -576,6 +578,7 @@ void carry_on_binary_search() {
         bit_field_clear(tested_mid_points, mid_point);
         return;
     }
+
     log_debug("done carry_on_binary_search");
     malloc_extras_check_all_marked(1002);
 }
@@ -586,12 +589,12 @@ void carry_on_binary_search() {
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
-    timesteps+=1;
-    if ((timesteps & 1023) == 0){
-        log_info("timesteps: %u", timesteps);
+    time_steps+=1;
+    if ((time_steps & 1023) == 0){
+        log_info("time_steps: %u", time_steps);
     }
-    if (timesteps > KILL_TIME){
-       log_error("timer overran %u", timesteps);
+    if (time_steps > KILL_TIME){
+       log_error("timer overran %u", time_steps);
         rt_error(RTE_SWERR);
     }
 }
@@ -847,7 +850,7 @@ void start_compression_process(uint unused0, uint unused1) {
         malloc_extras_terminate(EXIT_MALLOC);
     }
 
-    log_info("reading bitfields at timestep: %d", timesteps);
+    log_info("reading bitfields at time step: %d", time_steps);
     sorted_bit_fields = bit_field_creator_read_in_bit_fields(region_addresses);
 
     // check state
@@ -856,7 +859,7 @@ void start_compression_process(uint unused0, uint unused1) {
         malloc_extras_terminate(EXIT_MALLOC);
     }
     lowest_failure = n_bf_addresses;
-    log_info("finished reading bitfields at timestep: %d", timesteps);
+    log_info("finished reading bitfields at time step: %d", time_steps);
 
     set_up_tested_mid_points();
 
