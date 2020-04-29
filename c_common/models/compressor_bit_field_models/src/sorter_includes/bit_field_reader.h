@@ -211,7 +211,7 @@ void _sort_by_key(sorted_bit_fields_t* sorted_bit_fields) {
 //! \param[in/out] success: bool that helps decide if method finished
 //! successfully or not
 //! \return bool that states if it succeeded or not.
-sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
+sorted_bit_fields_t* bit_field_reader_read_in_bit_fields(
         region_addresses_t *region_addresses){
 
     int n_triples = region_addresses->n_triples;

@@ -851,7 +851,7 @@ void start_compression_process(uint unused0, uint unused1) {
     }
 
     log_info("reading bitfields at time step: %d", time_steps);
-    sorted_bit_fields = bit_field_creator_read_in_bit_fields(region_addresses);
+    sorted_bit_fields = bit_field_reader_read_in_bit_fields(region_addresses);
 
     // check state
     if (sorted_bit_fields == NULL){
