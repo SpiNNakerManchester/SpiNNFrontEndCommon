@@ -122,7 +122,7 @@ void _order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
         log_debug("core %u index %u total %u", worst_core, index, core_totals[worst_core]);
         sort_order[index] = i;
 
-        // If there is another row with te same processor
+        // If there is another row with the same processor
         if ((index < n_bf_addresses -1) &&
                 (processor_ids[index] == processor_ids[index+1])) {
             log_debug("i %u core %u index %u more %u total %u", i, worst_core, index, n_bf_addresses, core_totals[worst_core]);
@@ -211,7 +211,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
 
     n_bf_addresses = 0;
     for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
-        n_bf_addresses += region_addresses->pairs[r_id].filter->n_filters;
+        n_bf_addresses += region_addresses->pairs[r_id].filter->n_redundancy_filters;
     }
     log_info("Number of bitfields found is %u", n_bf_addresses);
 
@@ -233,7 +233,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
         filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
         int processor = region_addresses->pairs[r_id].processor;
         processor_heads[processor] = index;
-        for (int bf_id = 0; bf_id < filter_region->n_filters; bf_id++) {
+        for (int bf_id = 0; bf_id < filter_region->n_redundancy_filters; bf_id++) {
             sorted_bit_fields->processor_ids[index] = processor;
             sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
             core_totals[processor] += filter_region->filters[bf_id].n_atoms;
@@ -243,11 +243,13 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
                 sorted_bit_fields->bit_fields[index]->data,
                 _detect_redundant_packet_count(
                     sorted_bit_fields->bit_fields[index]));
-                platform_check_all_marked(60001);
-                index++;
+            index++;
+        }
+        for (int bf_id = filter_region->n_redundancy_filters;
+                bf_id < filter_region->n_filters; bf_id++) {
+            core_totals[processor] += filter_region->filters[bf_id].n_atoms;
         }
     }
-
     platform_check_all_marked(60012);
 
     for (int i = 0; i < N_CORES; i++){
