@@ -28,7 +28,7 @@
 #include "common/compressor_sorter_structs.h"
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
-#include "sorter_includes/bit_field_creator.h"
+#include "sorter_includes/bit_field_reader.h"
 #include "sorter_includes/message_sending.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control
@@ -245,12 +245,12 @@ static inline filter_region_t* find_processor_bit_field_region(
         int processor_id){
 
     // find the right bitfield region
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
-        int region_proc_id = region_addresses->pairs[r_id].processor;
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
+        int region_proc_id = region_addresses->triples[r_id].processor;
         log_debug(
             "is looking for %d and found %d", processor_id, region_proc_id);
         if (region_proc_id == processor_id){
-            return region_addresses->pairs[r_id].filter;
+            return region_addresses->triples[r_id].filter;
         }
     }
 
@@ -300,7 +300,7 @@ bool remove_merged_bitfields_from_processors(void) {
 
     // iterate though the processors sorted, and remove said bitfields from its
     // region
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++){
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++){
         int processor_id = sorted_bf_key_proc[r_id].processor_id;
         log_debug("processor id %d", processor_id);
 
@@ -344,7 +344,7 @@ bool remove_merged_bitfields_from_processors(void) {
 
     log_info("go freeing");
     // free items
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         if (sorted_bf_key_proc[r_id].key_list->length_of_list != 0) {
             FREE(sorted_bf_key_proc[r_id].key_list->master_pop_keys);
             FREE(sorted_bf_key_proc[r_id].key_list);
@@ -839,7 +839,7 @@ void start_compression_process(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
-    
+
     // ensure prints are off for the malloc tracker
     malloc_extras_turn_off_print();
 
@@ -927,16 +927,16 @@ bool initialise_compressor_processors(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         processor_status[processor_id] = NOT_COMPRESSOR;
     }
-    
+
     // Switch compressor processors to DOING_NOWT
-    log_debug("n region pairs = %d", region_addresses->n_pairs);
+    log_debug("n region triples = %d", region_addresses->n_triples);
     compressor_processors_top_t *compressor_processors_top =
-        (void *) &region_addresses->pairs[region_addresses->n_pairs];
+        (void *) &region_addresses->triples[region_addresses->n_triples];
     for (uint32_t processor_index = 0;
             processor_index < compressor_processors_top->n_processors;
             processor_index++) {
         processor_status[
-            compressor_processors_top->processor_id[processor_index]] = 
+            compressor_processors_top->processor_id[processor_index]] =
                 DOING_NOWT;
     }
     //log_processor_status();
@@ -1010,7 +1010,7 @@ static bool initialise(void) {
         log_error("failed to allocate best space");
         return false;
     }
-    
+
     // finished init
     return true;
 }
@@ -1022,7 +1022,7 @@ void c_main(void) {
         log_error("failed to init");
         malloc_extras_terminate(EXIT_FAIL);
     }
-    
+
     // set up interrupts
     spin1_callback_on(SDP_PACKET_RX, sdp_handler, SDP_PRIORITY);
     spin1_set_timer_tick(TIME_STEP);
