@@ -47,8 +47,12 @@
 
 //! flag for saying compression processor doing nowt
 #define DOING_NOWT -1
-// 0 or higher is doing that midpoint
 
+//! flag saying there is no valid result for a given search (
+// locate processor, locate midpoint)
+#define FAILED_TO_FIND -1
+
+// 0 or higher is doing that midpoint
 #define ADD_INCLUSIVE_BIT 1
 
 //! \brief move for processor id in the circular queue
