@@ -28,7 +28,6 @@
 #include "common/compressor_sorter_structs.h"
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
-#include "sorter_includes/bit_field_reader.h"
 #include "sorter_includes/bit_field_creator.h"
 #include "sorter_includes/message_sending.h"
 /*****************************************************************************/
@@ -831,15 +830,6 @@ void start_compression_process(uint unused0, uint unused1) {
 
     malloc_extras_turn_off_print();
 
-    //TODO REMOVE
-    log_info("OLD read in bitfields");
-    bit_field_by_processor = bit_field_reader_read_in_bit_fields(
-            region_addresses);
-    if (bit_field_by_processor == NULL){
-        log_error("failed to read in bitfields, quitting");
-        malloc_extras_terminate(EXIT_MALLOC);
-    }
-
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_no_bitfeilds_attempt();
     if (!success){
@@ -873,7 +863,7 @@ void start_compression_process(uint unused0, uint unused1) {
         }
     }
 
-    // set off checker which in turn sets of the other compressor processors
+    // set off checker which in turn sets of the other compressor cores
     spin1_schedule_callback(
         check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
 }
