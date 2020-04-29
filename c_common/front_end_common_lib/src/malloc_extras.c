@@ -147,7 +147,7 @@ void malloc_extras_check_all_marked(int marker) {
     // only check if safety turned on. else pointless.
     if (safety) {
         bool failed = false;
-        for(int index = 0; index < malloc_points_size; index ++) {
+        for (int index = 0; index < malloc_points_size; index ++) {
             if (malloc_points[index] != 0) {
                 if (!malloc_extras_check(malloc_points[index])) {
                     log_error("the malloc with index %d has overran", index);
@@ -198,7 +198,7 @@ static void build_malloc_tracker(void) {
     }
 
     // set tracker.
-    for(int index = 0; index < malloc_points_size; index ++) {
+    for (int index = 0; index < malloc_points_size; index ++) {
         malloc_points[index] = 0;
     }
 }
@@ -473,7 +473,7 @@ bool malloc_extras_initialise_no_fake_heap_data(void) {
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
 void malloc_extras_free_marked(void *ptr, int marker) {
     // only print if its currently set to print (saves iobuf)
-    if(to_print) {
+    if (to_print) {
         log_info("freeing %x", ptr);
     }
 
@@ -539,7 +539,7 @@ static inline void build_bigger_size(void) {
     }
 
     // init the new store
-    for(int index = 0; index < new_malloc_points_size; index ++) {
+    for (int index = 0; index < new_malloc_points_size; index ++) {
         temp_pointer[index] = 0;
     }
 
@@ -605,7 +605,7 @@ static void add_safety_len_and_padding(int* p, uint bytes) {
     malloc_points[malloc_point_index] = (void *)  &p[1];
 
     // only print if its currently set to print (saves iobuf)
-    if(to_print) {
+    if (to_print) {
         log_info("index %d", malloc_point_index);
         log_info("address is %x", &p[1]);
     }
@@ -656,14 +656,14 @@ void * malloc_extras_malloc(uint bytes) {
 
         // if DTCM failed to malloc, go to SDRAM.
         if (p == NULL) {
-           if(to_print) {
+           if (to_print) {
                log_info("went to SDRAM");
            }
            p = safe_sdram_malloc(bytes);
         }
     // only use SDRAM. (safer to avoid stack overflows)
     } else {
-        if(to_print) {
+        if (to_print) {
             log_info("went to SDRAM without checking DTCM. as requested");
         }
         p = safe_sdram_malloc(bytes);

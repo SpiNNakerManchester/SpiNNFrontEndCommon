@@ -509,7 +509,7 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 //! \return true if at least one processor is ready to compress
 bool all_compressor_processors_busy(void){
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] == DOING_NOWT){
+        if (processor_status[processor_id] == DOING_NOWT) {
             return false;
         }
     }
@@ -622,7 +622,7 @@ void process_compressor_response(int processor_id, int finished_state) {
         finished_state, processor_id, mid_point);
 
     // safety check to ensure we dont go on if the uncompressed failed
-    if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION){
+    if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION) {
         log_error("The no bitfields attempted failed! Giving up");
         malloc_extras_terminate(EXIT_FAIL);
     }
@@ -814,10 +814,10 @@ void check_buffer_queue(uint unused0, uint unused1) {
     use(unused1);
 
     // iterate over the circular buffer until we have the finished state
-    while(!found_best) {
+    while (!found_best) {
         // get the next element if it has one
         uint32_t next_element;
-        if(circular_buffer_get_next(sdp_circular_queue, &next_element)) {
+        if (circular_buffer_get_next(sdp_circular_queue, &next_element)) {
             int processor_id = next_element >> CORE_MOVE;
             int finished_state = next_element & FINISHED_STATE_MASK;
             log_debug("processing packet from circular buffer");
