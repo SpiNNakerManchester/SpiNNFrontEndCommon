@@ -863,7 +863,7 @@ void start_compression_process(uint unused0, uint unused1) {
         }
     }
 
-    // set off checker which in turn sets of the other compressor cores
+    // set off checker which in turn sets of the other compressor processors
     spin1_schedule_callback(
         check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
 }
