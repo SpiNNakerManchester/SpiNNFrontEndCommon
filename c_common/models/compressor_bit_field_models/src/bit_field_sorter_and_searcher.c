@@ -45,7 +45,7 @@
 #define TIME_STEP 10
 
 //! \brief After how many timesteps to kill the process
-#define KILL_TIME 200000
+#define KILL_TIME 2000000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
@@ -584,6 +584,13 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     timesteps+=1;
+    if ((timesteps & 1023) == 0){
+        log_info("timesteps: %u", timesteps);
+    }
+    if (timesteps > KILL_TIME){
+       log_error("timer overran %u", timesteps);
+        rt_error(RTE_SWERR);
+    }
 }
 
 void process_failed(int midpoint){

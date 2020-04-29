@@ -274,7 +274,7 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     spin1_pause();
 
 
-    log_debug("n bitfields = %d", start_cmd->table_data->n_bit_fields);
+    log_info("n bitfields = %d", start_cmd->table_data->n_bit_fields);
     if (n_bit_fields == start_cmd->table_data->n_bit_fields) {
         log_debug("cloned message, ignoring");
         return;
