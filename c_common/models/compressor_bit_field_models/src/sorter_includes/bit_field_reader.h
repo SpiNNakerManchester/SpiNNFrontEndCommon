@@ -256,8 +256,6 @@ sorted_bit_fields_t* bit_field_reader_read_in_bit_fields(
                 _detect_redundant_packet_count(
                     sorted_bit_fields->bit_fields[index]));
             index++;
-                malloc_extras_check_all_marked(60001);
-                index++;
         }
         for (int bf_id = filter_region->n_redundancy_filters;
                 bf_id < filter_region->n_filters; bf_id++) {
