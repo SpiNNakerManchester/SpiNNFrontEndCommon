@@ -21,12 +21,8 @@
 #include "helpful_functions.h"
 #include "../common/constants.h"
 #include "../common/routing_table.h"
-#include "../common/platform.h"
 #include <filter_info.h>
-
-
-//! max number of processors on chip used for app purposes
-#define MAX_PROCESSORS 18
+#include <malloc_extras.h>
 
 //! max number of links on a router
 #define MAX_LINKS_PER_ROUTER 6
@@ -56,13 +52,12 @@ int count_unigue_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
     return count;
 }
 
-
 //! Generates a routing tables by merging an entry and a list of bitfields
-//!    by processor
-//! \param[in] original_entry: The Routing Tabkle entry in the original table
-//! \param[in] filters: List of the bitfeilds to me merged in
-//! \param[in] bit_field_processor: List of the processors for each bitfeild
-//! \param[in] bf_found: Number of bitfeilds found.
+//! by processor
+//! \param[in] original_entry: The Routing Table entry in the original table
+//! \param[in] filters: List of the bitfields to me merged in
+//! \param[in] bit_field_processor: List of the processors for each bitfield
+//! \param[in] bf_found: Number of bitfields found.
 table_t* generate_table(
     entry_t original_entry, filter_info_t** filters,
     uint32_t* bit_field_processors, int bf_found) {
@@ -85,9 +80,10 @@ table_t* generate_table(
 
     uint32_t stripped_route = original_entry.route;
     for (int i =0; i < bf_found; i++) {
-        //Saftey code to be removed
+        // Safety code to be removed
         if (!bit_field_test(
-            &stripped_route, bit_field_processors[i] + MAX_LINKS_PER_ROUTER)){
+                &stripped_route,
+                bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
             log_error("WHAT THE FUCK!");
         }
         bit_field_clear(
@@ -99,7 +95,8 @@ table_t* generate_table(
         // Assigning to a uint32 creates a copy
         uint32_t new_route = stripped_route;
 
-        // iterate through the bitfield cores and see if they need this atom
+        // iterate through the bitfield processor's and see if they need this
+        // atom
         for (int bf_index = 0; bf_index < bf_found; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
             if (bit_field_test(filters[bf_index]->data, atom)){
@@ -143,7 +140,7 @@ void insert_entry(entry_t original_entry, table_t* no_bitfield_table) {
 
 //! takes a midpoint and reads the sorted bitfields up to that point generating
 //! bitfield routing tables and loading them into sdram for transfer to a
-//! compressor core
+//! compressor processor
 //! \param[in] mid_point: where in the sorted bitfields to go to
 //! \param[out] n_rt_addresses: how many addresses are needed for the
 //! tables
@@ -155,7 +152,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         uncompressed_table_region_data_t *uncompressed_router_table,
         sorted_bit_fields_t *sorted_bit_fields){
 
-    platform_check_all_marked(7001);
+    malloc_extras_check_all_marked(7001);
     // semantic sugar to avoid referencing
     filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     int* processor_ids = sorted_bit_fields->processor_ids;
@@ -189,11 +186,12 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
         FREE(no_bitfield_table);
         return NULL;
     }
-    bit_field_routing_tables[*n_rt_addresses - 1] = no_bitfield_table;
-    platform_check_all_marked(7002);
 
-    filter_info_t* filters[N_CORES];
-    uint32_t bit_field_processors[N_CORES];
+    bit_field_routing_tables[*n_rt_addresses - 1] = no_bitfield_table;
+    malloc_extras_check_all_marked(7002);
+
+    filter_info_t* filters[MAX_PROCESSORS];
+    uint32_t bit_field_processors[MAX_PROCESSORS];
     int bf_i = 0;
     int key_index =0;
     for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
@@ -216,7 +214,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
             insert_entry(original[rt_i], no_bitfield_table);
         }
     }
-    platform_check_all_marked(7004);
+    malloc_extras_check_all_marked(7004);
     return bit_field_routing_tables;
 }
 
@@ -229,6 +227,10 @@ void log_table(table_t* table){
    }
 }
 
+
+//! \brief sorts a given table so that the entries in the table are by key
+//! value.
+//! \param[in] table: the table to sort.
 void sort_table_by_key(table_t* table) {
     uint32_t size = table->size;
     entry_t* entries = table->entries;

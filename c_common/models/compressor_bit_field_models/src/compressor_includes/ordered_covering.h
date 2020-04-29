@@ -22,7 +22,7 @@
 #include "bit_set.h"
 #include "merge.h"
 #include "remove_default_routes.h"
-#include "../common/platform.h"
+#include <malloc_extras.h>
 #include "../common/routing_table.h"
 #include <debug.h>
 

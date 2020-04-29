@@ -30,11 +30,13 @@ CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects
-OBJS = data_specification.o simulation.o recording.o profiler.o
+OBJS = data_specification.o simulation.o recording.o profiler.o malloc_extras.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers
-HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h debug.h eieio.h sdp_no_scp.h filter_info.h key_atom_map.h 
+HEADERS = common-typedefs.h data_specification.h simulation.h recording.h \
+          profiler.h buffered_eieio_defs.h debug.h eieio.h sdp_no_scp.h \
+          filter_info.h key_atom_map.h malloc_extras.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile

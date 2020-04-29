@@ -18,7 +18,7 @@
 #ifndef __M_TRIE_H__
 #define __M_TRIE_H__
 
-#include "../common/platform.h"
+#include <malloc_extras.h>
 #include "../common/routing_table.h"
 #include "bit_set.h"
 #include <stdbool.h>

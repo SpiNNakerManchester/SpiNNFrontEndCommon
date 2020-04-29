@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <debug.h>
-#include "platform.h"
+#include <malloc_extras.h>
 #include "compressor_sorter_structs.h"
 
 //! enum covering top level entries for routing tables in sdram
@@ -197,7 +197,7 @@ static inline bool routing_tables_init(
         table_lo_entry[current_n_tables] = current_low_entry;
     }
 
-    bool check = platform_check(table_lo_entry);
+    bool check = malloc_extras_check(table_lo_entry);
     if (!check){
         log_error("failed");
     }
@@ -233,7 +233,7 @@ bool routing_table_sdram_store(table_t *table_format) {
     log_debug("compressed address = %x", table_format);
     table_format->size = n_entries;
 
-    bool check = platform_check(table_format);
+    bool check = malloc_extras_check(table_format);
     if (!check){
         log_error("failed");
         rt_error(RTE_SWERR);
@@ -267,7 +267,7 @@ bool routing_table_sdram_store(table_t *table_format) {
             }
 
             log_debug("updated the main index to %d", main_entry_index);
-            check = platform_check(table_format);
+            check = malloc_extras_check(table_format);
             if (!check){
                 log_error("failed");
             }

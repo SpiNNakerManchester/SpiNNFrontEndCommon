@@ -21,6 +21,25 @@
 #include <filter_info.h>
 #include <key_atom_map.h>
 
+//!===========================================================================
+//! enums
+
+//! \brief the acceptable finish states
+typedef enum finish_states {
+    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
+    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
+} finish_states;
+
+//! \brief the command codes in human readable form
+typedef enum command_codes_for_sdp_packet {
+    START_DATA_STREAM = 20,
+    COMPRESSION_RESPONSE = 21,
+    STOP_COMPRESSION_ATTEMPT = 22
+} command_codes_for_sdp_packet;
+
+//!=========================================================================
+//! structs
+
 //! \brief struct holding key and mask
 typedef struct key_mask_t {
     // Key for the key_mask
@@ -52,9 +71,9 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
-//! holds data for each compressor core, used to free stuff properly when
+//! holds data for each compressor processor, used to free stuff properly when
 //! required
-typedef struct comp_core_store_t{
+typedef struct comp_processor_store_t{
     // how many rt tables used here
     int n_elements;
     // how many bit fields were used to make those tables
@@ -63,13 +82,13 @@ typedef struct comp_core_store_t{
     table_t *compressed_table;
     // elements
     table_t **elements;
-} comp_core_store_t;
+} comp_processor_store_t;
 
-//! \brief the compressor cores data elements in sdram
-typedef struct compressor_cores_top_t {
-    uint32_t n_cores;
-    uint32_t core_id[];
-} compressor_cores_top_t;
+//! \brief the compressor processor data elements in SDRAM
+typedef struct compressor_processors_top_t {
+    uint32_t n_processors;
+    uint32_t processor_id[];
+} compressor_processors_top_t;
 
 //! \brief struct to hide the VLA'ness of the proc bit field keys.
 typedef struct master_pop_key_list_t {
@@ -113,24 +132,25 @@ typedef struct uncompressed_table_region_data_t{
     table_t uncompressed_table;
 } uncompressed_table_region_data_t;
 
-//! \brief compressor core data region
-typedef struct compressor_cores_region_data_t{
-    // how many compressor cores
-    int n_compressor_cores;
+//! \brief compressor processor data region
+typedef struct compressor_processors_region_data_t{
+    // how many compressor processors
+    int n_compressor_processors;
     // the processor ids
     int *processor_ids;
-} compressor_cores_region_data_t;
+} compressor_processors_region_data_t;
 
-//! \brief holder for the bitfield addresses and the processor ids
+//! \brief holder for the list of bitfield associated processor ids.
+//! sorted order based off best effort linked to sorted_bit_fields,
+//! but separate to avoid sdram rewrites
 typedef struct sorted_bit_fields_t{
-    //! list of bitfield associated processor ids. sorted order based off best
-    //! effort linked to sorted_bit_fields, but separate to avoid sdram
-    //! rewrites
+    //! len of the arrays
     int n_bit_fields;
+    //! list of bitfield associated processor ids.
     int* processor_ids;
     //! the list of bitfields in sorted order based off best effect.
     filter_info_t** bit_fields;
-    //! the sort order based on best contribution to reducing redunancy
+    //! the sort order based on best contribution to reducing redundancy
     int* sort_order;
 } sorted_bit_fields_t;
 
@@ -148,25 +168,12 @@ typedef struct region_addresses_t {
     pairs_t pairs[];
 } region_addresses_t;
 
-//! \brief the acceptable finish states
-typedef enum finish_states {
-    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
-    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
-} finish_states;
-
-//! \brief the command codes in human readable form
-typedef enum command_codes_for_sdp_packet {
-    START_DATA_STREAM = 20,
-    COMPRESSION_RESPONSE = 21,
-    STOP_COMPRESSION_ATTEMPT = 22
-} command_codes_for_sdp_packet;
-
 //! \brief the elements in the sdp packet (control for setting off a minimise
 //! attempt)
 typedef struct start_sdp_packet_t {
     uint32_t command_code;
     heap_t *fake_heap_data;
-    comp_core_store_t *table_data;
+    comp_processor_store_t *table_data;
 } start_sdp_packet_t;
 
 //! \brief the elements in the sdp packet when response to compression attempt.
@@ -182,26 +189,5 @@ typedef union {
     response_sdp_packet_t response;
 } compressor_payload_t;
 
-//! \brief struct for processor coverage by bitfield
-typedef struct _proc_cov_by_bitfield_t{
-    // processor id
-    int processor_id;
-    // length of the list
-    int length_of_list;
-    // list of the number of redundant packets from a bitfield
-    int* redundant_packets;
-} _proc_cov_by_bitfield_t;
-
-//! \brief struct for n redundant packets and the bitfield addresses of it
-typedef struct _coverage_t{
-    // n redundant packets
-    int n_redundant_packets;
-    // length of list
-    int length_of_list;
-    // list of corresponding processor id to the bitfield addresses list
-    int* processor_ids;
-    // list of addresses of bitfields with this x redundant packets
-    filter_info_t** bit_field_addresses;
-} _coverage_t;
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__

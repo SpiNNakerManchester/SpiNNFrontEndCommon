@@ -23,7 +23,7 @@
 // DAMN WELL LOOKS LIKE A FILTER_INFO.h
 
 #include <stdint.h>
-#include "../common/platform.h"
+#include <malloc_extras.h>
 #include "../common/common_helpful_functions.h"
 #include "../common/constants.h"
 #include <debug.h>
