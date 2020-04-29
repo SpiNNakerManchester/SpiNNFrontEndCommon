@@ -261,7 +261,7 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
         }
         for (int bf_id = filter_region->n_redundancy_filters;
                 bf_id < filter_region->n_filters; bf_id++) {
-            core_totals[processor] += filter_region->filters[bf_id].n_atoms;
+            processor_totals[processor] += filter_region->filters[bf_id].n_atoms;
         }
     }
 
