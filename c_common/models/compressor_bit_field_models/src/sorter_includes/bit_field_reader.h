@@ -214,12 +214,12 @@ void _sort_by_key(sorted_bit_fields_t* sorted_bit_fields) {
 sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
         region_addresses_t *region_addresses){
 
-    int n_pairs_of_addresses = region_addresses->n_pairs;
-    log_debug("n pairs of addresses = %d", n_pairs_of_addresses);
+    int n_triples = region_addresses->n_triples;
+    log_debug("n triples of addresses = %d", n_triples);
 
     n_bf_addresses = 0;
-    for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
-        n_bf_addresses += region_addresses->pairs[r_id].filter->n_redundancy_filters;
+    for (int r_id = 0; r_id < n_triples; r_id++) {
+        n_bf_addresses += region_addresses->triples[r_id].filter->n_redundancy_filters;
     }
     log_info("Number of bitfields found is %u", n_bf_addresses);
 
@@ -236,10 +236,10 @@ sorted_bit_fields_t* bit_field_creator_read_in_bit_fields(
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
     int index = 0;
-    for (int r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
+    for (int r_id = 0; r_id < n_triples; r_id++) {
         // locate data for malloc memory calcs
-        filter_region_t *filter_region = region_addresses->pairs[r_id].filter;
-        int processor = region_addresses->pairs[r_id].processor;
+        filter_region_t *filter_region = region_addresses->triples[r_id].filter;
+        int processor = region_addresses->triples[r_id].processor;
         processor_heads[processor] = index;
         for (int bf_id = 0; bf_id < filter_region->n_redundancy_filters; bf_id++) {
             sorted_bit_fields->processor_ids[index] = processor;
@@ -330,7 +330,7 @@ proc_bit_field_keys_t* sorter_by_processors(
         region_addresses_t *region_addresses, int best_search_point,
         sorted_bit_fields_t* sorted_bit_fields) {
     proc_bit_field_keys_t *sorted_bf_by_processor =
-            MALLOC(region_addresses->n_pairs * sizeof(proc_bit_field_keys_t));
+            MALLOC(region_addresses->n_triples * sizeof(proc_bit_field_keys_t));
     if (sorted_bf_by_processor == NULL) {
         log_error(
             "failed to allocate memory for the sorting of bitfield to keys");
@@ -338,7 +338,7 @@ proc_bit_field_keys_t* sorter_by_processors(
     }
 
     // malloc the lists
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++){
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++){
         sorted_bf_by_processor[r_id].key_list =
             MALLOC(sizeof(master_pop_key_list_t));
         if (sorted_bf_by_processor[r_id].key_list == NULL){
@@ -349,10 +349,10 @@ proc_bit_field_keys_t* sorter_by_processors(
 
     //locate how many bitfields in the search space accepted that are of a
     // given processor.
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++){
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++){
 
         // locate processor id for this region
-        int region_proc_id = region_addresses->pairs[r_id].processor;
+        int region_proc_id = region_addresses->triples[r_id].processor;
         sorted_bf_by_processor[r_id].processor_id = region_proc_id;
 
         // count entries
@@ -379,7 +379,7 @@ proc_bit_field_keys_t* sorter_by_processors(
                 for (int free_id =0; free_id < r_id; free_id++) {
                     FREE(sorted_bf_by_processor[free_id].key_list->master_pop_keys);
                 }
-                for (int free_id = 0; free_id < region_addresses->n_pairs;
+                for (int free_id = 0; free_id < region_addresses->n_triples;
                         free_id++){
                     FREE(sorted_bf_by_processor[free_id].key_list);
                 }

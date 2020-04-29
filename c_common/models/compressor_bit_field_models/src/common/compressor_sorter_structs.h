@@ -155,17 +155,17 @@ typedef struct sorted_bit_fields_t{
 } sorted_bit_fields_t;
 
 //! \brief a single mapping in the addresses area
-typedef struct pairs_t {
+typedef struct triples_t {
     filter_region_t *filter;
     key_atom_data_t *key_atom;
     int processor;
-} pairs_t;
+} triples_t;
 
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
     int threshold;
-    int n_pairs;
-    pairs_t pairs[];
+    int n_triples;
+    triples_t triples[];
 } region_addresses_t;
 
 //! \brief the elements in the sdp packet (control for setting off a minimise

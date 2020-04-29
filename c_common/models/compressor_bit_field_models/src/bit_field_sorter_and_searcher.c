@@ -28,7 +28,7 @@
 #include "common/compressor_sorter_structs.h"
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
-#include "sorter_includes/bit_field_creator.h"
+#include "sorter_includes/bit_field_reader.h"
 #include "sorter_includes/message_sending.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control
@@ -245,12 +245,12 @@ static inline filter_region_t* find_processor_bit_field_region(
         int processor_id){
 
     // find the right bitfield region
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
-        int region_proc_id = region_addresses->pairs[r_id].processor;
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
+        int region_proc_id = region_addresses->triples[r_id].processor;
         log_debug(
             "is looking for %d and found %d", processor_id, region_proc_id);
         if (region_proc_id == processor_id){
-            return region_addresses->pairs[r_id].filter;
+            return region_addresses->triples[r_id].filter;
         }
     }
 
@@ -300,7 +300,7 @@ bool remove_merged_bitfields_from_processors(void) {
 
     // iterate though the processors sorted, and remove said bitfields from its
     // region
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++){
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++){
         int processor_id = sorted_bf_key_proc[r_id].processor_id;
         log_debug("processor id %d", processor_id);
 
@@ -344,7 +344,7 @@ bool remove_merged_bitfields_from_processors(void) {
 
     log_info("go freeing");
     // free items
-    for (int r_id = 0; r_id < region_addresses->n_pairs; r_id++) {
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         if (sorted_bf_key_proc[r_id].key_list->length_of_list != 0) {
             FREE(sorted_bf_key_proc[r_id].key_list->master_pop_keys);
             FREE(sorted_bf_key_proc[r_id].key_list);
@@ -911,10 +911,10 @@ static void initialise_routing_control_flags(void) {
 
 //! \brief get compressor processors
 bool initialise_compressor_processors(void) {
-    // locate the data point for compressor processors, straight after pair
+    // locate the data point for compressor processors, straight after triple
     // data
-    int n_region_pairs = region_addresses->n_pairs;
-    log_debug("n region pairs = %d", n_region_pairs);
+    int n_region_triples = region_addresses->n_triples;
+    log_debug("n region triples = %d", n_region_triples);
 
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
@@ -931,7 +931,7 @@ bool initialise_compressor_processors(void) {
     }
     // Switch compressor processors to DOING_NOWT
     compressor_processors_top_t *compressor_processors_top =
-        (void *) &region_addresses->pairs[n_region_pairs];
+        (void *) &region_addresses->triples[n_region_triples];
     for (uint32_t processor_index=0;
             processor_index < compressor_processors_top->n_processors;
             processor_index++) {

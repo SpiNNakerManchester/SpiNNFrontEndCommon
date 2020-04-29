@@ -32,8 +32,8 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
         filter_info_t filter, region_addresses_t *region_addresses,
         bit_field_by_processor_t* bit_field_by_processor){
 
-    int n_pairs = region_addresses->n_pairs;
-    for (int bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++) {
+    int n_triples = region_addresses->n_triples;
+    for (int bf_by_proc = 0; bf_by_proc < n_triples; bf_by_proc++) {
         bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
         for (int addr_i = 0; addr_i < element.length_of_list; addr_i++) {
             if (element.bit_field_addresses[addr_i].data == filter.data) {
@@ -41,39 +41,6 @@ static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
             }
         }
     }
-    malloc_extras_terminate(EXIT_FAIL);
-    return 0;
-}
-
-
-//! \brief reads in the addresses region and from there reads in the key atom
-// map and from there searches for a given key. when found, returns the n atoms
-//! \param[in] key: the key to locate n atoms for
-//! \param[in] region_addresses: sdram data for where data regions are
-//! \return atom for the key
-static inline uint32_t helpful_functions_locate_key_atom_map(
-        uint32_t key, region_addresses_t *region_addresses){
-    // locate n address pairs
-    uint32_t n_address_pairs = region_addresses->n_pairs;
-
-    // cycle through key to atom regions to locate key
-    for (uint32_t r_id = 0; r_id < n_address_pairs; r_id++){
-        // get key address region
-        key_atom_data_t *key_atom_map = region_addresses->pairs[r_id].key_atom;
-
-        // read how many keys atom pairs there are
-        uint32_t n_key_atom_pairs = key_atom_map->n_pairs;
-
-        // cycle through keys in this region looking for the key find atoms of
-        for (uint32_t i = 0; i < n_key_atom_pairs; i++) {
-            // if key is correct, return atoms
-            if (key_atom_map->pairs[i].key == key) {
-                return key_atom_map->pairs[i].n_atoms;
-            }
-        }
-    }
-
-    log_error("cannot find the key %d at all?! WTF", key);
     malloc_extras_terminate(EXIT_FAIL);
     return 0;
 }
