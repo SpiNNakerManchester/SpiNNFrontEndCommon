@@ -182,8 +182,11 @@ void send_sdp_force_stop_message(int processor_id){
 //! \brief sets up the search bitfields.
 //! \return bool saying success or failure of the setup
 bool set_up_tested_mid_points(void) {
-    log_info("set_up_tested_mid_point n bf addresses is %d", n_bf_addresses);
-    uint32_t words = get_bit_field_size(n_bf_addresses + ADD_INCLUSIVE_BIT);
+    log_info(
+        "set_up_tested_mid_point n bf addresses is %d",
+        sorted_bit_fields->n_bit_fields);
+    uint32_t words = get_bit_field_size(
+        sorted_bit_fields->n_bit_fields + ADD_INCLUSIVE_BIT);
     if (tested_mid_points == NULL) {
         tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
     }
@@ -285,14 +288,15 @@ bool has_entry_in_sorted_keys(
 //! \return bool if was successful or not
 bool remove_merged_bitfields_from_processors(void) {
     // only try if there are bitfields to remove
-    if (n_bf_addresses == 0){
+    if (sorted_bit_fields->n_bit_fields == 0){
         log_info("no bitfields to remove");
         return true;
     }
 
     // which bitfields are to be removed from which processors
-    proc_bit_field_keys_t *sorted_bf_key_proc = sorter_by_processors(
-        region_addresses, best_search_point, sorted_bit_fields);
+    proc_bit_field_keys_t *sorted_bf_key_proc =
+        bit_field_reader_sort_by_processors(
+            region_addresses, best_search_point, sorted_bit_fields);
     if (sorted_bf_key_proc == NULL) {
         log_error("could not sort out bitfields to keys.");
         return false;
@@ -360,20 +364,21 @@ bool remove_merged_bitfields_from_processors(void) {
 //! \return int which is the midpoint or -1 if no midpoints left
 int locate_next_mid_point(void) {
     int new_mid_point;
-    if (n_bf_addresses == 0) {
+    if (sorted_bit_fields->n_bit_fields == 0) {
         return FAILED_TO_FIND;
     }
 
     // if not tested yet, test all
-    if (!bit_field_test(tested_mid_points, n_bf_addresses)){
-        new_mid_point = n_bf_addresses;
+    if (!bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields)){
+        new_mid_point = sorted_bit_fields->n_bit_fields;
         return new_mid_point;
     }
 
     // need to find a midpoint
     log_debug(
         "n_bf_addresses %d tested_mid_points %d",
-        n_bf_addresses, bit_field_test(tested_mid_points, n_bf_addresses));
+        sorted_bit_fields->n_bit_fields,
+        bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields));
 
     // the last point of the longest space
     int best_end = FAILED_TO_FIND;
@@ -470,7 +475,8 @@ void handle_best_cleanup(void){
 //! \brief prints out the status of the processors.
 void log_processor_status(){
     for (int i = 0; i < 18; i++){
-        if (processor_status[i] < -3 || processor_status[i] > n_bf_addresses){
+        if (processor_status[i] < -3 ||
+                processor_status[i] > sorted_bit_fields->n_bit_fields){
             log_error("Weird status %d: %d", i, processor_status[i]);
             return;
         }
@@ -851,20 +857,21 @@ void start_compression_process(uint unused0, uint unused1) {
     }
 
     log_info("reading bitfields at time step: %d", time_steps);
-    sorted_bit_fields = bit_field_creator_read_in_bit_fields(region_addresses);
+    sorted_bit_fields = bit_field_reader_read_in_bit_fields(region_addresses);
 
     // check state
-    if (sorted_bit_fields == NULL){
+    if (sorted_bit_fields == NULL) {
         log_error("failed to read in bitfields, quitting");
         malloc_extras_terminate(EXIT_MALLOC);
     }
-    lowest_failure = n_bf_addresses;
+    lowest_failure = sorted_bit_fields->n_bit_fields;
     log_info("finished reading bitfields at time step: %d", time_steps);
 
     set_up_tested_mid_points();
 
     //TODO: safety code to be removed
-    for (int bit_field_index = 0; bit_field_index < n_bf_addresses;
+    for (int bit_field_index = 0;
+            bit_field_index < sorted_bit_fields->n_bit_fields;
             bit_field_index++) {
         // get key
         filter_info_t* bf_pointer =
