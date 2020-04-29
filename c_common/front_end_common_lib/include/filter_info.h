@@ -29,7 +29,11 @@ typedef struct filter_info_t{
 
 //! \brief the elements in the bitfield region
 typedef struct filter_region_t{
-    // how many filters there are
+    // how many filters have been merged into routing tables
+    int n_merged_filters;
+    // total number of filters with redundant packets. (merged or not)
+    int n_redundancy_filters;
+    // total number of filters including with and without redundancy
     int n_filters;
     // the filters
     filter_info_t filters[];
