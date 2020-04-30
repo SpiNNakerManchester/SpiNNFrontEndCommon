@@ -849,6 +849,21 @@ void start_compression_process(uint unused0, uint unused1) {
     // ensure prints are off for the malloc tracker
     malloc_extras_turn_off_print();
 
+    // malloc the struct and populate n bit-fields. DOES NOT populate the rest.
+    sorted_bit_fields = bit_field_reader_initialise(region_addresses);
+
+    // check state to fail if not read in
+    // TODO this may not be valid action when trying to allow uncompressed
+    // best chance to pass.
+    if (sorted_bit_fields == NULL) {
+        log_error("failed to read in bitfields, quitting");
+        malloc_extras_terminate(EXIT_MALLOC);
+    }
+
+    // set up mid point trackers. NEEDED here as setup no bitfields attempt
+    // will use it during processor allocation.
+    set_up_tested_mid_points();
+
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_no_bitfields_attempt();
     if (!success){
@@ -856,18 +871,12 @@ void start_compression_process(uint unused0, uint unused1) {
         malloc_extras_terminate(EXIT_MALLOC);
     }
 
-    log_info("reading bitfields at time step: %d", time_steps);
-    sorted_bit_fields = bit_field_reader_read_in_bit_fields(region_addresses);
+    log_info("populating sorted bitfields at time step: %d", time_steps);
+    bit_field_reader_read_in_bit_fields(region_addresses, sorted_bit_fields);
 
-    // check state
-    if (sorted_bit_fields == NULL) {
-        log_error("failed to read in bitfields, quitting");
-        malloc_extras_terminate(EXIT_MALLOC);
-    }
+    // the first possible failure is all bitfields so set there.
     lowest_failure = sorted_bit_fields->n_bit_fields;
     log_info("finished reading bitfields at time step: %d", time_steps);
-
-    set_up_tested_mid_points();
 
     //TODO: safety code to be removed
     for (int bit_field_index = 0;
