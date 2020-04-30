@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BIT_FIELD_CREATER_H__
-#define __BIT_FIELD_CREATER_H__
+#ifndef __BIT_FIELD_READER_H__
+#define __BIT_FIELD_READER_H__
 
 #include <debug.h>
 #include <malloc_extras.h>
@@ -167,7 +167,7 @@ static inline void order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
                 sorted_index, worst_processor, index,
                 sorted_bit_fields->n_bit_fields,
                  processor_totals[worst_processor]);
-                
+
             // reduce the packet count bu redundancy
             processor_totals[worst_processor] -=
                 detect_redundant_packet_count(bit_fields[index]);
@@ -279,13 +279,13 @@ static void print_structs(sorted_bit_fields_t* sorted_bit_fields, int marker) {
 //! \param[in] sorted_bit_fields: the sorted bitfield struct with bitfields
 //! in sorted order.
 static inline void fills_in_sorted_bit_fields_and_tracker(
-        region_addresses_t *region_addresses, 
+        region_addresses_t *region_addresses,
         sorted_bit_fields_t* sorted_bit_fields) {
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
     int index = 0;
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        
+
         // locate data for malloc memory calcs
         filter_region_t *filter_region = region_addresses->triples[r_id].filter;
         int processor = region_addresses->triples[r_id].processor;
@@ -426,4 +426,4 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
     return sorted_bit_fields;
 }
 
-#endif  // __BIT_FIELD_CREATER_H__
+#endif  // __BIT_FIELD_READER_H__

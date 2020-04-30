@@ -631,20 +631,23 @@ void process_compressor_response(int processor_id, int finished_state) {
         finished_state, processor_id, mid_point);
 
     // safety check to ensure we dont go on if the uncompressed failed
-    if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION) {
+    if (mid_point == 0 && finished_state != SUCCESSFUL_COMPRESSION) {
         log_error("The no bitfields attempted failed! Giving up");
+        // TODO could try again with no other surplus mallocs if attempt
+        // failed from malloc.
         malloc_extras_terminate(EXIT_FAIL);
     }
 
     // free the processor for future processing
     processor_status[processor_id] = DOING_NOWT;
 
+    // if compressed was successful, store if best.
     if (finished_state == SUCCESSFUL_COMPRESSION) {
         log_info(
             "successful from processor %d doing mid point %d",
             processor_id, mid_point);
 
-        if (best_success <= mid_point){
+        if (best_success <= mid_point) {
             best_success = mid_point;
             log_info(
                 "copying to %x from %x for compressed table",
@@ -866,7 +869,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // set off the first compression attempt (aka no bitfields).
     bool success = setup_no_bitfields_attempt();
-    if (!success){
+    if (!success) {
         log_error("failed to set up uncompressed attempt");
         malloc_extras_terminate(EXIT_MALLOC);
     }
