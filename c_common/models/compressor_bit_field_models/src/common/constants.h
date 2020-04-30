@@ -40,13 +40,16 @@
 #define BITS_IN_A_WORD 32
 
 //! flag for saying processor is not a compressor
-#define NOT_COMPRESSOR -3
+#define NOT_COMPRESSOR - 4
 
 //! flag for saying compression processor should not be used any more
-#define DO_NOT_USE - 2
+#define DO_NOT_USE - 3
 
-//! flag for saying compression processor doing nowt
-#define DOING_NOWT -1
+//! flag for saying compression processor needs to be prepared for the first time
+#define TO_BE_PREPARED -2
+
+//! flag to say compression procesor has been asked to prepare/ clear previous
+#define PREPARING -1
 
 //! flag saying there is no valid result for a given search (
 // locate processor, locate midpoint)
@@ -60,5 +63,8 @@
 
 //! \brief mask to get the finished state
 #define FINISHED_STATE_MASK 0x0000FFFF
+
+//! how many tables the uncompressed router table entries is
+#define N_UNCOMPRESSED_TABLE 1
 
 #endif  // __CONSTANTS_H__

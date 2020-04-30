@@ -421,10 +421,10 @@ void initialise(void) {
         compress_as_much_as_possible = true;
     }
 
-    // set user 1,2,3 registers to 0
-    this_processor->user1 = 0;
-    this_processor->user2 = 0;
-    this_processor->user3 = 0;
+    // set user 1,2,3 registers to NULL
+    this_processor->user1 = NULL;
+    this_processor->user2 = NULL;
+    this_processor->user3 = NULL;
 
     // sort out timer (this is done in a indirect way due to lack of trust to
     // have timer only fire after full time after pause and resume.

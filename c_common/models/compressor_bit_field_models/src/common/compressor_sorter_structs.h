@@ -25,10 +25,15 @@
 //! enums
 
 //! \brief the acceptable finish states
-typedef enum finish_states {
-    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
-    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
-} finish_states;
+typedef enum compressor_states {
+   PREPARED = 30, COMPRESSING = 31, FORCED_BY_COMPRESSOR_CONTROL = 32,
+   SUCCESSFUL_COMPRESSION = 33, FAILED_MALLOC = 34, FAILED_TO_COMPRESS = 35,
+   RAN_OUT_OF_TIME = 36
+} compressor_states;
+
+typedef enum instrucions_to_compressor {
+    PREPARE = 40,  RUN = 41, STOP_FORCED = 42
+} instrucions_to_compressor;
 
 //! \brief the command codes in human readable form
 typedef enum command_codes_for_sdp_packet {
@@ -83,6 +88,19 @@ typedef struct comp_processor_store_t{
     // elements
     table_t **elements;
 } comp_processor_store_t;
+
+typedef struct comp_instruction_t{
+    // how many rt tables used here
+    int n_elements;
+    // how many bit fields were used to make those tables
+    int n_bit_fields;
+    // compressed table location
+    table_t *compressed_table;
+    // elements
+    table_t **elements;
+    // initialise value for malloc_extras_
+    heap_t *fake_heap_data;
+} comp_instruction_t;
 
 //! \brief the compressor processor data elements in SDRAM
 typedef struct compressor_processors_top_t {
