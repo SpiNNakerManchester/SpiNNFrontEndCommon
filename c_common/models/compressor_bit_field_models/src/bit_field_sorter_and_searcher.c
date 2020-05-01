@@ -163,6 +163,21 @@ void send_force_stop_message(int processor_id){
     comp_processor->user2 = FORCE_TO_STOP;
 }
 
+//! \brief sends a message telling the processor to prepare for the next run
+//! This is critical as it tells the processor to clear the result field
+//! \param[in] processor_id: the processor id to send a prepare to
+//! compression attempt
+//! \return bool saying successfully sent the message
+void send_prepape_message(int processor_id){
+    // set message params
+    log_debug(
+        "sending prepare to processor %d", processor_id);
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
+    comp_processor->user2 = PREPARE;
+    processor_status[processor_id] = PREPARING;
+}
+
 //! \brief sets up the search bitfields.
 //! \return bool saying success or failure of the setup
 bool set_up_tested_mid_points(void) {
@@ -189,12 +204,12 @@ bool set_up_tested_mid_points(void) {
 //! brief frees SDRAM from the compressor processor.
 //! \param[in] instuctions: Pointer to the instructions on the compressors
 void free_sdram_from_compression_attempt(comp_instruction_t* instuctions) {
-    if (instuctions.elements != NULL) {
+    if (instuctions->elements != NULL) {
         // free the individual elements
         for (int bit_field_id = 0; bit_field_id < instuctions->n_elements; bit_field_id++) {
-            FREE(instuctions.elements[bit_field_id]);
+            FREE(instuctions->elements[bit_field_id]);
         }
-        FREE(instuctions.elements);
+        FREE(instuctions->elements);
     }
 }
 
@@ -253,8 +268,8 @@ bool create_tables_and_set_off_bit_compressor(
     log_debug("finished creating bit field router tables");
 
     // if successful, try setting off the bitfield compression
-    pass_instructions_to_compressor(n_rt_addresses, processor_id, mid_point
-        bit_field_routing_tables)
+    pass_instructions_to_compressor(n_rt_addresses, processor_id, mid_point,
+        bit_field_routing_tables);
 
     malloc_extras_check_all_marked(1001);
     return true;
@@ -531,7 +546,7 @@ bool check_processor_prepared(int processor_id) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
     compressor_states comp_state = (compressor_states)comp_processor->user3;
-    return state == PREPARED;
+    return comp_state == PREPARED;
 }
 
 //! \brief Prepraes a processor for the first time.
@@ -543,14 +558,14 @@ bool prepare_processor_first_time(int processor_id ) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
     comp_processor->user2 = PREPARE;
-    comp_processor->user1 = MALLOC(sizeof(comp_instruction_t));
+    comp_processor->user1 = (int)MALLOC(sizeof(comp_instruction_t));
     if (comp_processor->user1 == NULL) {
         log_error("Failed to malloc comp_instruction_t for processor %d",
             processor_id);
-        processor_status[processor_id] == DO_NOT_USE;
-        return False;
+        processor_status[processor_id] = DO_NOT_USE;
+        return false;
     }
-    comp_instruction_t* instuctions = (comp_instruction_t*)this_processor->user1;
+    comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
     instuctions->n_elements = NULL;
     instuctions->n_bit_fields = NULL;
     instuctions->compressed_table = MALLOC_SDRAM(
@@ -558,9 +573,9 @@ bool prepare_processor_first_time(int processor_id ) {
     if (instuctions->compressed_table == NULL) {
         log_error("Failed to malloc comp_instruction_t for processor %d",
             processor_id);
-        processor_status[processor_id] == DO_NOT_USE;
-        free(comp_processor->user1);
-        return False;
+        processor_status[processor_id] = DO_NOT_USE;
+        FREE((void*)comp_processor->user1);
+        return false;
     }
     instuctions->elements = NULL;
     instuctions->fake_heap_data = malloc_extras_get_stolen_heap();
@@ -570,13 +585,13 @@ bool prepare_processor_first_time(int processor_id ) {
         //spin1_delay_us(50);
         count++;
         if (count > 20) {
-            processor_status[processor_id] == DO_NOT_USE;
-            free(instuctions->compressed_table);
-            free(comp_processor->user1);
-            return False;
+            processor_status[processor_id] = DO_NOT_USE;
+            FREE(instuctions->compressed_table);
+            FREE((void*)comp_processor->user1);
+            return false;
         }
     }
-    return True;
+    return true;
 }
 
 //! \brief Returns the next processor id which is ready to run a compression
@@ -586,16 +601,19 @@ bool find_prepared_processor(void) {
     // Look for a prepared one
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (processor_status[processor_id] == PREPARING) {
-            if check_processor_prepared(processor_id) {
+            if (check_processor_prepared(processor_id)) {
                 return processor_id;
             }
         }
     }
     // Look for a processor never used and  prepare it
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        prepare_processor_first_time(processor_id ) {
-             return processor_id;
+        if (processor_status[processor_id] == TO_BE_PREPARED) {
+            if (prepare_processor_first_time(processor_id)) {
+                return processor_id;
+            }
         }
+    }
     return FAILED_TO_FIND;
 }
 
@@ -618,8 +636,13 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 //! \return true if at least one processor is ready to compress
 bool all_compressor_processors_busy(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] == DOING_NOWT) {
-            return false;
+        if (processor_status[processor_id] == PREPARING) {
+            if (check_processor_prepared(processor_id)) {
+                return false;
+            }
+        }
+        else if (processor_status[processor_id] == TO_BE_PREPARED) {
+            return true;
         }
     }
     return true;
@@ -629,7 +652,7 @@ bool all_compressor_processors_busy(void) {
 //! \return true if all processors are done and not set ready
 bool all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] >= DOING_NOWT){
+        if (processor_status[processor_id] >= PREPARING) {
             return false;
         }
     }
@@ -658,9 +681,9 @@ void carry_on_binary_search(void) {
         // At least default no bitfield handled elsewhere so safe here.
         for (int processor_id = 0; processor_id < MAX_PROCESSORS;
                 processor_id++) {
-            if (processor_status[processor_id] == DOING_NOWT) {
+            if (processor_status[processor_id] == PREPARING) {
                 processor_status[processor_id] = DO_NOT_USE;
-            } else if (processor_status[processor_id] > DOING_NOWT) {
+            } else if (processor_status[processor_id] > PREPARING) {
                 log_info("waiting for processor %d doing midpoint %u",
                     processor_id, processor_status[processor_id]);
             }
@@ -679,7 +702,7 @@ void carry_on_binary_search(void) {
         processor_status[processor_id] = DO_NOT_USE;
         for (int processor_id = 0; processor_id < MAX_PROCESSORS;
                 processor_id++) {
-            if (processor_status[processor_id] == DOING_NOWT) {
+            if (processor_status[processor_id] == PREPARING) {
                 processor_status[processor_id] = DO_NOT_USE;
             }
         }
@@ -743,7 +766,7 @@ void process_compressor_response(int processor_id, int finished_state) {
     }
 
     // free the processor for future processing
-    processor_status[processor_id] = DOING_NOWT;
+    send_prepape_message(processor_id);
 
 //        switch (msg_payload->command) {
 //            case START_DATA_STREAM:
@@ -844,8 +867,8 @@ bool setup_no_bitfields_attempt(void) {
     log_info("allocated bf routing tables");
     log_info(
         "size of the first table is %d", bit_field_routing_tables[0]->size);
-    pass_instructions_to_compressor(N_UNCOMPRESSED_TABLE, processor_id, uint32_t mid_point,
-        table_t** bit_field_routing_tables)
+    pass_instructions_to_compressor(N_UNCOMPRESSED_TABLE, processor_id, 0,
+        bit_field_routing_tables);
     return true;
 }
 
@@ -860,17 +883,18 @@ void check_compressors(uint unused0, uint unused1) {
 
     // iterate over the compressors buffer until we have the finished state
     while (!found_best) {
+        bool no_new_result = true;
         for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-            bool no_new_result = true;
             // Check each compressor asked to run or forced
             if (processor_status[processor_id] >= 0) {
                 vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
-                int = (int)comp_processor->user3;
-                if (state > COMPRESSING) {
-                    result_found = true;
+                int finished_state = (int)comp_processor->user3;
+                if (finished_state > COMPRESSING) {
+                    no_new_result = false;
                     process_compressor_response(processor_id, finished_state);
                 }
             }
+        }
         if (no_new_result) {
             // Check if another processor could be started or even done
             carry_on_binary_search();
@@ -934,7 +958,7 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // set off checker which in turn sets of the other compressor processors
     spin1_schedule_callback(
-        check_buffer_queue, 0, 0, COMPRESSION_START_PRIORITY);
+        check_compressors, 0, 0, COMPRESSION_START_PRIORITY);
 }
 
 //! \brief sets up a tracker for the user registers so that its easier to use
