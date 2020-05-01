@@ -32,8 +32,21 @@ typedef enum compressor_states {
 } compressor_states;
 
 typedef enum instrucions_to_compressor {
-    PREPARE = 40,  RUN = 41, STOP_FORCED = 42
+    PREPARE = 40,  RUN = 41, FORCE_TO_STOP = 42
 } instrucions_to_compressor;
+
+typedef enum processor_status {
+    // flag for saying processor is not a compressor
+    NOT_COMPRESSOR = -4,
+    // flag for saying compression processor should not be used any more
+    DO_NOT_USE = -3,
+    // flag for saying compression processor needs to be prepared for the first time
+    TO_BE_PREPARED = -2,
+    // flag to say compression processor has been asked to prepare/ clear previous
+    PREPARING -1
+    // zero or higher is the midpoint the compressor processor has been asked to run
+    // This includes compressors that have been forced to stop but not check yet.
+}
 
 //! \brief the command codes in human readable form
 typedef enum command_codes_for_sdp_packet {

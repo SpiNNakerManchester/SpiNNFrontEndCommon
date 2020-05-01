@@ -18,7 +18,6 @@
 #include <spin1_api.h>
 #include <debug.h>
 #include <bit_field.h>
-#include <sdp_no_scp.h>
 #include <circular_buffer.h>
 #include <data_specification.h>
 #include <malloc_extras.h>
@@ -29,7 +28,6 @@
 #include "sorter_includes/bit_field_table_generator.h"
 #include "sorter_includes/helpful_functions.h"
 #include "sorter_includes/bit_field_reader.h"
-#include "sorter_includes/message_sending.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control
  * processor.
@@ -107,10 +105,6 @@ uint32_t app_id = 0;
 //! processor ids.
 sorted_bit_fields_t* sorted_bit_fields;
 
-//! \brief the list of compressor processors to bitfield routing table
-//! SDRAM addresses
-//comp_processor_store_t* processor_bf_tables;
-
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
@@ -119,12 +113,6 @@ int* processor_status;
 
 //! \brief the bitfield by processor global holder
 bit_field_by_processor_t* bit_field_by_processor;
-
-//! \brief sdp message to send control messages to compressors processors
-//sdp_msg_pure_data my_msg;
-
-//! \brief circular queue for storing sdp messages contents
-circular_buffer sdp_circular_queue;
 
 //============================================================================
 
@@ -161,22 +149,18 @@ bool load_routing_table_into_router(void) {
 }
 
 
-//! \brief sends a sdp message forcing the processor to stop its compression
+//! \brief sends a message forcing the processor to stop its compression
 //! attempt
 //! \param[in] processor_id: the processor id to send a force stop
 //! compression attempt
 //! \return bool saying successfully sent the message
-void send_sdp_force_stop_message(int processor_id){
+void send_force_stop_message(int processor_id){
     // set message params
     log_debug(
         "sending stop to processor %d", processor_id);
-    my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | processor_id;
-    compressor_payload_t* data = (compressor_payload_t*) &my_msg.data;
-    data->command = STOP_COMPRESSION_ATTEMPT;
-    my_msg.length = LENGTH_OF_SDP_HEADER + sizeof(command_codes_for_sdp_packet);
-
-    // send sdp packet
-    message_sending_send_sdp_message(&my_msg, processor_id);
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
+    comp_processor->user2 = FORCE_TO_STOP;
 }
 
 //! \brief sets up the search bitfields.
@@ -202,6 +186,18 @@ bool set_up_tested_mid_points(void) {
     return true;
 }
 
+//! brief frees SDRAM from the compressor processor.
+//! \param[in] instuctions: Pointer to the instructions on the compressors
+void free_sdram_from_compression_attempt(comp_instruction_t* instuctions) {
+    if (instuctions.elements != NULL) {
+        // free the individual elements
+        for (int bit_field_id = 0; bit_field_id < instuctions->n_elements; bit_field_id++) {
+            FREE(instuctions.elements[bit_field_id]);
+        }
+        FREE(instuctions.elements);
+    }
+}
+
 //! \brief stores the addresses for freeing when response code is sent
 //! \param[in] n_rt_addresses: how many bit field addresses there are
 //! \param[in] processor_id: the compressor processor id
@@ -225,17 +221,13 @@ static inline void pass_instructions_to_compressor(
     vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
     comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
     //free previous if there is any
-    if (instuctions.elements != NULL) {
-        // free the individual elements
-        for (int bit_field_id = 0; bit_field_id < instuctions->n_elements; bit_field_id++) {
-            FREE(instuctions.elements[bit_field_id]);
-        }
-        FREE(instuctions.elements);
-    }
     instuctions->n_elements = n_rt_addresses;
+    free_sdram_from_compression_attempt(instuctions);
     instuctions->elements = bit_field_routing_tables;
     instuctions->n_bit_fields = mid_point; ;
     // prepare_processor_first_time did compressed_table and fake_heap_data
+
+    comp_processor->user2 = RUN;
 }
 
 //! builds tables and tries to set off a compressor processor based off
@@ -477,6 +469,19 @@ int locate_next_mid_point(void) {
     return new_mid_point;
 }
 
+//! \brief cleans up all malloc not needed in the result
+void malloc_cleanup(void) {
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        // Check each compressor asked to run or forced
+        if (processor_status[processor_id] >= 0) {
+            vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+            vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
+            comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
+            free_sdram_from_compression_attempt(instuctions);
+        }
+    }
+}
+
 //! \brief handles the freeing of memory from compressor processors, waiting
 //! for compressor processors to finish and removing merged bitfields from
 //! the bitfield regions.
@@ -493,6 +498,8 @@ void handle_best_cleanup(void){
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint processor_id = spin1_get_core_id();
     sark_virtual_processor_info[processor_id].user2 = best_search_point;
+
+    malloc_cleanup();
 
     // Safety to break out of loop in check_buffer_queue
     found_best = true;
@@ -712,7 +719,7 @@ void process_failed(int midpoint){
     // to stop, as its highly likely a waste of time.
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (processor_status[processor_id] > midpoint) {
-            send_sdp_force_stop_message(processor_id);
+            send_force_stop_message(processor_id);
         }
     }
 }
@@ -725,6 +732,9 @@ void process_compressor_response(int processor_id, int finished_state) {
     int mid_point = processor_status[processor_id];
     log_debug("received response %d from processor %d doing %d midpoint",
         finished_state, processor_id, mid_point);
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
+    comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
 
     // safety check to ensure we dont go on if the uncompressed failed
     if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION) {
@@ -734,6 +744,10 @@ void process_compressor_response(int processor_id, int finished_state) {
 
     // free the processor for future processing
     processor_status[processor_id] = DOING_NOWT;
+
+//        switch (msg_payload->command) {
+//            case START_DATA_STREAM:
+//            default:
 
     if (finished_state == SUCCESSFUL_COMPRESSION) {
         log_info(
@@ -745,10 +759,10 @@ void process_compressor_response(int processor_id, int finished_state) {
             log_info(
                 "copying to %x from %x for compressed table",
                 last_compressed_table,
-                processor_bf_tables[processor_id].compressed_table);
+                instuctions->compressed_table);
             sark_mem_cpy(
                 last_compressed_table,
-                processor_bf_tables[processor_id].compressed_table,
+                instuctions->compressed_table,
                 routing_table_sdram_size_of_table(TARGET_LENGTH));
             log_debug("n entries is %d", last_compressed_table->size);
         }
@@ -759,7 +773,7 @@ void process_compressor_response(int processor_id, int finished_state) {
                 processor_id++) {
             if (processor_status[processor_id] >= 0 &&
                     processor_status[processor_id] < mid_point) {
-                send_sdp_force_stop_message(processor_id);
+                send_force_stop_message(processor_id);
             }
         }
 
@@ -794,108 +808,7 @@ void process_compressor_response(int processor_id, int finished_state) {
             "ignoring", finished_state, processor_id);
     }
 
-    // free the sdram associated with this compressor processor.
-    bool success = helpful_functions_free_sdram_from_compression_attempt(
-        processor_id, processor_bf_tables);
-    if (!success) {
-        log_error(
-            "failed to free sdram for compressor processor %d. WTF",
-             processor_id);
-    }
-}
-
-
-//! \brief the sdp control entrance.
-//! \param[in] mailbox: the message
-//! \param[in] port: don't care.
-void sdp_handler(uint mailbox, uint port) {
-    use(port);
-
-    log_debug("received response");
-
-    // get data from the sdp message
-    sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
-    compressor_payload_t* msg_payload = (compressor_payload_t*) &msg->data;
-    log_debug("command code is %d", msg_payload->command);
-    log_debug(
-        "response code was %d", msg_payload->response.response_code);
-
-    // filter off the port we've decided to use for this
-    if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
-        log_debug("correct port");
-        // filter based off the command code. Anything thats not a response is
-        // a error
-        switch (msg_payload->command) {
-            case START_DATA_STREAM:
-                log_error(
-                    "no idea why i'm receiving a start data message. "
-                    "Ignoring");
-                log_info("message address is %x", msg);
-                log_info("length = %x", msg->length);
-                log_info("checksum = %x", msg->checksum);
-                log_info("flags = %u", msg->flags);
-                log_info("tag = %u", msg->tag);
-                log_info("dest_port = %u", msg->dest_port);
-                log_info("srce_port = %u", msg->srce_port);
-                log_info("dest_addr = %u", msg->dest_addr);
-                log_info("srce_addr = %u", msg->srce_addr);
-                log_info("data 0 = %d", msg->data[0]);
-                log_info("data 1 = %d", msg->data[1]);
-                log_info("data 2 = %d", msg->data[2]);
-                malloc_extras_check_all();
-                log_info("finished checkall");
-                rt_error(RTE_SWERR);
-                break;
-            case COMPRESSION_RESPONSE:
-                malloc_extras_check_all();
-
-                // locate the compressor processor id that responded
-                log_debug("response packet");
-                int processor_id = msg->srce_port & CPU_MASK;
-
-                // response code just has one value, so being lazy and not
-                // casting
-                int finished_state = msg_payload->response.response_code;
-
-                // free message now, nothing left in it and we don't want to
-                // hold the memory for very long
-                sark_msg_free((sdp_msg_t*) msg);
-                msg = NULL;
-
-                // create holder
-                uint32_t store = processor_id << CORE_MOVE;
-                store = store | finished_state;
-
-                // store holder
-                log_debug(
-                    "finished state %d, index %d, store %d",
-                    finished_state, processor_id, store);
-                circular_buffer_add(sdp_circular_queue, store);
-                break;
-            case STOP_COMPRESSION_ATTEMPT:
-                log_error("no idea why i'm receiving a stop message. Ignoring");
-                rt_error(RTE_SWERR);
-                break;
-            default:
-                log_error(
-                    "no idea what to do with message with command code %d. "
-                    "Ignoring", msg_payload->command);
-                rt_error(RTE_SWERR);
-                break;
-            }
-        } else {
-            log_error(
-                "no idea what to do with message. on port %d Ignoring",
-                msg->srce_port >> PORT_SHIFT);
-            rt_error(RTE_SWERR);
-    }
-
-    // free message if not freed
-    if (msg) {
-        sark_msg_free((sdp_msg_t *) msg);
-    }
-
-    log_info("finish sdp process");
+    free_sdram_from_compression_attempt(instuctions);
 }
 
 bool setup_no_bitfields_attempt(void) {
@@ -931,35 +844,39 @@ bool setup_no_bitfields_attempt(void) {
     log_info("allocated bf routing tables");
     log_info(
         "size of the first table is %d", bit_field_routing_tables[0]->size);
-
     pass_instructions_to_compressor(N_UNCOMPRESSED_TABLE, processor_id, uint32_t mid_point,
         table_t** bit_field_routing_tables)
-    return message_sending_set_off_no_bit_field_compression(
-        uncompressed_router_table, processor_id);
+    return true;
 }
 
-//! \brief check sdp buffer till its finished
+//! \brief check compressors till its finished
 //! \param[in] unused0: api
 //! \param[in] unused1: api
-void check_buffer_queue(uint unused0, uint unused1) {
+void check_compressors(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    // iterate over the circular buffer until we have the finished state
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+
+    // iterate over the compressors buffer until we have the finished state
     while (!found_best) {
-        // get the next element if it has one
-        uint32_t next_element;
-        if (circular_buffer_get_next(sdp_circular_queue, &next_element)) {
-            int processor_id = next_element >> CORE_MOVE;
-            int finished_state = next_element & FINISHED_STATE_MASK;
-            log_debug("processing packet from circular buffer");
-            process_compressor_response(processor_id, finished_state);
-        } else {
+        for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+            bool no_new_result = true;
+            // Check each compressor asked to run or forced
+            if (processor_status[processor_id] >= 0) {
+                vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
+                int = (int)comp_processor->user3;
+                if (state > COMPRESSING) {
+                    result_found = true;
+                    process_compressor_response(processor_id, finished_state);
+                }
+            }
+        if (no_new_result) {
             // Check if another processor could be started or even done
             carry_on_binary_search();
         }
     }
-    // if i get here. something fucked up. blow up spectacularly
+    // Safety code incase exit after setting best_found fails
     log_info("exiting the interrupt, to allow the binary to finish");
 }
 
@@ -1080,26 +997,6 @@ bool initialise_compressor_processors(void) {
     }
     //log_processor_status();
 
-    // set up addresses tracker (use sdram so that this can be handed to the
-    // compressor to solve transmission faffs)
-    log_info("malloc for table trackers");
-    processor_bf_tables =
-        MALLOC_SDRAM(MAX_PROCESSORS * sizeof(comp_processor_store_t));
-    if (processor_bf_tables == NULL) {
-        log_error(
-            "failed to allocate memory for the holding of bitfield "
-            "addresses per compressor processor");
-        return false;
-    }
-
-    // ensure all bits set properly as init
-    log_info("setting up table trackers.");
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        processor_bf_tables[processor_id].n_elements = 0;
-        processor_bf_tables[processor_id].n_bit_fields = 0;
-        processor_bf_tables[processor_id].compressed_table = NULL;
-        processor_bf_tables[processor_id].elements = NULL;
-    }
     return true;
 }
 
@@ -1137,11 +1034,6 @@ static bool initialise(void) {
         return false;
     }
 
-    // init the circular queue to handle the size of sdp messages expected
-    // at any given point
-    sdp_circular_queue = circular_buffer_initialize(
-        MAX_PROCESSORS * N_MSGS_EXPECTED_FROM_COMPRESSOR);
-
     // set up the best compressed table
     last_compressed_table =
         MALLOC(routing_table_sdram_size_of_table(TARGET_LENGTH));
@@ -1163,7 +1055,6 @@ void c_main(void) {
     }
 
     // set up interrupts
-    spin1_callback_on(SDP_PACKET_RX, sdp_handler, SDP_PRIORITY);
     spin1_set_timer_tick(TIME_STEP);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
