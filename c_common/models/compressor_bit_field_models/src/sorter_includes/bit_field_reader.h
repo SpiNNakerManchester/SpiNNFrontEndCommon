@@ -396,12 +396,12 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
     // figure out how many bitfields we need
     log_debug("n triples of addresses = %d", region_addresses->n_triples);
     sorted_bit_fields->n_bit_fields = 0;
-    log_info(
-        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         sorted_bit_fields->n_bit_fields = sorted_bit_fields->n_bit_fields +
             region_addresses->triples[r_id].filter->n_redundancy_filters;
     }
+    log_info(
+        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
 
     // malloc the separate bits of the sorted bitfield struct
     sorted_bit_fields->bit_fields = MALLOC(

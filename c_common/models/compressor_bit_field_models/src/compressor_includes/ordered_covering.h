@@ -790,7 +790,7 @@ static inline bool oc_merge_apply(
 //! \param[in] target_length: the length to reach
 //! \param[in] aliases: whatever
 //! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
-//! \param[out] finished_by_control: bool flag saying it failed to control force
+//! \param[in] sorter_instruction: sorter instruction flag
 //! \param[out] timer_for_compression_attempt: bool flag that says timer ran our
 //!       for compression attempt.
 //! \param[in] compress_only_when_needed: only compress when needed
@@ -800,7 +800,7 @@ static inline bool oc_merge_apply(
 static inline bool oc_minimise(
         int target_length, aliases_t* aliases,
         bool *failed_by_malloc,
-        volatile bool *finished_by_control,
+        instrucions_to_compressor* sorter_instruction,
         volatile bool *timer_for_compression_attempt,
         bool compress_only_when_needed,
         bool compress_as_much_as_possible){
@@ -850,8 +850,10 @@ static inline bool oc_minimise(
     int attempts = 0;
 
     while ((routing_table_sdram_get_n_entries() > target_length) &&
-            !*timer_for_compression_attempt && !*finished_by_control) {
-
+            !*timer_for_compression_attempt) {
+        if (*sorter_instruction != RUN){
+            return false;
+        }
         log_debug("n entries is %d", routing_table_sdram_get_n_entries());
 
         // Get the best possible merge, if this merge is empty then break out
@@ -911,20 +913,11 @@ static inline bool oc_minimise(
         return false;
     }
 
-    // if it failed due to control telling it to stop, then reset and fail.
-    if (*finished_by_control) {
-         log_info(
-            "failed due to control. reached %d entries over %d"
-            " attempts", routing_table_sdram_get_n_entries(),  attempts);
-        spin1_pause();
-        return false;
-    }
-
     log_info(
-        "entries after compressed = %d, timer = %d, finished by control = %d,"
+        "entries after compressed = %d, timer = %d, sorter_instruction = %d,"
         " the number of merge cycles were %d",
         routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
-        *finished_by_control, attempts);
+        *sorter_instruction, attempts);
 
     log_debug("compressed!!!");
     log_debug(

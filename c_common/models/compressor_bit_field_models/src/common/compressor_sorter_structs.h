@@ -32,7 +32,7 @@ typedef enum compressor_states {
 } compressor_states;
 
 typedef enum instrucions_to_compressor {
-    PREPARE = 40,  RUN = 41, FORCE_TO_STOP = 42
+    NONE = 40, PREPARE = 41,  RUN = 42, FORCE_TO_STOP = 43
 } instrucions_to_compressor;
 
 typedef enum processor_status_values {

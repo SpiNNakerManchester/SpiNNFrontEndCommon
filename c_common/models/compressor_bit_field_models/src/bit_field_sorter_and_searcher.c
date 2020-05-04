@@ -43,7 +43,7 @@
 #define TIME_STEP 10
 
 //! \brief After how many time steps to kill the process
-#define KILL_TIME 2000000
+#define KILL_TIME 2000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
@@ -235,12 +235,17 @@ static inline void pass_instructions_to_compressor(
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
     comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
+    log_info("sark_virtual_processor_inf %u", &sark_virtual_processor_info);
+    log_info("processor %u",processor_id);
     //free previous if there is any
     instuctions->n_elements = n_rt_addresses;
     free_sdram_from_compression_attempt(instuctions);
     instuctions->elements = bit_field_routing_tables;
     instuctions->n_bit_fields = mid_point; ;
     // prepare_processor_first_time did compressed_table and fake_heap_data
+    log_info("fake_heap_data %u", instuctions->fake_heap_data);
+    log_info("n_elements %u", instuctions->n_elements);
+    log_info("&instuctions %u", &instuctions);
 
     comp_processor->user2 = RUN;
 }
@@ -579,15 +584,18 @@ bool prepare_processor_first_time(int processor_id ) {
     }
     instuctions->elements = NULL;
     instuctions->fake_heap_data = malloc_extras_get_stolen_heap();
+    log_info("fake_heap_data %u", instuctions->fake_heap_data);
     int count = 0;
     while (!check_processor_prepared(processor_id)) {
         // give chance for compressor to read
-        //spin1_delay_us(50);
+        spin1_delay_us(50);
         count++;
         if (count > 20) {
             processor_status[processor_id] = DO_NOT_USE;
             FREE(instuctions->compressed_table);
             FREE((void*)comp_processor->user1);
+            log_error("compressor failed to reply %d",
+                processor_id);
             return false;
         }
     }
@@ -597,23 +605,29 @@ bool prepare_processor_first_time(int processor_id ) {
 //! \brief Returns the next processor id which is ready to run a compression
 //! \param[in] mid_point: the mid point this processor will use
 //! \return the processor id of the next available processor or -1 if none
-bool find_prepared_processor(void) {
+int find_prepared_processor(void) {
     // Look for a prepared one
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (processor_status[processor_id] == PREPARING) {
             if (check_processor_prepared(processor_id)) {
+                log_info(" found prepared %d", processor_id);
                 return processor_id;
             }
         }
     }
     // Look for a processor never used and  prepare it
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        log_info("processor_id %d status %d", processor_id, processor_status[processor_id]);
         if (processor_status[processor_id] == TO_BE_PREPARED) {
             if (prepare_processor_first_time(processor_id)) {
+                log_info(" found to be prepared %d", processor_id);
                 return processor_id;
+            } else {
+                log_info(" first failed %d", processor_id);
             }
         }
     }
+    log_info(" FAILED %d", FAILED_TO_FIND);
     return FAILED_TO_FIND;
 }
 
@@ -629,6 +643,7 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
         bit_field_set(tested_mid_points, midpoint);
         // return processor id
     }
+    log_info("returning %d", processor_id);
     return processor_id;
 }
 
@@ -668,6 +683,7 @@ void carry_on_binary_search(void) {
         // Above method has a terminate so no worry about carry on here
     }
     if (all_compressor_processors_busy()) {
+        log_info("all_compressor_processors_busy");
         return;  //Pass back to check_buffer_queue
     }
     log_debug("start carry_on_binary_search");
@@ -881,6 +897,7 @@ void check_compressors(uint unused0, uint unused1) {
 
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
 
+    log_info("check_compressors");
     // iterate over the compressors buffer until we have the finished state
     while (!found_best) {
         bool no_new_result = true;
@@ -896,8 +913,11 @@ void check_compressors(uint unused0, uint unused1) {
             }
         }
         if (no_new_result) {
+            log_info("no_new_result");
             // Check if another processor could be started or even done
             carry_on_binary_search();
+        } else {
+            log_info("result");
         }
     }
     // Safety code incase exit after setting best_found fails
