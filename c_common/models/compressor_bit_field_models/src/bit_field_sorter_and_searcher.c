@@ -617,14 +617,14 @@ void timer_callback(uint unused0, uint unused1) {
 
     // TODO remove
     // debug to ensure code dies at some point.
-    time_steps+=1;
+    /*time_steps+=1;
     if ((time_steps & 1023) == 0){
         log_info("time_steps: %u", time_steps);
     }
     if (time_steps > KILL_TIME){
        log_error("timer overran %u", time_steps);
         rt_error(RTE_SWERR);
-    }
+    }*/
 }
 
 //! \brief handles the cleanup for a failed compressor processor.
