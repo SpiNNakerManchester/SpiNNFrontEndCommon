@@ -31,16 +31,19 @@
 #define NEURON_LEVEL_MASK 0xFFFFFFFF
 
 //! brief counts the number of unigue keys in the list up to the midpoint
-//!
 //! Works on the assumption that the list is grouped (sorted) by key
-//!
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \param[in] mid_point: where in the sorted bitfields to go to
-int count_unigue_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
-
+//! \return: the number of unique keys in the sorted list between 0 and
+//! midpoint.
+int count_unique_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
+    // Semantic sugar to avoid extra lookup all the time
     filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     int* sort_order =  sorted_bit_fields->sort_order;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
+
+    // iterate over entire sorted list, looking for sorted index's lower than
+    // given midpoint and count key changes. works as bitfields ordered by key.
     int count = 0;
     uint32_t last_key = -1;
     for (int i = 0; i < n_bit_fields; i++) {
@@ -58,6 +61,7 @@ int count_unigue_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
 //! \param[in] filters: List of the bitfields to me merged in
 //! \param[in] bit_field_processor: List of the processors for each bitfield
 //! \param[in] bf_found: Number of bitfields found.
+//! \return bit_field table
 table_t* generate_table(
     entry_t original_entry, filter_info_t** filters,
     uint32_t* bit_field_processors, int bf_found) {
@@ -161,7 +165,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     uint32_t original_size =  uncompressed_router_table->uncompressed_table.size;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
 
-    *n_rt_addresses = count_unigue_keys(sorted_bit_fields, mid_point);
+    *n_rt_addresses = count_unique_keys(sorted_bit_fields, mid_point);
     log_info("n_rt_addresses %u", *n_rt_addresses);
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.

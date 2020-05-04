@@ -922,8 +922,8 @@ void start_compression_process(uint unused0, uint unused1) {
     log_info("finished reading bitfields at time step: %d", time_steps);
 
     //TODO: safety code to be removed
-    for (int bit_field_index = 0;
-            bit_field_index < sorted_bit_fields->n_bit_fields;
+    int n_bit_fields = sorted_bit_fields->n_bit_fields;
+    for (int bit_field_index = 0; bit_field_index < n_bit_fields;
             bit_field_index++) {
         // get key
         filter_info_t* bf_pointer =
