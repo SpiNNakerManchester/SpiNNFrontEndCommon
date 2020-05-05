@@ -51,12 +51,9 @@
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
-//! \brief the maximum amount of messages possible to be received by the sorter
-#define N_MSGS_EXPECTED_FROM_COMPRESSOR 2
-
 //! \brief callback priorities
 typedef enum priorities{
-    COMPRESSION_START_PRIORITY = 3, SDP_PRIORITY = -1, TIMER_TICK_PRIORITY = 0
+    COMPRESSION_START_PRIORITY = 3, TIMER_TICK_PRIORITY = 0
 }priorities;
 
 //============================================================================
@@ -110,9 +107,6 @@ bit_field_t tested_mid_points;
 
 //! tracker for what each processor is doing (in terms of midpoints)
 int* processor_status;
-
-//! \brief the bitfield by processor global holder
-bit_field_by_processor_t* bit_field_by_processor;
 
 //============================================================================
 
@@ -168,7 +162,7 @@ void send_force_stop_message(int processor_id){
 //! \param[in] processor_id: the processor id to send a prepare to
 //! compression attempt
 //! \return bool saying successfully sent the message
-void send_prepape_message(int processor_id){
+void send_prepare_message(int processor_id){
     // set message params
     log_debug(
         "sending prepare to processor %d", processor_id);
@@ -783,7 +777,7 @@ void process_compressor_response(int processor_id, int finished_state) {
     }
 
     // free the processor for future processing
-    send_prepape_message(processor_id);
+    send_prepare_message(processor_id);
 
 //        switch (msg_payload->command) {
 //            case START_DATA_STREAM:

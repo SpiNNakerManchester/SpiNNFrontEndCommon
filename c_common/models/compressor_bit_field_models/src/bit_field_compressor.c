@@ -70,9 +70,6 @@ bool compress_as_much_as_possible = false;
 //! \brief the sdram location to write the compressed router table into
 table_t *sdram_loc_for_compressed_entries;
 
-//! \brief the control processor id for sending responses to
-int control_processor_id = -1;
-
 //! \brief aliases thingy for compression
 aliases_t aliases;
 
@@ -82,15 +79,7 @@ vcpu_t *this_processor = NULL;
 //! n bitfields testing
 int n_bit_fields = -1;
 
-int attempts = 0;
-
 // ---------------------------------------------------------------------
-
-//! \brief send a failed response where finished compression but failed to
-//! fit into allocated size.
-void set_result(int result) {
-    this_processor->user3 = result;
-}
 
 //! \brief stores the compressed routing tables into the compressed sdram
 //! location
@@ -155,25 +144,25 @@ void start_compression_process() {
         success = store_into_compressed_address();
         if (success) {
             log_debug("success response");
-            set_result(SUCCESSFUL_COMPRESSION);
+            this_processor->user3 = SUCCESSFUL_COMPRESSION;
         } else {
             log_debug("failed by space response");
-            set_result(FAILED_TO_COMPRESS);
+            this_processor->user3 = FAILED_TO_COMPRESS;
         }
     } else {  // if not a success, could be one of 4 states
         if (failed_by_malloc) {  // malloc failed somewhere
             log_debug("failed malloc response");
-            set_result(FAILED_MALLOC);
+            this_processor->user3 = FAILED_MALLOC;
         } else if (*sorter_instruction != RUN) {  // control killed it
             log_debug("force fail response");
-            set_result(FORCED_BY_COMPRESSOR_CONTROL);
+            this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
             log_debug("send ack");
         } else if (timer_for_compression_attempt) {  // ran out of time
             log_debug("time fail response");
-            set_result(RAN_OUT_OF_TIME);
+            this_processor->user3 = RAN_OUT_OF_TIME;
         } else { // after finishing compression, still could not fit into table.
             log_debug("failed by space response");
-            set_result(FAILED_TO_COMPRESS);
+            this_processor->user3 = FAILED_TO_COMPRESS;
         }
     }
 }
@@ -208,7 +197,7 @@ void run_compression_process(void){
     log_debug("table init finish");
     if (!success) {
         log_error("failed to allocate memory for routing table.h state");
-        set_result(FAILED_MALLOC);
+        this_processor->user3 = FAILED_MALLOC;
         return;
     }
 
