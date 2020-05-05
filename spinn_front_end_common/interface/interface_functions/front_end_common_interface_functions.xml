@@ -1074,10 +1074,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>executable_finder</param_name>
-                <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
                 <param_type>MemoryApplicationGraph</param_type>
@@ -1086,14 +1082,12 @@
         <required_inputs>
             <param_name>graph</param_name>
             <param_name>placements</param_name>
-            <param_name>executable_finder</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ExecutableTypes</param_type>
-            <param_type>BinaryToExecutableType</param_type>
         </outputs>
     </algorithm>
     <algorithm name="BufferManagerCreator">
@@ -1628,10 +1622,6 @@
                 <param_name>binary_types</param_name>
                 <param_type>ExtractIobufFromBinaryTypes</param_type>
             </parameter>
-            <parameter>
-                <param_name>binary_executable_types</param_name>
-                <param_type>BinaryToExecutableType</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -1639,7 +1629,6 @@
             <param_name>executable_finder</param_name>
             <param_name>app_provenance_file_path</param_name>
             <param_name>system_provenance_file_path</param_name>
-            <param_name>binary_executable_types</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
