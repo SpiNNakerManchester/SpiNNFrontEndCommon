@@ -89,8 +89,6 @@ int attempts = 0;
 //! \brief send a failed response where finished compression but failed to
 //! fit into allocated size.
 void set_result(int result) {
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
     this_processor->user3 = result;
 }
 
@@ -130,7 +128,7 @@ void start_compression_process() {
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
-    malloc_extras_check_all_marked(50004);
+    malloc_extras_check_all_marked(50001);
 
     // run compression
     bool success = oc_minimise(
@@ -145,7 +143,7 @@ void start_compression_process() {
     } else {
         log_info("Failed oc minimise with success %d", success);
     }
-    malloc_extras_check_all();
+    malloc_extras_check_all_marked(50005);
 
     // turn off timer and set us into pause state
     spin1_pause();
@@ -182,26 +180,19 @@ void start_compression_process() {
 
 void run_compression_process(void){
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    log_info("sark_virtual_processor_inf %u", &sark_virtual_processor_info);
-    log_info("processor %u", spin1_get_core_id());
     this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
     comp_instruction_t* instuctions = (comp_instruction_t*)this_processor->user1;
 
-    log_info("setting up fake heap for sdram usage");
-    log_info("fake_heap_data %u", instuctions->fake_heap_data);
-    log_info("n_elements %u", instuctions->n_elements);
-    log_info("&instuctions %u", &instuctions);
+    log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(instuctions->fake_heap_data);
-    log_info("set up fake heap for sdram usage");
+    log_debug("set up fake heap for sdram usage");
 
     failed_by_malloc = false;
     timer_for_compression_attempt = false;
  // reset timer counter
     counter = 0;
-    log_info("clearing alias");
     aliases_clear(&aliases);
     routing_table_reset();
-    log_info("routing_table_reset");
 
     // create aliases
     aliases = aliases_init();
@@ -232,15 +223,23 @@ void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
-    int none_counter = 0;
-    int none_cutoff = 1;
+
+    // values for debug logging
+    int ignore_counter = 0;
+    int ignore_cutoff = 1;
+    bool ignore;
+
     while (true) {
+        ignore = false;
+        ignore_counter++;
         switch(*sorter_instruction) {
             case PREPARE:
                 if (this_processor->user3 != PREPARED) {
                     log_info("prepared");
                     // clear previous result
                     this_processor->user3 = PREPARED;
+                 } else {
+                    ignore = true;
                 }
                 break;
             case RUN:
@@ -248,26 +247,37 @@ void wait_for_instructions(uint unused0, uint unused1) {
                     log_info("run detected");
                     this_processor->user3 = COMPRESSING;
                     run_compression_process();
+                } else {
+                    ignore = true;
                 }
-                log_info("run but %d", this_processor->user3);
                 break;
             case FORCE_TO_STOP:
-                if (this_processor->user3 != FORCED_BY_COMPRESSOR_CONTROL) {
-                    // Assuming the result no longer matters
+                if (this_processor->user3 > FORCED_BY_COMPRESSOR_CONTROL) {
+                    log_info("Force detected");
+                    // The results other than MALLOC no longer matters
                     this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+                } else {
+                    ignore = true;
                 }
                 break;
             case NONE:
-                none_counter++;
-                if (none_counter == none_cutoff){
-                    log_info("none_counter %d", none_counter);
-                    none_cutoff+= none_cutoff;
-                }
+                ignore = true;
                 // original state do nothing
                 break;
             default:
                 log_error("Unexpected user2 %d", *sorter_instruction);
                 rt_error(RTE_SWERR);
+        }
+        // TODO consider removing as only needed for debuging
+        if (ignore) {
+            if (ignore_counter == ignore_cutoff){
+                log_info("No new instuction counter: %d user2: %d, user3: %d",
+                    ignore_counter, *sorter_instruction, this_processor->user3);
+                ignore_cutoff+= ignore_cutoff;
+            }
+        } else {
+            ignore_counter = 0;
+            ignore_cutoff = 1;
         }
     }
 }
@@ -295,8 +305,6 @@ void initialise(void) {
     log_info("reading time_for_compression_attempt");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
-    log_info("sark_virtual_processor_inf %u", &sark_virtual_processor_info);
-    log_info("processor %u", spin1_get_core_id());
 
     uint32_t time_for_compression_attempt = this_processor->user1;
     log_info("user 1 = %d", time_for_compression_attempt);
@@ -317,9 +325,7 @@ void initialise(void) {
     // set user 1,2,3 registers to NULL
     this_processor->user1 = 0;
     this_processor->user2 = NONE;
-    log_info("this_processor->user2 %d", this_processor->user2);
     sorter_instruction = (instrucions_to_compressor*) &this_processor->user2;
-    log_info("sorter_instruction %d", *sorter_instruction);
     this_processor->user3 = 0;
 
     // sort out timer (this is done in a indirect way due to lack of trust to
@@ -328,7 +334,7 @@ void initialise(void) {
     spin1_set_timer_tick(1000);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
-    log_info("finished initialise %d", *sorter_instruction);
+    log_info("finished initialise %d %d", *sorter_instruction, this_processor->user2);
     log_info("my processor id is %d", spin1_get_core_id());
 }
 

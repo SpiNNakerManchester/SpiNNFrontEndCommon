@@ -204,13 +204,15 @@ bool set_up_tested_mid_points(void) {
 //! brief frees SDRAM from the compressor processor.
 //! \param[in] instuctions: Pointer to the instructions on the compressors
 void free_sdram_from_compression_attempt(comp_instruction_t* instuctions) {
+    malloc_extras_check_all_marked(1010);
     if (instuctions->elements != NULL) {
         // free the individual elements
         for (int bit_field_id = 0; bit_field_id < instuctions->n_elements; bit_field_id++) {
-            FREE(instuctions->elements[bit_field_id]);
+            malloc_extras_free_marked(instuctions->elements[bit_field_id], 1100);
         }
-        FREE(instuctions->elements);
+        malloc_extras_free_marked(instuctions->elements, 1102);
     }
+    instuctions->elements = NULL;
 }
 
 //! \brief stores the addresses for freeing when response code is sent
@@ -234,18 +236,14 @@ static inline void pass_instructions_to_compressor(
 
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
+
     comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
-    log_info("sark_virtual_processor_inf %u", &sark_virtual_processor_info);
-    log_info("processor %u",processor_id);
     //free previous if there is any
     instuctions->n_elements = n_rt_addresses;
     free_sdram_from_compression_attempt(instuctions);
     instuctions->elements = bit_field_routing_tables;
     instuctions->n_bit_fields = mid_point; ;
     // prepare_processor_first_time did compressed_table and fake_heap_data
-    log_info("fake_heap_data %u", instuctions->fake_heap_data);
-    log_info("n_elements %u", instuctions->n_elements);
-    log_info("&instuctions %u", &instuctions);
 
     comp_processor->user2 = RUN;
 }
@@ -258,7 +256,7 @@ static inline void pass_instructions_to_compressor(
 bool create_tables_and_set_off_bit_compressor(
         int mid_point, int processor_id) {
     int n_rt_addresses = 0;
-    //log_info("started create bit field router tables");
+    log_debug("started create bit field router tables");
     table_t **bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
             mid_point, &n_rt_addresses,
@@ -390,12 +388,12 @@ bool remove_merged_bitfields_from_processors(void) {
     // free items
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         if (sorted_bf_key_proc[r_id].key_list->length_of_list != 0) {
-            FREE(sorted_bf_key_proc[r_id].key_list->master_pop_keys);
-            FREE(sorted_bf_key_proc[r_id].key_list);
+            malloc_extras_free_marked(sorted_bf_key_proc[r_id].key_list->master_pop_keys, 1103);
+            malloc_extras_free_marked(sorted_bf_key_proc[r_id].key_list, 1104);
         }
     }
 
-    FREE(sorted_bf_key_proc);
+    malloc_extras_free_marked(sorted_bf_key_proc, 1105);
     // return we successfully removed merged bitfields
     return true;
 }
@@ -563,14 +561,15 @@ bool prepare_processor_first_time(int processor_id ) {
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     vcpu_t *comp_processor = &sark_virtual_processor_info[processor_id];
     comp_processor->user2 = PREPARE;
-    comp_processor->user1 = (int)MALLOC(sizeof(comp_instruction_t));
-    if (comp_processor->user1 == NULL) {
+
+    comp_instruction_t* instuctions = MALLOC_SDRAM(sizeof(comp_instruction_t));
+    if (instuctions == NULL) {
         log_error("Failed to malloc comp_instruction_t for processor %d",
             processor_id);
         processor_status[processor_id] = DO_NOT_USE;
         return false;
     }
-    comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
+    comp_processor->user1 = (int)instuctions;
     instuctions->n_elements = NULL;
     instuctions->n_bit_fields = NULL;
     instuctions->compressed_table = MALLOC_SDRAM(
@@ -579,12 +578,12 @@ bool prepare_processor_first_time(int processor_id ) {
         log_error("Failed to malloc comp_instruction_t for processor %d",
             processor_id);
         processor_status[processor_id] = DO_NOT_USE;
-        FREE((void*)comp_processor->user1);
+        malloc_extras_free_marked((void*)comp_processor->user1, 1106);
         return false;
     }
     instuctions->elements = NULL;
     instuctions->fake_heap_data = malloc_extras_get_stolen_heap();
-    log_info("fake_heap_data %u", instuctions->fake_heap_data);
+    log_debug("fake_heap_data %u", instuctions->fake_heap_data);
     int count = 0;
     while (!check_processor_prepared(processor_id)) {
         // give chance for compressor to read
@@ -592,8 +591,8 @@ bool prepare_processor_first_time(int processor_id ) {
         count++;
         if (count > 20) {
             processor_status[processor_id] = DO_NOT_USE;
-            FREE(instuctions->compressed_table);
-            FREE((void*)comp_processor->user1);
+            malloc_extras_free_marked(instuctions->compressed_table, 1107);
+            malloc_extras_free_marked((void*)comp_processor->user1, 1108);
             log_error("compressor failed to reply %d",
                 processor_id);
             return false;
@@ -610,24 +609,24 @@ int find_prepared_processor(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (processor_status[processor_id] == PREPARING) {
             if (check_processor_prepared(processor_id)) {
-                log_info(" found prepared %d", processor_id);
+                log_info("found prepared %d", processor_id);
                 return processor_id;
             }
         }
     }
     // Look for a processor never used and  prepare it
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        log_info("processor_id %d status %d", processor_id, processor_status[processor_id]);
+        log_debug("processor_id %d status %d", processor_id, processor_status[processor_id]);
         if (processor_status[processor_id] == TO_BE_PREPARED) {
             if (prepare_processor_first_time(processor_id)) {
-                log_info(" found to be prepared %d", processor_id);
+                log_debug("found to be prepared %d", processor_id);
                 return processor_id;
             } else {
-                log_info(" first failed %d", processor_id);
+                log_debug("first failed %d", processor_id);
             }
         }
     }
-    log_info(" FAILED %d", FAILED_TO_FIND);
+    log_debug("FAILED %d", FAILED_TO_FIND);
     return FAILED_TO_FIND;
 }
 
@@ -643,7 +642,7 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
         bit_field_set(tested_mid_points, midpoint);
         // return processor id
     }
-    log_info("returning %d", processor_id);
+    log_debug("returning %d", processor_id);
     return processor_id;
 }
 
@@ -651,13 +650,14 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 //! \return true if at least one processor is ready to compress
 bool all_compressor_processors_busy(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        log_debug("processor_id %d status %d", processor_id, processor_status[processor_id]);
         if (processor_status[processor_id] == PREPARING) {
             if (check_processor_prepared(processor_id)) {
                 return false;
             }
         }
         else if (processor_status[processor_id] == TO_BE_PREPARED) {
-            return true;
+            return false;
         }
     }
     return true;
@@ -684,6 +684,7 @@ void carry_on_binary_search(void) {
     }
     if (all_compressor_processors_busy()) {
         log_info("all_compressor_processors_busy");
+        rt_error(RTE_SWERR);
         return;  //Pass back to check_buffer_queue
     }
     log_debug("start carry_on_binary_search");
@@ -743,7 +744,7 @@ void timer_callback(uint unused0, uint unused1) {
     }
     if (time_steps > KILL_TIME){
        log_error("timer overran %u", time_steps);
-        rt_error(RTE_SWERR);
+       rt_error(RTE_SWERR);
     }
 }
 
@@ -795,6 +796,7 @@ void process_compressor_response(int processor_id, int finished_state) {
 
         if (best_success <= mid_point){
             best_success = mid_point;
+            malloc_extras_check_all_marked(1003);
             log_info(
                 "copying to %x from %x for compressed table",
                 last_compressed_table,
@@ -804,6 +806,7 @@ void process_compressor_response(int processor_id, int finished_state) {
                 instuctions->compressed_table,
                 routing_table_sdram_size_of_table(TARGET_LENGTH));
             log_debug("n entries is %d", last_compressed_table->size);
+            malloc_extras_check_all_marked(1004);
         }
 
         // kill any search below this point, as they all redundant as
@@ -869,7 +872,7 @@ bool setup_no_bitfields_attempt(void) {
                   "bit field compression attempt.");
         return false;
     }
-    log_info("finished cloning of uncompressed table");
+    log_debug("finished cloning of uncompressed table");
 
     // set up the bitfield routing tables so that it'll map down below
     table_t **bit_field_routing_tables = MALLOC_SDRAM(sizeof(table_t*));
@@ -880,8 +883,8 @@ bool setup_no_bitfields_attempt(void) {
     }
 
     bit_field_routing_tables[0] = sdram_clone_of_routing_table;
-    log_info("allocated bf routing tables");
-    log_info(
+    log_debug("allocated bf routing tables");
+    log_debug(
         "size of the first table is %d", bit_field_routing_tables[0]->size);
     pass_instructions_to_compressor(N_UNCOMPRESSED_TABLE, processor_id, 0,
         bit_field_routing_tables);
@@ -913,11 +916,11 @@ void check_compressors(uint unused0, uint unused1) {
             }
         }
         if (no_new_result) {
-            log_info("no_new_result");
+            log_debug("no_new_result");
             // Check if another processor could be started or even done
             carry_on_binary_search();
         } else {
-            log_info("result");
+            log_debug("result");
         }
     }
     // Safety code incase exit after setting best_found fails
