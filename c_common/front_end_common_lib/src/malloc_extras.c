@@ -95,9 +95,20 @@ bool malloc_extras_check(void *ptr) {
                 buffer_index++) {
             uint32_t flag = int_pointer[words + buffer_index];
             if (flag != SAFETY_FLAG) {
-                log_error("flag is actually %x for ptr %x", flag, ptr);
+                bool found = false;
+                for (int index = 0; index < malloc_points_size; index ++) {
+                    if ((malloc_points[index] != 0) &&
+                            (malloc_points[index] == ptr)) {
+                        found = true;
+                    }
+                }
+                if (found) {
+                    log_error("flag is actually %x for ptr %x", flag, ptr);
+                } else {
+                    log_error("Unexpected ptr %x", ptr);
+                }
                 return false;
-            }
+             }
         }
         return true;
     }
