@@ -669,7 +669,6 @@ bool all_compressor_processors_done(void) {
 }
 
 //! \brief Start the binary search on another compressor if one available
-
 void carry_on_binary_search(void) {
      if (all_compressor_processors_done()) {
         log_info("carry_on_binary_search detected done");
@@ -742,12 +741,18 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-void process_failed(int midpoint){
-    log_info("lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
+// !brief handle the fact that a midpoint failed.
+//! \param[in] mid_point: the mid point that failed
+void process_failed(int midpoint) {
     if (lowest_failure > midpoint){
-        lowest_failure = midpoint;
         log_info(
-            "Now lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
+            "Changing lowest_failure from: %d to midpoint:%d",
+                lowest_failure, midpoint);
+        lowest_failure = midpoint;
+    } else {
+        log_info(
+            "lowest_failure: %d already lower than midpoint:%d",
+                lowest_failure, midpoint);
     }
     // tell all compression processors trying midpoints above this one
     // to stop, as its highly likely a waste of time.
@@ -758,6 +763,33 @@ void process_failed(int midpoint){
     }
 }
 
+// !brief handle the fact that a midpoint was successfull.
+//! \param[in] mid_point: the mid point that failed
+void process_success(int mid_point, comp_instruction_t* instuctions) {
+    if (best_success <= mid_point) {
+        best_success = mid_point;
+        malloc_extras_check_all_marked(1003);
+        log_info(
+            "copying to %x from %x for compressed table",
+            last_compressed_table, instuctions->compressed_table);
+        sark_mem_cpy(
+            last_compressed_table, instuctions->compressed_table,
+            routing_table_sdram_size_of_table(TARGET_LENGTH));
+        log_debug("n entries is %d", last_compressed_table->size);
+        malloc_extras_check_all_marked(1004);
+    }
+
+    // kill any search below this point, as they all redundant as
+    // this is a better search.
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        if (processor_status[processor_id] >= 0 &&
+                processor_status[processor_id] < mid_point) {
+            send_force_stop_message(processor_id);
+        }
+    }
+
+    log_debug("finished process of successful compression");
+}
 
 //! \brief processes the response from the compressor attempt
 //! \param[in] processor_id: the compressor processor id
@@ -779,69 +811,49 @@ void process_compressor_response(int processor_id, int finished_state) {
     // free the processor for future processing
     send_prepare_message(processor_id);
 
-//        switch (msg_payload->command) {
-//            case START_DATA_STREAM:
-//            default:
+    switch (finished_state) {
 
-    if (finished_state == SUCCESSFUL_COMPRESSION) {
-        log_info(
-            "successful from processor %d doing mid point %d",
-            processor_id, mid_point);
-
-        if (best_success <= mid_point){
-            best_success = mid_point;
-            malloc_extras_check_all_marked(1003);
+        case SUCCESSFUL_COMPRESSION:
             log_info(
-                "copying to %x from %x for compressed table",
-                last_compressed_table,
-                instuctions->compressed_table);
-            sark_mem_cpy(
-                last_compressed_table,
-                instuctions->compressed_table,
-                routing_table_sdram_size_of_table(TARGET_LENGTH));
-            log_debug("n entries is %d", last_compressed_table->size);
-            malloc_extras_check_all_marked(1004);
-        }
+                "successful from processor %d doing mid point %d",
+                processor_id, mid_point);
+            process_success(mid_point, instuctions);
+            break;
 
-        // kill any search below this point, as they all redundant as
-        // this is a better search.
-        for (int processor_id = 0; processor_id < MAX_PROCESSORS;
-                processor_id++) {
-            if (processor_status[processor_id] >= 0 &&
-                    processor_status[processor_id] < mid_point) {
-                send_force_stop_message(processor_id);
-            }
-        }
+        case FAILED_MALLOC:
+            log_info(
+                "failed by malloc from processor %d doing mid point %d",
+                processor_id, mid_point);
+            // this will threshold the number of compressor processors that
+            // can be ran at any given time.
+            processor_status[processor_id] = DO_NOT_USE;
+            // Remove the flag that say this midpoint has been checked
+            bit_field_clear(tested_mid_points, mid_point);
+            break;
 
-        log_debug("finished process of successful compression");
-    } else if (finished_state == FAILED_MALLOC) {
-        log_info(
-            "failed by malloc from processor %d doing mid point %d",
-            processor_id, mid_point);
-        // this will threshold the number of compressor processors that
-        // can be ran at any given time.
-        processor_status[processor_id] = DO_NOT_USE;
-        // Remove the flag that say this midpoint has been checked
-        bit_field_clear(tested_mid_points, mid_point);
-    }
-    else if (finished_state == FAILED_TO_COMPRESS) {
-        log_info(
-            "failed to compress from processor %d doing mid point %d",
-            processor_id, mid_point);
-        process_failed(mid_point);
-    } else if (finished_state == RAN_OUT_OF_TIME) {
-        log_info(
-            "failed by time from processor %d doing mid point %d",
-            processor_id, mid_point);
-        process_failed(mid_point);
-    } else if (finished_state == FORCED_BY_COMPRESSOR_CONTROL) {
-        log_info(
-            "ack from forced from processor %d doing mid point %d",
-            processor_id, mid_point);
-    } else {
-        log_error(
-            "no idea what to do with finished state %d, from processor %d "
-            "ignoring", finished_state, processor_id);
+        case FAILED_TO_COMPRESS:
+            log_info(
+                "failed to compress from processor %d doing mid point %d",
+                processor_id, mid_point);
+            process_failed(mid_point);
+            break;
+
+         case RAN_OUT_OF_TIME:
+            log_info(
+                "failed by time from processor %d doing mid point %d",
+                processor_id, mid_point);
+            process_failed(mid_point);
+            break;
+
+        case FORCED_BY_COMPRESSOR_CONTROL:
+            log_info(
+                "ack from forced from processor %d doing mid point %d",
+                processor_id, mid_point);
+            break;
+            default:
+                log_error(
+                "no idea what to do with finished state %d, from processor %d "
+                "ignoring", finished_state, processor_id);
     }
 
     free_sdram_from_compression_attempt(instuctions);
