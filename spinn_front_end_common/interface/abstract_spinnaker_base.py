@@ -971,8 +971,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         len(steps), run_time)
             for i, step in enumerate(steps):
                 logger.info("Run {} of {}", i + 1, len(steps))
-                if (i > 0):
-                    graph_changed = False
                 self._do_run(step, graph_changed, run_until_complete)
         elif run_time is None and run_until_complete:
             logger.info("Running until complete")
@@ -1975,9 +1973,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Reports", "write_sdram_usage_report_per_chip"):
             algorithms.append("SdramUsageReportPerChip")
 
-        # clear iobuf if we are in multirun mode
-        if (self._has_ran and not graph_changed and
-                not self._use_virtual_board and not self._empty_graphs and
+        # Clear iobuf from machine
+        if (not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
