@@ -30,12 +30,13 @@ from spinn_front_end_common.mapping_algorithms. \
     on_chip_router_table_compression.compression import Compression
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
-    ExecutableType, ExecutableTargets
+    ExecutableType
 from spinn_machine import CoreSubsets, Router
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
     SpinnmanUnexpectedResponseCodeException, SpinnmanException
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 
 

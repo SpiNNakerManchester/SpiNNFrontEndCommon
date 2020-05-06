@@ -20,12 +20,12 @@ import struct
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinnman.model.cpu_infos import CPUInfos
 from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .globals_variables import get_simulator
 from .constants import BYTES_PER_WORD
 
@@ -396,7 +396,9 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     target = ExecutableTargets()
     path = get_simulator()._executable_finder.get_executable_path(
         vertex.get_binary_file_name())
-    target.place_binary(path, placement, vertex.get_binary_start_type())
+    target.add_processor(
+        path, placement.x, placement.y, placement.p,
+        vertex.get_binary_start_type())
     _emergency_iobuf_extract(txrx, target)
 
 
