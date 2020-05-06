@@ -382,6 +382,7 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         n_bit_fields +=
             region_addresses->triples[r_id].filter->n_redundancy_filters;
+        log_info("Number of bitfields found is %u", n_bit_fields);
     }
     sorted_bit_fields->n_bit_fields = n_bit_fields;
     log_info(

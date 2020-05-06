@@ -81,13 +81,11 @@ response_sdp_packet_t* response = (response_sdp_packet_t*) &my_msg.data;
 //! \brief aliases thingy for compression
 aliases_t aliases;
 
-//! get pointer to this processor user registers
+//! \brief get pointer to this processor user registers
 vcpu_t *this_processor = NULL;
 
-//! n bitfields testing
+//! \brief n bitfields testing
 int n_bit_fields = -1;
-
-int attempts = 0;
 
 // ---------------------------------------------------------------------
 
@@ -101,13 +99,11 @@ void send_sdp_message_response(void) {
     // send sdp packet
     int id = spin1_get_core_id();
     log_debug("processor %d", id);
-    //if (id == 5){
-        log_debug("actually sending");
-        while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
-            log_debug("failed to send. trying again");
-            // Empty body
-        }
-   //}
+    log_debug("actually sending");
+    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
+        log_debug("failed to send. trying again");
+        // Empty body
+    }
 
     log_debug("length = %x", my_msg.length);
     log_debug("checksum = %x", my_msg.checksum);
@@ -120,7 +116,6 @@ void send_sdp_message_response(void) {
     log_debug("data 0 = %d", my_msg.data[0]);
     log_debug("data 1 = %d", my_msg.data[1]);
     log_debug("data 2 = %d", my_msg.data[2]);
-    attempts += 1;
 }
 
 //! \brief send a failed response due to a malloc issue
@@ -326,7 +321,6 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
 //! \brief the sdp control entrance.
 //! \param[in] mailbox: the message
 //! \param[in] port: don't care.
-int m_recied = 0;
 void _sdp_handler(uint mailbox, uint port) {
     use(port);
     log_debug("my processor id at reception is %d", spin1_get_core_id());
