@@ -82,7 +82,8 @@ def run_system_application(
             check_targets.all_core_subsets, app_id, cpu_end_states)
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException):
-        handle_failure_function(executable_cores)
+        if handle_failure_function is not None:
+            handle_failure_function(executable_cores)
         succeeded = False
 
     # Check if any cores have not completed successfully
