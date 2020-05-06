@@ -244,14 +244,14 @@ static inline bool create_tables_and_set_off_bit_compressor(
 //! addresses
 //! \return the address in the addresses region for the processor id
 static inline filter_region_t* find_processor_bit_field_region(
-        int processor_id){
+        int processor_id) {
 
     // find the right bitfield region
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         int region_proc_id = region_addresses->triples[r_id].processor;
         log_debug(
             "is looking for %d and found %d", processor_id, region_proc_id);
-        if (region_proc_id == processor_id){
+        if (region_proc_id == processor_id) {
             return region_addresses->triples[r_id].filter;
         }
     }
@@ -418,8 +418,7 @@ static inline int locate_next_mid_point(void) {
                     best_length, best_end);
            // if not the end of the biggest block, ignore (log for debugging)
            } else {
-                log_debug(
-                    "not best: %d best_end %d", best_length, best_end);
+                log_debug("not best: %d best_end %d", best_length, best_end);
            }
            // if its seen a set we're at the end of a block. so reset the
            // current block len, as we're about to start another block.
@@ -472,14 +471,14 @@ static inline void handle_best_cleanup(void) {
 }
 
 //! \brief prints out the status of the processors.
-void print_processor_status() {
+void print_processor_status(void) {
     for (int i = 0; i < 18; i++) {
         if (processor_status[i] < -3 ||
                 processor_status[i] > sorted_bit_fields->n_bit_fields) {
             log_error("Weird status %d: %d", i, processor_status[i]);
             return;
         }
-        //log_info("processor: %d, status: %d", i, processor_status[i]);
+        log_info("processor: %d, status: %d", i, processor_status[i]);
     }
     log_info("0:%d 1:%d 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d "
         "12:%d 13:%d 14:%d 15:%d 16:%d 17:%d", processor_status[0],
@@ -697,12 +696,12 @@ void process_compressor_response(int processor_id, int finished_state) {
             "ignoring", finished_state, processor_id);
     }
 
-    // free the sdram associated with this compressor processor.
+    // free the SDRAM associated with this compressor processor.
     bool success = helpful_functions_free_sdram_from_compression_attempt(
         processor_id, processor_bf_tables);
     if (!success) {
         log_error(
-            "failed to free sdram for compressor processor %d. WTF",
+            "failed to free SDRAM for compressor processor %d. WTF",
              processor_id);
     }
 }
@@ -932,6 +931,7 @@ static void initialise_routing_control_flags(void) {
 }
 
 //! \brief get compressor processors
+//! \return bool saying if the init compressor succeeded or not.
 bool initialise_compressor_processors(void) {
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
@@ -1008,7 +1008,7 @@ static bool initialise(void) {
         log_error("failed to setup stolen heap");
         return false;
     }
-    log_info("finished setting up fake heap for sdram usage");
+    log_info("finished setting up fake heap for SDRAM usage");
 
     // get the compressor processors stored in an array
     log_debug("start init of compressor processors");
