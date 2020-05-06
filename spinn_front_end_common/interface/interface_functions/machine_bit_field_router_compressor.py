@@ -243,6 +243,7 @@ class MachineBitFieldRouterCompressor(object):
             for table in compressed_pacman_router_tables.routing_tables:
                 if (not machine.get_chip_at(table.x, table.y).virtual
                         and table.multicast_routing_entries):
+                    transceiver.clear_multicast_routes(table.x, table.y)
                     transceiver.load_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)

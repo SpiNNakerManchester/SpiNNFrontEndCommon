@@ -15,8 +15,8 @@
 
 BUILD_DIRS = compressor_bit_field_models \
 	         live_packet_gather \
-	         chip_power_monitor \
 	         command_sender_multicast_source \
+	         chip_power_monitor \
 	         reverse_iptag_multicast_source \
 	         system_models \
 	         minimise

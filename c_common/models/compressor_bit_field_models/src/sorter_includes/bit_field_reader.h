@@ -31,23 +31,6 @@ int processor_heads[MAX_PROCESSORS];
 //! ordered
 uint32_t processor_totals[MAX_PROCESSORS];
 
-//! /brief debug method to rpint a bit of a bitfeild on one line
-void _log_bitfield(bit_field_t bit_field){
-    log_info("0:%u 1:%u 2:%u 3:%u 4:%u 5:%u 6:%u 7:%u 8:%u 9:%u 10:%u 11:%u 12:%u",
-        bit_field_test(bit_field, 0),
-        bit_field_test(bit_field, 1),
-        bit_field_test(bit_field, 2),
-        bit_field_test(bit_field, 3),
-        bit_field_test(bit_field, 4),
-        bit_field_test(bit_field, 5),
-        bit_field_test(bit_field, 6),
-        bit_field_test(bit_field, 7),
-        bit_field_test(bit_field, 8),
-        bit_field_test(bit_field, 9),
-        bit_field_test(bit_field, 10),
-        bit_field_test(bit_field, 11),
-        bit_field_test(bit_field, 12));
-}
 
 //! sort out bitfields into processors and the keys of the bitfields to remove
 //! \param[out] sorted_bf_by_processor: the sorted stuff
@@ -232,9 +215,9 @@ static inline void sort_by_order(sorted_bit_fields_t* sorted_bit_fields) {
             filter_info_t* bit_field_temp = bit_fields[i];
             bit_fields[i] = bit_fields[j];
             bit_fields[j] = bit_field_temp;
+            malloc_extras_check_all_marked(60010);
         }
     }
-    malloc_extras_check_all_marked(60010);
 }
 
 //! brief Sorts the data bases on the bitfield key.
@@ -396,12 +379,12 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
     // figure out how many bitfields we need
     log_debug("n triples of addresses = %d", region_addresses->n_triples);
     sorted_bit_fields->n_bit_fields = 0;
+    log_info(
+        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         sorted_bit_fields->n_bit_fields = sorted_bit_fields->n_bit_fields +
             region_addresses->triples[r_id].filter->n_redundancy_filters;
     }
-    log_info(
-        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
 
     // malloc the separate bits of the sorted bitfield struct
     sorted_bit_fields->bit_fields = MALLOC(
