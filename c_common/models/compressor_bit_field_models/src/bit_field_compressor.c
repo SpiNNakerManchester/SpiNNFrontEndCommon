@@ -224,14 +224,20 @@ void wait_for_instructions(uint unused0, uint unused1) {
         bool ignore = false;
         ignore_counter++;
 
+        // cache the states so they dont change inside one loop
+        instrucions_to_compressor sorter_state =
+            (instrucions_to_compressor)this_processor->user2;
+        compressor_states compressor_state =
+            (compressor_states)this_processor->user3;
+
         // Documents all expected combinations of user2 and user3
         // Handle new instruction from sorter,
         // Ignore while waiting for sorter to pick up result
         // Or error if unexpected state reached
-        switch(this_processor->user2) {
+        switch(sorter_state) {
 
             case PREPARE:
-                switch(this_processor->user3) {
+                switch(compressor_state) {
                     case UNUSED:
                         // First prepare
                     case FAILED_MALLOC:
@@ -254,7 +260,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
                 break;
 
             case RUN:
-                switch(this_processor->user3) {
+                switch(compressor_state) {
                     case PREPARED:
                         log_info("run detected");
                         this_processor->user3 = COMPRESSING;
@@ -278,7 +284,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
                 break;
 
             case FORCE_TO_STOP:
-               switch(this_processor->user3) {
+               switch(compressor_state) {
                     case COMPRESSING:
                         // passed to compressor as *sorter_instruction
                         // Do nothing until compressor notices changed
@@ -298,14 +304,14 @@ void wait_for_instructions(uint unused0, uint unused1) {
                         log_info("Force detected");
                         // The results other than MALLOC no longer matters
                         this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+                        break;
                     default:
                         user_mismatch = true;
-                    break;
                 }
                 break;
 
             case NONE:
-               switch(this_processor->user3) {
+               switch(compressor_state) {
                     case UNUSED:
                         // waiting for sorter to malloc user1 and send prepare
                         ignore = true;
@@ -319,16 +325,18 @@ void wait_for_instructions(uint unused0, uint unused1) {
         }
 
         if (user_mismatch) {
-            log_error("Unexpected combination of user2 %d and user3 %d",
-                this_processor->user2, this_processor->user3);
+            log_error("Unexpected combination of sorter_state %d and "
+                "compressor_state %d",
+                sorter_state, compressor_state);
             malloc_extras_terminate(RTE_SWERR);
         }
 
         // TODO consider removing as only needed for debuging
         if (ignore) {
             if (ignore_counter == ignore_cutoff){
-                log_info("No new instruction counter: %d user2: %d, user3: %d",
-                    ignore_counter, *sorter_instruction, this_processor->user3);
+                log_info("No new instruction counter: %d sorter_state: %d,"
+                    "user3: %d",
+                    ignore_counter, sorter_state, this_processor->user3);
                 ignore_cutoff+= ignore_cutoff;
             }
         } else {
