@@ -26,7 +26,7 @@
 
 //! \brief the acceptable finish states
 typedef enum compressor_states {
-   PREPARED = 31, COMPRESSING = 32, FAILED_MALLOC = 33,
+   UNUSED = 30, PREPARED = 31, COMPRESSING = 32, FAILED_MALLOC = 33,
    FORCED_BY_COMPRESSOR_CONTROL = 34,
    SUCCESSFUL_COMPRESSION = 35, FAILED_TO_COMPRESS = 36,
    RAN_OUT_OF_TIME = 37

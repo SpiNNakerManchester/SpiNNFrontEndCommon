@@ -216,51 +216,118 @@ void wait_for_instructions(uint unused0, uint unused1) {
     // values for debug logging
     int ignore_counter = 0;
     int ignore_cutoff = 1;
-    bool ignore;
 
     while (true) {
-        ignore = false;
+        // set if combination of user2 and user3 is unexpected
+        bool user_mismatch = false;
+        // values for debug logging
+        bool ignore = false;
         ignore_counter++;
-        switch(*sorter_instruction) {
+
+        // Documents all expected combinations of user2 and user3
+        // Handle new instruction from sorter,
+        // Ignore while waiting for sorter to pick up result
+        // Or error if unexpected state reached
+        switch(this_processor->user2) {
+
             case PREPARE:
-                if (this_processor->user3 != PREPARED) {
-                    log_info("prepared");
-                    // clear previous result
-                    this_processor->user3 = PREPARED;
-                 } else {
-                    ignore = true;
+                switch(this_processor->user3) {
+                    case UNUSED:
+                        // First prepare
+                    case FAILED_MALLOC:
+                    case FORCED_BY_COMPRESSOR_CONTROL:
+                    case SUCCESSFUL_COMPRESSION:
+                    case FAILED_TO_COMPRESS:
+                    case RAN_OUT_OF_TIME:
+                        // clear previous result
+                        log_info("prepared");
+                        this_processor->user3 = PREPARED;
+                        break;
+                    case PREPARED:
+                        // waiting for sorter to pick up result
+                        ignore = true;
+                        break;
+
+                    default:
+                        user_mismatch = true;
                 }
                 break;
+
             case RUN:
-                if (this_processor->user3 == PREPARED) {
-                    log_info("run detected");
-                    this_processor->user3 = COMPRESSING;
-                    run_compression_process();
-                } else {
-                    ignore = true;
+                switch(this_processor->user3) {
+                    case PREPARED:
+                        log_info("run detected");
+                        this_processor->user3 = COMPRESSING;
+                        run_compression_process();
+                        break;
+                    case COMPRESSING:
+                        // Should not be back in this loop before result set
+                        user_mismatch = true;
+                        break;
+                    case FAILED_MALLOC:
+                    case FORCED_BY_COMPRESSOR_CONTROL:
+                    case SUCCESSFUL_COMPRESSION:
+                    case FAILED_TO_COMPRESS:
+                    case RAN_OUT_OF_TIME:
+                        // waiting for sorter to pick up result
+                        ignore = true;
+                        break;
+                    default:
+                        user_mismatch = true;
                 }
                 break;
+
             case FORCE_TO_STOP:
-                if (this_processor->user3 > FORCED_BY_COMPRESSOR_CONTROL) {
-                    log_info("Force detected");
-                    // The results other than MALLOC no longer matters
-                    this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
-                } else {
-                    ignore = true;
+               switch(this_processor->user3) {
+                    case COMPRESSING:
+                        // passed to compressor as *sorter_instruction
+                        // Do nothing until compressor notices changed
+                        ignore = true;
+                        break;
+                    case FAILED_MALLOC:
+                        // Keep force malloc as more important message
+                        ignore = true;
+                        break;
+                    case FORCED_BY_COMPRESSOR_CONTROL:
+                        // Waiting for sorter to pick up
+                        ignore = true;
+                        break;
+                    case SUCCESSFUL_COMPRESSION:
+                    case FAILED_TO_COMPRESS:
+                    case RAN_OUT_OF_TIME:
+                        log_info("Force detected");
+                        // The results other than MALLOC no longer matters
+                        this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+                    default:
+                        user_mismatch = true;
+                    break;
                 }
                 break;
+
             case NONE:
-                ignore = true;
-                // original state do nothing
+               switch(this_processor->user3) {
+                    case UNUSED:
+                        // waiting for sorter to malloc user1 and send prepare
+                        ignore = true;
+                        break;
+                    default:
+                        user_mismatch = true;
+                }
                 break;
             default:
-                log_error("Unexpected user2 %d", *sorter_instruction);
-                rt_error(RTE_SWERR);
+                user_mismatch = true;
         }
+
+        if (user_mismatch) {
+            log_error("Unexpected combination of user2 %d and user3 %d",
+                this_processor->user2, this_processor->user3);
+            malloc_extras_terminate(RTE_SWERR);
+        }
+
         // TODO consider removing as only needed for debuging
         if (ignore) {
             if (ignore_counter == ignore_cutoff){
-                log_info("No new instuction counter: %d user2: %d, user3: %d",
+                log_info("No new instruction counter: %d user2: %d, user3: %d",
                     ignore_counter, *sorter_instruction, this_processor->user3);
                 ignore_cutoff+= ignore_cutoff;
             }
@@ -311,11 +378,11 @@ void initialise(void) {
         compress_as_much_as_possible = true;
     }
 
-    // set user 1,2,3 registers to NULL
-    this_processor->user1 = 0;
+    // set user 1,2,3 registers to state before setup bu sorter
+    this_processor->user1 = NULL;
     this_processor->user2 = NONE;
     sorter_instruction = (instrucions_to_compressor*) &this_processor->user2;
-    this_processor->user3 = 0;
+    this_processor->user3 = UNUSED;
 
     // sort out timer (this is done in a indirect way due to lack of trust to
     // have timer only fire after full time after pause and resume.
