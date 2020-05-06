@@ -30,13 +30,12 @@ from spinn_front_end_common.mapping_algorithms. \
     on_chip_router_table_compression.compression import Compression
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
-    ExecutableType
+    ExecutableType, ExecutableTargets
 from spinn_machine import CoreSubsets, Router
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import SpinnmanInvalidParameterException, \
     SpinnmanUnexpectedResponseCodeException, SpinnmanException
-from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 
 
@@ -303,10 +302,12 @@ class MachineBitFieldRouterCompressor(object):
         # add the sets
         executable_targets.add_subsets(
             binary=bit_field_sorter_executable_path,
-            subsets=bit_field_sorter_cores)
+            subsets=bit_field_sorter_cores,
+            executable_type=ExecutableType.SYSTEM)
         executable_targets.add_subsets(
             binary=bit_field_compressor_executable_path,
-            subsets=bit_field_compressor_cores)
+            subsets=bit_field_compressor_cores,
+            executable_type=ExecutableType.SYSTEM)
 
         return (executable_targets, bit_field_sorter_executable_path,
                 bit_field_compressor_executable_path)
@@ -378,8 +379,7 @@ class MachineBitFieldRouterCompressor(object):
         io_errors, io_warnings = iobuf_extractor(
             transceiver, executable_targets, executable_finder,
             system_provenance_file_path=provenance_file_path,
-            app_provenance_file_path=None,
-            binary_executable_types=ExecutableType.SYSTEM)
+            app_provenance_file_path=None)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:

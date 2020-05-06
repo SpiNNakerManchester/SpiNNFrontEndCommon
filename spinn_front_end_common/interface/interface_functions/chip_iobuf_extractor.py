@@ -48,20 +48,26 @@ class ChipIOBufExtractor(object):
     def __call__(
             self, transceiver, executable_targets, executable_finder,
             app_provenance_file_path, system_provenance_file_path,
-            binary_executable_types, from_cores="ALL", binary_types=None):
+            from_cores="ALL", binary_types=None):
 
         error_entries = list()
         warn_entries = list()
         label = (("Recovering" if self._recovery_mode else "Extracting")
                  + " IOBUF from the machine")
 
+        system_binaries = {}
+        try:
+            system_binaries = executable_targets.\
+                get_binaries_of_executable_type(ExecutableType.SYSTEM)
+        except KeyError:
+            pass
+
         # all the cores
         if from_cores == "ALL":
             progress = ProgressBar(len(executable_targets.binaries), label)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
-                if (binary_executable_types[binary].value ==
-                        ExecutableType.SYSTEM.value):
+                if binary in system_binaries:
                     prov_path = system_provenance_file_path
                 else:
                     prov_path = app_provenance_file_path
@@ -83,8 +89,7 @@ class ChipIOBufExtractor(object):
                         core_subsets = iocores.intersect(
                             executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
-                        if (binary_executable_types[binary] ==
-                                ExecutableType.SYSTEM):
+                        if binary in system_binaries:
                             prov_path = system_provenance_file_path
                         else:
                             prov_path = app_provenance_file_path
@@ -100,8 +105,7 @@ class ChipIOBufExtractor(object):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
-                        if (binary_executable_types[binary] ==
-                                ExecutableType.SYSTEM):
+                        if binary in system_binaries:
                             prov_path = system_provenance_file_path
                         else:
                             prov_path = app_provenance_file_path
@@ -116,8 +120,7 @@ class ChipIOBufExtractor(object):
                 for binary in progress.over(binaries):
                     core_subsets = executable_targets.get_cores_for_binary(
                         binary)
-                    if (binary_executable_types[binary] ==
-                            ExecutableType.SYSTEM):
+                    if binary in system_binaries:
                         prov_path = system_provenance_file_path
                     else:
                         prov_path = app_provenance_file_path

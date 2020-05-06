@@ -1995,9 +1995,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Reports", "write_sdram_usage_report_per_chip"):
             algorithms.append("SdramUsageReportPerChip")
 
-        # clear iobuf if we are in multirun mode
-        if (self._has_ran and not graph_changed and
-                not self._use_virtual_board and not self._empty_graphs and
+        # Clear iobuf from machine
+        if (not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
@@ -2225,7 +2224,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 self._txrx, executable_targets, self._executable_finder,
                 self._app_provenance_file_path,
                 self._system_provenance_file_path,
-                self._mapping_outputs["BinaryToExecutableType"],
                 self._config.get("Reports", "extract_iobuf_from_cores"),
                 self._config.get("Reports", "extract_iobuf_from_binary_types")
             )
@@ -2771,9 +2769,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             executable_targets=self._last_run_outputs["ExecutableTargets"],
             executable_finder=self._executable_finder,
             app_provenance_file_path=self._app_provenance_file_path,
-            system_provenance_file_path=self._system_provenance_file_path,
-            binary_executable_types=(
-                self._mapping_outputs["BinaryToExecutableType"]))
+            system_provenance_file_path=self._system_provenance_file_path)
 
     @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
