@@ -82,7 +82,7 @@ uncompressed_table_region_data_t *uncompressed_router_table; // user1
 //! \brief stores the locations of bitfields from app processors
 region_addresses_t *region_addresses; // user2
 
-//! \brief stores of sdram blocks the fake heap can use
+//! \brief stores of SDRAM blocks the fake heap can use
 available_sdram_blocks *usable_sdram_regions; // user3
 
 // Best midpoint that record a success
@@ -130,8 +130,7 @@ circular_buffer sdp_circular_queue;
 
 //! \brief Load the best routing table to the router.
 //! \return bool saying if the table was loaded into the router or not
-
-bool load_routing_table_into_router(void) {
+static inline bool load_routing_table_into_router(void) {
 
     // Try to allocate sufficient room for the routing table.
     int start_entry = rtr_alloc_id(last_compressed_table->size, app_id);
@@ -166,7 +165,7 @@ bool load_routing_table_into_router(void) {
 //! \param[in] processor_id: the processor id to send a force stop
 //! compression attempt
 //! \return bool saying successfully sent the message
-void send_sdp_force_stop_message(int processor_id){
+static void send_sdp_force_stop_message(int processor_id) {
     // set message params
     log_debug(
         "sending stop to processor %d", processor_id);
@@ -369,7 +368,7 @@ static inline int locate_next_mid_point(void) {
     }
 
     // if not tested yet, test all
-    if (!bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields)){
+    if (!bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields)) {
         new_mid_point = sorted_bit_fields->n_bit_fields;
         return new_mid_point;
     }
@@ -476,7 +475,7 @@ static inline void handle_best_cleanup(void) {
 void print_processor_status() {
     for (int i = 0; i < 18; i++) {
         if (processor_status[i] < -3 ||
-                processor_status[i] > sorted_bit_fields->n_bit_fields){
+                processor_status[i] > sorted_bit_fields->n_bit_fields) {
             log_error("Weird status %d: %d", i, processor_status[i]);
             return;
         }
@@ -605,9 +604,9 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-void process_failed(int midpoint){
+static void process_failed(int midpoint) {
     log_info("lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
-    if (lowest_failure > midpoint){
+    if (lowest_failure > midpoint) {
         lowest_failure = midpoint;
         log_info(
             "Now lowest_failure: %d midpoint:%d", lowest_failure, midpoint);
@@ -802,6 +801,9 @@ void sdp_handler(uint mailbox, uint port) {
     log_info("finish sdp process");
 }
 
+//! \brief sets up the compression attempt for the no bitfield version.
+//! \return bool which says if setting off the compression attempt was
+//! successful or not.
 bool setup_no_bitfields_attempt(void) {
     int processor_id = find_compressor_processor_and_set_tracker(0);
     if (processor_id == FAILED_TO_FIND) {
@@ -841,6 +843,8 @@ void check_buffer_queue(uint unused0, uint unused1) {
 }
 
 //! \brief starts the work for the compression search
+//! \param[in] unused0: api
+//! \param[in] unused1: api
 void start_compression_process(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
@@ -920,7 +924,6 @@ static void initialise_user_register_tracker(void) {
 }
 
 //! \brief reads in router table setup params
-
 static void initialise_routing_control_flags(void) {
     app_id = uncompressed_router_table->app_id;
     log_debug(
@@ -981,6 +984,7 @@ bool initialise_compressor_processors(void) {
 }
 
 //! \brief the callback for setting off the router compressor
+//! \return bool which says if the initialisation was successful or not.
 static bool initialise(void) {
     log_debug(
         "Setting up stuff to allow bitfield comp control class to occur.");

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BIT_FIELD_CREATER_H__
-#define __BIT_FIELD_CREATER_H__
+#ifndef __BIT_FIELD_READER_H__
+#define __BIT_FIELD_READER_H__
 
 #include <debug.h>
 #include <malloc_extras.h>
@@ -378,52 +378,56 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
 
     // figure out how many bitfields we need
     log_debug("n triples of addresses = %d", region_addresses->n_triples);
-    sorted_bit_fields->n_bit_fields = 0;
-    log_info(
-        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
+    int n_bit_fields = 0;
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        sorted_bit_fields->n_bit_fields = sorted_bit_fields->n_bit_fields +
+        n_bit_fields +=
             region_addresses->triples[r_id].filter->n_redundancy_filters;
     }
+    sorted_bit_fields->n_bit_fields = n_bit_fields;
+    log_info(
+        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
 
-    // malloc the separate bits of the sorted bitfield struct
-    sorted_bit_fields->bit_fields = MALLOC(
-        sorted_bit_fields->n_bit_fields * sizeof(filter_info_t*));
-    if (sorted_bit_fields->bit_fields == NULL){
-        log_error("cannot allocate memory for the sorted bitfield addresses");
-        FREE(sorted_bit_fields);
-        return NULL;
-    }
+    // if there are no bit-fields just return sorted bitfields.
+    if (n_bit_fields != 0) {
 
-    sorted_bit_fields->processor_ids =
-        MALLOC(sorted_bit_fields->n_bit_fields * sizeof(int));
-    if (sorted_bit_fields->processor_ids == NULL){
-        log_error("cannot allocate memory for the sorted bitfields with "
-                  "processors ids");
-        FREE(sorted_bit_fields->bit_fields);
-        FREE(sorted_bit_fields);
-        return NULL;
-    }
+        // malloc the separate bits of the sorted bitfield struct
+        sorted_bit_fields->bit_fields =
+            MALLOC(n_bit_fields * sizeof(filter_info_t*));
+        if (sorted_bit_fields->bit_fields == NULL) {
+            log_error(
+                "cannot allocate memory for the sorted bitfield addresses");
+            FREE(sorted_bit_fields);
+            return NULL;
+        }
 
-    sorted_bit_fields->sort_order =
-        MALLOC(sorted_bit_fields->n_bit_fields * sizeof(int));
-    if (sorted_bit_fields->sort_order == NULL){
-        log_error("cannot allocate memory for the sorted bitfields with "
-                  "sort_order");
-        FREE(sorted_bit_fields->bit_fields);
-        FREE(sorted_bit_fields->processor_ids);
-        FREE(sorted_bit_fields);
-        return NULL;
-    }
+        sorted_bit_fields->processor_ids = MALLOC(n_bit_fields * sizeof(int));
+        if (sorted_bit_fields->processor_ids == NULL) {
+            log_error("cannot allocate memory for the sorted bitfields with "
+                      "processors ids");
+            FREE(sorted_bit_fields->bit_fields);
+            FREE(sorted_bit_fields);
+            return NULL;
+        }
 
-    // init to -1, else random data (used to make prints cleaner)
-    for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
-            sorted_index++) {
-        sorted_bit_fields->sort_order[sorted_index] = FAILED_TO_FIND;
+        sorted_bit_fields->sort_order = MALLOC(n_bit_fields * sizeof(int));
+        if (sorted_bit_fields->sort_order == NULL) {
+            log_error("cannot allocate memory for the sorted bitfields with "
+                      "sort_order");
+            FREE(sorted_bit_fields->bit_fields);
+            FREE(sorted_bit_fields->processor_ids);
+            FREE(sorted_bit_fields);
+            return NULL;
+        }
+
+        // init to -1, else random data (used to make prints cleaner)
+        for (int sorted_index = 0; sorted_index < n_bit_fields;
+                sorted_index++) {
+            sorted_bit_fields->sort_order[sorted_index] = FAILED_TO_FIND;
+        }
     }
 
     // return
     return sorted_bit_fields;
 }
 
-#endif  // __BIT_FIELD_CREATER_H__
+#endif  // __BIT_FIELD_READER_H__
