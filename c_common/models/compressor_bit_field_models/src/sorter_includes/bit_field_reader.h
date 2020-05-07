@@ -166,7 +166,7 @@ static inline void order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
                 "i %u processor %u index %u more %u total %u",
                 sorted_index, worst_processor, index,
                 sorted_bit_fields->n_bit_fields,
-                 processor_totals[worst_processor]);
+                processor_totals[worst_processor]);
                 
             // reduce the packet count bu redundancy
             processor_totals[worst_processor] -=
@@ -290,6 +290,11 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
         filter_region_t *filter_region = region_addresses->triples[r_id].filter;
         int processor = region_addresses->triples[r_id].processor;
 
+        if (filter_region->n_redundancy_filters == 0) {
+            // no bitfields to point at or sort so total can stay zero
+            break;
+        }
+
         // store the index in bitfields list where this processors bitfields
         // start being read in at. (not sorted)
         processor_heads[processor] = index;
@@ -305,7 +310,6 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
             processor_totals[processor] +=
                 filter_region->filters[bf_id].n_atoms;
 
-            print_structs(sorted_bit_fields, 60011);
         }
 
         // accum the incoming packets from bitfields which have no redundancy
@@ -382,11 +386,16 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         n_bit_fields +=
             region_addresses->triples[r_id].filter->n_redundancy_filters;
-        log_info("Number of bitfields found is %u", n_bit_fields);
+        log_info(
+            "Core %d has %u bitfields of which %u have redundancy",
+            region_addresses->triples[r_id].processor,
+            region_addresses->triples[r_id].filter->n_filters,
+            region_addresses->triples[r_id].filter->n_redundancy_filters);
     }
     sorted_bit_fields->n_bit_fields = n_bit_fields;
     log_info(
-        "Number of bitfields found is %u", sorted_bit_fields->n_bit_fields);
+        "Number of bitfields with redundancy found is %u",
+        sorted_bit_fields->n_bit_fields);
 
     // if there are no bit-fields just return sorted bitfields.
     if (n_bit_fields != 0) {
