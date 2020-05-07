@@ -41,13 +41,15 @@
 //! interrupt priorities
 typedef enum interrupt_priority{
     TIMER_TICK_PRIORITY = -1,
-    SDP_PRIORITY = 0,
     COMPRESSION_START_PRIORITY = 2
 } interrupt_priority;
 
 //! \timer controls, as it seems timer in massive waits doesnt engage properly
 int counter = 0;
 int max_counter = 0;
+
+//! \brief pointer to enum?
+instructions_to_compressor* sorter_instruction;
 
 //! \brief bool saying if the timer has fired, resulting in attempt to compress
 //! shutting down
@@ -69,15 +71,6 @@ bool compress_as_much_as_possible = false;
 //! \brief the sdram location to write the compressed router table into
 table_t *sdram_loc_for_compressed_entries;
 
-//! \brief the control processor id for sending responses to
-int control_processor_id = -1;
-
-//! \brief sdp message to send acks to the control processor with
-sdp_msg_pure_data my_msg;
-
-//! \brief sdp message data as a response packet (reducing casts)
-response_sdp_packet_t* response = (response_sdp_packet_t*) &my_msg.data;
-
 //! \brief aliases thingy for compression
 aliases_t aliases;
 
@@ -88,87 +81,6 @@ vcpu_t *this_processor = NULL;
 int n_bit_fields = -1;
 
 // ---------------------------------------------------------------------
-
-//! \brief sends a sdp message back to the control processor
-void send_sdp_message_response(void) {
-    my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | control_processor_id;
-
-     // give chance for compressor to read
-     spin1_delay_us(500);
-
-    // send sdp packet
-    int id = spin1_get_core_id();
-    log_debug("processor %d", id);
-    log_debug("actually sending");
-    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
-        log_debug("failed to send. trying again");
-        // Empty body
-    }
-
-    log_debug("length = %x", my_msg.length);
-    log_debug("checksum = %x", my_msg.checksum);
-    log_debug("flags = %u", my_msg.flags);
-    log_debug("tag = %u", my_msg.tag);
-    log_debug("dest_port = %u", my_msg.dest_port);
-    log_debug("srce_port = %u", my_msg.srce_port);
-    log_debug("dest_addr = %u", my_msg.dest_addr);
-    log_debug("srce_addr = %u", my_msg.srce_addr);
-    log_debug("data 0 = %d", my_msg.data[0]);
-    log_debug("data 1 = %d", my_msg.data[1]);
-    log_debug("data 2 = %d", my_msg.data[2]);
-}
-
-//! \brief send a failed response due to a malloc issue
-void return_malloc_response_message(void) {
-    // set message ack finished state to malloc fail
-    response->response_code = FAILED_MALLOC;
-
-    // send message
-    send_sdp_message_response();
-    log_debug("sent failed to malloc response");
-}
-
-//! \brief send a success response message
-void return_success_response_message(void) {
-
-    // set message ack finished state to malloc fail
-    response->response_code = SUCCESSFUL_COMPRESSION;
-
-    // send message
-    send_sdp_message_response();
-    log_debug("send success ack");
-}
-
-//! \brief send a failed response due to the control forcing it to stop
-void return_failed_by_force_response_message(void) {
-       // set message ack finished state to malloc fail
-    response->response_code = FORCED_BY_COMPRESSOR_CONTROL;
-
-    // send message
-    send_sdp_message_response();
-    log_info("send forced ack");
-}
-
-//! \brief sends a failed response due to running out of time
-void return_failed_by_time_response_message(void) {
-       // set message ack finished state to malloc fail
-    response->response_code = RAN_OUT_OF_TIME;
-
-    // send message
-    send_sdp_message_response();
-    log_debug("send failed by time");
-}
-
-//! \brief send a failed response where finished compression but failed to
-//! fit into allocated size.
-void return_failed_by_space_response_message(void) {
-       // set message ack finished state to malloc fail
-    response->response_code = FAILED_TO_COMPRESS;
-
-    // send message
-    send_sdp_message_response();
-    log_debug("send failed by space");
-}
 
 //! \brief stores the compressed routing tables into the compressed sdram
 //! location
@@ -198,24 +110,19 @@ bool store_into_compressed_address(void) {
 }
 
 //! \brief handles the compression process
-//! \param[in] unused0: param 1 forced on us from api
-//! \param[in] unused1: param 2 forced on us from api
-void start_compression_process(uint unused0, uint unused1) {
-    // api requirement
-    use(unused0);
-    use(unused1);
+void start_compression_process(void) {
 
     log_debug("in compression phase");
 
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
-    malloc_extras_check_all_marked(50004);
+    malloc_extras_check_all_marked(50001);
 
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
-        &finished_by_compressor_force,
+        sorter_instruction,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
 
@@ -225,7 +132,7 @@ void start_compression_process(uint unused0, uint unused1) {
     } else {
         log_info("Failed oc minimise with success %d", success);
     }
-    malloc_extras_check_all();
+    malloc_extras_check_all_marked(50005);
 
     // turn off timer and set us into pause state
     spin1_pause();
@@ -237,55 +144,44 @@ void start_compression_process(uint unused0, uint unused1) {
         success = store_into_compressed_address();
         if (success) {
             log_debug("success response");
-            return_success_response_message();
+            this_processor->user3 = SUCCESSFUL_COMPRESSION;
         } else {
             log_debug("failed by space response");
-            return_failed_by_space_response_message();
+            this_processor->user3 = FAILED_TO_COMPRESS;
         }
     } else {  // if not a success, could be one of 4 states
         if (failed_by_malloc) {  // malloc failed somewhere
             log_debug("failed malloc response");
-            return_malloc_response_message();
-        } else if (finished_by_compressor_force) {  // control killed it
+            this_processor->user3 = FAILED_MALLOC;
+        } else if (*sorter_instruction != RUN) {  // control killed it
             log_debug("force fail response");
-            return_failed_by_force_response_message();
+            this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
             log_debug("send ack");
         } else if (timer_for_compression_attempt) {  // ran out of time
             log_debug("time fail response");
-            return_failed_by_time_response_message();
+            this_processor->user3 = RAN_OUT_OF_TIME;
         } else { // after finishing compression, still could not fit into table.
             log_debug("failed by space response");
-            return_failed_by_space_response_message();
+            this_processor->user3 = FAILED_TO_COMPRESS;
         }
     }
-    this_processor->user1 = 0;
 }
 
-//! \brief handle the first message. Will store in the routing table store,
-//! and then set off user event if no more  are expected.
-//! \param[in] first_cmd: the first packet.
-static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
-    // reset states by first turning off timer (puts us in pause state as well)
-    spin1_pause();
-
-
-    log_info("n bitfields = %d", start_cmd->table_data->n_bit_fields);
-    if (n_bit_fields == start_cmd->table_data->n_bit_fields) {
-        log_debug("cloned message, ignoring");
-        return;
-    }
-
-    // update current n bitfields
-    n_bit_fields = start_cmd->table_data->n_bit_fields;
+//! \brief attempts to run the compressor algorithm and get results.
+void run_compression_process(void) {
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
+    comp_instruction_t* instructions = (comp_instruction_t*)this_processor->user1;
 
     // set up fake heap
     log_debug("setting up fake heap for sdram usage");
-    malloc_extras_initialise_with_fake_heap(start_cmd->fake_heap_data);
+    malloc_extras_initialise_with_fake_heap(instructions->fake_heap_data);
     log_debug("finished setting up fake heap for sdram usage");
 
     failed_by_malloc = false;
-    finished_by_compressor_force = false;
     timer_for_compression_attempt = false;
+
+    // reset timer counter
     counter = 0;
     aliases_clear(&aliases);
     routing_table_reset();
@@ -294,86 +190,170 @@ static void handle_start_data_stream(start_sdp_packet_t *start_cmd) {
     aliases = aliases_init();
 
     // location where to store the compressed table
-    sdram_loc_for_compressed_entries = start_cmd->table_data->compressed_table;
+    sdram_loc_for_compressed_entries = instructions->compressed_table;
 
     malloc_extras_check_all_marked(50002);
 
-    log_debug("table init for %d tables", start_cmd->table_data->n_elements);
+    log_info("table init for %d tables", instructions->n_elements);
     bool success = routing_tables_init(
-        start_cmd->table_data->n_elements, start_cmd->table_data->elements);
+        instructions->n_elements, instructions->elements);
     log_debug("table init finish");
 
     if (!success) {
         log_error("failed to allocate memory for routing table.h state");
-        return_malloc_response_message();
+        this_processor->user3 = FAILED_MALLOC;
         return;
     }
 
-    log_debug("starting compression attempt");
+    log_info("starting compression attempt");
 
     log_debug("my processor id at start comp is %d", spin1_get_core_id());
     // start compression process
-    spin1_schedule_callback(
-        start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
-
+    start_compression_process();
 }
 
 //! \brief the sdp control entrance.
-//! \param[in] mailbox: the message
-//! \param[in] port: don't care.
-void _sdp_handler(uint mailbox, uint port) {
-    use(port);
-    log_debug("my processor id at reception is %d", spin1_get_core_id());
-    log_debug("received packet");
+//! \param[in] unused0: param 1 forced on us from api
+//! \param[in] unused1: param 2 forced on us from api
+void wait_for_instructions(uint unused0, uint unused1) {
+    //api requirements
+    use(unused0);
+    use(unused1);
 
+// values for debug logging
+    int ignore_counter = 0;
+    int ignore_cutoff = 1;
 
-    // get data from the sdp message
-    sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
-    compressor_payload_t *payload = (compressor_payload_t *) msg->data;
+    // busy loop.
+    while (true) {
+        // set if combination of user2 and user3 is unexpected
+        bool user_mismatch = false;
 
-    // record control processor.
-    if (control_processor_id == -1) {
-        control_processor_id = (msg->srce_port & CPU_MASK);
-    }
+        // values for debug logging
+        bool ignore = false;
+        ignore_counter++;
 
-    log_debug("control processor is %d", control_processor_id);
-    log_debug("command code is %d", payload->command);
+        // cache the states so they dont change inside one loop
+        instructions_to_compressor sorter_state =
+            (instructions_to_compressor)this_processor->user2;
+        compressor_states compressor_state =
+            (compressor_states)this_processor->user3;
 
-    // get command code
-    if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
-        switch (payload->command) {
-            case START_DATA_STREAM:
-                log_debug("start a stream packet");
-                this_processor->user1 = 1;
-                handle_start_data_stream(&payload->start);
-                sark_msg_free((sdp_msg_t*) msg);
+        // Documents all expected combinations of user2 and user3
+        // Handle new instruction from sorter,
+        // Ignore while waiting for sorter to pick up result
+        // Or error if unexpected state reached
+        switch(sorter_state) {
+
+            // sorter is preparing
+            case PREPARE:
+                switch(compressor_state) {
+                    case UNUSED:
+                        // First prepare
+                    case FAILED_MALLOC:
+                    case FORCED_BY_COMPRESSOR_CONTROL:
+                    case SUCCESSFUL_COMPRESSION:
+                    case FAILED_TO_COMPRESS:
+                    case RAN_OUT_OF_TIME:
+                        // clear previous result
+                        log_info("prepared");
+                        this_processor->user3 = PREPARED;
+                        break;
+                    case PREPARED:
+                        // waiting for sorter to pick up result
+                        ignore = true;
+                        break;
+
+                    default:
+                        user_mismatch = true;
+                }
                 break;
-            case COMPRESSION_RESPONSE:
-                log_error("I really should not be receiving this!!! WTF");
-                log_error(
-                    "came from processor %d with code %d",
-                    msg->srce_port & CPU_MASK, payload->response.response_code);
-                sark_msg_free((sdp_msg_t*) msg);
+
+            case RUN:
+                switch(compressor_state) {
+                    case PREPARED:
+                        log_info("run detected");
+                        this_processor->user3 = COMPRESSING;
+                        run_compression_process();
+                        break;
+                    case COMPRESSING:
+                        // Should not be back in this loop before result set
+                        user_mismatch = true;
+                        break;
+                    case FAILED_MALLOC:
+                    case FORCED_BY_COMPRESSOR_CONTROL:
+                    case SUCCESSFUL_COMPRESSION:
+                    case FAILED_TO_COMPRESS:
+                    case RAN_OUT_OF_TIME:
+                        // waiting for sorter to pick up result
+                        ignore = true;
+                        break;
+                    default:
+                        user_mismatch = true;
+                }
                 break;
-            case STOP_COMPRESSION_ATTEMPT:
-                log_info("been forced to stop by control");
-                finished_by_compressor_force = true;
-                this_processor->user1 = 1;
-                sark_msg_free((sdp_msg_t*) msg);
+
+            case FORCE_TO_STOP:
+               switch(compressor_state) {
+                    case COMPRESSING:
+                        // passed to compressor as *sorter_instruction
+                        // Do nothing until compressor notices changed
+                        ignore = true;
+                        break;
+                    case FAILED_MALLOC:
+                        // Keep force malloc as more important message
+                        ignore = true;
+                        break;
+                    case FORCED_BY_COMPRESSOR_CONTROL:
+                        // Waiting for sorter to pick up
+                        ignore = true;
+                        break;
+                    case SUCCESSFUL_COMPRESSION:
+                    case FAILED_TO_COMPRESS:
+                    case RAN_OUT_OF_TIME:
+                        log_info("Force detected");
+                        // The results other than MALLOC no longer matters
+                        this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+                        break;
+                    default:
+                        user_mismatch = true;
+                }
+                break;
+
+            case NOTHING:
+               switch(compressor_state) {
+                    case UNUSED:
+                        // waiting for sorter to malloc user1 and send prepare
+                        ignore = true;
+                        break;
+                    default:
+                        user_mismatch = true;
+                }
                 break;
             default:
-                log_error(
-                    "no idea what to do with message with command code %d; "
-                    "Ignoring", payload->command);
-                sark_msg_free((sdp_msg_t*) msg);
+                user_mismatch = true;
         }
-    } else {
-        log_error(
-            "no idea what to do with message. on port %d; Ignoring",
-            msg->srce_port >> PORT_SHIFT);
-        sark_msg_free((sdp_msg_t*) msg);
-    }
 
+        if (user_mismatch) {
+            log_error(
+                "Unexpected combination of sorter_state %d and "
+                "compressor_state %d", sorter_state, compressor_state);
+            malloc_extras_terminate(RTE_SWERR);
+        }
+
+        // TODO consider removing as only needed for debuging
+        if (ignore) {
+            if (ignore_counter == ignore_cutoff){
+                //log_info("No new instruction counter: %d sorter_state: %d,"
+                //    "user3: %d",
+                //    ignore_counter, sorter_state, this_processor->user3);
+                ignore_cutoff+= ignore_cutoff;
+            }
+        } else {
+            ignore_counter = 0;
+            ignore_cutoff = 1;
+        }
+    }
 }
 
 //! \brief timer interrupt for controlling time taken to try to compress table
@@ -415,10 +395,11 @@ void initialise(void) {
         compress_as_much_as_possible = true;
     }
 
-    // set user 1,2,3 registers to 0
-    this_processor->user1 = 0;
-    this_processor->user2 = 0;
-    this_processor->user3 = 0;
+    // set user 1,2,3 registers to state before setup by sorter
+    this_processor->user1 = NULL;
+    this_processor->user2 = NOTHING;
+    sorter_instruction = (instructions_to_compressor*) &this_processor->user2;
+    this_processor->user3 = UNUSED;
 
     // sort out timer (this is done in a indirect way due to lack of trust to
     // have timer only fire after full time after pause and resume.
@@ -426,25 +407,10 @@ void initialise(void) {
     spin1_set_timer_tick(1000);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
-    // set up sdp callback
-    log_info("set up sdp interrupt");
-    spin1_callback_on(SDP_PACKET_RX, _sdp_handler, SDP_PRIORITY);
-    log_info("finished sdp interrupt");
-
-    //set up message static bits
-    log_info("set up sdp message bits");
-    response->command_code = COMPRESSION_RESPONSE;
-    my_msg.flags = REPLY_NOT_EXPECTED;
-    my_msg.srce_addr = spin1_get_chip_id();
-    my_msg.dest_addr = spin1_get_chip_id();
-    my_msg.srce_port = (RANDOM_PORT << PORT_SHIFT) | spin1_get_core_id();
-    my_msg.length = LENGTH_OF_SDP_HEADER + (sizeof(response_sdp_packet_t));
-
-    log_info("finished sdp message bits");
-    log_info("my processor id is %d", spin1_get_core_id());
     log_info(
-        "srce_port = %d the processor id is %d",
-        my_msg.srce_port, my_msg.srce_port & CPU_MASK);
+       "finished initialise %d %d",
+        *sorter_instruction, this_processor->user2);
+    log_info("my processor id is %d", spin1_get_core_id());
 }
 
 //! \brief the main entrance.
@@ -453,6 +419,10 @@ void c_main(void) {
 
     // set up params
     initialise();
+
+    // kick-start the process
+    spin1_schedule_callback(
+        wait_for_instructions, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
     spin1_start(SYNC_WAIT);

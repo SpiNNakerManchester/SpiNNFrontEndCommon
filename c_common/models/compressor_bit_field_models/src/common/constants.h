@@ -61,4 +61,14 @@
 //! \brief mask to get the finished state
 #define FINISHED_STATE_MASK 0x0000FFFF
 
+//! how many tables the uncompressed router table entries is
+#define N_UNCOMPRESSED_TABLE 1
+
+//! how many times to try to wait for the compressor to read a user register
+//! change.
+#define ATTEMPTS_FOR_COMPRESSOR_TO_READ_CHANGE 20
+
+//! delay between attempts to check compressor read
+#define ATTEMPT_DELAY 50
+
 #endif  // __CONSTANTS_H__
