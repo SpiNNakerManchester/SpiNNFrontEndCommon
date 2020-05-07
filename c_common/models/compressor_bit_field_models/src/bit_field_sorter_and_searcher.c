@@ -693,7 +693,7 @@ void carry_on_binary_search(void) {
         // Above method has a terminate so no worry about carry on here
     }
     if (all_compressor_processors_busy()) {
-        log_info("all_compressor_processors_busy");
+        log_debug("all_compressor_processors_busy");
         return;  //Pass back to check_compressors
     }
     log_debug("start carry_on_binary_search");
@@ -748,9 +748,6 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time_steps+=1;
-    if ((time_steps & 1023) == 0){
-        log_info("time_steps: %u", time_steps);
-    }
     if (time_steps > KILL_TIME){
        log_error("timer overran %u", time_steps);
         rt_error(RTE_SWERR);
@@ -958,7 +955,7 @@ void check_compressors(uint unused0, uint unused1) {
             log_debug("result");
         }
     }
-    // Safety code incase exit after setting best_found fails
+    // Safety code in case exit after setting best_found fails
     log_info("exiting the interrupt, to allow the binary to finish");
 }
 

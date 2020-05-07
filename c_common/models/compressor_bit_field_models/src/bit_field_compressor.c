@@ -122,7 +122,7 @@ void start_compression_process(void) {
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
-        sorter_instruction,
+        &finished_by_compressor_force,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
 
@@ -220,14 +220,17 @@ void wait_for_instructions(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-// values for debug logging
+    // values for debug logging
     int ignore_counter = 0;
     int ignore_cutoff = 1;
 
     // busy loop.
-    while (true) {
-        // set if combination of user2 and user3 is unexpected
-        bool user_mismatch = false;
+    bool forced_crash = false;
+
+    // set if combination of user2 and user3 is unexpected
+    bool user_mismatch = false;
+
+    while (true && !forced_crash && !user_mismatch) {
 
         // values for debug logging
         bool ignore = false;
@@ -266,6 +269,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
 
                     default:
                         user_mismatch = true;
+                        log_info("broken");
                 }
                 break;
 
@@ -273,12 +277,14 @@ void wait_for_instructions(uint unused0, uint unused1) {
                 switch(compressor_state) {
                     case PREPARED:
                         log_info("run detected");
+                        finished_by_compressor_force = false;
                         this_processor->user3 = COMPRESSING;
                         run_compression_process();
                         break;
                     case COMPRESSING:
                         // Should not be back in this loop before result set
                         user_mismatch = true;
+                        log_info("should never get here");
                         break;
                     case FAILED_MALLOC:
                     case FORCED_BY_COMPRESSOR_CONTROL:
@@ -290,6 +296,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
                         break;
                     default:
                         user_mismatch = true;
+                        log_info("even more borken");
                 }
                 break;
 
@@ -299,14 +306,18 @@ void wait_for_instructions(uint unused0, uint unused1) {
                         // passed to compressor as *sorter_instruction
                         // Do nothing until compressor notices changed
                         ignore = true;
+                        finished_by_compressor_force = true;
                         break;
                     case FAILED_MALLOC:
                         // Keep force malloc as more important message
                         ignore = true;
+                        finished_by_compressor_force = true;
                         break;
                     case FORCED_BY_COMPRESSOR_CONTROL:
                         // Waiting for sorter to pick up
                         ignore = true;
+                        log_info("forced by compressor forced");
+
                         break;
                     case SUCCESSFUL_COMPRESSION:
                     case FAILED_TO_COMPRESS:
@@ -317,6 +328,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
                         break;
                     default:
                         user_mismatch = true;
+                        log_info("sersiously borken");
                 }
                 break;
 
@@ -328,10 +340,12 @@ void wait_for_instructions(uint unused0, uint unused1) {
                         break;
                     default:
                         user_mismatch = true;
+                        log_info("crapply broken");
                 }
                 break;
             default:
                 user_mismatch = true;
+                log_info("so so so so broken");
         }
 
         if (user_mismatch) {
@@ -343,7 +357,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
 
         // TODO consider removing as only needed for debuging
         if (ignore) {
-            if (ignore_counter == ignore_cutoff){
+            if (ignore_counter == ignore_cutoff) {
                 //log_info("No new instruction counter: %d sorter_state: %d,"
                 //    "user3: %d",
                 //    ignore_counter, sorter_state, this_processor->user3);
@@ -354,6 +368,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
             ignore_cutoff = 1;
         }
     }
+    log_info("escaped the while loop");
 }
 
 //! \brief timer interrupt for controlling time taken to try to compress table
