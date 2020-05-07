@@ -25,10 +25,29 @@
 //! enums
 
 //! \brief the acceptable finish states
-typedef enum finish_states {
-    SUCCESSFUL_COMPRESSION = 30, FAILED_MALLOC = 31, FAILED_TO_COMPRESS = 32,
-    RAN_OUT_OF_TIME = 33, FORCED_BY_COMPRESSOR_CONTROL = 34
-} finish_states;
+typedef enum compressor_states {
+   UNUSED = 30, PREPARED = 31, COMPRESSING = 32, FAILED_MALLOC = 33,
+   FORCED_BY_COMPRESSOR_CONTROL = 34,
+   SUCCESSFUL_COMPRESSION = 35, FAILED_TO_COMPRESS = 36,
+   RAN_OUT_OF_TIME = 37
+} compressor_states;
+
+typedef enum instrucions_to_compressor {
+    NONE = 40, PREPARE = 41,  RUN = 42, FORCE_TO_STOP = 44
+} instrucions_to_compressor;
+
+typedef enum processor_status_values {
+    // flag for saying processor is not a compressor
+    NOT_COMPRESSOR = -4,
+    // flag for saying compression processor should not be used any more
+    DO_NOT_USE = -3,
+    // flag for saying compression processor needs to be prepared for the first time
+    TO_BE_PREPARED = -2,
+    // flag to say compression processor has been asked to prepare/ clear previous
+    PREPARING = -1
+    // zero or higher is the midpoint the compressor processor has been asked to run
+    // This includes compressors that have been forced to stop but not check yet.
+} processor_status_values;
 
 //! \brief the command codes in human readable form
 typedef enum command_codes_for_sdp_packet {
@@ -83,6 +102,19 @@ typedef struct comp_processor_store_t{
     // elements
     table_t **elements;
 } comp_processor_store_t;
+
+typedef struct comp_instruction_t{
+    // how many rt tables used here
+    int n_elements;
+    // how many bit fields were used to make those tables
+    int n_bit_fields;
+    // compressed table location
+    table_t *compressed_table;
+    // elements
+    table_t **elements;
+    // initialise value for malloc_extras_
+    heap_t *fake_heap_data;
+} comp_instruction_t;
 
 //! \brief the compressor processor data elements in SDRAM
 typedef struct compressor_processors_top_t {

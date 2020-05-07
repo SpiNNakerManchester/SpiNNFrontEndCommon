@@ -61,4 +61,7 @@
 //! \brief mask to get the finished state
 #define FINISHED_STATE_MASK 0x0000FFFF
 
+//! how many tables the uncompressed router table entries is
+#define N_UNCOMPRESSED_TABLE 1
+
 #endif  // __CONSTANTS_H__
