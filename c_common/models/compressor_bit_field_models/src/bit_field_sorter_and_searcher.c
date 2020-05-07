@@ -233,8 +233,8 @@ static inline void pass_instructions_to_compressor(
 
     comp_instruction_t* instuctions = (comp_instruction_t*)comp_processor->user1;
     //free previous if there is any
-    instuctions->n_elements = n_rt_addresses;
     free_sdram_from_compression_attempt(instuctions);
+    instuctions->n_elements = n_rt_addresses;
     instuctions->elements = bit_field_routing_tables;
     instuctions->n_bit_fields = mid_point; ;
     // prepare_processor_first_time did compressed_table and fake_heap_data
@@ -676,7 +676,7 @@ void carry_on_binary_search(void) {
         // Above method has a terminate so no worry about carry on here
     }
     if (all_compressor_processors_busy()) {
-        log_info("all_compressor_processors_busy");
+        log_debug("all_compressor_processors_busy");
         return;  //Pass back to check_buffer_queue
     }
     log_debug("start carry_on_binary_search");
@@ -1111,8 +1111,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
     // kick-start the process
-    spin1_schedule_callback(
-        start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
+    //spin1_schedule_callback(
+    //    start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
     log_debug("waiting for sycn");

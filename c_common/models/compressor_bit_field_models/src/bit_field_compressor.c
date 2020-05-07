@@ -207,6 +207,106 @@ void run_compression_process(void){
     start_compression_process();
 }
 
+static inline bool process_prepare(compressor_states compressor_state) {
+    //this_processor->user3 = FAILED_TO_COMPRESS;
+    return false;
+    switch(compressor_state) {
+        case UNUSED:
+            // First prepare
+            log_info("Prepared for the first time");
+            //this_processor->user3 = PREPARED;
+            return true;
+        case FAILED_MALLOC:
+        case FORCED_BY_COMPRESSOR_CONTROL:
+        case SUCCESSFUL_COMPRESSION:
+        case FAILED_TO_COMPRESS:
+        case RAN_OUT_OF_TIME:
+            // clear previous result
+            log_info("prepared");
+            this_processor->user3 = PREPARED;
+            return true;
+        case PREPARED:
+            // waiting for sorter to pick up result
+            return true;
+        case COMPRESSING:
+            // Should never happen
+            return false;
+    }
+    return false;
+}
+
+static inline bool process_run(compressor_states compressor_state) {
+    this_processor->user3 = FAILED_TO_COMPRESS;
+    return true;
+
+    switch(compressor_state) {
+        case PREPARED:
+            log_info("run detected");
+            this_processor->user3 = COMPRESSING;
+            run_compression_process();
+            return true;
+        case COMPRESSING:
+            // Should not be back in this loop before result set
+            return false;
+        case FAILED_MALLOC:
+        case FORCED_BY_COMPRESSOR_CONTROL:
+        case SUCCESSFUL_COMPRESSION:
+        case FAILED_TO_COMPRESS:
+        case RAN_OUT_OF_TIME:
+            // waiting for sorter to pick up result
+            return true;
+        case UNUSED:
+            // Should never happen
+            return false;
+    }
+    return false;
+}
+
+static inline bool process_force(compressor_states compressor_state) {
+   switch(compressor_state) {
+        case COMPRESSING:
+            // passed to compressor as *sorter_instruction
+            // Do nothing until compressor notices changed
+            return true;
+        case FAILED_MALLOC:
+            // Keep force malloc as more important message
+            return true;
+        case FORCED_BY_COMPRESSOR_CONTROL:
+            // Waiting for sorter to pick up
+            return true;
+        case SUCCESSFUL_COMPRESSION:
+        case FAILED_TO_COMPRESS:
+        case RAN_OUT_OF_TIME:
+            log_info("Force detected");
+            // The results other than MALLOC no longer matters
+            this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+            return true;
+        case PREPARED:
+        case UNUSED:
+            // Should never happen
+            return false;
+   }
+   return false;
+}
+
+static inline bool process_none(compressor_states compressor_state) {
+    switch(compressor_state) {
+        case UNUSED:
+            // waiting for sorter to malloc user1 and send prepare
+            return true;
+        case PREPARED:
+        case COMPRESSING:
+        case FAILED_MALLOC:
+        case FORCED_BY_COMPRESSOR_CONTROL:
+        case RAN_OUT_OF_TIME:
+        case SUCCESSFUL_COMPRESSION:
+        case FAILED_TO_COMPRESS:
+            // Should never happen
+            return false;
+    }
+    return false;
+}
+
 //! \brief busy waits until there is a new instuction from the sorter
 void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
@@ -214,136 +314,57 @@ void wait_for_instructions(uint unused0, uint unused1) {
     use(unused1);
 
     // values for debug logging
-    int ignore_counter = 0;
-    int ignore_cutoff = 1;
+    int previous_sorter_state = 0;
+    compressor_states previous_compressor_state = UNUSED;
 
-    while (true) {
+    bool users_match = true;
+    while (users_match) {
         // set if combination of user2 and user3 is unexpected
-        bool user_mismatch = false;
-        // values for debug logging
-        bool ignore = false;
-        ignore_counter++;
 
         // cache the states so they dont change inside one loop
         instrucions_to_compressor sorter_state =
             (instrucions_to_compressor)this_processor->user2;
         compressor_states compressor_state =
             (compressor_states)this_processor->user3;
+        //if (this_processor->user2 != previous_sorter_state) {
+        //    log_info("Sorter state changed  sorter: %d comoressor %d",
+        //        sorter_state, compressor_state);
+        //    previous_sorter_state = this_processor->user2;
+        //}
+        //if (compressor_state != previous_compressor_state) {
+        //    log_info("Compressor state changed  sorter: %d comoressor %d",
+        //       sorter_state, compressor_state);
+        //    previous_compressor_state = compressor_state;
+        //}
 
-        // Documents all expected combinations of user2 and user3
-        // Handle new instruction from sorter,
-        // Ignore while waiting for sorter to pick up result
-        // Or error if unexpected state reached
         switch(sorter_state) {
-
             case PREPARE:
-                switch(compressor_state) {
-                    case UNUSED:
-                        // First prepare
-                    case FAILED_MALLOC:
-                    case FORCED_BY_COMPRESSOR_CONTROL:
-                    case SUCCESSFUL_COMPRESSION:
-                    case FAILED_TO_COMPRESS:
-                    case RAN_OUT_OF_TIME:
-                        // clear previous result
-                        log_info("prepared");
-                        this_processor->user3 = PREPARED;
-                        break;
-                    case PREPARED:
-                        // waiting for sorter to pick up result
-                        ignore = true;
-                        break;
-
-                    default:
-                        user_mismatch = true;
-                }
+                //users_match = process_prepare(compressor_state);
+                users_match = false;
                 break;
-
             case RUN:
-                switch(compressor_state) {
-                    case PREPARED:
-                        log_info("run detected");
-                        this_processor->user3 = COMPRESSING;
-                        run_compression_process();
-                        break;
-                    case COMPRESSING:
-                        // Should not be back in this loop before result set
-                        user_mismatch = true;
-                        break;
-                    case FAILED_MALLOC:
-                    case FORCED_BY_COMPRESSOR_CONTROL:
-                    case SUCCESSFUL_COMPRESSION:
-                    case FAILED_TO_COMPRESS:
-                    case RAN_OUT_OF_TIME:
-                        // waiting for sorter to pick up result
-                        ignore = true;
-                        break;
-                    default:
-                        user_mismatch = true;
-                }
+            //    users_match = process_run(compressor_state);
+                users_match = false;
                 break;
-
             case FORCE_TO_STOP:
-               switch(compressor_state) {
-                    case COMPRESSING:
-                        // passed to compressor as *sorter_instruction
-                        // Do nothing until compressor notices changed
-                        ignore = true;
-                        break;
-                    case FAILED_MALLOC:
-                        // Keep force malloc as more important message
-                        ignore = true;
-                        break;
-                    case FORCED_BY_COMPRESSOR_CONTROL:
-                        // Waiting for sorter to pick up
-                        ignore = true;
-                        break;
-                    case SUCCESSFUL_COMPRESSION:
-                    case FAILED_TO_COMPRESS:
-                    case RAN_OUT_OF_TIME:
-                        log_info("Force detected");
-                        // The results other than MALLOC no longer matters
-                        this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
-                        break;
-                    default:
-                        user_mismatch = true;
-                }
+            //    users_match = process_force(compressor_state);
+                users_match = false;
                 break;
-
             case NONE:
-               switch(compressor_state) {
-                    case UNUSED:
-                        // waiting for sorter to malloc user1 and send prepare
-                        ignore = true;
-                        break;
-                    default:
-                        user_mismatch = true;
-                }
+                users_match = process_none(compressor_state);
                 break;
-            default:
-                user_mismatch = true;
         }
 
-        if (user_mismatch) {
+        if (!users_match) {
             log_error("Unexpected combination of sorter_state %d and "
                 "compressor_state %d",
                 sorter_state, compressor_state);
             malloc_extras_terminate(RTE_SWERR);
         }
 
-        // TODO consider removing as only needed for debuging
-        if (ignore) {
-            if (ignore_counter == ignore_cutoff){
-                log_info("No new instruction counter: %d sorter_state: %d,"
-                    "user3: %d",
-                    ignore_counter, sorter_state, this_processor->user3);
-                ignore_cutoff+= ignore_cutoff;
-            }
-        } else {
-            ignore_counter = 0;
-            ignore_cutoff = 1;
-        }
     }
+    log_error("Out of loop");
+
 }
 
 
