@@ -21,11 +21,14 @@ from .chip_iobuf_clearer import ChipIOBufClearer
 from .chip_iobuf_extractor import ChipIOBufExtractor
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
+from .compute_energy_used import ComputeEnergyUsed
 from .database_interface import DatabaseInterface
 from .system_multicast_routing_generator import (
     SystemMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
+from .energy_provenance_reporter import EnergyProvenanceReporter
+from .finalise_timing_data import FinaliseTimingData
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
     GraphDataSpecificationWriter)
@@ -75,9 +78,11 @@ __all__ = [
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "CreateNotificationProtocol", "DatabaseInterface",
+    "ChipRuntimeUpdater", "CreateNotificationProtocol",
+    "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
+    "EnergyProvenanceReporter", "FinaliseTimingData",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HBPMaxMachineGenerator",

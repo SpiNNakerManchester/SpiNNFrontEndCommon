@@ -16,12 +16,10 @@
 from enum import Enum
 import struct
 from spinn_utilities.overrides import overrides
-from spinnman.messages.eieio import EIEIOType
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
-    ResourceContainer)
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine,
     ProvidesProvenanceDataFromMachineImpl)
@@ -34,6 +32,7 @@ from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 _ONE_SHORT = struct.Struct("<H")
 _TWO_BYTES = struct.Struct("<BB")
@@ -55,41 +54,26 @@ class LivePacketGatherMachineVertex(
     _CONFIG_SIZE = 12 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
-    def __init__(
-            self, label, use_prefix=False, key_prefix=None, prefix_type=None,
-            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
-            payload_as_time_stamps=True, use_payload_prefix=True,
-            payload_prefix=None, payload_right_shift=0,
-            number_of_packets_sent_per_time_step=0,
-            hostname=None, port=None, strip_sdp=None,
-            tag=None, constraints=None):
-        # pylint: disable=too-many-arguments, too-many-locals
-
+    def __init__(self, lpg_params, label=None, constraints=None):
+        """
+        :param LivePacketGatherParams lpg_params:
+        :param str label:
+        :param constraints:
+        :type constraints:
+            iterable(~pacman.model.constraints.AbstractConstraint)
+        """
         # inheritance
         super(LivePacketGatherMachineVertex, self).__init__(
-            label, constraints=constraints)
+            label or lpg_params.label, constraints=constraints)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=ConstantSDRAM(self.get_sdram_usage()),
-            iptags=[IPtagResource(
-                ip_address=hostname, port=port,
-                strip_sdp=strip_sdp, tag=tag,
-                traffic_identifier=self.TRAFFIC_IDENTIFIER)])
+            iptags=[lpg_params.get_iptag_resource()])
 
         # app specific data items
-        self._use_prefix = use_prefix
-        self._key_prefix = key_prefix
-        self._prefix_type = prefix_type
-        self._message_type = message_type
-        self._right_shift = right_shift
-        self._payload_as_time_stamps = payload_as_time_stamps
-        self._use_payload_prefix = use_payload_prefix
-        self._payload_prefix = payload_prefix
-        self._payload_right_shift = payload_right_shift
-        self._number_of_packets_sent_per_time_step = \
-            number_of_packets_sent_per_time_step
+        self._lpg_params = lpg_params
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -205,59 +189,29 @@ class LivePacketGatherMachineVertex(
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
 
-        # has prefix
-        if self._use_prefix:
-            spec.write_value(data=1)
-        else:
-            spec.write_value(data=0)
-
-        # prefix
-        if self._key_prefix is not None:
-            spec.write_value(data=self._key_prefix)
-        else:
-            spec.write_value(data=0)
-
-        # prefix type
-        if self._prefix_type is not None:
-            spec.write_value(data=self._prefix_type.value)
-        else:
-            spec.write_value(data=0)
-
-        # packet type
-        spec.write_value(data=self._message_type.value)
-
-        # right shift
-        spec.write_value(data=self._right_shift)
-
-        # payload as time stamp
-        if self._payload_as_time_stamps:
-            spec.write_value(data=1)
-        else:
-            spec.write_value(data=0)
-
-        # payload has prefix
-        if self._use_payload_prefix:
-            spec.write_value(data=1)
-        else:
-            spec.write_value(data=0)
-
-        # payload prefix
-        if self._payload_prefix is not None:
-            spec.write_value(data=self._payload_prefix)
-        else:
-            spec.write_value(data=0)
-
-        # right shift
-        spec.write_value(data=self._payload_right_shift)
+        spec.write_value(int(self._lpg_params.use_prefix))
+        spec.write_value(self._lpg_params.key_prefix or 0)
+        spec.write_value(self._lpg_params.prefix_type.value
+                         if self._lpg_params.prefix_type else 0)
+        spec.write_value(self._lpg_params.message_type.value
+                         if self._lpg_params.message_type else 0)
+        spec.write_value(self._lpg_params.right_shift)
+        spec.write_value(int(self._lpg_params.payload_as_time_stamps))
+        spec.write_value(int(self._lpg_params.use_payload_prefix))
+        spec.write_value(self._lpg_params.payload_prefix or 0)
+        spec.write_value(data=self._lpg_params.payload_right_shift)
 
         # SDP tag
-        iptag = next(iter(iptags))
-        spec.write_value(data=iptag.tag)
-        spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
-            iptag.destination_y, iptag.destination_x))[0])
+        for iptag in iptags:
+            spec.write_value(iptag.tag)
+            spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
+                iptag.destination_y, iptag.destination_x))[0])
+            break
+        else:
+            raise ConfigurationException("no iptag provided")
 
         # number of packets to send per time stamp
-        spec.write_value(data=self._number_of_packets_sent_per_time_step)
+        spec.write_value(self._lpg_params.number_of_packets_sent_per_time_step)
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region

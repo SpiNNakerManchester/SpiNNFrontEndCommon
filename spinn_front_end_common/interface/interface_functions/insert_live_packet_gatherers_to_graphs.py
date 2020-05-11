@@ -63,41 +63,15 @@ class InsertLivePacketGatherersToGraphs(object):
         # pylint: disable=too-many-arguments
         if app_graph is not None:
             _slice = Slice(0, 0)
-            app_vtx = self._create_vertex(LivePacketGather, params)
+            app_vtx = LivePacketGather(params)
             app_graph.add_vertex(app_vtx)
             resources = app_vtx.get_resources_used_by_atoms(_slice)
             m_vtx = app_vtx.create_machine_vertex(
                 _slice, resources, label=params.label)
             mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
-            m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
+            m_vtx = LivePacketGatherMachineVertex(params)
 
         m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
         m_graph.add_vertex(m_vtx)
         return m_vtx
-
-    @staticmethod
-    def _create_vertex(lpg_vertex_class, params):
-        """ Creates a Live Packet Gather Vertex
-
-        :param lpg_vertex_class: the type to create for the vertex
-        :param params: the parameters of the vertex
-        :return: the vertex built
-        """
-        return lpg_vertex_class(
-            hostname=params.hostname,
-            port=params.port,
-            tag=params.tag,
-            strip_sdp=params.strip_sdp,
-            use_prefix=params.use_prefix,
-            key_prefix=params.key_prefix,
-            prefix_type=params.prefix_type,
-            message_type=params.message_type,
-            right_shift=params.right_shift,
-            payload_as_time_stamps=params.payload_as_time_stamps,
-            use_payload_prefix=params.use_payload_prefix,
-            payload_prefix=params.payload_prefix,
-            payload_right_shift=params.payload_right_shift,
-            number_of_packets_sent_per_time_step=(
-                params.number_of_packets_sent_per_time_step),
-            label=params.label)
