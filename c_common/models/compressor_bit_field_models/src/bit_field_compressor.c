@@ -83,6 +83,7 @@ int n_bit_fields = -1;
 int previous_sorter_state = 0;
 int previous_compressor_state = 0;
 
+comms_sdram_t *comms_sdram;
 // ---------------------------------------------------------------------
 
 //! \brief stores the compressed routing tables into the compressed sdram
@@ -307,29 +308,21 @@ static inline bool process_none(compressor_states compressor_state) {
     }
     return false;
 }
-/*
-void wait_for_instructionsX(uint unused0, uint unused1) {
+
+void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
-    bool users_match = true;
-    while (users_match) {
-        int user2 = this_processor->user2;
-        if (user2 < NONE) {
-            log_error("Unexpected user2 %d", user2);
-            malloc_extras_terminate(RTE_SWERR);
-        }
-        if (user2 > FORCE_TO_STOP) {
-            log_error("Unexpected user2 %d", user2);
-            malloc_extras_terminate(RTE_SWERR);
-        }
-    }
-    log_error("Out of loop");
+    log_info("compressor_stat: %d, .sorter_instruction %d, n_elements %d "
+            "n_bit_fields %d",
+            comms_sdram[spin1_get_core_id()].compressor_state,
+            comms_sdram[spin1_get_core_id()].sorter_instruction,
+            comms_sdram[spin1_get_core_id()].n_elements,
+            comms_sdram[spin1_get_core_id()].n_bit_fields);
 }
-*/
 
 //! \brief busy waits until there is a new instuction from the sorter
-void wait_for_instructions(uint unused0, uint unused1) {
+void wait_for_instructions2(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
@@ -433,13 +426,14 @@ void initialise(void) {
     if (int_value == 1) {
         compress_only_when_needed = true;
     }
+    // TODO compress_as_much_as_possible
+    //int_value = this_processor->user3;
+    //log_info("user 3 = %d", int_value);
+    //if (int_value == 1) {
+        compress_as_much_as_possible = false;
+    //}
 
-    int_value = this_processor->user3;
-    log_info("user 3 = %d", int_value);
-    if (int_value == 1) {
-        compress_as_much_as_possible = true;
-    }
-
+    comms_sdram = (comms_sdram_t*)this_processor->user3;
     // set user 1,2,3 registers to state before setup bu sorter
     this_processor->user1 = NULL;
     this_processor->user2 = NONE;

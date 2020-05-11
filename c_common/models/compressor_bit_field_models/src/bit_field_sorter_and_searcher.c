@@ -43,7 +43,7 @@
 #define TIME_STEP 10
 
 //! \brief After how many time steps to kill the process
-#define KILL_TIME 200000
+#define KILL_TIME 2000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
@@ -107,6 +107,8 @@ bit_field_t tested_mid_points;
 
 //! tracker for what each processor is doing (in terms of midpoints)
 int* processor_status;
+
+comms_sdram_t *comms_sdram;
 
 //============================================================================
 
@@ -1002,6 +1004,17 @@ static void initialise_user_register_tracker(void) {
         (uncompressed_table_region_data_t *) this_vcpu_info->user1;
 
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
+    comms_sdram = (comms_sdram_t*)region_addresses->comms_sdram;
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        comms_sdram[processor_id].compressor_state = UNUSED;
+        comms_sdram[processor_id].sorter_instruction = NONE;
+        comms_sdram[processor_id].n_elements = -1;
+        //TODO set to -1
+        comms_sdram[processor_id].n_bit_fields = 0 - processor_id;
+        comms_sdram[processor_id].compressed_table = NULL;
+        comms_sdram[processor_id].elements = NULL;
+        comms_sdram[processor_id].fake_heap_data = malloc_extras_get_stolen_heap();
+    }
     usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
 
     log_debug(
@@ -1036,7 +1049,7 @@ bool initialise_compressor_processors(void) {
         processor_status[processor_id] = NOT_COMPRESSOR;
     }
 
-    // Switch compressor processors to DOING_NOWT
+    // Switch compressor processors to TO_BE_PREPARED
     log_debug("n region triples = %d", region_addresses->n_triples);
     compressor_processors_top_t *compressor_processors_top =
         (void *) &region_addresses->triples[region_addresses->n_triples];
@@ -1047,6 +1060,7 @@ bool initialise_compressor_processors(void) {
             compressor_processors_top->processor_id[processor_index]] =
                 TO_BE_PREPARED;
     }
+
     //log_processor_status();
 
     return true;
@@ -1111,8 +1125,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
     // kick-start the process
-    spin1_schedule_callback(
-       start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
+    //spin1_schedule_callback(
+    //  start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
     log_debug("waiting for sycn");

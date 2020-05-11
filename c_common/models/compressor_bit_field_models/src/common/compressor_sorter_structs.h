@@ -193,9 +193,25 @@ typedef struct triples_t {
     int processor;
 } triples_t;
 
+typedef struct comms_sdram_t {
+    compressor_states compressor_state;
+    instrucions_to_compressor sorter_instruction;
+    // how many rt tables used here
+    int n_elements;
+    // how many bit fields were used to make those tables
+    int n_bit_fields;
+    // compressed table location
+    table_t *compressed_table;
+    // elements
+    table_t **elements;
+    // initialise value for malloc_extras_
+    heap_t *fake_heap_data;
+} comms_sdram_t;
+
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
     int threshold;
+    comms_sdram_t* comms_sdram;
     int n_triples;
     triples_t triples[];
 } region_addresses_t;
@@ -220,6 +236,5 @@ typedef union {
     start_sdp_packet_t start;
     response_sdp_packet_t response;
 } compressor_payload_t;
-
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__
