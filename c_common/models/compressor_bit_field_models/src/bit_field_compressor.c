@@ -315,10 +315,10 @@ void wait_for_instructions(uint unused0, uint unused1) {
     use(unused1);
     log_info("compressor_stat: %d, .sorter_instruction %d, n_elements %d "
             "n_bit_fields %d",
-            comms_sdram[spin1_get_core_id()].compressor_state,
-            comms_sdram[spin1_get_core_id()].sorter_instruction,
-            comms_sdram[spin1_get_core_id()].n_elements,
-            comms_sdram[spin1_get_core_id()].n_bit_fields);
+            comms_sdram->compressor_state,
+            comms_sdram->sorter_instruction,
+            comms_sdram->n_elements,
+            comms_sdram->n_bit_fields);
 }
 
 //! \brief busy waits until there is a new instuction from the sorter
@@ -433,7 +433,11 @@ void initialise(void) {
         compress_as_much_as_possible = false;
     //}
 
+    // Get the pointer for all cores
     comms_sdram = (comms_sdram_t*)this_processor->user3;
+    // Now move the pointer to the comms for this core
+    comms_sdram += spin1_get_core_id();
+
     // set user 1,2,3 registers to state before setup bu sorter
     this_processor->user1 = NULL;
     this_processor->user2 = NONE;
