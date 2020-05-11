@@ -33,6 +33,10 @@ WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
+FILE_FORMAT = "iobuf_for_chip_{}_{}_processor_id_{}.txt"
+LABEL_STRING = "{} IOBUF from the machine"
+FAIL_LOG = "failed to retrieve iobufs from {},{},{}; {}"
+
 
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
@@ -55,12 +59,15 @@ class ChipIOBufExtractor(object):
         # Flag to say this is after an an exception so don't throw new ones
         "_recovery_mode",
         # Class to replace the short messages to long ones
-        "_replacer"]
+        "_replacer",
+        # string used in recovery print
+        "_recovery_string"]
 
-    def __init__(self, recovery_mode=False,
-                 filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
+    def __init__(self, recovery_mode=False, filename_template=FILE_FORMAT):
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
+        self._recovery_string = LABEL_STRING.format(
+            "Recovering" if self._recovery_mode else "Extracting")
         if self._log_dict_path is None:
             logger.warning("No dict file specified")
             self._replacer = NoReplace()
@@ -74,8 +81,6 @@ class ChipIOBufExtractor(object):
 
         error_entries = list()
         warn_entries = list()
-        label = (("Recovering" if self._recovery_mode else "Extracting")
-                 + " IOBUF from the machine")
 
         system_binaries = {}
         try:
@@ -86,7 +91,8 @@ class ChipIOBufExtractor(object):
 
         # all the cores
         if from_cores == "ALL":
-            progress = ProgressBar(len(executable_targets.binaries), label)
+            progress = ProgressBar(
+                len(executable_targets.binaries), self._recovery_string)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
                 if binary in system_binaries:
@@ -94,21 +100,22 @@ class ChipIOBufExtractor(object):
                 else:
                     prov_path = app_provenance_file_path
                 self._run_for_core_subsets(
-                    core_subsets, binary, transceiver, prov_path,
-                    error_entries, warn_entries)
+                    core_subsets, transceiver, prov_path, error_entries,
+                    warn_entries)
 
         elif from_cores:
             if binary_types:
                 # bit of both
-                progress = ProgressBar(len(executable_targets.binaries), label)
+                progress = ProgressBar(
+                    len(executable_targets.binaries), self._recovery_string)
                 binaries = executable_finder.get_executable_paths(binary_types)
-                iocores = convert_string_into_chip_and_core_subset(from_cores)
+                io_cores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     if binary in binaries:
                         core_subsets = executable_targets.get_cores_for_binary(
                             binary)
                     else:
-                        core_subsets = iocores.intersect(
+                        core_subsets = io_cores.intersect(
                             executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
                         if binary in system_binaries:
@@ -116,15 +123,16 @@ class ChipIOBufExtractor(object):
                         else:
                             prov_path = app_provenance_file_path
                         self._run_for_core_subsets(
-                            core_subsets, binary, transceiver, prov_path,
+                            core_subsets, transceiver, prov_path,
                             error_entries, warn_entries)
 
             else:
                 # some hard coded cores
-                progress = ProgressBar(len(executable_targets.binaries), label)
-                iocores = convert_string_into_chip_and_core_subset(from_cores)
+                progress = ProgressBar(
+                    len(executable_targets.binaries), self._recovery_string)
+                io_cores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
-                    core_subsets = iocores.intersect(
+                    core_subsets = io_cores.intersect(
                         executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
                         if binary in system_binaries:
@@ -132,13 +140,13 @@ class ChipIOBufExtractor(object):
                         else:
                             prov_path = app_provenance_file_path
                         self._run_for_core_subsets(
-                            core_subsets, binary, transceiver, prov_path,
+                            core_subsets, transceiver, prov_path,
                             error_entries, warn_entries)
         else:
             if binary_types:
                 # some binaries
                 binaries = executable_finder.get_executable_paths(binary_types)
-                progress = ProgressBar(len(binaries), label)
+                progress = ProgressBar(len(binaries), self._recovery_string)
                 for binary in progress.over(binaries):
                     core_subsets = executable_targets.get_cores_for_binary(
                         binary)
@@ -147,8 +155,8 @@ class ChipIOBufExtractor(object):
                     else:
                         prov_path = app_provenance_file_path
                     self._run_for_core_subsets(
-                        core_subsets, binary, transceiver, prov_path,
-                        error_entries, warn_entries)
+                        core_subsets, transceiver, prov_path, error_entries,
+                        warn_entries)
             else:
                 # nothing
                 pass
@@ -156,7 +164,7 @@ class ChipIOBufExtractor(object):
         return error_entries, warn_entries
 
     def _run_for_core_subsets(
-            self, core_subsets, binary, transceiver, provenance_file_path,
+            self, core_subsets, transceiver, provenance_file_path,
             error_entries, warn_entries):
 
         # extract iobuf
@@ -185,7 +193,8 @@ class ChipIOBufExtractor(object):
                     self.__add_value_if_match(
                         WARNING_ENTRY, replaced, warn_entries, iobuf)
 
-    def __recover_iobufs(self, transceiver, core_subsets):
+    @staticmethod
+    def __recover_iobufs(transceiver, core_subsets):
         io_buffers = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
@@ -195,8 +204,7 @@ class ChipIOBufExtractor(object):
                     io_buffers.extend(transceiver.get_iobuf(cs))
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
-                        core_subset.x, core_subset.y, p,
-                        "failed to retrieve iobufs from {},{},{}; {}".format(
+                        core_subset.x, core_subset.y, p, FAIL_LOG.format(
                             core_subset.x, core_subset.y, p, str(e))))
         return io_buffers
 
@@ -231,5 +239,7 @@ class ChipIOBufExtractor(object):
 
 
 class NoReplace(object):
-    def replace(self, line):
+
+    @staticmethod
+    def replace(line):
         return line
