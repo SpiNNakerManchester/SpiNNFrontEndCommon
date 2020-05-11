@@ -49,3 +49,7 @@ class DataWritten(object):
         return (self._start_address == other.start_address and
                 self._memory_used == other.memory_used and
                 self._memory_written == other.memory_written)
+
+    def __repr__(self):
+        return "DataWritten(start={},used={},written={})".format(
+            self._start_address, self._memory_used, self.memory_written)
