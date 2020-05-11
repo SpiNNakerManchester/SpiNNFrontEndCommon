@@ -43,7 +43,7 @@
 #define TIME_STEP 10
 
 //! \brief After how many time steps to kill the process
-#define KILL_TIME 2000
+#define KILL_TIME 200000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
@@ -1111,8 +1111,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
     // kick-start the process
-    //spin1_schedule_callback(
-    //   start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
+    spin1_schedule_callback(
+       start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
     log_debug("waiting for sycn");
