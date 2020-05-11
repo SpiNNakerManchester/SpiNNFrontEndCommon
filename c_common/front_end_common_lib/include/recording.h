@@ -97,7 +97,7 @@ static inline bool recording_record(
 //! \param[in] data the pointer to the data.
 //! \param[in] size the number of bytes in the data.
 __attribute__((noreturn)) void recording_bad_offset(
-	void *data, uint32_t size);
+    void *data, uint32_t size);
 
 //! \brief records some data into a specific recording channel, calling a
 //!        callback function once complete
@@ -114,7 +114,7 @@ static inline bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
     if ((size_bytes & 3 || ((uint32_t) data) & 3) && callback != NULL) {
-	recording_bad_offset(data, size_bytes);
+    recording_bad_offset(data, size_bytes);
     }
     return recording_do_record_and_notify(channel, data, size_bytes, callback);
 }
@@ -163,5 +163,13 @@ void recording_reset(void);
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0
 void recording_do_timestep_update(uint32_t time);
+
+//! \brief Call once per step to ensure buffering is done - should only
+//!        be called if recording flags is not 0
+static inline void recording_do_step_update(uint32_t step) {
+    // Simply call the timestep version as this does the same thing;
+    // This "copy" exists to make the interface nicer for untimed models
+    recording_do_timestep_update(step);
+}
 
 #endif // _RECORDING_H_
