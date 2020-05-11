@@ -27,8 +27,14 @@
 #include <spin1_api_params.h>
 #include <spin1_api.h>
 
-// Import things from spin1_api that are not explicitly exposed
+// Import things from spin1_api that are not explicitly exposed //
+
+//! Wait for interrupt - will return to just after this point after an
+//! interrupt has been raised
 extern void spin1_wfi(void);
+
+//! Indicate whether the SYNC signal has been received.  Return 0 (false) if
+//! not received and 1 (true) if received.
 extern uint resume_wait(void);
 
 //! the pointer to the simulation time used by application models
@@ -62,7 +68,7 @@ static callback_t sdp_callback[NUM_SDP_PORTS];
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
 //! Whether the simulation uses the timer or not (default true)
-static uint32_t uses_timer = 1;
+static bool uses_timer = true;
 
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
@@ -147,6 +153,8 @@ static void synchronise_start(uint unused0, uint unused1) {
     stored_start_function();
 
     // If we are not using the timer, no-one else resets the event, so do it now
+    // (event comes from sark.h - this is how SARK knows whether to wait for a
+    //  SYNC0 or SYNC1 message)
     if (!uses_timer) {
         event.wait ^= 1;
     }
@@ -376,6 +384,6 @@ void simulation_set_start_function(start_callback_t start_function) {
     stored_start_function = start_function;
 }
 
-void simulation_set_uses_timer(uint sim_uses_timer) {
+void simulation_set_uses_timer(bool sim_uses_timer) {
     uses_timer = sim_uses_timer;
 }

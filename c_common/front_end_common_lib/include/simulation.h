@@ -174,8 +174,8 @@ void simulation_dma_transfer_done_callback_off(uint tag);
 //! \brief set whether the simulation uses the timer.  By default it will
 //!        be assumed that simulations use the timer unless this function is
 //!        called.
-//! \param[in] sim_uses_timer: Whether the simulation uses the timer (1)
-//!                            or not (0)
-void simulation_set_uses_timer(uint sim_uses_timer);
+//! \param[in] sim_uses_timer: Whether the simulation uses the timer (true)
+//!                            or not (false)
+void simulation_set_uses_timer(bool sim_uses_timer);
 
 #endif // _SIMULATION_H_

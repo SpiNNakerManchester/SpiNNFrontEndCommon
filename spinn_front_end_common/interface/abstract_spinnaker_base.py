@@ -1728,13 +1728,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["RunUntilTimeSteps"] = n_machine_time_steps
-
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+
+        # This is done twice to make things nicer for things which don't have
+        # time steps without breaking existing code; it is purely aesthetic
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["RunTimeSteps"] = n_machine_time_steps
 
         # This is done twice to make things nicer for things which don't have
-        # time steps
+        # time steps without breaking existing code; it is purely aesthetic
         inputs["DataNTimeSteps"] = self._max_run_time_steps
         inputs["DataNSteps"] = self._max_run_time_steps
 
