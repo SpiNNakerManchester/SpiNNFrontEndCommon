@@ -1112,7 +1112,7 @@ void c_main(void) {
 
     // kick-start the process
     //spin1_schedule_callback(
-    //    start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
+    //   start_compression_process, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
     log_debug("waiting for sycn");

@@ -307,6 +307,22 @@ static inline bool process_none(compressor_states compressor_state) {
     return false;
 }
 
+void wait_for_instructionsX(uint unused0, uint unused1) {
+    bool users_match = true;
+    while (users_match) {
+        int user2 = this_processor->user2;
+        if (user2 < NONE) {
+            log_error("Unexpected user2 %d", user2);
+            malloc_extras_terminate(RTE_SWERR);
+        }
+        if (user2 > FORCE_TO_STOP) {
+            log_error("Unexpected user2 %d", user2);
+            malloc_extras_terminate(RTE_SWERR);
+        }
+    }
+    log_error("Out of loop");
+}
+
 //! \brief busy waits until there is a new instuction from the sorter
 void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
@@ -315,56 +331,80 @@ void wait_for_instructions(uint unused0, uint unused1) {
 
     // values for debug logging
     int previous_sorter_state = 0;
-    compressor_states previous_compressor_state = UNUSED;
+    int previous_compressor_state = 0;
+    int counter = 0;
 
     bool users_match = true;
-    while (users_match) {
-        // set if combination of user2 and user3 is unexpected
+    // set if combination of user2 and user3 is unexpected
 
-        // cache the states so they dont change inside one loop
-        instrucions_to_compressor sorter_state =
-            (instrucions_to_compressor)this_processor->user2;
-        compressor_states compressor_state =
-            (compressor_states)this_processor->user3;
-        //if (this_processor->user2 != previous_sorter_state) {
-        //    log_info("Sorter state changed  sorter: %d comoressor %d",
-        //        sorter_state, compressor_state);
-        //    previous_sorter_state = this_processor->user2;
-        //}
-        //if (compressor_state != previous_compressor_state) {
-        //    log_info("Compressor state changed  sorter: %d comoressor %d",
-        //       sorter_state, compressor_state);
-        //    previous_compressor_state = compressor_state;
-        //}
+    // cache the states so they dont change inside one loop
+    int user2 = this_processor->user2;
+    if (user2 < NONE) {
+        log_error("Unexpected user2 %d", user2);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    if (user2 > FORCE_TO_STOP) {
+        log_error("Unexpected user2 %d", user2);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    instrucions_to_compressor sorter_state =
+        (instrucions_to_compressor)user2;
+    int user3 = this_processor->user3;
+    if (user3 < UNUSED) {
+        log_error("Unexpected user3 %d", user3);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    if (user3 > RAN_OUT_OF_TIME) {
+        log_error("Unexpected user3 %d", user3);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    compressor_states compressor_state =
+        (compressor_states)user3;
 
-        switch(sorter_state) {
-            case PREPARE:
-                //users_match = process_prepare(compressor_state);
-                users_match = false;
-                break;
-            case RUN:
-            //    users_match = process_run(compressor_state);
-                users_match = false;
-                break;
-            case FORCE_TO_STOP:
-            //    users_match = process_force(compressor_state);
-                users_match = false;
-                break;
-            case NONE:
-                users_match = process_none(compressor_state);
-                break;
-        }
+    if (user2 != previous_sorter_state) {
+        previous_sorter_state = user2;
+        log_info("Sorter state changed  sorter: %d comoressor %d %d",
+            sorter_state, compressor_state, previous_sorter_state);
+    }
+    if (user3 != previous_compressor_state) {
+        previous_compressor_state = user3;
+        log_info("Compressor state changed  sorter: %d comoressor %d %d",
+           sorter_state, compressor_state, previous_compressor_state);
+    }
 
-        if (!users_match) {
-            log_error("Unexpected combination of sorter_state %d and "
-                "compressor_state %d",
+    //counter++;
+    //if (counter > 100000) {
+    //   log_info("counter");
+    //    malloc_extras_terminate(RTE_SWERR);
+    //}
+    /*
+    switch(sorter_state) {
+        case PREPARE:
+            //users_match = process_prepare(compressor_state);
+            users_match = false;
+            break;
+        case RUN:
+        //    users_match = process_run(compressor_state);
+            users_match = false;
+            break;
+        case FORCE_TO_STOP:
+        //    users_match = process_force(compressor_state);
+            users_match = false;
+            break;
+        case NONE:
+            users_match = process_none(compressor_state);
+            break;
+    }
+    */
+    if (users_match) {
+        spin1_schedule_callback(
+            wait_for_instructions, 0, 0, COMPRESSION_START_PRIORITY);
+    } else {
+        log_error("Unexpected combination of sorter_state %d and "
+            "compressor_state %d",
                 sorter_state, compressor_state);
             malloc_extras_terminate(RTE_SWERR);
-        }
-
     }
-    log_error("Out of loop");
-
 }
 
 
