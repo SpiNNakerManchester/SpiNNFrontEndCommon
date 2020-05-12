@@ -20,10 +20,10 @@
 #include <bit_field.h>
 #include <sdp_no_scp.h>
 #include <malloc_extras.h>
+#include "common-typedefs.h"
 #include "common/routing_table.h"
 #include "common/constants.h"
-
-#include "common-typedefs.h"
+#include "common/compressor_sorter_structs.h"
 #include "compressor_includes/aliases.h"
 #include "compressor_includes/ordered_covering.h"
 /*****************************************************************************/
@@ -275,10 +275,10 @@ static inline bool process_force(compressor_states compressor_state) {
    return false;
 }
 
-static inline bool process_none(compressor_states compressor_state) {
+static inline bool process_to_be_prepared(compressor_states compressor_state) {
     switch(compressor_state) {
         case UNUSED:
-            // waiting for sorter to malloc user1 and send prepare
+            // waiting for sorter to preprare for first time
             return true;
         case PREPARED:
         case COMPRESSING:
@@ -331,6 +331,16 @@ void wait_for_instructions(uint unused0, uint unused1) {
     }
 
     switch(sorter_state) {
+        case NOT_COMPRESSOR:
+            users_match = false;
+            break;
+        case DO_NOT_USE:
+            log_info("DO_NOT_USE detected exiting wait");
+           users_match = false;
+            break;
+        case TO_BE_PREPARED:
+            users_match = process_to_be_prepared(compressor_state);
+            break;
         case PREPARE:
             users_match = process_prepare(compressor_state);
             break;
@@ -339,9 +349,6 @@ void wait_for_instructions(uint unused0, uint unused1) {
             break;
         case FORCE_TO_STOP:
             users_match = process_force(compressor_state);
-            break;
-        case NONE:
-            users_match = process_none(compressor_state);
             break;
     }
     if (users_match) {
@@ -354,7 +361,6 @@ void wait_for_instructions(uint unused0, uint unused1) {
             malloc_extras_terminate(RTE_SWERR);
     }
 }
-
 
 //! \brief timer interrupt for controlling time taken to try to compress table
 //! \param[in] unused0: not used

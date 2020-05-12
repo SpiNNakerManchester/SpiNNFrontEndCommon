@@ -33,21 +33,19 @@ typedef enum compressor_states {
 } compressor_states;
 
 typedef enum instrucions_to_compressor {
-    NONE = 40, PREPARE = 41,  RUN = 42, FORCE_TO_STOP = 44
-} instrucions_to_compressor;
-
-typedef enum processor_status_values {
     // flag for saying processor is not a compressor
-    NOT_COMPRESSOR = -4,
-    // flag for saying compression processor should not be used any more
-    DO_NOT_USE = -3,
+    NOT_COMPRESSOR = 40,
+    // flag for saying compression processor will not be used any more
+    DO_NOT_USE = 41,
     // flag for saying compression processor needs to be prepared for the first time
-    TO_BE_PREPARED = -2,
-    // flag to say compression processor has been asked to prepare/ clear previous
-    PREPARING = -1
-    // zero or higher is the midpoint the compressor processor has been asked to run
-    // This includes compressors that have been forced to stop but not check yet.
-} processor_status_values;
+    TO_BE_PREPARED = 42,
+    // flag to ask compressor to setup and clear any previous result
+    PREPARE = 43,
+    // flag to say processor shoukd run
+    RUN = 44,
+    // flag to say processor should stop as result no longer needed
+    FORCE_TO_STOP = 45
+} instrucions_to_compressor;
 
 //!=========================================================================
 //! structs

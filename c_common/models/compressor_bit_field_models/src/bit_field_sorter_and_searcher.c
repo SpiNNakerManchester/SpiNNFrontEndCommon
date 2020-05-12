@@ -105,9 +105,6 @@ sorted_bit_fields_t* sorted_bit_fields;
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
-//! tracker for what each processor is doing (in terms of midpoints)
-int* processor_status;
-
 comms_sdram_t *comms_sdram;
 
 //============================================================================
@@ -151,10 +148,11 @@ bool load_routing_table_into_router(void) {
 //! compression attempt
 //! \return bool saying successfully sent the message
 void send_force_stop_message(int processor_id){
-    // set message params
-    log_debug(
-        "sending stop to processor %d", processor_id);
-    comms_sdram[processor_id].sorter_instruction = FORCE_TO_STOP;;
+    if (comms_sdram[processor_id].sorter_instruction == RUN) {
+        log_debug(
+            "sending stop to processor %d", processor_id);
+        comms_sdram[processor_id].sorter_instruction = FORCE_TO_STOP;
+    }
 }
 
 //! \brief sends a message telling the processor to prepare for the next run
@@ -167,7 +165,6 @@ void send_prepare_message(int processor_id){
     log_debug(
         "sending prepare to processor %d", processor_id);
     comms_sdram[processor_id].sorter_instruction = PREPARE;
-    processor_status[processor_id] = PREPARING;
 }
 
 //! \brief sets up the search bitfields.
@@ -509,26 +506,6 @@ void handle_best_cleanup(void){
     malloc_extras_terminate(EXITED_CLEANLY);
 }
 
-//! \brief prints out the status of the processors.
-void log_processor_status(){
-    for (int i = 0; i < 18; i++){
-        if (processor_status[i] < -3 ||
-                processor_status[i] > sorted_bit_fields->n_bit_fields){
-            log_error("Weird status %d: %d", i, processor_status[i]);
-            return;
-        }
-        //log_info("processor: %d, status: %d", i, processor_status[i]);
-    }
-    log_info("0:%d 1:%d 2:%d 3:%d 4:%d 5:%d 6:%d 7:%d 8:%d 9:%d 10:%d 11:%d "
-        "12:%d 13:%d 14:%d 15:%d 16:%d 17:%d", processor_status[0],
-        processor_status[1], processor_status[2], processor_status[3],
-        processor_status[4], processor_status[5], processor_status[6],
-        processor_status[7], processor_status[8], processor_status[9],
-        processor_status[10], processor_status[11], processor_status[12],
-        processor_status[13], processor_status[14], processor_status[15],
-        processor_status[16], processor_status[17]);
-}
-
 bool check_processor_prepared(int processor_id) {
     return comms_sdram[processor_id].compressor_state == PREPARED;
 }
@@ -547,7 +524,7 @@ bool prepare_processor_first_time(int processor_id ) {
     if (comms_sdram[processor_id].compressed_table == NULL) {
         log_error("Failed to malloc comp_instruction_t for processor %d",
             processor_id);
-        processor_status[processor_id] = DO_NOT_USE;
+        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
         return false;
     }
     comms_sdram[processor_id].fake_heap_data = malloc_extras_get_stolen_heap();
@@ -558,7 +535,7 @@ bool prepare_processor_first_time(int processor_id ) {
         spin1_delay_us(50);
         count++;
         if (count > 20) {
-            processor_status[processor_id] = DO_NOT_USE;
+            comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
             log_error("compressor failed to reply %d",
                 processor_id);
             return false;
@@ -573,7 +550,7 @@ bool prepare_processor_first_time(int processor_id ) {
 int find_prepared_processor(void) {
     // Look for a prepared one
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] == PREPARING) {
+        if (comms_sdram[processor_id].sorter_instruction == PREPARE) {
             if (check_processor_prepared(processor_id)) {
                 log_info("found prepared %d", processor_id);
                 return processor_id;
@@ -582,8 +559,9 @@ int find_prepared_processor(void) {
     }
     // Look for a processor never used and  prepare it
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        log_debug("processor_id %d status %d", processor_id, processor_status[processor_id]);
-        if (processor_status[processor_id] == TO_BE_PREPARED) {
+        log_debug("processor_id %d status %d", processor_id,
+            comms_sdram[processor_id].sorter_instruction);
+        if (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED) {
             if (prepare_processor_first_time(processor_id)) {
                 log_debug("found to be prepared %d", processor_id);
                 return processor_id;
@@ -603,7 +581,7 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
     int processor_id = find_prepared_processor();
     if (processor_id > FAILED_TO_FIND) {
         // allocate this core to do this midpoint.
-        processor_status[processor_id] = midpoint;
+        comms_sdram[processor_id].n_bit_fields = midpoint;
         // set the tracker to use this midpoint
         bit_field_set(tested_mid_points, midpoint);
         // return processor id
@@ -616,13 +594,14 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 //! \return true if at least one processor is ready to compress
 bool all_compressor_processors_busy(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        log_debug("processor_id %d status %d", processor_id, processor_status[processor_id]);
-        if (processor_status[processor_id] == PREPARING) {
+        log_debug("processor_id %d status %d", processor_id,
+            comms_sdram[processor_id].sorter_instruction);
+        if (comms_sdram[processor_id].sorter_instruction == PREPARE) {
             if (check_processor_prepared(processor_id)) {
                 return false;
             }
         }
-        else if (processor_status[processor_id] == TO_BE_PREPARED) {
+        else if (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED) {
             return false;
         }
     }
@@ -633,7 +612,7 @@ bool all_compressor_processors_busy(void) {
 //! \return true if all processors are done and not set ready
 bool all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] >= PREPARING) {
+        if (comms_sdram[processor_id].sorter_instruction >= PREPARE) {
             return false;
         }
     }
@@ -652,7 +631,6 @@ void carry_on_binary_search(void) {
         return;  //Pass back to check_buffer_queue
     }
     log_debug("start carry_on_binary_search");
-    //log_processor_status();
 
     int mid_point = locate_next_mid_point();
     log_info("available with midpoint %d", mid_point);
@@ -662,11 +640,12 @@ void carry_on_binary_search(void) {
         // At least default no bitfield handled elsewhere so safe here.
         for (int processor_id = 0; processor_id < MAX_PROCESSORS;
                 processor_id++) {
-            if (processor_status[processor_id] == PREPARING) {
-                processor_status[processor_id] = DO_NOT_USE;
-            } else if (processor_status[processor_id] > PREPARING) {
-                log_info("waiting for processor %d doing midpoint %u",
-                    processor_id, processor_status[processor_id]);
+            if (comms_sdram[processor_id].sorter_instruction == PREPARE) {
+                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+            } else if (comms_sdram[processor_id].sorter_instruction > PREPARE) {
+                log_info("waiting for processor %d status %d doing midpoint %u",
+                    processor_id, comms_sdram[processor_id].sorter_instruction,
+                    comms_sdram[processor_id].n_bit_fields);
             }
         }
         return;
@@ -680,11 +659,12 @@ void carry_on_binary_search(void) {
     if (!success) {
         // Ok lets turn this and all ready processors off to save space.
         // At least default no bitfield handled elsewhere so of to reduce.
-        processor_status[processor_id] = DO_NOT_USE;
+        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
         for (int processor_id = 0; processor_id < MAX_PROCESSORS;
                 processor_id++) {
-            if (processor_status[processor_id] == PREPARING) {
-                processor_status[processor_id] = DO_NOT_USE;
+            if ((comms_sdram[processor_id].sorter_instruction == PREPARE) ||
+                    (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED)) {
+                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
             }
         }
         // Ok that midpoint did not work so need to try it again
@@ -728,7 +708,7 @@ void process_failed(int midpoint) {
     // tell all compression processors trying midpoints above this one
     // to stop, as its highly likely a waste of time.
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] > midpoint) {
+        if (comms_sdram[processor_id].n_bit_fields > midpoint) {
             send_force_stop_message(processor_id);
         }
     }
@@ -754,8 +734,7 @@ void process_success(int processor_id) {
     // kill any search below this point, as they all redundant as
     // this is a better search.
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_status[processor_id] >= 0 &&
-                processor_status[processor_id] < mid_point) {
+        if (comms_sdram[processor_id].n_bit_fields < mid_point) {
             send_force_stop_message(processor_id);
         }
     }
@@ -768,7 +747,7 @@ void process_success(int processor_id) {
 //! \param[in] finished_state: the response code
 void process_compressor_response(
     int processor_id, compressor_states finished_state) {
-    int mid_point = processor_status[processor_id];
+    int mid_point = comms_sdram[processor_id].n_bit_fields;
     log_debug("received response %d from processor %d doing %d midpoint",
         finished_state, processor_id, mid_point);
 
@@ -796,7 +775,7 @@ void process_compressor_response(
                 processor_id, mid_point);
             // this will threshold the number of compressor processors that
             // can be ran at any given time.
-            processor_status[processor_id] = DO_NOT_USE;
+            comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
             // Remove the flag that say this midpoint has been checked
             bit_field_clear(tested_mid_points, mid_point);
             break;
@@ -880,13 +859,11 @@ void check_compressors(uint unused0, uint unused1) {
         bool no_new_result = true;
         for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
             // Check each compressor asked to run or forced
-            if (processor_status[processor_id] >= 0) {
-                compressor_states finished_state =
-                    comms_sdram[processor_id].compressor_state;
-                if (finished_state > COMPRESSING) {
-                    no_new_result = false;
-                    process_compressor_response(processor_id, finished_state);
-                }
+            compressor_states finished_state =
+                comms_sdram[processor_id].compressor_state;
+            if (finished_state > COMPRESSING) {
+                no_new_result = false;
+                process_compressor_response(processor_id, finished_state);
             }
         }
         if (no_new_result) {
@@ -974,7 +951,7 @@ static void initialise_user_register_tracker(void) {
     comms_sdram = (comms_sdram_t*)region_addresses->comms_sdram;
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         comms_sdram[processor_id].compressor_state = UNUSED;
-        comms_sdram[processor_id].sorter_instruction = NONE;
+        comms_sdram[processor_id].sorter_instruction = NOT_COMPRESSOR;
         comms_sdram[processor_id].n_elements = -1;
         comms_sdram[processor_id].n_bit_fields = -1;
         comms_sdram[processor_id].compressed_table = NULL;
@@ -1003,17 +980,6 @@ static void initialise_routing_control_flags(void) {
 bool initialise_compressor_processors(void) {
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
-    processor_status = MALLOC(MAX_PROCESSORS * sizeof(int));
-    if (processor_status == NULL) {
-        log_error(
-            "failed to allocate memory for tracking what the "
-            "compression processors are doing");
-        return false;
-    }
-    // Unless a processor is found mark as not a compressor
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        processor_status[processor_id] = NOT_COMPRESSOR;
-    }
 
     log_debug("n region triples = %d", region_addresses->n_triples);
     compressor_processors_top_t *compressor_processors_top =
@@ -1022,12 +988,10 @@ bool initialise_compressor_processors(void) {
             processor_index < compressor_processors_top->n_processors;
             processor_index++) {
         // Switch compressor processors to TO_BE_PREPARED
-        processor_status[
-            compressor_processors_top->processor_id[processor_index]] =
-                TO_BE_PREPARED;
+        int processor_id =
+            compressor_processors_top->processor_id[processor_index];
+        comms_sdram[processor_id].sorter_instruction = TO_BE_PREPARED;
     }
-
-    //log_processor_status();
 
     return true;
 }
