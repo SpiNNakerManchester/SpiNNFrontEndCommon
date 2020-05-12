@@ -1874,7 +1874,11 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_types</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
+        <optional_inputs>
+        	<token>ReadIOBuf</token>
+        </optional_inputs>
         <outputs>
             <token>ClearedIOBuf</token>
         </outputs>
