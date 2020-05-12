@@ -39,15 +39,6 @@
 //! bits in a word
 #define BITS_IN_A_WORD 32
 
-//! flag for saying processor is not a compressor
-#define NOT_COMPRESSOR -3
-
-//! flag for saying compression processor should not be used any more
-#define DO_NOT_USE - 2
-
-//! flag for saying compression processor doing nowt
-#define DOING_NOWT -1
-
 //! flag saying there is no valid result for a given search (
 // locate processor, locate midpoint)
 #define FAILED_TO_FIND -1
