@@ -105,6 +105,43 @@ bool simulation_initialise(
         uint32_t *infinite_run_pointer, uint32_t *time_pointer,
         int sdp_packet_callback_priority, int dma_transfer_complete_priority);
 
+//! \brief initialises the simulation interface for step-based simulation,
+//! which involves:
+//! 1. Reading the timing details for the simulation out of a region,
+//!        which is formatted as:
+//!            uint32_t magic_number;
+//!            uint32_t timer_period; (ignored in this case)
+//!            uint32_t n_simulation_steps;
+//! 2. setting the simulation SDP port code that supports multiple runs of the
+//! executing code through front end calls.
+//! 3. setting up the registration for storing provenance data
+//! \param[in] address The address of the region
+//! \param[in] expected_application_magic_number The expected value of the magic
+//!            number that checks if the data was meant for this code
+//! \param[in] simulation_steps_pointer Pointer to the number of simulation
+//!            steps, to allow this to be updated when requested via SDP
+//! \param[in] infinite_steps_pointer Pointer to the infinite steps flag, to
+//!            allow this to be updated when requested via SDP
+//! \param[in] step_pointer Pointer to the current step, to allow this to be
+//!            updated when requested via SDP
+//! \param[in] sdp_packet_callback_priority The priority to use for the
+//!            SDP packet reception
+//! \param[in] dma_transfer_complete_priority The priority to use for the
+//!            DMA transfer complete callbacks
+//! \return True if the data was found, false otherwise
+static inline bool simulation_steps_initialise(
+        address_t address, uint32_t expected_application_magic_number,
+        uint32_t *simulation_steps_pointer, uint32_t *infinite_steps_pointer,
+        uint32_t *step_pointer, int sdp_packet_callback_priority,
+        int dma_transfer_complete_priority) {
+    // Use the normal simulation initialise, passing in matching parameters
+    uint32_t unused_timer_period;
+    return simulation_initialise(address, expected_application_magic_number,
+        &unused_timer_period, simulation_steps_pointer, infinite_steps_pointer,
+        step_pointer, sdp_packet_callback_priority,
+        dma_transfer_complete_priority);
+}
+
 //! \brief Set the address of the data region where provenance data is to be
 //!        stored
 //! \param[in] provenance_data_address: the address where provenance data should
