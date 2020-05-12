@@ -72,7 +72,7 @@ aliases_t aliases;
 int n_bit_fields = -1;
 
 // values for debug logging in wait_for_instructions
-instrucions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
+instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 compressor_states previous_compressor_state = UNUSED;
 
 comms_sdram_t *comms_sdram;
@@ -275,50 +275,22 @@ static inline bool process_force(compressor_states compressor_state) {
    return false;
 }
 
-static inline bool process_to_be_prepared(compressor_states compressor_state) {
-    switch(compressor_state) {
-        case UNUSED:
-            // waiting for sorter to preprare for first time
-            return true;
-        case PREPARED:
-        case COMPRESSING:
-        case FAILED_MALLOC:
-        case FORCED_BY_COMPRESSOR_CONTROL:
-        case RAN_OUT_OF_TIME:
-        case SUCCESSFUL_COMPRESSION:
-        case FAILED_TO_COMPRESS:
-            // Should never happen
-            return false;
-    }
-    return false;
-}
-
-void wait_for_instructionsX(uint unused0, uint unused1) {
-    //api requirements
-    use(unused0);
-    use(unused1);
-    log_info("compressor_stat: %d, .sorter_instruction %d, n_elements %d "
-            "n_bit_fields %d",
-            comms_sdram->compressor_state,
-            comms_sdram->sorter_instruction,
-            comms_sdram->n_elements,
-            comms_sdram->n_bit_fields);
-}
-
 //! \brief busy waits until there is a new instuction from the sorter
+//! \param[in] unused0: param 1 forced on us from api
+//! \param[in] unused1: param 2 forced on us from api
 void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
 
+    // set if combination of user2 and user3 is expected
     bool users_match = true;
-    // set if combination of user2 and user3 is unexpected
 
     // cache the states so they dont change inside one loop
     compressor_states compressor_state = comms_sdram->compressor_state;
-    instrucions_to_compressor sorter_state = comms_sdram->sorter_instruction;
+    instructions_to_compressor sorter_state = comms_sdram->sorter_instruction;
     /*
-    // Log if changed
+    // When debugging Log if changed
     if (sorter_state != previous_sorter_state) {
          previous_sorter_state = sorter_state;
          log_info("Sorter state changed  sorter: %d compressor %d",
@@ -341,8 +313,9 @@ void wait_for_instructions(uint unused0, uint unused1) {
             users_match = process_force(compressor_state);
             break;
         case NOT_COMPRESSOR:
+            // For some reason compressor sees this state too
         case TO_BE_PREPARED:
-            users_match = process_to_be_prepared(compressor_state);
+            users_match = (compressor_state == UNUSED);
             break;
         case DO_NOT_USE:
             log_info("DO_NOT_USE detected exiting wait");

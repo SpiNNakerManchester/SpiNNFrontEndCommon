@@ -32,7 +32,7 @@ typedef enum compressor_states {
    RAN_OUT_OF_TIME = 37
 } compressor_states;
 
-typedef enum instrucions_to_compressor {
+typedef enum instructions_to_compressor {
     // flag for saying processor is not a compressor
     NOT_COMPRESSOR = 40,
     // flag for saying compression processor will not be used any more
@@ -45,7 +45,7 @@ typedef enum instrucions_to_compressor {
     RUN = 44,
     // flag to say processor should stop as result no longer needed
     FORCE_TO_STOP = 45
-} instrucions_to_compressor;
+}  instructions_to_compressor;
 
 //!=========================================================================
 //! structs
@@ -174,7 +174,7 @@ typedef struct triples_t {
 //! \brief sdram area to comminucate between sorter and compressor
 typedef struct comms_sdram_t {
     compressor_states compressor_state;
-    instrucions_to_compressor sorter_instruction;
+    instructions_to_compressor sorter_instruction;
     // how many rt tables used here
     int n_elements;
     // how many bit fields were used to make those tables
