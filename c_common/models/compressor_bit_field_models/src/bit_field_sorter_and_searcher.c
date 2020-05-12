@@ -683,13 +683,13 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time_steps+=1;
-    if ((time_steps & 1023) == 0){
-        log_info("time_steps: %u", time_steps);
-    }
-    if (time_steps > KILL_TIME){
-       log_error("timer overran %u", time_steps);
-       rt_error(RTE_SWERR);
-    }
+    //if ((time_steps & 1023) == 0){
+    //    log_info("time_steps: %u", time_steps);
+    //}
+    //if (time_steps > KILL_TIME){
+    //   log_error("timer overran %u", time_steps);
+    //   rt_error(RTE_SWERR);
+    //}
 }
 
 // !brief handle the fact that a midpoint failed.
@@ -721,7 +721,7 @@ void process_success(int processor_id) {
     if (best_success <= mid_point) {
         best_success = mid_point;
         malloc_extras_check_all_marked(1003);
-        log_info(
+        log_debug(
             "copying to %x from %x for compressed table",
             last_compressed_table, comms_sdram[processor_id].compressed_table);
         sark_mem_cpy(

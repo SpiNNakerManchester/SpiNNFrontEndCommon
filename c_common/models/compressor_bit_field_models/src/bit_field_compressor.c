@@ -41,7 +41,7 @@
 //! interrupt priorities
 typedef enum interrupt_priority{
     TIMER_TICK_PRIORITY = -1,
-    COMPRESSION_START_PRIORITY = 2
+    COMPRESSION_START_PRIORITY = 3
 } interrupt_priority;
 
 //! \timer controls, as it seems timer in massive waits doesnt engage properly
@@ -72,8 +72,8 @@ aliases_t aliases;
 int n_bit_fields = -1;
 
 // values for debug logging in wait_for_instructions
-int previous_sorter_state = 0;
-int previous_compressor_state = 0;
+instrucions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
+compressor_states previous_compressor_state = UNUSED;
 
 comms_sdram_t *comms_sdram;
 // ---------------------------------------------------------------------
@@ -317,7 +317,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
     // cache the states so they dont change inside one loop
     compressor_states compressor_state = comms_sdram->compressor_state;
     instrucions_to_compressor sorter_state = comms_sdram->sorter_instruction;
-
+    /*
     // Log if changed
     if (sorter_state != previous_sorter_state) {
          previous_sorter_state = sorter_state;
@@ -328,19 +328,9 @@ void wait_for_instructions(uint unused0, uint unused1) {
         previous_compressor_state = compressor_state;
         log_info("Compressor state changed  sorter: %d compressor %d",
            sorter_state, compressor_state);
-    }
+    }*/
 
     switch(sorter_state) {
-        case NOT_COMPRESSOR:
-            users_match = false;
-            break;
-        case DO_NOT_USE:
-            log_info("DO_NOT_USE detected exiting wait");
-           users_match = false;
-            break;
-        case TO_BE_PREPARED:
-            users_match = process_to_be_prepared(compressor_state);
-            break;
         case PREPARE:
             users_match = process_prepare(compressor_state);
             break;
@@ -350,6 +340,13 @@ void wait_for_instructions(uint unused0, uint unused1) {
         case FORCE_TO_STOP:
             users_match = process_force(compressor_state);
             break;
+        case NOT_COMPRESSOR:
+        case TO_BE_PREPARED:
+            users_match = process_to_be_prepared(compressor_state);
+            break;
+        case DO_NOT_USE:
+            log_info("DO_NOT_USE detected exiting wait");
+            return;
     }
     if (users_match) {
         spin1_schedule_callback(
@@ -386,20 +383,20 @@ void initialise(void) {
     vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
 
     uint32_t time_for_compression_attempt = this_vcpu_info->user1;
-    log_info("user 1 = %d", time_for_compression_attempt);
+    log_info("time_for_compression_attempt = %d", time_for_compression_attempt);
 
-    // bool from int conversion happening here
+    // bit 0 = compress_only_when_needed
+    // bit 1 = compress_as_much_as_possible
     uint32_t int_value = this_vcpu_info->user2;
-    log_info("user 2 = %d", int_value);
-    if (int_value == 1) {
+    if (int_value > 1) {
+        compress_as_much_as_possible = true;
+    }
+    if ((int_value & 1) == 0){
         compress_only_when_needed = true;
     }
-    // TODO compress_as_much_as_possible
-    //int_value = this_processor->user3;
-    //log_info("user 3 = %d", int_value);
-    //if (int_value == 1) {
-        compress_as_much_as_possible = false;
-    //}
+    log_info("compress_only_when_needed = %d compress_as_much_as_possible = %d",
+        compress_only_when_needed,
+        compress_as_much_as_possible);
 
     // Get the pointer for all cores
     comms_sdram = (comms_sdram_t*)this_vcpu_info->user3;
@@ -427,5 +424,8 @@ void c_main(void) {
         wait_for_instructions, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
+    log_debug("waiting for sycn %d %d", comms_sdram->sorter_instruction,
+        comms_sdram->compressor_state);
     spin1_start(SYNC_WAIT);
+
 }

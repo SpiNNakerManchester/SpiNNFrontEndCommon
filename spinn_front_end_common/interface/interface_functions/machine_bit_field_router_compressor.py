@@ -207,7 +207,6 @@ class MachineBitFieldRouterCompressor(object):
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
-
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
@@ -516,10 +515,17 @@ class MachineBitFieldRouterCompressor(object):
                 self._ONE_WORDS.pack(
                     self._convert_to_microseconds(time_per_iteration)),
                 self._USER_BYTES)
-            # TODO compress_as_much_as_possible
+            # bit 0 = compress_only_when_needed
+            # bit 1 = compress_as_much_as_possible
+            if compress_as_much_as_possible:
+                value = 2
+            else:
+                value = 1
+            if compress_only_when_needed:
+                value += 1
             transceiver.write_memory(
                 chip_x, chip_y, user2_base_address,
-                self._ONE_WORDS.pack(compress_only_when_needed),
+                self._ONE_WORDS.pack(value),
                 self._USER_BYTES)
             transceiver.write_memory(
                 chip_x, chip_y, user3_base_address,
