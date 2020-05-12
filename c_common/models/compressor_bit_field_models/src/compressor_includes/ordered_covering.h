@@ -800,10 +800,10 @@ static inline bool oc_merge_apply(
 static inline bool oc_minimise(
         int target_length, aliases_t* aliases,
         bool *failed_by_malloc,
-        instrucions_to_compressor* sorter_instruction,
+        instructions_to_compressor* sorter_instruction,
         volatile bool *timer_for_compression_attempt,
         bool compress_only_when_needed,
-        bool compress_as_much_as_possible){
+        bool compress_as_much_as_possible) {
 
     counter_to_crash += 1;
 
@@ -913,8 +913,17 @@ static inline bool oc_minimise(
         return false;
     }
 
+    // if it failed due to control telling it to stop, then reset and fail.
+    if (*sorter_instruction == FORCE_TO_STOP) {
+         log_info(
+            "failed due to control. reached %d entries over %d"
+            " attempts", routing_table_sdram_get_n_entries(),  attempts);
+        spin1_pause();
+        return false;
+    }
+
     log_info(
-        "entries after compressed = %d, timer = %d, sorter_instruction = %d,"
+        "entries after compressed = %d, timer = %d, finished by control = %d,"
         " the number of merge cycles were %d",
         routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
         *sorter_instruction, attempts);

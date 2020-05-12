@@ -82,7 +82,8 @@ def run_system_application(
             check_targets.all_core_subsets, app_id, cpu_end_states)
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException):
-        handle_failure_function(executable_cores)
+        if handle_failure_function is not None:
+            handle_failure_function(executable_cores)
         succeeded = False
 
     # Check if any cores have not completed successfully
@@ -95,8 +96,7 @@ def run_system_application(
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
             app_provenance_file_path=None,
-            system_provenance_file_path=provenance_file_path,
-            binary_executable_types=binary_start_types)
+            system_provenance_file_path=provenance_file_path)
 
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)

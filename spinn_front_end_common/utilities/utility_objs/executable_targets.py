@@ -64,7 +64,7 @@ class ExecutableTargets(SuperExecTargets):
     def get_binaries_of_executable_type(self, executable_type):
         """ get the binaries of a given a executable type
 
-        :param ExecutableType execute_type: the executable type enum value
+        :param ExecutableType executable_type: the executable type enum value
         :return: iterable of binaries with that executable type
         :rtype: iterable(str)
         """

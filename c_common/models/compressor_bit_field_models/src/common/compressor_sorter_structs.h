@@ -32,29 +32,20 @@ typedef enum compressor_states {
    RAN_OUT_OF_TIME = 37
 } compressor_states;
 
-typedef enum instrucions_to_compressor {
-    NONE = 40, PREPARE = 41,  RUN = 42, FORCE_TO_STOP = 44
-} instrucions_to_compressor;
-
-typedef enum processor_status_values {
+typedef enum instructions_to_compressor {
     // flag for saying processor is not a compressor
-    NOT_COMPRESSOR = -4,
-    // flag for saying compression processor should not be used any more
-    DO_NOT_USE = -3,
+    NOT_COMPRESSOR = 40,
+    // flag for saying compression processor will not be used any more
+    DO_NOT_USE = 41,
     // flag for saying compression processor needs to be prepared for the first time
-    TO_BE_PREPARED = -2,
-    // flag to say compression processor has been asked to prepare/ clear previous
-    PREPARING = -1
-    // zero or higher is the midpoint the compressor processor has been asked to run
-    // This includes compressors that have been forced to stop but not check yet.
-} processor_status_values;
-
-//! \brief the command codes in human readable form
-typedef enum command_codes_for_sdp_packet {
-    START_DATA_STREAM = 20,
-    COMPRESSION_RESPONSE = 21,
-    STOP_COMPRESSION_ATTEMPT = 22
-} command_codes_for_sdp_packet;
+    TO_BE_PREPARED = 42,
+    // flag to ask compressor to setup and clear any previous result
+    PREPARE = 43,
+    // flag to say processor shoukd run
+    RUN = 44,
+    // flag to say processor should stop as result no longer needed
+    FORCE_TO_STOP = 45
+}  instructions_to_compressor;
 
 //!=========================================================================
 //! structs
@@ -102,19 +93,6 @@ typedef struct comp_processor_store_t{
     // elements
     table_t **elements;
 } comp_processor_store_t;
-
-typedef struct comp_instruction_t{
-    // how many rt tables used here
-    int n_elements;
-    // how many bit fields were used to make those tables
-    int n_bit_fields;
-    // compressed table location
-    table_t *compressed_table;
-    // elements
-    table_t **elements;
-    // initialise value for malloc_extras_
-    heap_t *fake_heap_data;
-} comp_instruction_t;
 
 //! \brief the compressor processor data elements in SDRAM
 typedef struct compressor_processors_top_t {
@@ -193,33 +171,28 @@ typedef struct triples_t {
     int processor;
 } triples_t;
 
+//! \brief sdram area to comminucate between sorter and compressor
+typedef struct comms_sdram_t {
+    compressor_states compressor_state;
+    instructions_to_compressor sorter_instruction;
+    // how many rt tables used here
+    int n_elements;
+    // how many bit fields were used to make those tables
+    int n_bit_fields;
+    // compressed table location
+    table_t *compressed_table;
+    // elements
+    table_t **elements;
+    // initialise value for malloc_extras_
+    heap_t *fake_heap_data;
+} comms_sdram_t;
+
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
     int threshold;
+    comms_sdram_t* comms_sdram;
     int n_triples;
     triples_t triples[];
 } region_addresses_t;
-
-//! \brief the elements in the sdp packet (control for setting off a minimise
-//! attempt)
-typedef struct start_sdp_packet_t {
-    uint32_t command_code;
-    heap_t *fake_heap_data;
-    comp_processor_store_t *table_data;
-} start_sdp_packet_t;
-
-//! \brief the elements in the sdp packet when response to compression attempt.
-typedef struct response_sdp_packet_t {
-    uint32_t command_code;
-    uint32_t response_code;
-} response_sdp_packet_t;
-
-//! \brief all the types of SDP messages that we receive, as one
-typedef union {
-    command_codes_for_sdp_packet command;
-    start_sdp_packet_t start;
-    response_sdp_packet_t response;
-} compressor_payload_t;
-
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__

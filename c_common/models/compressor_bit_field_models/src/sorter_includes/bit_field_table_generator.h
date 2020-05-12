@@ -36,8 +36,7 @@
 //!
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \param[in] mid_point: where in the sorted bitfields to go to
-int count_unigue_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
-
+int count_unique_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
     filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     int* sort_order =  sorted_bit_fields->sort_order;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
@@ -127,7 +126,8 @@ table_t* generate_table(
 }
 
 //! Inserts an entry into a table
-//! \param[in] original_entry: The Routing Tabkle entry in the original table
+//! \param[in] original_entry: The Routing Table entry in the original table
+//! \param[in] no_bitfield_table: pointer to the table with no bitfields
 void insert_entry(entry_t original_entry, table_t* no_bitfield_table) {
     entry_t *new_entry =
        &no_bitfield_table->entries[no_bitfield_table->size];
@@ -150,9 +150,10 @@ void insert_entry(entry_t original_entry, table_t* no_bitfield_table) {
 static inline table_t** bit_field_table_generator_create_bit_field_router_tables(
         int mid_point, int *n_rt_addresses,
         uncompressed_table_region_data_t *uncompressed_router_table,
-        sorted_bit_fields_t *sorted_bit_fields){
+        sorted_bit_fields_t *sorted_bit_fields) {
 
     malloc_extras_check_all_marked(7001);
+
     // semantic sugar to avoid referencing
     filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     int* processor_ids = sorted_bit_fields->processor_ids;
@@ -161,8 +162,11 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     uint32_t original_size =  uncompressed_router_table->uncompressed_table.size;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
 
-    *n_rt_addresses = count_unigue_keys(sorted_bit_fields, mid_point);
+    // count how many unique keys there are in the bit-fields to a given
+    // midpoint, as these will be the number of bit-field tables.
+    *n_rt_addresses = count_unique_keys(sorted_bit_fields, mid_point);
     log_info("n_rt_addresses %u", *n_rt_addresses);
+
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
     *n_rt_addresses += 1;
@@ -218,9 +222,11 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     return bit_field_routing_tables;
 }
 
-void log_table(table_t* table){
+//! \brief debugging print for a pointer to a table.
+//! \param[in] table: the table pointer to print
+void print_table(table_t* table) {
    entry_t* entries = table->entries;
-   for (uint32_t i = 0; i < table->size; i++){
+   for (uint32_t i = 0; i < table->size; i++) {
         log_info("i %u, key %u, mask %u, route %u, source %u",
         i, entries[i].key_mask.key, entries[i].key_mask.mask,
         entries[i].route, entries[i].source);

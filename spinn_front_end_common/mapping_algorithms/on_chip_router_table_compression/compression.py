@@ -19,10 +19,10 @@ import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 
@@ -234,8 +234,7 @@ class Compression(object):
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
             self._transceiver, executable_targets, executable_finder,
-            self._provenance_file_path, self._provenance_file_path,
-            {self._binary_path: ExecutableType.SYSTEM})
+            self._provenance_file_path, self._provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:

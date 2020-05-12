@@ -22,29 +22,6 @@
 #include <filter_info.h>
 #include <malloc_extras.h>
 
-//! \brief finds the processor id of a given bitfield address (search though
-//! the bit field by processor
-//! \param[in] filter: the location in sdram where the bitfield starts
-//! \param[in] region_addresses: the sdram where the data on regions is
-//! \param[in] bit_field_by_processor:  map between processor and bitfields
-//! \return the processor id that this bitfield address is associated.
-static inline uint32_t helpful_functions_locate_proc_id_from_bf_address(
-        filter_info_t filter, region_addresses_t *region_addresses,
-        bit_field_by_processor_t* bit_field_by_processor){
-
-    int n_triples = region_addresses->n_triples;
-    for (int bf_by_proc = 0; bf_by_proc < n_triples; bf_by_proc++) {
-        bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
-        for (int addr_i = 0; addr_i < element.length_of_list; addr_i++) {
-            if (element.bit_field_addresses[addr_i].data == filter.data) {
-                return element.processor_id;
-            }
-        }
-    }
-    malloc_extras_terminate(EXIT_FAIL);
-    return 0;
-}
-
 //! \brief gets data about the bitfields being considered
 //! \param[in/out] keys: the data holder to populate
 //! \param[in] mid_point: the point in the sorted bit fields to look for
@@ -80,34 +57,6 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
     }
     log_debug("out population_master_pop_bit_field_ts");
     return n_keys;
-}
-
-//! \brief frees SDRAM from the compressor processor.
-//! \param[in] processor_index: the compressor processor index to clear
-//! SDRAM usage from
-//! \param[in] processor_bf_tables: the map of what tables that processor used
-//! \return bool stating that it was successful in clearing SDRAM
-bool helpful_functions_free_sdram_from_compression_attempt(
-        int processor_id, comp_processor_store_t* processor_bf_tables) {
-    int elements = processor_bf_tables[processor_id].n_elements;
-
-    log_error("method needs checking and not surigually removed");
-    return true;
-
-    // free the individual elements
-    for (int bit_field_id = 0; bit_field_id < elements; bit_field_id++) {
-        FREE(processor_bf_tables[processor_id].elements[bit_field_id]);
-    }
-
-    // only try freeing if its not been freed already. (safety feature)
-    if (processor_bf_tables[processor_id].elements != NULL){
-        FREE(processor_bf_tables[processor_id].elements);
-    }
-
-    processor_bf_tables[processor_id].elements = NULL;
-    processor_bf_tables[processor_id].n_elements = 0;
-    processor_bf_tables[processor_id].n_bit_fields = 0;
-    return true;
 }
 
 //! \brief clones the un compressed routing table, to another sdram location
