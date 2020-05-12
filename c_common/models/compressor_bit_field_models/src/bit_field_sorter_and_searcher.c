@@ -624,7 +624,7 @@ void carry_on_binary_search(void) {
     log_debug("start carry_on_binary_search");
 
     int mid_point = locate_next_mid_point();
-    log_info("available with midpoint %d", mid_point);
+    log_debug("available with midpoint %d", mid_point);
 
     if (mid_point == FAILED_TO_FIND) {
         // Ok lets turn all ready processors off as done.
@@ -634,8 +634,10 @@ void carry_on_binary_search(void) {
             if (comms_sdram[processor_id].sorter_instruction == PREPARE) {
                 comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
             } else if (comms_sdram[processor_id].sorter_instruction > PREPARE) {
-                log_info("waiting for processor %d status %d doing midpoint %u",
-                    processor_id, comms_sdram[processor_id].sorter_instruction,
+                log_debug(
+                    "waiting for processor %d status %d doing midpoint %u",
+                    processor_id,
+                    comms_sdram[processor_id].sorter_instruction,
                     comms_sdram[processor_id].n_bit_fields);
             }
         }
