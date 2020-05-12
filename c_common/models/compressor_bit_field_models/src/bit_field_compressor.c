@@ -48,8 +48,6 @@ typedef enum interrupt_priority{
 int counter = 0;
 int max_counter = 0;
 
-instrucions_to_compressor* sorter_instruction;
-
 //! \brief bool saying if the timer has fired, resulting in attempt to compress
 //! shutting down
 volatile bool timer_for_compression_attempt = false;
@@ -67,14 +65,8 @@ bool compress_only_when_needed = false;
 //! control flag for compressing as much as possible
 bool compress_as_much_as_possible = false;
 
-//! \brief the sdram location to write the compressed router table into
-table_t *sdram_loc_for_compressed_entries;
-
 //! \brief aliases thingy for compression
 aliases_t aliases;
-
-//! get pointer to this processor user registers
-vcpu_t *this_processor = NULL;
 
 //! n bitfields testing
 int n_bit_fields = -1;
@@ -101,8 +93,7 @@ bool store_into_compressed_address(void) {
 
     malloc_extras_check_all_marked(50003);
 
-    bool success = routing_table_sdram_store(
-        sdram_loc_for_compressed_entries);
+    bool success = routing_table_sdram_store(comms_sdram->compressed_table);
     malloc_extras_check_all_marked(50004);
 
     log_debug("finished store");
@@ -127,7 +118,7 @@ void start_compression_process() {
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
-        sorter_instruction,
+        &comms_sdram->sorter_instruction,
         &timer_for_compression_attempt, compress_only_when_needed,
         compress_as_much_as_possible);
 
@@ -149,36 +140,33 @@ void start_compression_process() {
         success = store_into_compressed_address();
         if (success) {
             log_debug("success response");
-            this_processor->user3 = SUCCESSFUL_COMPRESSION;
+            comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
         } else {
             log_debug("failed by space response");
-            this_processor->user3 = FAILED_TO_COMPRESS;
+            comms_sdram->compressor_state = FAILED_TO_COMPRESS;
         }
     } else {  // if not a success, could be one of 4 states
         if (failed_by_malloc) {  // malloc failed somewhere
             log_debug("failed malloc response");
-            this_processor->user3 = FAILED_MALLOC;
-        } else if (*sorter_instruction != RUN) {  // control killed it
+            comms_sdram->compressor_state = FAILED_MALLOC;
+        } else if (comms_sdram->sorter_instruction != RUN) {  // control killed it
             log_debug("force fail response");
-            this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+            comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
             log_debug("send ack");
         } else if (timer_for_compression_attempt) {  // ran out of time
             log_debug("time fail response");
-            this_processor->user3 = RAN_OUT_OF_TIME;
+            comms_sdram->compressor_state = RAN_OUT_OF_TIME;
         } else { // after finishing compression, still could not fit into table.
             log_debug("failed by space response");
-            this_processor->user3 = FAILED_TO_COMPRESS;
+            comms_sdram->compressor_state = FAILED_TO_COMPRESS;
         }
     }
 }
 
 void run_compression_process(void){
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
-    comp_instruction_t* instuctions = (comp_instruction_t*)this_processor->user1;
 
     log_debug("setting up fake heap for sdram usage");
-    malloc_extras_initialise_with_fake_heap(instuctions->fake_heap_data);
+    malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);
     log_debug("set up fake heap for sdram usage");
 
     failed_by_malloc = false;
@@ -191,18 +179,15 @@ void run_compression_process(void){
     // create aliases
     aliases = aliases_init();
 
-    // location where to store the compressed table
-    sdram_loc_for_compressed_entries = instuctions->compressed_table;
-
     malloc_extras_check_all_marked(50002);
 
-    log_info("table init for %d tables", instuctions->n_elements);
+    log_info("table init for %d tables", comms_sdram->n_elements);
     bool success = routing_tables_init(
-        instuctions->n_elements, instuctions->elements);
+        comms_sdram->n_elements, comms_sdram->elements);
     log_debug("table init finish");
     if (!success) {
         log_error("failed to allocate memory for routing table.h state");
-        this_processor->user3 = FAILED_MALLOC;
+        comms_sdram->compressor_state = FAILED_MALLOC;
         return;
     }
 
@@ -213,12 +198,11 @@ void run_compression_process(void){
 }
 
 static inline bool process_prepare(compressor_states compressor_state) {
-    //this_processor->user3 = FAILED_TO_COMPRESS;
     switch(compressor_state) {
         case UNUSED:
             // First prepare
             log_info("Prepared for the first time");
-            this_processor->user3 = PREPARED;
+            comms_sdram->compressor_state = PREPARED;
             return true;
         case FAILED_MALLOC:
         case FORCED_BY_COMPRESSOR_CONTROL:
@@ -227,7 +211,7 @@ static inline bool process_prepare(compressor_states compressor_state) {
         case RAN_OUT_OF_TIME:
             // clear previous result
             log_info("prepared");
-            this_processor->user3 = PREPARED;
+            comms_sdram->compressor_state = PREPARED;
             return true;
         case PREPARED:
             // waiting for sorter to pick up result
@@ -244,7 +228,7 @@ static inline bool process_run(compressor_states compressor_state) {
     switch(compressor_state) {
         case PREPARED:
             log_info("run detected");
-            this_processor->user3 = COMPRESSING;
+            comms_sdram->compressor_state = COMPRESSING;
             run_compression_process();
             return true;
         case COMPRESSING:
@@ -281,7 +265,7 @@ static inline bool process_force(compressor_states compressor_state) {
         case RAN_OUT_OF_TIME:
             log_info("Force detected");
             // The results other than MALLOC no longer matters
-            this_processor->user3 = FORCED_BY_COMPRESSOR_CONTROL;
+            comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
             return true;
         case PREPARED:
         case UNUSED:
@@ -309,7 +293,7 @@ static inline bool process_none(compressor_states compressor_state) {
     return false;
 }
 
-void wait_for_instructions(uint unused0, uint unused1) {
+void wait_for_instructionsX(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
@@ -322,7 +306,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
 }
 
 //! \brief busy waits until there is a new instuction from the sorter
-void wait_for_instructions2(uint unused0, uint unused1) {
+void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
@@ -330,40 +314,18 @@ void wait_for_instructions2(uint unused0, uint unused1) {
     bool users_match = true;
     // set if combination of user2 and user3 is unexpected
 
-    // TODO consider removing this safety block.
-    int user2 = this_processor->user2;
-    if (user2 < NONE) {
-        log_error("Unexpected user2 %d", user2);
-        malloc_extras_terminate(RTE_SWERR);
-    }
-    if (user2 > FORCE_TO_STOP) {
-        log_error("Unexpected user2 %d", user2);
-        malloc_extras_terminate(RTE_SWERR);
-    }
-    int user3 = this_processor->user3;
-    if (user3 < UNUSED) {
-        log_error("Unexpected user3 %d", user3);
-        malloc_extras_terminate(RTE_SWERR);
-    }
-    if (user3 > RAN_OUT_OF_TIME) {
-        log_error("Unexpected user3 %d", user3);
-        malloc_extras_terminate(RTE_SWERR);
-    }
-
     // cache the states so they dont change inside one loop
-    compressor_states compressor_state =
-        (compressor_states)user3;
-    instrucions_to_compressor sorter_state =
-        (instrucions_to_compressor)user2;
+    compressor_states compressor_state = comms_sdram->compressor_state;
+    instrucions_to_compressor sorter_state = comms_sdram->sorter_instruction;
 
     // Log if changed
-    if (user2 != previous_sorter_state) {
-         previous_sorter_state = user2;
+    if (sorter_state != previous_sorter_state) {
+         previous_sorter_state = sorter_state;
          log_info("Sorter state changed  sorter: %d compressor %d",
             sorter_state, compressor_state);
     }
-    if (user3 != previous_compressor_state) {
-        previous_compressor_state = user3;
+    if (compressor_state != previous_compressor_state) {
+        previous_compressor_state = compressor_state;
         log_info("Compressor state changed  sorter: %d compressor %d",
            sorter_state, compressor_state);
     }
@@ -414,14 +376,14 @@ void initialise(void) {
     log_info("Setting up stuff to allow bitfield compressor to occur.");
 
     log_info("reading time_for_compression_attempt");
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
 
-    uint32_t time_for_compression_attempt = this_processor->user1;
+    uint32_t time_for_compression_attempt = this_vcpu_info->user1;
     log_info("user 1 = %d", time_for_compression_attempt);
 
     // bool from int conversion happening here
-    uint32_t int_value = this_processor->user2;
+    uint32_t int_value = this_vcpu_info->user2;
     log_info("user 2 = %d", int_value);
     if (int_value == 1) {
         compress_only_when_needed = true;
@@ -434,15 +396,9 @@ void initialise(void) {
     //}
 
     // Get the pointer for all cores
-    comms_sdram = (comms_sdram_t*)this_processor->user3;
+    comms_sdram = (comms_sdram_t*)this_vcpu_info->user3;
     // Now move the pointer to the comms for this core
     comms_sdram += spin1_get_core_id();
-
-    // set user 1,2,3 registers to state before setup bu sorter
-    this_processor->user1 = NULL;
-    this_processor->user2 = NONE;
-    sorter_instruction = (instrucions_to_compressor*) &this_processor->user2;
-    this_processor->user3 = UNUSED;
 
     // sort out timer (this is done in a indirect way due to lack of trust to
     // have timer only fire after full time after pause and resume.
@@ -450,7 +406,6 @@ void initialise(void) {
     spin1_set_timer_tick(1000);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
-    log_info("finished initialise %d %d", *sorter_instruction, this_processor->user2);
     log_info("my processor id is %d", spin1_get_core_id());
 }
 
