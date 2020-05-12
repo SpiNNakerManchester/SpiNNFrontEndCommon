@@ -2035,7 +2035,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
-                not self._use_virtual_board):
+                not self._use_virtual_board and
+                not run_until_complete):
             algorithms.append("ChipIOBufExtractor")
 
         # add in the timing finalisation
