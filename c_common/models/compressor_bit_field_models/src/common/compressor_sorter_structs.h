@@ -49,13 +49,6 @@ typedef enum processor_status_values {
     // This includes compressors that have been forced to stop but not check yet.
 } processor_status_values;
 
-//! \brief the command codes in human readable form
-typedef enum command_codes_for_sdp_packet {
-    START_DATA_STREAM = 20,
-    COMPRESSION_RESPONSE = 21,
-    STOP_COMPRESSION_ATTEMPT = 22
-} command_codes_for_sdp_packet;
-
 //!=========================================================================
 //! structs
 
@@ -102,19 +95,6 @@ typedef struct comp_processor_store_t{
     // elements
     table_t **elements;
 } comp_processor_store_t;
-
-typedef struct comp_instruction_t{
-    // how many rt tables used here
-    int n_elements;
-    // how many bit fields were used to make those tables
-    int n_bit_fields;
-    // compressed table location
-    table_t *compressed_table;
-    // elements
-    table_t **elements;
-    // initialise value for malloc_extras_
-    heap_t *fake_heap_data;
-} comp_instruction_t;
 
 //! \brief the compressor processor data elements in SDRAM
 typedef struct compressor_processors_top_t {
@@ -193,6 +173,7 @@ typedef struct triples_t {
     int processor;
 } triples_t;
 
+//! \brief sdram area to comminucate between sorter and compressor
 typedef struct comms_sdram_t {
     compressor_states compressor_state;
     instrucions_to_compressor sorter_instruction;
@@ -215,26 +196,5 @@ typedef struct region_addresses_t {
     int n_triples;
     triples_t triples[];
 } region_addresses_t;
-
-//! \brief the elements in the sdp packet (control for setting off a minimise
-//! attempt)
-typedef struct start_sdp_packet_t {
-    uint32_t command_code;
-    heap_t *fake_heap_data;
-    comp_processor_store_t *table_data;
-} start_sdp_packet_t;
-
-//! \brief the elements in the sdp packet when response to compression attempt.
-typedef struct response_sdp_packet_t {
-    uint32_t command_code;
-    uint32_t response_code;
-} response_sdp_packet_t;
-
-//! \brief all the types of SDP messages that we receive, as one
-typedef union {
-    command_codes_for_sdp_packet command;
-    start_sdp_packet_t start;
-    response_sdp_packet_t response;
-} compressor_payload_t;
 
 #endif  // __COMPRESSOR_SORTER_STRUCTS_H__

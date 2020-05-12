@@ -1015,13 +1015,13 @@ bool initialise_compressor_processors(void) {
         processor_status[processor_id] = NOT_COMPRESSOR;
     }
 
-    // Switch compressor processors to TO_BE_PREPARED
     log_debug("n region triples = %d", region_addresses->n_triples);
     compressor_processors_top_t *compressor_processors_top =
         (void *) &region_addresses->triples[region_addresses->n_triples];
     for (uint32_t processor_index = 0;
             processor_index < compressor_processors_top->n_processors;
             processor_index++) {
+        // Switch compressor processors to TO_BE_PREPARED
         processor_status[
             compressor_processors_top->processor_id[processor_index]] =
                 TO_BE_PREPARED;
