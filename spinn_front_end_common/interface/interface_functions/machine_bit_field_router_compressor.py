@@ -449,12 +449,16 @@ class MachineBitFieldRouterCompressor(object):
                         routing_table_compressor_app_id, progress_bar, cores,
                         matrix_addresses_and_size[(table.x, table.y)])
 
+                    comms_sdram = transceiver.malloc_sdram(
+                        table.x, table.y, 7 * 4 * 18, routing_table_compressor_app_id)
+
                     self._load_address_data(
                         addresses, table.x, table.y, transceiver,
                         routing_table_compressor_app_id,
                         cores, matrix_addresses_and_size[(table.x, table.y)],
                         bit_field_compressor_executable_path,
-                        bit_field_sorter_executable_path, threshold_percentage)
+                        bit_field_sorter_executable_path, comms_sdram,
+                        threshold_percentage)
 
                     self._load_usable_sdram(
                         matrix_addresses_and_size[(table.x, table.y)], table.x,
@@ -465,7 +469,7 @@ class MachineBitFieldRouterCompressor(object):
                         table.x, table.y, time_per_iteration, transceiver,
                         bit_field_compressor_executable_path, cores,
                         compress_only_when_needed,
-                        compress_as_much_as_possible)
+                        compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
                     run_by_host.append((table.x, table.y))
 
@@ -478,7 +482,8 @@ class MachineBitFieldRouterCompressor(object):
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
-            compress_only_when_needed, compress_as_much_as_possible):
+            compress_only_when_needed, compress_as_much_as_possible,
+            comms_sdram):
         """ updates the user1 address for the compressor cores so they can \
         set the time per attempt
 
@@ -493,6 +498,7 @@ class MachineBitFieldRouterCompressor(object):
         :param compress_as_much_as_possible: bool flag asking if should \
         compress as much as possible
         :param cores: the executable targets
+        :param comms_sdram (int) : Address for comms block
         :rtype: None
         """
         compressor_cores = cores.get_cores_for_binary(
@@ -510,13 +516,14 @@ class MachineBitFieldRouterCompressor(object):
                 self._ONE_WORDS.pack(
                     self._convert_to_microseconds(time_per_iteration)),
                 self._USER_BYTES)
+            # TODO compress_as_much_as_possible
             transceiver.write_memory(
                 chip_x, chip_y, user2_base_address,
                 self._ONE_WORDS.pack(compress_only_when_needed),
                 self._USER_BYTES)
             transceiver.write_memory(
                 chip_x, chip_y, user3_base_address,
-                self._ONE_WORDS.pack(compress_as_much_as_possible),
+                self._ONE_WORDS.pack(comms_sdram),
                 self._USER_BYTES)
 
     def _load_usable_sdram(
@@ -578,7 +585,8 @@ class MachineBitFieldRouterCompressor(object):
             self, addresses, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores, matrix_addresses_and_size,
             bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, threshold_percentage):
+            bit_field_sorter_executable_path, comms_sdram,
+            threshold_percentage):
         """ loads the bitfield addresses space
 
         :param addresses: the addresses to load
@@ -590,6 +598,8 @@ class MachineBitFieldRouterCompressor(object):
         :param bit_field_compressor_executable_path: the path to the \
         compressor binary path
         :param bit_field_sorter_executable_path: the path to the sorter binary
+        :param comms_sdram (int) : Address for comms block
+        :param threshold_percentage: TODO ALAN!
         :rtype: None
         """
         # generate address_data
@@ -598,7 +608,7 @@ class MachineBitFieldRouterCompressor(object):
             cores.get_cores_for_binary(
                 bit_field_compressor_executable_path).get_core_subset_for_chip(
                     chip_x, chip_y),
-            threshold_percentage)
+            comms_sdram, threshold_percentage)
 
         # get sdram address on chip
         try:
@@ -781,16 +791,21 @@ class MachineBitFieldRouterCompressor(object):
 
         return region_addresses, sdram_block_addresses_and_sizes
 
-    def _generate_chip_data(self, address_list, cores, threshold_percentage):
+    def _generate_chip_data(
+            self, address_list, cores, comms_sdram, threshold_percentage):
         """ generate byte array data for a list of sdram addresses and \
         finally the time to run per compression iteration
 
         :param address_list: the list of sdram addresses
         :param cores: compressor cores on this chip.
+        :param comms_sdram (int) : Address for comms block
+        :param threshold_percentage: TODO ALAN!
         :return: the byte array
         """
+
         data = b""
         data += self._ONE_WORDS.pack(threshold_percentage)
+        data += self._ONE_WORDS.pack(comms_sdram)
         data += self._ONE_WORDS.pack(len(address_list))
         for (bit_field, key_to_atom, processor_id) in address_list:
             data += self._THREE_WORDS.pack(
