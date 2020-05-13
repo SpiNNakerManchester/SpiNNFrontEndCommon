@@ -280,6 +280,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_minimum_auto_time_steps",
 
         #
+        "_run_until_complete",
+
+        #
         "_app_id",
 
         #
@@ -492,6 +495,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._no_machine_time_steps = None
         self._minimum_auto_time_steps = self._config.getint(
                 "Buffers", "minimum_auto_time_steps")
+        self._run_until_complete = False
 
         self._app_id = self._read_config_int("Machine", "app_id")
 
@@ -749,6 +753,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def run_until_complete(self):
         """ Run a simulation until it completes
         """
+        self._run_until_complete = True
         self._run(None, run_until_complete=True)
 
     @overrides(SimulatorInterface.run)
@@ -2035,8 +2040,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
-                not self._use_virtual_board and
-                not run_until_complete):
+                not self._use_virtual_board):
             algorithms.append("ChipIOBufExtractor")
 
         # add in the timing finalisation
@@ -2605,7 +2609,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
-                not self._use_virtual_board):
+                not self._use_virtual_board and not self._run_until_complete):
             executor = self._create_stop_workflow()
             run_complete = False
             try:
