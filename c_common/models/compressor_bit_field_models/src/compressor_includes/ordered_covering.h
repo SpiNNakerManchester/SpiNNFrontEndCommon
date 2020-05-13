@@ -84,14 +84,13 @@ static unsigned int oc_get_insertion_point(
 //! existing entries if they were included in the given merge.
 //! \param[in] merge: the merge to consider
 //! \param[in] min_goodness: ????????
-//! \param[in] timer_for_compression_attempt: bool pointer for if the timer
-//!            has decided the attempt is over
+//! \param[in] stop_compressing: bool pointer for if compressor should stop
 //! \param[out] changed: bool pointer for if the merge drops below goodness
 //!                      level
 //! \return bool flag saying if the method was successful in completing or not
 static inline bool oc_up_check(
         merge_t *merge, int min_goodness,
-        volatile bool *timer_for_compression_attempt, bool *changed) {
+        volatile bool *stop_compressing, bool *changed) {
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     // Get the point where the merge will be inserted into the table.
@@ -107,7 +106,7 @@ static inline bool oc_up_check(
             _i--, i--) {
 
         // safety check for timing limits
-        if (*timer_for_compression_attempt){
+        if (*stop_compressing){
             return false;
         }
 
@@ -247,19 +246,19 @@ static __sets_t _get_removables(
 //! \param[in] min_goodness: ????????
 //! \param[in] a: ????????
 //! \param[out] failed_by_malloc: bool flag saying if it failed due to malloc
-//! \param[in] timer_for_compression_attempt: bool pointer for if the timer has
+//! \param[in] stop_compressing: bool pointer for if the compressor should stop
 //! \return bool that says if it was successful or not
 static bool oc_down_check(
         merge_t *merge, int min_goodness, aliases_t *aliases,
         bool *failed_by_malloc,
-        volatile bool *timer_for_compression_attempt) {
+        volatile bool *stop_compressing) {
 
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     while (merge_goodness(merge) > min_goodness) {
 
         // safety check for timing limits
-        if (*timer_for_compression_attempt) {
+        if (*stop_compressing) {
             log_error("failed due to timing");
             return false;
         }
@@ -287,7 +286,7 @@ static bool oc_down_check(
                 i++) {
 
             // safety check for timing limits
-            if (*timer_for_compression_attempt){
+            if (*stop_compressing){
                 log_error("failed due to timing");
                 return false;
             }
@@ -307,7 +306,7 @@ static bool oc_down_check(
                     alias_list_t *the_alias_list = aliases_find(aliases, km);
                     while (the_alias_list != NULL) {
                         // safety check for timing limits
-                        if (*timer_for_compression_attempt){
+                        if (*stop_compressing){
                             log_error("failed due to timing");
                             return false;
                         }
@@ -315,7 +314,7 @@ static bool oc_down_check(
                                 j++) {
 
                             // safety check for timing limits
-                            if (*timer_for_compression_attempt){
+                            if (*stop_compressing){
                                 log_error("failed due to timing");
                                 return false;
                             }
@@ -409,7 +408,7 @@ static bool oc_down_check(
         int entry = 0;
         for (int i = 0; i <routing_table_sdram_get_n_entries(); i++) {
             // safety check for timing limits
-            if (*timer_for_compression_attempt) {
+            if (*stop_compressing) {
                 log_error("failed due to timing");
                 bit_set_delete(sets.best);
                 bit_set_delete(sets.working);
@@ -453,12 +452,11 @@ static bool oc_down_check(
 //! \param[in] aliases: ???????????
 //! \param[in] best: the best merge to find
 //! \param[out] failed_by_malloc: bool flag saying failed by malloc
-//! \param[in] timer_for_compression_attempt: bool flag saying if timer has
-//! fired
+//! \param[in] stop_compressing: bool flag saying if compression should stop
 //! \return bool saying if successful or not.
 static inline bool oc_get_best_merge(
         aliases_t *aliases, merge_t *best, bool *failed_by_malloc,
-        volatile bool *timer_for_compression_attempt) {
+        volatile bool *stop_compressing) {
 
     // Keep track of which entries have been considered as part of merges.
     bit_set_t considered;
@@ -504,8 +502,8 @@ static inline bool oc_get_best_merge(
     for (int i = 0; i < routing_table_sdram_get_n_entries(); i++) {
 
         // safety check for timing limits
-        if (*timer_for_compression_attempt) {
-            log_info("closed due to timing");
+        if (*stop_compressing) {
+            log_info("closed due to stop request");
             // free bits we already done
             merge_delete(best);
             bit_set_delete(&considered);
@@ -535,8 +533,8 @@ static inline bool oc_get_best_merge(
         for (int j = i+1; j < routing_table_sdram_get_n_entries(); j++) {
 
             // safety check for timing limits
-            if (*timer_for_compression_attempt) {
-                log_info("closed due to timing");
+            if (*stop_compressing) {
+                log_info("closed due to stop request");
                 // free bits we already done
                 merge_delete(best);
                 bit_set_delete(&considered);
@@ -565,7 +563,7 @@ static inline bool oc_get_best_merge(
         // Perform the first down check
         success = oc_down_check(
             &working, merge_goodness(best), aliases, failed_by_malloc,
-            timer_for_compression_attempt);
+            stop_compressing);
         if (!success) {
             log_error("failed to down check.");
 
@@ -584,8 +582,7 @@ static inline bool oc_get_best_merge(
         // size of the merge.
         bool changed = false;
         success = oc_up_check(
-            &working, merge_goodness(best), timer_for_compression_attempt,
-            &changed);
+            &working, merge_goodness(best), stop_compressing, &changed);
         if (!success){
             log_info("failed to upcheck");
             // free bits we already done
@@ -605,7 +602,7 @@ static inline bool oc_get_best_merge(
             log_debug("down check");
             success = oc_down_check(
                 &working, merge_goodness(best), aliases, failed_by_malloc,
-                timer_for_compression_attempt);
+                stop_compressing);
             if (!success) {
                 log_error("failed to down check. ");
 
@@ -790,9 +787,8 @@ static inline bool oc_merge_apply(
 //! \param[in] target_length: the length to reach
 //! \param[in] aliases: whatever
 //! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
-//! \param[in] sorter_instruction: sorter instruction flag
-//! \param[out] timer_for_compression_attempt: bool flag that says timer ran our
-//!       for compression attempt.
+//! \param[out] stop_compressing: bool flag that says compressor should stop
+//!    and return false
 //! \param[in] compress_only_when_needed: only compress when needed
 //! \param[in] compress_as_much_as_possible: only compress to normal routing
 //!       table length
@@ -800,11 +796,12 @@ static inline bool oc_merge_apply(
 static inline bool oc_minimise(
         int target_length, aliases_t* aliases,
         bool *failed_by_malloc,
-        instructions_to_compressor* sorter_instruction,
-        volatile bool *timer_for_compression_attempt,
+        volatile bool *stop_compressing,
         bool compress_only_when_needed,
         bool compress_as_much_as_possible) {
 
+    // DEBUG so some cores are slower
+    // spin1_delay_us(1000 * spin1_get_core_id() * spin1_get_core_id());
     counter_to_crash += 1;
 
     // check if any compression actually needed
@@ -814,7 +811,7 @@ static inline bool oc_minimise(
 
     if (compress_only_when_needed &&
             (routing_table_sdram_get_n_entries() < target_length)) {
-        log_debug("does not need compression.");
+        log_info("does not need compression.");
         return true;
     }
 
@@ -833,6 +830,7 @@ static inline bool oc_minimise(
     log_debug("before check for remove ");
 
     if (compress_only_when_needed && (length_after_removal < target_length)) {
+        log_info("remove defaults was enought.");
         remove_default_routes_minimise(&length_after_removal, true);
         return true;
     }
@@ -850,17 +848,14 @@ static inline bool oc_minimise(
     int attempts = 0;
 
     while ((routing_table_sdram_get_n_entries() > target_length) &&
-            !*timer_for_compression_attempt) {
-        if (*sorter_instruction != RUN){
-            return false;
-        }
+            !*stop_compressing) {
         log_debug("n entries is %d", routing_table_sdram_get_n_entries());
 
         // Get the best possible merge, if this merge is empty then break out
         // of the loop.
         merge_t merge;
         bool success = oc_get_best_merge(
-            aliases, &merge, failed_by_malloc, timer_for_compression_attempt);
+            aliases, &merge, failed_by_malloc, stop_compressing);
         if (!success) {
             log_debug(
                 "failed to do get best merge. the number of merge cycles "
@@ -905,28 +900,18 @@ static inline bool oc_minimise(
     spin1_pause();
 
     // if it failed due to timing, report and then reset and fail.
-    if (*timer_for_compression_attempt) {
+    if (*stop_compressing) {
         log_info(
-            "failed due to timing limitations. reached %d entries over %d"
-            " attempts", routing_table_sdram_get_n_entries(),  attempts);
-        spin1_pause();
-        return false;
-    }
-
-    // if it failed due to control telling it to stop, then reset and fail.
-    if (*sorter_instruction == FORCE_TO_STOP) {
-         log_info(
-            "failed due to control. reached %d entries over %d"
-            " attempts", routing_table_sdram_get_n_entries(),  attempts);
+            "Asked to stop. reached %d entries over %d attempts",
+            routing_table_sdram_get_n_entries(),  attempts);
         spin1_pause();
         return false;
     }
 
     log_info(
-        "entries after compressed = %d, timer = %d, finished by control = %d,"
+        "entries after compressed = %d, stop = %d, "
         " the number of merge cycles were %d",
-        routing_table_sdram_get_n_entries(), *timer_for_compression_attempt,
-        *sorter_instruction, attempts);
+        routing_table_sdram_get_n_entries(), *stop_compressing, attempts);
 
     log_debug("compressed!!!");
     log_debug(

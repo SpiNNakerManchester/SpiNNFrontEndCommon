@@ -48,9 +48,8 @@ typedef enum interrupt_priority{
 int counter = 0;
 int max_counter = 0;
 
-//! \brief bool saying if the timer has fired, resulting in attempt to compress
-//! shutting down
-volatile bool timer_for_compression_attempt = false;
+//! \brief bool saying if the compressor should shut down
+volatile bool stop_compressing = false;
 
 //! \brief bool flag to say if i was forced to stop by the compressor control
 volatile bool finished_by_compressor_force = false;
@@ -118,8 +117,7 @@ void start_compression_process() {
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
-        &comms_sdram->sorter_instruction,
-        &timer_for_compression_attempt, compress_only_when_needed,
+        &stop_compressing, compress_only_when_needed,
         compress_as_much_as_possible);
 
     // print out result for debugging purposes
@@ -153,7 +151,7 @@ void start_compression_process() {
             log_debug("force fail response");
             comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
             log_debug("send ack");
-        } else if (timer_for_compression_attempt) {  // ran out of time
+        } else if (stop_compressing) {  // ran out of time
             log_debug("time fail response");
             comms_sdram->compressor_state = RAN_OUT_OF_TIME;
         } else { // after finishing compression, still could not fit into table.
@@ -170,7 +168,7 @@ void run_compression_process(void){
     log_debug("set up fake heap for sdram usage");
 
     failed_by_malloc = false;
-    timer_for_compression_attempt = false;
+    stop_compressing = false;
  // reset timer counter
     counter = 0;
     aliases_clear(&aliases);
@@ -263,7 +261,7 @@ static inline bool process_force(compressor_states compressor_state) {
         case SUCCESSFUL_COMPRESSION:
         case FAILED_TO_COMPRESS:
         case RAN_OUT_OF_TIME:
-            log_info("Force detected");
+            log_info("Force detected so changing result to ack");
             // The results other than MALLOC no longer matters
             comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
             return true;
@@ -289,7 +287,6 @@ void wait_for_instructions(uint unused0, uint unused1) {
     // cache the states so they dont change inside one loop
     compressor_states compressor_state = comms_sdram->compressor_state;
     instructions_to_compressor sorter_state = comms_sdram->sorter_instruction;
-    /*
     // When debugging Log if changed
     if (sorter_state != previous_sorter_state) {
          previous_sorter_state = sorter_state;
@@ -300,7 +297,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
         previous_compressor_state = compressor_state;
         log_info("Compressor state changed  sorter: %d compressor %d",
            sorter_state, compressor_state);
-    }*/
+    }
 
     switch(sorter_state) {
         case PREPARE:
@@ -332,7 +329,9 @@ void wait_for_instructions(uint unused0, uint unused1) {
     }
 }
 
-//! \brief timer interrupt for controlling time taken to try to compress table
+//! \brief timer interrupt for controlling stopping compression
+//! Could be due to time taken to try to compress table
+//! Could be because sorter has cancelled run request
 //! \param[in] unused0: not used
 //! \param[in] unused1: not used
 void timer_callback(uint unused0, uint unused1) {
@@ -340,9 +339,14 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     counter ++;
 
-    if (counter >= max_counter){
-        timer_for_compression_attempt = true;
-        log_debug("passed timer point");
+    if (counter >= max_counter) {
+        stop_compressing = true;
+        log_info("passed timer point");
+        spin1_pause();
+    }
+    if (comms_sdram->sorter_instruction != RUN) {
+        stop_compressing = true;
+        log_info("Sorter cancelled run request");
         spin1_pause();
     }
 }
@@ -364,12 +368,12 @@ void initialise(void) {
     if (int_value > 1) {
         compress_as_much_as_possible = true;
     }
-    if ((int_value & 1) == 0){
+    if ((int_value & 1) == 1){
         compress_only_when_needed = true;
     }
-    log_info("compress_only_when_needed = %d compress_as_much_as_possible = %d",
-        compress_only_when_needed,
-        compress_as_much_as_possible);
+    log_info("int %d, compress_only_when_needed = %d"
+        "compress_as_much_as_possible = %d", int_value,
+        compress_only_when_needed, compress_as_much_as_possible);
 
     // Get the pointer for all cores
     comms_sdram = (comms_sdram_t*)this_vcpu_info->user3;
