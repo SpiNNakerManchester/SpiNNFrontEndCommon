@@ -86,9 +86,6 @@ int best_success = -1;
 // Lowest midpoint that record failure
 int lowest_failure;
 
-//! \brief best routing table position in the search
-int best_search_point = 0;
-
 //! \brief the last routing table position in the search
 int last_search_point = 0;
 
@@ -303,6 +300,31 @@ bool has_entry_in_sorted_keys(
     return false;
 }
 
+bool cyab(void) {
+    uint32_t first_keys[MAX_PROCESSORS];
+    int first_order[MAX_PROCESSORS];
+    // Initialize first order to be higher than max of n_bit_fields
+    log_info("best_success %d", best_success);
+    for (int index = 0; index < MAX_PROCESSORS; index++) {
+        first_order[index] = sorted_bit_fields->n_bit_fields + 1;
+    }
+    for (int index = 0; index < sorted_bit_fields->n_bit_fields; index++) {
+        int test = sorted_bit_fields->sort_order[index];
+        if (test > best_success) {
+            int processor_id = sorted_bit_fields->processor_ids[index];
+            if (test < first_order[processor_id]) {
+                first_order[processor_id] = test;
+                first_keys[processor_id] =
+                    sorted_bit_fields->bit_fields[index]->key;
+            }
+        }
+    }
+    for (int index = 0; index < MAX_PROCESSORS; index++) {
+        log_info("index %d, first_key %d first_order %d", index, first_keys[index], first_order[index]);
+    }
+    return true;
+}
+
 //! \brief removes the merged bitfields from the application processors
 //! bitfield regions
 //! \return bool if was successful or not
@@ -316,7 +338,7 @@ bool remove_merged_bitfields_from_processors(void) {
     // which bitfields are to be removed from which processors
     proc_bit_field_keys_t *sorted_bf_key_proc =
         bit_field_reader_sort_by_processors(
-            region_addresses, best_search_point, sorted_bit_fields);
+            region_addresses, best_success, sorted_bit_fields);
     if (sorted_bf_key_proc == NULL) {
         log_error("could not sort out bitfields to keys.");
         return false;
@@ -336,7 +358,9 @@ bool remove_merged_bitfields_from_processors(void) {
         int n_bfs = filter_region->n_filters;
         filter_region->n_filters =
             n_bfs - sorted_bf_key_proc[r_id].key_list->length_of_list;
-
+        log_info("r_id %d n_bfs %d, n_redundancy_filters %d removed %d", r_id,
+            n_bfs, filter_region->n_redundancy_filters,
+            sorted_bf_key_proc[r_id].key_list->length_of_list);
         // only operate if there is a reduction to do
         if (filter_region->n_filters != n_bfs) {
             // pointers for shifting data up by excluding the ones been added to
@@ -487,11 +511,12 @@ static inline void handle_best_cleanup(void){
     // clear away bitfields that were merged into the router from
     //their lists.
     log_info("remove merged bitfields");
+    cyab();
     remove_merged_bitfields_from_processors();
 
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint processor_id = spin1_get_core_id();
-    sark_virtual_processor_info[processor_id].user2 = best_search_point;
+    sark_virtual_processor_info[processor_id].user2 = best_success;
 
     // removes any mallocs that are dangling
     malloc_cleanup();

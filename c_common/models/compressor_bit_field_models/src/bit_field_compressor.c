@@ -67,9 +67,6 @@ bool compress_as_much_as_possible = false;
 //! \brief aliases thingy for compression
 aliases_t aliases;
 
-//! n bitfields testing
-int n_bit_fields = -1;
-
 // values for debug logging in wait_for_instructions
 instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 compressor_states previous_compressor_state = UNUSED;
@@ -114,6 +111,11 @@ void start_compression_process() {
 
     malloc_extras_check_all_marked(50001);
 
+    if (comms_sdram->n_bit_fields >= 100) {
+        log_info("HACK fail at 100 plus bitfeilds!");
+         comms_sdram->compressor_state = FAILED_TO_COMPRESS;
+         return;
+    }
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,

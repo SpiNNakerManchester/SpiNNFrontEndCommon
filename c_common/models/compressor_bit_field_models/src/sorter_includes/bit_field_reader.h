@@ -69,9 +69,11 @@ static inline proc_bit_field_keys_t* bit_field_reader_sort_by_processors(
 
         // count entries
         int n_entries = 0;
-        for (int bf_index = 0; bf_index < best_search_point; bf_index++) {
+        for (int bf_index = 0; bf_index < sorted_bit_fields->n_bit_fields; bf_index++) {
             if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
-                n_entries ++;
+                if (sorted_bit_fields->sort_order[bf_index] < best_search_point) {
+                    n_entries ++;
+                }
             }
         }
 
@@ -101,14 +103,16 @@ static inline proc_bit_field_keys_t* bit_field_reader_sort_by_processors(
 
             // put keys in the array
             int a_index = 0;
-            for (int bf_index = 0; bf_index < best_search_point; bf_index++) {
+            for (int bf_index = 0; bf_index < sorted_bit_fields->n_bit_fields; bf_index++) {
                 if (sorted_bit_fields->processor_ids[bf_index] ==
                         region_proc_id) {
-                    filter_info_t* bf_pointer =
-                        sorted_bit_fields->bit_fields[bf_index];
-                    sorted_bf_by_processor[r_id].key_list->master_pop_keys[
-                        a_index] = bf_pointer->key;
-                    a_index ++;
+                    if (sorted_bit_fields->sort_order[bf_index] < best_search_point) {
+                        filter_info_t* bf_pointer =
+                            sorted_bit_fields->bit_fields[bf_index];
+                        sorted_bf_by_processor[r_id].key_list->master_pop_keys[
+                            a_index] = bf_pointer->key;
+                        a_index ++;
+                    }
                 }
             }
          }
