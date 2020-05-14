@@ -14,15 +14,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+
+from spinn_utilities.log import FormatAdapter
 from spinnman.connections import SocketAddressWithChip
+from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+import time
+import logging
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class MachineGenerator(object):
     """ Makes a transceiver and a :py:class:`~spinn_machine.Machine` object.
     """
+
+    POWER_CYCLE_WARNING = (
+        "When power cycling a board. It is recommended that you wait for 30"
+        " seconds before attempting a reboot. Therefore the tools will now "
+        "wait for 30 seconds. If you wish to avoid this wait. Please set "
+        "in your corresponding cfg file the param [Machine] "
+        "reset_machine_on_startup to False.")
 
     __slots__ = []
 
@@ -93,6 +107,9 @@ class MachineGenerator(object):
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()
+            logger.warning(self.POWER_CYCLE_WARNING)
+            time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
+            logger.warning("Power cycle wait complete")
 
         # do auto boot if possible
         if board_version is None:
