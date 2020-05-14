@@ -746,10 +746,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
-    def run_until_complete(self):
+    def run_until_complete(self, n_steps=None):
         """ Run a simulation until it completes
+
+        :param n_steps: If not None, this specifies that the simulation should\
+            be requested to run for the given number of steps.  The host will\
+            still wait until the simulation itself says it has completed
         """
-        self._run(None, run_until_complete=True)
+        self._run(n_steps, run_until_complete=True)
 
     @overrides(SimulatorInterface.run)
     def run(self, run_time):
@@ -1724,10 +1728,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["RunUntilTimeSteps"] = n_machine_time_steps
-
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+
+        # This is done twice to make things nicer for things which don't have
+        # time steps without breaking existing code; it is purely aesthetic
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
+        inputs["RunTimeSteps"] = n_machine_time_steps
+
+        # This is done twice to make things nicer for things which don't have
+        # time steps without breaking existing code; it is purely aesthetic
         inputs["DataNTimeSteps"] = self._max_run_time_steps
+        inputs["DataNSteps"] = self._max_run_time_steps
 
         # Run the data generation algorithms
         outputs = []
