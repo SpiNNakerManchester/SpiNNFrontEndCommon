@@ -36,7 +36,7 @@ before_install:
   - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
   - python support/travis_blocking_stdout.py
   - support/rat.sh download
-  # Bring pip up to date 
+  # Bring pip up to date
   - pip install --upgrade pip setuptools wheel
   - pip install --only-binary=numpy,scipy numpy scipy
   # SpiNNakerManchester internal dependencies; development mode
