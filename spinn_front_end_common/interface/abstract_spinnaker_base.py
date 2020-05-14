@@ -2021,9 +2021,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 (run_until_complete or n_machine_time_steps is not None)):
             algorithms.append("BufferExtractor")
 
-        write_prov = self._config.getboolean(
-            "Reports", "write_provenance_data")
-        if write_prov:
+        read_prov = self._config.getboolean(
+            "Reports", "read_provenance_data")
+        if read_prov:
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
@@ -2043,11 +2043,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("FinaliseTimingData")
             if self._config.getboolean("Reports", "write_energy_report"):
                 algorithms.append("ComputeEnergyUsed")
-                if write_prov:
+                if read_prov:
                     algorithms.append("EnergyProvenanceReporter")
 
         # add extractor of provenance if needed
-        if (write_prov and not self._use_virtual_board and
+        if (read_prov and not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
@@ -2685,7 +2685,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Add the buffer extractor just in case
         algorithms.append("BufferExtractor")
 
-        write_prov = self._config.getboolean("Reports", "writeProvenanceData")
+        read_prov = self._config.getboolean("Reports", "read_provenance_data")
 
         # add extractor of iobuf if needed
         if self._config.getboolean("Reports", "extract_iobuf") and \
@@ -2693,14 +2693,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
-        if write_prov:
+        if read_prov:
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
         if (self._config.getboolean("Reports", "write_energy_report") and
                 not self._use_virtual_board):
             algorithms.append("ComputeEnergyUsed")
-            if write_prov:
+            if read_prov:
                 algorithms.append("EnergyProvenanceReporter")
 
         # Assemble how to run the algorithms
