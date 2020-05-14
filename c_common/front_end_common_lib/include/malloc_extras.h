@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__
+#ifndef __MALLOC_EXTRAS_H__
+#define __MALLOC_EXTRAS_H__
 
 #include <sark.h>
 #include <common-typedefs.h>
@@ -127,4 +127,4 @@ uint malloc_extras_max_available_block_size(void) ;
 #define FREE_MARKED malloc_extras_free_marked
 #define MALLOC_SDRAM malloc_extras_sdram_malloc_wrapper
 
-#endif  // __PLATFORM_H__
+#endif  // __MALLOC_EXTRAS_H__
