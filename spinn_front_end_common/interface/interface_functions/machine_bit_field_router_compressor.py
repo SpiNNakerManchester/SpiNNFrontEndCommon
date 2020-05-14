@@ -49,6 +49,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 # sdram allocation for addresses
 SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
 
+# 7 pointers or int for each core. 4 Bytes for each  18 cores max
+SIZE_OF_COMMS_SDRAM = 7 * 4 * 18
+
 SECOND_TO_MICRO_SECOND = 1000000
 
 # provenance data item names
@@ -449,7 +452,8 @@ class MachineBitFieldRouterCompressor(object):
                         matrix_addresses_and_size[(table.x, table.y)])
 
                     comms_sdram = transceiver.malloc_sdram(
-                        table.x, table.y, 7 * 4 * 18, routing_table_compressor_app_id)
+                        table.x, table.y, SIZE_OF_COMMS_SDRAM,
+                        routing_table_compressor_app_id)
 
                     self._load_address_data(
                         addresses, table.x, table.y, transceiver,
