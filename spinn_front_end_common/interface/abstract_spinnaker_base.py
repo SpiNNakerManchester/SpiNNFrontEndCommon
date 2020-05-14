@@ -1849,7 +1849,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
-    def _sort_out_provenance_writing(self, executor):
+    def _gather_provenance_for_writing(self, executor):
         """ handled the gathering of prov items for writer.
 
         :param executor: the pacman executor.
@@ -1892,7 +1892,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # write provenance to file if necessary
             if (self._config.getboolean("Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
-                self._sort_out_provenance_writing(executor)
+                self._gather_provenance_for_writing(executor)
 
             # move data around
             self._last_run_outputs = executor.get_items()
@@ -2077,6 +2077,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
         """
+
         writer = None
         if self._provenance_format == "xml":
             writer = ProvenanceXMLWriter()
@@ -2622,7 +2623,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
                 # write provenance to file if necessary
                 if self._config.getboolean("Reports", "write_provenance_data"):
-                    self._sort_out_provenance_writing(executor)
+                    self._gather_provenance_for_writing(executor)
             except Exception as e:
                 exc_info = sys.exc_info()
 
