@@ -114,8 +114,8 @@ class MachineGenerator(object):
         # do auto boot if possible
         if board_version is None:
             raise ConfigurationException(
-                "Please set a machine version number in the configuration "
-                "file (spynnaker.cfg or pacman.cfg)")
+                "Please set a machine version number in the "
+                "corresponding configuration file")
         txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         return txrx.get_machine_details(), txrx
