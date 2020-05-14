@@ -31,96 +31,6 @@ int processor_heads[MAX_PROCESSORS];
 //! ordered
 uint32_t processor_totals[MAX_PROCESSORS];
 
-
-//! sort out bitfields into processors and the keys of the bitfields to remove
-//! \param[out] sorted_bf_by_processor: the sorted stuff
-//! \param[in] region_addresses: addresses of the regions
-//! \param[in] best_search_point: best search point
-//! \param[in] sorted_bit_fields: the bitfields in sort order
-//! \return list of master pop keys for a given processor
-static inline proc_bit_field_keys_t* bit_field_reader_sort_by_processors(
-        region_addresses_t *region_addresses, int best_search_point,
-        sorted_bit_fields_t* sorted_bit_fields) {
-    proc_bit_field_keys_t *sorted_bf_by_processor = MALLOC(
-        region_addresses->n_triples * sizeof(proc_bit_field_keys_t));
-    if (sorted_bf_by_processor == NULL) {
-        log_error(
-            "failed to allocate memory for the sorting of bitfield to keys");
-        return NULL;
-    }
-
-    // malloc the lists
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        sorted_bf_by_processor[r_id].key_list =
-            MALLOC(sizeof(master_pop_key_list_t));
-        if (sorted_bf_by_processor[r_id].key_list == NULL){
-            log_error("failed to alloc memory for master pop key list.");
-            return NULL;
-        }
-    }
-
-    //locate how many bitfields in the search space accepted that are of a
-    // given processor.
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++){
-
-        // locate processor id for this region
-        int region_proc_id = region_addresses->triples[r_id].processor;
-        sorted_bf_by_processor[r_id].processor_id = region_proc_id;
-
-        // count entries
-        int n_entries = 0;
-        for (int bf_index = 0; bf_index < sorted_bit_fields->n_bit_fields; bf_index++) {
-            if (sorted_bit_fields->processor_ids[bf_index] == region_proc_id) {
-                if (sorted_bit_fields->sort_order[bf_index] < best_search_point) {
-                    n_entries ++;
-                }
-            }
-        }
-
-        // update length
-        sorted_bf_by_processor[r_id].key_list->length_of_list = n_entries;
-
-        // alloc for keys
-        if (n_entries != 0){
-            sorted_bf_by_processor[r_id].key_list->master_pop_keys =
-                MALLOC(n_entries * sizeof(int));
-            if (sorted_bf_by_processor[r_id].key_list->master_pop_keys ==
-                    NULL) {
-                log_error(
-                    "failed to allocate memory for the master pop keys for "
-                    "processor %d in the sorting of successful bitfields to "
-                    "remove.", region_proc_id);
-                for (int free_id =0; free_id < r_id; free_id++) {
-                    FREE(sorted_bf_by_processor[free_id].key_list->master_pop_keys);
-                }
-                for (int free_id = 0; free_id < region_addresses->n_triples;
-                        free_id++){
-                    FREE(sorted_bf_by_processor[free_id].key_list);
-                }
-                FREE(sorted_bf_by_processor);
-                return NULL;
-            }
-
-            // put keys in the array
-            int a_index = 0;
-            for (int bf_index = 0; bf_index < sorted_bit_fields->n_bit_fields; bf_index++) {
-                if (sorted_bit_fields->processor_ids[bf_index] ==
-                        region_proc_id) {
-                    if (sorted_bit_fields->sort_order[bf_index] < best_search_point) {
-                        filter_info_t* bf_pointer =
-                            sorted_bit_fields->bit_fields[bf_index];
-                        sorted_bf_by_processor[r_id].key_list->master_pop_keys[
-                            a_index] = bf_pointer->key;
-                        a_index ++;
-                    }
-                }
-            }
-         }
-    }
-
-    return sorted_bf_by_processor;
-}
-
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
 //! \return how many redundant packets there are
@@ -192,6 +102,7 @@ static inline void order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
     }
 }
 
+// DEAD code but felt as it shows how it could be sorted by order fast
 //! brief Sorts the data bases on the sort_order array
 //! \param[in] sorted_bit_fields: data to be ordered
 static inline void sort_by_order(sorted_bit_fields_t* sorted_bit_fields) {

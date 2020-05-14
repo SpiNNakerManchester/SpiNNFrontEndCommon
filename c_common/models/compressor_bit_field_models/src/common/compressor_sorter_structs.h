@@ -26,24 +26,38 @@
 
 //! \brief the acceptable finish states
 typedef enum compressor_states {
-   UNUSED = 30, PREPARED = 31, COMPRESSING = 32, FAILED_MALLOC = 33,
+    // Flag to say this core has never been used or prepared
+   UNUSED = 30,
+   // Flag to say compressor is ready to run.  This clears previous results
+   PREPARED = 31,
+   // Flag to say compressor is acticvely compressing
+   COMPRESSING = 32,
+   // Flag to say the last compression run ended due to a malloc failure
+   FAILED_MALLOC = 33,
+   // Flag to say sorter force seen and compression has ended or been stopped
+   // Note: It use may be replaced with the PREPARED flag
    FORCED_BY_COMPRESSOR_CONTROL = 34,
-   SUCCESSFUL_COMPRESSION = 35, FAILED_TO_COMPRESS = 36,
+   // Flag to say previous run was successful
+   SUCCESSFUL_COMPRESSION = 35,
+   // Flag to say previous run finished but without a small enough table
+   FAILED_TO_COMPRESS = 36,
+   // Flag to say previous run was aborted as it ran out of time
    RAN_OUT_OF_TIME = 37
 } compressor_states;
 
 typedef enum instructions_to_compressor {
-    // flag for saying processor is not a compressor
+    // Flag for saying processor is not a compressor
     NOT_COMPRESSOR = 40,
-    // flag for saying compression processor will not be used any more
+    // Flag for saying compression processor will not be used any more
     DO_NOT_USE = 41,
-    // flag for saying compression processor needs to be prepared for the first time
+    // Flag for saying compression processor needs to be prepared for the first time
     TO_BE_PREPARED = 42,
-    // flag to ask compressor to setup and clear any previous result
+    // Flag to ask compressor to setup and clear any previous result
     PREPARE = 43,
-    // flag to say processor shoukd run
+    // Flag to say processor shoukd run
     RUN = 44,
-    // flag to say processor should stop as result no longer needed
+    // Flag to say processor should stop as result no longer needed
+    // Note may be replaced with just PREPARE
     FORCE_TO_STOP = 45
 }  instructions_to_compressor;
 
@@ -81,46 +95,11 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
-//DEAD!
-//! \brief the compressor processor data elements in SDRAM
+//! \brief the lis of cores that can be used as compressor processor
 typedef struct compressor_processors_top_t {
     uint32_t n_processors;
     uint32_t processor_id[];
 } compressor_processors_top_t;
-
-//! \brief struct to hide the VLA'ness of the proc bit field keys.
-typedef struct master_pop_key_list_t {
-    // length of the list
-    int length_of_list;
-    // list of the keys to remove bitfields for.
-    uint32_t *master_pop_keys;
-} master_pop_key_list_t;
-
-//! \brief struct for figuring keys from bitfields, used for removal tracking
-typedef struct proc_bit_field_keys_t{
-    // processor id
-    int processor_id;
-    // length of the list
-    master_pop_key_list_t *key_list;
-} proc_bit_field_keys_t;
-
-//! \brief struct for bitfield by processor
-typedef struct bit_field_by_processor_t{
-    // processor id
-    int processor_id;
-    // length of list
-    int length_of_list;
-    // list of addresses where the bitfields start
-    filter_info_t *bit_field_addresses;
-} bit_field_by_processor_t;
-
-//! \brief struct holding keys and n bitfields with key
-typedef struct master_pop_bit_field_t{
-    // the master pop key
-    uint32_t master_pop_key;
-    // the number of bitfields with this key
-    int n_bitfields_with_key;
-} master_pop_bit_field_t;
 
 //! \brief uncompressed routing table region
 typedef struct uncompressed_table_region_data_t{
@@ -129,15 +108,6 @@ typedef struct uncompressed_table_region_data_t{
     // table struct
     table_t uncompressed_table;
 } uncompressed_table_region_data_t;
-
-//DEAD!
-//! \brief compressor processor data region
-typedef struct compressor_processors_region_data_t{
-    // how many compressor processors
-    int n_compressor_processors;
-    // the processor ids
-    int *processor_ids;
-} compressor_processors_region_data_t;
 
 //! \brief holder for the list of bitfield associated processor ids.
 //! sorted order based off best effort linked to sorted_bit_fields,
@@ -153,7 +123,7 @@ typedef struct sorted_bit_fields_t{
     int* sort_order;
 } sorted_bit_fields_t;
 
-//! \brief sdram area to comminucate between sorter and compressor
+//! \brief sdram area to communicate between sorter and compressor
 typedef struct comms_sdram_t {
     compressor_states compressor_state;
     instructions_to_compressor sorter_instruction;

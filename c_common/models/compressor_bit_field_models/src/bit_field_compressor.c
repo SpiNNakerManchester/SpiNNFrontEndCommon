@@ -27,16 +27,6 @@
 #include "compressor_includes/aliases.h"
 #include "compressor_includes/ordered_covering.h"
 /*****************************************************************************/
-/* SpiNNaker routing table minimisation with bitfield integration.
- *
- * Minimise a routing table loaded into SDRAM and load the minimised table into
- * the router using the specified application ID.
- *
- * the exit code is stored in the user1 register
- *
- * The memory address with tag "1" is expected contain the following struct
- * (entry_t is defined in `routing_table.h` but is described below).
-*/
 
 //! interrupt priorities
 typedef enum interrupt_priority{
@@ -71,7 +61,9 @@ aliases_t aliases;
 instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 compressor_states previous_compressor_state = UNUSED;
 
+// Sdram are used for comminication between sorter and THIS compressor
 comms_sdram_t *comms_sdram;
+
 // ---------------------------------------------------------------------
 
 //! \brief stores the compressed routing tables into the compressed sdram
@@ -111,11 +103,13 @@ void start_compression_process() {
 
     malloc_extras_check_all_marked(50001);
 
-    if (comms_sdram->n_bit_fields >= 100) {
-        log_info("HACK fail at 100 plus bitfeilds!");
-         comms_sdram->compressor_state = FAILED_TO_COMPRESS;
-         return;
-    }
+    // DEBUG Stuff please leave
+    //if (comms_sdram->n_bit_fields >= 100) {
+    //    log_info("HACK fail at 100 plus bitfeilds!");
+    //     comms_sdram->compressor_state = FAILED_TO_COMPRESS;
+    //     return;
+    //}
+
     // run compression
     bool success = oc_minimise(
         TARGET_LENGTH, &aliases, &failed_by_malloc,
@@ -163,15 +157,16 @@ void start_compression_process() {
     }
 }
 
+//! brief Runs the compressors process as requested
 void run_compression_process(void){
 
     log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);
     log_debug("set up fake heap for sdram usage");
 
+    // Set all status flags
     failed_by_malloc = false;
     stop_compressing = false;
- // reset timer counter
     counter = 0;
     aliases_clear(&aliases);
     routing_table_reset();
@@ -197,6 +192,37 @@ void run_compression_process(void){
     start_compression_process();
 }
 
+//! Brief Check what to do if anything as Sorter has asked to RUN
+//! May do nothing if the previous run has already finished
+//! \returns bool if the RUN made sense with the current Compressor sate
+static inline bool process_run(compressor_states compressor_state) {
+
+    switch(compressor_state) {
+        case PREPARED:
+            log_info("run detected");
+            comms_sdram->compressor_state = COMPRESSING;
+            run_compression_process();
+            return true;
+        case COMPRESSING:
+            // Should not be back in this loop before result set
+            return false;
+        case FAILED_MALLOC:
+        case FORCED_BY_COMPRESSOR_CONTROL:
+        case SUCCESSFUL_COMPRESSION:
+        case FAILED_TO_COMPRESS:
+        case RAN_OUT_OF_TIME:
+            // waiting for sorter to pick up result
+            return true;
+        case UNUSED:
+            // Should never happen
+            return false;
+    }
+    return false;
+}
+
+//! Brief Check what to do if anything as Sorter has asked to PREPARE
+//! Mainly used to clear result of previous run
+//! \returns bool if the PREPARE made sense with the current Compressor sate
 static inline bool process_prepare(compressor_states compressor_state) {
     switch(compressor_state) {
         case UNUSED:
@@ -223,43 +249,25 @@ static inline bool process_prepare(compressor_states compressor_state) {
     return false;
 }
 
-static inline bool process_run(compressor_states compressor_state) {
-
-    switch(compressor_state) {
-        case PREPARED:
-            log_info("run detected");
-            comms_sdram->compressor_state = COMPRESSING;
-            run_compression_process();
-            return true;
-        case COMPRESSING:
-            // Should not be back in this loop before result set
-            return false;
-        case FAILED_MALLOC:
-        case FORCED_BY_COMPRESSOR_CONTROL:
-        case SUCCESSFUL_COMPRESSION:
-        case FAILED_TO_COMPRESS:
-        case RAN_OUT_OF_TIME:
-            // waiting for sorter to pick up result
-            return true;
-        case UNUSED:
-            // Should never happen
-            return false;
-    }
-    return false;
-}
-
+//! Brief Check what to do if anything as Sorter has asked to FORCE_TO_STOP
+//!
+//! Mainly used to clear result of previous run
+//! The wait loop that calls this does not run during compressing
+//! timer_callback picks up the sorter change during compression
+//! Note may be replaced with just going stright to PREPARE
+//! \returns bool if the FORCE_TO_STOP made sense with the current Compressor sate
 static inline bool process_force(compressor_states compressor_state) {
    switch(compressor_state) {
         case COMPRESSING:
             // passed to compressor as *sorter_instruction
             // Do nothing until compressor notices changed
             return true;
-        case FAILED_MALLOC:
             // Keep force malloc as more important message
             return true;
         case FORCED_BY_COMPRESSOR_CONTROL:
             // Waiting for sorter to pick up
             return true;
+        case FAILED_MALLOC:
         case SUCCESSFUL_COMPRESSION:
         case FAILED_TO_COMPRESS:
         case RAN_OUT_OF_TIME:

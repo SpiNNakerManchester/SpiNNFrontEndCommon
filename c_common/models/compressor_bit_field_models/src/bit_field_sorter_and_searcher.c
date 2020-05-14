@@ -26,7 +26,6 @@
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"
 #include "sorter_includes/bit_field_table_generator.h"
-#include "sorter_includes/helpful_functions.h"
 #include "sorter_includes/bit_field_reader.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control
@@ -280,35 +279,19 @@ static inline filter_region_t* find_processor_bit_field_region(
     return NULL;
 }
 
-//! \brief checks if a key is in the set to be removed.
-//! \param[in] sorted_bf_key_proc: the key store
-//! \param[in] key: the key to locate a entry for
-//! \return true if found, false otherwise
-bool has_entry_in_sorted_keys(
-        proc_bit_field_keys_t sorted_bf_key_proc, uint32_t key) {
-    for (int element_index = 0;
-            element_index < sorted_bf_key_proc.key_list->length_of_list;
-            element_index++) {
-        log_debug(
-            "length %d index %d key %d",
-            sorted_bf_key_proc.key_list->length_of_list, element_index, key);
-        if (sorted_bf_key_proc.key_list->master_pop_keys[element_index] ==
-                key) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool cyab(void) {
+//! \brief set_n_merged_filters for every core with bitfields
+//! bitfield regions
+static inline void set_n_merged_filters(void) {
     uint32_t highest_key[MAX_PROCESSORS];
     int highest_order[MAX_PROCESSORS];
     log_info("best_success %d", best_success);
+
     // Initialize highest order to -1 ie None merged in
     for (int index = 0; index < MAX_PROCESSORS; index++) {
         highest_order[index] = -1;
     }
-    // FInd the first key above the best midpoint for each processor
+
+    // Find the first key above the best midpoint for each processor
     for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
             sorted_index++) {
         int test = sorted_bit_fields->sort_order[sorted_index];
@@ -321,10 +304,13 @@ bool cyab(void) {
             }
         }
     }
+
+    // debug
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         log_debug("processor %d, first_key %d first_order %d", processor_id,
             highest_key[processor_id], highest_order[processor_id]);
     }
+
     // Set n_redundancy_filters
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         int processor_id = region_addresses->triples[r_id].processor;
@@ -336,89 +322,10 @@ bool cyab(void) {
             index--;
         }
         filter->n_merged_filters = index + 1;
-        log_debug("processor_id %d n_merged_filters %d",
-            processor_id, filter->n_merged_filters);
+        log_info("core %d has %d bitfields of which %d have redundancy "
+            " of which %d merged in", processor_id, filter->n_filters,
+            filter->n_redundancy_filters, filter->n_merged_filters);
     }
-    return true;
-}
-
-//! \brief removes the merged bitfields from the application processors
-//! bitfield regions
-//! \return bool if was successful or not
-bool remove_merged_bitfields_from_processors(void) {
-    // only try if there are bitfields to remove
-    if (sorted_bit_fields->n_bit_fields == 0){
-        log_info("no bitfields to remove");
-        return true;
-    }
-
-    // which bitfields are to be removed from which processors
-    proc_bit_field_keys_t *sorted_bf_key_proc =
-        bit_field_reader_sort_by_processors(
-            region_addresses, best_success, sorted_bit_fields);
-    if (sorted_bf_key_proc == NULL) {
-        log_error("could not sort out bitfields to keys.");
-        return false;
-    }
-
-    // iterate though the processors sorted, and remove said bitfields from its
-    // region
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        int processor_id = sorted_bf_key_proc[r_id].processor_id;
-        log_debug("processor id %d", processor_id);
-
-        filter_region_t *filter_region = find_processor_bit_field_region(
-            processor_id);
-
-        // iterate though the bitfield region looking for bitfields with
-        // correct keys to remove
-        int n_bfs = filter_region->n_filters;
-        filter_region->n_filters =
-            n_bfs - sorted_bf_key_proc[r_id].key_list->length_of_list;
-        log_debug("processor %d n_bfs %d, n_redundancy_filters %d removed %d",
-            processor_id , n_bfs, filter_region->n_redundancy_filters,
-            sorted_bf_key_proc[r_id].key_list->length_of_list);
-        // only operate if there is a reduction to do
-        if (filter_region->n_filters != n_bfs) {
-            // pointers for shifting data up by excluding the ones been added to
-            // router.
-            filter_info_t *write_index = filter_region->filters;
-            filter_info_t *read_index = filter_region->filters;
-
-            // iterate though the bitfields only writing ones which are not
-            // removed
-            for (int bf_index = 0; bf_index < n_bfs; bf_index++) {
-                // if entry is to be removed
-                if (!has_entry_in_sorted_keys(
-                        sorted_bf_key_proc[r_id], read_index->key)) {
-                    // write the data in the current write positions, if it
-                    // isn't where we're currently reading from
-                    if (write_index != read_index) {
-                        // copy the key, n_atoms and bitfield pointer over to
-                        // the new location
-                        sark_mem_cpy(
-                            write_index, read_index, sizeof(filter_info_t));
-                    }
-                    // update pointers
-                    write_index += 1;
-                }
-                read_index += 1;
-            }
-        }
-    }
-
-    log_info("go freeing");
-    // free items
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        if (sorted_bf_key_proc[r_id].key_list->length_of_list != 0) {
-            FREE_MARKED(sorted_bf_key_proc[r_id].key_list->master_pop_keys, 1103);
-            FREE_MARKED(sorted_bf_key_proc[r_id].key_list, 1104);
-        }
-    }
-
-    FREE_MARKED(sorted_bf_key_proc, 1105);
-    // return we successfully removed merged bitfields
-    return true;
 }
 
 //! \brief locates the next valid midpoint to test
@@ -525,15 +432,10 @@ static inline void handle_best_cleanup(void){
     load_routing_table_into_router();
     log_debug("finished loading table");
 
-    // clear away bitfields that were merged into the router from
-    //their lists.
-    log_info("remove merged bitfields");
-    log_info("cyab started %d", time_steps);
-    cyab();
-    log_info("old started %d", time_steps);
-    remove_merged_bitfields_from_processors();
-    log_info("old done %d", time_steps);
+    log_info("setting set_n_merged_filters");
+    set_n_merged_filters();
 
+    // TODO why is this done?
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint processor_id = spin1_get_core_id();
     sark_virtual_processor_info[processor_id].user2 = best_success;
@@ -721,13 +623,14 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time_steps+=1;
-    //if ((time_steps & 1023) == 0){
+    // Debug stuff please keep
+    // if ((time_steps & 1023) == 0){
     //    log_info("time_steps: %u", time_steps);
-    //}
-    //if (time_steps > KILL_TIME){
+    // }
+    // if (time_steps > KILL_TIME){
     //   log_error("timer overran %u", time_steps);
     //   rt_error(RTE_SWERR);
-    //}
+    // }
 }
 
 //! brief handle the fact that a midpoint failed.
@@ -853,6 +756,46 @@ void process_compressor_response(
     free_sdram_from_compression_attempt(processor_id);
 }
 
+//! \brief clones the un compressed routing table, to another sdram location
+//! \param[in] uncompressed_router_table: sdram location for uncompressed table
+//! \return: address of new clone, or null if it failed to clone
+table_t* clone_un_compressed_routing_table(
+        uncompressed_table_region_data_t *uncompressed_router_table){
+
+    uint32_t sdram_used = routing_table_sdram_size_of_table(
+        uncompressed_router_table->uncompressed_table.size);
+    log_debug("sdram used is %d", sdram_used);
+
+    // allocate sdram for the clone
+    table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
+    if (where_was_cloned == NULL) {
+        log_error(
+            "failed to allocate sdram for the cloned routing table for "
+            "uncompressed compression attempt of bytes %d",
+            sdram_used);
+        return NULL;
+    }
+
+    bool check = malloc_extras_check(where_was_cloned);
+    if (!check){
+        log_info("failed");
+        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
+    }
+
+    // copy the table data over correctly
+    routing_table_copy_table(
+        &uncompressed_router_table->uncompressed_table, where_was_cloned);
+    log_debug("cloned routing table entries is %d", where_was_cloned->size);
+
+    check = malloc_extras_check(where_was_cloned);
+    if (!check){
+        log_info("failed");
+        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
+    }
+
+    return where_was_cloned;
+}
+
 //! \brief sets up the compression attempt for the no bitfield version.
 //! \return bool which says if setting off the compression attempt was
 //! successful or not.
@@ -868,7 +811,7 @@ bool setup_no_bitfields_attempt(void) {
 
     // allocate and clone uncompressed entry
     table_t *sdram_clone_of_routing_table =
-        helpful_functions_clone_un_compressed_routing_table(
+        clone_un_compressed_routing_table(
             uncompressed_router_table);
     if (sdram_clone_of_routing_table == NULL){
         log_error("could not allocate memory for uncompressed table for no "
