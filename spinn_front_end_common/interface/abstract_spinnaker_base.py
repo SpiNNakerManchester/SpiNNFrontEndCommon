@@ -1849,6 +1849,33 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
+    def _sort_out_provenance_writing(self, executor):
+        """ handled the gathering of prov items for writer.
+
+        :param executor: the pacman executor.
+        :return:
+        """
+        prov_items = list()
+        if self._version_provenance is not None:
+            prov_items.extend(self._version_provenance)
+        prov_items.extend(self._pacman_provenance.data_items)
+        prov_item = executor.get_item("GraphProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        prov_item = executor.get_item("PlacementsProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        prov_item = executor.get_item("RouterProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        prov_item = executor.get_item("PowerProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        self._pacman_provenance.clear()
+        self._version_provenance = list()
+        self._write_provenance(prov_items)
+        self._all_provenance_items.append(prov_items)
+
     def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
         # start timer
         self._run_timer = Timer()
@@ -1865,26 +1892,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # write provenance to file if necessary
             if (self._config.getboolean("Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
-                prov_items = list()
-                if self._version_provenance is not None:
-                    prov_items.extend(self._version_provenance)
-                prov_items.extend(self._pacman_provenance.data_items)
-                prov_item = executor.get_item("GraphProvenanceItems")
-                if prov_item is not None:
-                    prov_items.extend(prov_item)
-                prov_item = executor.get_item("PlacementsProvenanceItems")
-                if prov_item is not None:
-                    prov_items.extend(prov_item)
-                prov_item = executor.get_item("RouterProvenanceItems")
-                if prov_item is not None:
-                    prov_items.extend(prov_item)
-                prov_item = executor.get_item("PowerProvenanceItems")
-                if prov_item is not None:
-                    prov_items.extend(prov_item)
-                self._pacman_provenance.clear()
-                self._version_provenance = list()
-                self._write_provenance(prov_items)
-                self._all_provenance_items.append(prov_items)
+                self._sort_out_provenance_writing(executor)
 
             # move data around
             self._last_run_outputs = executor.get_items()
@@ -2614,23 +2622,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
                 # write provenance to file if necessary
                 if self._config.getboolean("Reports", "write_provenance_data"):
-                    prov_items = list()
-                    if self._version_provenance is not None:
-                        prov_items.extend(self._version_provenance)
-                    prov_items.extend(self._pacman_provenance.data_items)
-                    prov_item = executor.get_item("GraphProvenanceItems")
-                    if prov_item is not None:
-                        prov_items.extend(prov_item)
-                    prov_item = executor.get_item("PlacementsProvenanceItems")
-                    if prov_item is not None:
-                        prov_items.extend(prov_item)
-                    prov_item = executor.get_item("RouterProvenanceItems")
-                    if prov_item is not None:
-                        prov_items.extend(prov_item)
-                    self._pacman_provenance.clear()
-                    self._version_provenance = list()
-                    self._write_provenance(prov_items)
-                    self._all_provenance_items.append(prov_items)
+                    self._sort_out_provenance_writing(executor)
             except Exception as e:
                 exc_info = sys.exc_info()
 
