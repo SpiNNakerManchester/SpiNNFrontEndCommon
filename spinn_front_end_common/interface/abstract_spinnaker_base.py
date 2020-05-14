@@ -279,7 +279,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # The lowest values auto pause resume may use as steps
         "_minimum_auto_time_steps",
 
-        #
+        # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
         #
@@ -483,7 +483,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._database_interface = None
         self._create_database = None
 
-        # holder for timing related values
+        # holder for timing and running related values
+        self._run_until_complete = False
         self._has_ran = False
         self._state = Simulator_State.INIT
         self._state_condition = Condition()
@@ -495,7 +496,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._no_machine_time_steps = None
         self._minimum_auto_time_steps = self._config.getint(
                 "Buffers", "minimum_auto_time_steps")
-        self._run_until_complete = False
 
         self._app_id = self._read_config_int("Machine", "app_id")
 
@@ -1933,8 +1933,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # reraise exception
             reraise(*e_inf)
 
-    def _create_execute_workflow(
-            self, n_machine_time_steps, graph_changed):
+    def _create_execute_workflow(self, n_machine_time_steps, graph_changed):
         # calculate number of machine time steps
         run_until_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
