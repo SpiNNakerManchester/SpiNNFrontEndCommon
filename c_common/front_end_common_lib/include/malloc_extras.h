@@ -120,7 +120,7 @@ void * malloc_extras_malloc(uint bytes);
 
 //! \brief locates the biggest block of available memory from the heaps
 //! \return the biggest block size in the heaps.
-uint malloc_extras_max_available_block_size(void) ;
+uint malloc_extras_max_available_block_size(void);
 
 #define MALLOC malloc_extras_malloc
 #define FREE   malloc_extras_free
