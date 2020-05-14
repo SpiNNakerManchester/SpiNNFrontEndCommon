@@ -81,19 +81,7 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
-//! holds data for each compressor processor, used to free stuff properly when
-//! required
-typedef struct comp_processor_store_t{
-    // how many rt tables used here
-    int n_elements;
-    // how many bit fields were used to make those tables
-    int n_bit_fields;
-    // compressed table location
-    table_t *compressed_table;
-    // elements
-    table_t **elements;
-} comp_processor_store_t;
-
+//DEAD!
 //! \brief the compressor processor data elements in SDRAM
 typedef struct compressor_processors_top_t {
     uint32_t n_processors;
@@ -142,6 +130,7 @@ typedef struct uncompressed_table_region_data_t{
     table_t uncompressed_table;
 } uncompressed_table_region_data_t;
 
+//DEAD!
 //! \brief compressor processor data region
 typedef struct compressor_processors_region_data_t{
     // how many compressor processors
@@ -164,13 +153,6 @@ typedef struct sorted_bit_fields_t{
     int* sort_order;
 } sorted_bit_fields_t;
 
-//! \brief a single mapping in the addresses area
-typedef struct triples_t {
-    filter_region_t *filter;
-    key_atom_data_t *key_atom;
-    int processor;
-} triples_t;
-
 //! \brief sdram area to comminucate between sorter and compressor
 typedef struct comms_sdram_t {
     compressor_states compressor_state;
@@ -186,6 +168,13 @@ typedef struct comms_sdram_t {
     // initialise value for malloc_extras_
     heap_t *fake_heap_data;
 } comms_sdram_t;
+
+//! \brief a single mapping in the addresses area
+typedef struct triples_t {
+    filter_region_t *filter;
+    key_atom_data_t *key_atom;
+    int processor;
+} triples_t;
 
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {

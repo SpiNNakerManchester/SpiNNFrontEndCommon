@@ -301,26 +301,43 @@ bool has_entry_in_sorted_keys(
 }
 
 bool cyab(void) {
-    uint32_t first_keys[MAX_PROCESSORS];
-    int first_order[MAX_PROCESSORS];
-    // Initialize first order to be higher than max of n_bit_fields
+    uint32_t highest_key[MAX_PROCESSORS];
+    int highest_order[MAX_PROCESSORS];
     log_info("best_success %d", best_success);
+    // Initialize highest order to -1 ie None merged in
     for (int index = 0; index < MAX_PROCESSORS; index++) {
-        first_order[index] = sorted_bit_fields->n_bit_fields + 1;
+        highest_order[index] = -1;
     }
-    for (int index = 0; index < sorted_bit_fields->n_bit_fields; index++) {
-        int test = sorted_bit_fields->sort_order[index];
-        if (test > best_success) {
-            int processor_id = sorted_bit_fields->processor_ids[index];
-            if (test < first_order[processor_id]) {
-                first_order[processor_id] = test;
-                first_keys[processor_id] =
-                    sorted_bit_fields->bit_fields[index]->key;
+    // FInd the first key above the best midpoint for each processor
+    for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
+            sorted_index++) {
+        int test = sorted_bit_fields->sort_order[sorted_index];
+        if (test <= best_success) {
+            int processor_id = sorted_bit_fields->processor_ids[sorted_index];
+            if (test > highest_order[processor_id]) {
+                highest_order[processor_id] = test;
+                highest_key[processor_id] =
+                    sorted_bit_fields->bit_fields[sorted_index]->key;
             }
         }
     }
-    for (int index = 0; index < MAX_PROCESSORS; index++) {
-        log_info("index %d, first_key %d first_order %d", index, first_keys[index], first_order[index]);
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        log_debug("processor %d, first_key %d first_order %d", processor_id,
+            highest_key[processor_id], highest_order[processor_id]);
+    }
+    // Set n_redundancy_filters
+    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
+        int processor_id = region_addresses->triples[r_id].processor;
+        filter_region_t *filter = region_addresses->triples[r_id].filter;
+        int index = filter->n_redundancy_filters - 1;
+        // Find the index of highest one merged in
+        while ((index >= 0) &&
+                (filter->filters[index].key != highest_key[processor_id])) {
+            index--;
+        }
+        filter->n_merged_filters = index + 1;
+        log_debug("processor_id %d n_merged_filters %d",
+            processor_id, filter->n_merged_filters);
     }
     return true;
 }
@@ -358,8 +375,8 @@ bool remove_merged_bitfields_from_processors(void) {
         int n_bfs = filter_region->n_filters;
         filter_region->n_filters =
             n_bfs - sorted_bf_key_proc[r_id].key_list->length_of_list;
-        log_info("r_id %d n_bfs %d, n_redundancy_filters %d removed %d", r_id,
-            n_bfs, filter_region->n_redundancy_filters,
+        log_debug("processor %d n_bfs %d, n_redundancy_filters %d removed %d",
+            processor_id , n_bfs, filter_region->n_redundancy_filters,
             sorted_bf_key_proc[r_id].key_list->length_of_list);
         // only operate if there is a reduction to do
         if (filter_region->n_filters != n_bfs) {
@@ -511,8 +528,11 @@ static inline void handle_best_cleanup(void){
     // clear away bitfields that were merged into the router from
     //their lists.
     log_info("remove merged bitfields");
+    log_info("cyab started %d", time_steps);
     cyab();
+    log_info("old started %d", time_steps);
     remove_merged_bitfields_from_processors();
+    log_info("old done %d", time_steps);
 
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint processor_id = spin1_get_core_id();
