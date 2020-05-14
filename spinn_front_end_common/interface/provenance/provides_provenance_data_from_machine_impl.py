@@ -225,7 +225,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         data_items.append(ProvenanceDataItem(
             self._add_name(names, "max_number_of_times_timer_tic_over_ran"),
             max_number_of_times_timer_tic_over_ran,
-            report=max_number_of_times_timer_tic_over_ran > 4,
+            report=max_number_of_times_timer_tic_over_ran != 0,
             message=(
                 "The timer for {} on {}, {}, {} fell behind by up to {} "
                 "ticks. This is a sign of the system being overloaded and "
