@@ -754,7 +754,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Run a simulation until it completes
         """
         self._run_until_complete = True
-        self._run(None, run_until_complete=True)
+        self._run(None)
 
     @overrides(SimulatorInterface.run)
     def run(self, run_time):
@@ -837,7 +837,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         return n_machine_time_steps, total_run_time
 
-    def _run(self, run_time, run_until_complete=False):
+    def _run(self, run_time):
         """ The main internal run function
 
         :param run_time: the run duration in milliseconds.
@@ -976,15 +976,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                         len(steps), run_time)
             for i, step in enumerate(steps):
                 logger.info("Run {} of {}", i + 1, len(steps))
-                self._do_run(step, graph_changed, run_until_complete)
-        elif run_time is None and run_until_complete:
+                self._do_run(step, graph_changed)
+        elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
-            self._do_run(None, graph_changed, True)
+            self._do_run(None, graph_changed)
         elif (not self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume") or
                 not is_per_timestep_sdram):
             logger.info("Running forever")
-            self._do_run(None, graph_changed, run_until_complete)
+            self._do_run(None, graph_changed)
             logger.info("Waiting for stop request")
             with self._state_condition:
                 while self._state != Simulator_State.STOP_REQUESTED:
@@ -995,9 +995,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             i = 0
             while self._state != Simulator_State.STOP_REQUESTED:
                 logger.info("Run {}".format(i + 1))
-                self._do_run(
-                    self._max_run_time_steps, graph_changed,
-                    run_until_complete)
+                self._do_run(self._max_run_time_steps, graph_changed)
                 i += 1
 
         # Indicate that the signal handler needs to act
@@ -1854,14 +1852,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._mapping_time, self._dsg_time, self._load_time,
             self._execute_time, self._extraction_time)
 
-    def _do_run(self, n_machine_time_steps, graph_changed, run_until_complete):
+    def _do_run(self, n_machine_time_steps, graph_changed):
         # start timer
         self._run_timer = Timer()
         self._run_timer.start_timing()
 
         run_complete = False
         executor, self._current_run_timesteps = self._create_execute_workflow(
-            n_machine_time_steps, graph_changed, run_until_complete)
+            n_machine_time_steps, graph_changed)
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -1936,7 +1934,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*e_inf)
 
     def _create_execute_workflow(
-            self, n_machine_time_steps, graph_changed, run_until_complete):
+            self, n_machine_time_steps, graph_changed):
         # calculate number of machine time steps
         run_until_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
@@ -1960,7 +1958,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
-        if run_until_complete:
+        if self._run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
         inputs["ExtractIobufFromCores"] = self._config.get(
@@ -1979,7 +1977,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             algorithms.append("SdramUsageReportPerChip")
 
         # Clear iobuf from machine
-        if (not run_until_complete and
+        if (not self._run_until_complete and
             not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
@@ -2023,8 +2021,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if (not self._use_virtual_board and
-                (run_until_complete or n_machine_time_steps is not None)):
+        if ((self._run_until_complete or n_machine_time_steps is not None)
+                and not self._use_virtual_board):
             algorithms.append("BufferExtractor")
 
         write_prov = self._config.getboolean(
