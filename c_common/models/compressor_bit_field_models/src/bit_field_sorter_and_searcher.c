@@ -323,7 +323,7 @@ static inline void set_n_merged_filters(void) {
         }
         filter->n_merged_filters = index + 1;
         log_info("core %d has %d bitfields of which %d have redundancy "
-            " of which %d merged in", processor_id, filter->n_filters,
+            "of which %d merged in", processor_id, filter->n_filters,
             filter->n_redundancy_filters, filter->n_merged_filters);
     }
 }
