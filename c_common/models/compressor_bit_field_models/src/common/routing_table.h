@@ -48,44 +48,6 @@ int n_tables = 0;
 //! current filled n tables
 int current_n_tables = 0;
 
-//! \brief Get a mask of the Xs in a key_mask
-//! \param[in] km: the key mask to get as xs
-//! \return a merged mask
-static inline uint32_t key_mask_get_xs(key_mask_t km) {
-    return ~km.key & ~km.mask;
-}
-
-
-//! \brief Get a count of the Xs in a key_mask
-//! \param[in] km: the key mask struct to count
-//! \return the number of bits set in the mask
-static inline unsigned int key_mask_count_xs(key_mask_t km) {
-    return __builtin_popcount(key_mask_get_xs(km));
-}
-
-
-//! \brief Determine if two key_masks would match any of the same keys
-//! \param[in] a: key mask struct a
-//! \param[in] b: key mask struct b
-//! \return bool that says if these key masks intersect
-static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
-    return (a.key & b.mask) == (b.key & a.mask);
-}
-
-//! \brief Generate a new key-mask which is a combination of two other key_masks
-//! \brief c := a | b
-//! \param[in] a: the key mask struct a
-//! \param[in] b: the key mask struct b
-//! \return a key mask struct when merged
-static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b) {
-    key_mask_t c;
-    uint32_t new_xs = ~(a.key ^ b.key);
-    c.mask = a.mask & b.mask & new_xs;
-    c.key = (a.key | b.key) & c.mask;
-
-    return c;
-}
-
 //! \brief resets a routing table set
 void routing_table_reset(void) {
     log_debug("have reset!");
@@ -99,6 +61,7 @@ void routing_table_reset(void) {
     log_debug("finished reset");
 }
 
+// Unused debug
 //! \brief prints out table fully from list
 void routing_table_print_list_tables(void) {
     for (int table_index = 0; table_index < current_n_tables; table_index++) {
@@ -286,6 +249,7 @@ static void routing_tables_print_out_table_sizes(void){
     }
 }
 
+// debug code
 void routing_table_print_table_lo_atom(void){
     for (int rt_index = 0; rt_index < n_tables; rt_index++){
         log_debug(
