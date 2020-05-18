@@ -176,15 +176,9 @@ void run_compression_process(void){
 
     malloc_extras_check_all_marked(50002);
 
-    log_info("table init for %d tables", comms_sdram->n_elements);
-    bool success = routing_tables_init(
-        comms_sdram->n_elements, comms_sdram->elements);
-    log_debug("table init finish");
-    if (!success) {
-        log_error("failed to allocate memory for routing table.h state");
-        comms_sdram->compressor_state = FAILED_MALLOC;
-        return;
-    }
+    log_info("table init for %d entries", comms_sdram->n_entries);
+    routing_tables_init(
+        comms_sdram->uncompressed_tables, comms_sdram->n_entries);
 
     log_info("starting compression attempt");
     log_debug("my processor id at start comp is %d", spin1_get_core_id());

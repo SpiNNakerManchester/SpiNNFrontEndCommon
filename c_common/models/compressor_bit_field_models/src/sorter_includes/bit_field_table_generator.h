@@ -56,25 +56,11 @@ int count_unique_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
 //! \param[in] filters: List of the bitfields to me merged in
 //! \param[in] bit_field_processor: List of the processors for each bitfield
 //! \param[in] bf_found: Number of bitfields found.
-table_t* generate_table(
+void generate_table(
     entry_t original_entry, filter_info_t** filters,
     uint32_t* bit_field_processors, int bf_found) {
 
     uint32_t n_atoms = filters[0]->n_atoms;
-
-    // create sdram holder for the table we're going to generate
-    table_t* sdram_table = MALLOC_SDRAM(routing_table_sdram_size_of_table(
-        n_atoms));
-    log_debug("%x for sdram table", sdram_table);
-    if (sdram_table == NULL) {
-        log_error("can not allocate sdram for the sdram routing table");
-        return false;
-    }
-
-    // update the size of the router table, as we know there will be one entry
-    // per atom
-    sdram_table->size = n_atoms;
-    log_debug(" n atoms is %d, size %d", n_atoms, sdram_table->size);
 
     uint32_t stripped_route = original_entry.route;
     for (int i =0; i < bf_found; i++) {
@@ -107,118 +93,10 @@ table_t* generate_table(
             }
         }
 
-        // get the entry and fill in details.
-        entry_t *new_entry = &sdram_table->entries[atom];
-        new_entry->key_mask.key = original_entry.key_mask.key + atom;
-        new_entry->key_mask.mask = NEURON_LEVEL_MASK;
-        new_entry->source = original_entry.source;
-        new_entry->route = new_route;
-        log_debug(
-            "key is %x route in entry %d is %x",
-             sdram_table->entries[atom].key_mask.key, atom,
-             sdram_table->entries[atom].route);
+        routing_table_append_new_entry(
+            original_entry.key_mask.key + atom,
+            NEURON_LEVEL_MASK, new_route, original_entry.source);
     }
-
-    // do not remove sdram store, as that's critical to how this stuff works
-    return sdram_table;
-
-}
-
-//! Inserts an entry into a table
-//! \param[in] original_entry: The Routing Table entry in the original table
-//! \param[in] no_bitfield_table: pointer to the table with no bitfields
-void insert_entry(entry_t original_entry, table_t* no_bitfield_table) {
-    entry_t *new_entry =
-       &no_bitfield_table->entries[no_bitfield_table->size];
-    new_entry->key_mask.key = original_entry.key_mask.key;
-    new_entry->key_mask.mask = original_entry.key_mask.mask;
-    new_entry->source = original_entry.source;
-    new_entry->route = original_entry.route;
-    no_bitfield_table->size ++;
-}
-
-//! takes a midpoint and reads the sorted bitfields up to that point generating
-//! bitfield routing tables and loading them into sdram for transfer to a
-//! compressor processor
-//! \param[in] mid_point: where in the sorted bitfields to go to
-//! \param[out] n_rt_addresses: how many addresses are needed for the
-//! tables
-//! \param[in] uncompressed_router_table: the uncompressed router table
-//! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
-//! \return bool saying if it successfully built them into sdram
-static inline table_t** bit_field_table_generator_create_bit_field_router_tables(
-        int mid_point, int *n_rt_addresses,
-        uncompressed_table_region_data_t *uncompressed_router_table,
-        sorted_bit_fields_t *sorted_bit_fields) {
-
-    malloc_extras_check_all_marked(7001);
-
-    // semantic sugar to avoid referencing
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
-    int* processor_ids = sorted_bit_fields->processor_ids;
-    int* sort_order =  sorted_bit_fields->sort_order;
-    entry_t* original = uncompressed_router_table->uncompressed_table.entries;
-    uint32_t original_size =  uncompressed_router_table->uncompressed_table.size;
-    int n_bit_fields = sorted_bit_fields->n_bit_fields;
-
-    // count how many unique keys there are in the bit-fields to a given
-    // midpoint, as these will be the number of bit-field tables.
-    *n_rt_addresses = count_unique_keys(sorted_bit_fields, mid_point);
-    log_info("n_rt_addresses %u", *n_rt_addresses);
-
-    // add the uncompressed table, for allowing the bitfield table generator to
-    // edit accordingly.
-    *n_rt_addresses += 1;
-
-    table_t* no_bitfield_table = MALLOC_SDRAM(
-        routing_table_sdram_size_of_table(original_size));
-    if (no_bitfield_table == NULL) {
-        log_error(
-            "failed to create no_bitfield_table for attempt %d", mid_point);
-        return NULL;
-    }
-    no_bitfield_table->size = 0;
-
-    log_debug(
-        "looking for %d bytes from %d tables",
-        *n_rt_addresses * sizeof(table_t*), *n_rt_addresses);
-    table_t** bit_field_routing_tables =
-        MALLOC_SDRAM(*n_rt_addresses * sizeof(table_t*));
-    if (bit_field_routing_tables == NULL) {
-        log_error("failed to allocate memory for bitfield routing tables");
-        FREE(no_bitfield_table);
-        return NULL;
-    }
-
-    bit_field_routing_tables[*n_rt_addresses - 1] = no_bitfield_table;
-    malloc_extras_check_all_marked(7002);
-
-    filter_info_t* filters[MAX_PROCESSORS];
-    uint32_t bit_field_processors[MAX_PROCESSORS];
-    int bf_i = 0;
-    int key_index =0;
-    for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
-        uint32_t key = original[rt_i].key_mask.key;
-        int bf_found = 0;
-        while ((bf_i < n_bit_fields) && (bit_fields[bf_i]->key == key)) {
-            if (sort_order[bf_i] < mid_point) {
-                filters[bf_found] = bit_fields[bf_i];
-                bit_field_processors[bf_found] = processor_ids[bf_i];
-                bf_found++;
-            }
-            bf_i++;
-        }
-        if (bf_found > 0){
-            table_t *table = generate_table(
-                original[rt_i], filters, bit_field_processors, bf_found);
-            bit_field_routing_tables[key_index] = table;
-            key_index++;
-        } else {
-            insert_entry(original[rt_i], no_bitfield_table);
-        }
-    }
-    malloc_extras_check_all_marked(7004);
-    return bit_field_routing_tables;
 }
 
 //! Takes a midpoint and reads the sorted bitfields
@@ -228,7 +106,7 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
 //! \param[in] uncompressed_router_table: the uncompressed router table
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return size of table(s) to be generated in entries
-static inline int bit_field_table_generator_max_size(int mid_point,
+static inline uint32_t bit_field_table_generator_max_size(int mid_point,
         uncompressed_table_region_data_t *uncompressed_router_table,
         sorted_bit_fields_t *sorted_bit_fields) {
 
@@ -254,6 +132,60 @@ static inline int bit_field_table_generator_max_size(int mid_point,
     log_info("Using mid_point %d, counted size of table is %d",
         mid_point, max_size);
     return max_size;
+}
+
+//! takes a midpoint and reads the sorted bitfields up to that point generating
+//! bitfield routing tables and loading them into sdram for transfer to a
+//! compressor processor
+//! \param[in] mid_point: where in the sorted bitfields to go to
+//! \param[in] uncompressed_router_table: the uncompressed router table
+//! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
+//! \return bool saying if it successfully built them into sdram
+static inline bool bit_field_table_generator_create_bit_field_router_tables(
+        int mid_point,
+        uncompressed_table_region_data_t *uncompressed_router_table,
+        sorted_bit_fields_t *sorted_bit_fields) {
+
+    // semantic sugar to avoid referencing
+    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
+    int* processor_ids = sorted_bit_fields->processor_ids;
+    int* sort_order =  sorted_bit_fields->sort_order;
+    entry_t* original = uncompressed_router_table->uncompressed_table.entries;
+    uint32_t original_size =  uncompressed_router_table->uncompressed_table.size;
+    int n_bit_fields = sorted_bit_fields->n_bit_fields;
+
+    malloc_extras_check_all_marked(7001);
+
+    uint32_t max_size = bit_field_table_generator_max_size(mid_point,
+        uncompressed_router_table, sorted_bit_fields);
+    if (!routing_table_malloc(max_size)) {
+        return false;
+    }
+    malloc_extras_check_all_marked(7002);
+
+    filter_info_t* filters[MAX_PROCESSORS];
+    uint32_t bit_field_processors[MAX_PROCESSORS];
+    int bf_i = 0;
+    for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
+        uint32_t key = original[rt_i].key_mask.key;
+        int bf_found = 0;
+        while ((bf_i < n_bit_fields) && (bit_fields[bf_i]->key == key)) {
+            if (sort_order[bf_i] < mid_point) {
+                filters[bf_found] = bit_fields[bf_i];
+                bit_field_processors[bf_found] = processor_ids[bf_i];
+                bf_found++;
+            }
+            bf_i++;
+        }
+        if (bf_found > 0){
+            generate_table(
+                original[rt_i], filters, bit_field_processors, bf_found);
+        } else {
+            routing_table_append_entry(original[rt_i]);
+        }
+    }
+    malloc_extras_check_all_marked(7004);
+    return true;
 }
 
 //! \brief debugging print for a pointer to a table.

@@ -127,14 +127,14 @@ typedef struct sorted_bit_fields_t{
 typedef struct comms_sdram_t {
     compressor_states compressor_state;
     instructions_to_compressor sorter_instruction;
-    // how many rt tables used here
-    int n_elements;
     // how many bit fields were used to make those tables
     int n_bit_fields;
     // compressed table location
     table_t *compressed_table;
-    // elements
-    table_t **elements;
+    // Pointer to the uncompressed tables
+    entry_t** uncompressed_tables;
+    // Number of entries in the uncompressed tables
+    uint32_t n_entries;
     // initialise value for malloc_extras_
     heap_t *fake_heap_data;
 } comms_sdram_t;
