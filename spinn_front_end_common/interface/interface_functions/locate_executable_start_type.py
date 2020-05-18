@@ -26,44 +26,32 @@ class LocateExecutableStartType(object):
 
     :param ~pacman.model.graphs.machine.MachineGraph graph:
     :param ~pacman.model.placements.Placements placements:
-    :param ~spinn_utilities.executable_finder.ExecutableFinder \
-            executable_finder:
-    :rtype: tuple(
-        dict(ExecutableType,~spinn_machine.CoreSubsets)
-        or list(ExecutableType), dict(str,ExecutableType))
+    :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets)
+        or list(ExecutableType)
     """
 
-    def __call__(self, graph, placements, executable_finder):
+    def __call__(self, graph, placements):
         """
         :param ~.MachineGraph graph:
         :param ~.Placements placements:
-        :param ~.ExecutableFinder executable_finder:
-        :rtype: tuple(
-            dict(ExecutableType, ~.CoreSubsets)
-            or list(ExecutableType), dict(str, ExecutableType))
+        :rtype: dict(ExecutableType, ~.CoreSubsets) or list(ExecutableType)
         """
         if not graph.vertices:
             return [ExecutableType.NO_APPLICATION], {}
 
         binary_start_types = dict()
-        binary_to_start_type = dict()
+
         progress = ProgressBar(
             graph.n_vertices, "Finding executable start types")
         for vertex in progress.over(graph.vertices):
             # try to locate binary type, but possible it doesn't have one
             bin_type = None
-            bin_name = None
             if isinstance(vertex, AbstractHasAssociatedBinary):
                 bin_type = vertex.get_binary_start_type()
-                bin_name = vertex.get_binary_file_name()
             elif isinstance(vertex.app_vertex, AbstractHasAssociatedBinary):
                 bin_type = vertex.app_vertex.get_binary_start_type()
-                bin_name = vertex.app_vertex.get_binary_file_name()
-            else:
-                continue
-            # check for vertices with no associated binary, if so, ignore
-            if bin_type is None or bin_name is None:
-                # TODO: Warn that the vertex is insane
+            if bin_type is None:
+                # no associated binary in reality, ignore
                 continue
 
             # update core subset with location of the vertex on the machine
@@ -79,16 +67,12 @@ class LocateExecutableStartType(object):
                         machine_vertex, placements,
                         binary_start_types[bin_type])
 
-            # add to the binary to start type map
-            binary_path = executable_finder.get_executable_path(bin_name)
-            if binary_path:
-                binary_to_start_type[binary_path] = bin_type
-
-        # only got apps with no binary, such as external devices. return no app
+        # only got apps with no binary, such as external devices.
+        # return no app
         if not binary_start_types:
             return [ExecutableType.NO_APPLICATION], {}
 
-        return binary_start_types, binary_to_start_type
+        return binary_start_types
 
     @staticmethod
     def _add_vertex_to_subset(machine_vertex, placements, core_subsets):
@@ -98,5 +82,5 @@ class LocateExecutableStartType(object):
         :param ~.CoreSubsets core_subsets:
         """
         placement = placements.get_placement_of_vertex(machine_vertex)
-        core_subsets.add_processor(x=placement.x, y=placement.y,
-                                   processor_id=placement.p)
+        core_subsets.add_processor(
+            x=placement.x, y=placement.y, processor_id=placement.p)

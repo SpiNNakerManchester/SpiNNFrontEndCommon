@@ -49,9 +49,8 @@ class ChipIOBufExtractor(object):
     :rtype: tuple(list(str),list(str))
     """
 
-    __slots__ = ["_filename_template", "_recovery_mode", "__executable_types",
-                 "__app_provenance_file_path", "__system_provenance_file_path",
-                 "__transceiver"]
+    __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
+                 "__app_path", "__sys_path", "__transceiver"]
 
     def __init__(self, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
@@ -65,7 +64,7 @@ class ChipIOBufExtractor(object):
     def __call__(
             self, transceiver, executable_targets, executable_finder,
             app_provenance_file_path, system_provenance_file_path,
-            binary_executable_types, from_cores="ALL", binary_types=None):
+            from_cores="ALL", binary_types=None):
         """
         :param ~.Transceiver transceiver:
         :param ExecutableTargets executable_targets:
@@ -78,10 +77,17 @@ class ChipIOBufExtractor(object):
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))
         """
-        self.__executable_types = binary_executable_types
-        self.__app_provenance_file_path = app_provenance_file_path
-        self.__system_provenance_file_path = system_provenance_file_path
+        self.__app_path = app_provenance_file_path
+        self.__sys_path = system_provenance_file_path
         self.__transceiver = transceiver
+
+        self.__system_binaries = set()
+        try:
+            self.__system_binaries.update(
+                executable_targets.get_binaries_of_executable_type(
+                    ExecutableType.SYSTEM))
+        except KeyError:
+            pass
 
         if from_cores == "ALL":
             return self.__extract_all_cores(executable_targets)
@@ -114,10 +120,8 @@ class ChipIOBufExtractor(object):
         :return: provenance directory path
         :rtype: str
         """
-        if self.__executable_types[binary] == ExecutableType.SYSTEM:
-            return self.__system_provenance_file_path
-        else:
-            return self.__app_provenance_file_path
+        return (self.__sys_path if binary in self.__system_binaries
+                else self.__app_path)
 
     def __extract_all_cores(self, executable_targets):
         """
