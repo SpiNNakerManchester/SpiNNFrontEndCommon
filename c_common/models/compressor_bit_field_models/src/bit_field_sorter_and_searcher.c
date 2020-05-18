@@ -235,11 +235,14 @@ static inline bool create_tables_and_set_off_bit_compressor(
         int mid_point, int processor_id) {
     int n_rt_addresses = 0;
     log_debug("started create bit field router tables");
+
     table_t **bit_field_routing_tables =
         bit_field_table_generator_create_bit_field_router_tables(
             mid_point, &n_rt_addresses,
             uncompressed_router_table,
             sorted_bit_fields);
+    bit_field_table_generator_max_size(mid_point, uncompressed_router_table,
+        sorted_bit_fields);
     if (bit_field_routing_tables == NULL){
         log_info(
             "failed to create bitfield tables for midpoint %d", mid_point);

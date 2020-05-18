@@ -221,6 +221,41 @@ static inline table_t** bit_field_table_generator_create_bit_field_router_tables
     return bit_field_routing_tables;
 }
 
+//! Takes a midpoint and reads the sorted bitfields
+//! computing the max size of the routing table.
+//!
+//! \param[in] mid_point: where in the sorted bitfields to go to
+//! \param[in] uncompressed_router_table: the uncompressed router table
+//! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
+//! \return size of table(s) to be generated in entries
+static inline int bit_field_table_generator_max_size(int mid_point,
+        uncompressed_table_region_data_t *uncompressed_router_table,
+        sorted_bit_fields_t *sorted_bit_fields) {
+
+    // semantic sugar to avoid referencing
+    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
+    int* sort_order =  sorted_bit_fields->sort_order;
+
+    // Start with the size of the uncompressed table
+    uint32_t max_size =  uncompressed_router_table->uncompressed_table.size;
+
+    // Check every bitfield to see if is to be used
+    // Only need each key once to track last used as tables is sorted by key
+    uint32_t used_key = -1;
+    for (int bf_i = sorted_bit_fields->n_bit_fields -1;  bf_i >= 0; bf_i--) {
+        if (sort_order[bf_i] < mid_point) {
+            if (used_key != bit_fields[bf_i]->key ) {
+                used_key = bit_fields[bf_i]->key;
+                // One entry per atom but we can remove the uncompressed one
+                max_size += bit_fields[bf_i]->n_atoms -1;
+            }
+        }
+    }
+    log_info("Using mid_point %d, counted size of table is %d",
+        mid_point, max_size);
+    return max_size;
+}
+
 //! \brief debugging print for a pointer to a table.
 //! \param[in] table: the table pointer to print
 void print_table(table_t* table) {
