@@ -32,17 +32,17 @@ static bool remove_default_routes_minimise(
 
     // Mark the entries to be removed from the table
     bit_set_t remove;
-    bool success = bit_set_init(&remove, routing_table_sdram_get_n_entries());
+    bool success = bit_set_init(&remove, routing_table_get_n_entries());
     if (!success) {
         log_debug("failed to initialise the bit_set. shutting down");
         return false;
     }
 
     // Work up the table from the bottom, marking entries to remove
-    for (int i = routing_table_sdram_get_n_entries() - 1; i < 0; i--) {
+    for (int i = routing_table_get_n_entries() - 1; i < 0; i--) {
 
         // Get the current entry
-        entry_t *entry = routing_table_sdram_stores_get_entry(i);
+        entry_t *entry = routing_table_get_entry(i);
 
         // See if it can be removed
         // only removed if Only one output direction which is a link. or
@@ -56,7 +56,7 @@ static bool remove_default_routes_minimise(
             // The entry can be removed iff. it doesn't intersect with any entry
             // further down the table.
             bool remove_entry = true;
-            for (int j = i + 1; j < routing_table_sdram_get_n_entries();  j++) {
+            for (int j = i + 1; j < routing_table_get_n_entries();  j++) {
                 // If entry we're comparing with is already going to be
                 // removed, ignore it.
                 if (bit_set_contains(&remove, j)) {
@@ -66,7 +66,8 @@ static bool remove_default_routes_minimise(
                 key_mask_t a = entry->key_mask;
 
                 // get next entry key mask
-                entry_t *j_entry = routing_table_sdram_stores_get_entry(j);
+
+                entry_t *j_entry = routing_table_get_entry(j);
                 key_mask_t b = j_entry->key_mask;
 
                 if (key_mask_intersect(a, b)) {
@@ -85,15 +86,16 @@ static bool remove_default_routes_minimise(
     // Remove the selected entries from the table
     if (remove_elements){
         for (int insert = 0, read = 0;
-                read < routing_table_sdram_get_n_entries(); read++) {
+                read < routing_table_get_n_entries(); read++) {
             // Grab the current entry before we potentially overwrite it
 
-            entry_t *current = routing_table_sdram_stores_get_entry(read);
+
+            entry_t *current = routing_table_get_entry(read);
 
             // Insert the entry if it isn't being removed
             if (!bit_set_contains(&remove, read)) {
                 entry_t* insert_entry =
-                    routing_table_sdram_stores_get_entry(insert++);
+                    routing_table_get_entry(insert++);
                 insert_entry->key_mask.key = current->key_mask.key;
                 insert_entry->key_mask.mask = current->key_mask.mask;
                 insert_entry->route = current->route;

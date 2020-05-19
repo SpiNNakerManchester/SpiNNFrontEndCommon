@@ -132,7 +132,7 @@ typedef struct comms_sdram_t {
     // compressed table location
     table_t *compressed_table;
     // Pointer to the uncompressed tables
-    entry_t** uncompressed_tables;
+    table_t** uncompressed_tables;
     // Number of entries in the uncompressed tables
     uint32_t n_entries;
     // initialise value for malloc_extras_

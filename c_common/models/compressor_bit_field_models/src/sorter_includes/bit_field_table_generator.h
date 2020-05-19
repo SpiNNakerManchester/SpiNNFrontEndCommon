@@ -97,6 +97,7 @@ void generate_table(
             original_entry.key_mask.key + atom,
             NEURON_LEVEL_MASK, new_route, original_entry.source);
     }
+    log_debug("key %d atoms %d size %d",original_entry.key_mask.key, n_atoms, routing_table_get_n_entries());
 }
 
 //! Takes a midpoint and reads the sorted bitfields
@@ -116,7 +117,7 @@ static inline uint32_t bit_field_table_generator_max_size(int mid_point,
 
     // Start with the size of the uncompressed table
     uint32_t max_size =  uncompressed_router_table->uncompressed_table.size;
-
+    log_debug("keys %d",  max_size);
     // Check every bitfield to see if is to be used
     // Only need each key once to track last used as tables is sorted by key
     uint32_t used_key = -1;
@@ -126,6 +127,7 @@ static inline uint32_t bit_field_table_generator_max_size(int mid_point,
                 used_key = bit_fields[bf_i]->key;
                 // One entry per atom but we can remove the uncompressed one
                 max_size += bit_fields[bf_i]->n_atoms -1;
+                log_debug("key %d size %d", used_key, bit_fields[bf_i]->n_atoms);
             }
         }
     }
@@ -166,6 +168,7 @@ static inline bool bit_field_table_generator_create_bit_field_router_tables(
     filter_info_t* filters[MAX_PROCESSORS];
     uint32_t bit_field_processors[MAX_PROCESSORS];
     int bf_i = 0;
+    log_debug("pre size %d", routing_table_get_n_entries());
     for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
         uint32_t key = original[rt_i].key_mask.key;
         int bf_found = 0;
@@ -182,6 +185,7 @@ static inline bool bit_field_table_generator_create_bit_field_router_tables(
                 original[rt_i], filters, bit_field_processors, bf_found);
         } else {
             routing_table_append_entry(original[rt_i]);
+            log_debug("key %d size %d", original[rt_i].key_mask.key, routing_table_get_n_entries);
         }
     }
     malloc_extras_check_all_marked(7004);

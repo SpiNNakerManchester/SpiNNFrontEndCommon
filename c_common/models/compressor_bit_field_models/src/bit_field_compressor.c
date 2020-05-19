@@ -66,32 +66,6 @@ comms_sdram_t *comms_sdram;
 
 // ---------------------------------------------------------------------
 
-//! \brief stores the compressed routing tables into the compressed sdram
-//! location
-//! \returns bool if was successful or now
-bool store_into_compressed_address(void) {
-    if (routing_table_sdram_get_n_entries() > TARGET_LENGTH) {
-        log_debug("not enough space in routing table");
-        return false;
-    }
-
-    log_debug(
-        "starting store of %d tables with %d entries",
-        n_tables, routing_table_sdram_get_n_entries());
-
-    malloc_extras_check_all_marked(50003);
-
-    bool success = routing_table_sdram_store(comms_sdram->compressed_table);
-    malloc_extras_check_all_marked(50004);
-
-    log_debug("finished store");
-    if (!success) {
-        log_error("failed to store entries into sdram.");
-        return false;
-    }
-    return true;
-}
-
 //! \brief handles the compression process
 //! \param[in] unused0: param 1 forced on us from api
 //! \param[in] unused1: param 2 forced on us from api
@@ -116,30 +90,18 @@ void start_compression_process() {
         &stop_compressing, compress_only_when_needed,
         compress_as_much_as_possible);
 
-    // print out result for debugging purposes
-    if (success) {
-        log_info("Passed oc minimise with success %d", success);
-    } else {
-        log_info("Failed oc minimise with success %d", success);
-    }
     malloc_extras_check_all_marked(50005);
 
     // turn off timer and set us into pause state
     spin1_pause();
 
-    // check state
-    log_debug("success was %d", success);
     if (success) {
-        log_debug("store into compressed");
-        success = store_into_compressed_address();
-        if (success) {
-            log_debug("success response");
-            comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
-        } else {
-            log_debug("failed by space response");
-            comms_sdram->compressor_state = FAILED_TO_COMPRESS;
-        }
+        log_info("Passed oc minimise with success %d", success);
+        routing_table_convert_to_table_t(comms_sdram->compressed_table);
     } else {  // if not a success, could be one of 4 states
+        log_info("Failed oc minimise with success %d", success);
+        comms_sdram->compressed_table = NULL;
+        routing_table_free();
         if (failed_by_malloc) {  // malloc failed somewhere
             log_debug("failed malloc response");
             comms_sdram->compressor_state = FAILED_MALLOC;
@@ -169,7 +131,6 @@ void run_compression_process(void){
     stop_compressing = false;
     counter = 0;
     aliases_clear(&aliases);
-    routing_table_reset();
 
     // create aliases
     aliases = aliases_init();

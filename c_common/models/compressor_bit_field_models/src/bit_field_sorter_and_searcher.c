@@ -89,7 +89,7 @@ int lowest_failure;
 int last_search_point = 0;
 
 //! \brief the store for the last routing table that was compressed
-table_t* last_compressed_table;
+table_t* last_compressed_table = NULL;
 
 //! \brief the compressor app id
 uint32_t app_id = 0;
@@ -422,14 +422,7 @@ static inline void handle_best_cleanup(void){
 bool prepare_processor_first_time(int processor_id ) {
     comms_sdram[processor_id].sorter_instruction = PREPARE;
 
-    comms_sdram[processor_id].compressed_table = MALLOC_SDRAM(
-            routing_table_sdram_size_of_table(TARGET_LENGTH));
-    if (comms_sdram[processor_id].compressed_table == NULL) {
-        log_error("Failed to malloc comp_instruction_t for processor %d",
-            processor_id);
-        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-        return false;
-    }
+    comms_sdram[processor_id].compressed_table = NULL;
     comms_sdram[processor_id].fake_heap_data = malloc_extras_get_stolen_heap();
     log_debug("fake_heap_data %u", comms_sdram[processor_id].fake_heap_data);
     int count = 0;
@@ -627,12 +620,11 @@ void process_success(int processor_id) {
     if (best_success <= mid_point) {
         best_success = mid_point;
         malloc_extras_check_all_marked(1003);
-        log_debug(
-            "copying to %x from %x for compressed table",
-            last_compressed_table, comms_sdram[processor_id].compressed_table);
-        sark_mem_cpy(
-            last_compressed_table, comms_sdram[processor_id].compressed_table,
-            routing_table_sdram_size_of_table(TARGET_LENGTH));
+        // If we have a previous table free it as no longer needed
+        if (last_compressed_table != NULL) {
+            FREE_MARKED(last_compressed_table, 1100);
+        }
+        last_compressed_table = comms_sdram[processor_id].compressed_table;
         log_debug("n entries is %d", last_compressed_table->size);
         malloc_extras_check_all_marked(1004);
     }
@@ -931,14 +923,6 @@ static bool initialise(void) {
     bool success_compressor_processors = initialise_compressor_processors();
     if (!success_compressor_processors) {
         log_error("failed to init the compressor processors.");
-        return false;
-    }
-
-    // set up the best compressed table
-    last_compressed_table =
-        MALLOC(routing_table_sdram_size_of_table(TARGET_LENGTH));
-    if (last_compressed_table == NULL) {
-        log_error("failed to allocate best space");
         return false;
     }
 

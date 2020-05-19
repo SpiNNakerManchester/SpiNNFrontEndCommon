@@ -96,7 +96,7 @@ static inline void merge_delete(merge_t *m) {
 static inline void merge_add(merge_t *m, unsigned int i) {
     // Add the entry to the bit set contained in the merge
     if (bit_set_add(&m->entries, i)) {
-        entry_t *entry = routing_table_sdram_stores_get_entry(i);
+        entry_t *entry = routing_table_get_entry(i);
 
         // Get the key_mask
         if (m->key_mask.key == FULL && m->key_mask.mask == EMPTY) {
@@ -134,8 +134,8 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
         m->source = INIT_SOURCE;
         m->key_mask.key  = FULL;
         m->key_mask.mask = EMPTY;
-        for (int j = 0; j < routing_table_sdram_get_n_entries(); j++) {
-            entry_t *e = routing_table_sdram_stores_get_entry(j);
+        for (int j = 0; j < routing_table_get_n_entries(); j++) {
+            entry_t *e = routing_table_get_entry(j);
 
             if (bit_set_contains(&m->entries, j)) {
                 m->route |= e->route;
@@ -148,32 +148,6 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
                     // Merge the key_mask
                     m->key_mask = key_mask_merge(m->key_mask, e->key_mask);
                 }
-            }
-        }
-    }
-}
-
-//! \brief prints out a merge by bit level
-//! \param[in] merge: the merge to print
-void merge_print_merge_bit(merge_t *merge){
-    log_info(
-        "merge key is %x or %d, mask %x, route %x, source %x",
-         merge->key_mask.key, merge->key_mask.key, merge->key_mask.mask,
-         merge->route, merge->source);
-    //print_bit_set(merge->entries);
-    log_info("bit set n_elements is %d", merge->entries.n_elements);
-    for (int table_index = 0; table_index < current_n_tables; table_index++){
-        table_t *table = routing_tables[table_index];
-        for (uint32_t entry_index = 0; entry_index < table->size;
-                entry_index ++){
-            entry_t entry = table->entries[entry_index];
-            if (merge_contains(
-                    merge, table_lo_entry[table_index] + entry_index)){
-                log_info(
-                    "entry %d has key %x or %d mask %x route %x source %x",
-                    table_lo_entry[table_index] + entry_index,
-                    entry.key_mask.key, entry.key_mask.key,
-                    entry.key_mask.mask, entry.route, entry.source);
             }
         }
     }
