@@ -718,46 +718,6 @@ void process_compressor_response(
     }
 }
 
-//! \brief clones the un compressed routing table, to another sdram location
-//! \param[in] uncompressed_router_table: sdram location for uncompressed table
-//! \return: address of new clone, or null if it failed to clone
-table_t* clone_un_compressed_routing_table(
-        uncompressed_table_region_data_t *uncompressed_router_table){
-
-    uint32_t sdram_used = routing_table_sdram_size_of_table(
-        uncompressed_router_table->uncompressed_table.size);
-    log_debug("sdram used is %d", sdram_used);
-
-    // allocate sdram for the clone
-    table_t* where_was_cloned = MALLOC_SDRAM(sdram_used);
-    if (where_was_cloned == NULL) {
-        log_error(
-            "failed to allocate sdram for the cloned routing table for "
-            "uncompressed compression attempt of bytes %d",
-            sdram_used);
-        return NULL;
-    }
-
-    bool check = malloc_extras_check(where_was_cloned);
-    if (!check){
-        log_info("failed");
-        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
-    }
-
-    // copy the table data over correctly
-    routing_table_copy_table(
-        &uncompressed_router_table->uncompressed_table, where_was_cloned);
-    log_debug("cloned routing table entries is %d", where_was_cloned->size);
-
-    check = malloc_extras_check(where_was_cloned);
-    if (!check){
-        log_info("failed");
-        malloc_extras_terminate(DETECTED_MALLOC_FAILURE);
-    }
-
-    return where_was_cloned;
-}
-
 //! \brief sets up the compression attempt for the no bitfield version.
 //! \return bool which says if setting off the compression attempt was
 //! successful or not.
@@ -771,10 +731,8 @@ bool setup_no_bitfields_attempt(void) {
     log_info(
         "sets off the no bitfield version of the search on %u", processor_id);
 
-    routing_table_clone_table
-
     // allocate and clone uncompressed entry
-    bool success = clone_un_compressed_routing_table(
+    bool success = routing_table_clone_table(
         uncompressed_router_table->uncompressed_table);
     if (!success){
         log_error("could not allocate memory for uncompressed table for no "
@@ -897,10 +855,10 @@ static void initialise_user_register_tracker(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         comms_sdram[processor_id].compressor_state = UNUSED;
         comms_sdram[processor_id].sorter_instruction = NOT_COMPRESSOR;
-        comms_sdram[processor_id].n_elements = -1;
         comms_sdram[processor_id].n_bit_fields = -1;
         comms_sdram[processor_id].compressed_table = NULL;
-        comms_sdram[processor_id].elements = NULL;
+        comms_sdram[processor_id].uncompressed_tables = NULL;
+        comms_sdram[processor_id].n_entries = NULL;
         comms_sdram[processor_id].fake_heap_data = NULL;
     }
     usable_sdram_regions = (available_sdram_blocks *) this_vcpu_info->user3;
