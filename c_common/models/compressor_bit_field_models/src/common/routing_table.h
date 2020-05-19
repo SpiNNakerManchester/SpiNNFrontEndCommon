@@ -20,13 +20,7 @@
 
 #include <debug.h>
 #include <malloc_extras.h>
-#include "compressor_sorter_structs.h"
-
-#define TABLE_SIZE 1024 // number of entries in each sub table
-// Shift to go from entry _id to table id.  2^TABLE_SHIFT needs to be TABLE_SIZE
-#define TABLE_SHIFT 10
-// bitwise add to get sub table id.  NEEDS to be TABLE_SIZE - 1;
-#define LOCAL_ID_ADD 1023
+#include "routing_table_utils.h"
 
 //=============================================================================
 //state for reduction in parameters being passed around
@@ -40,57 +34,6 @@ uint32_t n_sub_tables = 0;
 
 //! the number of entries appended to the table
 int n_entries = 0;
-
-//! brief  Frees the memory held by the routing tables
-//! \param[in] keep_first: If true will not free the first table
-void routing_table_free() {
-    if (n_sub_tables == 0) {
-        // never malloced or already freed
-        return;
-    }
-    for (uint32_t i = 0; i > n_sub_tables; i++) {
-        FREE_MARKED(sub_tables[i], 70100);
-    }
-    //FREE_MARKED(sub_tables, 70101);
-    n_sub_tables = 0;
-    n_entries = 0;
-}
-
-//! brief Prepares the Routing tabke to handle at least n_entries
-//!
-//! Will do all the the mallocs needed to hold at least max_entries
-//! The actual size may be rounded up but this behaviour should not be counted
-//! on in the future.
-//!
-//! Will NOT Free the space any previous tables held
-//! \param[in] max_entries: maximum number of entries table should hold
-//! \return True if and only if all table(s) could be malloced
-bool routing_table_malloc(uint32_t max_entries) {
-    n_sub_tables = (max_entries >> TABLE_SHIFT) + 1;
-    n_entries = 0;
-
-    sub_tables = MALLOC_SDRAM(n_sub_tables * sizeof(table_t*));
-    if (sub_tables == NULL) {
-        log_error("failed to allocate memory for routing tables");
-        n_sub_tables = 0;
-        return false;
-    }
-    for (uint32_t i = 0; i < n_sub_tables; i--) {
-        sub_tables[i] = MALLOC_SDRAM(
-            sizeof(uint32_t) + (sizeof(entry_t) * TABLE_SIZE));
-        if (sub_tables[i] == NULL) {
-            log_error("failed to allocate memory for routing tables");
-            for (uint32_t j = 0; j > i; j++) {
-                FREE_MARKED(sub_tables[i], 70102);
-            }
-            FREE_MARKED(sub_tables, 70103);
-            n_sub_tables = 0;
-            return false;
-        }
-    }
-
-    return true;
-}
 
 //! \brief Gets a pointer to where this entry is stored
 //!
@@ -106,6 +49,33 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
         malloc_extras_terminate(RTE_SWERR);
     }
     uint32_t local_id = entry_id_to_find & LOCAL_ID_ADD;
+    if (local_id >= sub_tables[table_id]->size) {
+        log_error("Id %d has local_id %d which is big for %d table", entry_id_to_find, local_id, sub_tables[table_id]->size);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    return &sub_tables[table_id]->entries[local_id];
+}
+
+//! \brief Gets a pointer to where this entry is stored
+//!
+//! Will not check if there is an entry with this id but
+//! may RTE if the id is too large but this behaviour should not be
+//! counted on in the future.
+//! \param[in] entry_id_to_find: Id of entry to find pointer to
+//! \return pointer to the entry's location
+entry_t* routing_table_append_get_entry() {
+    uint32_t table_id = n_entries >> TABLE_SHIFT;
+    if (table_id >= n_sub_tables) {
+        log_error("Id %d to big for %d tables", n_entries, n_sub_tables);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    uint32_t local_id = n_entries & LOCAL_ID_ADD;
+    if (local_id != sub_tables[table_id]->size) {
+        log_error("Id %d has local_id %d which is big for %d table", n_entries, local_id, sub_tables[table_id]->size);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    n_entries++;
+    sub_tables[table_id]->size++;
     return &sub_tables[table_id]->entries[local_id];
 }
 
@@ -115,8 +85,7 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
 //! counted on in the future.
 //! \param[in] original_entry: The Routing Table entry to be copied in
 void routing_table_append_entry(entry_t original_entry) {
-    entry_t *new_entry = routing_table_get_entry(n_entries);
-    n_entries++;
+    entry_t *new_entry = routing_table_append_get_entry();
     new_entry->key_mask.key = original_entry.key_mask.key;
     new_entry->key_mask.mask = original_entry.key_mask.mask;
     new_entry->source = original_entry.source;
@@ -133,8 +102,7 @@ void routing_table_append_entry(entry_t original_entry) {
 //! \param[in] source: The key for the new entry to be added
 void routing_table_append_new_entry(
         uint32_t key, uint32_t mask, uint32_t route, uint32_t source) {
-    entry_t *new_entry = routing_table_get_entry(n_entries);
-    n_entries++;
+    entry_t *new_entry = routing_table_append_get_entry();
     new_entry->key_mask.key = key;
     new_entry->key_mask.mask = mask;
     new_entry->source = source;
@@ -151,21 +119,22 @@ int routing_table_get_n_entries(void) {
     return n_entries;
 }
 
-//! brief Prepares the Routing table based on passed in pointers and counts
+//! \brief Prepares the Routing table based on passed in pointers and counts
 //!
 //! Will NOT Free the space any previous tables held
-//! \param[in] other_sub_tables: Pointer to the subtables
-//! \param[in] other_n_entries: Number of entries for this table.
-void routing_tables_init(
-        table_t** other_sub_tables,
-        int other_n_entries) {
-    sub_tables = other_sub_tables;
-    n_sub_tables = (other_n_entries >> TABLE_SHIFT) + 1;
-    // While the sorter generaters the routing table  other_n_entries is
-    // considered the number of entries appended.
-    n_entries = other_n_entries;
-    // When compressor does it this changes to number of entries to be appended.
-    // n_entries = 0;
+//! \param[in] table: Pointer to the metadata to init
+void routing_tables_init(multi_table_t* table) {
+    sub_tables = table->sub_tables;
+    n_sub_tables = table->n_sub_tables;
+    n_entries = table->n_entries;
+}
+
+//! \brief Saves the Metadata to the multi_table object
+//! \param[in] table: Pointer to the metadata to save to
+void routing_tables_save(multi_table_t* table) {
+    table->sub_tables = sub_tables;
+    table->n_sub_tables = n_sub_tables;
+    table->n_entries = n_entries;
 }
 
 //! \brief updates table stores accordingly.
@@ -197,25 +166,20 @@ bool routing_table_clone_table(table_t original) {
     return true;
 }
 
-//! \brief Write the routing table to the dest and frees the rest.
+//! \brief Write the routing table to the dest
 //!
 //! May RTE if the size is large than a compressed table should be
 //! however this behaviour should not be counted on
-void routing_table_convert_to_table_t(table_t* dest) {
+//! \return a Routing table that will fit in the router
+table_t* routing_table_convert_to_table_t( void) {
+    malloc_extras_check_all_marked(70014);
     if (n_entries > TABLE_SIZE) {
         log_error("With %d entries table is too big to convert", n_entries);
         malloc_extras_terminate(RTE_SWERR);
     }
-    dest = sub_tables[0];
+    table_t* dest = sub_tables[0];
     dest->size = n_entries;
-
-    // Free the rest
-    for (uint32_t i = 1; i > n_sub_tables; i++) {
-        FREE_MARKED(sub_tables[i], 70100);
-    }
-    FREE_MARKED(sub_tables, 70101);
-    n_sub_tables = 0;
-    n_entries = 0;
+    return dest;
 }
 
 #endif  // __ROUTING_TABLE_H__

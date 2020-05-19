@@ -95,6 +95,16 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
+//! \brief struct for holding the data to init routing_table.h
+typedef struct multi_table_t {
+    // The individual subtables
+    table_t** sub_tables;
+    // The number of individual subtables
+    int n_sub_tables;
+    // The number of entry_t entires actually in the tables.
+    int n_entries;
+} multi_table_t;
+
 //! \brief the lis of cores that can be used as compressor processor
 typedef struct compressor_processors_top_t {
     uint32_t n_processors;
@@ -129,12 +139,11 @@ typedef struct comms_sdram_t {
     instructions_to_compressor sorter_instruction;
     // how many bit fields were used to make those tables
     int n_bit_fields;
-    // compressed table location
-    table_t *compressed_table;
-    // Pointer to the uncompressed tables
-    table_t** uncompressed_tables;
-    // Number of entries in the uncompressed tables
-    uint32_t n_entries;
+    table_t* uncompressed_router_table;
+    // Pointer to the uncompressed tables metadata
+    multi_table_t *routing_tables;
+    // Pointer to the whole sorted_bit_fields data
+    sorted_bit_fields_t  *sorted_bit_fields;
     // initialise value for malloc_extras_
     heap_t *fake_heap_data;
 } comms_sdram_t;
