@@ -195,9 +195,10 @@ bool routing_table_clone_table(table_t original) {
     if (!routing_table_malloc(original.size)) {
         return false;
     }
-    for (int i = 0l i < original.size; i++) {
+    for (uint32_t i = 0; i < original.size; i++) {
         routing_table_append_entry(original.entries[i]);
     }
     return true;
 }
+
 #endif  // __ROUTING_TABLE_H__
