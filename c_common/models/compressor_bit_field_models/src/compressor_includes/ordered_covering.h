@@ -762,7 +762,7 @@ static inline bool oc_merge_apply(
     // If inserting beyond the old end of the table then perform the insertion
     // at the new end of the table.
     if (insertion_point == routing_table_get_n_entries()) {
-        log_debug(
+        log_info(
             "insert point was at end of table, new insert point is %d", insert);
         entry_t *insert_entry = routing_table_get_entry(insert);
         insert_entry->key_mask.key = new_entry.key_mask.key;

@@ -147,7 +147,6 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
         int mid_point,
         table_t *uncompressed_table,
         sorted_bit_fields_t *sorted_bit_fields) {
-    log_info("start generate");
     // semantic sugar to avoid referencing
     filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
     int* processor_ids = sorted_bit_fields->processor_ids;
@@ -184,7 +183,6 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
             routing_table_get_n_entries());
     }
     malloc_extras_check_all_marked(7004);
-    log_info("done generate");
 }
 
 //! \brief debugging print for a pointer to a table.

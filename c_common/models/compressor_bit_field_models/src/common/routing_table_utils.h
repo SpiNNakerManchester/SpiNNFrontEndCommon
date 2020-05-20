@@ -58,8 +58,8 @@ void routing_table_utils_free_all(multi_table_t* tables) {
 //! \return True if and only if all table(s) could be malloced
 bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
     malloc_extras_check_all_marked(70016);
-
-    tables->n_sub_tables = (max_entries >> TABLE_SHIFT) + 1;
+    tables->n_sub_tables = ((max_entries + 1) >> TABLE_SHIFT) + 1;
+    log_debug("n table %d max entries %d", tables->n_sub_tables, max_entries);
     tables->n_entries = 0;
     tables->sub_tables = MALLOC_SDRAM(tables->n_sub_tables  * sizeof(table_t*));
     if (tables->sub_tables == NULL) {
@@ -67,7 +67,7 @@ bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
         tables->n_sub_tables = 0;
         return false;
     }
-    for (uint32_t i = 0; i < tables->n_sub_tables; i--) {
+    for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
         tables->sub_tables[i] = MALLOC_SDRAM(
             sizeof(uint32_t) + (sizeof(entry_t) * TABLE_SIZE));
         if (tables->sub_tables[i] == NULL) {
@@ -79,8 +79,14 @@ bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
             return false;
         }
         tables->sub_tables[i]->size = 0;
+        log_debug("created table %d size %d", i, tables->sub_tables[i]->size);
     }
     malloc_extras_check_all_marked(70015);
+    log_debug("n table %d entries %d", tables->n_sub_tables, tables->n_entries);
+    for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
+        log_info("table %d size %d", i, tables->sub_tables[i]->size);
+    }
+    malloc_extras_check_all_marked(70016);
     return true;
 }
 

@@ -85,11 +85,10 @@ void start_compression_process() {
     //}
 
     // run compression
-    bool success = true;
-        //oc_minimise(
-        //TARGET_LENGTH, &aliases, &failed_by_malloc,
-        //&stop_compressing, compress_only_when_needed,
-        //compress_as_much_as_possible);
+    bool success = oc_minimise(
+        TARGET_LENGTH, &aliases, &failed_by_malloc,
+        &stop_compressing, compress_only_when_needed,
+        compress_as_much_as_possible);
 
     malloc_extras_check_all_marked(50005);
 

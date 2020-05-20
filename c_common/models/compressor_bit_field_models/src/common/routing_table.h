@@ -50,7 +50,8 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
     }
     uint32_t local_id = entry_id_to_find & LOCAL_ID_ADD;
     if (local_id >= sub_tables[table_id]->size) {
-        log_error("Id %d has local_id %d which is big for %d table", entry_id_to_find, local_id, sub_tables[table_id]->size);
+        log_error("Id %d has local_id %d which is too big for table of size %d",
+            entry_id_to_find, local_id, sub_tables[table_id]->size);
         malloc_extras_terminate(RTE_SWERR);
     }
     return &sub_tables[table_id]->entries[local_id];
@@ -127,6 +128,11 @@ void routing_tables_init(multi_table_t* table) {
     sub_tables = table->sub_tables;
     n_sub_tables = table->n_sub_tables;
     n_entries = table->n_entries;
+    log_debug("init with n table %d entries %d", n_sub_tables, n_entries);
+
+    for (uint32_t i = 0; i <  n_sub_tables; i++) {
+        log_debug("table %d size %d", i, sub_tables[i]->size);
+    }
 }
 
 //! \brief Saves the Metadata to the multi_table object
