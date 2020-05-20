@@ -98,11 +98,9 @@ void start_compression_process() {
 
     if (success) {
         log_info("Passed oc minimise with success %d", success);
-        comms_sdram->compressed_table = routing_table_convert_to_table_t();
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
     } else {  // if not a success, could be one of 4 states
         log_info("Failed oc minimise with success %d", success);
-        comms_sdram->compressed_table = NULL;
         if (failed_by_malloc) {  // malloc failed somewhere
             log_debug("failed malloc response");
             comms_sdram->compressor_state = FAILED_MALLOC;
@@ -138,9 +136,10 @@ void run_compression_process(void){
 
     malloc_extras_check_all_marked(50002);
 
-    log_info("table init for %d entries", comms_sdram->n_entries);
-    routing_tables_init(
-        comms_sdram->uncompressed_tables, comms_sdram->n_entries);
+
+    log_info("table init for %d entries",
+        comms_sdram->routing_tables->n_entries);
+    routing_tables_init(comms_sdram->routing_tables);
 
     log_info("starting compression attempt");
     log_debug("my processor id at start comp is %d", spin1_get_core_id());
@@ -155,7 +154,6 @@ static inline bool process_run(compressor_states compressor_state) {
 
     switch(compressor_state) {
         case PREPARED:
-            return true;
             log_info("run detected");
             comms_sdram->compressor_state = COMPRESSING;
             run_compression_process();

@@ -100,7 +100,7 @@ typedef struct multi_table_t {
     // The individual subtables
     table_t** sub_tables;
     // The number of individual subtables
-    int n_sub_tables;
+    uint32_t n_sub_tables;
     // The number of entry_t entires actually in the tables.
     int n_entries;
 } multi_table_t;

@@ -156,14 +156,10 @@ void routing_table_remove_from_size(int size_to_remove) {
 //! Will NOT Free the space any previous tables held
 //! Makes a Deep copy of the original
 //! \return True if and only if all table(s) could be malloced
-bool routing_table_clone_table(table_t original) {
-    if (!routing_table_malloc(original.size)) {
-        return false;
-    }
+void routing_table_clone_table(table_t original) {
     for (uint32_t i = 0; i < original.size; i++) {
         routing_table_append_entry(original.entries[i]);
     }
-    return true;
 }
 
 //! \brief Write the routing table to the dest
