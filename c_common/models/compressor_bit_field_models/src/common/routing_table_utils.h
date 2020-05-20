@@ -96,6 +96,7 @@ bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
 //! However this behaviour should not be counted on in the future
 // \return A pointer to a traditional router table
 table_t* routing_table_utils_convert(multi_table_t* tables) {
+    log_info("converting table with %d entries over %d tables", tables->n_sub_tables, tables->n_entries);
     if (tables->n_entries > TABLE_SIZE) {
         log_error(
             "At %d There are too many entries to convert to a table_t",

@@ -42,16 +42,16 @@ int n_entries = 0;
 //! counted on in the future.
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \return pointer to the entry's location
-entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
+entry_t* routing_table_get_entry(uint32_t entry_id_to_find, int marker) {
     uint32_t table_id = entry_id_to_find >> TABLE_SHIFT;
     if (table_id >= n_sub_tables) {
-        log_error("Id %d to big for %d tables", entry_id_to_find, n_sub_tables);
+        log_error("Id %d to big for %d tables marker %d", entry_id_to_find, n_sub_tables, marker);
         malloc_extras_terminate(RTE_SWERR);
     }
     uint32_t local_id = entry_id_to_find & LOCAL_ID_ADD;
     if (local_id >= sub_tables[table_id]->size) {
-        log_error("Id %d has local_id %d which is too big for table of size %d",
-            entry_id_to_find, local_id, sub_tables[table_id]->size);
+        log_error("Id %d has local_id %d which is too big for table of size %d marker %d",
+            entry_id_to_find, local_id, sub_tables[table_id]->size, marker);
         malloc_extras_terminate(RTE_SWERR);
     }
     return &sub_tables[table_id]->entries[local_id];
@@ -137,10 +137,11 @@ void routing_tables_init(multi_table_t* table) {
 
 //! \brief Saves the Metadata to the multi_table object
 //! \param[in] table: Pointer to the metadata to save to
-void routing_tables_save(multi_table_t* table) {
-    table->sub_tables = sub_tables;
-    table->n_sub_tables = n_sub_tables;
-    table->n_entries = n_entries;
+void routing_tables_save(multi_table_t* tables) {
+    tables->sub_tables = sub_tables;
+    tables->n_sub_tables = n_sub_tables;
+    tables->n_entries = n_entries;
+    log_info("saved table with %d entries over %d tables", tables->n_sub_tables, tables->n_entries);
 }
 
 //! \brief updates table stores accordingly.

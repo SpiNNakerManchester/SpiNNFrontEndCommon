@@ -42,7 +42,7 @@ static bool remove_default_routes_minimise(
     for (int i = routing_table_get_n_entries() - 1; i < 0; i--) {
 
         // Get the current entry
-        entry_t *entry = routing_table_get_entry(i);
+        entry_t *entry = routing_table_get_entry(i, 9916);
 
         // See if it can be removed
         // only removed if Only one output direction which is a link. or
@@ -67,7 +67,7 @@ static bool remove_default_routes_minimise(
 
                 // get next entry key mask
 
-                entry_t *j_entry = routing_table_get_entry(j);
+                entry_t *j_entry = routing_table_get_entry(j, 9917);
                 key_mask_t b = j_entry->key_mask;
 
                 if (key_mask_intersect(a, b)) {
@@ -90,12 +90,12 @@ static bool remove_default_routes_minimise(
             // Grab the current entry before we potentially overwrite it
 
 
-            entry_t *current = routing_table_get_entry(read);
+            entry_t *current = routing_table_get_entry(read, 9918);
 
             // Insert the entry if it isn't being removed
             if (!bit_set_contains(&remove, read)) {
                 entry_t* insert_entry =
-                    routing_table_get_entry(insert++);
+                    routing_table_get_entry(insert++, 9920);
                 insert_entry->key_mask.key = current->key_mask.key;
                 insert_entry->key_mask.mask = current->key_mask.mask;
                 insert_entry->route = current->route;

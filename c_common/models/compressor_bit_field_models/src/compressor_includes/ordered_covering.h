@@ -48,7 +48,7 @@ static unsigned int oc_get_insertion_point(
     int pos = top / 2;
 
     // get first entry
-    entry_t* entry = routing_table_get_entry(pos);
+    entry_t* entry = routing_table_get_entry(pos, 9903);
     unsigned int count_xs = key_mask_count_xs(entry->key_mask);
 
     // iterate till found something
@@ -63,7 +63,7 @@ static unsigned int oc_get_insertion_point(
         pos = bottom + (top - bottom) / 2;
 
         // update entry and count
-        entry = routing_table_get_entry(pos);
+        entry = routing_table_get_entry(pos, 9904);
         count_xs = key_mask_count_xs(entry->key_mask);
     }
 
@@ -72,8 +72,13 @@ static unsigned int oc_get_insertion_point(
     while (pos < routing_table_get_n_entries() &&
             (count_xs < generality)) {
         pos++;
-        entry = routing_table_get_entry(pos);
-        count_xs = key_mask_count_xs(entry->key_mask);
+        if (pos < routing_table_get_n_entries()) {
+            entry = routing_table_get_entry(pos, 9905);
+            count_xs = key_mask_count_xs(entry->key_mask);
+        } else {
+            // FIX MUNDY LOOKING PAST END OF TABLE!
+            count_xs = 0;
+        }
     }
 
     return pos;
@@ -116,13 +121,13 @@ static inline bool oc_up_check(
         }
 
         // Get the key_mask for this entry
-        key_mask_t km = routing_table_get_entry(i)->key_mask;
+        key_mask_t km = routing_table_get_entry(i, 9906)->key_mask;
 
         // Otherwise look through the table from the insertion point to the
         // current entry position to ensure that nothing covers the merge.
         for (unsigned int j = i + 1; j < insertion_index; j++) {
             key_mask_t other_km =
-                routing_table_get_entry(j)->key_mask;
+                routing_table_get_entry(j, 9907)->key_mask;
 
             // If the key masks intersect then remove this entry from the merge
             // and recalculate the insertion index.
@@ -209,7 +214,7 @@ static __sets_t _get_removables(
             }
 
             // See if this entry should be removed
-            key_mask_t km = routing_table_get_entry(i)->key_mask;
+            key_mask_t km = routing_table_get_entry(i, 9908)->key_mask;
 
             // check entry has x or 1 or 0 in this position.
             if ((bit & ~km.mask) || (!to_one && (bit & km.key)) ||
@@ -291,7 +296,7 @@ static bool oc_down_check(
                 return false;
             }
 
-            key_mask_t km = routing_table_get_entry(i)->key_mask;
+            key_mask_t km = routing_table_get_entry(i, 9909)->key_mask;
             if (key_mask_intersect(km, merge->key_mask)) {
                 if (!aliases_contains(aliases, km)) {
                     // The entry doesn't contain any aliases so we need to
@@ -522,7 +527,7 @@ static inline bool oc_get_best_merge(
         bit_set_add(&considered, i);
 
         // Get the entry
-        entry_t *entry = routing_table_get_entry(i);
+        entry_t *entry = routing_table_get_entry(i, 9910);
 
         // Try to merge with other entries
         log_debug("starting second search at index %d", i);
@@ -538,7 +543,7 @@ static inline bool oc_get_best_merge(
             }
 
             // Get the other entry
-            entry_t *other = routing_table_get_entry(j);
+            entry_t *other = routing_table_get_entry(j, 9911);
 
             // check if merge-able
             if (entry->route == other->route) {
@@ -684,7 +689,7 @@ static inline bool oc_merge_apply(
             remove++) {
 
         // Grab the current entry before we possibly overwrite it
-        entry_t* current = routing_table_get_entry(remove);
+        entry_t* current = routing_table_get_entry(remove, 9912);
         log_debug("bacon");
         log_debug(
             "entry %d being processed has key %x or %d, mask %x route %x "
@@ -698,7 +703,7 @@ static inline bool oc_merge_apply(
                 remove, insert);
 
             entry_t* insert_entry =
-                routing_table_get_entry(insert);
+                routing_table_get_entry(insert, 9913);
 
             // move data between entries
             insert_entry->key_mask.key = new_entry.key_mask.key;
@@ -716,7 +721,7 @@ static inline bool oc_merge_apply(
                 remove, insert);
 
             entry_t* insert_entry =
-                routing_table_get_entry(insert);
+                routing_table_get_entry(insert, 9914);
 
             // move data between entries
             insert_entry->key_mask.key = current->key_mask.key;
@@ -764,7 +769,7 @@ static inline bool oc_merge_apply(
     if (insertion_point == routing_table_get_n_entries()) {
         log_info(
             "insert point was at end of table, new insert point is %d", insert);
-        entry_t *insert_entry = routing_table_get_entry(insert);
+        entry_t *insert_entry = routing_table_get_entry(insert, 9915);
         insert_entry->key_mask.key = new_entry.key_mask.key;
         insert_entry->key_mask.mask = new_entry.key_mask.mask;
         insert_entry->route = new_entry.route;
@@ -905,9 +910,9 @@ static inline bool oc_minimise(
     }
 
     log_info(
-        "entries after compressed = %d, stop = %d, "
+        "entries after compressed = %d, target_length = %d, stop = %d, "
         " the number of merge cycles were %d",
-        routing_table_get_n_entries(), *stop_compressing, attempts);
+        routing_table_get_n_entries(), target_length, *stop_compressing, attempts);
 
     log_debug("compressed!!!");
     log_debug(

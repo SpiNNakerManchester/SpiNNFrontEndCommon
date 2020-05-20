@@ -95,8 +95,9 @@ void start_compression_process() {
     // turn off timer and set us into pause state
     spin1_pause();
 
-    if (success) {
+    if (success && (routing_table_get_n_entries() <= TARGET_LENGTH)) {
         log_info("Passed oc minimise with success %d", success);
+        routing_tables_save(comms_sdram->routing_tables);
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
     } else {  // if not a success, could be one of 4 states
         log_info("Failed oc minimise with success %d", success);

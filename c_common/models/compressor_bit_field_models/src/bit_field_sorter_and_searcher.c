@@ -612,10 +612,10 @@ void timer_callback(uint unused0, uint unused1) {
     //if ((time_steps & 1023) == 0){
     //    log_info("time_steps: %u", time_steps);
     //}
-    if (time_steps > KILL_TIME){
-        log_error("timer overran %u", time_steps);
-        malloc_extras_terminate(RTE_SWERR);
-    }
+    //if (time_steps > KILL_TIME){
+    //    log_error("timer overran %u", time_steps);
+    //    malloc_extras_terminate(RTE_SWERR);
+    //}
 }
 
 //! brief handle the fact that a midpoint was successfull.
