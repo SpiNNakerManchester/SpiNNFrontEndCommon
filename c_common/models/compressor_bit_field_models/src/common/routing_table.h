@@ -110,11 +110,6 @@ void routing_table_append_new_entry(
     new_entry->route = route;
 }
 
-//! \return The number of sub_tables
-table_t** routing_table_get_sub_tables(void) {
-    return sub_tables;
-}
-
 //! \return number of appended entries.
 int routing_table_get_n_entries(void) {
     return n_entries;
@@ -167,22 +162,6 @@ void routing_table_clone_table(table_t original) {
     for (uint32_t i = 0; i < original.size; i++) {
         routing_table_append_entry(original.entries[i]);
     }
-}
-
-//! \brief Write the routing table to the dest
-//!
-//! May RTE if the size is large than a compressed table should be
-//! however this behaviour should not be counted on
-//! \return a Routing table that will fit in the router
-table_t* routing_table_convert_to_table_t( void) {
-    malloc_extras_check_all_marked(70014);
-    if (n_entries > TABLE_SIZE) {
-        log_error("With %d entries table is too big to convert", n_entries);
-        malloc_extras_terminate(RTE_SWERR);
-    }
-    table_t* dest = sub_tables[0];
-    dest->size = n_entries;
-    return dest;
 }
 
 #endif  // __ROUTING_TABLE_H__

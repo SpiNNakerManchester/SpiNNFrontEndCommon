@@ -81,7 +81,6 @@ bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
         tables->sub_tables[i]->size = 0;
         log_debug("created table %d size %d", i, tables->sub_tables[i]->size);
     }
-    malloc_extras_check_all_marked(70015);
     log_debug("n table %d entries %d", tables->n_sub_tables, tables->n_entries);
     for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
         log_info("table %d size %d", i, tables->sub_tables[i]->size);

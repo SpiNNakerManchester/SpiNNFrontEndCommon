@@ -155,8 +155,6 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
     uint32_t original_size =  uncompressed_table->size;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
 
-    malloc_extras_check_all_marked(7001);
-
     filter_info_t* filters[MAX_PROCESSORS];
     uint32_t bit_field_processors[MAX_PROCESSORS];
     int bf_i = 0;
@@ -182,7 +180,6 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
         log_debug("key %d size %d", original[rt_i].key_mask.key,
             routing_table_get_n_entries());
     }
-    malloc_extras_check_all_marked(7004);
 }
 
 //! \brief debugging print for a pointer to a table.
@@ -196,7 +193,6 @@ void print_table(table_t* table) {
    }
 }
 
-
 //! \brief sorts a given table so that the entries in the table are by key
 //! value.
 //! \param[in] table: the table to sort.
@@ -206,29 +202,6 @@ void sort_table_by_key(table_t* table) {
     for (uint32_t i = 0; i < size - 1; i++){
         for (uint32_t j = i + 1; j < size; j++) {
             if (entries[i].key_mask.key > entries[j].key_mask.key) {
-                uint32_t temp = entries[i].key_mask.key;
-                entries[i].key_mask.key = entries[j].key_mask.key;
-                entries[j].key_mask.key = temp;
-                temp = entries[i].key_mask.mask;
-                entries[i].key_mask.mask = entries[j].key_mask.mask;
-                entries[j].key_mask.mask = temp;
-                temp = entries[i].route;
-                entries[i].route = entries[j].route;
-                entries[j].route = temp;
-                temp = entries[i].source;
-                entries[i].source = entries[j].source;
-                entries[j].source = temp;
-            }
-        }
-    }
-}
-
-void sort_table_by_route(table_t* table) {
-    uint32_t size = table->size;
-    entry_t* entries = table->entries;
-    for (uint32_t i = 0; i < size - 1; i++){
-        for (uint32_t j = i + 1; j < size; j++) {
-            if (entries[i].route > entries[j].route) {
                 uint32_t temp = entries[i].key_mask.key;
                 entries[i].key_mask.key = entries[j].key_mask.key;
                 entries[j].key_mask.key = temp;
