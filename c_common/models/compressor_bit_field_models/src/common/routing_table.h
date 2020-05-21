@@ -41,6 +41,8 @@ int n_entries = 0;
 //! may RTE if the id is too large but this behaviour should not be
 //! counted on in the future.
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
+//! \param[in] marker: int that should be different in every call so we can
+//! detect where MUNDY was reading past the end of the table
 //! \return pointer to the entry's location
 entry_t* routing_table_get_entry(uint32_t entry_id_to_find, int marker) {
     uint32_t table_id = entry_id_to_find >> TABLE_SHIFT;
@@ -158,9 +160,9 @@ void routing_table_remove_from_size(int size_to_remove) {
 //! Will NOT Free the space any previous tables held
 //! Makes a Deep copy of the original
 //! \return True if and only if all table(s) could be malloced
-void routing_table_clone_table(table_t original) {
-    for (uint32_t i = 0; i < original.size; i++) {
-        routing_table_append_entry(original.entries[i]);
+void routing_table_clone_table(table_t* original) {
+    for (uint32_t i = 0; i < original->size; i++) {
+        routing_table_append_entry(original->entries[i]);
     }
 }
 

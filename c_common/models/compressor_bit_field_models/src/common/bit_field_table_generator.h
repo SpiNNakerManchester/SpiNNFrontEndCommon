@@ -132,7 +132,7 @@ static inline uint32_t bit_field_table_generator_max_size(int mid_point,
             }
         }
     }
-    log_info("Using mid_point %d, counted size of table is %d",
+    log_debug("Using mid_point %d, counted size of table is %d",
         mid_point, max_size);
     return max_size;
 }

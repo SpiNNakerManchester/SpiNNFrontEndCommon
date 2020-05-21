@@ -138,7 +138,7 @@ typedef struct comms_sdram_t {
     compressor_states compressor_state;
     instructions_to_compressor sorter_instruction;
     // how many bit fields were used to make those tables
-    int n_bit_fields;
+    int mid_point;
     table_t* uncompressed_router_table;
     // Pointer to the uncompressed tables metadata
     multi_table_t *routing_tables;

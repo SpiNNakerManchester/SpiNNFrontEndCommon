@@ -289,7 +289,8 @@ static inline void bit_field_reader_read_in_bit_fields(
 //! MALLOC's failed for any reason.
 static inline sorted_bit_fields_t* bit_field_reader_initialise(
         region_addresses_t *region_addresses) {
-    sorted_bit_fields_t* sorted_bit_fields = MALLOC(sizeof(sorted_bit_fields_t));
+    sorted_bit_fields_t* sorted_bit_fields = MALLOC_SDRAM(
+        sizeof(sorted_bit_fields_t));
     if (sorted_bit_fields == NULL) {
         log_error("failed to allocate dtcm for sorted bitfields.");
         return NULL;
@@ -317,7 +318,7 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
 
         // malloc the separate bits of the sorted bitfield struct
         sorted_bit_fields->bit_fields =
-            MALLOC(n_bit_fields * sizeof(filter_info_t*));
+            MALLOC_SDRAM(n_bit_fields * sizeof(filter_info_t*));
         if (sorted_bit_fields->bit_fields == NULL) {
             log_error(
                 "cannot allocate memory for the sorted bitfield addresses");
@@ -325,7 +326,8 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
             return NULL;
         }
 
-        sorted_bit_fields->processor_ids = MALLOC(n_bit_fields * sizeof(int));
+        sorted_bit_fields->processor_ids = MALLOC_SDRAM(
+            n_bit_fields * sizeof(int));
         if (sorted_bit_fields->processor_ids == NULL) {
             log_error("cannot allocate memory for the sorted bitfields with "
                       "processors ids");
@@ -334,7 +336,8 @@ static inline sorted_bit_fields_t* bit_field_reader_initialise(
             return NULL;
         }
 
-        sorted_bit_fields->sort_order = MALLOC(n_bit_fields * sizeof(int));
+        sorted_bit_fields->sort_order = MALLOC_SDRAM(
+            n_bit_fields * sizeof(int));
         if (sorted_bit_fields->sort_order == NULL) {
             log_error("cannot allocate memory for the sorted bitfields with "
                       "sort_order");

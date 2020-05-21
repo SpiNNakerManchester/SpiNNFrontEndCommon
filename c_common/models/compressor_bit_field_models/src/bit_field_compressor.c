@@ -24,8 +24,11 @@
 #include "common/routing_table.h"
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"
+#include "common/bit_field_table_generator.h"
 #include "compressor_includes/aliases.h"
 #include "compressor_includes/ordered_covering.h"
+#include "common//bit_field_table_generator.h"
+
 /*****************************************************************************/
 
 //! interrupt priorities
@@ -118,6 +121,22 @@ void start_compression_process() {
     }
 }
 
+void setup_rounting_tables() {
+    log_info("table init for %d entries (should be zero) and %d tables and %d mid_point out of %d bitfields",
+        comms_sdram->routing_tables->n_entries,
+        comms_sdram->routing_tables->n_sub_tables,
+        comms_sdram->mid_point, comms_sdram->sorted_bit_fields->n_bit_fields);
+    routing_tables_init(comms_sdram->routing_tables);
+
+    if (comms_sdram->mid_point == 0) {
+        routing_table_clone_table(comms_sdram->uncompressed_router_table);
+    } else {
+        bit_field_table_generator_create_bit_field_router_tables(
+            comms_sdram->mid_point, comms_sdram->uncompressed_router_table,
+            comms_sdram->sorted_bit_fields);
+    }
+}
+
 //! brief Runs the compressors process as requested
 void run_compression_process(void){
 
@@ -135,14 +154,11 @@ void run_compression_process(void){
     aliases = aliases_init();
 
     malloc_extras_check_all_marked(50002);
+    setup_rounting_tables();
+    malloc_extras_check_all_marked(50002);
 
-
-    log_info("table init for %d entries",
-        comms_sdram->routing_tables->n_entries);
-    routing_tables_init(comms_sdram->routing_tables);
-
-    log_info("starting compression attempt");
-    log_debug("my processor id at start comp is %d", spin1_get_core_id());
+    log_info("starting compression attempt with %d entries",
+        routing_table_get_n_entries());
     // start compression process
     start_compression_process();
 }
@@ -255,12 +271,12 @@ void wait_for_instructions(uint unused0, uint unused1) {
     // When debugging Log if changed
     if (sorter_state != previous_sorter_state) {
          previous_sorter_state = sorter_state;
-         log_info("Sorter state changed  sorter: %d compressor %d",
+         log_debug("Sorter state changed  sorter: %d compressor %d",
             sorter_state, compressor_state);
     }
     if (compressor_state != previous_compressor_state) {
         previous_compressor_state = compressor_state;
-        log_info("Compressor state changed  sorter: %d compressor %d",
+        log_debug("Compressor state changed  sorter: %d compressor %d",
            sorter_state, compressor_state);
     }
 

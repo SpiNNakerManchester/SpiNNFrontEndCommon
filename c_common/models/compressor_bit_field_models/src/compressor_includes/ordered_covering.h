@@ -767,7 +767,7 @@ static inline bool oc_merge_apply(
     // If inserting beyond the old end of the table then perform the insertion
     // at the new end of the table.
     if (insertion_point == routing_table_get_n_entries()) {
-        log_info(
+        log_debug(
             "insert point was at end of table, new insert point is %d", insert);
         entry_t *insert_entry = routing_table_get_entry(insert, 9915);
         insert_entry->key_mask.key = new_entry.key_mask.key;
@@ -845,7 +845,7 @@ static inline bool oc_minimise(
 
     // start the merger process
     log_debug("start compression true attempt");
-    log_info("n entries is %d", routing_table_get_n_entries());
+    log_debug("n entries is %d", routing_table_get_n_entries());
     int attempts = 0;
 
     while ((routing_table_get_n_entries() > target_length) &&
@@ -863,7 +863,6 @@ static inline bool oc_minimise(
                 "were %d", attempts);
             return false;
         }
-
 
         log_debug("best merge end");
         unsigned int count = merge.entries.count;
