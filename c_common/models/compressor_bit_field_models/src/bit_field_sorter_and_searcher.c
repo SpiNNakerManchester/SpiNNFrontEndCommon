@@ -216,10 +216,11 @@ static inline bool pass_instructions_to_compressor(
 
 //! builds tables and tries to set off a compressor processor based off
 //! midpoint
+//! If there is a problem will set reset the mid_point as untested and
+//! set this and all unused compressors to do not use
 //! \param[in] mid_point: the mid point to start at
 //! \param[in] processor_id: the processor to run the compression on
-//! \return bool fag if it fails for memory issues
-static inline bool malloc_tables_and_set_off_bit_compressor(
+static inline void malloc_tables_and_set_off_bit_compressor(
         int mid_point, int processor_id) {
 
     // free any previous routing tables
@@ -231,7 +232,22 @@ static inline bool malloc_tables_and_set_off_bit_compressor(
 
     malloc_extras_check_all_marked(1005);
     // if successful, try setting off the bitfield compression
-    return pass_instructions_to_compressor(processor_id, mid_point, table_size);
+    bool success = pass_instructions_to_compressor(processor_id, mid_point, table_size);
+
+    if (!success) {
+        // Ok lets turn this and all ready processors off to save space.
+        // At least default no bitfield handled elsewhere so of to reduce.
+        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+        for (int processor_id = 0; processor_id < MAX_PROCESSORS;
+                processor_id++) {
+            if ((comms_sdram[processor_id].sorter_instruction == PREPARE) ||
+                    (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED)) {
+                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+            }
+        }
+        // Ok that midpoint did not work so need to try it again
+        bit_field_clear(tested_mid_points, mid_point);
+    }
 }
 
 //! \brief finds the region id in the region addresses for this processor id
@@ -567,27 +583,8 @@ void carry_on_binary_search(void) {
     }
     int processor_id = find_compressor_processor_and_set_tracker(mid_point);
     log_debug("start create at time step: %u", time_steps);
-    bool success =
-        malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
+    malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
     log_debug("end create at time step: %u", time_steps);
-
-    if (!success) {
-        // Ok lets turn this and all ready processors off to save space.
-        // At least default no bitfield handled elsewhere so of to reduce.
-        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-        for (int processor_id = 0; processor_id < MAX_PROCESSORS;
-                processor_id++) {
-            if ((comms_sdram[processor_id].sorter_instruction == PREPARE) ||
-                    (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED)) {
-                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-            }
-        }
-        // Ok that midpoint did not work so need to try it again
-        bit_field_clear(tested_mid_points, mid_point);
-        return;
-    }
-
-    log_debug("done carry_on_binary_search");
     malloc_extras_check_all_marked(1002);
 }
 
@@ -800,6 +797,37 @@ void check_compressors(uint unused0, uint unused1) {
     log_info("exiting the interrupt, to allow the binary to finish");
 }
 
+//! \brief Starts binary search on all compressor diving the bitfields as even
+//! as possible
+void start_binary_search(void) {
+    // Find the number of available processors
+    uint32_t available = 0;
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        if (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED) {
+            available += 1;
+        }
+    }
+
+    uint32_t mid_point = sorted_bit_fields->n_bit_fields;
+    while ((available > 0) && (mid_point > 0)) {
+        int processor_id = find_compressor_processor_and_set_tracker(0);
+        // Check the processor replied and has not been turned of by previous
+        if (processor_id == FAILED_TO_FIND) {
+            log_error("No processor available in start_binary_search");
+            return;
+        }
+        malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
+
+        // Find the next step which may change due to rounding
+        int step = (mid_point / available);
+        if (step < 1) {
+            step = 1;
+        }
+        mid_point -= step;
+        available -= 1;
+    }
+}
+
 //! \brief starts the work for the compression search
 //! \param[in] unused0: api
 //! \param[in] unused1: api
@@ -853,6 +881,8 @@ void start_compression_process(uint unused0, uint unused1) {
             return;
         }
     }
+
+    start_binary_search();
 
     // set off checker which in turn sets of the other compressor processors
     spin1_schedule_callback(
