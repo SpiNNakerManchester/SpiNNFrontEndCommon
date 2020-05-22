@@ -57,7 +57,6 @@ typedef enum instructions_to_compressor {
     // Flag to say processor shoukd run
     RUN = 44,
     // Flag to say processor should stop as result no longer needed
-    // Note may be replaced with just PREPARE
     FORCE_TO_STOP = 45
 }  instructions_to_compressor;
 

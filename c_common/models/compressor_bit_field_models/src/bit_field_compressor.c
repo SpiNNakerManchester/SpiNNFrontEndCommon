@@ -225,7 +225,6 @@ static inline bool process_prepare(compressor_states compressor_state) {
 //! Mainly used to clear result of previous run
 //! The wait loop that calls this does not run during compressing
 //! timer_callback picks up the sorter change during compression
-//! Note may be replaced with just going stright to PREPARE
 //! \returns bool if the FORCE_TO_STOP made sense with the current Compressor sate
 static inline bool process_force(compressor_states compressor_state) {
    switch(compressor_state) {
