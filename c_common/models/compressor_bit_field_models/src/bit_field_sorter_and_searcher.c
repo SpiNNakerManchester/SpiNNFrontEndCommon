@@ -101,8 +101,10 @@ sorted_bit_fields_t* sorted_bit_fields;
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
+//! \brief SDRAM used to commimnicate with the compressors
 comms_sdram_t *comms_sdram;
 
+bool no_bit_field_retried = false;
 //============================================================================
 
 //! \brief Load the best routing table to the router.
@@ -157,6 +159,7 @@ void send_prepare_message(int processor_id){
     log_debug(
         "sending prepare to processor %d", processor_id);
     comms_sdram[processor_id].sorter_instruction = PREPARE;
+    comms_sdram[processor_id].mid_point = -1;
 }
 
 //! \brief sets up the search bitfields.
@@ -519,6 +522,25 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
     return processor_id;
 }
 
+//! \brief sets up the compression attempt for the no bitfield version.
+//! \return bool which says if setting off the compression attempt was
+//! successful or not.
+bool setup_no_bitfields_attempt(void) {
+    int processor_id = find_compressor_processor_and_set_tracker(0);
+    if (processor_id == FAILED_TO_FIND) {
+        log_error("No processor available for no bitfield attempt");
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    // set off a none bitfield compression attempt, to pipe line work
+    log_info(
+        "sets off the no bitfield version of the search on %u", processor_id);
+
+    pass_instructions_to_compressor(
+        processor_id, 0, uncompressed_router_table->uncompressed_table.size);
+    malloc_extras_check_all_marked(1001);
+    return true;
+}
+
 //! \brief Check if a compressor processor is available
 //! \return true if at least one processor is ready to compress
 bool all_compressor_processors_busy(void) {
@@ -609,6 +631,7 @@ void timer_callback(uint unused0, uint unused1) {
 //! \param[in] mid_point: the mid point that failed
 void process_success(int processor_id) {
     int mid_point = comms_sdram[processor_id].mid_point;
+    comms_sdram[processor_id].mid_point = -1;
     if (best_success <= mid_point) {
         best_success = mid_point;
         malloc_extras_check_all_marked(1003);
@@ -635,23 +658,91 @@ void process_success(int processor_id) {
     log_debug("finished process of successful compression");
 }
 
+void check_processor_stopped(int processor_id) {
+    while (true) {
+        compressor_states finished_state =
+            comms_sdram[processor_id].compressor_state;
+        switch (finished_state) {
+            case SUCCESSFUL_COMPRESSION:
+                log_info(
+                    "successful from processor %d doing mid point %d",
+                    processor_id, comms_sdram[processor_id].mid_point);
+                process_success(processor_id);
+                log_info(
+                    "As no bitfields failed with malloc using that and stopping");
+                handle_best_cleanup();
+                // Should never get here as above terminates
+            case FAILED_MALLOC:
+            case FAILED_TO_COMPRESS:
+            case RAN_OUT_OF_TIME:
+            case FORCED_BY_COMPRESSOR_CONTROL:
+                // shut that compressor down for good
+                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+                routing_table_utils_free_all(
+                    comms_sdram[processor_id].routing_tables);
+            case UNUSED:
+            case PREPARED:
+                // nothing to do!
+                return;
+            case COMPRESSING:
+                // stay in the loop;
+                break;
+        }
+    }
+}
+
+void stop_all_and_try_no_bitfield_again(int no_bitfield_processor_id) {
+    if (no_bit_field_retried) {
+        log_info("not bitfield malloc failed a second time GIVING UP!");
+        malloc_extras_terminate(RTE_SWERR);
+    }
+    no_bit_field_retried = true;
+    // tell all processors to stop
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        send_force_stop_message(processor_id);
+    }
+
+    // check they are all stopped and cleared
+    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
+        if (processor_id == no_bitfield_processor_id) {
+            routing_table_utils_free_all(
+                comms_sdram[processor_id].routing_tables);
+        } else {
+            check_processor_stopped(processor_id);
+        }
+    }
+
+    // retry no bitfield on only core left;
+    setup_no_bitfields_attempt();
+}
+
+
 //! brief handle the fact that a midpoint failed due to a malloc
 //! \param[in] mid_point: the mid point that failed
 //! \param[in] processor_id: the compressor processor id
 void process_failed_malloc(int mid_point, int processor_id) {
-    routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
-    // this will threshold the number of compressor processors that
-    // can be ran at any given time.
-    comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-    // Remove the flag that say this midpoint has been checked
-    bit_field_clear(tested_mid_points, mid_point);
-    routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    if (mid_point == 0)  {
+        stop_all_and_try_no_bitfield_again(processor_id);
+    } else {
+        routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+        // this will threshold the number of compressor processors that
+        // can be ran at any given time.
+        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+        // Remove the flag that say this midpoint has been checked
+        bit_field_clear(tested_mid_points, mid_point);
+        routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    }
 }
 
 //! brief handle the fact that a midpoint failed.
 //! \param[in] mid_point: the mid point that failed
 //! \param[in] processor_id: the compressor processor id
 void process_failed(int mid_point, int processor_id) {
+    // safety check to ensure we dont go on if the uncompressed failed
+    if (mid_point == 0)  {
+        log_error("The no bitfields attempted failed! Giving up");
+        malloc_extras_terminate(EXIT_FAIL);
+    }
     if (lowest_failure > mid_point){
         log_info(
             "Changing lowest_failure from: %d to mid_point:%d",
@@ -673,7 +764,6 @@ void process_failed(int mid_point, int processor_id) {
     }
 }
 
-
 //! \brief processes the response from the compressor attempt
 //! \param[in] processor_id: the compressor processor id
 //! \param[in] finished_state: the response code
@@ -682,12 +772,6 @@ void process_compressor_response(
     int mid_point = comms_sdram[processor_id].mid_point;
     log_debug("received response %d from processor %d doing %d midpoint",
         finished_state, processor_id, mid_point);
-
-    // safety check to ensure we dont go on if the uncompressed failed
-    if (mid_point == 0  && finished_state != SUCCESSFUL_COMPRESSION) {
-        log_error("The no bitfields attempted failed! Giving up");
-        malloc_extras_terminate(EXIT_FAIL);
-    }
 
     // free the processor for future processing
     send_prepare_message(processor_id);
@@ -742,25 +826,6 @@ void process_compressor_response(
                 finished_state, processor_id);
             malloc_extras_terminate(RTE_SWERR);
     }
-}
-
-//! \brief sets up the compression attempt for the no bitfield version.
-//! \return bool which says if setting off the compression attempt was
-//! successful or not.
-bool setup_no_bitfields_attempt(void) {
-    int processor_id = find_compressor_processor_and_set_tracker(0);
-    if (processor_id == FAILED_TO_FIND) {
-        log_error("No processor available for no bitfield attempt");
-        malloc_extras_terminate(RTE_SWERR);
-    }
-    // set off a none bitfield compression attempt, to pipe line work
-    log_info(
-        "sets off the no bitfield version of the search on %u", processor_id);
-
-    pass_instructions_to_compressor(
-        processor_id, 0, uncompressed_router_table->uncompressed_table.size);
-    malloc_extras_check_all_marked(1001);
-    return true;
 }
 
 //! \brief check compressors till its finished
