@@ -27,8 +27,7 @@ class ExecutableTargets(SuperExecTargets):
         super(ExecutableTargets, self).__init__()
         self._binary_type_map = defaultdict(OrderedSet)
 
-    @overrides(SuperExecTargets.add_subsets, extend_defaults=True,
-               additional_arguments={"executable_type"})
+    @overrides(SuperExecTargets.add_subsets)
     def add_subsets(self, binary, subsets, executable_type=None):
         """
         :type binary: str
