@@ -333,11 +333,18 @@ static inline void set_n_merged_filters(void) {
 //! \return int which is the midpoint or -1 if no midpoints left
 static inline int locate_next_mid_point(void) {
     int new_mid_point;
-    if (sorted_bit_fields->n_bit_fields == 0) {
-        return FAILED_TO_FIND;
+
+    // If not tested yet / reset test 0
+    if (!bit_field_test(tested_mid_points, 0)) {
+        log_info("Retrying no bit fields");
+        return 0;
+    } else {
+        if (sorted_bit_fields->n_bit_fields == 0) {
+            return FAILED_TO_FIND;
+        }
     }
 
-    // if not tested yet, test all
+    // if not tested yet / reset test all
     if (!bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields)){
         log_info("Retrying all which is mid_point %d",
             sorted_bit_fields->n_bit_fields);

@@ -81,7 +81,7 @@ void start_compression_process() {
     malloc_extras_check_all_marked(50001);
 
     // DEBUG Stuff please leave
-    //if (comms_sdram->n_bit_fields >= 100) {
+    //if (comms_sdram->mid_point >= 100) {
     //    log_info("HACK fail at 100 plus bitfeilds!");
     //     comms_sdram->compressor_state = FAILED_TO_COMPRESS;
     //     return;
