@@ -114,6 +114,9 @@ static struct lpg_config config;
 
 //! \brief Because WHY OH WHY would you use aligned memory? At least with this
 //! we don't get data aborts.
+//! \param[in] base: place to write to
+//! \param[in] index: location in base to write to
+//! \param[in] value: the value to write to the base.
 static inline void write_word(void *base, uint32_t index, uint32_t value) {
     uint16_t *ary = base;
     uint32_t idx = index * 2;
@@ -122,6 +125,9 @@ static inline void write_word(void *base, uint32_t index, uint32_t value) {
 }
 
 //! \brief Simple mirror of write_word() for true 16 bit values.
+//! \param[in] base: place to write to
+//! \param[in] index: location in base to write to
+//! \param[in] value: the value to write to the base.
 static inline void write_short(void *base, uint32_t index, uint32_t value) {
     uint16_t *ary = base;
     ary[index] = CLAMP16(value);
@@ -137,6 +143,7 @@ static inline uint8_t get_event_count(void) {
     return event_count;
 }
 
+//! \brief fills the SDP message and empties the buffer.
 static void flush_events(void) {
     // Send the event message only if there is data
     if ((buffer_index > 0) && (
@@ -169,6 +176,7 @@ static void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
+//! \param[in] provenance_region_address: address for storing provenance
 static void record_provenance_data(address_t provenance_region_address) {
     struct provenance_data_struct *sdram = (void *) provenance_region_address;
     // Copy provenance data into SDRAM region
@@ -176,6 +184,9 @@ static void record_provenance_data(address_t provenance_region_address) {
 }
 
 // Callbacks
+//! \brief timer that clears packets stored and stops if required.
+//! \param[in] unused0: api limit.
+//! \param[in] unused1: api limit.
 static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -202,13 +213,16 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
+//! \brief checks if there's enough stored events to push to a SDP message
+//! and if so, fills and sends the SDP message.
 static inline void flush_events_if_full(void) {
     if ((get_event_count() + 1) * event_size > BUFFER_CAPACITY) {
         flush_events();
     }
 }
 
-// processes an incoming multicast packet without payload
+//! \brief processes an incoming multicast packet without payload
+//! \param[in] key: multicast key.
 static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
@@ -237,7 +251,9 @@ static void process_incoming_event(uint key) {
     }
 }
 
-// processes an incoming multicast packet with payload
+//! \brief processes an incoming multicast packet with payload
+//! \param[in] key: multicast key.
+//! \param[in] payload: multicast payload.
 static void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 
@@ -267,6 +283,10 @@ static void process_incoming_event_payload(uint key, uint payload) {
     }
 }
 
+//! \brief user interrupt for pulling out of the buffer and filling up a SDP
+//! message. Will sned SDP if more than 1 SDP message needed.
+//! \param[in] unused0: api limit.
+//! \param[in] unused1: api limit.
 static void incoming_event_process_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -289,6 +309,9 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
     } while (processing_events);
 }
 
+//! \brief callback for a multicast packet without a payload.
+//! \param[in] key: the multicast key.
+//! \param[in] unused: api limit.
 static void incoming_event_callback(uint key, uint unused) {
     use(unused);
     log_debug("Received key %x", key);
@@ -303,6 +326,9 @@ static void incoming_event_callback(uint key, uint unused) {
     }
 }
 
+//! \brief callback for a multicast packet with a payload.
+//! \param[in] key: the multicast key.
+//! \param[in] payload: the payload of the multicast packet.
 static void incoming_event_payload_callback(uint key, uint payload) {
     log_debug("Received key %x, payload %x", key, payload);
 
@@ -317,6 +343,8 @@ static void incoming_event_payload_callback(uint key, uint payload) {
     }
 }
 
+//! \brief init method.
+//! \param[in] sdram_config: sdram location for the lpg parameters.
 static void read_parameters(struct lpg_config *sdram_config) {
     // Faster to copy by field than to use spin1_memcpy()!
 
@@ -356,6 +384,9 @@ static void read_parameters(struct lpg_config *sdram_config) {
     log_info("packets_per_timestamp: %d", config.packets_per_timestamp);
 }
 
+//! \brief top level init method.
+//! \param[in] timer_period pointer to int where timer period will be stored.
+//! \return bool where True was successful init and  false otherwise.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -388,6 +419,8 @@ static bool initialize(uint32_t *timer_period) {
     return true;
 }
 
+//! \brief init for the sdp message
+//! \return bool where True was successful init and  false otherwise.
 static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg");
 
@@ -518,8 +551,7 @@ void c_main(void) {
     spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, MC_PACKET);
     spin1_callback_on(
             MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
-    spin1_callback_on(
-            USER_EVENT, incoming_event_process_callback, USER);
+    spin1_callback_on(USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0
