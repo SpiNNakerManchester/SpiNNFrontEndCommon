@@ -59,6 +59,16 @@ class BadArgs(Exception):
         return "bad args"
 
 
+def parse_app_id(string):
+    app_id = str(string, base=0)
+    if not APP_MIN <= app_id <= APP_MAX:
+        raise ValueError("bad App ID")
+    return app_id
+
+
+# ------------------------------------------------------------------------------
+
+
 def cmd_boot(cmd):
     if cmd.count > 2:
         raise BadArgs
@@ -320,9 +330,7 @@ def cmd_rtr_load(cmd):
     if cmd.count != 2:
         raise BadArgs
     _file = cmd.arg(0)
-    app_id = int(cmd.arg(1), base=0)
-    if not APP_MIN <= app_id <= APP_MAX:
-        raise ValueError("Bad App ID")
+    app_id = parse_app_id(cmd.arg(1))
 
     buf = read_file(_file, 65536)
     size = len(buf)
@@ -437,7 +445,7 @@ Sig_type = {
 }
 
 
-def cmd_app_size(cmd):
+def cmd_app_sig(cmd):
     if cmd.count < 3:
         raise BadArgs
     save_region = region = cmd.arg(0)
@@ -446,7 +454,7 @@ def cmd_app_size(cmd):
     state = cmd.arg(3) or 0
 
     app_id, app_mask = parse_apps(apps)
-    region = parse_region(region, 0, 0)
+    region = parse_region(region, chip_x, chip_y)
     if signal not in Signal:
         raise ValueError("bad signal")
     _type = Sig_type[signal]
@@ -511,6 +519,143 @@ def cmd_app_stop(cmd):
     arg3 = (1 << 31) | (0x3F << 8) | 0x00
 
     spin.nnp(arg1, arg2, arg3, addr=[])
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_app_load_old(cmd):
+    if not 4 <= cmd.count <= 5:
+        raise BadArgs
+    filename = cmd.arg(0)
+    mask = parse_cores(cmd.arg(1))
+    app_id = parse_app_id(cmd.arg(2))
+    flags = 0
+    if cmd.count == 4:
+        if cmd.arg(3) != "wait":
+            raise ValueError("bad wait argument")
+        flags = 1
+
+    buf = read_file(filename, 65536)
+
+    addr = 0x67800000
+    spin.write(addr, buf)
+    spin.ar(mask, app_id, flags)
+
+
+def cmd_app_load(cmd):
+    if not 3 <= cmd.count <= 4:
+        raise BadArgs
+    filename = cmd.arg(0)
+    region = parse_region(cmd.arg(1), chip_x, chip_y)
+    mask = parse_cores(cmd.arg(2))
+    app_id = int(cmd.arg(3), base=0)
+    flags = 0
+    if cmd.count == 5:
+        if cmd.arg(4) != "wait":
+            raise ValueError("bad wait argument")
+        flags = 1
+    buf = read_file(filename, 65536)
+
+    if debug:
+        print("Region {:08x}, mask {:08x}".format(region, mask))
+
+    spin.flood_fill(buf, region, mask, app_id, flags)
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_data_load(cmd):
+    if cmd.count != 3:
+        raise BadArgs
+    region = parse_region(cmd.arg(1), chip_x, chip_y)
+    addr = int(cmd.arg(2), base=16)
+    buf = read_file(cmd.arg(0), 1024 * 1024)
+
+    spin.flood_fill(buf, region, 0, 0, 0, base=addr, addr=[])
+
+
+# ------------------------------------------------------------------------------
+
+
+def global_write(addr, data, _type):
+    if _type == 2 and addr & 3:
+        raise ValueError("bad address alignment")
+    if _type == 1 and addr & 1:
+        raise ValueError("bad address alignment")
+
+    if 0xF5007F00 <= addr < 0xF5008000:
+        addr -= 0xf5007f00
+        op = 0
+    elif 0xF5000000 <= addr < 0xF5000100:
+        addr -= 0xF5000000
+        op = 1
+    elif 0xF2000000 <= addr < 0xF2000100:
+        addr -= 0xF2000000
+        op = 2
+    else:
+        raise ValueError("bad address")
+
+    key = ((NN_CMD_SIG1 << 24) | (0 << 20) | (_type << 18) | (op << 16) |
+           (addr << 8) | 0)
+    fr = (1 << 31) | (0x3F << 8) | 0xF8
+    spin.nnp(key, data, fr, addr=[])
+
+
+def cmd_gw(cmd):
+    if cmd.count != 2:
+        raise BadArgs
+    addr = int(cmd.arg(0), base=16)
+    data = int(cmd.arg(1), base=16)
+    global_write(addr, data, 2)
+
+
+def cmd_gh(cmd):
+    if cmd.count != 2:
+        raise BadArgs
+    addr = int(cmd.arg(0), base=16)
+    data = int(cmd.arg(1), base=16)
+    global_write(addr, data, 1)
+
+
+def cmd_gb(cmd):
+    if cmd.count != 2:
+        raise BadArgs
+    addr = int(cmd.arg(0), base=16)
+    data = int(cmd.arg(1), base=16)
+    global_write(addr, data, 0)
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_sload(cmd):
+    if cmd.count != 2:
+        raise BadArgs
+    filename = cmd.arg(0)
+    addr = int(cmd.arg(1), base=16)
+    spin.write_file(addr, filename)
+
+
+def cmd_sdump(cmd):
+    if cmd.count != 3:
+        raise BadArgs
+    filename = cmd.arg(0)
+    addr = int(cmd.arg(1), base=16)
+    length = int(cmd.arg(2), base=16)
+
+    byte_count = 0
+    with open(filename, "wb") as f:
+        while byte_count != length:
+            chunk_len = min(length - byte_count, 4096)
+            data = spin.read(addr, chunk_len)
+            addr += chunk_len
+            if chunk_len != len(data):
+                raise ValueError("length mismatch")
+            f.write(data)
+            byte_count += chunk_len
+
 
 # ------------------------------------------------------------------------------
 
