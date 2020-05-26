@@ -446,14 +446,10 @@ def cmd_app_size(cmd):
     state = cmd.arg(3) or 0
 
     app_id, app_mask = parse_apps(apps)
-    if not 0 <= app_id <= 255:
-        raise ValueError("bad app_id")
-    region = parse_region(region)
-    if not region:
-        raise ValueError("bad region")
+    region = parse_region(region, 0, 0)
     if signal not in Signal:
         raise ValueError("bad signal")
-    type = Sig_type[signal]
+    _type = Sig_type[signal]
     signal = Signal[signal]
     if signal >= 16:  # and/or/count
         if cmd.cout != 4:
@@ -466,7 +462,7 @@ def cmd_app_size(cmd):
     data = (app_mask << 8) | app_id
     mask = region & 0xFFFF
 
-    if type == 1:
+    if _type == 1:
         op, mode = 2, 2
         if signal >= 16:
             op, mode = 1, signal - 16
@@ -476,10 +472,10 @@ def cmd_app_size(cmd):
         data += signal << 16
 
     if debug:
-        print("Type {} data {:08x} mask {:08x}".format(type, data, mask))
+        print("Type {} data {:08x} mask {:08x}".format(_type, data, mask))
         print("Region {:08x} signal {} state {}".format(region, signal, state))
 
-    if type == 1:
+    if _type == 1:
         xb = region >> 24
         yb = (region >> 16) & 0xFC
         # find a working chip in the target region (try at most 16 addresses)
@@ -488,7 +484,7 @@ def cmd_app_size(cmd):
             addr = (xb + (inc * (i >> 2)), yb + (inc * (i & 3)), 0)
             try:
                 r = struct.unpack("<I", spin.signal(
-                    type, data, mask, addr=addr))
+                    _type, data, mask, addr=addr))
             except SpinnRetries:  # FIXME
                 raise
             except:  # pylint: disable=bare-except
@@ -501,15 +497,13 @@ def cmd_app_size(cmd):
             return
         print("Region {} is unreachable".format(save_region))
     else:
-        spin.signal(type, data, mask, addr=[])
+        spin.signal(_type, data, mask, addr=[])
 
 
 def cmd_app_stop(cmd):
     if cmd.count != 1:
         raise BadArgs
     app_id, app_mask = parse_apps(cmd.arg(0))
-    if not 0 <= app_id <= 255:
-        raise ValueError("bad app_id")
 
     SIG_STOP = Signal["stop"]
     arg1 = (NN_CMD_SIG0 << 4) | (0x3F << 16) | (0x00 << 8) | 0
