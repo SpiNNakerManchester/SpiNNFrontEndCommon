@@ -50,6 +50,8 @@
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
+#define LAST_RESULT_NOT_MALLOC_FAIL -1
+
 //! \brief callback priorities
 typedef enum priorities{
     COMPRESSION_START_PRIORITY = 3, TIMER_TICK_PRIORITY = 0
@@ -80,7 +82,7 @@ region_addresses_t *region_addresses; // user2
 available_sdram_blocks *usable_sdram_regions; // user3
 
 // Best midpoint that record a success
-int best_success = -1;
+int best_success = FAILED_TO_FIND;
 
 // Lowest midpoint that record failure
 int lowest_failure;
@@ -104,7 +106,9 @@ bit_field_t tested_mid_points;
 //! \brief SDRAM used to commimnicate with the compressors
 comms_sdram_t *comms_sdram;
 
-bool no_bit_field_retried = false;
+//! brief record of the last mid_point to return a malloc failed
+int last_malloc_failed = LAST_RESULT_NOT_MALLOC_FAIL;
+
 //============================================================================
 
 //! \brief Load the best routing table to the router.
@@ -335,8 +339,9 @@ static inline int locate_next_mid_point(void) {
 
     // if not tested yet, test all
     if (!bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields)){
-        new_mid_point = sorted_bit_fields->n_bit_fields;
-        return new_mid_point;
+        log_info("Retrying all which is mid_point %d",
+            sorted_bit_fields->n_bit_fields);
+        return sorted_bit_fields->n_bit_fields;
     }
 
     // need to find a midpoint
@@ -418,6 +423,10 @@ static inline int locate_next_mid_point(void) {
 //! for compressor processors to finish and removing merged bitfields from
 //! the bitfield regions.
 static inline void handle_best_cleanup(void){
+    if (best_success == FAILED_TO_FIND) {
+        log_error("No usable result found!");
+        malloc_extras_terminate(RTE_SWERR);
+    }
     // load routing table into router
     load_routing_table_into_router();
     log_debug("finished loading table");
@@ -588,7 +597,6 @@ void carry_on_binary_search(void) {
 
     if (mid_point == FAILED_TO_FIND) {
         // Ok lets turn all ready processors off as done.
-        // At least default no bitfield handled elsewhere so safe here.
         for (int processor_id = 0; processor_id < MAX_PROCESSORS;
                 processor_id++) {
             if (comms_sdram[processor_id].sorter_instruction == PREPARE) {
@@ -629,8 +637,8 @@ void timer_callback(uint unused0, uint unused1) {
 
 //! brief handle the fact that a midpoint was successfull.
 //! \param[in] mid_point: the mid point that failed
-void process_success(int processor_id) {
-    int mid_point = comms_sdram[processor_id].mid_point;
+//! \param[in] processor_id: the compressor processor id
+void process_success(int mid_point, int processor_id) {
     comms_sdram[processor_id].mid_point = -1;
     if (best_success <= mid_point) {
         best_success = mid_point;
@@ -639,6 +647,7 @@ void process_success(int processor_id) {
         if (last_compressed_table != NULL) {
             FREE_MARKED(last_compressed_table, 1100);
         }
+        // Get last table and free the rest
         last_compressed_table = routing_table_utils_convert(
             comms_sdram[processor_id].routing_tables);
         log_debug("n entries is %d", last_compressed_table->size);
@@ -655,82 +664,40 @@ void process_success(int processor_id) {
         }
     }
 
+    last_malloc_failed = LAST_RESULT_NOT_MALLOC_FAIL;
     log_debug("finished process of successful compression");
 }
-
-void check_processor_stopped(int processor_id) {
-    while (true) {
-        compressor_states finished_state =
-            comms_sdram[processor_id].compressor_state;
-        switch (finished_state) {
-            case SUCCESSFUL_COMPRESSION:
-                log_info(
-                    "successful from processor %d doing mid point %d",
-                    processor_id, comms_sdram[processor_id].mid_point);
-                process_success(processor_id);
-                log_info(
-                    "As no bitfields failed with malloc using that and stopping");
-                handle_best_cleanup();
-                // Should never get here as above terminates
-            case FAILED_MALLOC:
-            case FAILED_TO_COMPRESS:
-            case RAN_OUT_OF_TIME:
-            case FORCED_BY_COMPRESSOR_CONTROL:
-                // shut that compressor down for good
-                comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-                routing_table_utils_free_all(
-                    comms_sdram[processor_id].routing_tables);
-            case UNUSED:
-            case PREPARED:
-                // nothing to do!
-                return;
-            case COMPRESSING:
-                // stay in the loop;
-                break;
-        }
-    }
-}
-
-void stop_all_and_try_no_bitfield_again(int no_bitfield_processor_id) {
-    if (no_bit_field_retried) {
-        log_info("not bitfield malloc failed a second time GIVING UP!");
-        malloc_extras_terminate(RTE_SWERR);
-    }
-    no_bit_field_retried = true;
-    // tell all processors to stop
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        send_force_stop_message(processor_id);
-    }
-
-    // check they are all stopped and cleared
-    for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        if (processor_id == no_bitfield_processor_id) {
-            routing_table_utils_free_all(
-                comms_sdram[processor_id].routing_tables);
-        } else {
-            check_processor_stopped(processor_id);
-        }
-    }
-
-    // retry no bitfield on only core left;
-    setup_no_bitfields_attempt();
-}
-
 
 //! brief handle the fact that a midpoint failed due to a malloc
 //! \param[in] mid_point: the mid point that failed
 //! \param[in] processor_id: the compressor processor id
 void process_failed_malloc(int mid_point, int processor_id) {
-    if (mid_point == 0)  {
-        stop_all_and_try_no_bitfield_again(processor_id);
-    } else {
-        routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    // Remove the flag that say this midpoint has been checked
+    bit_field_clear(tested_mid_points, mid_point);
+    if (last_malloc_failed == LAST_RESULT_NOT_MALLOC_FAIL) {
+        // Remove the flag that say this midpoint has been checked
+        bit_field_clear(tested_mid_points, mid_point);
         // this will threshold the number of compressor processors that
         // can be ran at any given time.
         comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-        // Remove the flag that say this midpoint has been checked
+        last_malloc_failed = mid_point;
+    } else if (last_malloc_failed == mid_point) {
+        if (mid_point == 0) {
+            log_error("No bitfeild failed to malloc twice! Giving up");
+            malloc_extras_terminate(EXIT_FAIL);
+        }
+        log_info("Repeated malloc fail detected at %d", mid_point);
+        comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
+        // Not resetting tested_mid_points as failed twice
+    } else {
+        log_info("Multiple malloc detected on %d keeping processor %d",
+            mid_point, processor_id);
         bit_field_clear(tested_mid_points, mid_point);
-        routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+        // Not thresholding as just did a threshold
+        // Every other malloc should result in a thresholded
+        // This ensures we do not end in a endless loop of malloc fails
+        last_malloc_failed = LAST_RESULT_NOT_MALLOC_FAIL;
     }
 }
 
@@ -762,6 +729,8 @@ void process_failed(int mid_point, int processor_id) {
             send_force_stop_message(processor_id);
         }
     }
+
+    last_malloc_failed = LAST_RESULT_NOT_MALLOC_FAIL;
 }
 
 //! \brief processes the response from the compressor attempt
@@ -781,9 +750,10 @@ void process_compressor_response(
         // compressor was successful at compressing the tables.
         case SUCCESSFUL_COMPRESSION:
             log_info(
-                "successful from processor %d doing mid point %d",
-                processor_id, mid_point);
-            process_success(processor_id);
+                "successful from processor %d doing mid point %d "
+                "best so far was %d",
+                processor_id, mid_point, best_success);
+            process_success(mid_point, processor_id);
             break;
 
         // compressor failed as a malloc request failed.
@@ -875,7 +845,7 @@ void start_binary_search(void) {
 
     uint32_t mid_point = sorted_bit_fields->n_bit_fields;
     while ((available > 0) && (mid_point > 0)) {
-        int processor_id = find_compressor_processor_and_set_tracker(0);
+        int processor_id = find_compressor_processor_and_set_tracker(mid_point);
         // Check the processor replied and has not been turned of by previous
         if (processor_id == FAILED_TO_FIND) {
             log_error("No processor available in start_binary_search");
