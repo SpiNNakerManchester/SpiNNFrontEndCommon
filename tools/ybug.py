@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 import struct
 import time
@@ -655,6 +656,107 @@ def cmd_sdump(cmd):
                 raise ValueError("length mismatch")
             f.write(data)
             byte_count += chunk_len
+
+
+# ------------------------------------------------------------------------------
+
+
+Cs = ("----", "PWRDN", "RTE", "WDOG", "INIT", "WAIT",  "SARK", "RUN", "SYNC0",
+      "SYNC1", "PAUSE", "EXIT", "ST_12", "ST_13", "ST_14", "IDLE")
+Rte = ("NONE", "RESET", "UNDEF", "SVC", "PABT", "DABT", "IRQ", "FIQ", "VIC",
+       "ABORT", "MALLOC", "DIV0", "EVENT", "SWERR", "IOBUF", "ENABLE", "NULL",
+       "PKT", "TIMER", "API", "VER")
+
+
+def cpu_dump(num, long, fmt):
+    base = sv.read_var("sv.vcpu_base")
+    sv.base("vcpu", base + sv.size("vcpu") * num)
+    sv.read_struct("vcpu")
+
+    timestamp = sv.get_var("vcpu.time")
+    et = time.time() - timestamp
+    if timestamp:
+        _time = datetime.fromtimestamp(timestamp).strftime("%d %b %H:%M")
+        et = "{:d}:{:02d}:{:02d}".format(et // 3600, (et // 60) % 60, et % 60)
+    else:
+        _time = " " * 12
+        et = " " * 9
+
+    if long:
+        rt_code = sv.get_var("vcpu.rt_code")
+        print("Core {:2d}: app \"{}\", state {}, app_id {}, "
+              "running {} ({})".format(
+            num, sv.get_var("vcpu.app_name"), Cs[sv.get_var("vcpu.cpu_state")],
+            sv.get_var("vcpu.app_id"), et, _time))
+        print("AP mbox:   cmd      {:02x}  msg     {:08x}".format(
+            sv.get_var("vcpu.mbox_ap_cmd"), sv.get_var("vcpu.mbox_ap_msg")))
+        print("MP mbox:   cmd      {:02x}  msg     {:08x}".format(
+            sv.get_var("vcpu.mbox_mp_cmd"), sv.get_var("vcpu.mbox_mp_msg")))
+        print("SW error:  line {:6d}  file    {:08x} count {}".format(
+            sv.get_var("vcpu.sw_line"), sv.get_var("vcpu.sw_file"),
+            sv.get_var("vcpu.sw_count")))
+        print("RT error:  {:-6s}  PSR     {:08x} SP {:08x} LR {:08x}".format(
+            Rte[rt_code], sv.get_var("vcpu.psr"),
+            sv.get_var("vcpu.sp"), sv.get_var("vcpu.lr")))
+        if rt_code:
+            print("r0-r7: {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} "
+                  "{:08x}".format(
+                sv.get_var("vcpu.r0"), sv.get_var("vcpu.r1"),
+                sv.get_var("vcpu.r2"), sv.get_var("vcpu.r3"),
+                sv.get_var("vcpu.r4"), sv.get_var("vcpu.r5"),
+                sv.get_var("vcpu.r6"), sv.get_var("vcpu.r7")))
+    else:
+        if not num:
+            print("Core State  Application       ID   ", end="")
+            if fmt == 0:
+                print("Running  Started")
+                print("---- -----  -----------       --   -------  -------")
+            elif fmt == 1 or fmt == 2:
+                print("     User0      User1      User2      User3")
+                print("---- -----  -----------       --        -----      "
+                      "-----      -----      -----")
+            else:
+                print("PCore  SWver")
+                print("---- -----  -----------       --   -----  --------")
+        print("{:3d}  {:-6s} {:-16s} {:3d} ".format(
+            num, Cs[sv.get_var("vcpu.cpu_state")],
+            sv.get_var("vcpu.app_name"), sv.get_var("vcpu.app_id")), end="")
+        if fmt == 1:
+            print("    {:08x}   {:08x}   {:08x}   {:08x}".format(
+                sv.get_var("vcpu.user0"), sv.get_var("vcpu.user1"),
+                sv.get_var("vcpu.user2"), sv.get_var("vcpu.user3")))
+        elif fmt == 2:
+            print("  {:10u} {:10u} {:10u} {:10u}".format(
+                sv.get_var("vcpu.user0"), sv.get_var("vcpu.user1"),
+                sv.get_var("vcpu.user2"), sv.get_var("vcpu.user3")))
+        elif fmt == 3:
+            v = sv.get_var("vcpu.sw_ver")
+            print("   {:2u}    {}.{}.{}".format(
+                sv.get_var("vcpu.phys_cpu"),
+                (v >> 16) & 255, (v >> 8) & 255, v & 255))
+        else:
+            swc = sv.get_var("vcpu.sw_count")
+            print("{:9s}  {} {}".format(
+                et, _time, (" SWC {}".format(swc) if swc else "")))
+
+
+def cmd_ps(cmd):
+    if cmd.count > 1:
+        raise BadArgs
+
+    if cmd.count == 1 and re.match(r"^\d+$", cmd.arg(0)):
+        vc = int(cmd.arg(0))
+        if not 0 <= vc < 18:
+            raise BadArgs
+        cpu_dump(vc, 1, 0)
+    elif cmd.count == 1 and cmd.arg(0) in ("x", "d", "p"):
+        arg = cmd.arg(0)
+        fmt = 1 if arg == "x" else 2 if arg == "d" else 3
+        for vc in range(18):
+            cpu_dump(vc, 0, fmt)
+    else:
+        for vc in range(18):
+            cpu_dump(vc, 0, 0)
 
 
 # ------------------------------------------------------------------------------
