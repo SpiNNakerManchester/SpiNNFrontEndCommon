@@ -691,8 +691,8 @@ void process_failed_malloc(int mid_point, int processor_id) {
         last_malloc_failed = mid_point;
     } else if (last_malloc_failed == mid_point) {
         if (mid_point == 0) {
-            log_error("No bitfeild failed to malloc twice! Giving up");
-            malloc_extras_terminate(EXIT_FAIL);
+            // Dont give up on mid point zero
+            bit_field_clear(tested_mid_points, mid_point);
         }
         log_info("Repeated malloc fail detected at %d", mid_point);
         comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
