@@ -76,6 +76,9 @@ typedef void (*resume_callback_t)(void);
 //! is sent and models want to do cleaning up
 typedef void (*exit_callback_t)(void);
 
+//! the definition of the callback used to call a function once at start
+typedef resume_callback_t start_callback_t;
+
 //! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
 //!        which is formatted as:
@@ -107,6 +110,43 @@ bool simulation_initialise(
         uint32_t *infinite_run_pointer, uint32_t *time_pointer,
         int sdp_packet_callback_priority, int dma_transfer_complete_priority);
 
+//! \brief initialises the simulation interface for step-based simulation,
+//! which involves:
+//! 1. Reading the timing details for the simulation out of a region,
+//!        which is formatted as:
+//!            uint32_t magic_number;
+//!            uint32_t timer_period; (ignored in this case)
+//!            uint32_t n_simulation_steps;
+//! 2. setting the simulation SDP port code that supports multiple runs of the
+//! executing code through front end calls.
+//! 3. setting up the registration for storing provenance data
+//! \param[in] address The address of the region
+//! \param[in] expected_application_magic_number The expected value of the magic
+//!            number that checks if the data was meant for this code
+//! \param[in] simulation_steps_pointer Pointer to the number of simulation
+//!            steps, to allow this to be updated when requested via SDP
+//! \param[in] infinite_steps_pointer Pointer to the infinite steps flag, to
+//!            allow this to be updated when requested via SDP
+//! \param[in] step_pointer Pointer to the current step, to allow this to be
+//!            updated when requested via SDP
+//! \param[in] sdp_packet_callback_priority The priority to use for the
+//!            SDP packet reception
+//! \param[in] dma_transfer_complete_priority The priority to use for the
+//!            DMA transfer complete callbacks
+//! \return True if the data was found, false otherwise
+static inline bool simulation_steps_initialise(
+        address_t address, uint32_t expected_application_magic_number,
+        uint32_t *simulation_steps_pointer, uint32_t *infinite_steps_pointer,
+        uint32_t *step_pointer, int sdp_packet_callback_priority,
+        int dma_transfer_complete_priority) {
+    // Use the normal simulation initialise, passing in matching parameters
+    uint32_t unused_timer_period;
+    return simulation_initialise(address, expected_application_magic_number,
+        &unused_timer_period, simulation_steps_pointer, infinite_steps_pointer,
+        step_pointer, sdp_packet_callback_priority,
+        dma_transfer_complete_priority);
+}
+
 //! \brief Set the address of the data region where provenance data is to be
 //!        stored
 //! \param[in] provenance_data_address: the address where provenance data should
@@ -125,6 +165,11 @@ void simulation_set_provenance_function(
 //! \param[in] exit_function: function to call when the host tells the
 //!            simulation to exit. Executed before API exit.
 void simulation_set_exit_function(exit_callback_t exit_function);
+
+//! \brief Set an additional function to call before starting the binary
+//! \param[in] start_function: function to call when the host tells the
+//!            simulation to start.  Executed before "synchronisation".
+void simulation_set_start_function(start_callback_t start_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.  Note that
@@ -167,5 +212,12 @@ bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback);
 //! \brief turns off a registered callback for a given DMA transfer done tag
 //! \param[in] tag: the DMA transfer tag to de-register
 void simulation_dma_transfer_done_callback_off(uint tag);
+
+//! \brief set whether the simulation uses the timer.  By default it will
+//!        be assumed that simulations use the timer unless this function is
+//!        called.
+//! \param[in] sim_uses_timer: Whether the simulation uses the timer (true)
+//!                            or not (false)
+void simulation_set_uses_timer(bool sim_uses_timer);
 
 #endif // _SIMULATION_H_

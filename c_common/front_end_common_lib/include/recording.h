@@ -189,4 +189,12 @@ void recording_reset(void);
 //! \param[in] time: the current simulation time
 void recording_do_timestep_update(timer_t time);
 
+//! \brief Call once per step to ensure buffering is done - should only
+//!        be called if recording flags is not 0
+static inline void recording_do_step_update(uint32_t step) {
+    // Simply call the timestep version as this does the same thing;
+    // This "copy" exists to make the interface nicer for untimed models
+    recording_do_timestep_update(step);
+}
+
 #endif // _RECORDING_H_
