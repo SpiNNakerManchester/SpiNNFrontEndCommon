@@ -611,7 +611,7 @@ bool recording_initialize(
                 return false;
             }
             sdram_region_ptrs[counter] = region_addresses[counter];
-            log_info("recording address is %x", region_addresses[counter]);
+            log_debug("recording address is %x", region_addresses[counter]);
             *recording_flags = (*recording_flags | (1 << counter));
         } else {
             sdram_region_ptrs[counter] = NULL;
@@ -674,7 +674,7 @@ void recording_reset(void) {
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            log_info("Recording channel %u configured to use %u byte memory block"
+            log_debug("Recording channel %u configured to use %u byte memory block"
                     " starting at 0x%08x",
                     i, region_size, g_recording_channels[i].start);
         } else {
@@ -688,7 +688,7 @@ void recording_reset(void) {
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            log_info("Recording channel %u left uninitialised", i);
+            log_debug("Recording channel %u left uninitialised", i);
         }
     }
     recording_buffer_state_data_write();
