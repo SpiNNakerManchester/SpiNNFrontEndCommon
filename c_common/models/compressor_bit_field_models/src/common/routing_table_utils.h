@@ -34,7 +34,7 @@
 //! \brief Does all frees for the multi_table object except maybe the first
 // \param[in] tables: pointer to the matadata to be freed
 // compressed table is not freed.
-void routing_table_utils_free_all(multi_table_t* tables) {
+void routing_table_utils_free_all(multi_table_t *restrict tables) {
     if (tables->n_sub_tables == 0) {
         // Already freed or never malloced
         return;
@@ -56,7 +56,8 @@ void routing_table_utils_free_all(multi_table_t* tables) {
 //! Will NOT Free the space any previous tables held
 //! \param[in] max_entries: maximum number of entries table should hold
 //! \return True if and only if all table(s) could be malloced
-bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
+bool routing_table_utils_malloc(
+        multi_table_t *restrict tables, uint32_t max_entries) {
     malloc_extras_check_all_marked(70016);
     tables->n_sub_tables = ((max_entries + 1) >> TABLE_SHIFT) + 1;
     log_debug("n table %d max entries %d", tables->n_sub_tables, max_entries);
@@ -94,8 +95,10 @@ bool routing_table_utils_malloc(multi_table_t* tables, uint32_t max_entries) {
 //! May RTE if the routing table has too many entries to fit into a router
 //! However this behaviour should not be counted on in the future
 // \return A pointer to a traditional router table
-table_t* routing_table_utils_convert(multi_table_t* tables) {
-    log_debug("converting table with %d entries over %d tables", tables->n_sub_tables, tables->n_entries);
+table_t* routing_table_utils_convert(
+        multi_table_t *restrict tables) {
+    log_debug("converting table with %d entries over %d tables",
+            tables->n_sub_tables, tables->n_entries);
     if (tables->n_entries > TABLE_SIZE) {
         log_error(
             "At %d There are too many entries to convert to a table_t",

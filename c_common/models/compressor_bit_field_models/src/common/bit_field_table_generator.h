@@ -35,9 +35,10 @@
 //!
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \param[in] mid_point: where in the sorted bitfields to go to
-int count_unique_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
-    int* sort_order =  sorted_bit_fields->sort_order;
+int count_unique_keys(
+        sorted_bit_fields_t *restrict sorted_bit_fields, int midpoint) {
+    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict restrict sort_order =  sorted_bit_fields->sort_order;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
     int count = 0;
     uint32_t last_key = -1;
@@ -57,8 +58,8 @@ int count_unique_keys(sorted_bit_fields_t *sorted_bit_fields, int midpoint) {
 //! \param[in] bit_field_processor: List of the processors for each bitfield
 //! \param[in] bf_found: Number of bitfields found.
 void generate_table(
-    entry_t original_entry, filter_info_t** filters,
-    uint32_t* bit_field_processors, int bf_found) {
+    entry_t original_entry, filter_info_t **restrict filters,
+    uint32_t *restrict bit_field_processors, int bf_found) {
 
     uint32_t n_atoms = filters[0]->n_atoms;
 
@@ -109,12 +110,12 @@ void generate_table(
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return size of table(s) to be generated in entries
 static inline uint32_t bit_field_table_generator_max_size(int mid_point,
-        table_t *uncompressed_table,
-        sorted_bit_fields_t *sorted_bit_fields) {
+        table_t *restrict uncompressed_table,
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
 
     // semantic sugar to avoid referencing
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
-    int* sort_order =  sorted_bit_fields->sort_order;
+    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict sort_order =  sorted_bit_fields->sort_order;
 
     // Start with the size of the uncompressed table
     uint32_t max_size =  uncompressed_table->size;
@@ -145,17 +146,17 @@ static inline uint32_t bit_field_table_generator_max_size(int mid_point,
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 static inline void bit_field_table_generator_create_bit_field_router_tables(
         int mid_point,
-        table_t *uncompressed_table,
-        sorted_bit_fields_t *sorted_bit_fields) {
+        table_t *restrict uncompressed_table,
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
     // semantic sugar to avoid referencing
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
-    int* processor_ids = sorted_bit_fields->processor_ids;
-    int* sort_order =  sorted_bit_fields->sort_order;
-    entry_t* original = uncompressed_table->entries;
+    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    int *restrict sort_order =  sorted_bit_fields->sort_order;
+    entry_t *restrict original = uncompressed_table->entries;
     uint32_t original_size =  uncompressed_table->size;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
 
-    filter_info_t* filters[MAX_PROCESSORS];
+    filter_info_t * filters[MAX_PROCESSORS];
     uint32_t bit_field_processors[MAX_PROCESSORS];
     int bf_i = 0;
     log_debug("pre size %d", routing_table_get_n_entries());
@@ -184,8 +185,8 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
 
 //! \brief debugging print for a pointer to a table.
 //! \param[in] table: the table pointer to print
-void print_table(table_t* table) {
-   entry_t* entries = table->entries;
+void print_table(table_t * table) {
+   entry_t *restrict entries = table->entries;
    for (uint32_t i = 0; i < table->size; i++) {
         log_info("i %u, key %u, mask %u, route %u, source %u",
         i, entries[i].key_mask.key, entries[i].key_mask.mask,
@@ -198,7 +199,7 @@ void print_table(table_t* table) {
 //! \param[in] table: the table to sort.
 void sort_table_by_key(table_t* table) {
     uint32_t size = table->size;
-    entry_t* entries = table->entries;
+    entry_t *restrict entries = table->entries;
     for (uint32_t i = 0; i < size - 1; i++){
         for (uint32_t j = i + 1; j < size; j++) {
             if (entries[i].key_mask.key > entries[j].key_mask.key) {

@@ -65,7 +65,7 @@ instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 compressor_states previous_compressor_state = UNUSED;
 
 // Sdram are used for comminication between sorter and THIS compressor
-comms_sdram_t *comms_sdram;
+comms_sdram_t *restrict comms_sdram;
 
 // ---------------------------------------------------------------------
 
@@ -336,8 +336,9 @@ void initialise(void) {
     log_info("Setting up stuff to allow bitfield compressor to occur.");
 
     log_info("reading time_for_compression_attempt");
-    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
-    vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
+    vcpu_t *restrict sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    vcpu_t *restrict this_vcpu_info =
+        &sark_virtual_processor_info[spin1_get_core_id()];
 
     uint32_t time_for_compression_attempt = this_vcpu_info->user1;
     log_info("time_for_compression_attempt = %d", time_for_compression_attempt);

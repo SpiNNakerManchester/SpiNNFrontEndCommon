@@ -73,13 +73,13 @@ uint32_t time_per_iteration = 0;
 uint32_t finish_compression_flag = 0;
 
 //! \brief easier programming tracking of the user registers
-uncompressed_table_region_data_t *uncompressed_router_table; // user1
+uncompressed_table_region_data_t *restrict uncompressed_router_table; // user1
 
 //! \brief stores the locations of bitfields from app processors
-region_addresses_t *region_addresses; // user2
+region_addresses_t *restrict region_addresses; // user2
 
 //! \brief stores of sdram blocks the fake heap can use
-available_sdram_blocks *usable_sdram_regions; // user3
+available_sdram_blocks *restrict usable_sdram_regions; // user3
 
 // Best midpoint that record a success
 int best_success = FAILED_TO_FIND;
@@ -91,20 +91,20 @@ int lowest_failure;
 int last_search_point = 0;
 
 //! \brief the store for the last routing table that was compressed
-table_t* last_compressed_table = NULL;
+table_t *restrict last_compressed_table = NULL;
 
 //! \brief the compressor app id
 uint32_t app_id = 0;
 
 //! \brief the list of bitfields in sorted order based off best effect, and
 //! processor ids.
-sorted_bit_fields_t* sorted_bit_fields;
+sorted_bit_fields_t *restrict sorted_bit_fields;
 
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
 //! \brief SDRAM used to commimnicate with the compressors
-comms_sdram_t *comms_sdram;
+comms_sdram_t *restrict comms_sdram;
 
 //! brief record of the last mid_point to return a malloc failed
 int last_malloc_failed = LAST_RESULT_NOT_MALLOC_FAIL;
@@ -261,7 +261,7 @@ static inline void malloc_tables_and_set_off_bit_compressor(
 //! \param[in] processor_id: the processor id to find the region id in the
 //! addresses
 //! \return the address in the addresses region for the processor id
-static inline filter_region_t* find_processor_bit_field_region(
+static inline filter_region_t * find_processor_bit_field_region(
         int processor_id){
 
     // find the right bitfield region
@@ -935,10 +935,11 @@ void start_compression_process(uint unused0, uint unused1) {
 //!  during coding.
 static void initialise_user_register_tracker(void) {
     log_debug("set up user register tracker (easier reading)");
-    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
-    vcpu_t *this_vcpu_info = &sark_virtual_processor_info[spin1_get_core_id()];
+    vcpu_t *restrict sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    vcpu_t *restrict this_vcpu_info =
+        &sark_virtual_processor_info[spin1_get_core_id()];
 
-    data_specification_metadata_t * app_ptr_table =
+    data_specification_metadata_t *restrict app_ptr_table =
         (data_specification_metadata_t *) this_vcpu_info->user0;
     uncompressed_router_table =
         (uncompressed_table_region_data_t *) this_vcpu_info->user1;

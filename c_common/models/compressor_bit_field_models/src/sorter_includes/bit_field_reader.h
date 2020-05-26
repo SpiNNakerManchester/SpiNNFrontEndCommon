@@ -34,7 +34,8 @@ uint32_t processor_totals[MAX_PROCESSORS];
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
 //! \return how many redundant packets there are
-static uint32_t detect_redundant_packet_count(filter_info_t *filter_info) {
+static uint32_t detect_redundant_packet_count(
+        filter_info_t *restrict filter_info) {
     uint32_t n_filtered_packets = 0;
     uint32_t n_neurons = filter_info->n_atoms;
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++) {
@@ -47,11 +48,12 @@ static uint32_t detect_redundant_packet_count(filter_info_t *filter_info) {
 
 //! \brief Fills in the order column based on packet reduction
 //! \param[in] sorted_bit_fields: data to be ordered
-static inline void order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
+static inline void order_bitfields(
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
     // Semantic sugar to avoid extra lookup all the time
-    int* processor_ids = sorted_bit_fields->processor_ids;
-    int* sort_order =  sorted_bit_fields->sort_order;
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    int *restrict sort_order =  sorted_bit_fields->sort_order;
+    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
 
     // To label each row in sort order
     for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
@@ -105,16 +107,17 @@ static inline void order_bitfields(sorted_bit_fields_t* sorted_bit_fields) {
 // DEAD code but felt as it shows how it could be sorted by order fast
 //! brief Sorts the data bases on the sort_order array
 //! \param[in] sorted_bit_fields: data to be ordered
-static inline void sort_by_order(sorted_bit_fields_t* sorted_bit_fields) {
+static inline void sort_by_order(
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
     // Everytime there is a swap at least one of the rows is moved to the
     //         final place.
     //  There is one check per row in the for loop plus if the first fails
     //        up to one more for each row about to be moved to the correct place.
 
     malloc_extras_check_all_marked(60011);
-    int* processor_ids = sorted_bit_fields->processor_ids;
-    int* sort_order = sorted_bit_fields->sort_order;
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    int *restrict sort_order = sorted_bit_fields->sort_order;
+    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
     // Check each row in the lists
     for (int i = 0; i < sorted_bit_fields->n_bit_fields; i++) {
         // check that the data is in the correct place
@@ -137,13 +140,13 @@ static inline void sort_by_order(sorted_bit_fields_t* sorted_bit_fields) {
 
 //! brief Sorts the data bases on the bitfield key.
 //! \param[in] sorted_bit_fields: data to be ordered
-static inline void sort_by_key(sorted_bit_fields_t* sorted_bit_fields) {
+static inline void sort_by_key(sorted_bit_fields_t *restrict sorted_bit_fields) {
     malloc_extras_check_all_marked(60031);
     
     // Semantic sugar to avoid extra lookup all the time
-    int* processor_ids = sorted_bit_fields->processor_ids;
-    int* sort_order = sorted_bit_fields->sort_order;
-    filter_info_t** bit_fields = sorted_bit_fields->bit_fields;
+    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    int *restrict sort_order = sorted_bit_fields->sort_order;
+    filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
     
     // Everytime there is a swap at least one of the rows is moved to the
     //         final place.
@@ -172,7 +175,8 @@ static inline void sort_by_key(sorted_bit_fields_t* sorted_bit_fields) {
 //! \brief debugger support. prints sorted bitfields and tests malloc.
 //! \param[in] sorted_bit_fields: the sorted bitfields
 //! \param[in]  marker: the marker to hand to malloc checker.
-static void print_structs(sorted_bit_fields_t* sorted_bit_fields, int marker) {
+static void print_structs(
+        sorted_bit_fields_t *restrict sorted_bit_fields, int marker) {
     // useful for debugging
     for (int index = 0; index < sorted_bit_fields->n_bit_fields; index++) {
         log_debug(
@@ -194,15 +198,16 @@ static void print_structs(sorted_bit_fields_t* sorted_bit_fields, int marker) {
 //! \param[in] sorted_bit_fields: the sorted bitfield struct with bitfields
 //! in sorted order.
 static inline void fills_in_sorted_bit_fields_and_tracker(
-        region_addresses_t *region_addresses, 
-        sorted_bit_fields_t* sorted_bit_fields) {
+        region_addresses_t *restrict region_addresses,
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
     int index = 0;
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         
         // locate data for malloc memory calcs
-        filter_region_t *filter_region = region_addresses->triples[r_id].filter;
+        filter_region_t *restrict filter_region =
+            region_addresses->triples[r_id].filter;
         int processor = region_addresses->triples[r_id].processor;
 
         if (filter_region->n_redundancy_filters == 0) {
@@ -243,8 +248,8 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
 //! bitfields in sorted order will be populated.
 //! \return bool that states if it succeeded or not.
 static inline void bit_field_reader_read_in_bit_fields(
-        region_addresses_t *region_addresses,
-        sorted_bit_fields_t* sorted_bit_fields) {
+        region_addresses_t *restrict region_addresses,
+        sorted_bit_fields_t *restrict sorted_bit_fields) {
 
     //init data tracking structures
     for (int i = 0; i < MAX_PROCESSORS; i++) {
@@ -287,11 +292,12 @@ static inline void bit_field_reader_read_in_bit_fields(
 //! bitfield addresses
 //! \return the pointer to the sorted memory tracker, or NULL if any of the
 //! MALLOC's failed for any reason.
-static inline sorted_bit_fields_t* bit_field_reader_initialise(
-        region_addresses_t *region_addresses) {
-    sorted_bit_fields_t* sorted_bit_fields = MALLOC_SDRAM(
+static inline sorted_bit_fields_t * bit_field_reader_initialise(
+        region_addresses_t *restrict region_addresses) {
+    sorted_bit_fields_t *restrict sorted_bit_fields = MALLOC_SDRAM(
         sizeof(sorted_bit_fields_t));
-    if (sorted_bit_fields == NULL) {
+    if (sorted_bit_fields
+     == NULL) {
         log_error("failed to allocate dtcm for sorted bitfields.");
         return NULL;
     }

@@ -105,7 +105,7 @@ void routing_table_append_entry(entry_t original_entry) {
 //! \param[in] source: The key for the new entry to be added
 void routing_table_append_new_entry(
         uint32_t key, uint32_t mask, uint32_t route, uint32_t source) {
-    entry_t *new_entry = routing_table_append_get_entry();
+    entry_t *restrict new_entry = routing_table_append_get_entry();
     new_entry->key_mask.key = key;
     new_entry->key_mask.mask = mask;
     new_entry->source = source;
@@ -134,7 +134,7 @@ void routing_tables_init(multi_table_t* table) {
 
 //! \brief Saves the Metadata to the multi_table object
 //! \param[in] table: Pointer to the metadata to save to
-void routing_tables_save(multi_table_t* tables) {
+void routing_tables_save(multi_table_t *restrict tables) {
     tables->sub_tables = sub_tables;
     tables->n_sub_tables = n_sub_tables;
     tables->n_entries = n_entries;
@@ -160,7 +160,7 @@ void routing_table_remove_from_size(int size_to_remove) {
 //! Will NOT Free the space any previous tables held
 //! Makes a Deep copy of the original
 //! \return True if and only if all table(s) could be malloced
-void routing_table_clone_table(table_t* original) {
+void routing_table_clone_table(table_t *restrict original) {
     for (uint32_t i = 0; i < original->size; i++) {
         routing_table_append_entry(original->entries[i]);
     }
