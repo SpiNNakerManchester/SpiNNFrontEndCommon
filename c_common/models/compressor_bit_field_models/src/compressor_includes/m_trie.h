@@ -34,44 +34,46 @@
 
 //! \brief Short routing table entry resulting from an m-trie
 typedef struct m_trie_entry_t {
-    // key_mask of the entry
+    //! key_mask of the entry
     key_mask_t key_mask;
 
-    // Sources of packets in the entry
+    //! Sources of packets in the entry
     uint32_t source;
 } m_trie_entry_t;
 
-// \brief m-Trie structure
+//! \brief m-Trie structure
 typedef struct m_trie_t {
 
-    // Our parent
+    //! Our parent
     struct _m_trie_node_t *parent;
 
-    // Bit represented by this Node
+    //! Bit represented by this Node
     uint32_t bit;
 
-    // Children of this Node
+    //! First child of this Node
     struct m_trie_t *child_0;
+    //! Second child of this Node
     struct m_trie_t *child_1;
+    //! Third child of this Node
     struct m_trie_t *child_X;
 
-    // Source(s) of packets which "reach" this node
+    //! Source(s) of packets which "reach" this node
     uint32_t source;
 } m_trie_t;
 
-//\brief Sub table structure used to hold partially-minimised routing tables
+//! \brief Sub table structure used to hold partially-minimised routing tables
 typedef struct sub_table_t {
 
-    // Number of entries in the sub table
+    //! Number of entries in the sub table
     unsigned int n_entries;
 
-    // Route of all entries in the sub table
+    //! Route of all entries in the sub table
     uint32_t route;
 
-    // Entries in the sub table
+    //! Entries in the sub table
     m_trie_entry_t *entries;
 
-    // Next sub table in the chain
+    //! Next sub table in the chain
     struct sub_table *next;
 } sub_table_t;
 

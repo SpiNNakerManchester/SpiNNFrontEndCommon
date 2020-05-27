@@ -22,18 +22,18 @@
 #include "../common/routing_table.h"
 #include "../common/key_mask.h"
 
-//! \merge struct. entries which can be merged
+//! \brief merge struct. entries which can be merged
 typedef struct merge_t {
-    // Set of entries included in the merge
+    //! Set of entries included in the merge
     bit_set_t entries;
 
-    // key_mask resulting from the merge
+    //! key_mask resulting from the merge
     key_mask_t key_mask;
 
-    // Route taken by entries in the merge
+    //! Route taken by entries in the merge
     uint32_t route;
 
-    // Collective source of entries in the route
+    //! Collective source of entries in the route
     uint32_t source;
 } merge_t;
 

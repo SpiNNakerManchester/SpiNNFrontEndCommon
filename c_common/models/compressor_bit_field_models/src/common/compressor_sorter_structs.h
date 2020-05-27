@@ -26,7 +26,7 @@
 
 //! \brief the acceptable finish states
 typedef enum compressor_states {
-    // Flag to say this core has never been used or prepared
+   // Flag to say this core has never been used or prepared
    UNUSED = 30,
    // Flag to say compressor is ready to run.  This clears previous results
    PREPARED = 31,
@@ -65,56 +65,58 @@ typedef enum instructions_to_compressor {
 
 //! \brief struct holding key and mask
 typedef struct key_mask_t {
-    // Key for the key_mask
+    //! Key for the key_mask
     uint32_t key;
 
-    // Mask for the key_mask
+    //! Mask for the key_mask
     uint32_t mask;
 } key_mask_t;
 
 //! \brief struct holding routing table entry data
 typedef struct entry_t {
-    // Key and mask
+    //! Key and mask
     key_mask_t key_mask;
 
-    // Routing direction
+    //! Routing direction
     uint32_t route;
 
-    // Source of packets arriving at this entry
+    //! Source of packets arriving at this entry
     uint32_t source;
 } entry_t;
 
 //! \brief struct for holding table entries
 typedef struct table_t {
 
-    // Number of entries in the table
+    //! Number of entries in the table
     uint32_t size;
 
-    // Entries in the table
+    //! Entries in the table
     entry_t entries[];
 } table_t;
 
 //! \brief struct for holding the data to init routing_table.h
 typedef struct multi_table_t {
-    // The individual subtables
+    //! The individual subtables
     table_t** sub_tables;
-    // The number of individual subtables
+    //! The number of individual subtables
     uint32_t n_sub_tables;
-    // The number of entry_t entires actually in the tables.
+    //! The number of entry_t entires actually in the tables.
     int n_entries;
 } multi_table_t;
 
 //! \brief the lis of cores that can be used as compressor processor
 typedef struct compressor_processors_top_t {
+    //! The number of processor_id(s) in the list
     uint32_t n_processors;
+    //! List of the ids of processors that can be used as compressors
     uint32_t processor_id[];
 } compressor_processors_top_t;
 
 //! \brief uncompressed routing table region
 typedef struct uncompressed_table_region_data_t{
-    // the app id
+    //! the app id
     uint32_t app_id;
-    // table struct
+    //! table struct
     table_t uncompressed_table;
 } uncompressed_table_region_data_t;
 
@@ -134,31 +136,41 @@ typedef struct sorted_bit_fields_t{
 
 //! \brief sdram area to communicate between sorter and compressor
 typedef struct comms_sdram_t {
+    //! The state the compressor is in
     compressor_states compressor_state;
+    //! The last instruction passed from the sorter to the compressor
     instructions_to_compressor sorter_instruction;
-    // how many bit fields were used to make those tables
+    //! how many bit fields were used to make those tables
     int mid_point;
+    //! Pointer to the shared version of the uncompressed routing table
     table_t* uncompressed_router_table;
-    // Pointer to the uncompressed tables metadata
+    //! Pointer to the uncompressed tables metadata
     multi_table_t *routing_tables;
-    // Pointer to the whole sorted_bit_fields data
+    //! Pointer to the whole sorted_bit_fields data
     sorted_bit_fields_t  *sorted_bit_fields;
-    // initialise value for malloc_extras_
+    //! initialise value for malloc_extras (Same for all compressors)
     heap_t *fake_heap_data;
 } comms_sdram_t;
 
 //! \brief a single mapping in the addresses area
 typedef struct triples_t {
+    //! The bitfield wrapper
     filter_region_t *filter;
+    //! Key and mask associated with the bitfield
     key_atom_data_t *key_atom;
+    //! The core associated with the bitfield
     int processor;
 } triples_t;
 
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
+    //! Miniumum percentage of biffeilds to be merge in (currently ignored)
     int threshold;
+    //! Pointer to the area malloced to hold the comms_sdram
     comms_sdram_t* comms_sdram;
+    //! Number of triples in the list
     int n_triples;
+    //! The mappings
     triples_t triples[];
 } region_addresses_t;
 

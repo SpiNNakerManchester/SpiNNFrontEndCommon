@@ -30,16 +30,16 @@
 
 //! \brief wrapper over bitfield
 typedef struct _bit_set_t {
-    // Keep track of members
+    //! Keep track of members
     unsigned int count;
 
-    // Number of words in _data
+    //! Number of words in _data
     unsigned int n_words;
 
-    // Number of elements which may be in the set
+    //! Number of elements which may be in the set
     unsigned int n_elements;
 
-    // Pointer to data
+    //! Pointer to data
     uint32_t *_data;
 } bit_set_t;
 

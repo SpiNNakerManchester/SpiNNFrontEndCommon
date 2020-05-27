@@ -29,23 +29,24 @@
 /*****************************************************************************/
 /* Vector-like object ********************************************************/
 
+//! \brief Copy of key mask needed for Mundy compressor
 typedef struct _alias_element_t {  // Element of an alias list
-    // key_mask of the element
+    //! key_mask of the element
     key_mask_t key_mask;
 
-    // Source of packets matching the element
+    //! Source of packets matching the element
     uint32_t source;
 } alias_element_t;
 
-// Linked list of arrays
+//! \brief Linked list of arrays
 typedef struct _alias_list_t {
-    // Elements in this instance
+    //! Elements in this instance
     unsigned int n_elements;
-    // Max number of elements in this instance
+    //! Max number of elements in this instance
     unsigned int max_size;
-    // Next element in list of lists
+    //! Next element in list of lists
     struct _alias_list_t *next;
-    // Data region
+    //! Data region
     alias_element_t data;
 } alias_list_t;
 
@@ -126,33 +127,34 @@ void alias_list_delete(alias_list_t *a) {
 
 //! \brief the key union from a key and mask to a 64 bit number
 typedef union a_key_t {
-    // key mast combo
+    //! key mast combo
     key_mask_t km;
 
-    // the 64 bit int version
+    //! the 64 bit int version
     int64_t as_int;
 } a_key_t;
 
-// node struct
+//! \brief node struct
 typedef struct node_t {
-    // Key and value of this node
+    //! Key and value of this node
     a_key_t key;
 
-    // alias ......
+    //! alias ......
     alias_list_t *val;
 
-    // tree level maybe?
+    //! tree level maybe?
     unsigned int level;
 
-    // left child
+    //! left child
     struct node_t *left;
 
-    // right child
+    //! right child
     struct node_t *right;
 } node_t;
 
 //! \brief top of tree
 typedef struct aliases_t {
+    //! pointer to first element
     node_t *root;
 } aliases_t;
 
