@@ -199,7 +199,7 @@ static inline bool pass_instructions_to_compressor(
     uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
 
     bool success = routing_table_utils_malloc(
-        comms_sdram[processor_id].routing_tables, table_size) ;
+        comms_sdram[processor_id].routing_tables, table_size);
     if (!success){
         log_info(
             "failed to create bitfield tables for midpoint %d", mid_point);
