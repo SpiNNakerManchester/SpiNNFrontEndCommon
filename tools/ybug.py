@@ -1,7 +1,9 @@
 from datetime import datetime
 import re
 import struct
+import sys
 import time
+from zlib import crc32
 import tools.cli
 import tools.boot
 import tools.struct
@@ -9,7 +11,6 @@ import tools.cmd
 from tools.util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits,
     sllt_version)
-import sys
 
 # ------------------------------------------------------------------------------
 
@@ -668,6 +669,20 @@ Rte = ("NONE", "RESET", "UNDEF", "SVC", "PABT", "DABT", "IRQ", "FIQ", "VIC",
        "PKT", "TIMER", "API", "VER")
 
 
+def cpu_dump_header(fmt):
+    if fmt == 0:
+        print("Core State  Application       ID   Running  Started")
+        print("---- -----  -----------       --   -------  -------")
+    elif fmt == 1 or fmt == 2:
+        print("Core State  Application       ID   "
+              "     User0      User1      User2      User3")
+        print("---- -----  -----------       --   "
+              "     -----      -----      -----      -----")
+    else:
+        print("Core State  Application       ID   PCore  SWver")
+        print("---- -----  -----------       --   -----  --------")
+
+
 def cpu_dump(num, long, fmt):
     base = sv.read_var("sv.vcpu_base")
     sv.base("vcpu", base + sv.size("vcpu") * num)
@@ -706,18 +721,6 @@ def cpu_dump(num, long, fmt):
                 sv.get_var("vcpu.r4"), sv.get_var("vcpu.r5"),
                 sv.get_var("vcpu.r6"), sv.get_var("vcpu.r7")))
     else:
-        if not num:
-            print("Core State  Application       ID   ", end="")
-            if fmt == 0:
-                print("Running  Started")
-                print("---- -----  -----------       --   -------  -------")
-            elif fmt == 1 or fmt == 2:
-                print("     User0      User1      User2      User3")
-                print("---- -----  -----------       --        -----      "
-                      "-----      -----      -----")
-            else:
-                print("PCore  SWver")
-                print("---- -----  -----------       --   -----  --------")
         print("{:3d}  {:-6s} {:-16s} {:3d} ".format(
             num, Cs[sv.get_var("vcpu.cpu_state")],
             sv.get_var("vcpu.app_name"), sv.get_var("vcpu.app_id")), end="")
@@ -752,11 +755,200 @@ def cmd_ps(cmd):
     elif cmd.count == 1 and cmd.arg(0) in ("x", "d", "p"):
         arg = cmd.arg(0)
         fmt = 1 if arg == "x" else 2 if arg == "d" else 3
+        cpu_dump_header(fmt)
         for vc in range(18):
             cpu_dump(vc, 0, fmt)
     else:
+        cpu_dump_header(0)
         for vc in range(18):
             cpu_dump(vc, 0, 0)
+
+
+# ------------------------------------------------------------------------------
+
+Srom_info = {
+    "25aa1024": {"PAGE": 256, "ADDR": 24},
+    "25aa080a": {"PAGE": 16,  "ADDR": 16},
+    "25aa160b": {"PAGE": 32,  "ADDR": 16}}
+
+
+def cmd_srom_type(cmd):
+    global srom_type
+    if cmd.count > 1:
+        raise BadArgs
+    elif cmd.count == 1:
+        _type = cmd.arg(0)
+        if _type not in Srom_info:
+            raise ValueError("bad SROM type")
+        srom_type = _type
+
+    info = Srom_info[srom_type]
+    print("SROM type {} (page {}, addr {})".format(
+        srom_type, info["PAGE"], info["ADDR"]))
+
+
+def cmd_srom_read(cmd):
+    if cmd.count > 1:
+        raise BadArgs
+    elif cmd.count == 1:
+        addr = int(cmd.arg(0), base=16)
+    else:
+        addr = 0
+
+    data = spin.srom_read(addr, 256, addr_size=Srom_info[srom_type]["ADDR"])
+    hex_dump(data, addr=addr)
+
+
+def cmd_srom_erase(cmd):
+    if cmd.count:
+        raise BadArgs
+    spin.srom_erase()
+
+
+def cmd_srom_write(cmd):
+    if cmd.count != 2:
+        raise BadArgs
+    addr = int(cmd.arg(1), base=16)
+    buf = read_file(cmd.arg(0), 128 * 1024)
+    info = Srom_info[srom_type]
+
+    print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
+
+    spin.srom_write(addr, buf, page_size = info["PAGE"], addr_size=info["ADDR"])
+
+
+def cmd_srom_dump(cmd):
+    if cmd.count != 3:
+        raise BadArgs
+    filename = cmd.arg(0)
+    addr = int(cmd.arg(1), base=16)
+    length = int(cmd.arg(2), base=0)
+    info = Srom_info[srom_type]
+
+    byte_count = 0
+    size = 256
+    buf = b''
+    while byte_count != length:
+        l = min(size, length - byte_count)
+        byte_count += l
+        data = spin.srom_read(addr, l, addr_size=info["ADDR"])
+        addr += l
+        if l != len(data):
+            raise ValueError("length mismatch")
+        buf += data
+
+    print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
+
+    with open(filename, "wb") as f:
+        f.write(buf)
+
+
+# ------------------------------------------------------------------------------
+
+
+def check_ip(s):
+    m = re.match(r"^/(\d+)$", s)
+    if m:
+        s = int(m.group(1))
+        if not 8 <= s <= 32:
+            raise ValueError("bad netmask shorthand")
+        s = (0xFFFFFFFF << (32 - s)) & 0xFFFFFFFF
+        s = ".".join((s >> x) & 0xFF for x in (24, 16, 8, 0))
+    elif not re.match(r"^\d+\.\d+\.\d+\.\d+$", s):
+        raise ValueError("bad IP address")
+
+    v = s.split(".")
+    if not all(0 <= n <= 255 for n in v):
+        raise ValueError("bad IP address")
+    v.reverse()
+    return v
+
+
+def get_srom_info(long):
+    addr = 8
+    length = 32
+
+    # NB: this data is BIG ENDIAN
+    d = struct.unpack_from(">8B 4B 4B 4B 2B H", spin.srom_read(
+        addr, length, addr_size=Srom_info[srom_type]["ADDR"]))
+
+    flag = (d[2] << 8) + d[3]
+    mac = "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}".format(
+        d[1], d[0], d[7], d[6], d[5], d[4])
+    ip = ".".join(map(str, d[11:7:-1]))
+    gw = ".".join(map(str, d[15:11:-1]))
+    nm = ".".join(map(str, d[19:15:-1]))
+    port = d[22]
+
+    if long:
+        print("Flag: {:04x}".format(flag))
+        print("MAC:  {}".format(mac))
+        print("IP:   {}".format(ip))
+        print("GW:   {}".format(gw))
+        print("NM:   {}".format(nm))
+        print("Port: {:d}".format(port))
+    else:
+        print("{:04x} {} {} {} {} {:d}".format(
+            flag, mac, ip, gw, nm, port))
+
+
+def cmd_srom_init(cmd):
+    if cmd.count == 0:
+        get_srom_info(0)
+        return
+    elif cmd.count != 6:
+        raise BadArgs
+
+    flag = int(cmd.arg(0), base=16)
+    mac = cmd.arg(1)
+    ip = check_ip(cmd.arg(2))
+    gw = check_ip(cmd.arg(3))
+    nm = check_ip(cmd.arg(4))
+    port = int(cmd.arg(5), base=0)
+
+    if not 0x8000 <= flag < 0x10000:
+        raise ValueError("bad flag")
+    if not re.match(r"^([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}$", mac, re.IGNORECASE):
+        raise ValueError("bad mac")
+    if not 1024 <= port < 65536:
+        raise ValueError("bad port")
+
+    mac = [int(m, base=16) for m in mac.split(":")]
+    data = struct.pack(">2I 2B H 4B 4B 4B 4B 2B H 2I I",
+                       0x553A0008, 0xF5007FE0, mac[4], mac[5], flag,
+                       mac[0], mac[1], mac[2], mac[3],
+                       *ip, *gw, *nm, 0, 0, port, 0, 0, 0xAAAAAAAA)
+    info = Srom_info[srom_type]
+    spin.srom_write(0, data, page_size=info["PAGE"], addr_size=info["ADDR"])
+    get_srom_info(1)
+
+
+def cmd_srom_ip(cmd):
+    if cmd.count == 0:
+        get_srom_info(1)
+        return
+    if not 0 <= cmd.count <= 3:
+        raise BadArgs
+    info = Srom_info[srom_type]
+
+    addr = 16
+    data = b''
+    for a in range(cmd.count):
+        data += struct.pack(">4B", *check_ip(cmd.arg(a)))
+    length = len(data)
+
+    print("Writing {} bytes at address {}".format(length, addr))
+
+    spin.srom_write(addr, data, page=info["PAGE"], addr=info["ADDR"])
+
+    print("Checking...")
+
+    get_srom_info(1)
+    rdata = spin.srom_read(addr, length, addr_size=info["ADDR"])
+    if len(rdata) != length or data != rdata:
+        print("Oops! Try again?")
+    else:
+        print("Looks OK!")
 
 
 # ------------------------------------------------------------------------------

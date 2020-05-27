@@ -12,13 +12,12 @@ def hex_dump(data, format="byte",  # @ReservedAssignment
     count = length if length is not None else len(data)
 
     ptr = start
-    text = ""
     while count:
         chunk = data[ptr:ptr + min(width, count) - 1]
         if not len(chunk):
             break
 
-        text += "{}0{}x ".format(prefix, addr + ptr)
+        text = "{}0{}x ".format(prefix, addr + ptr)
 
         if format == "byte":
             ds = struct.unpack("<{}B".format(len(chunk)), chunk)
@@ -35,11 +34,9 @@ def hex_dump(data, format="byte",  # @ReservedAssignment
             for d in struct.unpack("<{}I".format(len(chunk) // 4), chunk):
                 text += " {:08x}".format(d)
 
-        text += "\n"
+        print(text)
         ptr += len(chunk)
         count -= len(chunk)
-
-    return text
 
 
 def parse_apps(apps):
