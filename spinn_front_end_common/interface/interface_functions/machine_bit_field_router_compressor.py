@@ -22,7 +22,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import get_generality as ordered_covering_generality
 from spinn_front_end_common.interface.interface_functions import \
-    ChipIOBufExtractor, LoadExecutableImages
+    LoadExecutableImages
 from spinn_front_end_common.interface.interface_functions.\
     host_bit_field_router_compressor import \
     HostBasedBitFieldRouterCompressor
