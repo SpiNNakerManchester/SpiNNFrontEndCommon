@@ -23,6 +23,7 @@ from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 from spinnman.model import ExecutableTargets
 
+
 class _PretendTransceiver(object):
     def __init__(self, iobuffers):
         self._iobuffers = iobuffers
