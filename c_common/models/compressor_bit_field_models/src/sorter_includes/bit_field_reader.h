@@ -204,7 +204,6 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
     // processor struct, whilst updating n bf total param.
     int index = 0;
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        
         // locate data for malloc memory calcs
         filter_region_t *restrict filter_region =
             region_addresses->triples[r_id].filter;

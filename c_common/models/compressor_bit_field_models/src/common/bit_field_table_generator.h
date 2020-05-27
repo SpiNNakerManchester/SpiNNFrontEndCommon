@@ -98,7 +98,7 @@ void generate_table(
             original_entry.key_mask.key + atom,
             NEURON_LEVEL_MASK, new_route, original_entry.source);
     }
-    log_debug("key %d atoms %d size %d",original_entry.key_mask.key, n_atoms,
+    log_debug("key %d atoms %d size %d", original_entry.key_mask.key, n_atoms,
         routing_table_get_n_entries());
 }
 

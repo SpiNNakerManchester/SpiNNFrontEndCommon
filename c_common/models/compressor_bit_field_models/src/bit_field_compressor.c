@@ -122,7 +122,8 @@ void start_compression_process() {
 }
 
 void setup_rounting_tables() {
-    log_info("table init for %d entries (should be zero) and %d tables and %d mid_point out of %d bitfields",
+    log_info("table init for %d entries (should be zero) and %d tables and "
+        " %d mid_point out of %d bitfields",
         comms_sdram->routing_tables->n_entries,
         comms_sdram->routing_tables->n_sub_tables,
         comms_sdram->mid_point, comms_sdram->sorted_bit_fields->n_bit_fields);
@@ -167,8 +168,7 @@ void run_compression_process(void){
 //! May do nothing if the previous run has already finished
 //! \returns bool if the RUN made sense with the current Compressor sate
 static inline bool process_run(compressor_states compressor_state) {
-
-    switch(compressor_state) {
+    switch (compressor_state) {
         case PREPARED:
             log_info("run detected");
             comms_sdram->compressor_state = COMPRESSING;
@@ -195,7 +195,7 @@ static inline bool process_run(compressor_states compressor_state) {
 //! Mainly used to clear result of previous run
 //! \returns bool if the PREPARE made sense with the current Compressor sate
 static inline bool process_prepare(compressor_states compressor_state) {
-    switch(compressor_state) {
+    switch (compressor_state) {
         case UNUSED:
             // First prepare
             log_info("Prepared for the first time");
@@ -227,7 +227,7 @@ static inline bool process_prepare(compressor_states compressor_state) {
 //! timer_callback picks up the sorter change during compression
 //! \returns bool if the FORCE_TO_STOP made sense with the current Compressor sate
 static inline bool process_force(compressor_states compressor_state) {
-   switch(compressor_state) {
+   switch (compressor_state) {
         case COMPRESSING:
             // passed to compressor as *sorter_instruction
             // Do nothing until compressor notices changed
@@ -279,7 +279,7 @@ void wait_for_instructions(uint unused0, uint unused1) {
            sorter_state, compressor_state);
     }
 
-    switch(sorter_state) {
+    switch (sorter_state) {
         case PREPARE:
             users_match = process_prepare(compressor_state);
             break;

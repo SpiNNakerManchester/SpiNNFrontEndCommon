@@ -74,7 +74,8 @@ entry_t* routing_table_append_get_entry() {
     }
     uint32_t local_id = n_entries & LOCAL_ID_ADD;
     if (local_id != sub_tables[table_id]->size) {
-        log_error("Id %d has local_id %d which is big for %d table", n_entries, local_id, sub_tables[table_id]->size);
+        log_error("Id %d has local_id %d which is big for %d table",
+            n_entries, local_id, sub_tables[table_id]->size);
         malloc_extras_terminate(RTE_SWERR);
     }
     n_entries++;
