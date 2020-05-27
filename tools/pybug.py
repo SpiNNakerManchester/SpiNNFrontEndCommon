@@ -854,7 +854,7 @@ def check_ip(s):
             raise ValueError("bad netmask shorthand")
         s = (0xFFFFFFFF << (32 - s)) & 0xFFFFFFFF
         s = ".".join((s >> x) & 0xFF for x in (24, 16, 8, 0))
-    elif not re.match(r"^\d+\.\d+\.\d+\.\d+$", s):
+    elif not re.match(r"^(?:\d+\.){3}\d+$", s):
         raise ValueError("bad IP address")
 
     v = s.split(".")
@@ -904,11 +904,12 @@ def cmd_srom_init(cmd):
     ip = check_ip(cmd.arg(2))
     gw = check_ip(cmd.arg(3))
     nm = check_ip(cmd.arg(4))
+    addresses = ip + gw + nm
     port = int(cmd.arg(5), base=0)
 
     if not 0x8000 <= flag < 0x10000:
         raise ValueError("bad flag")
-    if not re.match(r"^([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}$", mac, re.IGNORECASE):
+    if not re.match(r"(?i)^(?:[0-9a-f]{1,2}:){5}[0-9a-f]{1,2}$", mac):
         raise ValueError("bad mac")
     if not 1024 <= port < 65536:
         raise ValueError("bad port")
@@ -917,7 +918,7 @@ def cmd_srom_init(cmd):
     data = struct.pack(">2I 2B H 4B 4B 4B 4B 2B H 2I I",
                        0x553A0008, 0xF5007FE0, mac[4], mac[5], flag,
                        mac[0], mac[1], mac[2], mac[3],
-                       *ip, *gw, *nm, 0, 0, port, 0, 0, 0xAAAAAAAA)
+                       *addresses, 0, 0, port, 0, 0, 0xAAAAAAAA)
     info = Srom_info[srom_type]
     spin.srom_write(0, data, page_size=info["PAGE"], addr_size=info["ADDR"])
     get_srom_info(1)
@@ -949,6 +950,166 @@ def cmd_srom_ip(cmd):
         print("Oops! Try again?")
     else:
         print("Looks OK!")
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_led(cmd):
+    Led = {"on": 3, "off": 2, "inv": 1, "flip": 1}
+
+    if cmd.count != 2:
+        raise BadArgs
+    num = cmd.arg(0)
+    if not re.match(r"^[0-3]+$", num):
+        raise BadArgs
+    action = cmd.arg(1).lower()
+    if action not in Led:
+        raise BadArgs
+
+    c = sum(Led[action] << (int(l) * 2) for l in num)
+    spin.led(c, addr=[0])
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_remap(cmd):
+    if not 1 <= cmd.count <= 2:
+        raise BadArgs
+    proc = int(cmd.arg(0), base=0)
+    if not 0 <= proc <= 17:
+        raise BadArgs
+    map_type = cmd.arg(1).lower() if cmd.count == 2 else "virt"
+    if map_type not in ("phys", "virt"):
+        raise BadArgs
+    map_type = map_type == "phys"
+
+    spin.scp_cmd(CMD_REMAP, arg1=proc, arg2=map_type)
+
+
+# ------------------------------------------------------------------------------
+
+
+def app_dump(data):
+    print(" ID Cores Clean  Sema  Lead Mask")
+    print("--- ----- -----  ----  ---- ----")
+
+    for i in range(256):
+        cores, clean, sema, lead, mask = struct.unpack_from(
+            "<4BI", data, offset=i * 8)
+        if cores or clean:
+            print("{:3d} {:5d} {:5d} {:5d} {:5d} {:08x}".format(
+                i, cores, clean, sema, lead, mask))
+
+
+def cmd_app_dump(cmd):
+    if cmd.count:
+        raise BadArgs
+    addr = sv.read_var("sv.app_data")
+    app_dump(spin.read(addr, 256 * 8))
+
+
+# ------------------------------------------------------------------------------
+
+
+def rtr_heap(rtr_copy, rtr_free, name="Router"):
+    print("\n{}\n{}".format(name, "-" * len(name)))
+
+    p = 1  # RTR_ALLOC_FIRST
+    while p:
+        _next, free = struct.unpack("<HH", spin.read(rtr_copy + 16 * p, 4))
+        size = _next - p if _next else 0
+
+        if free & 0x8000:
+            fs = "AppID  {:3d}".format(free & 255)
+        else:
+            fs = "Free {:5d}".format(free)
+        print("BLOCK {:5d}  Next {:5d}  {}  Size {}".format(p, _next, fs, size))
+        p = _next
+
+    p = rtr_free
+    while p:
+        _next, free = struct.unpack("<HH", spin.read(rtr_copy + 16 * p, 4))
+        size = _next - p if _next else 0
+
+        print("FREE  {:5d}  Next {:5d}  Free {:5d}  Size {}".format(
+            p, _next, free, size))
+        p = free
+
+    print("")
+
+
+def rtr_dump(buf, fr):
+    print("Entry  Route       (Core) (Link)  Key       Mask      AppID  Core")
+    print("-----  765432109876543210 543210  ---       ----      -----  ----\n")
+
+    for i in range(1024):
+        _next, free, route, key, mask = struct.unpack_from(
+            "<2H3I", buf, offset=16 * i)
+        if route >= 0xFF000000:
+            continue
+        print("{:4d}:  {:018b} {:06b}  {:08x}  {:08x}  {:5d}  {:4d}".format(
+            i, (route >> 6) & 0x3FFFF, route & 0x3F, key, mask, free & 0xFF,
+            (free >> 8) & 0x1F))
+
+    print("  FR:  {:018b} {:06b}".format((fr >> 6) & 0x3FFFF, fr & 0x3F))
+
+
+def cmd_rtr_init(cmd):
+    if cmd.count:
+        raise BadArgs
+    spin.scp_cmd(CMD_RTR)
+
+
+def cmd_rtr_dump(cmd):
+    if cmd.count:
+        raise BadArgs
+
+    rtr = sv.read_var("sv.rtr_copy")
+    fr = sv.read_var("sv.fr_copy")
+    rtr_dump(spin.read(rtr, 1025 * 16), fr)
+
+
+def rtr_wait(v):
+    m = v & 0x0F         # mantissa
+    e = (v >> 4) & 0x0F  # exponent
+    return (m + (0x10 if e > 4 else (0xF0 >> e) & 0x0F)) << e
+
+
+def cmd_rtr_diag(cmd):
+    if cmd.count >= 2:
+        raise BadArgs
+    arg0 = cmd.arg(0).lower() if cmd.count else ""
+
+    rtrc = ("Loc  MC:", "Ext  MC:", "Loc  PP:", "Ext  PP:",
+            "Loc  NN:", "Ext  NN:", "Loc  FR:", "Ext  FR:",
+            "Dump MC:", "Dump PP:", "Dump NN:", "Dump FR:",
+            "Cntr 12:", "Cntr 13:", "Cntr 14:", "Cntr 15:")
+
+    rcr, = struct.unpack("<I", spin.read(0xE1000000, 4, type="word"))
+    print("\nCtrl Reg:  0x{:08x} (Mon {}, Wait1 {}, Wait2 {})".format(
+        rcr, (rcr >> 8) & 0x1F, rtr_wait(rcr >> 16), rtr_wait(rcr >> 24)))
+
+    es, = struct.unpack("<I", spin.read(0xE1000014, 4, type="word"))
+    print("Err Stat:  0x{:08x}\n".format(es))
+
+    data = spin.read(0xE1000300, 64, type="word")
+    for label, datum in zip(rtrc, struct.unpack("<16I", data)):
+        print("{:-10s} {}".format(label, datum))
+
+    if arg0 == "clr":
+        c = struct.pack("<I", 0xFFFFFFFF)
+        spin.write(0xF100002C, c, type="word")
+
+
+def cmd_rtr_heap(cmd):
+    if cmd.count:
+        raise BadArgs
+
+    rtr_copy = sv.read_var("sv.rtr_copy")
+    rtr_free = sv.read_var("sv.rtr_free")
+    rtr_heap(rtr_copy, rtr_free)
 
 
 # ------------------------------------------------------------------------------
