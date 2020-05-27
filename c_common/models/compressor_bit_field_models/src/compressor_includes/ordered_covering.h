@@ -786,7 +786,6 @@ static inline bool oc_merge_apply(
 // Minimise the table until either the table is shorter than the target length
 // or no more merges are possible.
 //! \param[in] target_length: the length to reach
-//! \param[in] aliases: whatever
 //! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
 //! \param[out] stop_compressing: bool flag that says compressor should stop
 //!    and return false
@@ -795,11 +794,16 @@ static inline bool oc_merge_apply(
 //!       table length
 //! \return bool saying if it was successful or not.
 static inline bool oc_minimise(
-        int target_length, aliases_t* aliases,
+        int target_length,
         bool *failed_by_malloc,
         volatile bool *stop_compressing,
         bool compress_only_when_needed,
         bool compress_as_much_as_possible) {
+
+    // Some Mundy black magic
+    aliases_t aliases;
+    aliases_clear(&aliases);
+    aliases = aliases_init();
 
     // DEBUG so some cores are slower
     // spin1_delay_us(1000 * spin1_get_core_id() * spin1_get_core_id());
@@ -856,7 +860,7 @@ static inline bool oc_minimise(
         // of the loop.
         merge_t merge;
         bool success = oc_get_best_merge(
-            aliases, &merge, failed_by_malloc, stop_compressing);
+            &aliases, &merge, failed_by_malloc, stop_compressing);
         if (!success) {
             log_debug(
                 "failed to do get best merge. the number of merge cycles "
@@ -873,7 +877,7 @@ static inline bool oc_minimise(
             //routing_tables_print_out_table_sizes();
             log_debug("merge apply");
             bool malloc_success = oc_merge_apply(
-                &merge, aliases, failed_by_malloc);
+                &merge, &aliases, failed_by_malloc);
 
             if (!malloc_success){
                 log_error("failed to malloc");
