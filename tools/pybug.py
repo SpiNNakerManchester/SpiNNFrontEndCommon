@@ -4,25 +4,28 @@ import struct
 import sys
 import time
 from zlib import crc32
-import tools.cli
-import tools.boot
-import tools.struct
-import tools.cmd
+from tools.cli import CLI, Pause, Echo, Quit, Help, At, Query
+from tools.boot import boot
+from tools.struct import Struct
+from tools.cmd import Cmd, SpinnRetries
 from tools.util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits,
     sllt_version)
 
+# This code ought to be rewritten to use the Cmd package:
+# https://docs.python.org/3.8/library/cmd.html
+
 # ------------------------------------------------------------------------------
 
-spin = None          # SpiNN::Cmd object for SpiNNaker
-bmp = None           # SpiNN::Cmd object for BMP (or undef)
-cli = None           # SpiNN::CLI object
+spin = None          # Cmd object for SpiNNaker
+bmp = None           # Cmd object for BMP (or undef)
+_cli = None          # CLI object
 
-sv = None            # SpiNN::Struct object
+sv = None            # Struct object
 
 debug = False        # Enable verbosity
 expert = False       # Expert mode
-readline = True      # Use readline
+_readline = True     # Use readline
 
 spinn_target = None  # Target host name
 bmp_target = None    # BMP host name
@@ -71,11 +74,11 @@ def parse_app_id(string):
 # ------------------------------------------------------------------------------
 
 
-def cmd_boot(cmd):
-    if cmd.count > 2:
+def cmd_boot(cli):
+    if cli.count > 2:
         raise BadArgs
-    file = cmd.arg(0) or "scamp.boot"
-    conf = cmd.arg(1) or ""
+    file = cli.arg(0) or "scamp.boot"
+    conf = cli.arg(1) or ""
 
     try:
         # Warn if already booted
@@ -85,7 +88,7 @@ def cmd_boot(cmd):
         except:  # pylint: disable=bare-except
             pass
 
-        tools.boot.boot(spinn_target, file, conf, debug=debug)
+        boot(spinn_target, file, conf, debug=debug)
 
         # Wait for boot to complete
         booted = True
@@ -114,107 +117,107 @@ def cmd_boot(cmd):
         spin.addr(chip_x, chip_y, cpu)
 
 
-def cmd_sver(cmd):
-    if cmd.count:
+def cmd_sver(cli):
+    if cli.count:
         raise BadArgs
     print(spin.ver())
 
 
-def cmd_lw(cmd):
-    if not 2 <= cmd.count <= 3:
+def cmd_lw(cli):
+    if not 2 <= cli.count <= 3:
         raise BadArgs
-    link = int(cmd.arg(0), base=0)
-    addr = int(cmd.arg(1), base=0)
+    link = int(cli.arg(0), base=0)
+    addr = int(cli.arg(1), base=0)
 
-    if cmd.count == 2:
+    if cli.count == 2:
         data = struct.unpack("<I", spin.link_read(link, addr, 4))
         print("{:08x} = {:08x}".format(addr, data[0]))
     else:
-        data = struct.pack("<I", int(cmd.arg(2), base=0))
+        data = struct.pack("<I", int(cli.arg(2), base=0))
         spin.link_write(link, addr, data)
 
 
-def cmd_lmemw(cmd):
-    if cmd.count != 2:
+def cmd_lmemw(cli):
+    if cli.count != 2:
         raise BadArgs
-    link = int(cmd.arg(0), base=0)
-    addr = int(cmd.arg(1), base=0)
+    link = int(cli.arg(0), base=0)
+    addr = int(cli.arg(1), base=0)
     data = spin.link_read(link, addr, 256)
     hex_dump(data, addr=addr, format="word")
 
 
-def cmd_smemw(cmd):
-    if cmd.count > 1:
+def cmd_smemw(cli):
+    if cli.count > 1:
         raise BadArgs
-    addr = int(cmd.arg(0), base=0) if cmd.count else 0
+    addr = int(cli.arg(0), base=0) if cli.count else 0
     data = spin.read(addr, 256, type="word")
     hex_dump(data, addr=addr, format="word")
 
 
-def cmd_smemh(cmd):
-    if cmd.count > 1:
+def cmd_smemh(cli):
+    if cli.count > 1:
         raise BadArgs
-    addr = int(cmd.arg(0), base=0) if cmd.count else 0
+    addr = int(cli.arg(0), base=0) if cli.count else 0
     data = spin.read(addr, 256, type="half")
     hex_dump(data, addr=addr, format="half", width=16)
 
 
-def cmd_smemb(cmd):
-    if cmd.count > 1:
+def cmd_smemb(cli):
+    if cli.count > 1:
         raise BadArgs
-    addr = int(cmd.arg(0), base=0) if cmd.count else 0
+    addr = int(cli.arg(0), base=0) if cli.count else 0
     data = spin.read(addr, 256, type="byte")
     hex_dump(data, addr=addr)
 
 
-def cmd_sw(cmd):
-    if not 1 <= cmd.count <= 2:
+def cmd_sw(cli):
+    if not 1 <= cli.count <= 2:
         raise BadArgs
-    addr = int(cmd.arg(0), base=0)
-    if cmd.count == 1:
+    addr = int(cli.arg(0), base=0)
+    if cli.count == 1:
         data = struct.unpack("<I", spin.read(addr, 4, type="word"))
         print("{:08x} = {:08x}".format(addr, data[0]))
     else:
-        data = struct.pack("<I", int(cmd.arg(1), base=0))
+        data = struct.pack("<I", int(cli.arg(1), base=0))
         spin.write(addr, data, type="word")
 
 
-def cmd_sh(cmd):
-    if not 1 <= cmd.count <= 2:
+def cmd_sh(cli):
+    if not 1 <= cli.count <= 2:
         raise BadArgs
-    addr = int(cmd.arg(0), base=0)
-    if cmd.count == 1:
+    addr = int(cli.arg(0), base=0)
+    if cli.count == 1:
         data = struct.unpack("<H", spin.read(addr, 2, type="half"))
         print("{:08x} = {:04x}".format(addr, data[0]))
     else:
-        data = struct.pack("<H", int(cmd.arg(1), base=0))
+        data = struct.pack("<H", int(cli.arg(1), base=0))
         spin.write(addr, data, type="half")
 
 
-def cmd_sb(cmd):
-    if not 1 <= cmd.count <= 2:
+def cmd_sb(cli):
+    if not 1 <= cli.count <= 2:
         raise BadArgs
-    addr = int(cmd.arg(0), base=0)
-    if cmd.count == 1:
+    addr = int(cli.arg(0), base=0)
+    if cli.count == 1:
         data = struct.unpack("<B", spin.read(addr, 1, type="byte"))
         print("{:08x} = {:02x}".format(addr, data[0]))
     else:
-        data = struct.pack("<B", int(cmd.arg_x(1), base=0))
+        data = struct.pack("<B", int(cli.arg_x(1), base=0))
         spin.write(addr, data, type="byte")
 
 
-def cmd_sfill(cmd):
-    if cmd.count != 3:
+def cmd_sfill(cli):
+    if cli.count != 3:
         raise BadArgs
-    _from = int(cmd.arg(0), base=0)
-    to = int(cmd.arg(1), base=0)
-    fill = int(cmd.arg(2), base=0)
+    _from = int(cli.arg(0), base=0)
+    to = int(cli.arg(1), base=0)
+    fill = int(cli.arg(2), base=0)
     spin.fill(_from, fill, to-_from)
 
 
-def cmd_sp(cmd):
+def cmd_sp(cli):
     global chip_x, chip_y, cpu
-    if not cmd.count or (cmd.count == 1 and cmd.arg(0) == "root"):
+    if not cli.count or (cli.count == 1 and cli.arg(0) == "root"):
         # Try and determine the true coordinates of the root chip
         root_x, root_y = 0, 0
         try:
@@ -224,21 +227,21 @@ def cmd_sp(cmd):
         except:  # pylint: disable=bare-except
             pass
         chip_x, chip_y, cpu = spin.addr(root_x, root_y)
-    elif cmd.count == 1:
-        chip_x, chip_y, cpu = spin.addr(int(cmd.arg(0), base=0))
-    elif cmd.count == 2:
+    elif cli.count == 1:
+        chip_x, chip_y, cpu = spin.addr(int(cli.arg(0), base=0))
+    elif cli.count == 2:
         chip_x, chip_y, cpu = spin.addr(
-            int(cmd.arg(0), base=0), int(cmd.arg(1), base=0))
-    elif cmd.count == 3:
+            int(cli.arg(0), base=0), int(cli.arg(1), base=0))
+    elif cli.count == 3:
         chip_x, chip_y, cpu = spin.addr(
-            int(cmd.arg(0), base=0), int(cmd.arg(1), base=0),
-            int(cmd.arg(2), base=0))
+            int(cli.arg(0), base=0), int(cli.arg(1), base=0),
+            int(cli.arg(2), base=0))
     else:
         raise BadArgs
 
     # Update the prompt
-    cmd.prompt = re.sub(
-        r":.+", ":{},{},{} > ".format(chip_x, chip_y, cpu), cmd.prompt)
+    cli.prompt = re.sub(
+        r":.+", ":{},{},{} > ".format(chip_x, chip_y, cpu), cli.prompt)
 
 
 # ------------------------------------------------------------------------------
@@ -252,14 +255,14 @@ def _iodump(fh, buf):
     return _next
 
 
-def cmd_iobuf(cmd):
-    if not 1 <= cmd.count <= 2:
+def cmd_iobuf(cli):
+    if not 1 <= cli.count <= 2:
         raise BadArgs
-    core = int(cmd.arg(0), base=0)
+    core = int(cli.arg(0), base=0)
 
-    opened = cmd.count > 1
+    opened = cli.count > 1
     if opened:
-        fh = open(cmd.arg(1))
+        fh = open(cli.arg(1))
     else:
         fh = sys.stdout
 
@@ -310,10 +313,10 @@ def dump_heap(heap, name):
         p = free
 
 
-def cmd_heap(cmd):
-    if cmd.count > 1:
+def cmd_heap(cli):
+    if cli.count > 1:
         raise BadArgs
-    arg = cmd.arg(0) if cmd.count else None
+    arg = cli.arg(0) if cli.count else None
 
     if arg is None or arg == "sdram":
         dump_heap(sv.read_var("sv.sdram_heap"), "SDRAM")
@@ -328,11 +331,11 @@ def cmd_heap(cmd):
 # ------------------------------------------------------------------------------
 
 
-def cmd_rtr_load(cmd):
-    if cmd.count != 2:
+def cmd_rtr_load(cli):
+    if cli.count != 2:
         raise BadArgs
-    _file = cmd.arg(0)
-    app_id = parse_app_id(cmd.arg(1))
+    _file = cli.arg(0)
+    app_id = parse_app_id(cli.arg(1))
 
     buf = read_file(_file, 65536)
     size = len(buf)
@@ -381,37 +384,37 @@ def dump_iptag():
                 spin_port_id, count))
 
 
-def cmd_iptag(cmd):
-    if not cmd.count:
+def cmd_iptag(cli):
+    if not cli.count:
         dump_iptag()
         return
-    if cmd.count < 2:
+    if cli.count < 2:
         raise BadArgs
 
-    tag = int(cmd.arg(0), base=0)
+    tag = int(cli.arg(0), base=0)
     if not MIN_TAG <= tag <= MAX_TAG:
         raise ValueError("bad tag")
-    command = cmd.arg(1)
+    command = cli.arg(1)
 
     if command == "clear":
-        if cmd.count != 2:
+        if cli.count != 2:
             raise BadArgs
         spin.iptag_clear(tag)
     elif command in ("set", "strip"):
-        if cmd.count != 4:
+        if cli.count != 4:
             raise BadArgs
-        host = cmd.arg(2)
-        port = int(cmd.arg(3), base=0)
+        host = cli.arg(2)
+        port = int(cli.arg(3), base=0)
         strip = command == "strip"
         if not port:
             raise ValueError("bad port")
         spin.iptag_set(tag, port, host=host, strip=strip)
     elif command == "reverse":
-        if cmd.count != 5:
+        if cli.count != 5:
             raise BadArgs
-        port = int(cmd.arg(2), base=0)
-        dest_addr = int(cmd.arg(3), base=16)
-        dest_port = int(cmd.arg(4), base=16)
+        port = int(cli.arg(2), base=0)
+        dest_addr = int(cli.arg(3), base=16)
+        dest_port = int(cli.arg(4), base=16)
         if not port:
             raise ValueError("bad port")
         spin.iptag_set(tag, port, reverse=True,
@@ -447,13 +450,13 @@ Sig_type = {
 }
 
 
-def cmd_app_sig(cmd):
-    if cmd.count < 3:
+def cmd_app_sig(cli):
+    if cli.count < 3:
         raise BadArgs
-    save_region = region = cmd.arg(0)
-    apps = cmd.arg(1)
-    signal = cmd.arg(2)
-    state = cmd.arg(3) or 0
+    save_region = region = cli.arg(0)
+    apps = cli.arg(1)
+    signal = cli.arg(2)
+    state = cli.arg(3) or 0
 
     app_id, app_mask = parse_apps(apps)
     region = parse_region(region, chip_x, chip_y)
@@ -462,7 +465,7 @@ def cmd_app_sig(cmd):
     _type = Sig_type[signal]
     signal = Signal[signal]
     if signal >= 16:  # and/or/count
-        if cmd.cout != 4:
+        if cli.cout != 4:
             raise BadArgs
         if state not in State:
             raise ValueError("bad state")
@@ -510,10 +513,10 @@ def cmd_app_sig(cmd):
         spin.signal(_type, data, mask, addr=[])
 
 
-def cmd_app_stop(cmd):
-    if cmd.count != 1:
+def cmd_app_stop(cli):
+    if cli.count != 1:
         raise BadArgs
-    app_id, app_mask = parse_apps(cmd.arg(0))
+    app_id, app_mask = parse_apps(cli.arg(0))
 
     SIG_STOP = Signal["stop"]
     arg1 = (NN_CMD_SIG0 << 4) | (0x3F << 16) | (0x00 << 8) | 0
@@ -526,15 +529,15 @@ def cmd_app_stop(cmd):
 # ------------------------------------------------------------------------------
 
 
-def cmd_app_load_old(cmd):
-    if not 4 <= cmd.count <= 5:
+def cmd_app_load_old(cli):
+    if not 4 <= cli.count <= 5:
         raise BadArgs
-    filename = cmd.arg(0)
-    mask = parse_cores(cmd.arg(1))
-    app_id = parse_app_id(cmd.arg(2))
+    filename = cli.arg(0)
+    mask = parse_cores(cli.arg(1))
+    app_id = parse_app_id(cli.arg(2))
     flags = 0
-    if cmd.count == 4:
-        if cmd.arg(3) != "wait":
+    if cli.count == 4:
+        if cli.arg(3) != "wait":
             raise ValueError("bad wait argument")
         flags = 1
 
@@ -545,16 +548,16 @@ def cmd_app_load_old(cmd):
     spin.ar(mask, app_id, flags)
 
 
-def cmd_app_load(cmd):
-    if not 3 <= cmd.count <= 4:
+def cmd_app_load(cli):
+    if not 3 <= cli.count <= 4:
         raise BadArgs
-    filename = cmd.arg(0)
-    region = parse_region(cmd.arg(1), chip_x, chip_y)
-    mask = parse_cores(cmd.arg(2))
-    app_id = int(cmd.arg(3), base=0)
+    filename = cli.arg(0)
+    region = parse_region(cli.arg(1), chip_x, chip_y)
+    mask = parse_cores(cli.arg(2))
+    app_id = int(cli.arg(3), base=0)
     flags = 0
-    if cmd.count == 5:
-        if cmd.arg(4) != "wait":
+    if cli.count == 5:
+        if cli.arg(4) != "wait":
             raise ValueError("bad wait argument")
         flags = 1
     buf = read_file(filename, 65536)
@@ -568,12 +571,12 @@ def cmd_app_load(cmd):
 # ------------------------------------------------------------------------------
 
 
-def cmd_data_load(cmd):
-    if cmd.count != 3:
+def cmd_data_load(cli):
+    if cli.count != 3:
         raise BadArgs
-    region = parse_region(cmd.arg(1), chip_x, chip_y)
-    addr = int(cmd.arg(2), base=16)
-    buf = read_file(cmd.arg(0), 1024 * 1024)
+    region = parse_region(cli.arg(1), chip_x, chip_y)
+    addr = int(cli.arg(2), base=16)
+    buf = read_file(cli.arg(0), 1024 * 1024)
 
     spin.flood_fill(buf, region, 0, 0, 0, base=addr, addr=[])
 
@@ -605,47 +608,47 @@ def global_write(addr, data, _type):
     spin.nnp(key, data, fr, addr=[])
 
 
-def cmd_gw(cmd):
-    if cmd.count != 2:
+def cmd_gw(cli):
+    if cli.count != 2:
         raise BadArgs
-    addr = int(cmd.arg(0), base=16)
-    data = int(cmd.arg(1), base=16)
+    addr = int(cli.arg(0), base=16)
+    data = int(cli.arg(1), base=16)
     global_write(addr, data, 2)
 
 
-def cmd_gh(cmd):
-    if cmd.count != 2:
+def cmd_gh(cli):
+    if cli.count != 2:
         raise BadArgs
-    addr = int(cmd.arg(0), base=16)
-    data = int(cmd.arg(1), base=16)
+    addr = int(cli.arg(0), base=16)
+    data = int(cli.arg(1), base=16)
     global_write(addr, data, 1)
 
 
-def cmd_gb(cmd):
-    if cmd.count != 2:
+def cmd_gb(cli):
+    if cli.count != 2:
         raise BadArgs
-    addr = int(cmd.arg(0), base=16)
-    data = int(cmd.arg(1), base=16)
+    addr = int(cli.arg(0), base=16)
+    data = int(cli.arg(1), base=16)
     global_write(addr, data, 0)
 
 
 # ------------------------------------------------------------------------------
 
 
-def cmd_sload(cmd):
-    if cmd.count != 2:
+def cmd_sload(cli):
+    if cli.count != 2:
         raise BadArgs
-    filename = cmd.arg(0)
-    addr = int(cmd.arg(1), base=16)
+    filename = cli.arg(0)
+    addr = int(cli.arg(1), base=16)
     spin.write_file(addr, filename)
 
 
-def cmd_sdump(cmd):
-    if cmd.count != 3:
+def cmd_sdump(cli):
+    if cli.count != 3:
         raise BadArgs
-    filename = cmd.arg(0)
-    addr = int(cmd.arg(1), base=16)
-    length = int(cmd.arg(2), base=16)
+    filename = cli.arg(0)
+    addr = int(cli.arg(1), base=16)
+    length = int(cli.arg(2), base=16)
 
     byte_count = 0
     with open(filename, "wb") as f:
@@ -743,17 +746,17 @@ def cpu_dump(num, long, fmt):
                 et, _time, (" SWC {}".format(swc) if swc else "")))
 
 
-def cmd_ps(cmd):
-    if cmd.count > 1:
+def cmd_ps(cli):
+    if cli.count > 1:
         raise BadArgs
 
-    if cmd.count == 1 and re.match(r"^\d+$", cmd.arg(0)):
-        vc = int(cmd.arg(0))
+    if cli.count == 1 and re.match(r"^\d+$", cli.arg(0)):
+        vc = int(cli.arg(0))
         if not 0 <= vc < 18:
             raise BadArgs
         cpu_dump(vc, 1, 0)
-    elif cmd.count == 1 and cmd.arg(0) in ("x", "d", "p"):
-        arg = cmd.arg(0)
+    elif cli.count == 1 and cli.arg(0) in ("x", "d", "p"):
+        arg = cli.arg(0)
         fmt = 1 if arg == "x" else 2 if arg == "d" else 3
         cpu_dump_header(fmt)
         for vc in range(18):
@@ -772,12 +775,12 @@ Srom_info = {
     "25aa160b": {"PAGE": 32,  "ADDR": 16}}
 
 
-def cmd_srom_type(cmd):
+def cmd_srom_type(cli):
     global srom_type
-    if cmd.count > 1:
+    if cli.count > 1:
         raise BadArgs
-    elif cmd.count == 1:
-        _type = cmd.arg(0)
+    elif cli.count == 1:
+        _type = cli.arg(0)
         if _type not in Srom_info:
             raise ValueError("bad SROM type")
         srom_type = _type
@@ -787,11 +790,11 @@ def cmd_srom_type(cmd):
         srom_type, info["PAGE"], info["ADDR"]))
 
 
-def cmd_srom_read(cmd):
-    if cmd.count > 1:
+def cmd_srom_read(cli):
+    if cli.count > 1:
         raise BadArgs
-    elif cmd.count == 1:
-        addr = int(cmd.arg(0), base=16)
+    elif cli.count == 1:
+        addr = int(cli.arg(0), base=16)
     else:
         addr = 0
 
@@ -799,17 +802,17 @@ def cmd_srom_read(cmd):
     hex_dump(data, addr=addr)
 
 
-def cmd_srom_erase(cmd):
-    if cmd.count:
+def cmd_srom_erase(cli):
+    if cli.count:
         raise BadArgs
     spin.srom_erase()
 
 
-def cmd_srom_write(cmd):
-    if cmd.count != 2:
+def cmd_srom_write(cli):
+    if cli.count != 2:
         raise BadArgs
-    addr = int(cmd.arg(1), base=16)
-    buf = read_file(cmd.arg(0), 128 * 1024)
+    addr = int(cli.arg(1), base=16)
+    buf = read_file(cli.arg(0), 128 * 1024)
     info = Srom_info[srom_type]
 
     print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
@@ -817,12 +820,12 @@ def cmd_srom_write(cmd):
     spin.srom_write(addr, buf, page_size = info["PAGE"], addr_size=info["ADDR"])
 
 
-def cmd_srom_dump(cmd):
-    if cmd.count != 3:
+def cmd_srom_dump(cli):
+    if cli.count != 3:
         raise BadArgs
-    filename = cmd.arg(0)
-    addr = int(cmd.arg(1), base=16)
-    length = int(cmd.arg(2), base=0)
+    filename = cli.arg(0)
+    addr = int(cli.arg(1), base=16)
+    length = int(cli.arg(2), base=0)
     info = Srom_info[srom_type]
 
     byte_count = 0
@@ -892,20 +895,20 @@ def get_srom_info(long):
             flag, mac, ip, gw, nm, port))
 
 
-def cmd_srom_init(cmd):
-    if cmd.count == 0:
+def cmd_srom_init(cli):
+    if cli.count == 0:
         get_srom_info(0)
         return
-    elif cmd.count != 6:
+    elif cli.count != 6:
         raise BadArgs
 
-    flag = int(cmd.arg(0), base=16)
-    mac = cmd.arg(1)
-    ip = check_ip(cmd.arg(2))
-    gw = check_ip(cmd.arg(3))
-    nm = check_ip(cmd.arg(4))
+    flag = int(cli.arg(0), base=16)
+    mac = cli.arg(1)
+    ip = check_ip(cli.arg(2))
+    gw = check_ip(cli.arg(3))
+    nm = check_ip(cli.arg(4))
     addresses = ip + gw + nm
-    port = int(cmd.arg(5), base=0)
+    port = int(cli.arg(5), base=0)
 
     if not 0x8000 <= flag < 0x10000:
         raise ValueError("bad flag")
@@ -924,18 +927,18 @@ def cmd_srom_init(cmd):
     get_srom_info(1)
 
 
-def cmd_srom_ip(cmd):
-    if cmd.count == 0:
+def cmd_srom_ip(cli):
+    if cli.count == 0:
         get_srom_info(1)
         return
-    if not 0 <= cmd.count <= 3:
+    if not 0 <= cli.count <= 3:
         raise BadArgs
     info = Srom_info[srom_type]
 
     addr = 16
     data = b''
-    for a in range(cmd.count):
-        data += struct.pack(">4B", *check_ip(cmd.arg(a)))
+    for a in range(cli.count):
+        data += struct.pack(">4B", *check_ip(cli.arg(a)))
     length = len(data)
 
     print("Writing {} bytes at address {}".format(length, addr))
@@ -955,15 +958,15 @@ def cmd_srom_ip(cmd):
 # ------------------------------------------------------------------------------
 
 
-def cmd_led(cmd):
+def cmd_led(cli):
     Led = {"on": 3, "off": 2, "inv": 1, "flip": 1}
 
-    if cmd.count != 2:
+    if cli.count != 2:
         raise BadArgs
-    num = cmd.arg(0)
+    num = cli.arg(0)
     if not re.match(r"^[0-3]+$", num):
         raise BadArgs
-    action = cmd.arg(1).lower()
+    action = cli.arg(1).lower()
     if action not in Led:
         raise BadArgs
 
@@ -974,13 +977,13 @@ def cmd_led(cmd):
 # ------------------------------------------------------------------------------
 
 
-def cmd_remap(cmd):
-    if not 1 <= cmd.count <= 2:
+def cmd_remap(cli):
+    if not 1 <= cli.count <= 2:
         raise BadArgs
-    proc = int(cmd.arg(0), base=0)
+    proc = int(cli.arg(0), base=0)
     if not 0 <= proc <= 17:
         raise BadArgs
-    map_type = cmd.arg(1).lower() if cmd.count == 2 else "virt"
+    map_type = cli.arg(1).lower() if cli.count == 2 else "virt"
     if map_type not in ("phys", "virt"):
         raise BadArgs
     map_type = map_type == "phys"
@@ -1003,8 +1006,8 @@ def app_dump(data):
                 i, cores, clean, sema, lead, mask))
 
 
-def cmd_app_dump(cmd):
-    if cmd.count:
+def cmd_app_dump(cli):
+    if cli.count:
         raise BadArgs
     addr = sv.read_var("sv.app_data")
     app_dump(spin.read(addr, 256 * 8))
@@ -1056,14 +1059,14 @@ def rtr_dump(buf, fr):
     print("  FR:  {:018b} {:06b}".format((fr >> 6) & 0x3FFFF, fr & 0x3F))
 
 
-def cmd_rtr_init(cmd):
-    if cmd.count:
+def cmd_rtr_init(cli):
+    if cli.count:
         raise BadArgs
     spin.scp_cmd(CMD_RTR)
 
 
-def cmd_rtr_dump(cmd):
-    if cmd.count:
+def cmd_rtr_dump(cli):
+    if cli.count:
         raise BadArgs
 
     rtr = sv.read_var("sv.rtr_copy")
@@ -1077,10 +1080,10 @@ def rtr_wait(v):
     return (m + (0x10 if e > 4 else (0xF0 >> e) & 0x0F)) << e
 
 
-def cmd_rtr_diag(cmd):
-    if cmd.count >= 2:
+def cmd_rtr_diag(cli):
+    if cli.count >= 2:
         raise BadArgs
-    arg0 = cmd.arg(0).lower() if cmd.count else ""
+    arg0 = cli.arg(0).lower() if cli.count else ""
 
     rtrc = ("Loc  MC:", "Ext  MC:", "Loc  PP:", "Ext  PP:",
             "Loc  NN:", "Ext  NN:", "Loc  FR:", "Ext  FR:",
@@ -1103,8 +1106,8 @@ def cmd_rtr_diag(cmd):
         spin.write(0xF100002C, c, type="word")
 
 
-def cmd_rtr_heap(cmd):
-    if cmd.count:
+def cmd_rtr_heap(cli):
+    if cli.count:
         raise BadArgs
 
     rtr_copy = sv.read_var("sv.rtr_copy")
@@ -1115,15 +1118,109 @@ def cmd_rtr_heap(cmd):
 # ------------------------------------------------------------------------------
 
 
-def cmd_expert(cmd):
-    if cmd.count:
+def cmd_reset(cli):
+    if cli.count:
+        raise BadArgs
+    if bmp is None:
+        raise RuntimeError("BMP not set")
+
+    bmp.reset(bmp_range)
+
+
+def cmd_power(cli):
+    if cli.count != 1:
+        raise BadArgs
+    power = cli.arg(0).lower()
+    if power not in ("off", "on"):
+        raise BadArgs
+    power = power == "on"
+    if bmp is None:
+        raise RuntimeError("BMP not set")
+
+    bmp.power(power, bmp_range, timeout=3.0 if power else bmp.timeout)
+
+
+def cmd_p2p_route(cli):
+    if cli.count > 1:
+        raise BadArgs
+    elif not cli.count:
+        print("Flags 0x{:02x}".format(spin.flags))
+        return
+
+    enable = cli.arg(0).lower()
+    if enable not in ("off", "on"):
+        raise BadArgs
+
+    flags = spin.flags()
+    spin.flags(flags & ~0x20 if enable == "on" else flags | 0x20)
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_debug(cli):
+    global debug
+    if cli.count > 1:
+        raise BadArgs
+    elif cli.count:
+        debug = int(cli.arg(0), base=0)
+
+    spin.debug(debug)
+    if bmp is not None:
+        bmp.debug(debug)
+
+    print("Debug {}".format(debug))
+
+
+def cmd_sleep(cli):
+    naptime = 1.0
+    if cli.count > 1:
+        raise BadArgs
+    elif cli.count:
+        naptime = float(cli.arg(0))
+
+    time.sleep(naptime)
+
+
+def cmd_timeout(cli):
+    if cli.count > 1:
+        raise BadArgs
+    elif cli.count:
+        t = float(cli.arg(0))
+        spin.timeout(t)
+
+    print("Timeout {}".format(spin.timeout()))
+
+
+def cmd_cmd(cli):
+    if not 1 <= cli.count <= 4:
+        raise BadArgs
+    op = int(cli.arg(0), base=0)
+    arg1 = int(cli.arg(1), base=16) if cli.count >= 2 else 0
+    arg2 = int(cli.arg(2), base=16) if cli.count >= 3 else 0
+    arg3 = int(cli.arg(3), base=16) if cli.count == 4 else 0
+
+    spin.scp_cmd(op, arg1=arg1, arg2=arg2, arg3=arg3)
+
+
+def cmd_version(cli):
+    if cli and cli.count:
+        raise BadArgs
+    print("# pybug - version {}".format(sllt_version()))
+
+
+# ------------------------------------------------------------------------------
+
+
+def cmd_expert(cli):
+    if cli.count:
         raise BadArgs
     global expert
 
     if expert:
         return
     expert = True
-    cli.cmd(expert_cmds, 0)
+    _cli.cmd(expert_cmds, 0)
 
     print("# You are now an expert!")
 
@@ -1235,22 +1332,22 @@ spin_cmds = {
     "power": (cmd_power,
         "on|off",
         "Switch power on/off via BMP"),
-    "pause": (tools.cli.Pause,
+    "pause": (Pause,
         "<text.S>",
         "Print string and wait for Enter key"),
-    "echo": (tools.cli.Echo,
+    "echo": (Echo,
         "<text.S>",
         "Print string"),
-    "quit": (tools.cli.Quit,
+    "quit": (Quit,
         "",
         "Quit"),
-    "help": (tools.cli.Help,
+    "help": (Help,
         "",
         "Provide help"),
-    "@": (tools.cli.At,
+    "@": (At,
         "<file.F> [quiet]",
         "Read commands from file"),
-    "?": (tools.cli.Query,
+    "?": (Query,
         "",
         "List commands"),
 }
@@ -1305,3 +1402,106 @@ expert_cmds = {
         '<cmd.D> <arg1.X> <arg2.X> <arg3.X>',
         'User specified command'),
 }
+
+# ------------------------------------------------------------------------------
+
+
+def usage():
+    print("usage: pybug <options> <hostname>", file=sys.stderr)
+    print("  -bmp  <name>[/<slots>]   - set BMP target", file=sys.stderr)
+    print("  -version                 - print version number", file=sys.stderr)
+    print("  -norl                    - don't use 'ReadLine'", file=sys.stderr)
+    print("  -expert                  - set 'expert' mode", file=sys.stderr)
+    print("  -debug <value>           - set debug variable", file=sys.stderr)
+    sys.exit(1)
+
+
+def process_args():
+    global spinn_target, bmp_target, expert, _readline, debug
+    global bmp_range
+    _range = "0"
+    args = list(sys.argv)
+    while args:
+        arg = args.pop(0)
+        if arg == "-bmp":
+            bmp_target = args.pop(0)
+            m = re.match(r"^(.*)/(\S+)$", bmp_target)
+            if m:
+                bmp_target, _range = m.groups()
+        elif arg == "-version":
+            cmd_version(None)
+            sys.exit()
+        elif arg == "-debug":
+            debug = int(args.pop(0))
+        elif arg == "-norl":
+            _readline = False
+        elif arg == "-expert":
+            expert = True
+        elif not re.match(r"^-", arg):
+            spinn_target = arg
+            break
+        else:
+            usage()
+    if args:
+        usage()
+
+    bmp_range = parse_bits(_range, 0, 23)
+    if spinn_target is None:
+        print("target not specified", file=sys.stderr)
+        sys.exit(1)
+    prompt = spinn_target
+    if not re.match(r"^\d", prompt):
+        prompt = re.sub(r"\..+", "", prompt)
+    prompt += ":0,0,0 > "
+    return prompt
+
+
+def open_targets():
+    global spin, sv, bmp
+    spin = Cmd(target=spinn_target, port=spin_port, debug=debug)
+    sv = Struct(scp=spin)
+    if bmp_target is not None:
+        bmp = Cmd(target=bmp_target, port=bmp_port, debug=debug)
+
+
+class Completer(object):
+    def __init__(self, rl):
+        self._rl = rl
+        self._stored = [None]
+
+    def __call__(self, text, state):
+        if self._rl.get_begidx():
+            # No filename completion; that's complicated!
+            return None
+        if not state:
+            # Add None to the end to mark end of matches
+            # https://eli.thegreenplace.net/2016/basics-of-using-the-readline-library/
+            self._stored = [c for c in _cli.commands if c.startswith(text)] + [
+                None]
+        word = self._stored[state]
+        if word and len(self._stored) == 1:
+            word += " "
+        return word
+
+
+def init_readline():
+    if not _readline:
+        return None
+
+    import readline
+    readline.set_completer(Completer(readline))
+    return readline
+
+
+def main():
+    global _cli
+    prompt = process_args()
+    rl = init_readline()
+
+    open_targets()
+    cmd_version(None)
+
+    _cli = CLI(sys.stdin, prompt, spin_cmds, rl)
+    if expert:
+        _cli.cmd(expert_cmds, 0)
+    _cli.run()
