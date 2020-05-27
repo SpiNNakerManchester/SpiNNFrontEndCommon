@@ -25,7 +25,6 @@
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"
 #include "common/bit_field_table_generator.h"
-#include "compressor_includes/aliases.h"
 #include "compressor_includes/ordered_covering.h"
 #include "common//bit_field_table_generator.h"
 
@@ -57,9 +56,6 @@ bool compress_only_when_needed = false;
 //! control flag for compressing as much as possible
 bool compress_as_much_as_possible = false;
 
-//! \brief aliases thingy for compression
-aliases_t aliases;
-
 // values for debug logging in wait_for_instructions
 instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 compressor_states previous_compressor_state = UNUSED;
@@ -89,7 +85,7 @@ void start_compression_process() {
 
     // run compression
     bool success = oc_minimise(
-        TARGET_LENGTH, &aliases, &failed_by_malloc,
+        TARGET_LENGTH, &failed_by_malloc,
         &stop_compressing, compress_only_when_needed,
         compress_as_much_as_possible);
 
@@ -149,10 +145,6 @@ void run_compression_process(void){
     failed_by_malloc = false;
     stop_compressing = false;
     counter = 0;
-    aliases_clear(&aliases);
-
-    // create aliases
-    aliases = aliases_init();
 
     malloc_extras_check_all_marked(50002);
     setup_rounting_tables();
