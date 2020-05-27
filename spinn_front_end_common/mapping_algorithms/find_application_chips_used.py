@@ -23,8 +23,23 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class FindApplicationChipsUsed(object):
+    """ builds a set of stats on how many chips were used for application
+    sided cores.
+
+    """
 
     def __call__(self, placements, graph_mapper=None):
+        """ finds how many application chips there were and the cost on
+        each chip
+
+        :param placements: placements
+        :param graph_mapper: the graph mapper.
+        :return: a tuple with 4 elements.
+        1. how many chips were used
+        2. the max application cores on any given chip
+        3. the lowest number of application cores on any given chip
+        4. the average number of application cores on any given chip
+        """
         chips_used = defaultdict(int)
         for placement in placements:
             # find binary type if applicable

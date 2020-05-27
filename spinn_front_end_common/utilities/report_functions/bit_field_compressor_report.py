@@ -37,6 +37,16 @@ class BitFieldCompressorReport(object):
     def __call__(
             self, report_default_directory, provenance_items, machine_graph,
             placements, graph_mapper):
+        """ generates a report that shows the impact of the compression of
+        bitfields into the routing table
+
+        :param report_default_directory: report folder
+        :param provenance_items: prov items
+        :param machine_graph: the machine graph
+        :param placements: the placements
+        :param graph_mapper: the graph mapper
+        :return:
+        """
 
         file_name = os.path.join(report_default_directory, _FILE_NAME)
 
@@ -51,6 +61,16 @@ class BitFieldCompressorReport(object):
 
     @staticmethod
     def _merged_component(provenance_items, writer):
+        """ reporting how many bitfields were merged into the router
+
+        :param provenance_items: prov items
+        :param writer: file writer.
+        :return: tuple containing 4 elements.
+         1. min_bit_fields merged in a chip,
+         2. the max bit_fields merged in a chip,
+         3. the total bit_fields_merged into all the routers.
+         4. average number of bit-fields merged on the routers.
+        """
         top_bit_field = 0
         min_bit_field = sys.maxsize
         total_bit_fields_merged = 0
@@ -127,6 +147,15 @@ class BitFieldCompressorReport(object):
     def _write_report(
             self, writer, provenance_items, machine_graph, placements,
             graph_mapper):
+        """ writes the report
+
+        :param writer: the file writer
+        :param provenance_items: the prov items
+        :param machine_graph: the machine graph
+        :param placements: the placements
+        :param graph_mapper: the graph mapper
+        :return: a BitFieldSummary.
+        """
 
         (min_bit_field, top_bit_field, total_bit_fields_merged,
          average_per_chip_merged) = self._merged_component(
