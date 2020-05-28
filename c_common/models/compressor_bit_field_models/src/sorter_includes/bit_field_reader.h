@@ -59,6 +59,7 @@ static inline void order_bitfields(
     // To label each row in sort order
     for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
             sorted_index++) {
+
         // Find the processor with highest number of packets coming in
         int worst_processor = 0;
         uint32_t highest_neurons = 0;
@@ -93,7 +94,7 @@ static inline void order_bitfields(
             processor_heads[worst_processor] += 1;
         } else {
             // otherwise set the counters to ignore this processor
-            processor_totals[worst_processor] = 0;
+            processor_totals[worst_processor] = NO_BIT_FIELDS;
             processor_heads[worst_processor] = DO_NOT_USE;
 
             log_debug(
@@ -151,7 +152,7 @@ static inline void sort_by_key(sorted_bit_fields_t *restrict sorted_bit_fields) 
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
     
     // Everytime there is a swap at least one of the rows is moved to the
-    //         final place.
+    //      final place.
     //  There is one check per row in the for loop plus if the first fails
     //      up to one more for each row about to be moved to the correct place.
     for (int i = 0; i < sorted_bit_fields->n_bit_fields - 1; i++) {
@@ -187,8 +188,7 @@ static void print_structs(
             sorted_bit_fields->processor_ids[index],
             sorted_bit_fields->bit_fields[index]->key,
             sorted_bit_fields->bit_fields[index]->data,
-            detect_redundant_packet_count(
-                sorted_bit_fields->bit_fields[index]),
+            detect_redundant_packet_count(sorted_bit_fields->bit_fields[index]),
             sorted_bit_fields->sort_order[index]);
     }
     malloc_extras_check_all_marked(marker);

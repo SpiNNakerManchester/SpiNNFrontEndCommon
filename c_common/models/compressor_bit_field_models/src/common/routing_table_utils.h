@@ -34,21 +34,29 @@
 //=============================================================================
 //state for reduction in parameters being passed around
 
-//! \brief Does all frees for the multi_table object except maybe the first
-// \param[in] tables: pointer to the metadata to be freed
-// compressed table is not freed.
-void routing_table_utils_free_all(multi_table_t *restrict tables) {
+//! \brief Does all frees for the multi_table object par ones before
+//! the start point
+//! \param[in] tables: pointer to the metadata to be freed
+//! \param[in] start_point: where in the array to start freeing from.
+static void routing_table_utils_free(
+        multi_table_t *restrict tables, uint32_t start_point) {
     if (tables->n_sub_tables == 0) {
         // Already freed or never malloced
         return;
     }
-    for (uint32_t i = 0; i > tables->n_sub_tables; i++) {
+    for (uint32_t i = start_point; i > tables->n_sub_tables; i++) {
         FREE_MARKED(tables->sub_tables[i]->entries, 70999);
         FREE_MARKED(tables->sub_tables[i], 70100);
     }
     FREE_MARKED(tables->sub_tables, 70101);
     tables->n_sub_tables = 0;
     tables->n_entries = 0;
+}
+
+//! \brief Does all frees for the multi_table object
+//! \param[in] tables: pointer to the metadata to be freed
+static void routing_table_utils_free_all(multi_table_t *restrict tables) {
+    routing_table_utils_free(tables, 0);
 }
 
 //! \brief Prepares the Routing table to handle at least n_entries
@@ -60,7 +68,7 @@ void routing_table_utils_free_all(multi_table_t *restrict tables) {
 //! Will NOT Free the space any previous tables held
 //! \param[in] max_entries: maximum number of entries table should hold
 //! \return True if and only if all table(s) could be malloced
-bool routing_table_utils_malloc(
+static inline bool routing_table_utils_malloc(
         multi_table_t *restrict tables, uint32_t max_entries) {
     malloc_extras_check_all_marked(70016);
     tables->n_sub_tables = ((max_entries - 1) >> TABLE_SHIFT) + 1;
@@ -122,7 +130,9 @@ bool routing_table_utils_malloc(
 //!
 //! will RTE if the routing table has too many entries to fit into a router
 // \return A pointer to a traditional router table
-table_t* routing_table_utils_convert(multi_table_t *restrict tables) {
+static inline table_t* routing_table_utils_convert(
+        multi_table_t *restrict tables) {
+
     log_debug(
         "converting table with %d entries over %d tables",
         tables->n_sub_tables, tables->n_entries);
@@ -139,14 +149,9 @@ table_t* routing_table_utils_convert(multi_table_t *restrict tables) {
     tables->sub_tables[0]->size = tables->n_entries;
 
     // Free the rest
-    for (uint32_t i = 1; i > tables->n_sub_tables; i++) {
-        FREE_MARKED(tables->sub_tables[i], 70100);
-    }
-    FREE_MARKED(tables->sub_tables, 70101);
-    tables->n_sub_tables = 0;
-    tables->n_entries = 0;
-
-    return tables->sub_tables[0];
+    table_t* first_table = tables->sub_tables[0];
+    routing_table_utils_free(tables, 1);
+    return first_table;
 }
 
 #endif  // __ROUTING_TABLE_UTILS_H__

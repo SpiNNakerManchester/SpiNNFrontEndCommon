@@ -50,9 +50,6 @@
 //! \brief flag for if a rtr_mc failure.
 #define RTR_MC_FAILED 0
 
-//! \brief number of bitfields that no bitfields run needs
-#define NO_BIT_FIELDS 0
-
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
@@ -164,7 +161,7 @@ void send_prepare_message(int processor_id) {
     // set message params
     log_debug("sending prepare to processor %d", processor_id);
     comms_sdram[processor_id].sorter_instruction = PREPARE;
-    comms_sdram[processor_id].mid_point = -1;
+    comms_sdram[processor_id].mid_point = FAILED_TO_FIND;
 }
 
 //! \brief sets up the search bitfields.
@@ -594,8 +591,8 @@ bool all_compressor_processors_done(void) {
 
 //! \brief check if all processors are done and if yes run best exit
 //! \return false if at least one compressors not Done.
-//! Should never return true but does in case the temrinate fails.
-bool exit_carry_on_if_all_compressor_processors_done() {
+//! Should never return true but does in case the terminate fails.
+bool exit_carry_on_if_all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (comms_sdram[processor_id].sorter_instruction >= PREPARE) {
             return false;
@@ -693,14 +690,16 @@ void timer_callback(uint unused0, uint unused1) {
 //! \param[in] mid_point: the mid point that failed
 //! \param[in] processor_id: the compressor processor id
 void process_success(int mid_point, int processor_id) {
-    comms_sdram[processor_id].mid_point = -1;
+    // if the mid point is better than seen before, store results for final.
     if (best_success <= mid_point) {
         best_success = mid_point;
         malloc_extras_check_all_marked(1003);
+
         // If we have a previous table free it as no longer needed
         if (last_compressed_table != NULL) {
             FREE_MARKED(last_compressed_table, 1100);
         }
+
         // Get last table and free the rest
         last_compressed_table = routing_table_utils_convert(
             comms_sdram[processor_id].routing_tables);
@@ -779,6 +778,8 @@ void process_failed(int mid_point, int processor_id) {
 //! \param[in] finished_state: the response code
 void process_compressor_response(
         int processor_id, compressor_states finished_state) {
+
+    // locate this responses midpoint
     int mid_point = comms_sdram[processor_id].mid_point;
     log_debug("received response %d from processor %d doing %d midpoint",
         finished_state, processor_id, mid_point);
@@ -786,6 +787,7 @@ void process_compressor_response(
     // free the processor for future processing
     send_prepare_message(processor_id);
 
+    // process compressor response based off state.
     switch (finished_state) {
 
         // compressor was successful at compressing the tables.
@@ -884,6 +886,7 @@ void start_binary_search(void) {
         }
     }
 
+    // create slices and set off each slice.
     uint32_t mid_point = sorted_bit_fields->n_bit_fields;
     while ((available > 0) && (mid_point > 0)) {
         int processor_id = find_compressor_processor_and_set_tracker(mid_point);
@@ -944,8 +947,7 @@ void start_compression_process(uint unused0, uint unused1) {
             bit_field_index < sorted_bit_fields->n_bit_fields;
             bit_field_index++) {
         // get key
-        filter_info_t* bf_pointer =
-            sorted_bit_fields->bit_fields[bit_field_index];
+        filter_info_t* bf_pointer = sorted_bit_fields->bit_fields[bit_field_index];
         if (bf_pointer == NULL) {
             log_info("failed at index %d", bit_field_index);
             malloc_extras_terminate(RTE_SWERR);
@@ -953,6 +955,7 @@ void start_compression_process(uint unused0, uint unused1) {
         }
     }
 
+    // start the binary search by slicing the search space by the compressors.
     start_binary_search();
 
     // set off checker which in turn sets of the other compressor processors

@@ -55,4 +55,7 @@
 //! how many tables the uncompressed router table entries is
 #define N_UNCOMPRESSED_TABLE 1
 
+//! \brief number of bitfields that no bitfields run needs
+#define NO_BIT_FIELDS 0
+
 #endif  // __CONSTANTS_H__
