@@ -99,10 +99,14 @@ bool routing_table_utils_malloc(
     if (tables->sub_tables[tables->n_sub_tables - 1] == NULL) {
         log_error("failed to allocate memory for routing tables");
         tables->n_sub_tables = tables->n_sub_tables - 1;
-        tables->sub_tables[tables->n_sub_tables - 1]->size = 0;
         routing_table_utils_free_all(tables);
         return false;
     }
+    tables->sub_tables[tables->n_sub_tables - 1]->size = 0;
+    log_debug(
+        "created table %d size %d",
+        tables->n_sub_tables - 1,
+        tables->sub_tables[tables->n_sub_tables - 1]->size);
 
 
     log_debug("n table %d entries %d", tables->n_sub_tables, tables->n_entries);
