@@ -3,11 +3,13 @@ import re
 import struct
 import sys
 import time
+from collections import namedtuple
 from zlib import crc32
+from tools.exn import BadArgs, SpinnException
 from tools.cli import CLI, Pause, Echo, Quit, Help, At, Query
 from tools.boot import boot
 from tools.struct import Struct
-from tools.cmd import Cmd, SpinnRetries
+from tools.cmd import Cmd
 from tools.util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits,
     sllt_version)
@@ -57,11 +59,6 @@ NN_CMD_SIG0 = 0
 NN_CMD_SIG1 = 4
 
 # ------------------------------------------------------------------------------
-
-
-class BadArgs(Exception):
-    def __str__(self):
-        return "bad args"
 
 
 def parse_app_id(string):
@@ -126,22 +123,22 @@ def cmd_sver(cli):
 def cmd_lw(cli):
     if not 2 <= cli.count <= 3:
         raise BadArgs
-    link = int(cli.arg(0), base=0)
-    addr = int(cli.arg(1), base=0)
+    link = cli.arg_i(0)
+    addr = cli.arg_i(1)
 
     if cli.count == 2:
         data = struct.unpack("<I", spin.link_read(link, addr, 4))
         print("{:08x} = {:08x}".format(addr, data[0]))
     else:
-        data = struct.pack("<I", int(cli.arg(2), base=0))
+        data = struct.pack("<I", cli.arg_i(2))
         spin.link_write(link, addr, data)
 
 
 def cmd_lmemw(cli):
     if cli.count != 2:
         raise BadArgs
-    link = int(cli.arg(0), base=0)
-    addr = int(cli.arg(1), base=0)
+    link = cli.arg_i(0)
+    addr = cli.arg_i(1)
     data = spin.link_read(link, addr, 256)
     hex_dump(data, addr=addr, format="word")
 
@@ -149,7 +146,7 @@ def cmd_lmemw(cli):
 def cmd_smemw(cli):
     if cli.count > 1:
         raise BadArgs
-    addr = int(cli.arg(0), base=0) if cli.count else 0
+    addr = cli.arg_i(0) if cli.count else 0
     data = spin.read(addr, 256, type="word")
     hex_dump(data, addr=addr, format="word")
 
@@ -157,7 +154,7 @@ def cmd_smemw(cli):
 def cmd_smemh(cli):
     if cli.count > 1:
         raise BadArgs
-    addr = int(cli.arg(0), base=0) if cli.count else 0
+    addr = cli.arg_i(0) if cli.count else 0
     data = spin.read(addr, 256, type="half")
     hex_dump(data, addr=addr, format="half", width=16)
 
@@ -165,7 +162,7 @@ def cmd_smemh(cli):
 def cmd_smemb(cli):
     if cli.count > 1:
         raise BadArgs
-    addr = int(cli.arg(0), base=0) if cli.count else 0
+    addr = cli.arg_i(0) if cli.count else 0
     data = spin.read(addr, 256, type="byte")
     hex_dump(data, addr=addr)
 
@@ -173,46 +170,45 @@ def cmd_smemb(cli):
 def cmd_sw(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
-    addr = int(cli.arg(0), base=0)
+    addr = cli.arg_i(0)
     if cli.count == 1:
         data = struct.unpack("<I", spin.read(addr, 4, type="word"))
         print("{:08x} = {:08x}".format(addr, data[0]))
     else:
-        data = struct.pack("<I", int(cli.arg(1), base=0))
+        data = struct.pack("<I", cli.arg_i(1))
         spin.write(addr, data, type="word")
 
 
 def cmd_sh(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
-    addr = int(cli.arg(0), base=0)
+    addr = cli.arg_i(0)
     if cli.count == 1:
         data = struct.unpack("<H", spin.read(addr, 2, type="half"))
         print("{:08x} = {:04x}".format(addr, data[0]))
     else:
-        data = struct.pack("<H", int(cli.arg(1), base=0))
+        data = struct.pack("<H", cli.arg_i(1))
         spin.write(addr, data, type="half")
 
 
 def cmd_sb(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
-    addr = int(cli.arg(0), base=0)
+    addr = cli.arg_i(0)
     if cli.count == 1:
         data = struct.unpack("<B", spin.read(addr, 1, type="byte"))
         print("{:08x} = {:02x}".format(addr, data[0]))
     else:
-        data = struct.pack("<B", int(cli.arg_x(1), base=0))
+        data = struct.pack("<B", cli.arg_x(1))
         spin.write(addr, data, type="byte")
 
 
 def cmd_sfill(cli):
     if cli.count != 3:
         raise BadArgs
-    _from = int(cli.arg(0), base=0)
-    to = int(cli.arg(1), base=0)
-    fill = int(cli.arg(2), base=0)
-    spin.fill(_from, fill, to-_from)
+    _from = cli.arg_i(0)
+    to = cli.arg_i(1)
+    spin.fill(_from, cli.arg_i(2), to - _from)
 
 
 def cmd_sp(cli):
@@ -228,14 +224,13 @@ def cmd_sp(cli):
             pass
         chip_x, chip_y, cpu = spin.addr(root_x, root_y)
     elif cli.count == 1:
-        chip_x, chip_y, cpu = spin.addr(int(cli.arg(0), base=0))
+        chip_x, chip_y, cpu = spin.addr(cli.arg_i(0))
     elif cli.count == 2:
         chip_x, chip_y, cpu = spin.addr(
-            int(cli.arg(0), base=0), int(cli.arg(1), base=0))
+            cli.arg_i(0), cli.arg_i(1))
     elif cli.count == 3:
         chip_x, chip_y, cpu = spin.addr(
-            int(cli.arg(0), base=0), int(cli.arg(1), base=0),
-            int(cli.arg(2), base=0))
+            cli.arg_i(0), cli.arg_i(1), cli.arg_i(2))
     else:
         raise BadArgs
 
@@ -258,7 +253,7 @@ def _iodump(fh, buf):
 def cmd_iobuf(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
-    core = int(cli.arg(0), base=0)
+    core = cli.arg_i(0)
 
     opened = cli.count > 1
     if opened:
@@ -370,8 +365,10 @@ def dump_iptag():
     tto = (1 << (tto - 1)) / 100 if tto else 0
 
     print("IPTags={} (F={}, T={}), TTO={}s\n".format(_max, fix, pool, tto))
-    print("Tag    IP address    TxPort RxPort  T/O   Flags    Addr    Port      Count")
-    print("---    ----------    ------ ------  ---   -----    ----    ----      -----")
+    print("Tag    IP address    TxPort RxPort  T/O   Flags    Addr    Port"
+          "      Count")
+    print("---    ----------    ------ ------  ---   -----    ----    ----"
+          "      -----")
 
     for i in range(_max):
         (ip, _mac, tx_port, timeout, flags, count, rx_port, spin_addr,
@@ -391,7 +388,7 @@ def cmd_iptag(cli):
     if cli.count < 2:
         raise BadArgs
 
-    tag = int(cli.arg(0), base=0)
+    tag = cli.arg_i(0)
     if not MIN_TAG <= tag <= MAX_TAG:
         raise ValueError("bad tag")
     command = cli.arg(1)
@@ -404,7 +401,7 @@ def cmd_iptag(cli):
         if cli.count != 4:
             raise BadArgs
         host = cli.arg(2)
-        port = int(cli.arg(3), base=0)
+        port = cli.arg_i(3)
         strip = command == "strip"
         if not port:
             raise ValueError("bad port")
@@ -412,9 +409,9 @@ def cmd_iptag(cli):
     elif command == "reverse":
         if cli.count != 5:
             raise BadArgs
-        port = int(cli.arg(2), base=0)
-        dest_addr = int(cli.arg(3), base=16)
-        dest_port = int(cli.arg(4), base=16)
+        port = cli.arg_i(2)
+        dest_addr = cli.arg_x(3)
+        dest_port = cli.arg_x(4)
         if not port:
             raise ValueError("bad port")
         spin.iptag_set(tag, port, reverse=True,
@@ -498,9 +495,9 @@ def cmd_app_sig(cli):
             try:
                 r = struct.unpack("<I", spin.signal(
                     _type, data, mask, addr=addr))
-            except SpinnRetries:  # FIXME
-                raise
-            except:  # pylint: disable=bare-except
+            except SpinnException as e:
+                if "retries" in str(e):
+                    raise
                 # General exception: just try somewhere else
                 continue
             if signal == 18:
@@ -554,7 +551,7 @@ def cmd_app_load(cli):
     filename = cli.arg(0)
     region = parse_region(cli.arg(1), chip_x, chip_y)
     mask = parse_cores(cli.arg(2))
-    app_id = int(cli.arg(3), base=0)
+    app_id = cli.arg_i(3)
     flags = 0
     if cli.count == 5:
         if cli.arg(4) != "wait":
@@ -575,7 +572,7 @@ def cmd_data_load(cli):
     if cli.count != 3:
         raise BadArgs
     region = parse_region(cli.arg(1), chip_x, chip_y)
-    addr = int(cli.arg(2), base=16)
+    addr = cli.arg_x(2)
     buf = read_file(cli.arg(0), 1024 * 1024)
 
     spin.flood_fill(buf, region, 0, 0, 0, base=addr, addr=[])
@@ -611,25 +608,19 @@ def global_write(addr, data, _type):
 def cmd_gw(cli):
     if cli.count != 2:
         raise BadArgs
-    addr = int(cli.arg(0), base=16)
-    data = int(cli.arg(1), base=16)
-    global_write(addr, data, 2)
+    global_write(cli.arg_x(0), cli.arg_x(1), 2)
 
 
 def cmd_gh(cli):
     if cli.count != 2:
         raise BadArgs
-    addr = int(cli.arg(0), base=16)
-    data = int(cli.arg(1), base=16)
-    global_write(addr, data, 1)
+    global_write(cli.arg_x(0), cli.arg_x(1), 1)
 
 
 def cmd_gb(cli):
     if cli.count != 2:
         raise BadArgs
-    addr = int(cli.arg(0), base=16)
-    data = int(cli.arg(1), base=16)
-    global_write(addr, data, 0)
+    global_write(cli.arg_x(0), cli.arg_x(1), 0)
 
 
 # ------------------------------------------------------------------------------
@@ -639,7 +630,7 @@ def cmd_sload(cli):
     if cli.count != 2:
         raise BadArgs
     filename = cli.arg(0)
-    addr = int(cli.arg(1), base=16)
+    addr = cli.arg_x(1)
     spin.write_file(addr, filename)
 
 
@@ -647,8 +638,8 @@ def cmd_sdump(cli):
     if cli.count != 3:
         raise BadArgs
     filename = cli.arg(0)
-    addr = int(cli.arg(1), base=16)
-    length = int(cli.arg(2), base=16)
+    addr = cli.arg_x(1)
+    length = cli.arg_x(2)
 
     byte_count = 0
     with open(filename, "wb") as f:
@@ -751,7 +742,7 @@ def cmd_ps(cli):
         raise BadArgs
 
     if cli.count == 1 and re.match(r"^\d+$", cli.arg(0)):
-        vc = int(cli.arg(0))
+        vc = cli.arg_i(0)
         if not 0 <= vc < 18:
             raise BadArgs
         cpu_dump(vc, 1, 0)
@@ -769,10 +760,11 @@ def cmd_ps(cli):
 
 # ------------------------------------------------------------------------------
 
+SromInfo = namedtuple("SromInfo", ["PAGE", "ADDR"])
 Srom_info = {
-    "25aa1024": {"PAGE": 256, "ADDR": 24},
-    "25aa080a": {"PAGE": 16,  "ADDR": 16},
-    "25aa160b": {"PAGE": 32,  "ADDR": 16}}
+    "25aa1024": SromInfo(256, 24),
+    "25aa080a": SromInfo(16, 16),
+    "25aa160b": SromInfo(32, 16)}
 
 
 def cmd_srom_type(cli):
@@ -787,18 +779,18 @@ def cmd_srom_type(cli):
 
     info = Srom_info[srom_type]
     print("SROM type {} (page {}, addr {})".format(
-        srom_type, info["PAGE"], info["ADDR"]))
+        srom_type, info.PAGE, info.ADDR))
 
 
 def cmd_srom_read(cli):
     if cli.count > 1:
         raise BadArgs
     elif cli.count == 1:
-        addr = int(cli.arg(0), base=16)
+        addr = cli.arg_x(0)
     else:
         addr = 0
 
-    data = spin.srom_read(addr, 256, addr_size=Srom_info[srom_type]["ADDR"])
+    data = spin.srom_read(addr, 256, addr_size=Srom_info[srom_type].ADDR)
     hex_dump(data, addr=addr)
 
 
@@ -811,21 +803,21 @@ def cmd_srom_erase(cli):
 def cmd_srom_write(cli):
     if cli.count != 2:
         raise BadArgs
-    addr = int(cli.arg(1), base=16)
+    addr = cli.arg_x(1)
     buf = read_file(cli.arg(0), 128 * 1024)
     info = Srom_info[srom_type]
 
     print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
 
-    spin.srom_write(addr, buf, page_size = info["PAGE"], addr_size=info["ADDR"])
+    spin.srom_write(addr, buf, page_size = info.PAGE, addr_size=info.ADDR)
 
 
 def cmd_srom_dump(cli):
     if cli.count != 3:
         raise BadArgs
     filename = cli.arg(0)
-    addr = int(cli.arg(1), base=16)
-    length = int(cli.arg(2), base=0)
+    addr = cli.arg_x(1)
+    length = cli.arg_i(2)
     info = Srom_info[srom_type]
 
     byte_count = 0
@@ -834,7 +826,7 @@ def cmd_srom_dump(cli):
     while byte_count != length:
         l = min(size, length - byte_count)
         byte_count += l
-        data = spin.srom_read(addr, l, addr_size=info["ADDR"])
+        data = spin.srom_read(addr, l, addr_size=info.ADDR)
         addr += l
         if l != len(data):
             raise ValueError("length mismatch")
@@ -873,7 +865,7 @@ def get_srom_info(long):
 
     # NB: this data is BIG ENDIAN
     d = struct.unpack_from(">8B 4B 4B 4B 2B H", spin.srom_read(
-        addr, length, addr_size=Srom_info[srom_type]["ADDR"]))
+        addr, length, addr_size=Srom_info[srom_type].ADDR))
 
     flag = (d[2] << 8) + d[3]
     mac = "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}".format(
@@ -902,13 +894,13 @@ def cmd_srom_init(cli):
     elif cli.count != 6:
         raise BadArgs
 
-    flag = int(cli.arg(0), base=16)
+    flag = cli.arg_x(0)
     mac = cli.arg(1)
     ip = check_ip(cli.arg(2))
     gw = check_ip(cli.arg(3))
     nm = check_ip(cli.arg(4))
     addresses = ip + gw + nm
-    port = int(cli.arg(5), base=0)
+    port = cli.arg_i(5)
 
     if not 0x8000 <= flag < 0x10000:
         raise ValueError("bad flag")
@@ -923,7 +915,7 @@ def cmd_srom_init(cli):
                        mac[0], mac[1], mac[2], mac[3],
                        *addresses, 0, 0, port, 0, 0, 0xAAAAAAAA)
     info = Srom_info[srom_type]
-    spin.srom_write(0, data, page_size=info["PAGE"], addr_size=info["ADDR"])
+    spin.srom_write(0, data, page_size=info.PAGE, addr_size=info.ADDR)
     get_srom_info(1)
 
 
@@ -943,12 +935,12 @@ def cmd_srom_ip(cli):
 
     print("Writing {} bytes at address {}".format(length, addr))
 
-    spin.srom_write(addr, data, page=info["PAGE"], addr=info["ADDR"])
+    spin.srom_write(addr, data, page=info.PAGE, addr=info.ADDR)
 
     print("Checking...")
 
     get_srom_info(1)
-    rdata = spin.srom_read(addr, length, addr_size=info["ADDR"])
+    rdata = spin.srom_read(addr, length, addr_size=info.ADDR)
     if len(rdata) != length or data != rdata:
         print("Oops! Try again?")
     else:
@@ -980,7 +972,7 @@ def cmd_led(cli):
 def cmd_remap(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
-    proc = int(cli.arg(0), base=0)
+    proc = cli.arg_i(0)
     if not 0 <= proc <= 17:
         raise BadArgs
     map_type = cli.arg(1).lower() if cli.count == 2 else "virt"
@@ -1163,7 +1155,7 @@ def cmd_debug(cli):
     if cli.count > 1:
         raise BadArgs
     elif cli.count:
-        debug = int(cli.arg(0), base=0)
+        debug = cli.arg_i(0)
 
     spin.debug(debug)
     if bmp is not None:
@@ -1195,10 +1187,10 @@ def cmd_timeout(cli):
 def cmd_cmd(cli):
     if not 1 <= cli.count <= 4:
         raise BadArgs
-    op = int(cli.arg(0), base=0)
-    arg1 = int(cli.arg(1), base=16) if cli.count >= 2 else 0
-    arg2 = int(cli.arg(2), base=16) if cli.count >= 3 else 0
-    arg3 = int(cli.arg(3), base=16) if cli.count == 4 else 0
+    op = cli.arg_i(0)
+    arg1 = cli.arg_x(1) if cli.count >= 2 else 0
+    arg2 = cli.arg_x(2) if cli.count >= 3 else 0
+    arg3 = cli.arg_x(3) if cli.count == 4 else 0
 
     spin.scp_cmd(op, arg1=arg1, arg2=arg2, arg3=arg3)
 

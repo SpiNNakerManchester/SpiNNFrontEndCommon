@@ -29,14 +29,38 @@ class CLI(object):
             self.commands = dict()
         self.commands.update(command_set)
 
+    def __prompt(self):
+        if self.tty and self.term is None:
+            print(self.prompt, end="", flush=True)
+
     def run(self):
         """ execute a CLI """
-        # FIXME
+        self.__prompt()
+        for line in self.channel:
+            if not self.tty and not self.quiet:
+                print(self.prompt + line)
+            print("")
+            line = line.strip()
+            if not line or line.startswith("#"):
+                self.__prompt()
+                continue
+            self.__args = line.split()
+            cmd = self.__args.pop(0)
+            if cmd in self.commands:
+                try:
+                    if self.commands[cmd][0](self):
+                        break
+                except Exception as e:  # pylint: disable=broad-except
+                    print("error: {}".format(e))
+            else:
+                print("bad command \"{}\"".format(cmd))
+            self.__prompt()
 
-    def pause(self):
-        text = " ".join(self.__args).replace(r"\n", "\n")
-        print(text)
-        input()
+    def write(self, text):
+        print(text, flush=self.tty)
+
+    def read(self):
+        return self.channel.readline()
 
     @property
     def count(self):
@@ -50,18 +74,22 @@ class CLI(object):
     def arg(self, n):
         return self.__args[n]
 
+    def arg_i(self, n):
+        return int(self.__args[n], base=0)
+
+    def arg_x(self, n):
+        return int(self.__args[n], base=16)
+
 
 def Pause(cli):
     """ print a string and wait for Enter key """
-    text = " ".join(cli.args).replace(r"\n", "\n")
-    print(text)
-    input()
+    cli.write(" ".join(cli.args).replace(r"\n", "\n"))
+    cli.read()
 
 
 def Echo(cli):
     """ print a string """
-    text = " ".join(cli.args).replace(r"\n", "\n")
-    print(text)
+    print(" ".join(cli.args).replace(r"\n", "\n"))
 
 
 def Quit(cli):
@@ -94,7 +122,7 @@ def At(cli):
     if not 1 <= cli.count <= 2:
         raise BadArgs
     filename = cli.arg(0)
-    _quiet = 0 if cli.count == 1 else int(cli.arg(1))
+    _quiet = 0 if cli.count == 1 else cli.arg_i(1)
     if cli.level > 10:
         raise RuntimeError("@ nested too deep")
 

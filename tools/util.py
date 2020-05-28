@@ -126,19 +126,30 @@ def parse_region(region, x, y):
     return (x << 24) | (y << 16) | (level << 16) | mask
 
 
-def read_file(filename, max_size):
+def read_file(filename, max_size=0):
     with open(filename, "rb") as f:
-        if os.fstat(f.fileno()).st_size > max_size:
+        if max_size and os.fstat(f.fileno()).st_size > max_size:
             raise ValueError("file too large")
         return f.read()
 
 
 def find_path(filename):
-    pass  # TODO
+    currentdir = os.path.dirname(os.path.abspath(__file__))
+    file_in_bootdir = os.path.join(currentdir, "boot", filename)
+    if os.path.exists(file_in_bootdir):
+        return os.path.normpath(file_in_bootdir)
+
+    spinn_path = os.environ["SPINN_PATH"]
+    for d in spinn_path.split(os.pathsep):
+        file_on_path = os.path.join(d, filename)
+        if os.path.exists(file_on_path):
+            return os.path.normpath(file_on_path)
+
+    raise ValueError("{} not found!".format(filename))
 
 
-def read_path(filename, max_size):
-    pass  # TODO
+def read_path(filename, max_size=0):
+    return read_file(find_path(filename), max_size)
 
 
 def bmp_version():
