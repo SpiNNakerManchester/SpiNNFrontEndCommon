@@ -148,8 +148,10 @@ static inline table_t* routing_table_utils_convert(
     // Assume size of subtable not set so set it
     tables->sub_tables[0]->size = tables->n_entries;
 
-    // Free the rest
+    // claim the first pointer before freeing to avoid bad memory access
     table_t* first_table = tables->sub_tables[0];
+
+    // Free the rest
     routing_table_utils_free(tables, 1);
     return first_table;
 }
