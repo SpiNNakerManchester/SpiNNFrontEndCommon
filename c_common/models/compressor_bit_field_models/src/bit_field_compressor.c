@@ -63,6 +63,8 @@ compressor_states previous_compressor_state = UNUSED;
 // Sdram are used for communication between sorter and THIS compressor
 comms_sdram_t *restrict comms_sdram;
 
+// DEBUG stuff
+//bool hack_malloc_failed = false;
 // ---------------------------------------------------------------------
 
 //! \brief handles the compression process
@@ -79,6 +81,14 @@ void start_compression_process(void) {
     //    log_info("HACK fail at 100 plus bitfeilds!");
     //     comms_sdram->compressor_state = FAILED_TO_COMPRESS;
     //     return;
+    //}
+
+    // DEBUG stuff
+    //if ((comms_sdram->mid_point > 0) || (!hack_malloc_failed)) {
+    //    log_info("HACK malloc fail!");
+    //    hack_malloc_failed = true;
+    //    comms_sdram->compressor_state = FAILED_MALLOC;
+    //    return;
     //}
 
     // run compression
