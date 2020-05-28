@@ -798,11 +798,6 @@ static inline bool oc_minimise(
         bool compress_only_when_needed,
         bool compress_as_much_as_possible) {
 
-    // Some Mundy black magic
-    aliases_t aliases;
-    aliases_clear(&aliases);
-    aliases = aliases_init();
-
     // check if any compression actually needed
     log_debug(
         "n entries before compression is %d",
@@ -814,6 +809,9 @@ static inline bool oc_minimise(
         return true;
     }
 
+    // Some Mundy black magic
+    aliases_t aliases = aliases_init();
+
     // remove default routes and check lengths again
     log_debug("before rerun count");
     int length_after_removal = routing_table_get_n_entries();
@@ -822,6 +820,7 @@ static inline bool oc_minimise(
     if (!success) {
         log_error("failed to remove default routes due to malloc. failing");
         *failed_by_malloc = true;
+        aliases_clear(&aliases);
         return false;
     }
     log_debug("after default route removal");
@@ -831,6 +830,7 @@ static inline bool oc_minimise(
     if (compress_only_when_needed && (length_after_removal < target_length)) {
         log_info("remove defaults was enought.");
         remove_default_routes_minimise(&length_after_removal, true);
+        aliases_clear(&aliases);
         return true;
     }
 
@@ -859,6 +859,7 @@ static inline bool oc_minimise(
             log_debug(
                 "failed to do get best merge. the number of merge cycles "
                 "were %d", attempts);
+            aliases_clear(&aliases);
             return false;
         }
 
@@ -875,6 +876,7 @@ static inline bool oc_minimise(
 
             if (!malloc_success){
                 log_error("failed to malloc");
+                aliases_clear(&aliases);
                 return false;
             }
             log_debug("merge apply end");
@@ -903,6 +905,7 @@ static inline bool oc_minimise(
             "Asked to stop. reached %d entries over %d attempts",
             routing_table_get_n_entries(),  attempts);
         spin1_pause();
+        aliases_clear(&aliases);
         return false;
     }
 
@@ -914,6 +917,7 @@ static inline bool oc_minimise(
     log_debug("compressed!!!");
     log_debug(
         "produced table with %d entries", routing_table_get_n_entries());
+    aliases_clear(&aliases);
     return true;
 }
 
