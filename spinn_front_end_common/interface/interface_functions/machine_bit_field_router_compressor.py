@@ -580,7 +580,8 @@ class MachineBitFieldRouterCompressor(object):
         compressor binary path
         :param bit_field_sorter_executable_path: the path to the sorter binary
         :param comms_sdram (int) : Address for comms block
-        :param threshold_percentage: TODO ALAN!
+        :param threshold_percentage: the percentage of bitfields the user has \
+        defined as a minimum needed to pass to be successful.
         :rtype: None
         """
         # generate address_data
@@ -780,7 +781,8 @@ class MachineBitFieldRouterCompressor(object):
         :param address_list: the list of sdram addresses
         :param cores: compressor cores on this chip.
         :param comms_sdram (int) : Address for comms block
-        :param threshold_percentage: TODO ALAN!
+        :param threshold_percentage: the percentage of bitfields the user has \
+        defined as a minimum needed to pass to be successful.
         :return: the byte array
         """
 
