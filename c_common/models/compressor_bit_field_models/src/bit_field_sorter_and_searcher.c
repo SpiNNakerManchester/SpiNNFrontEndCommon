@@ -41,13 +41,13 @@
 //! \brief time step for safety timer tick interrupt
 #define TIME_STEP 1000
 
-//! \brief After how many time steps to kill the process
+//! \brief used for debug. kills after how many time steps to kill the process
 #define KILL_TIME 20000
 
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
 
-//! \brief flag for if a rtr_mc_set failure.
+//! \brief flag for if a rtr_mc failure.
 #define RTR_MC_FAILED 0
 
 //! \brief bit shift for the app id for the route
@@ -988,19 +988,17 @@ static void initialise_routing_control_flags(void) {
 bool initialise_compressor_processors(void) {
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
-
-    log_debug("n region triples = %d", region_addresses->n_triples);
     compressor_processors_top_t *compressor_processors_top =
         (void *) &region_addresses->triples[region_addresses->n_triples];
+
+    // Switch compressor processors to TO_BE_PREPARED
     for (uint32_t processor_index = 0;
             processor_index < compressor_processors_top->n_processors;
             processor_index++) {
-        // Switch compressor processors to TO_BE_PREPARED
         int processor_id =
             compressor_processors_top->processor_id[processor_index];
         comms_sdram[processor_id].sorter_instruction = TO_BE_PREPARED;
     }
-    comms_sdram[4].sorter_instruction = TO_BE_PREPARED;
     return true;
 }
 
