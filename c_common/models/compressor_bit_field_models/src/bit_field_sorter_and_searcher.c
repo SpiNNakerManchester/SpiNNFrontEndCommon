@@ -207,9 +207,8 @@ static inline bool pass_instructions_to_compressor(
         return false;
     }
 
-    // set compressor states for the given processor.
+    // set the midpoint for the given compressor processor.
     comms_sdram[processor_id].mid_point = mid_point;
-    comms_sdram[processor_id].sorted_bit_fields = sorted_bit_fields;
 
     // Info stuff
     log_info(
@@ -240,7 +239,9 @@ static inline void malloc_tables_and_set_off_bit_compressor(
         sorted_bit_fields);
 
     malloc_extras_check_all_marked(1005);
+
     // if successful, try setting off the bitfield compression
+    comms_sdram[processor_id].sorted_bit_fields = sorted_bit_fields;
     bool success = pass_instructions_to_compressor(
         processor_id, mid_point, table_size);
 

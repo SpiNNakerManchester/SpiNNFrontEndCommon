@@ -202,10 +202,11 @@ static void print_structs(
 static inline void fills_in_sorted_bit_fields_and_tracker(
         region_addresses_t *restrict region_addresses,
         sorted_bit_fields_t *restrict sorted_bit_fields) {
+
     // iterate through a processors bitfield region and add to the bf by
     // processor struct, whilst updating n bf total param.
-    int index = 0;
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
+    for (int r_id = 0, index = 0; r_id < region_addresses->n_triples; r_id++) {
+
         // locate data for malloc memory calcs
         filter_region_t *restrict filter_region =
             region_addresses->triples[r_id].filter;
@@ -226,18 +227,14 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
 
             // update trackers.
             sorted_bit_fields->processor_ids[index] = processor;
-            sorted_bit_fields->bit_fields[index] =
-                &filter_region->filters[bf_id];
-            processor_totals[processor] +=
-                filter_region->filters[bf_id].n_atoms;
-
+            sorted_bit_fields->bit_fields[index] = &filter_region->filters[bf_id];
+            processor_totals[processor] += filter_region->filters[bf_id].n_atoms;
         }
 
         // accum the incoming packets from bitfields which have no redundancy
         for (int bf_id = filter_region->n_redundancy_filters;
                 bf_id < filter_region->n_filters; bf_id++) {
-            processor_totals[processor] +=
-                filter_region->filters[bf_id].n_atoms;
+            processor_totals[processor] += filter_region->filters[bf_id].n_atoms;
         }
     }
 }
