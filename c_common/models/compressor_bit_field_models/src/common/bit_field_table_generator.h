@@ -29,7 +29,7 @@
 //! neuron level mask
 #define NEURON_LEVEL_MASK 0xFFFFFFFF
 
-//! brief counts the number of unigue keys in the list up to the midpoint
+//! brief counts the number of unique keys in the list up to the midpoint
 //!
 //! Works on the assumption that the list is grouped (sorted) by key
 //!
@@ -37,9 +37,13 @@
 //! \param[in] mid_point: where in the sorted bitfields to go to
 int count_unique_keys(
         sorted_bit_fields_t *restrict sorted_bit_fields, int midpoint) {
+    // semantic sugar
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
     int *restrict restrict sort_order =  sorted_bit_fields->sort_order;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
+
+    // as the sorted bitfields are sorted by key. checking key changes when
+    // within the midpoint will work.
     int count = 0;
     uint32_t last_key = -1;
     for (int i = 0; i < n_bit_fields; i++) {
@@ -84,7 +88,7 @@ void generate_table(
         // atom
         for (int bf_index = 0; bf_index < bf_found; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
-            if (bit_field_test(filters[bf_index]->data, atom)){
+            if (bit_field_test(filters[bf_index]->data, atom)) {
                 log_debug(
                     "setting for atom %d from bitfield index %d so proc %d",
                     atom, bf_index, bit_field_processors[bf_index]);
@@ -98,8 +102,9 @@ void generate_table(
             original_entry.key_mask.key + atom,
             NEURON_LEVEL_MASK, new_route, original_entry.source);
     }
-    log_debug("key %d atoms %d size %d", original_entry.key_mask.key, n_atoms,
-        routing_table_get_n_entries());
+    log_debug(
+        "key %d atoms %d size %d",
+        original_entry.key_mask.key, n_atoms, routing_table_get_n_entries());
 }
 
 //! Takes a midpoint and reads the sorted bitfields
@@ -109,8 +114,8 @@ void generate_table(
 //! \param[in] uncompressed_router_table: the uncompressed router table
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return size of table(s) to be generated in entries
-static inline uint32_t bit_field_table_generator_max_size(int mid_point,
-        table_t *restrict uncompressed_table,
+static inline uint32_t bit_field_table_generator_max_size(
+        int mid_point, table_t *restrict uncompressed_table,
         sorted_bit_fields_t *restrict sorted_bit_fields) {
 
     // semantic sugar to avoid referencing
@@ -120,6 +125,7 @@ static inline uint32_t bit_field_table_generator_max_size(int mid_point,
     // Start with the size of the uncompressed table
     uint32_t max_size =  uncompressed_table->size;
     log_debug("keys %d",  max_size);
+
     // Check every bitfield to see if is to be used
     // Only need each key once to track last used as tables is sorted by key
     uint32_t used_key = -1;
@@ -133,7 +139,8 @@ static inline uint32_t bit_field_table_generator_max_size(int mid_point,
             }
         }
     }
-    log_debug("Using mid_point %d, counted size of table is %d",
+    log_debug(
+        "Using mid_point %d, counted size of table is %d",
         mid_point, max_size);
     return max_size;
 }
@@ -148,6 +155,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
         int mid_point,
         table_t *restrict uncompressed_table,
         sorted_bit_fields_t *restrict sorted_bit_fields) {
+
     // semantic sugar to avoid referencing
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
@@ -172,14 +180,15 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
             }
             bf_i++;
         }
-        if (bf_found > 0){
+        if (bf_found > 0) {
             generate_table(
                 original[rt_i], filters, bit_field_processors, bf_found);
         } else {
             routing_table_append_entry(original[rt_i]);
         }
-        log_debug("key %d size %d", original[rt_i].key_mask.key,
-            routing_table_get_n_entries());
+        log_debug(
+            "key %d size %d",
+            original[rt_i].key_mask.key, routing_table_get_n_entries());
     }
 }
 

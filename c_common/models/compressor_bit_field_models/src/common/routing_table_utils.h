@@ -102,13 +102,14 @@ bool routing_table_utils_malloc(
         routing_table_utils_free_all(tables);
         return false;
     }
+    // init the size
     tables->sub_tables[tables->n_sub_tables - 1]->size = 0;
     log_debug(
         "created table %d size %d",
         tables->n_sub_tables - 1,
         tables->sub_tables[tables->n_sub_tables - 1]->size);
 
-
+    // debugging please keep.
     log_debug("n table %d entries %d", tables->n_sub_tables, tables->n_entries);
     for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
         log_debug("table %d size %d", i, tables->sub_tables[i]->size);
