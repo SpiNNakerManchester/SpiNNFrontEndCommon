@@ -50,6 +50,9 @@
 //! \brief flag for if a rtr_mc failure.
 #define RTR_MC_FAILED 0
 
+//! \brief number of bitfields that no bitfields run needs
+#define NO_BIT_FIELDS 0
+
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
@@ -173,11 +176,11 @@ static inline bool set_up_tested_mid_points(void) {
     log_info(
         "set_up_tested_mid_point n bf addresses is %d",
         sorted_bit_fields->n_bit_fields);
+
     uint32_t words = get_bit_field_size(
         sorted_bit_fields->n_bit_fields + ADD_INCLUSIVE_BIT);
-    if (tested_mid_points == NULL) {
-        tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
-    }
+    tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
+
     // check the malloc worked
     if (tested_mid_points == NULL) {
         return false;
@@ -201,15 +204,15 @@ static inline bool pass_instructions_to_compressor(
 
     bool success = routing_table_utils_malloc(
         comms_sdram[processor_id].routing_tables, table_size);
-    if (!success){
+    if (!success) {
         log_info(
             "failed to create bitfield tables for midpoint %d", mid_point);
         return false;
     }
 
+    // set compressor states for the given processor.
     comms_sdram[processor_id].mid_point = mid_point;
     comms_sdram[processor_id].sorted_bit_fields = sorted_bit_fields;
-    // prepare_processor_first_time did compressed_table and fake_heap_data
 
     // Info stuff
     log_info(
@@ -473,7 +476,7 @@ bool prepare_processor_first_time(int processor_id) {
         MALLOC_SDRAM(sizeof(multi_table_t));
     if (comms_sdram[processor_id].routing_tables == NULL) {
         comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
-        log_error("Error mallocing routint bake pointer on  %d", processor_id);
+        log_error("Error mallocing routing bake pointer on  %d", processor_id);
             return false;
     }
     comms_sdram[processor_id].routing_tables->sub_tables = NULL;
@@ -500,7 +503,8 @@ bool prepare_processor_first_time(int processor_id) {
     return true;
 }
 
-//! \brief Returns the next processor id which is ready to run a compression
+//! \brief Returns the next processor id which is ready to run a compression.
+//! may result in preparing a processor in the process.
 //! \param[in] mid_point: the mid point this processor will use
 //! \return the processor id of the next available processor or -1 if none
 int find_prepared_processor(void) {
@@ -513,6 +517,12 @@ int find_prepared_processor(void) {
             }
         }
     }
+
+    // NOTE: This initialization component exists here due to a race condition
+    // with the compressors, where we dont know if they are reacting to
+    // "messages" before sync signal has been sent. We also have this here to
+    // save the 16 bytes per compressor core we dont end up using.
+
     // Look for a processor never used and  prepare it
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         log_debug(
@@ -551,17 +561,17 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 //! \return bool which says if setting off the compression attempt was
 //! successful or not.
 bool setup_no_bitfields_attempt(void) {
-    int processor_id = find_compressor_processor_and_set_tracker(0);
+    int processor_id = find_compressor_processor_and_set_tracker(NO_BIT_FIELDS);
     if (processor_id == FAILED_TO_FIND) {
         log_error("No processor available for no bitfield attempt");
         malloc_extras_terminate(RTE_SWERR);
     }
     // set off a none bitfield compression attempt, to pipe line work
-    log_info(
-        "sets off the no bitfield version of the search on %u", processor_id);
+    log_info("sets off the no bitfield version of the search on %u", processor_id);
 
     pass_instructions_to_compressor(
-        processor_id, 0, uncompressed_router_table->uncompressed_table.size);
+        processor_id, NO_BIT_FIELDS,
+        uncompressed_router_table->uncompressed_table.size);
     malloc_extras_check_all_marked(1001);
     return true;
 }
@@ -886,9 +896,6 @@ void start_compression_process(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
-
-    // ensure prints are off for the malloc tracker
-    malloc_extras_turn_off_print();
 
     // malloc the struct and populate n bit-fields. DOES NOT populate the rest.
     sorted_bit_fields = bit_field_reader_initialise(region_addresses);

@@ -25,11 +25,11 @@
 
 //! \brief For each possible processor the first index of a row for that
 //! processor
-int processor_heads[MAX_PROCESSORS];
+static int processor_heads[MAX_PROCESSORS];
 
 //! \brief Sum of packets per processor for bitfields with redundancy not yet
 //! ordered
-uint32_t processor_totals[MAX_PROCESSORS];
+static uint32_t processor_totals[MAX_PROCESSORS];
 
 //! \brief reads a bitfield and deduces how many bits are not set
 //! \param[in] filter_info_struct: the struct holding a bitfield
@@ -297,8 +297,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
         region_addresses_t *restrict region_addresses) {
     sorted_bit_fields_t *restrict sorted_bit_fields = MALLOC_SDRAM(
         sizeof(sorted_bit_fields_t));
-    if (sorted_bit_fields
-     == NULL) {
+    if (sorted_bit_fields == NULL) {
         log_error("failed to allocate dtcm for sorted bitfields.");
         return NULL;
     }
@@ -307,8 +306,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
     log_debug("n triples of addresses = %d", region_addresses->n_triples);
     int n_bit_fields = 0;
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        n_bit_fields +=
-            region_addresses->triples[r_id].filter->n_redundancy_filters;
+        n_bit_fields += region_addresses->triples[r_id].filter->n_redundancy_filters;
         log_info(
             "Core %d has %u bitfields of which %u have redundancy",
             region_addresses->triples[r_id].processor,
@@ -324,8 +322,8 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
     if (n_bit_fields != 0) {
 
         // malloc the separate bits of the sorted bitfield struct
-        sorted_bit_fields->bit_fields =
-            MALLOC_SDRAM(n_bit_fields * sizeof(filter_info_t*));
+        sorted_bit_fields->bit_fields = MALLOC_SDRAM(
+            n_bit_fields * sizeof(filter_info_t*));
         if (sorted_bit_fields->bit_fields == NULL) {
             log_error(
                 "cannot allocate memory for the sorted bitfield addresses");
@@ -333,8 +331,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
             return NULL;
         }
 
-        sorted_bit_fields->processor_ids = MALLOC_SDRAM(
-            n_bit_fields * sizeof(int));
+        sorted_bit_fields->processor_ids = MALLOC_SDRAM(n_bit_fields * sizeof(int));
         if (sorted_bit_fields->processor_ids == NULL) {
             log_error("cannot allocate memory for the sorted bitfields with "
                       "processors ids");
@@ -343,8 +340,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
             return NULL;
         }
 
-        sorted_bit_fields->sort_order = MALLOC_SDRAM(
-            n_bit_fields * sizeof(int));
+        sorted_bit_fields->sort_order = MALLOC_SDRAM(n_bit_fields * sizeof(int));
         if (sorted_bit_fields->sort_order == NULL) {
             log_error("cannot allocate memory for the sorted bitfields with "
                       "sort_order");
