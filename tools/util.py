@@ -7,10 +7,12 @@ _REGION_RE = re.compile(r"^(\d+),(\d+)$")
 
 
 def hex_dump(data, format="byte",  # @ReservedAssignment
-             width=None, addr=0, start=0, length=None, prefix=""):
+             width=None, addr=0, start=0, length=None, prefix="",
+             do_print=True):
     width = width if width is not None else 16 if format == "byte" else 32
     count = length if length is not None else len(data)
 
+    result = ""
     ptr = start
     while count:
         chunk = data[ptr:ptr + min(width, count) - 1]
@@ -34,9 +36,14 @@ def hex_dump(data, format="byte",  # @ReservedAssignment
             for d in struct.unpack("<{}I".format(len(chunk) // 4), chunk):
                 text += " {:08x}".format(d)
 
-        print(text)
+        if do_print:
+            print(text)
+        else:
+            result += text
+            result += "\n"
         ptr += len(chunk)
         count -= len(chunk)
+    return result
 
 
 def parse_apps(apps):
