@@ -3,52 +3,77 @@ from tools.pybug import BadArgs
 
 class CLI(object):
     def __init__(self, channel, prompt, commands, term):
-        self.channel = channel
+        self._channel = channel
         self.prompt = prompt
-        self.commands = dict(commands)
-        self.term = term
-        self.level = 0
-        self.quiet = 0
-        self.tty = channel.isatty()
-        self.__args = []
+        self._commands = {}
+        self.cmd(commands, True)
+        self._term = term
+        self._level = 0
+        self._quiet = 0
+        self._tty = channel.isatty()
+        self._args = []
 
     @property
     def state(self):
         return (
-            self.channel, self.tty, self.prompt, self.quiet,
-            self.term, self.level, self.commands)
+            self._channel, self._tty, self.prompt, self._quiet,
+            self._term, self._level, self._commands)
 
     @state.setter
     def state(self, state):
-        (self.channel, self.tty, self.prompt, self.quiet, self.term,
-         self.level, self.commands) = state
+        (self._channel, self._tty, self.prompt, self._quiet, self._term,
+         self._level, self._commands) = state
 
     def cmd(self, command_set, delete=False):
         """ update command list """
         if delete:
-            self.commands = dict()
-        self.commands.update(command_set)
+            self._commands = {
+                "pause": (self._Pause,
+                    "<text.S>",
+                    "Print string and wait for Enter key"),
+                "echo": (self._Echo,
+                    "<text.S>",
+                    "Print string"),
+                "quit": (self._Quit,
+                    "",
+                    "Quit"),
+                "help": (self._Help,
+                    "",
+                    "Provide help"),
+                "@": (self._At,
+                    "<file.F> [quiet]",
+                    "Read commands from file"),
+                "?": (self._Query,
+                    "",
+                    "List commands"),
+            }
+        self._commands.update(command_set)
+
+    def commands_starting_with(self, string):
+        for c in self._commands:
+            if c.startswith(string):
+                yield c
 
     def __prompt(self):
-        if self.tty and self.term is None:
+        if self._tty and self._term is None:
             print(self.prompt, end="", flush=True)
 
     def run(self):
         """ execute a CLI """
         self.__prompt()
-        for line in self.channel:
-            if not self.tty and not self.quiet:
+        for line in self._channel:
+            if not self._tty and not self._quiet:
                 print(self.prompt + line)
             print("")
             line = line.strip()
             if not line or line.startswith("#"):
                 self.__prompt()
                 continue
-            self.__args = line.split()
-            cmd = self.__args.pop(0)
-            if cmd in self.commands:
+            self._args = line.split()
+            cmd = self._args.pop(0)
+            if cmd in self._commands:
                 try:
-                    if self.commands[cmd][0](self):
+                    if self._commands[cmd][0](self):
                         break
                 except Exception as e:  # pylint: disable=broad-except
                     print("error: {}".format(e))
@@ -56,101 +81,94 @@ class CLI(object):
                 print("bad command \"{}\"".format(cmd))
             self.__prompt()
 
-    def write(self, text):
-        print(text, flush=self.tty)
-
-    def read(self):
-        return self.channel.readline()
+    def __write(self, text):
+        print(text, flush=self._tty)
 
     @property
     def count(self):
-        return len(self.__args)
+        return len(self._args)
 
     @property
     def args(self):
-        for a in self.__args:
+        for a in self._args:
             yield a
 
     def arg(self, n):
-        return self.__args[n]
+        return self._args[n]
 
     def arg_i(self, n):
-        return int(self.__args[n], base=0)
+        return int(self._args[n], base=0)
 
     def arg_x(self, n):
-        return int(self.__args[n], base=16)
+        return int(self._args[n], base=16)
 
+    # Default commands of a CLI object; always present!
 
-def Pause(cli):
-    """ print a string and wait for Enter key """
-    cli.write(" ".join(cli.args).replace(r"\n", "\n"))
-    cli.read()
+    def _Pause(self):
+        """ print a string and wait for Enter key """
+        self.__write(" ".join(self.args).replace(r"\n", "\n"))
+        self._channel.readline()
 
+    def _Echo(self):
+        """ print a string """
+        self.__write(" ".join(self.args).replace(r"\n", "\n"))
 
-def Echo(cli):
-    """ print a string """
-    print(" ".join(cli.args).replace(r"\n", "\n"))
+    def _Quit(self):
+        if self.count:
+            raise BadArgs
+        return 1
 
+    def _Help(self):
+        """ command to print help information on CLI commands """
+        if self.count == 1:
+            cmd = self.arg(0)
+            info = self._commands.get(cmd, None)
+            if info is not None:
+                print("usage:   {} {}".format(cmd, info[1]))
+                print("purpose: {}".format(info[2]))
+                return
+        elif self.count:
+            raise BadArgs
 
-def Quit(cli):
-    if cli.count:
-        raise BadArgs
-    return 1
+        cmds = list(self._commands)
+        cmds.sort()
+        for cmd in cmds:
+            info = self._commands[cmd]
+            print(" {:-12s} {:-30s} - {}".format(cmd, info[1], info[2]))
 
+    def _At(self):
+        """ command to read CLI commands from a file """
+        if not 1 <= self.count <= 2:
+            raise BadArgs
+        filename = self.arg(0)
+        quiet = 0 if self.count == 1 else self.arg_i(1)
+        if self._level > 10:
+            raise RuntimeError("@ nested too deep")
 
-def Help(cli):
-    """ command to print help information on CLI commands """
-    if cli.count == 1:
-        cmd = cli.arg(0)
-        info = cli.commands.get(cmd, None)
-        if info is not None:
-            print("usage:   {} {}".format(cmd, info[1]))
-            print("purpose: {}".format(info[2]))
-            return
-    elif cli.count:
-        raise BadArgs
+        with open(filename) as fh:
+            state = self.state
 
-    cmds = list(cli.commands)
-    cmds.sort()
-    for cmd in cmds:
-        info = cli.commands[cmd]
-        print(" {:-12s} {:-30s} - {}".format(cmd, info[1], info[2]))
+            self._level += 1
+            self._channel = fh
+            self._tty = fh.isatty()
+            self.prompt = "@" + self.prompt
+            self._quiet = quiet
+            self._term = None
+            try:
+                self.run()
+            finally:
+                self.state = state
 
-
-def At(cli):
-    """ command to read CLI commands from a file """
-    if not 1 <= cli.count <= 2:
-        raise BadArgs
-    filename = cli.arg(0)
-    _quiet = 0 if cli.count == 1 else cli.arg_i(1)
-    if cli.level > 10:
-        raise RuntimeError("@ nested too deep")
-
-    with open(filename) as fh:
-        state = cli.state
-
-        cli.level += 1
-        cli.channel = fh
-        cli.tty = fh.isatty()
-        cli.prompt = "@" + cli.prompt
-        cli.quiet = _quiet
-        cli.term = None
-        try:
-            cli.run()
-        finally:
-            cli.state = state
-
-
-def Query(cli):
-    """ command to print a list of CLI commands """
-    cmds = list(cli.commands)
-    cmds.sort()
-    s = ""
-    for cmd in cmds:
-        if len(s + " " + cmd) > 78:
+    def _Query(self):
+        """ command to print a list of CLI commands """
+        cmds = list(self._commands)
+        cmds.sort()
+        s = ""
+        for cmd in cmds:
+            if len(s + " " + cmd) > 78:
+                print(s)
+                s = ""
+            s += " "
+            s += cmd
+        if s:
             print(s)
-            s = ""
-        s += " "
-        s += cmd
-    if s:
-        print(s)

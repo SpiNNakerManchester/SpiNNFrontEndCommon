@@ -6,9 +6,9 @@ import time
 from collections import namedtuple
 from zlib import crc32
 from tools.exn import BadArgs, SpinnException
-from tools.cli import CLI, Pause, Echo, Quit, Help, At, Query
+from tools.cli import CLI
 from tools.boot import boot
-from tools.struct import Struct
+from tools.sv import Struct
 from tools.cmd import Cmd
 from tools.util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits,
@@ -1324,24 +1324,6 @@ spin_cmds = {
     "power": (cmd_power,
         "on|off",
         "Switch power on/off via BMP"),
-    "pause": (Pause,
-        "<text.S>",
-        "Print string and wait for Enter key"),
-    "echo": (Echo,
-        "<text.S>",
-        "Print string"),
-    "quit": (Quit,
-        "",
-        "Quit"),
-    "help": (Help,
-        "",
-        "Provide help"),
-    "@": (At,
-        "<file.F> [quiet]",
-        "Read commands from file"),
-    "?": (Query,
-        "",
-        "List commands"),
 }
 
 expert_cmds = {
@@ -1468,8 +1450,7 @@ class Completer(object):
         if not state:
             # Add None to the end to mark end of matches
             # https://eli.thegreenplace.net/2016/basics-of-using-the-readline-library/
-            self._stored = [c for c in _cli.commands if c.startswith(text)] + [
-                None]
+            self._stored = list(_cli.commands_starting_with(text)) + [None]
         word = self._stored[state]
         if word and len(self._stored) == 1:
             word += " "
