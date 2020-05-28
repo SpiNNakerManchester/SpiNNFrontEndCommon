@@ -23,40 +23,36 @@
 #include "routing_table_utils.h"
 
 //=============================================================================
-//state for reduction in parameters being passed around
+//! location for variables
 
-//! \brief store for addresses for routing entries in sdram
-//! WARNING size of
-table_t** sub_tables;
-
-//! the number of sub_tables used
-uint32_t n_sub_tables = 0;
-
-//! the number of entries appended to the table
-int n_entries = 0;
+// holder in DTCM for top level pointers in SDRAM, used for performance.
+multi_table_t multi_table;
 
 //! \brief Gets a pointer to where this entry is stored
 //!
-//! Will not check if there is an entry with this id but
-//! may RTE if the id is too large but this behaviour should not be
-//! counted on in the future.
+//! Will not check if there is an entry with this id but will RTE if the id
+//! is too large
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \param[in] marker: int that should be different in every call so we can
 //! detect where MUNDY was reading past the end of the table
 //! \return pointer to the entry's location
 entry_t* routing_table_get_entry(uint32_t entry_id_to_find, int marker) {
     uint32_t table_id = entry_id_to_find >> TABLE_SHIFT;
-    if (table_id >= n_sub_tables) {
-        log_error("Id %d to big for %d tables marker %d", entry_id_to_find, n_sub_tables, marker);
+    if (table_id >= multi_table.n_sub_tables) {
+        log_error(
+            "Id %d to big for %d tables marker %d",
+            entry_id_to_find, multi_table.n_sub_tables, marker);
         malloc_extras_terminate(RTE_SWERR);
     }
     uint32_t local_id = entry_id_to_find & LOCAL_ID_ADD;
-    if (local_id >= sub_tables[table_id]->size) {
-        log_error("Id %d has local_id %d which is too big for table of size %d marker %d",
-            entry_id_to_find, local_id, sub_tables[table_id]->size, marker);
+    if (local_id >= multi_table.sub_tables[table_id]->size) {
+        log_error(
+            "Id %d has local_id %d which is too big for table of size %d marker %d",
+            entry_id_to_find, local_id, multi_table.sub_tables[table_id]->size,
+            marker);
         malloc_extras_terminate(RTE_SWERR);
     }
-    return &sub_tables[table_id]->entries[local_id];
+    return &multi_table.sub_tables[table_id]->entries[local_id];
 }
 
 //! \brief Gets a pointer to where this entry is stored
@@ -66,27 +62,40 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find, int marker) {
 //! counted on in the future.
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \return pointer to the entry's location
-entry_t* routing_table_append_get_entry() {
-    uint32_t table_id = n_entries >> TABLE_SHIFT;
-    if (table_id >= n_sub_tables) {
-        log_error("Id %d to big for %d tables", n_entries, n_sub_tables);
+entry_t* routing_table_append_get_entry(void) {
+    // check that we're not hitting the max entries supported by the table
+    if (multi_table.n_entries == (int) multi_table.max_entries) {
+        log_error("there is no more space in this multi-table for this entry.");
         malloc_extras_terminate(RTE_SWERR);
     }
-    uint32_t local_id = n_entries & LOCAL_ID_ADD;
-    if (local_id != sub_tables[table_id]->size) {
+
+    // locate right table index
+    uint32_t table_id = multi_table.n_entries >> TABLE_SHIFT;
+    if (table_id >= multi_table.n_sub_tables) {
+        log_error(
+            "Id %d to big for %d tables",
+            multi_table.n_entries, multi_table.n_sub_tables);
+        malloc_extras_terminate(RTE_SWERR);
+    }
+
+    // locate entry index
+    uint32_t local_id = multi_table.n_entries & LOCAL_ID_ADD;
+    if (local_id != multi_table.sub_tables[table_id]->size) {
         log_error("Id %d has local_id %d which is big for %d table",
-            n_entries, local_id, sub_tables[table_id]->size);
+            multi_table.n_entries, local_id,
+            multi_table.sub_tables[table_id]->size);
         malloc_extras_terminate(RTE_SWERR);
     }
-    n_entries++;
-    sub_tables[table_id]->size++;
-    return &sub_tables[table_id]->entries[local_id];
+
+    // update trackers.
+    multi_table.n_entries++;
+    multi_table.sub_tables[table_id]->size++;
+    return &multi_table.sub_tables[table_id]->entries[local_id];
 }
 
 //! Inserts a deep copy of an entry after the last known entry in the table.
 //!
-//! May RTE if is this appended is unexpected but this behaviour should not be
-//! counted on in the future.
+//! will RTE if is this appended fails.
 //! \param[in] original_entry: The Routing Table entry to be copied in
 void routing_table_append_entry(entry_t original_entry) {
     entry_t *new_entry = routing_table_append_get_entry();
@@ -98,8 +107,7 @@ void routing_table_append_entry(entry_t original_entry) {
 
 //! Inserts an new entry after the last known entry in the table.
 //!
-//! May RTE if is this appended is unexpected but this behaviour should not be
-//! counted on in the future.
+//! will RTE if is this appended fails.
 //! \param[in] key: The key for the new entry to be added
 //! \param[in] mask: The key for the new entry to be added
 //! \param[in] route: The key for the new entry to be added
@@ -115,45 +123,52 @@ void routing_table_append_new_entry(
 
 //! \return number of appended entries.
 int routing_table_get_n_entries(void) {
-    return n_entries;
+    return multi_table.n_entries;
 }
 
 //! \brief Prepares the Routing table based on passed in pointers and counts
 //!
-//! Will NOT Free the space any previous tables held
+//! NOTE: Will NOT Free the space any previous tables held
 //! \param[in] table: Pointer to the metadata to init
 void routing_tables_init(multi_table_t* table) {
-    sub_tables = table->sub_tables;
-    n_sub_tables = table->n_sub_tables;
-    n_entries = table->n_entries;
-    log_debug("init with n table %d entries %d", n_sub_tables, n_entries);
+    multi_table.sub_tables = table->sub_tables;
+    multi_table.n_sub_tables = table->n_sub_tables;
+    multi_table.n_entries = table->n_entries;
+    multi_table.max_entries = table->max_entries;
+    log_debug(
+        "init with n table %d entries %d",
+        multi_table.n_sub_tables, multi_table.n_entries);
 
-    for (uint32_t i = 0; i <  n_sub_tables; i++) {
-        log_debug("table %d size %d", i, sub_tables[i]->size);
+    for (uint32_t i = 0; i <  multi_table.n_sub_tables; i++) {
+        log_debug("table %d size %d", i, multi_table.sub_tables[i]->size);
     }
 }
 
 //! \brief Saves the Metadata to the multi_table object
+//!
 //! \param[in] table: Pointer to the metadata to save to
 void routing_tables_save(multi_table_t *restrict tables) {
-    tables->sub_tables = sub_tables;
-    tables->n_sub_tables = n_sub_tables;
-    tables->n_entries = n_entries;
-    log_info("saved table with %d entries over %d tables", tables->n_sub_tables, tables->n_entries);
+    tables->sub_tables = multi_table.sub_tables;
+    tables->n_sub_tables = multi_table.n_sub_tables;
+    tables->n_entries = multi_table.n_entries;
+    tables->max_entries = multi_table.max_entries;
+    log_info(
+        "saved table with %d entries over %d tables",
+        tables->n_sub_tables, tables->n_entries);
 }
 
 //! \brief updates table stores accordingly.
 //!
-//! May RTE if this causes the total entries to become negative this behaviour
-//! should not be counted on in the future.
+//! will RTE if this causes the total entries to become negative.
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(int size_to_remove) {
-    if (size_to_remove > n_entries) {
+    if (size_to_remove > multi_table.n_entries) {
         log_error(
-            "Remove %d large than n_entries %d", size_to_remove, n_entries);
+            "Remove %d large than n_entries %d",
+            size_to_remove, multi_table.n_entries);
         malloc_extras_terminate(RTE_SWERR);
     }
-    n_entries -= size_to_remove;
+    multi_table.n_entries -= size_to_remove;
 }
 
 //! \brief Clones an Original table into this format.

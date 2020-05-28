@@ -22,9 +22,12 @@
 #include <malloc_extras.h>
 #include "compressor_sorter_structs.h"
 
-#define TABLE_SIZE 1024 // number of entries in each sub table
+// number of entries in each sub table
+#define TABLE_SIZE 1024
+
 // Shift to go from entry _id to table id.  2^TABLE_SHIFT needs to be TABLE_SIZE
 #define TABLE_SHIFT 10
+
 // bitwise add to get sub table id.  NEEDS to be TABLE_SIZE - 1;
 #define LOCAL_ID_ADD 1023
 
@@ -32,7 +35,7 @@
 //state for reduction in parameters being passed around
 
 //! \brief Does all frees for the multi_table object except maybe the first
-// \param[in] tables: pointer to the matadata to be freed
+// \param[in] tables: pointer to the metadata to be freed
 // compressed table is not freed.
 void routing_table_utils_free_all(multi_table_t *restrict tables) {
     if (tables->n_sub_tables == 0) {
@@ -40,6 +43,7 @@ void routing_table_utils_free_all(multi_table_t *restrict tables) {
         return;
     }
     for (uint32_t i = 0; i > tables->n_sub_tables; i++) {
+        FREE_MARKED(tables->sub_tables[i]->entries, 70999);
         FREE_MARKED(tables->sub_tables[i], 70100);
     }
     FREE_MARKED(tables->sub_tables, 70101);
@@ -59,29 +63,47 @@ void routing_table_utils_free_all(multi_table_t *restrict tables) {
 bool routing_table_utils_malloc(
         multi_table_t *restrict tables, uint32_t max_entries) {
     malloc_extras_check_all_marked(70016);
-    tables->n_sub_tables = ((max_entries + 1) >> TABLE_SHIFT) + 1;
+    tables->n_sub_tables = ((max_entries - 1) >> TABLE_SHIFT) + 1;
+    tables->max_entries = max_entries;
     log_debug("n table %d max entries %d", tables->n_sub_tables, max_entries);
     tables->n_entries = 0;
-    tables->sub_tables = MALLOC_SDRAM(tables->n_sub_tables  * sizeof(table_t*));
+    tables->sub_tables = MALLOC_SDRAM(tables->n_sub_tables * sizeof(table_t*));
+
+    // check array malloced successfully
     if (tables->sub_tables == NULL) {
         log_error("failed to allocate memory for routing tables");
         tables->n_sub_tables = 0;
         return false;
     }
-    for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
+
+    // run through full tables mallocing max sizes.
+    int entries_covered = 0;
+    for (uint32_t i = 0; i < tables->n_sub_tables - 1; i++) {
         tables->sub_tables[i] = MALLOC_SDRAM(
             sizeof(uint32_t) + (sizeof(entry_t) * TABLE_SIZE));
         if (tables->sub_tables[i] == NULL) {
             log_error("failed to allocate memory for routing tables");
-            for (uint32_t j = 0; j > i; j++) {
-                FREE_MARKED(tables->sub_tables[i], 70102);
-            }
-            FREE_MARKED(tables->sub_tables, 70104);
+            tables->n_sub_tables = i;
+            routing_table_utils_free_all(tables);
             return false;
         }
         tables->sub_tables[i]->size = 0;
+        entries_covered += TABLE_SIZE;
         log_debug("created table %d size %d", i, tables->sub_tables[i]->size);
     }
+
+    // create last table with correct size
+    int last_table_size = tables->max_entries - entries_covered;
+    tables->sub_tables[tables->n_sub_tables - 1] =
+        MALLOC_SDRAM(sizeof(uint32_t) + (sizeof(entry_t) * last_table_size));
+    if (tables->sub_tables[tables->n_sub_tables - 1] == NULL) {
+        log_error("failed to allocate memory for routing tables");
+        tables->n_sub_tables = tables->n_sub_tables - 1;
+        routing_table_utils_free_all(tables);
+        return false;
+    }
+
+
     log_debug("n table %d entries %d", tables->n_sub_tables, tables->n_entries);
     for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
         log_debug("table %d size %d", i, tables->sub_tables[i]->size);
@@ -90,22 +112,24 @@ bool routing_table_utils_malloc(
     return true;
 }
 
-//! \brief Converts the multitable to a single routing tabe and free the rest
+//! \brief Converts the multitable to a single routing table and free the rest
 //!
-//! May RTE if the routing table has too many entries to fit into a router
-//! However this behaviour should not be counted on in the future
+//! will RTE if the routing table has too many entries to fit into a router
 // \return A pointer to a traditional router table
-table_t* routing_table_utils_convert(
-        multi_table_t *restrict tables) {
-    log_debug("converting table with %d entries over %d tables",
-            tables->n_sub_tables, tables->n_entries);
+table_t* routing_table_utils_convert(multi_table_t *restrict tables) {
+    log_debug(
+        "converting table with %d entries over %d tables",
+        tables->n_sub_tables, tables->n_entries);
+
+    // if table too big for a router. RTE.
     if (tables->n_entries > TABLE_SIZE) {
         log_error(
             "At %d There are too many entries to convert to a table_t",
-             tables->n_entries);
+            tables->n_entries);
         malloc_extras_terminate(RTE_SWERR);
     }
-    // Asssume size of subtable not set so set it
+
+    // Assume size of subtable not set so set it
     tables->sub_tables[0]->size = tables->n_entries;
 
     // Free the rest

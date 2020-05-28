@@ -100,8 +100,12 @@ typedef struct multi_table_t {
     table_t** sub_tables;
     //! The number of individual subtables
     uint32_t n_sub_tables;
-    //! The number of entry_t entires actually in the tables.
+    //! The number of entry_t entries actually in the tables.
+    // NOTE: is a int because ordered covering uses ints for len of tables
+    // and we did not feel safe to change that.
     int n_entries;
+    //! The max number of entries supported by this multitable.
+    uint32_t max_entries;
 } multi_table_t;
 
 //! \brief the lis of cores that can be used as compressor processor
@@ -164,7 +168,7 @@ typedef struct triples_t {
 
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
-    //! Miniumum percentage of biffeilds to be merge in (currently ignored)
+    //! Miniumum percentage of bitfields to be merge in (currently ignored)
     int threshold;
     //! Pointer to the area malloced to hold the comms_sdram
     comms_sdram_t* comms_sdram;

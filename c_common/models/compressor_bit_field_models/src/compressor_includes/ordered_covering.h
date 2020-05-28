@@ -18,15 +18,13 @@
 #ifndef __ORDERED_COVERING_H__
 #define __ORDERED_COVERING_H__
 
+#include <malloc_extras.h>
+#include <debug.h>
 #include "aliases.h"
 #include "bit_set.h"
 #include "merge.h"
 #include "remove_default_routes.h"
-#include <malloc_extras.h>
 #include "../common/routing_table.h"
-#include <debug.h>
-
-int counter_to_crash = 0;
 
 //! \brief ?????????
 typedef struct _sets_t {
@@ -804,10 +802,6 @@ static inline bool oc_minimise(
     aliases_t aliases;
     aliases_clear(&aliases);
     aliases = aliases_init();
-
-    // DEBUG so some cores are slower
-    // spin1_delay_us(1000 * spin1_get_core_id() * spin1_get_core_id());
-    counter_to_crash += 1;
 
     // check if any compression actually needed
     log_debug(

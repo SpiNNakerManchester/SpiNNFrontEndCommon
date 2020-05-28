@@ -50,6 +50,7 @@ static uint32_t detect_redundant_packet_count(
 //! \param[in] sorted_bit_fields: data to be ordered
 static inline void order_bitfields(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
+
     // Semantic sugar to avoid extra lookup all the time
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order =  sorted_bit_fields->sort_order;
@@ -118,6 +119,7 @@ static inline void sort_by_order(
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
+
     // Check each row in the lists
     for (int i = 0; i < sorted_bit_fields->n_bit_fields; i++) {
         // check that the data is in the correct place

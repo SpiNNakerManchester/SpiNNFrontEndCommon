@@ -48,7 +48,7 @@
 #define ADD_INCLUSIVE_BIT 1
 
 //! \brief flag for if a rtr_mc_set failure.
-#define RTR_MC_SET_FAILED 0
+#define RTR_MC_FAILED 0
 
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
@@ -112,7 +112,7 @@ static inline bool load_routing_table_into_router(void) {
 
     // Try to allocate sufficient room for the routing table.
     int start_entry = rtr_alloc_id(last_compressed_table->size, app_id);
-    if (start_entry == 0) {
+    if (start_entry == RTR_MC_FAILED) {
         log_error(
             "Unable to allocate routing table of size %d\n",
             last_compressed_table->size);
@@ -133,7 +133,7 @@ static inline bool load_routing_table_into_router(void) {
             route);
 
         // chekc that the entry was set
-        if (success == RTR_MC_SET_FAILED) {
+        if (success == RTR_MC_FAILED) {
             log_error(
                 "failed to set a router table entry at index %d",
                 start_entry + entry_id);
@@ -149,10 +149,9 @@ static inline bool load_routing_table_into_router(void) {
 //! attempt
 //! \param[in] processor_id: the processor id to send a force stop
 //! compression attempt
-void send_force_stop_message(int processor_id){
+void send_force_stop_message(int processor_id) {
     if (comms_sdram[processor_id].sorter_instruction == RUN) {
-        log_debug(
-            "sending stop to processor %d", processor_id);
+        log_debug("sending stop to processor %d", processor_id);
         comms_sdram[processor_id].sorter_instruction = FORCE_TO_STOP;
     }
 }
@@ -161,10 +160,9 @@ void send_force_stop_message(int processor_id){
 //! This is critical as it tells the processor to clear the result field
 //! \param[in] processor_id: the processor id to send a prepare to
 //! compression attempt
-void send_prepare_message(int processor_id){
+void send_prepare_message(int processor_id) {
     // set message params
-    log_debug(
-        "sending prepare to processor %d", processor_id);
+    log_debug("sending prepare to processor %d", processor_id);
     comms_sdram[processor_id].sorter_instruction = PREPARE;
     comms_sdram[processor_id].mid_point = -1;
 }
@@ -237,12 +235,14 @@ static inline void malloc_tables_and_set_off_bit_compressor(
     routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
 
     // malloc space for the routing tables
-    uint32_t table_size = bit_field_table_generator_max_size(mid_point,
-        &uncompressed_router_table->uncompressed_table, sorted_bit_fields);
+    uint32_t table_size = bit_field_table_generator_max_size(
+        mid_point, &uncompressed_router_table->uncompressed_table,
+        sorted_bit_fields);
 
     malloc_extras_check_all_marked(1005);
     // if successful, try setting off the bitfield compression
-    bool success = pass_instructions_to_compressor(processor_id, mid_point, table_size);
+    bool success = pass_instructions_to_compressor(
+        processor_id, mid_point, table_size);
 
     if (!success) {
         // Ok lets turn this and all ready processors off to save space.
@@ -265,14 +265,14 @@ static inline void malloc_tables_and_set_off_bit_compressor(
 //! addresses
 //! \return the address in the addresses region for the processor id
 static inline filter_region_t * find_processor_bit_field_region(
-        int processor_id){
+        int processor_id) {
 
     // find the right bitfield region
     for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
         int region_proc_id = region_addresses->triples[r_id].processor;
         log_debug(
             "is looking for %d and found %d", processor_id, region_proc_id);
-        if (region_proc_id == processor_id){
+        if (region_proc_id == processor_id) {
             return region_addresses->triples[r_id].filter;
         }
     }
@@ -320,6 +320,7 @@ static inline void set_n_merged_filters(void) {
         int processor_id = region_addresses->triples[r_id].processor;
         filter_region_t *filter = region_addresses->triples[r_id].filter;
         int index = filter->n_redundancy_filters - 1;
+
         // Find the index of highest one merged in
         while ((index >= 0) &&
                 (filter->filters[index].key != highest_key[processor_id])) {
@@ -420,7 +421,7 @@ static inline int locate_next_mid_point(void) {
         log_debug("setting new mid point %d", new_mid_point);
 
         // just a safety check, as this has caught us before.
-        if (bit_field_test(tested_mid_points, new_mid_point)){
+        if (bit_field_test(tested_mid_points, new_mid_point)) {
             log_info("HOW THE HELL DID YOU GET HERE!");
             malloc_extras_terminate(EXIT_SWERR);
         }
@@ -432,11 +433,12 @@ static inline int locate_next_mid_point(void) {
 //! \brief handles the freeing of memory from compressor processors, waiting
 //! for compressor processors to finish and removing merged bitfields from
 //! the bitfield regions.
-static inline void handle_best_cleanup(void){
+static inline void handle_best_cleanup(void) {
     if (best_success == FAILED_TO_FIND) {
         log_error("No usable result found!");
         malloc_extras_terminate(RTE_SWERR);
     }
+
     // load routing table into router
     load_routing_table_into_router();
     log_debug("finished loading table");
@@ -463,7 +465,7 @@ static inline void handle_best_cleanup(void){
 //! This includes mallocing the comp_instruction_t user
 //! \param[in] mid_point: the mid point this processor will use
 //! \return the processor id of the next available processor or -1 if none
-bool prepare_processor_first_time(int processor_id ) {
+bool prepare_processor_first_time(int processor_id) {
     comms_sdram[processor_id].sorter_instruction = PREPARE;
 
     //! Create the space for the routing table meta data
@@ -513,8 +515,9 @@ int find_prepared_processor(void) {
     }
     // Look for a processor never used and  prepare it
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
-        log_debug("processor_id %d status %d", processor_id,
-            comms_sdram[processor_id].sorter_instruction);
+        log_debug(
+            "processor_id %d status %d",
+            processor_id, comms_sdram[processor_id].sorter_instruction);
         if (comms_sdram[processor_id].sorter_instruction == TO_BE_PREPARED) {
             if (prepare_processor_first_time(processor_id)) {
                 log_debug("found to be prepared %d", processor_id);
@@ -610,8 +613,7 @@ void carry_on_binary_search(void) {
 
     if (mid_point == FAILED_TO_FIND) {
         // Ok lets turn all ready processors off as done.
-        for (int processor_id = 0; processor_id < MAX_PROCESSORS;
-                processor_id++) {
+        for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
             if (comms_sdram[processor_id].sorter_instruction == PREPARE) {
                 comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
             } else if (comms_sdram[processor_id].sorter_instruction > PREPARE) {
@@ -624,6 +626,7 @@ void carry_on_binary_search(void) {
         }
         return;
     }
+
     int processor_id = find_compressor_processor_and_set_tracker(mid_point);
     log_debug("start create at time step: %u", time_steps);
     malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
@@ -723,15 +726,15 @@ void process_failed(int mid_point, int processor_id) {
         log_error("The no bitfields attempted failed! Giving up");
         malloc_extras_terminate(EXIT_FAIL);
     }
-    if (lowest_failure > mid_point){
+    if (lowest_failure > mid_point) {
         log_info(
             "Changing lowest_failure from: %d to mid_point:%d",
-                lowest_failure, mid_point);
+            lowest_failure, mid_point);
         lowest_failure = mid_point;
     } else {
         log_info(
             "lowest_failure: %d already lower than mid_point:%d",
-                lowest_failure, mid_point);
+            lowest_failure, mid_point);
     }
     routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
 
@@ -750,7 +753,7 @@ void process_failed(int mid_point, int processor_id) {
 //! \param[in] processor_id: the compressor processor id
 //! \param[in] finished_state: the response code
 void process_compressor_response(
-    int processor_id, compressor_states finished_state) {
+        int processor_id, compressor_states finished_state) {
     int mid_point = comms_sdram[processor_id].mid_point;
     log_debug("received response %d from processor %d doing %d midpoint",
         finished_state, processor_id, mid_point);
@@ -945,17 +948,18 @@ static void initialise_user_register_tracker(void) {
     vcpu_t *restrict this_vcpu_info =
         &sark_virtual_processor_info[spin1_get_core_id()];
 
+    // convert user registers to struct pointers
     data_specification_metadata_t *restrict app_ptr_table =
         (data_specification_metadata_t *) this_vcpu_info->user0;
     uncompressed_router_table =
         (uncompressed_table_region_data_t *) this_vcpu_info->user1;
-
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
+
     comms_sdram = (comms_sdram_t*)region_addresses->comms_sdram;
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         comms_sdram[processor_id].compressor_state = UNUSED;
         comms_sdram[processor_id].sorter_instruction = NOT_COMPRESSOR;
-        comms_sdram[processor_id].mid_point = -1;
+        comms_sdram[processor_id].mid_point = FAILED_TO_FIND;
         comms_sdram[processor_id].routing_tables = NULL;
         comms_sdram[processor_id].uncompressed_router_table =
             &uncompressed_router_table->uncompressed_table;

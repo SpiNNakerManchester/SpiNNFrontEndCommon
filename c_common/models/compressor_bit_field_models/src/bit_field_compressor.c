@@ -36,15 +36,15 @@ typedef enum interrupt_priority{
     COMPRESSION_START_PRIORITY = 3
 } interrupt_priority;
 
+//! \brief number of timer iterations to ensure close to matching tracker
+#define TIMER_ITERATIONS 1000
+
 //! \timer controls, as it seems timer in massive waits doesnt engage properly
 int counter = 0;
 int max_counter = 0;
 
 //! \brief bool saying if the compressor should shut down
 volatile bool stop_compressing = false;
-
-//! \brief bool flag to say if i was forced to stop by the compressor control
-volatile bool finished_by_compressor_force = false;
 
 //! bool flag pointer to allow minimise to report if it failed due to malloc
 //! issues
@@ -60,15 +60,13 @@ bool compress_as_much_as_possible = false;
 instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
 compressor_states previous_compressor_state = UNUSED;
 
-// Sdram are used for comminication between sorter and THIS compressor
+// Sdram are used for communication between sorter and THIS compressor
 comms_sdram_t *restrict comms_sdram;
 
 // ---------------------------------------------------------------------
 
 //! \brief handles the compression process
-//! \param[in] unused0: param 1 forced on us from api
-//! \param[in] unused1: param 2 forced on us from api
-void start_compression_process() {
+void start_compression_process(void) {
     log_debug("in compression phase");
 
     // restart timer (also puts us in running state)
@@ -117,12 +115,16 @@ void start_compression_process() {
     }
 }
 
-void setup_rounting_tables() {
-    log_info("table init for %d entries (should be zero) and %d tables and "
+//! \brief initialise the abstraction layer of many routing tables as 1 big
+//! table
+void setup_routing_tables(void) {
+    log_info(
+        "table init for %d entries (should be zero) and %d tables and "
         " %d mid_point out of %d bitfields",
         comms_sdram->routing_tables->n_entries,
         comms_sdram->routing_tables->n_sub_tables,
-        comms_sdram->mid_point, comms_sdram->sorted_bit_fields->n_bit_fields);
+        comms_sdram->mid_point,
+        comms_sdram->sorted_bit_fields->n_bit_fields);
     routing_tables_init(comms_sdram->routing_tables);
 
     if (comms_sdram->mid_point == 0) {
@@ -135,7 +137,7 @@ void setup_rounting_tables() {
 }
 
 //! brief Runs the compressors process as requested
-void run_compression_process(void){
+void run_compression_process(void) {
 
     log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);
@@ -147,11 +149,13 @@ void run_compression_process(void){
     counter = 0;
 
     malloc_extras_check_all_marked(50002);
-    setup_rounting_tables();
+    setup_routing_tables();
     malloc_extras_check_all_marked(50002);
 
-    log_info("starting compression attempt with %d entries",
+    log_info(
+        "starting compression attempt with %d entries",
         routing_table_get_n_entries());
+
     // start compression process
     start_compression_process();
 }
@@ -185,7 +189,7 @@ static inline bool process_run(compressor_states compressor_state) {
 
 //! Brief Check what to do if anything as Sorter has asked to PREPARE
 //! Mainly used to clear result of previous run
-//! \returns bool if the PREPARE made sense with the current Compressor sate
+//! \returns bool if the PREPARE made sense with the current Compressor state
 static inline bool process_prepare(compressor_states compressor_state) {
     switch (compressor_state) {
         case UNUSED:
@@ -224,8 +228,6 @@ static inline bool process_force(compressor_states compressor_state) {
             // passed to compressor as *sorter_instruction
             // Do nothing until compressor notices changed
             return true;
-            // Keep force malloc as more important message
-            return true;
         case FORCED_BY_COMPRESSOR_CONTROL:
             // Waiting for sorter to pick up
             return true;
@@ -245,7 +247,7 @@ static inline bool process_force(compressor_states compressor_state) {
    return false;
 }
 
-//! \brief busy waits until there is a new instuction from the sorter
+//! \brief busy waits until there is a new instruction from the sorter
 //! \param[in] unused0: param 1 forced on us from api
 //! \param[in] unused1: param 2 forced on us from api
 void wait_for_instructions(uint unused0, uint unused1) {
@@ -294,10 +296,10 @@ void wait_for_instructions(uint unused0, uint unused1) {
         spin1_schedule_callback(
             wait_for_instructions, 0, 0, COMPRESSION_START_PRIORITY);
     } else {
-        log_error("Unexpected combination of sorter_state %d and "
-            "compressor_state %d",
-                sorter_state, compressor_state);
-            malloc_extras_terminate(RTE_SWERR);
+        log_error(
+            "Unexpected combination of sorter_state %d and compressor_state %d",
+            sorter_state, compressor_state);
+        malloc_extras_terminate(RTE_SWERR);
     }
 }
 
@@ -316,6 +318,8 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("passed timer point");
         spin1_pause();
     }
+
+    // check that the sorter has told the compressor to finish for any reason
     if (comms_sdram->sorter_instruction != RUN) {
         stop_compressing = true;
         log_info("Sorter cancelled run request");
@@ -341,22 +345,25 @@ void initialise(void) {
     if (int_value > 1) {
         compress_as_much_as_possible = true;
     }
-    if ((int_value & 1) == 1){
+    if ((int_value & 1) == 1) {
         compress_only_when_needed = true;
     }
-    log_info("int %d, compress_only_when_needed = %d"
-        "compress_as_much_as_possible = %d", int_value,
-        compress_only_when_needed, compress_as_much_as_possible);
+    log_info(
+        "int %d, compress_only_when_needed = %d "
+        "compress_as_much_as_possible = %d",
+        int_value, compress_only_when_needed, compress_as_much_as_possible);
 
     // Get the pointer for all cores
-    comms_sdram = (comms_sdram_t*)this_vcpu_info->user3;
+    comms_sdram = (comms_sdram_t*) this_vcpu_info->user3;
+
     // Now move the pointer to the comms for this core
     comms_sdram += spin1_get_core_id();
 
-    // sort out timer (this is done in a indirect way due to lack of trust to
-    // have timer only fire after full time after pause and resume.
-    max_counter = time_for_compression_attempt / 1000;
-    spin1_set_timer_tick(1000);
+    // sort out timer (this is shrank to be called 1000 times, so that we can
+    // check for sorter controls. e.g. is the sorter forces the compressor
+    // to stop early).
+    max_counter = time_for_compression_attempt / TIMER_ITERATIONS;
+    spin1_set_timer_tick(TIMER_ITERATIONS);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
     log_info("my processor id is %d", spin1_get_core_id());
@@ -374,8 +381,9 @@ void c_main(void) {
         wait_for_instructions, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
-    log_debug("waiting for sycn %d %d", comms_sdram->sorter_instruction,
-        comms_sdram->compressor_state);
+    log_debug(
+        "waiting for sycn %d %d",
+        comms_sdram->sorter_instruction, comms_sdram->compressor_state);
     spin1_start(SYNC_WAIT);
 
 }

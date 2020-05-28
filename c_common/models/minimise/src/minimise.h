@@ -180,7 +180,12 @@ void cleanup_and_exit(header_t *header) {
 void minimise(uint32_t target_length);
 
 //! \brief the callback for setting off the router compressor
-void compress_start(void) {
+//! \param[in] unused0: param 1 forced on us from api
+//! \param[in] unused1: param 2 forced on us from api
+void compress_start(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+
     uint32_t size_original;
 
     log_info("Starting on chip router compressor");

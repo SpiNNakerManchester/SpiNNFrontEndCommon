@@ -48,11 +48,13 @@ static bool remove_default_routes_minimise(
         // only removed if Only one output direction which is a link. or
         // Only one input direction which is a link. or
         // Source is opposite to sink
+        //TODO NAME THESE MAGIC NUMBERS (MUNDY)
         if (__builtin_popcount(entry->route) == 1 && (entry->route & 0x3f) &&
                 __builtin_popcount(entry->source) == 1 &&
                 (entry->source & 0x3f) &&
                 (entry->route >> 3) == (entry->source & 0x7) &&
                 (entry->source >> 3) == (entry->route & 0x7)) {
+
             // The entry can be removed iff. it doesn't intersect with any entry
             // further down the table.
             bool remove_entry = true;
@@ -84,18 +86,15 @@ static bool remove_default_routes_minimise(
     }
 
     // Remove the selected entries from the table
-    if (remove_elements){
-        for (int insert = 0, read = 0;
-                read < routing_table_get_n_entries(); read++) {
+    if (remove_elements) {
+        for (int insert = 0, read = 0; read < routing_table_get_n_entries(); read++) {
+
             // Grab the current entry before we potentially overwrite it
-
-
             entry_t *current = routing_table_get_entry(read, 9918);
 
             // Insert the entry if it isn't being removed
             if (!bit_set_contains(&remove, read)) {
-                entry_t* insert_entry =
-                    routing_table_get_entry(insert++, 9920);
+                entry_t* insert_entry = routing_table_get_entry(insert++, 9920);
                 insert_entry->key_mask.key = current->key_mask.key;
                 insert_entry->key_mask.mask = current->key_mask.mask;
                 insert_entry->route = current->route;
