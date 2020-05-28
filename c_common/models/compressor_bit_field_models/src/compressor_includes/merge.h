@@ -20,7 +20,7 @@
 
 #include "bit_set.h"
 #include "../common/routing_table.h"
-#include "../common/key_mask.h"
+#include "key_mask.h"
 
 //! \brief merge struct. entries which can be merged
 typedef struct merge_t {

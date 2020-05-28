@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <debug.h>
-#include "compressor_sorter_structs.h"
+#include "../common/compressor_sorter_structs.h"
 
 //=============================================================================
 //state for reduction in parameters being passed around
