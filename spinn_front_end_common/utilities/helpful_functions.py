@@ -321,9 +321,8 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 
 def find_executable_start_type(machine_vertex, graph_mapper=None):
-    has_binary = isinstance(machine_vertex, AbstractHasAssociatedBinary)
 
-    if not has_binary:
+    if not isinstance(machine_vertex, AbstractHasAssociatedBinary):
         return None
     elif graph_mapper is not None:
         app_vertex = graph_mapper.get_application_vertex(machine_vertex)

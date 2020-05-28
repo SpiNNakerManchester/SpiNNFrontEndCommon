@@ -22,7 +22,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import get_generality as ordered_covering_generality
 from spinn_front_end_common.interface.interface_functions import \
-    ChipIOBufExtractor, LoadExecutableImages
+    LoadExecutableImages
 from spinn_front_end_common.interface.interface_functions.\
     host_bit_field_router_compressor import \
     HostBasedBitFieldRouterCompressor
@@ -367,31 +367,6 @@ class MachineBitFieldRouterCompressor(object):
         return True
 
     @staticmethod
-    def _call_iobuf_and_clean_up(
-            executable_targets, transceiver, provenance_file_path,
-            compressor_app_id, executable_finder):
-        """handles the reading of iobuf and cleaning the cores off the machine
-
-        :param executable_targets: cores which are running the router \
-        compressor with bitfield.
-        :param transceiver: SpiNNMan instance
-        :param provenance_file_path: provenance file path
-        :param executable_finder: executable finder
-        :rtype: None
-        """
-        iobuf_extractor = ChipIOBufExtractor()
-        io_errors, io_warnings = iobuf_extractor(
-            transceiver, executable_targets, executable_finder,
-            system_provenance_file_path=provenance_file_path,
-            app_provenance_file_path=None)
-        for warning in io_warnings:
-            logger.warning(warning)
-        for error in io_errors:
-            logger.error(error)
-        transceiver.stop_application(compressor_app_id)
-        transceiver.app_id_tracker.free_id(compressor_app_id)
-
-    @staticmethod
     def _handle_failure_for_bit_field_router_compressor(
             executable_targets, host_chips, txrx):
         """handles the state where some cores have failed.
@@ -478,10 +453,6 @@ class MachineBitFieldRouterCompressor(object):
 
         return run_by_host
 
-    @staticmethod
-    def _convert_to_microseconds(seconds):
-        return seconds * SECOND_TO_MICRO_SECOND
-
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
@@ -517,7 +488,7 @@ class MachineBitFieldRouterCompressor(object):
             transceiver.write_memory(
                 chip_x, chip_y, user1_base_address,
                 self._ONE_WORDS.pack(
-                    self._convert_to_microseconds(time_per_iteration)),
+                    time_per_iteration * SECOND_TO_MICRO_SECOND),
                 self._USER_BYTES)
             # bit 0 = compress_only_when_needed
             # bit 1 = compress_as_much_as_possible

@@ -47,9 +47,13 @@
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
 
+//! \brief flag for if a rtr_mc_set failure.
+#define RTR_MC_SET_FAILED 0
+
 //! \brief bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
+//! \brief flag for detecting that the last message back is not a malloc fail.
 #define LAST_RESULT_NOT_MALLOC_FAIL -1
 
 //! \brief callback priorities
@@ -60,17 +64,11 @@ typedef enum priorities{
 //============================================================================
 //! global params
 
-//! \brief counter of how many time steps have passed
+//! \brief DEBUG variable: counter of how many time steps have passed
 uint32_t time_steps = 0;
 
 //! \brief bool flag for saying found the best stopping position
 volatile bool found_best = false;
-
-//! \brief time to take per compression iteration
-uint32_t time_per_iteration = 0;
-
-//! \brief flag of how many times the timer has fired during this one
-uint32_t finish_compression_flag = 0;
 
 //! \brief easier programming tracking of the user registers
 uncompressed_table_region_data_t *restrict uncompressed_router_table; // user1
@@ -87,9 +85,6 @@ int best_success = FAILED_TO_FIND;
 // Lowest midpoint that record failure
 int lowest_failure;
 
-//! \brief the last routing table position in the search
-int last_search_point = 0;
-
 //! \brief the store for the last routing table that was compressed
 table_t *restrict last_compressed_table = NULL;
 
@@ -103,10 +98,10 @@ sorted_bit_fields_t *restrict sorted_bit_fields;
 //! \brief stores which values have been tested
 bit_field_t tested_mid_points;
 
-//! \brief SDRAM used to commimnicate with the compressors
+//! \brief SDRAM used to communicate with the compressors
 comms_sdram_t *restrict comms_sdram;
 
-//! brief record of the last mid_point to return a malloc failed
+//! \brief record of the last mid_point to return a malloc failed
 int last_malloc_failed = LAST_RESULT_NOT_MALLOC_FAIL;
 
 //============================================================================
@@ -133,9 +128,17 @@ static inline bool load_routing_table_into_router(void) {
             entry_id++) {
         entry_t entry = last_compressed_table->entries[entry_id];
         uint32_t route = entry.route | (app_id << ROUTE_APP_ID_BIT_SHIFT);
-        rtr_mc_set(
+        uint success = rtr_mc_set(
             start_entry + entry_id, entry.key_mask.key, entry.key_mask.mask,
             route);
+
+        // chekc that the entry was set
+        if (success == RTR_MC_SET_FAILED) {
+            log_error(
+                "failed to set a router table entry at index %d",
+                start_entry + entry_id);
+            return false;
+        }
     }
 
     // Indicate we were able to allocate routing table entries.
@@ -441,18 +444,21 @@ static inline void handle_best_cleanup(void){
     log_info("setting set_n_merged_filters");
     set_n_merged_filters();
 
-    // TODO why is this done?
+    // This is to allow the host report to know how many bitfields on the chip
+    // merged without reading every cores bit-field region.
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     uint processor_id = spin1_get_core_id();
     sark_virtual_processor_info[processor_id].user2 = best_success;
 
-    // Safety to break out of loop in check_buffer_queue
+    // Safety to break out of loop in check_buffer_queue as terminate wont
+    // stop this interrupt
     found_best = true;
 
+    // set up user registers etc to finish cleanly
     malloc_extras_terminate(EXITED_CLEANLY);
 }
 
-//! \brief Prepraes a processor for the first time.
+//! \brief Prepares a processor for the first time.
 //!
 //! This includes mallocing the comp_instruction_t user
 //! \param[in] mid_point: the mid point this processor will use

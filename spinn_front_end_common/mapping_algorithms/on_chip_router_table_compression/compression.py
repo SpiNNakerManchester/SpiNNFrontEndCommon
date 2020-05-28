@@ -60,7 +60,7 @@ def mundy_on_chip_router_compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, system_provenance_folder,
         routing_tables, transceiver)
-    compression._compress()
+    compression.compress()
 
 
 def pair_compression(
@@ -89,6 +89,7 @@ def pair_compression(
     :param bool compress_only_when_needed:
         If True, the compressor will only compress if the table doesn't fit in
         the current router space, otherwise it will just load the table
+    :param executable_finder: tracker of binaries.
      """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
@@ -97,7 +98,7 @@ def pair_compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
-    compression._compress()
+    compression.compress()
 
 
 class Compression(object):
@@ -139,7 +140,7 @@ class Compression(object):
         self._transceiver = transceiver
         self._routing_tables = routing_tables
 
-    def _compress(self):
+    def compress(self):
         """ Apply the on-machine compression algorithm.
         """
         # pylint: disable=too-many-arguments
