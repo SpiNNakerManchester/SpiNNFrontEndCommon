@@ -1,9 +1,10 @@
+from collections import namedtuple
 from datetime import datetime
+from enum import IntEnum
 import re
 import struct
 import sys
 import time
-from collections import namedtuple
 from zlib import crc32
 from tools.exn import BadArgs, SpinnException
 from tools.cli import CLI
@@ -49,10 +50,10 @@ srom_type = "25aa1024"  # SROM type
 
 # ------------------------------------------------------------------------------
 
-NN_CMD_SIG0 = 0
-NN_CMD_SIG1 = 4
 
-# ------------------------------------------------------------------------------
+class NN_CMD(IntEnum):
+    SIG0 = 0
+    SIG1 = 4
 
 
 def parse_app_id(string):
@@ -68,7 +69,7 @@ def parse_app_id(string):
 def cmd_boot(cli):
     if cli.count > 2:
         raise BadArgs
-    file = cli.arg(0) or "scamp.boot"
+    filename = cli.arg(0) or "scamp.boot"
     conf = cli.arg(1) or ""
 
     try:
@@ -79,7 +80,7 @@ def cmd_boot(cli):
         except:  # pylint: disable=bare-except
             pass
 
-        boot(spinn_target, file, conf, debug=debug)
+        boot(spinn_target, filename, conf, debug=debug)
 
         # Wait for boot to complete
         booted = True
@@ -510,7 +511,7 @@ def cmd_app_stop(cli):
     app_id, app_mask = parse_apps(cli.arg(0))
 
     SIG_STOP = Signal["stop"]
-    arg1 = (NN_CMD_SIG0 << 4) | (0x3F << 16) | (0x00 << 8) | 0
+    arg1 = (NN_CMD.SIG0 << 4) | (0x3F << 16) | (0x00 << 8) | 0
     arg2 = (5 << 28) | (SIG_STOP << 16) | (app_mask << 8) | app_id
     arg3 = (1 << 31) | (0x3F << 8) | 0x00
 
@@ -593,7 +594,7 @@ def global_write(addr, data, _type):
     else:
         raise ValueError("bad address")
 
-    key = ((NN_CMD_SIG1 << 24) | (0 << 20) | (_type << 18) | (op << 16) |
+    key = ((NN_CMD.SIG1 << 24) | (0 << 20) | (_type << 18) | (op << 16) |
            (addr << 8) | 0)
     fr = (1 << 31) | (0x3F << 8) | 0xF8
     spin.nnp(key, data, fr, addr=[])
