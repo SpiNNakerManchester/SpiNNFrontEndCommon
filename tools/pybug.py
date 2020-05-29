@@ -9,7 +9,7 @@ from tools.exn import BadArgs, SpinnException
 from tools.cli import CLI
 from tools.boot import boot
 from tools.sv import Struct
-from tools.cmd import Cmd
+from tools.cmd import SCAMPCmd, BMPCmd, SCAMP_CMD
 from tools.util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits,
     sllt_version)
@@ -48,12 +48,6 @@ MIN_TAG, MAX_TAG = 0, 7  # Hard-coded range
 srom_type = "25aa1024"  # SROM type
 
 # ------------------------------------------------------------------------------
-
-CMD_REMAP = 16
-CMD_ALLOC = 28
-CMD_RTR   = 29
-CMD_RESET = 55
-CMD_POWER = 57
 
 NN_CMD_SIG0 = 0
 NN_CMD_SIG1 = 4
@@ -341,11 +335,11 @@ def cmd_rtr_load(cli):
     addr = 0x67800000
     spin.write(addr, buf)
     base = struct.unpack("<I", spin.scp_cmd(
-        CMD_ALLOC, arg1=(app_id << 8) + 3, arg2=size))
+        SCAMP_CMD.ALLOC, arg1=(app_id << 8) + 3, arg2=size))
     if not base:
         raise RuntimeError("no room in router heap")
-    spin.scp_cmd(
-        CMD_RTR, arg1=(size << 16) + (app_id << 8 + 2), arg2=addr, arg3=base)
+    spin.scp_cmd(SCAMP_CMD.RTR,
+                 arg1=(size << 16) + (app_id << 8 + 2), arg2=addr, arg3=base)
 
 
 # ------------------------------------------------------------------------------
@@ -372,7 +366,7 @@ def dump_iptag():
 
     for i in range(_max):
         (ip, _mac, tx_port, timeout, flags, count, rx_port, spin_addr,
-         spin_port_id) = struct.unpack("<4s6sHHHIHHB", spin.iptag_get(i, 1))
+         spin_port_id) = struct.unpack("<4s6sHHHIHHB", spin.iptag_get(i, True))
         if flags & 0x8000:  # Tag in use
             print("{:3d}  {:-15s}  {:5d}  {:5d}  {:-4s}  {:-4s}   0x{:04x}    "
                   "0x{:02x} {:10d}".format(
@@ -980,7 +974,7 @@ def cmd_remap(cli):
         raise BadArgs
     map_type = map_type == "phys"
 
-    spin.scp_cmd(CMD_REMAP, arg1=proc, arg2=map_type)
+    spin.scp_cmd(SCAMP_CMD.REMAP, arg1=proc, arg2=map_type)
 
 
 # ------------------------------------------------------------------------------
@@ -1054,7 +1048,7 @@ def rtr_dump(buf, fr):
 def cmd_rtr_init(cli):
     if cli.count:
         raise BadArgs
-    spin.scp_cmd(CMD_RTR)
+    spin.scp_cmd(SCAMP_CMD.RTR)
 
 
 def cmd_rtr_dump(cli):
@@ -1432,10 +1426,10 @@ def process_args():
 
 def open_targets():
     global spin, sv, bmp
-    spin = Cmd(target=spinn_target, port=spin_port, debug=debug)
+    spin = SCAMPCmd(target=spinn_target, port=spin_port, debug=debug)
     sv = Struct(scp=spin)
     if bmp_target is not None:
-        bmp = Cmd(target=bmp_target, port=bmp_port, debug=debug)
+        bmp = BMPCmd(target=bmp_target, port=bmp_port, debug=debug)
 
 
 class Completer(object):
@@ -1478,3 +1472,6 @@ def main():
     if expert:
         _cli.cmd(expert_cmds, 0)
     _cli.run()
+
+
+main()

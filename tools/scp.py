@@ -37,7 +37,7 @@ class SCP(object):
     """ Class implementing SpiNNaker SCP & SDP """
     __slots__ = ("__socket", "_port", "_target_name", "_target_ip", "_host_ip",
                  "_timeout", "_retries", "_debug", "_delay", "_buf_size",
-                 "_nn_id", "_tx_seq", "_rx_seq", "_cmd_rc", "_x", "_y", "_c",
+                 "_tx_seq", "_rx_seq", "_cmd_rc", "_x", "_y", "_c",
                  "_tag", "_flags", "_sa", "_sp", "_sdp_hdr", "_sdp_data")
 
     def __init__(self, target="", port=SPIN_PORT, timeout=TIMEOUT,
@@ -72,7 +72,6 @@ class SCP(object):
         self._delay = int(delay)
 
         self._buf_size = 256
-        self._nn_id = 0
         self._tx_seq = 0
         self._rx_seq = 0
         self._cmd_rc = 0
