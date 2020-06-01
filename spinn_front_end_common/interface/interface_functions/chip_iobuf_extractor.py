@@ -43,16 +43,6 @@ class ChipIOBufExtractor(object):
         lines based on their prefix.
     """
 
-    # The log dict is the same every time so can be static
-    if 'SPINN_DIRS' in os.environ:
-        _log_dict_path = os.path.join(
-            os.environ['SPINN_DIRS'], "lib", "logs.dict")
-    elif os.environ.get('CONTINUOUS_INTEGRATION', 'false').lower() == 'true':
-        _log_dict_path = None
-    else:
-        raise PacmanConfigurationException(
-            "Environment variable 'SPINN_DIRS' not set")
-
     __slots__ = [
         # Template for the file names to be used where writing the results
         "_filename_template",
@@ -68,11 +58,7 @@ class ChipIOBufExtractor(object):
         self._recovery_mode = bool(recovery_mode)
         self._recovery_string = LABEL_STRING.format(
             "Recovering" if self._recovery_mode else "Extracting")
-        if self._log_dict_path is None:
-            logger.warning("No dict file specified")
-            self._replacer = NoReplace()
-        else:
-            self._replacer = Replacer(self._log_dict_path)
+        self._replacer = Replacer()
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
@@ -215,31 +201,3 @@ class ChipIOBufExtractor(object):
             entries.append("{}, {}, {}: {} ({})".format(
                 place.x, place.y, place.p, match.group(ENTRY_TEXT),
                 match.group(ENTRY_FILE)))
-
-    @staticmethod
-    def add_alternative_log_dict_path(alternative):
-        """
-        Sets the new log dict path ONLY if the default one is not found.
-
-        :param alternative: Full path to the alternative log dict
-
-        :raises: PacmanConfigurationException if neither the default nor this
-            dict file found.
-        """
-        if (ChipIOBufExtractor._log_dict_path is not None
-                and os.path.exists(ChipIOBufExtractor._log_dict_path)):
-            return
-        if os.path.isfile(alternative):
-            ChipIOBufExtractor._log_dict_path = alternative
-            return
-        raise PacmanConfigurationException(
-            "No log dict file found at {}. "
-            "Please ensure your Environment variables are set correctly "
-            "and do a full system make".format(alternative))
-
-
-class NoReplace(object):
-
-    @staticmethod
-    def replace(line):
-        return line
