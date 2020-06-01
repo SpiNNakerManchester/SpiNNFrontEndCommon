@@ -102,10 +102,10 @@ static sdp_msg_t g_event_message;
 static uint16_t *sdp_msg_aer_header;
 
 //! The location of the payload prefix in the message. `NULL` if no prefix.
-static void *sdp_msg_aer_payload_prefix = NULL;
+static uint16_t *sdp_msg_aer_payload_prefix = NULL;
 
 //! Pointer to outbound message data. _Might only be half-word aligned!_
-static void *sdp_msg_aer_data;
+static uint16_t *sdp_msg_aer_data;
 
 //! Current simulation time
 static uint32_t time;
