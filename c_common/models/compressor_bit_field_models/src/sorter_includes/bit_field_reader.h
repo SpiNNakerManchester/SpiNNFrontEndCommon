@@ -116,7 +116,6 @@ static inline void sort_by_order(
     //  There is one check per row in the for loop plus if the first fails
     //        up to one more for each row about to be moved to the correct place.
 
-    malloc_extras_check_all_marked(60011);
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
@@ -136,7 +135,6 @@ static inline void sort_by_order(
             filter_info_t* bit_field_temp = bit_fields[i];
             bit_fields[i] = bit_fields[j];
             bit_fields[j] = bit_field_temp;
-            malloc_extras_check_all_marked(60010);
         }
     }
 }
@@ -144,7 +142,6 @@ static inline void sort_by_order(
 //! brief Sorts the data bases on the bitfield key.
 //! \param[in] sorted_bit_fields: data to be ordered
 static inline void sort_by_key(sorted_bit_fields_t *restrict sorted_bit_fields) {
-    malloc_extras_check_all_marked(60031);
     
     // Semantic sugar to avoid extra lookup all the time
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
@@ -172,14 +169,11 @@ static inline void sort_by_key(sorted_bit_fields_t *restrict sorted_bit_fields) 
             }
         }
     }
-    malloc_extras_check_all_marked(60032);
 }
 
 //! \brief debugger support. prints sorted bitfields and tests malloc.
 //! \param[in] sorted_bit_fields: the sorted bitfields
-//! \param[in]  marker: the marker to hand to malloc checker.
-static void print_structs(
-        sorted_bit_fields_t *restrict sorted_bit_fields, int marker) {
+void print_structs(sorted_bit_fields_t *restrict sorted_bit_fields) {
     // useful for debugging
     for (int index = 0; index < sorted_bit_fields->n_bit_fields; index++) {
         log_debug(
@@ -191,7 +185,6 @@ static void print_structs(
             detect_redundant_packet_count(sorted_bit_fields->bit_fields[index]),
             sorted_bit_fields->sort_order[index]);
     }
-    malloc_extras_check_all_marked(marker);
 }
 
 //! \brief fills in the sorted bit-field struct and builds tracker of
@@ -264,7 +257,7 @@ static inline void bit_field_reader_read_in_bit_fields(
             "i: %d, head: %d count: %d",
             i, processor_heads[i], processor_totals[i]);
     }
-    print_structs(sorted_bit_fields, 60012);
+    //print_structs(sorted_bit_fields);
 
     // sort bitfields so that bit-fields are in order of most impact on worse
     // affected cores. so that merged bitfields should reduce packet rates
@@ -272,7 +265,7 @@ static inline void bit_field_reader_read_in_bit_fields(
     order_bitfields(sorted_bit_fields);
 
     //TODO safety code to be removed.
-    print_structs(sorted_bit_fields, 60015);
+    //print_structs(sorted_bit_fields);
 
     // sort the bitfields by key.
     // NOTE: does not affect previous sort, as this directly affects the index
@@ -281,7 +274,7 @@ static inline void bit_field_reader_read_in_bit_fields(
     sort_by_key(sorted_bit_fields);
 
     // useful for debugging
-    print_structs(sorted_bit_fields, 60016);
+    //print_structs(sorted_bit_fields);
 }
 
 

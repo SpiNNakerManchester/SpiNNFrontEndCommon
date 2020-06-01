@@ -70,7 +70,6 @@ static void routing_table_utils_free_all(multi_table_t *restrict tables) {
 //! \return True if and only if all table(s) could be malloced
 static inline bool routing_table_utils_malloc(
         multi_table_t *restrict tables, uint32_t max_entries) {
-    malloc_extras_check_all_marked(70016);
     tables->n_sub_tables = ((max_entries - 1) >> TABLE_SHIFT) + 1;
     tables->max_entries = max_entries;
     log_debug("n table %d max entries %d", tables->n_sub_tables, max_entries);
@@ -122,7 +121,6 @@ static inline bool routing_table_utils_malloc(
     for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
         log_debug("table %d size %d", i, tables->sub_tables[i]->size);
     }
-    malloc_extras_check_all_marked(70016);
     return true;
 }
 

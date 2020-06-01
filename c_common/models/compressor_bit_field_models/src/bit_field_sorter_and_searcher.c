@@ -244,8 +244,6 @@ static inline void malloc_tables_and_set_off_bit_compressor(
         mid_point, &uncompressed_router_table->uncompressed_table,
         sorted_bit_fields);
 
-    malloc_extras_check_all_marked(1005);
-
     // if successful, try setting off the bitfield compression
     comms_sdram[processor_id].sorted_bit_fields = sorted_bit_fields;
     bool success = pass_instructions_to_compressor(
@@ -572,7 +570,6 @@ bool setup_no_bitfields_attempt(void) {
     pass_instructions_to_compressor(
         processor_id, NO_BIT_FIELDS,
         uncompressed_router_table->uncompressed_table.size);
-    malloc_extras_check_all_marked(1001);
     return true;
 }
 
@@ -700,7 +697,6 @@ void carry_on_binary_search(void) {
     log_debug("start create at time step: %u", time_steps);
     malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
     log_debug("end create at time step: %u", time_steps);
-    malloc_extras_check_all_marked(1002);
 }
 
 //! \brief timer interrupt for controlling time taken to try to compress table
@@ -727,18 +723,16 @@ void process_success(int mid_point, int processor_id) {
     // if the mid point is better than seen before, store results for final.
     if (best_success <= mid_point) {
         best_success = mid_point;
-        malloc_extras_check_all_marked(1003);
 
         // If we have a previous table free it as no longer needed
         if (last_compressed_table != NULL) {
-            FREE_MARKED(last_compressed_table, 1100);
+            FREE(last_compressed_table);
         }
 
         // Get last table and free the rest
         last_compressed_table = routing_table_utils_convert(
             comms_sdram[processor_id].routing_tables);
         log_debug("n entries is %d", last_compressed_table->size);
-        malloc_extras_check_all_marked(1004);
     } else {
         routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
     }
@@ -1113,6 +1107,11 @@ static bool initialise(void) {
         log_error("failed to setup stolen heap");
         return false;
     }
+
+    // allows us to not be forced to use the safety code (
+    // used in production mode)
+    malloc_extras_turn_off_safety();
+
     log_info("finished setting up fake heap for sdram usage");
 
     // get the compressor processors stored in an array

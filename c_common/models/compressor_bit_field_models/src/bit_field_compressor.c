@@ -74,8 +74,6 @@ void start_compression_process(void) {
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
-    malloc_extras_check_all_marked(50001);
-
     // DEBUG Stuff please leave
     //if (comms_sdram->mid_point >= 100) {
     //    log_info("HACK fail at 100 plus bitfeilds!");
@@ -96,8 +94,6 @@ void start_compression_process(void) {
         TARGET_LENGTH, &failed_by_malloc,
         &stop_compressing, compress_only_when_needed,
         compress_as_much_as_possible);
-
-    malloc_extras_check_all_marked(50005);
 
     // turn off timer and set us into pause state
     spin1_pause();
@@ -158,9 +154,7 @@ void run_compression_process(void) {
     stop_compressing = false;
     counter = 0;
 
-    malloc_extras_check_all_marked(50002);
     setup_routing_tables();
-    malloc_extras_check_all_marked(50002);
 
     log_info(
         "starting compression attempt with %d entries",

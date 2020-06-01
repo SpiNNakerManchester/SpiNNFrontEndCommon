@@ -96,7 +96,7 @@ static inline void merge_delete(merge_t *m) {
 static inline void merge_add(merge_t *m, unsigned int i) {
     // Add the entry to the bit set contained in the merge
     if (bit_set_add(&m->entries, i)) {
-        entry_t *entry = routing_table_get_entry(i, 9901);
+        entry_t *entry = routing_table_get_entry(i);
 
         // Get the key_mask
         if (m->key_mask.key == FULL && m->key_mask.mask == EMPTY) {
@@ -135,7 +135,7 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
         m->key_mask.key  = FULL;
         m->key_mask.mask = EMPTY;
         for (int j = 0; j < routing_table_get_n_entries(); j++) {
-            entry_t *e = routing_table_get_entry(j, 9902);
+            entry_t *e = routing_table_get_entry(j);
 
             if (bit_set_contains(&m->entries, j)) {
                 m->route |= e->route;

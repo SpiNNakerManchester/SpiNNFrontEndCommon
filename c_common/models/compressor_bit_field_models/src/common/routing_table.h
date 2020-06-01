@@ -36,7 +36,7 @@ multi_table_t multi_table;
 //! \param[in] marker: int that should be different in every call so we can
 //! detect where MUNDY was reading past the end of the table
 //! \return pointer to the entry's location
-entry_t* routing_table_get_entry(uint32_t entry_id_to_find, int marker) {
+entry_t* routing_table_get_entry_marked(uint32_t entry_id_to_find, int marker) {
     uint32_t table_id = entry_id_to_find >> TABLE_SHIFT;
     if (table_id >= multi_table.n_sub_tables) {
         log_error(
@@ -54,6 +54,17 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find, int marker) {
     }
     return &multi_table.sub_tables[table_id]->entries[local_id];
 }
+
+//! \brief Gets a pointer to where this entry is stored
+//!
+//! Will not check if there is an entry with this id but will RTE if the id
+//! is too large
+//! \param[in] entry_id_to_find: Id of entry to find pointer to
+//! \return pointer to the entry's location
+entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
+    return routing_table_get_entry_marked(entry_id_to_find, -1);
+}
+
 
 //! \brief Gets a pointer to where this entry is stored
 //!

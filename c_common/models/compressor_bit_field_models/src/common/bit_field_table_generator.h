@@ -21,7 +21,6 @@
 #include "../common/constants.h"
 #include "../common/routing_table.h"
 #include <filter_info.h>
-#include <malloc_extras.h>
 
 //! max number of links on a router
 #define MAX_LINKS_PER_ROUTER 6
@@ -197,9 +196,10 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
 void print_table(table_t * table) {
    entry_t *restrict entries = table->entries;
    for (uint32_t i = 0; i < table->size; i++) {
-        log_info("i %u, key %u, mask %u, route %u, source %u",
-        i, entries[i].key_mask.key, entries[i].key_mask.mask,
-        entries[i].route, entries[i].source);
+        log_info(
+            "i %u, key %u, mask %u, route %u, source %u",
+            i, entries[i].key_mask.key, entries[i].key_mask.mask,
+            entries[i].route, entries[i].source);
    }
 }
 
