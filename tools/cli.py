@@ -12,7 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from tools.pybug import BadArgs
+from __future__ import print_function  # for 2.7
+from tools.exn import BadArgs
 
 
 class CLI(object):

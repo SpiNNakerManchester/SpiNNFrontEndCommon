@@ -12,6 +12,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+""" An application for booting SpiNNaker chips
+"""
+from __future__ import print_function  # for 2.7
 from collections import namedtuple
 from datetime import datetime
 from enum import IntEnum

@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ Boot a SpiNNaker system.
 """
+from __future__ import print_function  # for 2.7
 from enum import IntEnum
 import socket
 import struct
