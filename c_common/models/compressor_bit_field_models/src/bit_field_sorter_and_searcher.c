@@ -82,8 +82,8 @@ int best_success = FAILED_TO_FIND;
 // Lowest midpoint that record failure
 int lowest_failure;
 
-// The minimum number of bitfeilds to be merged in
-int threshold_in_bitfeilds;
+// The minimum number of bitfields to be merged in
+int threshold_in_bitfields;
 
 //! \brief the store for the last routing table that was compressed
 table_t *restrict last_compressed_table = NULL;
@@ -638,11 +638,13 @@ bool exit_carry_on_if_all_compressor_processors_done(void) {
     }
 
     // Should never get here if above check failed but just in case
-    if (best_success < threshold_in_bitfeilds) {
-        log_error("The threshold is %d bitfeilds. Which is %d precent of the total of %d",
-            threshold_in_bitfeilds, region_addresses->threshold,
+    if (best_success < threshold_in_bitfields) {
+        log_error(
+            "The threshold is %d bitfields. Which is %d percent of the total of %d",
+            threshold_in_bitfields, region_addresses->threshold,
             sorted_bit_fields->n_bit_fields);
-        log_error("Best result found was %d Which is below the thresehold! Use host",
+        log_error(
+            "Best result found was %d Which is below the threshold! Use host",
             best_success);
         malloc_extras_terminate(RTE_SWERR);
         // Should never get here but break out of the loop
@@ -771,14 +773,16 @@ void process_failed_malloc(int mid_point, int processor_id) {
 //! \param[in] processor_id: the compressor processor id
 void process_failed(int mid_point, int processor_id) {
     // safety check to ensure we dont go on if the uncompressed failed
-    if (mid_point <= threshold_in_bitfeilds)  {
-        if (threshold_in_bitfeilds == 0) {
+    if (mid_point <= threshold_in_bitfields)  {
+        if (threshold_in_bitfields == 0) {
             log_error("The no bitfields attempted failed! Giving up");
         } else {
-            log_error("The threshold is %d Which is %d percent of the total of %d",
-                threshold_in_bitfeilds, region_addresses->threshold,
+            log_error(
+                "The threshold is %d Which is %d percent of the total of %d",
+                threshold_in_bitfields, region_addresses->threshold,
                 sorted_bit_fields->n_bit_fields);
-            log_error("The attempt with %d bitfeilds failed. ! Giving up", mid_point);
+            log_error(
+                "The attempt with %d bitfields failed. ! Giving up", mid_point);
         }
         malloc_extras_terminate(EXIT_FAIL);
     }
@@ -918,15 +922,17 @@ void start_binary_search(void) {
         }
     }
 
-    // Set off the worse acceptable (note no bitfeild would have been set off earlier)
-    if (threshold_in_bitfeilds > 0) {
-        int processor_id = find_compressor_processor_and_set_tracker(threshold_in_bitfeilds);
-        malloc_tables_and_set_off_bit_compressor(threshold_in_bitfeilds, processor_id);
+    // Set off the worse acceptable (note no bitfield would have been set off earlier)
+    if (threshold_in_bitfields > 0) {
+        int processor_id = find_compressor_processor_and_set_tracker(
+            threshold_in_bitfields);
+        malloc_tables_and_set_off_bit_compressor(
+            threshold_in_bitfields, processor_id);
     }
 
     // create slices and set off each slice.
     uint32_t mid_point = sorted_bit_fields->n_bit_fields;
-    while ((available > 0) && (mid_point > threshold_in_bitfeilds)) {
+    while ((available > 0) && (mid_point > threshold_in_bitfields)) {
         int processor_id = find_compressor_processor_and_set_tracker(mid_point);
         // Check the processor replied and has not been turned of by previous
         if (processor_id == FAILED_TO_FIND) {
@@ -936,7 +942,7 @@ void start_binary_search(void) {
         malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
 
         // Find the next step which may change due to rounding
-        int step = ((mid_point - threshold_in_bitfeilds) / available);
+        int step = ((mid_point - threshold_in_bitfields) / available);
         if (step < 1) {
             step = 1;
         }
@@ -963,14 +969,14 @@ void start_compression_process(uint unused0, uint unused1) {
 
     // Set the threshold
     if (region_addresses->threshold == 0) {
-        threshold_in_bitfeilds = 0;
+        threshold_in_bitfields = 0;
     } else {
-        threshold_in_bitfeilds = (sorted_bit_fields->n_bit_fields *
+        threshold_in_bitfields = (sorted_bit_fields->n_bit_fields *
             region_addresses->threshold) / 100;
-        best_success = threshold_in_bitfeilds;
+        best_success = threshold_in_bitfields;
     }
-    log_info("threshold_in_bitfeilds %d which is %d percent of %d",
-        threshold_in_bitfeilds, region_addresses->threshold,
+    log_info("threshold_in_bitfields %d which is %d percent of %d",
+        threshold_in_bitfields, region_addresses->threshold,
         sorted_bit_fields->n_bit_fields);
 
     // set up mid point trackers. NEEDED here as setup no bitfields attempt
