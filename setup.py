@@ -79,6 +79,11 @@ setup(
                       'numpy',
                       'futures; python_version == "2.7"',
                       'six'],
+    entry_points={
+        "console_scripts": [
+            "pybug = tools.pybug:main"
+        ],
+    },
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"
 )

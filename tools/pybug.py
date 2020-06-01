@@ -1,3 +1,17 @@
+# Copyright (c) 2013-2020 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from collections import namedtuple
 from datetime import datetime
 from enum import IntEnum
@@ -6,14 +20,14 @@ import struct
 import sys
 import time
 from zlib import crc32
+from spinn_front_end_common import __version__ as fec_version
 from tools.exn import BadArgs, SpinnException
 from tools.cli import CLI
 from tools.boot import boot
 from tools.sv import Struct
 from tools.cmd import SCAMPCmd, BMPCmd, SCAMP_CMD
 from tools.util import (
-    read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits,
-    sllt_version)
+    read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits)
 
 # This code ought to be rewritten to use the Cmd package:
 # https://docs.python.org/3.8/library/cmd.html
@@ -1193,7 +1207,7 @@ def cmd_cmd(cli):
 def cmd_version(cli):
     if cli and cli.count:
         raise BadArgs
-    print("# pybug - version {}".format(sllt_version()))
+    print("# pybug - version {}".format(fec_version))
 
 
 # ------------------------------------------------------------------------------
@@ -1473,6 +1487,3 @@ def main():
     if expert:
         _cli.cmd(expert_cmds, 0)
     _cli.run()
-
-
-main()
