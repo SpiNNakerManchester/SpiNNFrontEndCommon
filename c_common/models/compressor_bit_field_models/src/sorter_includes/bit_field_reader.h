@@ -142,7 +142,7 @@ static inline void sort_by_order(
 //! brief Sorts the data bases on the bitfield key.
 //! \param[in] sorted_bit_fields: data to be ordered
 static inline void sort_by_key(sorted_bit_fields_t *restrict sorted_bit_fields) {
-    
+
     // Semantic sugar to avoid extra lookup all the time
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
