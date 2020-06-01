@@ -924,10 +924,9 @@ def cmd_srom_init(cli):
         raise ValueError("bad port")
 
     mac = [int(m, base=16) for m in mac.split(":")]
-    data = struct.pack(">2I 2B H 4B 4B 4B 4B 2B H 2I I",
-                       0x553A0008, 0xF5007FE0, mac[4], mac[5], flag,
-                       mac[0], mac[1], mac[2], mac[3],
-                       *addresses, 0, 0, port, 0, 0, 0xAAAAAAAA)
+    data = struct.pack(">2I 2B H 4B 4B 4B 4B 2B H 2I I", *([
+        0x553A0008, 0xF5007FE0, mac[4], mac[5], flag, mac[0], mac[1], mac[2],
+        mac[3]] + addresses + [0, 0, port, 0, 0, 0xAAAAAAAA]))
     info = Srom_info[srom_type]
     spin.srom_write(0, data, page_size=info.PAGE, addr_size=info.ADDR)
     get_srom_info(1)
