@@ -171,27 +171,27 @@ class Cmd(SCP):
         type = Mem_type[type]  # @ReservedAssignment
 
         while length:
-            l = min(self._buf_size, length)
+            _l = min(self._buf_size, length)
             data += self.scp_cmd(
-                CMD.READ, arg1=base, arg2=l, arg3=type, **kwargs)
-            length -= l
-            base += l
+                CMD.READ, arg1=base, arg2=_l, arg3=type, **kwargs)
+            length -= _l
+            base += _l
 
         return self._decode(data, unpack, format)
 
     def link_read(self, link, base, length, unpack=None,
-             format=None, **kwargs):  # @ReservedAssignment
-        data = b''
+                  format=None, **kwargs):  # @ReservedAssignment
         if not 0 <= link <= 5:
             raise ValueError("bad link")
 
+        data = b''
         length = (length + 3) & ~3  # Round up to whole words
         while length:
-            l = min(self._buf_size, length)
+            _l = min(self._buf_size, length)
             data += self.scp_cmd(
-                CMD.LINK_READ, arg1=base, arg2=l, arg3=link, **kwargs)
-            length -= l
-            base += l
+                CMD.LINK_READ, arg1=base, arg2=_l, arg3=link, **kwargs)
+            length -= _l
+            base += _l
 
         return self._decode(data, unpack, format)
 
@@ -226,10 +226,9 @@ class Cmd(SCP):
         type = Mem_type[type]  # @ReservedAssignment
 
         for buf in self._chunk(data):
-            length = len(buf)
-            self.scp_cmd(CMD.WRITE, arg1=base, arg2=length, arg3=type, data=buf,
-                         **kwargs)
-            base += length
+            self.scp_cmd(CMD.WRITE, arg1=base, arg2=len(buf), arg3=type,
+                         data=buf, **kwargs)
+            base += len(buf)
 
     def link_write(self, link, base, data, **kwargs):
         if not 0 <= link <= 5:
@@ -307,7 +306,7 @@ class SCAMPCmd(Cmd):
                   sending)
         timeout - the timeout to use when waiting for reply packets
         retries - the number of retries to use when the target doesn't respond
-        debug   - a debug value (integers > 0 cause debug output; defaults to 0)
+        debug   - a debug value (integers>0 cause debug output; defaults to 0)
         delay   - delay (seconds) before sending (to throttle packets)
         """
         super().__init__(self, *args, **kwargs)
@@ -348,13 +347,13 @@ class SCAMPCmd(Cmd):
                   format=None, **kwargs):  # @ReservedAssignment
         data = b""
         while length:
-            l = min(length, self._buf_size)
+            _l = min(length, self._buf_size)
             data += self.scp_cmd(
-                SCAMP_CMD.SROM, arg1=(l << 16) | addr_size | 8,
-                arg2=0x03000000 + (base << (24 - addr_size))
+                SCAMP_CMD.SROM, arg1=(_l << 16) | addr_size | 8,
+                arg2=0x03000000 + (base << (24 - addr_size)),
                 **kwargs)
-            length -= l
-            base += l
+            length -= _l
+            base += _l
 
         return self._decode(data, unpack, format)
 
@@ -459,19 +458,18 @@ class BMPCmd(Cmd):
     def sf_read(self, base, length, **kwargs):
         data = b''
         while length:
-            l = min(length, self._buf_size)
-            data += self.scp_cmd(BMP_CMD.BMP_SF, arg1=base, arg2=l, arg3=0,
+            _l = min(length, self._buf_size)
+            data += self.scp_cmd(BMP_CMD.BMP_SF, arg1=base, arg2=_l, arg3=0,
                                  **kwargs)
-            length -= l
-            base += l
+            length -= _l
+            base += _l
         return data
 
     def sf_write(self, base, data, **kwargs):
         for buf in self._chunk(data):
-            l = len(buf)
-            self.scp_cmd(BMP_CMD.BMP_SF, arg1=base, arg2=l, arg3=1, data=buf,
-                         **kwargs)
-            base += l
+            self.scp_cmd(BMP_CMD.BMP_SF, arg1=base, arg2=len(buf), arg3=1,
+                         data=buf, **kwargs)
+            base += len(buf)
 
     def flash_write(self, addr, data, update=False, **kwargs):
         size = len(data)
@@ -509,4 +507,4 @@ class BMPCmd(Cmd):
     def power(self, on, mask, delay=0, **kwargs):
         self.scp_cmd(
             BMP_CMD.POWER, arg1=(delay << 16) | on, arg2=mask,
-            timeout = 5.0 if on else self._timeout, **kwargs)
+            timeout=(5.0 if on else self._timeout), **kwargs)

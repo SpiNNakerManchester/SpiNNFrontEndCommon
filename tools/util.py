@@ -104,6 +104,7 @@ def parse_bits(mask, minimum, maximum):
                 r |= 1 << i
     return r
 
+
 def parse_cores(mask):
     return parse_bits(mask, 1, 17)
 

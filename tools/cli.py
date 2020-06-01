@@ -42,22 +42,28 @@ class CLI(object):
         """ update command list """
         if delete:
             self._commands = {
-                "pause": (self._Pause,
+                "pause": (
+                    self._Pause,
                     "<text.S>",
                     "Print string and wait for Enter key"),
-                "echo": (self._Echo,
+                "echo": (
+                    self._Echo,
                     "<text.S>",
                     "Print string"),
-                "quit": (self._Quit,
+                "quit": (
+                    self._Quit,
                     "",
                     "Quit"),
-                "help": (self._Help,
+                "help": (
+                    self._Help,
                     "",
                     "Provide help"),
-                "@": (self._At,
+                "@": (
+                    self._At,
                     "<file.F> [quiet]",
                     "Read commands from file"),
-                "?": (self._Query,
+                "?": (
+                    self._Query,
                     "",
                     "List commands"),
             }
@@ -148,7 +154,7 @@ class CLI(object):
         cmds.sort()
         for cmd in cmds:
             info = self._commands[cmd]
-            print(" {:-12s} {:-30s} - {}".format(cmd, info[1], info[2]))
+            print(" {:<12s} {:<30s} - {}".format(cmd, info[1], info[2]))
 
     def _At(self):
         """ command to read CLI commands from a file """

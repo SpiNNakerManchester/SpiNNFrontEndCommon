@@ -54,9 +54,8 @@ class _Struct(object):
     def add_field(self, field, value, pack, offset, fmt, index):
         size = self._SIZE[pack]
         pack = self._REPACK[pack]
-        if fmt.endswith("x"):
+        if fmt.endswith("x}"):
             fmt = "0x" + fmt
-        fmt = re.sub(r"%(.+)", r"{:\1", fmt)
         self.__fields[field] = Field(pack, offset, fmt, index, size)
         self.__values[field] = value
 
@@ -73,29 +72,39 @@ class Struct(object):
     """ Manages data in structs. """
     __slots__ = ("__scp", "__structs")
 
+    _FIELD_MATCHER = re.compile(
+        r"""(?x)^
+        ([\w.]+)
+        (?:\[ (\d+) \])? \s+
+        (V|v|C|A16) \s+
+        (\S+) \s+
+        %(\d*[dxs]) \s+
+        (\S+)
+        $""")
+
     def __init__(self, scp, filename="sark.struct", debug=False):
         self.__scp = scp
         self.__structs = {}
         self.read_file(filename, debug)
 
     def __parse_field(self, line, struct_name, file_name, line_number):
-        m = re.match(
-            r"^([\w\.]+)(?:\[(\d+)\])?\s+(V|v|C|A16)\s+(\S+)\s+(%\d*[dx]|%s)\s+(\S+)$",
-            line)
-        if m:
-            field, index, pack, offset, fmt, value = m.groups()
-            try:
-                offset = int(offset, base=0)
-                value = int(value, base=0)
-            except ValueError:
-                raise StructParseException(
-                    "read_file: syntax error - {}.{}".format(
-                        file_name, line_number))
+        m = self._FIELD_MATCHER.match(line)
+        if not m:
+            return False
 
-            index = 1 if index is None else int(index)
-            self.__structs[struct_name].add_field(
-                field, value, pack, offset, fmt, index)
-        return m
+        field, index, pack, offset, fmt, value = m.groups()
+        try:
+            offset = int(offset, base=0)
+            value = int(value, base=0)
+        except ValueError:
+            raise StructParseException(
+                "read_file: syntax error - {}.{}".format(
+                    file_name, line_number))
+
+        index = 1 if index is None else int(index)
+        self.__structs[struct_name].add_field(
+            field, value, pack, offset, re.sub(r"(.+)", r"{:\1}", fmt), index)
+        return True
 
     def read_file(self, filename, debug=False):
         filename = find_path(filename)
@@ -209,7 +218,7 @@ class Struct(object):
         fields = list(sv.fields)
         fields.sort(key=lambda f: sv[f].offset)
         for field in fields:
-            print(("{:-16s} " + sv[field].fmt).format(field, sv.value(field)))
+            print(("{:<16s} " + sv[field].fmt).format(field, sv.value(field)))
 
     def size(self, name):
         return self.__structs[name].size
@@ -217,7 +226,7 @@ class Struct(object):
     def base(self, name, new=None):
         sv = self.__structs[name]
         old = sv.base
-        if new != None:
+        if new is not None:
             sv.base = new
         return old
 

@@ -65,7 +65,7 @@ class SCP(object):
                   sending)
         timeout - the timeout to use when waiting for reply packets
         retries - the number of retries to use when the target doesn't respond
-        debug   - a debug value (integers > 0 cause debug output; defaults to 0)
+        debug   - a debug value (integers>0 cause debug output; defaults to 0)
         delay   - delay (seconds) before sending (to throttle packets)
         """
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -216,13 +216,14 @@ class SCP(object):
             flags |= 0x80
 
         pad = struct.pack("<H", 0)
-        hdr = struct.pack("<4B2H", flags, self._tag, dp, self._sp, da, self._sa)
+        hdr = struct.pack(
+            "<4B2H", flags, self._tag, dp, self._sp, da, self._sa)
         if delay:
             time.sleep(delay)
         self.__socket.send(pad + hdr + data)
         if debug >= 3:
-            print(self._sdp_dump(
-                hdr, data, prefix="#>SDP ", print_data=debug>=4))
+            print(self._sdp_dump(hdr, data, prefix="#>SDP ",
+                                 print_data=(debug >= 4)))
 
     def send_scp(self, cmd, arg1, arg2, arg3, data, debug=None, **kwargs):
         """
@@ -239,7 +240,7 @@ class SCP(object):
         scp_hdr = struct.pack("<2H 3I", cmd, self._tx_seq, arg1, arg2, arg3)
         if debug:
             print(self._scp_dump(scp_hdr, num_args=3, prefix="#>SCP ",
-                                 print_data=debug >= 2))
+                                 print_data=(debug >= 2)))
         self.send_sdp(scp_hdr + data, debug=debug, **kwargs)
 
     def recv_sdp(self, timeout=None, debug=None):
@@ -265,8 +266,8 @@ class SCP(object):
         self._sdp_data = buf[10:]
 
         if debug >= 3:
-            print(self._sdp_dump(self._sdp_hdr, self._sdp_data, prefix="#<SDP ",
-                                 print_data=debug >= 4))
+            print(self._sdp_dump(self._sdp_hdr, self._sdp_data,
+                                 prefix="#<SDP ", print_data=(debug >= 4)))
         return True
 
     def recv_scp(self, timeout=None, debug=None):
@@ -287,7 +288,7 @@ class SCP(object):
 
         if debug:
             print(self._scp_dump(self._sdp_data, prefix="#<SCP ",
-                                 print_data=debug >= 2))
+                                 print_data=(debug >= 2)))
         return self._cmd_rc
 
     def scp_cmd(self, cmd, arg1=0, arg2=0, arg3=0, data=b'', addr=None, port=0,
@@ -383,4 +384,4 @@ class SCP(object):
         for name, value in inspect.getmembers(
                 self, lambda obj: not inspect.isroutine(obj)):
             if name.startswith("_") and not name.startswith("__"):
-                print("{:-16s} {}".format(name.strip("_"), value))
+                print("{:<16s} {}".format(name.strip("_"), value))

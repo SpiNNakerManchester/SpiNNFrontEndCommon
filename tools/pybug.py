@@ -91,7 +91,7 @@ def cmd_boot(cli):
         try:
             spin.ver(addr=[], timeout=0.1)
             print("Warning: Already booted")
-        except:  # pylint: disable=bare-except
+        except SpinnException:
             pass
 
         boot(spinn_target, filename, conf, debug=debug)
@@ -229,7 +229,7 @@ def cmd_sp(cli):
             version_info = spin.ver(addr=[], raw=1, timeout=0.1)
             root_x = version_info[3]
             root_y = version_info[2]
-        except:  # pylint: disable=bare-except
+        except SpinnException:
             pass
         chip_x, chip_y, cpu = spin.addr(root_x, root_y)
     elif cli.count == 1:
@@ -360,7 +360,7 @@ def cmd_rtr_load(cli):
 
 
 def ipflag(flags):
-    r =  "T" if flags & 0x4000 else ""
+    r = "T" if flags & 0x4000 else ""
     r += "A" if flags & 0x2000 else ""
     r += "R" if flags & 0x0200 else ""
     r += "S" if flags & 0x0100 else ""
@@ -382,11 +382,12 @@ def dump_iptag():
         (ip, _mac, tx_port, timeout, flags, count, rx_port, spin_addr,
          spin_port_id) = spin.iptag_get(i, True, unpack="<4s6sHHHIHHB")
         if flags & 0x8000:  # Tag in use
-            print("{:3d}  {:-15s}  {:5d}  {:5d}  {:-4s}  {:-4s}   0x{:04x}    "
-                  "0x{:02x} {:10d}".format(
-                i, ".".join(map(str, struct.unpack("BBBB", ip))),
-                tx_port, rx_port, timeout / 100, ipflag(flags), spin_addr,
-                spin_port_id, count))
+            print(
+                "{:3d}  {:<15s}  {:5d}  {:5d}  {:<4s}  {:<4s}   0x{:04x}    "
+                "0x{:02x} {:10d}".format(
+                    i, ".".join(map(str, struct.unpack("BBBB", ip))),
+                    tx_port, rx_port, timeout / 100, ipflag(flags), spin_addr,
+                    spin_port_id, count))
 
 
 def cmd_iptag(cli):
@@ -700,10 +701,12 @@ def cpu_dump(num, long, fmt):
 
     if long:
         rt_code = sv.get_var("vcpu.rt_code")
-        print("Core {:2d}: app \"{}\", state {}, app_id {}, "
-              "running {} ({})".format(
-            num, sv.get_var("vcpu.app_name"), Cs[sv.get_var("vcpu.cpu_state")],
-            sv.get_var("vcpu.app_id"), et, _time))
+        print(
+            "Core {:2d}: app \"{}\", state {}, app_id {}, running {} "
+            "({})".format(
+                num, sv.get_var("vcpu.app_name"),
+                Cs[sv.get_var("vcpu.cpu_state")],
+                sv.get_var("vcpu.app_id"), et, _time))
         print("AP mbox:   cmd      {:02x}  msg     {:08x}".format(
             sv.get_var("vcpu.mbox_ap_cmd"), sv.get_var("vcpu.mbox_ap_msg")))
         print("MP mbox:   cmd      {:02x}  msg     {:08x}".format(
@@ -711,18 +714,19 @@ def cpu_dump(num, long, fmt):
         print("SW error:  line {:6d}  file    {:08x} count {}".format(
             sv.get_var("vcpu.sw_line"), sv.get_var("vcpu.sw_file"),
             sv.get_var("vcpu.sw_count")))
-        print("RT error:  {:-6s}  PSR     {:08x} SP {:08x} LR {:08x}".format(
+        print("RT error:  {:<6s}  PSR     {:08x} SP {:08x} LR {:08x}".format(
             Rte[rt_code], sv.get_var("vcpu.psr"),
             sv.get_var("vcpu.sp"), sv.get_var("vcpu.lr")))
         if rt_code:
-            print("r0-r7: {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} "
-                  "{:08x}".format(
-                sv.get_var("vcpu.r0"), sv.get_var("vcpu.r1"),
-                sv.get_var("vcpu.r2"), sv.get_var("vcpu.r3"),
-                sv.get_var("vcpu.r4"), sv.get_var("vcpu.r5"),
-                sv.get_var("vcpu.r6"), sv.get_var("vcpu.r7")))
+            print(
+                "r0-r7: {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} "
+                "{:08x}".format(
+                    sv.get_var("vcpu.r0"), sv.get_var("vcpu.r1"),
+                    sv.get_var("vcpu.r2"), sv.get_var("vcpu.r3"),
+                    sv.get_var("vcpu.r4"), sv.get_var("vcpu.r5"),
+                    sv.get_var("vcpu.r6"), sv.get_var("vcpu.r7")))
     else:
-        print("{:3d}  {:-6s} {:-16s} {:3d} ".format(
+        print("{:3d}  {:<6s} {:<16s} {:3d} ".format(
             num, Cs[sv.get_var("vcpu.cpu_state")],
             sv.get_var("vcpu.app_name"), sv.get_var("vcpu.app_id")), end="")
         if fmt == 1:
@@ -816,7 +820,7 @@ def cmd_srom_write(cli):
 
     print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
 
-    spin.srom_write(addr, buf, page_size = info.PAGE, addr_size=info.ADDR)
+    spin.srom_write(addr, buf, page_size=info.PAGE, addr_size=info.ADDR)
 
 
 def cmd_srom_dump(cli):
@@ -831,12 +835,12 @@ def cmd_srom_dump(cli):
     size = 256
     buf = b''
     while byte_count != length:
-        l = min(size, length - byte_count)
-        data = spin.srom_read(addr, l, addr_size=info.ADDR)
-        if l != len(data):
+        _l = min(size, length - byte_count)
+        data = spin.srom_read(addr, _l, addr_size=info.ADDR)
+        if _l != len(data):
             raise ValueError("length mismatch")
-        byte_count += l
-        addr += l
+        byte_count += _l
+        addr += _l
         buf += data
 
     print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
@@ -962,14 +966,14 @@ def cmd_led(cli):
 
     if cli.count != 2:
         raise BadArgs
-    num = cli.arg(0)
+    num = cli.arg(0)  # This is a string!
     if not re.match(r"^[0-3]+$", num):
         raise BadArgs
     action = cli.arg(1).lower()
     if action not in Led:
         raise BadArgs
 
-    c = sum(Led[action] << (int(l) * 2) for l in num)
+    c = sum(Led[action] << (int(led) * 2) for led in num)
     spin.led(c, addr=[0])
 
 
@@ -1027,7 +1031,8 @@ def rtr_heap(rtr_copy, rtr_free, name="Router"):
             fs = "AppID  {:3d}".format(free & 255)
         else:
             fs = "Free {:5d}".format(free)
-        print("BLOCK {:5d}  Next {:5d}  {}  Size {}".format(p, _next, fs, size))
+        print("BLOCK {:5d}  Next {:5d}  {}  Size {}".format(
+            p, _next, fs, size))
         p = _next
 
     p = rtr_free
@@ -1044,7 +1049,8 @@ def rtr_heap(rtr_copy, rtr_free, name="Router"):
 
 def rtr_dump(buf, fr):
     print("Entry  Route       (Core) (Link)  Key       Mask      AppID  Core")
-    print("-----  765432109876543210 543210  ---       ----      -----  ----\n")
+    print("-----  765432109876543210 543210  ---       ----      -----  ----")
+    print("")
 
     for i in range(1024):
         _next, free, route, key, mask = struct.unpack_from(
@@ -1098,7 +1104,7 @@ def cmd_rtr_diag(cli):
 
     data = spin.read(0xE1000300, 64, type="word", unpack="<16I")
     for label, datum in zip(rtrc, data):
-        print("{:-10s} {}".format(label, datum))
+        print("{:<10s} {}".format(label, datum))
 
     if arg0 == "clr":
         c = struct.pack("<I", 0xFFFFFFFF)
@@ -1228,158 +1234,207 @@ def cmd_expert(cli):
 
 
 spin_cmds = {
-    "version": (cmd_version,
+    "version": (
+        cmd_version,
         "",
         "Show ybug version"),
-    "expert": (cmd_expert,
+    "expert": (
+        cmd_expert,
         "",
         "Enable expert commands"),
-    "debug": (cmd_debug,
+    "debug": (
+        cmd_debug,
         "<num.D>",
         "Set debug level"),
-    "timeout": (cmd_timeout,
+    "timeout": (
+        cmd_timeout,
         "<secs.R>",
         "Set target timeout"),
-    "sleep": (cmd_sleep,
+    "sleep": (
+        cmd_sleep,
         "<secs.D>",
         "Sleep (secs)"),
-    "sp": (cmd_sp,
+    "sp": (
+        cmd_sp,
         "<chip_x.D> <chip_y.D> <core.D>",
         "Select SpiNNaker chip and core"),
-    "sver": (cmd_sver,
+    "sver": (
+        cmd_sver,
         "",
         "Show SpiNNaker S/W version"),
-    "ps": (cmd_ps,
+    "ps": (
+        cmd_ps,
         "[<core.D>|d|x|p]",
         "Display core state"),
-    "smemb": (cmd_smemb,
+    "smemb": (
+        cmd_smemb,
         "<addr.X>",
         "Read SpiNNaker memory (bytes)"),
-    "smemh": (cmd_smemh,
+    "smemh": (
+        cmd_smemh,
         "<addr.X>",
         "Read SpiNNaker memory (half-words)"),
-    "smemw": (cmd_smemw,
+    "smemw": (
+        cmd_smemw,
         "<addr.X>",
         "Read SpiNNaker memory (words)"),
-    "sload": (cmd_sload,
+    "sload": (
+        cmd_sload,
         "<file.F> <addr.X>",
         "Load SpiNNaker memory from file"),
-    "sw": (cmd_sw,
+    "sw": (
+        cmd_sw,
         "<addr.X> [<data.X>]",
         "Read/write Spinnaker word"),
-    "sh": (cmd_sh,
+    "sh": (
+        cmd_sh,
         "<addr.X> [<data.X>]",
         "Read/write Spinnaker half-word"),
-    "sb": (cmd_sb,
+    "sb": (
+        cmd_sb,
         "<addr.X> [<data.X>]",
         "Read/write Spinnaker byte"),
-    "sfill": (cmd_sfill,
+    "sfill": (
+        cmd_sfill,
         "<from_addr.X> <to_addr.X> <word.X>",
         "Fill Spinnaker memory (words)"),
-    "boot": (cmd_boot,
+    "boot": (
+        cmd_boot,
         "[<boot_file.F>] [<conf_file.F>]",
         "System bootstrap"),
-    "app_load": (cmd_app_load,
+    "app_load": (
+        cmd_app_load,
         "<file.F> .|@<X.D>,<Y.D>|<region> <cores> <app_id.D> [wait]",
         "Load application"),
-    "app_stop": (cmd_app_stop,
+    "app_stop": (
+        cmd_app_stop,
         "<app_id.D>[-<app_id.D>]",
         "Stop application(s)"),
-    "app_sig": (cmd_app_sig,
+    "app_sig": (
+        cmd_app_sig,
         "<region> <app_id.D>[-<app_id.D>] <signal> [state]",
         "Send signal to application"),
-    "data_load": (cmd_data_load,
+    "data_load": (
+        cmd_data_load,
         "<file.F> <region> <addr.X>",
         "Load data to all chips in region"),
-    "rtr_load": (cmd_rtr_load,
+    "rtr_load": (
+        cmd_rtr_load,
         "<file.F> <app_id.D>",
         "Load router file"),
-    "rtr_dump": (cmd_rtr_dump,
+    "rtr_dump": (
+        cmd_rtr_dump,
         "",
         "Dump router MC table"),
-#    "rtr_init": (cmd_rtr_init,
-#         "",
-#         "Initialise router MC table and heap"),
-    "rtr_heap": (cmd_rtr_heap,
+    # "rtr_init": (
+    #     cmd_rtr_init,
+    #     "",
+    #     "Initialise router MC table and heap"),
+    "rtr_heap": (
+        cmd_rtr_heap,
         "",
         "Dump router MC heap"),
-    "rtr_diag": (cmd_rtr_diag,
+    "rtr_diag": (
+        cmd_rtr_diag,
         "[clr]",
         "Show router diagnostic counts, etc"),
-    "iobuf": (cmd_iobuf,
+    "iobuf": (
+        cmd_iobuf,
         "<core.D> [<file.F>]",
         "Display/write I/O buffer for core"),
-    "sdump": (cmd_sdump,
+    "sdump": (
+        cmd_sdump,
         "<file.F> <addr.X> <len.X>",
         "Dump SpiNNaker memory to file"),
-    "iptag": (cmd_iptag,
+    "iptag": (
+        cmd_iptag,
         """<tag.D> <cmd.S> args...
                <tag.D> clear
                <tag.D> set     <host.P> <port.D>
                <tag.D> strip   <host.P> <port.D>
                <tag.D> reverse <port.D> <address.X> <port.X>""",
         "Set up IPTags"),
-    "led": (cmd_led,
+    "led": (
+        cmd_led,
         "<0123>* on|off|inv|flip",
         "Set/clear LEDs"),
-    "heap": (cmd_heap,
+    "heap": (
+        cmd_heap,
         "sdram|sysram|system",
         "Dump heaps"),
-    "reset": (cmd_reset,
+    "reset": (
+        cmd_reset,
         "",
         "Reset Spinnakers via BMP"),
-    "power": (cmd_power,
+    "power": (
+        cmd_power,
         "on|off",
         "Switch power on/off via BMP"),
 }
 
 expert_cmds = {
-    "gw": (cmd_gw,
+    "gw": (
+        cmd_gw,
         "<addr.X> <data.X>",
         "Global word write"),
-    "gh": (cmd_gh,
+    "gh": (
+        cmd_gh,
         "<addr.X> <data.X>",
         "Global half-word write"),
-    "gb": (cmd_gb,
+    "gb": (
+        cmd_gb,
         "<addr.X> <data.X>",
         "Global byte write"),
-    "lmemw": (cmd_lmemw,
+    "lmemw": (
+        cmd_lmemw,
         "<link.D> <addr.X>",
         "Read SpiNNaker memory via link (words)"),
-    "lw": (cmd_lw,
+    "lw": (
+        cmd_lw,
         "<link.D> <addr.X> [<data.X]",
         "Read/write SpiNNaker word via link"),
-    "srom_ip": (cmd_srom_ip,
+    "srom_ip": (
+        cmd_srom_ip,
         "[<ip_addr.P> [<gw_addr.P> [<net_mask.P>]]]",
         "Set IP address in serial ROM"),
-    "srom_read": (cmd_srom_read,
+    "srom_read": (
+        cmd_srom_read,
         "<addr.X>",
         "Read serial ROM data"),
-    "srom_type": (cmd_srom_type,
+    "srom_type": (
+        cmd_srom_type,
         "25aa1024|25aa080a|25aa160b",
         "Set SROM type"),
-    "srom_dump": (cmd_srom_dump,
+    "srom_dump": (
+        cmd_srom_dump,
         "<file.F> <addr.X> <len.D>",
         "Dump serial ROM data"),
-    "srom_write": (cmd_srom_write,
+    "srom_write": (
+        cmd_srom_write,
         "<file.F> <addr.X>",
         "Write serial ROM data"),
-    "srom_erase": (cmd_srom_erase,
+    "srom_erase": (
+        cmd_srom_erase,
         "",
         "Erase (all) serial ROM data"),
-    "srom_init": (cmd_srom_init,
+    "srom_init": (
+        cmd_srom_init,
         "<Flag.X> <MAC.M> <ip_addr.P> <gw_addr.P> <net_mask.P> <port.D>",
         "Initialise serial ROM"),
-    "remap": (cmd_remap,
+    "remap": (
+        cmd_remap,
         "<core.D> [phys|virt]",
         "Remove bad core from core map"),
-    "p2p_route": (cmd_p2p_route,
+    "p2p_route": (
+        cmd_p2p_route,
         "[on|off]",
         "Control P2P routing"),
-    "app_dump": (cmd_app_dump,
+    "app_dump": (
+        cmd_app_dump,
         "",
         "Show app data for this chip"),
-    "cmd": (cmd_cmd,
+    "cmd": (
+        cmd_cmd,
         '<cmd.D> <arg1.X> <arg2.X> <arg3.X>',
         'User specified command'),
 }
