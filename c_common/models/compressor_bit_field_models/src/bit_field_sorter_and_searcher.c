@@ -44,6 +44,12 @@
 //! \brief used for debug. kills after how many time steps to kill the process
 #define KILL_TIME 20000
 
+//! \brief delay between checks of sdram polling
+#define SDRAM_POLL_DELAY 50
+
+//! \brief attempts for sdram poll
+#define SDRAM_POLL_ATTEMPTS 20
+
 //! \brief the magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
 
@@ -477,10 +483,11 @@ bool prepare_processor_first_time(int processor_id) {
     //! Check the processor is live
     int count = 0;
     while (!(comms_sdram[processor_id].compressor_state == PREPARED)) {
+
         // give chance for compressor to read
-        spin1_delay_us(50);
+        spin1_delay_us(SDRAM_POLL_DELAY);
         count++;
-        if (count > 20) {
+        if (count > SDRAM_POLL_ATTEMPTS) {
             comms_sdram[processor_id].sorter_instruction = DO_NOT_USE;
             log_error("compressor failed to reply %d",
                 processor_id);
@@ -774,7 +781,7 @@ void process_failed_malloc(int mid_point, int processor_id) {
 void process_failed(int mid_point, int processor_id) {
     // safety check to ensure we dont go on if the uncompressed failed
     if (mid_point <= threshold_in_bitfields)  {
-        if (threshold_in_bitfields == 0) {
+        if (threshold_in_bitfields == NO_BIT_FIELDS) {
             log_error("The no bitfields attempted failed! Giving up");
         } else {
             log_error(
@@ -806,6 +813,7 @@ void process_failed(int mid_point, int processor_id) {
         }
     }
 
+    // handler to say this message has changed the last to not be a malloc fail
     just_reduced_cores_due_to_malloc = false;
 }
 

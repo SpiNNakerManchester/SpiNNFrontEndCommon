@@ -295,7 +295,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
     sorted_bit_fields_t *restrict sorted_bit_fields = MALLOC_SDRAM(
         sizeof(sorted_bit_fields_t));
     if (sorted_bit_fields == NULL) {
-        log_error("failed to allocate dtcm for sorted bitfields.");
+        log_error("failed to allocate DTCM for sorted bitfields.");
         return NULL;
     }
 

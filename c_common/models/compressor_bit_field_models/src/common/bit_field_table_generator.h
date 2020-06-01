@@ -128,7 +128,7 @@ static inline uint32_t bit_field_table_generator_max_size(
 
     // Check every bitfield to see if is to be used
     // Only need each key once to track last used as tables is sorted by key
-    uint32_t used_key = -1;
+    uint32_t used_key = FAILED_TO_FIND;
     for (int bf_i = sorted_bit_fields->n_bit_fields -1;  bf_i >= 0; bf_i--) {
         if (sort_order[bf_i] < mid_point) {
             if (used_key != bit_fields[bf_i]->key ) {
