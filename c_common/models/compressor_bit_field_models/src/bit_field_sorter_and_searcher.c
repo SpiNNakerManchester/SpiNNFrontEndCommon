@@ -555,7 +555,7 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
 //! \return bool which says if setting off the compression attempt was
 //! successful or not.
 bool setup_no_bitfields_attempt(void) {
-    if (region_addresses->threshold > 0) {
+    if (threshold_in_bitfields > 0) {
         log_info("No bitfields attempt skipped due to threshold of %d percent",
             region_addresses->threshold);
             return true;
