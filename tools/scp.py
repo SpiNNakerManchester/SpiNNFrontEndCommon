@@ -18,7 +18,7 @@ import socket
 import struct
 import time
 from tools.util import hex_dump
-from tools.exn import SpinnException
+from tools.exn import SpinnException, SpinnTooManyRetriesException
 
 SPIN_PORT = 17893
 TIMEOUT = 0.5
@@ -330,7 +330,7 @@ class SCP(object):
             if debug:
                 print("# Timeout (attempt {})".format(tries + 1))
         else:
-            raise SpinnException("too many retries")
+            raise SpinnTooManyRetriesException("too many retries")
         if rc != RC_OK:
             raise SpinnException("error {}".format(
                 RC[rc] if rc in RC else "0x{:02x}".format(rc)))

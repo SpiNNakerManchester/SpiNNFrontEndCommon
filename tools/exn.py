@@ -25,3 +25,7 @@ class StructParseException(Exception):
 
 class SpinnException(Exception):
     """ General exception from the comms layer or SpiNNaker. """
+
+
+class SpinnTooManyRetriesException(SpinnException):
+    """ Too many retries were required. """

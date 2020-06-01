@@ -21,7 +21,7 @@ import sys
 import time
 from zlib import crc32
 from spinn_front_end_common import __version__ as fec_version
-from tools.exn import BadArgs, SpinnException
+from tools.exn import BadArgs, SpinnException, SpinnTooManyRetriesException
 from tools.cli import CLI
 from tools.boot import boot
 from tools.sv import Struct
@@ -136,8 +136,8 @@ def cmd_lw(cli):
     addr = cli.arg_i(1)
 
     if cli.count == 2:
-        data = struct.unpack("<I", spin.link_read(link, addr, 4))
-        print("{:08x} = {:08x}".format(addr, data[0]))
+        data, = spin.link_read(link, addr, 4, unpack="<I")
+        print("{:08x} = {:08x}".format(addr, data))
     else:
         data = struct.pack("<I", cli.arg_i(2))
         spin.link_write(link, addr, data)
@@ -181,8 +181,8 @@ def cmd_sw(cli):
         raise BadArgs
     addr = cli.arg_i(0)
     if cli.count == 1:
-        data = struct.unpack("<I", spin.read(addr, 4, type="word"))
-        print("{:08x} = {:08x}".format(addr, data[0]))
+        data, = spin.read(addr, 4, type="word", unpack="<I")
+        print("{:08x} = {:08x}".format(addr, data))
     else:
         data = struct.pack("<I", cli.arg_i(1))
         spin.write(addr, data, type="word")
@@ -193,8 +193,8 @@ def cmd_sh(cli):
         raise BadArgs
     addr = cli.arg_i(0)
     if cli.count == 1:
-        data = struct.unpack("<H", spin.read(addr, 2, type="half"))
-        print("{:08x} = {:04x}".format(addr, data[0]))
+        data, = spin.read(addr, 2, type="half", unpack="<H")
+        print("{:08x} = {:04x}".format(addr, data))
     else:
         data = struct.pack("<H", cli.arg_i(1))
         spin.write(addr, data, type="half")
@@ -205,8 +205,8 @@ def cmd_sb(cli):
         raise BadArgs
     addr = cli.arg_i(0)
     if cli.count == 1:
-        data = struct.unpack("<B", spin.read(addr, 1, type="byte"))
-        print("{:08x} = {:02x}".format(addr, data[0]))
+        data, = spin.read(addr, 1, type="byte", unpack="<B")
+        print("{:08x} = {:02x}".format(addr, data))
     else:
         data = struct.pack("<B", cli.arg_x(1))
         spin.write(addr, data, type="byte")
@@ -290,15 +290,14 @@ def cmd_iobuf(cli):
 
 
 def dump_heap(heap, name):
-    heap_free, heap_first, _, free_bytes = struct.unpack(
-        "<IIII", spin.read(heap, 16))
+    heap_free, heap_first, _, free_bytes = spin.read(heap, 16, unpack="<IIII")
     print("")
     print("{} {}".format(name, free_bytes))
     print("-" * len(name))
 
     p = heap_first
     while p:
-        _next, free = struct.unpack("<II", spin.read(p, 8))
+        _next, free = spin.read(p, 8, unpack="<II")
         size = 0 if _next == 0 else _next - p - 8
         if free & 0xFFFF0000 == 0xFFFF0000:
             fs = "Tag {:3d} ID {:3d}".format(free & 0xFF, (free >> 8) & 0xFF)
@@ -310,7 +309,7 @@ def dump_heap(heap, name):
 
     p = heap_free
     while p:
-        _next, free = struct.unpack("<II", spin.read(p, 8))
+        _next, free = spin.read(p, 8, unpack="<II")
         size = 0 if _next == 0 else _next - p - 8
         print("FREE   {:8x}  Next {:8x}  Free  {:08x}  Size {}".format(
             p, _next, free, size))
@@ -349,8 +348,8 @@ def cmd_rtr_load(cli):
 
     addr = 0x67800000
     spin.write(addr, buf)
-    base = struct.unpack("<I", spin.scp_cmd(
-        SCAMP_CMD.ALLOC, arg1=(app_id << 8) + 3, arg2=size))
+    base = spin.scp_cmd(
+        SCAMP_CMD.ALLOC, arg1=(app_id << 8) + 3, arg2=size, unpack="<I")
     if not base:
         raise RuntimeError("no room in router heap")
     spin.scp_cmd(SCAMP_CMD.RTR,
@@ -369,7 +368,7 @@ def ipflag(flags):
 
 
 def dump_iptag():
-    tto, pool, fix = struct.unpack("<BxBB", spin.iptag_tto(255))
+    tto, pool, fix = spin.iptag_tto(255, unpack="<BxBB")
     _max = pool + fix
     tto = (1 << (tto - 1)) / 100 if tto else 0
 
@@ -381,7 +380,7 @@ def dump_iptag():
 
     for i in range(_max):
         (ip, _mac, tx_port, timeout, flags, count, rx_port, spin_addr,
-         spin_port_id) = struct.unpack("<4s6sHHHIHHB", spin.iptag_get(i, True))
+         spin_port_id) = spin.iptag_get(i, True, unpack="<4s6sHHHIHHB")
         if flags & 0x8000:  # Tag in use
             print("{:3d}  {:-15s}  {:5d}  {:5d}  {:-4s}  {:-4s}   0x{:04x}    "
                   "0x{:02x} {:10d}".format(
@@ -502,11 +501,10 @@ def cmd_app_sig(cli):
         for i in range(16):
             addr = (xb + (inc * (i >> 2)), yb + (inc * (i & 3)), 0)
             try:
-                r = struct.unpack("<I", spin.signal(
-                    _type, data, mask, addr=addr))
-            except SpinnException as e:
-                if "retries" in str(e):
-                    raise
+                r, = spin.signal(_type, data, mask, addr=addr, unpack="<I")
+            except SpinnTooManyRetriesException:
+                raise
+            except SpinnException:
                 # General exception: just try somewhere else
                 continue
             if signal == 18:
@@ -834,11 +832,11 @@ def cmd_srom_dump(cli):
     buf = b''
     while byte_count != length:
         l = min(size, length - byte_count)
-        byte_count += l
         data = spin.srom_read(addr, l, addr_size=info.ADDR)
-        addr += l
         if l != len(data):
             raise ValueError("length mismatch")
+        byte_count += l
+        addr += l
         buf += data
 
     print("Length {}, CRC32 0x{:08x}".format(len(buf), crc32(buf)))
@@ -873,8 +871,8 @@ def get_srom_info(long):
     length = 32
 
     # NB: this data is BIG ENDIAN
-    d = struct.unpack_from(">8B 4B 4B 4B 2B H", spin.srom_read(
-        addr, length, addr_size=Srom_info[srom_type].ADDR))
+    d = spin.srom_read(addr, length, addr_size=Srom_info[srom_type].ADDR,
+                       unpack=">8B 4B 4B 4B 2B H")
 
     flag = (d[2] << 8) + d[3]
     mac = "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}".format(
@@ -1022,7 +1020,7 @@ def rtr_heap(rtr_copy, rtr_free, name="Router"):
 
     p = 1  # RTR_ALLOC_FIRST
     while p:
-        _next, free = struct.unpack("<HH", spin.read(rtr_copy + 16 * p, 4))
+        _next, free = spin.read(rtr_copy + 16 * p, 4, unpack="<HH")
         size = _next - p if _next else 0
 
         if free & 0x8000:
@@ -1034,7 +1032,7 @@ def rtr_heap(rtr_copy, rtr_free, name="Router"):
 
     p = rtr_free
     while p:
-        _next, free = struct.unpack("<HH", spin.read(rtr_copy + 16 * p, 4))
+        _next, free = spin.read(rtr_copy + 16 * p, 4, unpack="<HH")
         size = _next - p if _next else 0
 
         print("FREE  {:5d}  Next {:5d}  Free {:5d}  Size {}".format(
@@ -1091,15 +1089,15 @@ def cmd_rtr_diag(cli):
             "Dump MC:", "Dump PP:", "Dump NN:", "Dump FR:",
             "Cntr 12:", "Cntr 13:", "Cntr 14:", "Cntr 15:")
 
-    rcr, = struct.unpack("<I", spin.read(0xE1000000, 4, type="word"))
+    rcr, = spin.read(0xE1000000, 4, type="word", unpack="<I")
     print("\nCtrl Reg:  0x{:08x} (Mon {}, Wait1 {}, Wait2 {})".format(
         rcr, (rcr >> 8) & 0x1F, rtr_wait(rcr >> 16), rtr_wait(rcr >> 24)))
 
-    es, = struct.unpack("<I", spin.read(0xE1000014, 4, type="word"))
+    es, = spin.read(0xE1000014, 4, type="word", unpack="<I")
     print("Err Stat:  0x{:08x}\n".format(es))
 
-    data = spin.read(0xE1000300, 64, type="word")
-    for label, datum in zip(rtrc, struct.unpack("<16I", data)):
+    data = spin.read(0xE1000300, 64, type="word", unpack="<16I")
+    for label, datum in zip(rtrc, data):
         print("{:-10s} {}".format(label, datum))
 
     if arg0 == "clr":

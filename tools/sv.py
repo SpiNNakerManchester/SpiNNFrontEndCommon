@@ -23,7 +23,7 @@ Field = namedtuple("Field", ["pack", "offset", "fmt", "index", "size"])
 
 
 class _Struct(object):
-    __slots__ = ("_size", "_base", "_fields", "_values")
+    __slots__ = ("size", "base", "__fields", "__values")
 
     _SIZE = {
         "V": 4,
@@ -33,20 +33,23 @@ class _Struct(object):
     }
 
     _REPACK = {
-        "V": "I",
-        "v": "H",
-        "C": "B",
-        "A16": "16s"
+        "V": "<I",
+        "v": "<H",
+        "C": "<B",
+        "A16": "<16s"
     }
 
     def __init__(self):
-        self._size = 0
-        self._base = None
-        self._fields = dict()
-        self._values = dict()
+        self.size = 0
+        self.base = None
+        self.__fields = dict()
+        self.__values = dict()
 
     def __getitem__(self, name):
-        return self._fields[name]
+        return self.__fields[name]
+
+    def __setitem__(self, name, value):
+        self.__values[name] = value
 
     def add_field(self, field, value, pack, offset, fmt, index):
         size = self._SIZE[pack]
@@ -54,16 +57,16 @@ class _Struct(object):
         if fmt.endswith("x"):
             fmt = "0x" + fmt
         fmt = re.sub(r"%(.+)", r"{:\1", fmt)
-        self._fields[field] = Field(pack, offset, fmt, index, size)
-        self._values[field] = value
+        self.__fields[field] = Field(pack, offset, fmt, index, size)
+        self.__values[field] = value
 
     @property
     def fields(self):
-        for f in self._fields:
+        for f in self.__fields:
             yield f
 
     def value(self, field):
-        return self._values[field]
+        return self.__values[field]
 
 
 class Struct(object):
@@ -74,6 +77,25 @@ class Struct(object):
         self.__scp = scp
         self.__structs = {}
         self.read_file(filename, debug)
+
+    def __parse_field(self, line, struct_name, file_name, line_number):
+        m = re.match(
+            r"^([\w\.]+)(?:\[(\d+)\])?\s+(V|v|C|A16)\s+(\S+)\s+(%\d*[dx]|%s)\s+(\S+)$",
+            line)
+        if m:
+            field, index, pack, offset, fmt, value = m.groups()
+            try:
+                offset = int(offset, base=0)
+                value = int(value, base=0)
+            except ValueError:
+                raise StructParseException(
+                    "read_file: syntax error - {}.{}".format(
+                        file_name, line_number))
+
+            index = 1 if index is None else int(index)
+            self.__structs[struct_name].add_field(
+                field, value, pack, offset, fmt, index)
+        return m
 
     def read_file(self, filename, debug=False):
         filename = find_path(filename)
@@ -98,11 +120,11 @@ class Struct(object):
                 m = re.match(r"^name\s*=\s*(\w+)$", line)
                 if m:
                     if name:
-                        if not self.__structs[name]._size:
+                        if not self.__structs[name].size:
                             raise StructParseException(
                                 "read_file: size undefined in {}".format(
                                     filename))
-                        if self.__structs[name]._base is None:
+                        if self.__structs[name].base is None:
                             raise StructParseException(
                                 "read_file: base undefined in {}".format(
                                     filename))
@@ -112,32 +134,15 @@ class Struct(object):
 
                 m = re.match(r"^size\s*=\s*(\S+)$", line)
                 if m:
-                    self.__structs[name]._size = int(m.group(1), base=0)
+                    self.__structs[name].size = int(m.group(1), base=0)
                     continue
 
                 m = re.match(r"base\s*=\s*(\S+)$", line)
                 if m:
-                    self.__structs[name]._base = int(m.group(1), base=0)
+                    self.__structs[name].base = int(m.group(1), base=0)
                     continue
 
-                m = re.match(
-                    r"^([\w\.]+)(?:\[(\d+)\])?\s+(V|v|C|A16)\s+(\S+)\s+(%\d*[dx]|%s)\s+(\S+)$",
-                    line)
-                if m:
-                    field, index, pack, offset, fmt, value = m.groups()
-                    try:
-                        offset = int(offset, base=0)
-                        value = int(value, base=0)
-                    except ValueError:
-                        raise StructParseException(
-                            "read_file: syntax error - {}.{}".format(
-                                filename, line_number))
-                    if index is not None:
-                        self.__structs[name].add_field(
-                            field, value, pack, offset, fmt, int(index))
-                    else:
-                        self.__structs[name].add_field(
-                            field, value, pack, offset, fmt, 1)
+                if self.__parse_field(line, name, filename, line_number):
                     continue
 
                 raise StructParseException(
@@ -148,48 +153,56 @@ class Struct(object):
             for n in self.__structs:
                 print(">> {} {}".format(n, self.__structs[n]))
 
+    def __read(self, *args, **kwargs):
+        if self.__scp is None:
+            raise RuntimeError("not bound to existing SpiNNaker instance")
+        return self.__scp.read(*args, **kwargs)
+
+    def __write(self, *args, **kwargs):
+        if self.__scp is None:
+            raise RuntimeError("not bound to existing SpiNNaker instance")
+        return self.__scp.write(*args, **kwargs)
+
     def read_struct(self, name, addr=None):
         sv = self.__structs[name]
-        self._unpack(name, self.__scp.read(sv._base, sv._size, addr=addr))
+        self.unpack(name, self.__read(sv.base, sv.size, addr=addr))
 
     def write_struct(self, name, addr=None):
-        data = self._pack(name)
+        data = self.pack(name)
         sv = self.__structs[name]
-        self.__scp.write(sv._base, sv._size, data, addr=addr)
+        self.__write(sv.base, sv.size, data, addr=addr)
 
     def read_var(self, var, addr=None):
         name, field = var.split(".")
         sv = self.__structs[name]
         f = sv[field]
-        base = sv._base + f.offset
-        data = struct.unpack("<" + f.pack, self.__scp.read(
-            base, f.size, addr=addr))
-        sv.set_field_value(field, data[0])
-        return data[0]
+        data, = struct.unpack(f.pack, self.__read(
+            sv.base + f.offset, f.size, addr=addr))
+        sv[field] = data
+        return data
 
     def write_var(self, var, new, addr=None):
         name, field = var.split(".")
         sv = self.__structs[name]
         f = sv[field]
-        base = sv._base + f.offset
-        value = struct.pack(f.pack, new)
-        self.__scp.write(base, value, addr=addr)
-        sv.set_field_value(field, new)
+        self.__write(
+            sv.base + f.offset, struct.pack(f.pack, new), addr=addr)
+        sv[field] = new
 
-    def _pack(self, name):
+    def pack(self, name):
         sv = self.__structs[name]
-        data = b'\0' * sv._size
+        data = b'\0' * sv.size
         for field in sv.fields:
             f = sv[field]
             struct.pack_into(f.pack, data, f.offset, sv.value(field))
         return data
 
-    def _unpack(self, name, data):
+    def unpack(self, name, data):
         sv = self.__structs[name]
         for field in sv.fields:
             f = sv[field]
-            values = struct.unpack_from("<" + f.pack, data, f.offset)
-            sv.set_field_value(field, values[0])
+            values = struct.unpack_from(f.pack, data, f.offset)
+            sv[field] = values[0]
 
     def dump(self, name):
         sv = self.__structs[name]
@@ -199,19 +212,18 @@ class Struct(object):
             print(("{:-16s} " + sv[field].fmt).format(field, sv.value(field)))
 
     def size(self, name):
-        sv = self.__structs[name]
-        return sv._size
+        return self.__structs[name].size
 
     def base(self, name, new=None):
         sv = self.__structs[name]
-        old = sv._base
+        old = sv.base
         if new != None:
-            sv._base = new
+            sv.base = new
         return old
 
     def addr(self, name, field):
         sv = self.__structs[name]
-        return sv._base + sv[field].offset
+        return sv.base + sv[field].offset
 
     def get_var(self, var):
         name, field = var.split(".")
@@ -222,7 +234,7 @@ class Struct(object):
         name, field = var.split(".")
         sv = self.__structs[name]
         old = sv.value(field)
-        sv.set_field_value(field, value)
+        sv[field] = value
         return old
 
     def update(self, name, filename):

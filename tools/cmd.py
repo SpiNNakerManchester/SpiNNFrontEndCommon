@@ -149,6 +149,16 @@ class Cmd(SCP):
 
     # -------------------------------------------------------------------------
 
+    def _decode(self, data, unpack, fmt):
+        if unpack:
+            original = data
+            # Important! Some use cases have more data than we unpack
+            data = struct.unpack_from(unpack, data)
+            if fmt:
+                data += [original]
+                data = fmt.format(*data)
+        return data
+
     def read(self, base, length, unpack=None,
              type="byte", format=None, **kwargs):  # @ReservedAssignment
         data = b''
@@ -167,11 +177,7 @@ class Cmd(SCP):
             length -= l
             base += l
 
-        if unpack:
-            data = struct.unpack_from(unpack, data) + [data]
-        if format:
-            data = format.format(*data)
-        return data
+        return self._decode(data, unpack, format)
 
     def link_read(self, link, base, length, unpack=None,
              format=None, **kwargs):  # @ReservedAssignment
@@ -187,11 +193,7 @@ class Cmd(SCP):
             length -= l
             base += l
 
-        if unpack:
-            data = struct.unpack_from(unpack, data) + [data]
-        if format:
-            data = format.format(*data)
-        return data
+        return self._decode(data, unpack, format)
 
     # -------------------------------------------------------------------------
 
@@ -354,11 +356,7 @@ class SCAMPCmd(Cmd):
             length -= l
             base += l
 
-        if unpack:
-            data = struct.unpack_from(unpack, data) + [data]
-        if format:
-            data = format.format(*data)
-        return data
+        return self._decode(data, unpack, format)
 
     def srom_write(self, base, data, page_size=256, addr_size=24, **kwargs):
         for buf in self._chunk(data, page_size):
