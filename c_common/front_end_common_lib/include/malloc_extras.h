@@ -58,6 +58,9 @@ typedef struct available_sdram_blocks {
 
 // ===========================================================================
 
+//! \brief turn off safety code if wanted
+void malloc_extras_turn_off_safety(void);
+
 //! \brief turn on printing
 void malloc_extras_turn_on_print(void);
 

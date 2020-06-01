@@ -48,6 +48,11 @@ int malloc_points_size = 4;
 // ===========================================================================
 //! functions
 
+//! \brief turn off safety code if wanted
+void malloc_extras_turn_off_safety(void) {
+    safety = false;
+}
+
 //! \brief turn on printing of logs. can reduce output significantly
 void malloc_extras_turn_on_print(void) {
     to_print = true;
