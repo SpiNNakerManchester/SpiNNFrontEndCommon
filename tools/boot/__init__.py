@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ Boot a SpiNNaker system.
 """
-
+from enum import IntEnum
 import socket
 import struct
 import time
@@ -27,7 +27,13 @@ BOOT_BYTE_SIZE = 1024
 MAX_BLOCKS = 32
 
 
-def boot_pkt(sock, op, a1, a2, a3, data, delay):
+class _BootCmd(IntEnum):
+    START = 1
+    DATA = 3
+    END = 5
+
+
+def _send_boot_pkt(sock, op, a1, a2, a3, data, delay):
     hdr = struct.pack(">H4I", PROT_VER, op, a1, a2, a3)
     if data:
         # Byte-swap the data; this protocol is BIG-ENDIAN!
@@ -38,7 +44,7 @@ def boot_pkt(sock, op, a1, a2, a3, data, delay):
     time.sleep(delay)
 
 
-def rom_boot(host, buf, debug, port):
+def _rom_boot(host, buf, debug, port):
     """ Boot using SpiNNaker BootROM protocol.
     """
     delay = 0.01
@@ -56,23 +62,23 @@ def rom_boot(host, buf, debug, port):
         sock.connect((host, port))
         if debug:
             print("Boot: Start (delay {})".format(delay))
-        boot_pkt(sock, 1, 0, 0, blocks - 1, b'', delay)
+        _send_boot_pkt(sock, _BootCmd.START, 0, 0, blocks - 1, b'', delay)
 
         for block in range(blocks):
             data = buf[block * BOOT_BYTE_SIZE:(block + 1) * BOOT_BYTE_SIZE]
             a1 = ((BOOT_BYTE_SIZE // 4 - 1) << 8) | (block & 0xFF)
             if debug:
                 print("Boot: Data {}".format(block), end="\r")
-            boot_pkt(sock, 3, a1, 0, 0, data, delay)
+            _send_boot_pkt(sock, _BootCmd.DATA, a1, 0, 0, data, delay)
 
         if debug:
             print("\nBoot: End")
-        boot_pkt(sock, 5, 1, 0, 0, b'', delay)
+        _send_boot_pkt(sock, _BootCmd.END, 1, 0, 0, b'', delay)
 
     time.sleep(2.0)
 
 
-def scamp_boot(host, buf, sv, timestamp, debug):
+def _scamp_boot(host, buf, sv, timestamp, debug):
     """ Boot using SpiNNaker SC&MP protocol.
     """
     spin = SCAMPCmd(target=host, debug=debug)
@@ -102,11 +108,11 @@ def boot(host, filename, conf, debug=0, port=54321):
 
     if filename.endswith(".boot"):
         sv.set_var("sv.root_chip", 1)
-        buf[384:512] = sv._pack("sv")[0:128]
-        rom_boot(host, buf, debug, port)
+        buf[384:512] = sv.pack("sv")[0:128]
+        _rom_boot(host, buf, debug, port)
     elif filename.endswith(".aplx"):
         sv.set_var("sv.boot_delay", 0)
-        buf[384:512] = sv._pack("sv")[0:128]
-        scamp_boot(host, buf, sv, timestamp, debug)
+        buf[384:512] = sv.pack("sv")[0:128]
+        _scamp_boot(host, buf, sv, timestamp, debug)
     else:
         raise ValueError("unknown boot file format")
