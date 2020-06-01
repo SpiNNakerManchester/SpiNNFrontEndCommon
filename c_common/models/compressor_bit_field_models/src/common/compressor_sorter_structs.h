@@ -169,7 +169,7 @@ typedef struct triples_t {
 //! \brief top-level structure in the addresses area
 typedef struct region_addresses_t {
     //! Minimum percentage of bitfields to be merge in (currently ignored)
-    int threshold;
+    uint32_t threshold;
     //! Pointer to the area malloced to hold the comms_sdram
     comms_sdram_t* comms_sdram;
     //! Number of triples in the list

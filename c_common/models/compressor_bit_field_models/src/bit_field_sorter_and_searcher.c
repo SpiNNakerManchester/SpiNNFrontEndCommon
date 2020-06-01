@@ -89,7 +89,7 @@ int best_success = FAILED_TO_FIND;
 int lowest_failure;
 
 // The minimum number of bitfields to be merged in
-int threshold_in_bitfields;
+uint32_t threshold_in_bitfields;
 
 //! \brief the store for the last routing table that was compressed
 table_t *restrict last_compressed_table = NULL;
@@ -645,7 +645,7 @@ bool exit_carry_on_if_all_compressor_processors_done(void) {
     }
 
     // Should never get here if above check failed but just in case
-    if (best_success < threshold_in_bitfields) {
+    if (best_success < (int) threshold_in_bitfields) {
         log_error(
             "The threshold is %d bitfields. Which is %d percent of the total of %d",
             threshold_in_bitfields, region_addresses->threshold,
@@ -780,7 +780,7 @@ void process_failed_malloc(int mid_point, int processor_id) {
 //! \param[in] processor_id: the compressor processor id
 void process_failed(int mid_point, int processor_id) {
     // safety check to ensure we dont go on if the uncompressed failed
-    if (mid_point <= threshold_in_bitfields)  {
+    if (mid_point <= (int) threshold_in_bitfields)  {
         if (threshold_in_bitfields == NO_BIT_FIELDS) {
             log_error("The no bitfields attempted failed! Giving up");
         } else {
