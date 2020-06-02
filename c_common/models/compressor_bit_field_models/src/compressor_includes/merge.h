@@ -72,7 +72,7 @@ static inline void merge_clear(merge_t *m) {
 //! \brief Initialise a merge
 //! \param[in] m: the merge pointer to init
 //! \param[in] n_entries_in_table: the possible number of entries in the merge
-//! \return bool saying true if the merge was initialised
+//! \return whether the merge was initialised
 static inline bool merge_init(merge_t *m, uint32_t n_entries_in_table) {
     // Initialise the bit_set
     if (!bit_set_init(&m->entries, n_entries_in_table)) {
@@ -83,7 +83,7 @@ static inline bool merge_init(merge_t *m, uint32_t n_entries_in_table) {
     return true;
 }
 
-// \brief Destruct a merge
+//! \brief Destroy a merge
 //! \param[in] m: the merge to delete
 static inline void merge_delete(merge_t *m) {
     // Free the bit set

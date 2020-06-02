@@ -18,24 +18,24 @@
 #ifndef __FILTER_INFO_H__
 
 //! \brief the elements in a filter info (bitfield wrapper)
-typedef struct filter_info_t{
-    // bit field master pop key
+typedef struct filter_info_t {
+    //! bit field master pop key
     uint32_t key;
-    // n words representing the bitfield
+    //! number of words representing the bitfield
     uint32_t n_atoms;
-    // the words of the bitfield
+    //! the words of the bitfield
     bit_field_t data;
 } filter_info_t;
 
 //! \brief the elements in the bitfield region
-typedef struct filter_region_t{
-    // how many filters have been merged into routing tables
+typedef struct filter_region_t {
+    //! how many filters have been merged into routing tables
     int n_merged_filters;
-    // total number of filters with redundant packets. (merged or not)
+    //! total number of filters with redundant packets. (merged or not)
     int n_redundancy_filters;
-    // total number of filters including with and without redundancy
+    //! total number of filters including with and without redundancy
     int n_filters;
-    // the filters
+    //! the filters
     filter_info_t filters[];
 } filter_region_t;
 

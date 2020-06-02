@@ -32,102 +32,127 @@
 
 //! enum for the different states to report through the user1 address.
 typedef enum exit_states_for_user_one {
-    EXITED_CLEANLY = 0, EXIT_FAIL = 1, EXIT_MALLOC = 2, EXIT_SWERR = 3,
+    //! Everything is fine
+    EXITED_CLEANLY = 0,
+    //! We went wrong
+    EXIT_FAIL = 1,
+    //! We ran out of space
+    EXIT_MALLOC = 2,
+    //! We hit an internal error
+    EXIT_SWERR = 3,
+    //! We detected a problem
     DETECTED_MALLOC_FAILURE = 4
 } exit_states_for_user_one;
 
 
 //! a sdram block outside the heap
 typedef struct sdram_block {
-    // the base address of where the sdram block starts
+    //! Base address of where the SDRAM block starts
     uchar *sdram_base_address;
 
-    // size of block in bytes
+    //! Size of block in bytes
     uint size;
-
 } sdram_block;
 
 //! the struct for holding host based sdram blocks outside the heap
 typedef struct available_sdram_blocks {
-    // the number of blocks of sdram which can be utilised outside of alloc
+    //! Number of blocks of SDRAM which can be utilised outside of alloc
     int n_blocks;
 
-    // VLA of sdram blocks
-    sdram_block blocks [];
+    //! VLA of SDRAM blocks
+    sdram_block blocks[];
 } available_sdram_blocks;
 
 // ===========================================================================
 
-//! \brief turn off safety code if wanted
+//! \brief Turn off safety code if wanted
 void malloc_extras_turn_off_safety(void);
 
-//! \brief turn on printing
+//! \brief Turn on printing
+//! \note Printing of allocations can take a lot of IOBUF space.
 void malloc_extras_turn_on_print(void);
 
-//! \brief turn off printing
+//! \brief Turn off printing
 void malloc_extras_turn_off_print(void);
 
-//! \brief get the pointer to the stolen heap
+//! \brief Get the pointer to the stolen heap
 //! \return the heap pointer.
-heap_t* malloc_extras_get_stolen_heap(void);
+heap_t *malloc_extras_get_stolen_heap(void);
 
-//static inline void terminate(uint result_code) __attribute__((noreturn));
-//! \brief stops a binary dead
-//! \param[in] code to put in user 1
+#if 0
+static inline void terminate(uint result_code) __attribute__((noreturn));
+#endif
+
+//! \brief Stops execution with a result code
+//! \param[in] result_code: code to put in user 1
 void malloc_extras_terminate(uint result_code);
 
-//! \brief checks a pointer for safety stuff
+//! \brief Checks a pointer for safety stuff
+//! \param[in] ptr: the malloc pointer to check for memory overwrites
+//! \return true if nothing is broken, false if there was detected overwrites.
 bool malloc_extras_check(void *ptr);
 
-//! \brief checks all malloc's with a given marker. to allow easier tracking
-//! from application code (probably should be a string. but meh)
+//! \brief Checks all malloc()s with a given marker.
+//! \param[in] marker: the numerical marker for this test, allowing easier
+//!     tracking of where this check was called in the user application code
+//! \internal probably should be a string marker, but meh
 void malloc_extras_check_all_marked(int marker);
 
-//! \brief checks all malloc's for overwrites with no marker
+//! \brief Checks all malloc's for overwrites with no marker
+//! \details Calls malloc_extras_check_all_marked(), but does not provide an
+//!     easy marker to track back to the application user code.
 void malloc_extras_check_all(void);
 
-//! \brief update heap
-//! \param[in] heap_location: address where heap is location
+//! \brief Update heap
+//! \param[in] heap_location: address where heap is located
 bool malloc_extras_initialise_with_fake_heap(heap_t *heap_location);
 
-//! \brief builds a new heap based off stolen sdram blocks from cores
-//! synaptic matrix's. Needs to merge in the true sdram free heap, as
-//! otherwise its impossible to free the block properly.
+//! \brief Builds a new heap based off stolen sdram blocks from cores
+//!     synaptic matrices.
+//! \details Needs to merge in the true SDRAM free heap, as otherwise it's
+//!     impossible to free the block properly.
 //! \param[in] sizes_region; the sdram address where the free regions exist
 //! \return None
 bool malloc_extras_initialise_and_build_fake_heap(
         available_sdram_blocks *sizes_region);
 
-//! \brief builds a new heap with no stolen SDRAM and sets up the malloc
-//! tracker.
-//! \return bool where true is a successful initialisation and false otherwise.
+//! \brief Builds a new heap with no stolen SDRAM and sets up the malloc
+//!     tracker.
+//! \return true is a successful initialisation and false otherwise.
 bool malloc_extras_initialise_no_fake_heap_data(void);
 
-//! \brief frees the sdram allocated from whatever heap it came from
+//! \brief Frees the sdram allocated from whatever heap it came from
 //! \param[in] ptr: the address to free. could be DTCM or SDRAM
+//! \param[in] marker: the numerical marker for this test, allowing easier
+//!     tracking of where this check was called in the user application code
 void malloc_extras_free_marked(void *ptr, int marker);
 
-//! \brief frees a pointer without any marker for application code
+//! \brief Frees a pointer without any marker for application code
 //! \param[in] ptr: the pointer to free.
 void malloc_extras_free(void *ptr);
 
-void * malloc_extras_sdram_malloc_wrapper(uint bytes);
+//! \brief Mallocs a number of bytes from SDRAM.
+//! \details If safety turned on, it allocates more SDRAM to support buffers
+//!     and size recordings.
+//! \param[in] bytes: the number of bytes to allocate from SDRAM.
+//! \return the pointer to the location in SDRAM to use in application code.
+void *malloc_extras_sdram_malloc_wrapper(uint bytes);
 
-//! \brief allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
-//! NOTE: commented out as this can cause stack overflow issues quickly.
-//! if deemed safe. could be uncommented out. which the same to the #define
-//! below at the end of the file
+//! \brief Allows a search of the 2 heaps available. (DTCM, stolen SDRAM)
+//! \note Commented out as this can cause stack overflow issues quickly.
+//!     If deemed safe, could be uncommented. That is the same to the
+//!     `#define` below at the end of the file
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return: the address of the block of memory to utilise.
-void * malloc_extras_malloc(uint bytes);
+void *malloc_extras_malloc(uint bytes);
 
-//! \brief locates the biggest block of available memory from the heaps
+//! \brief Locates the biggest block of available memory from the heaps
 //! \return the biggest block size in the heaps.
 uint malloc_extras_max_available_block_size(void);
 
-#define MALLOC malloc_extras_malloc
-#define FREE   malloc_extras_free
-#define FREE_MARKED malloc_extras_free_marked
-#define MALLOC_SDRAM malloc_extras_sdram_malloc_wrapper
+#define MALLOC          malloc_extras_malloc
+#define FREE            malloc_extras_free
+#define FREE_MARKED     malloc_extras_free_marked
+#define MALLOC_SDRAM    malloc_extras_sdram_malloc_wrapper
 
 #endif  // __PLATFORM_H__

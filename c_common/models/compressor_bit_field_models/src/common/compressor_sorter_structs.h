@@ -26,37 +26,39 @@
 
 //! \brief the acceptable finish states
 typedef enum compressor_states {
-   // Flag to say this core has never been used or prepared
+   //! Flag to say this core has never been used or prepared
    UNUSED = 30,
-   // Flag to say compressor is ready to run.  This clears previous results
+   //! Flag to say compressor is ready to run.  This clears previous results
    PREPARED = 31,
-   // Flag to say compressor is acticvely compressing
+   //! Flag to say compressor is acticvely compressing
    COMPRESSING = 32,
-   // Flag to say the last compression run ended due to a malloc failure
+   //! Flag to say the last compression run ended due to a malloc failure
    FAILED_MALLOC = 33,
-   // Flag to say sorter force seen and compression has ended or been stopped
-   // Note: It use may be replaced with the PREPARED flag
+   //! Flag to say sorter force seen and compression has ended or been stopped
+   //! Note: It use may be replaced with the PREPARED flag
    FORCED_BY_COMPRESSOR_CONTROL = 34,
-   // Flag to say previous run was successful
+   //! Flag to say previous run was successful
    SUCCESSFUL_COMPRESSION = 35,
-   // Flag to say previous run finished but without a small enough table
+   //! Flag to say previous run finished but without a small enough table
    FAILED_TO_COMPRESS = 36,
-   // Flag to say previous run was aborted as it ran out of time
+   //! Flag to say previous run was aborted as it ran out of time
    RAN_OUT_OF_TIME = 37
 } compressor_states;
 
+//! \brief The commands sent to a compressor core
 typedef enum instructions_to_compressor {
-    // Flag for saying processor is not a compressor
+    //! Flag for saying processor is not a compressor
     NOT_COMPRESSOR = 40,
-    // Flag for saying compression processor will not be used any more
+    //! Flag for saying compression processor will not be used any more
     DO_NOT_USE = 41,
-    // Flag for saying compression processor needs to be prepared for the first time
+    //! Flag for saying compression processor needs to be prepared for the
+    //! first time
     TO_BE_PREPARED = 42,
-    // Flag to ask compressor to setup and clear any previous result
+    //! Flag to ask compressor to setup and clear any previous result
     PREPARE = 43,
-    // Flag to say processor shoukd run
+    //! Flag to say processor shoukd run
     RUN = 44,
-    // Flag to say processor should stop as result no longer needed
+    //! Flag to say processor should stop as result no longer needed
     FORCE_TO_STOP = 45
 }  instructions_to_compressor;
 
@@ -86,7 +88,6 @@ typedef struct entry_t {
 
 //! \brief struct for holding table entries
 typedef struct table_t {
-
     //! Number of entries in the table
     uint32_t size;
 
@@ -108,7 +109,7 @@ typedef struct multi_table_t {
     uint32_t max_entries;
 } multi_table_t;
 
-//! \brief the lis of cores that can be used as compressor processor
+//! \brief the list of cores that can be used as compressor processor
 typedef struct compressor_processors_top_t {
     //! The number of processor_id(s) in the list
     uint32_t n_processors;
@@ -125,8 +126,8 @@ typedef struct uncompressed_table_region_data_t{
 } uncompressed_table_region_data_t;
 
 //! \brief holder for the list of bitfield associated processor ids.
-//! sorted order based off best effort linked to sorted_bit_fields,
-//! but separate to avoid sdram rewrites
+//! \details sorted order based off best effort linked to sorted_bit_fields,
+//!     but separate to avoid SDRAM rewrites
 typedef struct sorted_bit_fields_t{
     //! len of the arrays
     int n_bit_fields;
@@ -138,7 +139,7 @@ typedef struct sorted_bit_fields_t{
     int* sort_order;
 } sorted_bit_fields_t;
 
-//! \brief sdram area to communicate between sorter and compressor
+//! \brief SDRAM area to communicate between sorter and compressor
 typedef struct comms_sdram_t {
     //! The state the compressor is in
     compressor_states compressor_state;

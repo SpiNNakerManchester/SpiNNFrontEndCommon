@@ -159,17 +159,17 @@ typedef struct aliases_t {
 } aliases_t;
 
 //! \brief Create a new, empty, aliases container
-//! return new alias list
+//! \return new alias list
 static aliases_t aliases_init(void) {
     aliases_t aliases = {NULL};
     return aliases;
 }
 
-//! \brief ????????
-//! \param[in] node: ????????
-//! \param[in] key: ????????
-//! \return ???????????
-static node_t *_aliases_find_node(node_t *node, a_key_t key) {
+//! \brief Retrieve a node from an aliases container
+//! \param[in] node: the subtree root
+//! \param[in] key: the key being sought
+//! \return the node with that key, or `NULL` if no such node
+static inline node_t *_aliases_find_node(node_t *node, a_key_t key) {
     while (node != NULL) {
         if (key.as_int == node->key.as_int) {
             // This is the requested item, return it
@@ -187,12 +187,11 @@ static node_t *_aliases_find_node(node_t *node, a_key_t key) {
     return NULL;  // We didn't find the requested item
 }
 
-
 //! \brief Retrieve an element from an aliases container
-//! \param[in] a: ??????????
-//! \param[in] key: ????????????
-//! \return ?????????????
-static alias_list_t *aliases_find(aliases_t *a, key_mask_t key) {
+//! \param[in] a: The key-to-alias map
+//! \param[in] key: The key sought
+//! \return The alias list for that key, or `NULL` if mapping absent
+static inline alias_list_t *aliases_find(aliases_t *a, key_mask_t key) {
     // Search the tree
     node_t *node = _aliases_find_node(a->root, (a_key_t) key);
     if (node == NULL) {
@@ -201,19 +200,18 @@ static alias_list_t *aliases_find(aliases_t *a, key_mask_t key) {
     return node->val;
 }
 
-
 //! \brief See if the aliases contain holds an element
-//! \param[in] a: alias
-//! \param[in] key: the key mask struct
-//! \return bool saying if the alias has the key mask.
-static bool aliases_contains(aliases_t *a, key_mask_t key) {
+//! \param[in] a: The key-to-alias map
+//! \param[in] key: the key mask sought
+//! \return whether the alias has the key mask.
+static inline bool aliases_contains(aliases_t *a, key_mask_t key) {
     return aliases_find(a, key) != NULL;
 }
 
-//! \brief ???????
-//! \param[in] n: ??????????
-//! \return ??????????
-static node_t *_aliases_skew(node_t *n) {
+//! \brief Fix node skew; part of rebalancing
+//! \param[in] n: Node that is root of this sub-tree
+//! \return Node that is new root of this sub-tree
+static inline node_t *_aliases_skew(node_t *n) {
     if (n == NULL) {
         return NULL;
     }
@@ -227,10 +225,10 @@ static node_t *_aliases_skew(node_t *n) {
     return node_pointer;
 }
 
-//! \brief ??????????
-//! \param[in] n: ??????????
-//! \return ??????????
-static node_t *_aliases_split(node_t *n) {
+//! \brief Split nodes; part of rebalancing
+//! \param[in] n: Node that is root of this sub-tree
+//! \return Node that is new root of this sub-tree
+static inline node_t *_aliases_split(node_t *n) {
     if (n == NULL) {
         return NULL;
     }
@@ -246,19 +244,18 @@ static node_t *_aliases_split(node_t *n) {
     return r;
 }
 
-//! \brief ??????????
-//! \param[in] n: ??????????
-//! \param[in] key: ????????
-//! \param[in] val: ?????????
-//! \return bool stating if the insert was successful or not
-static bool _aliases_insert(
+//! \brief Core of how to insert aliases
+//! \param[in] n: Sub-tree to do insert within
+//! \param[in] key: Node key to insert
+//! \param[in] val: Node value to insert
+//! \return whether the insert was successful or not (fails on no memory)
+static bool _aliases_insert( // DO NOT INLINE; RECURSIVE!
         node_t *n, a_key_t key, alias_list_t *val) {
-
     if (n == NULL) {
         // If the node is NULL then create a new Node
         // Malloc room for the node
         n = MALLOC(sizeof(node_t));
-        if (n == NULL){
+        if (n == NULL) {
             log_error("failed to allocate memory for node");
             return false;
         }
@@ -275,13 +272,13 @@ static bool _aliases_insert(
     if (key.as_int < n->key.as_int) {
         // Go left
         bool success = _aliases_insert(n->left, key, val);
-        if (!success){
+        if (!success) {
             return false;
         }
     } else if (key.as_int > n->key.as_int) {
         // Go right
         bool success = _aliases_insert(n->right, key, val);
-        if (!success){
+        if (!success) {
             return false;
         }
     } else {
@@ -298,11 +295,11 @@ static bool _aliases_insert(
 
 
 //! \brief Add/overwrite an element into an aliases tree
-//! \param[in] a: ??????????
-//! \param[in] key: key mask struct
-//! \param[in] value: ????????
-//! \return bool stating if the insert was successful or not
-static bool aliases_insert(
+//! \param[in] a: The key-to-alias map
+//! \param[in] key: key mask to insert or overwrite
+//! \param[in] value: the value to write in
+//! \return whether the insert was successful or not
+static inline bool aliases_insert(
         aliases_t *a, key_mask_t key, alias_list_t *value) {
     // Insert into, and balance, the tree
 
@@ -322,9 +319,9 @@ static inline void aliases_remove(aliases_t *a, key_mask_t key) {
     }
 }
 
-//! \brief clears a node from the aliase tree
+//! \brief clears a node from the alias tree
 //! \param[in] n: the note to clear from the alias tree
-static void _aliases_clear(node_t *n) {
+static void _aliases_clear(node_t *n) { // DO NOT INLINE; RECURSIVE!
     if (n == NULL) {
         return;
     }
@@ -348,9 +345,9 @@ static void _aliases_clear(node_t *n) {
 
 
 //! \brief Remove all elements from an aliases container and free all
-//! sub-containers
+//!     sub-containers
 //! \param[in] a: the aliases tree.
-static void aliases_clear(aliases_t *a) {
+static inline void aliases_clear(aliases_t *a) {
     _aliases_clear(a->root);
 }
 

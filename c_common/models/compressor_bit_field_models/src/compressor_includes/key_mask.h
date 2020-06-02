@@ -51,13 +51,13 @@ static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
 }
 
 //! \brief Generate a new key-mask which is a combination of two other key_masks
-//! \brief c := a | b
-//! \param[in] a: the key mask struct a
-//! \param[in] b: the key mask struct b
-//! \return a key mask struct when merged
+//! \details `c := a | b`
+//! \param[in] a: the first key mask struct
+//! \param[in] b: the second key mask struct
+//! \return the merged key mask struct
 static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b) {
-    key_mask_t c;
     uint32_t new_xs = ~(a.key ^ b.key);
+    key_mask_t c;
     c.mask = a.mask & b.mask & new_xs;
     c.key = (a.key | b.key) & c.mask;
 

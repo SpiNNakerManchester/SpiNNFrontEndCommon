@@ -40,7 +40,7 @@
 #define BITS_IN_A_WORD 32
 
 //! flag saying there is no valid result for a given search (
-// locate processor, locate midpoint)
+//! locate processor, locate midpoint)
 #define FAILED_TO_FIND -1
 
 // 0 or higher is doing that midpoint
