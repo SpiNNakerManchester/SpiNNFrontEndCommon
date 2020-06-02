@@ -25,11 +25,10 @@
 //! \brief removes default routes from the routing tables
 //! \param[in] remove_elements: bool flag to actually remove elements from table
 //! \param[in/out] pointer_to_new_size: new size to set without removing
-//! elements from table
-//! \return: bool flag that says if it succeeded or not
+//!     elements from table
+//! \return: whether successful or not
 static bool remove_default_routes_minimise(
         int *pointer_to_new_size, bool remove_elements) {
-
     // Mark the entries to be removed from the table
     bit_set_t remove;
     bool success = bit_set_init(&remove, routing_table_get_n_entries());
@@ -40,7 +39,6 @@ static bool remove_default_routes_minimise(
 
     // Work up the table from the bottom, marking entries to remove
     for (int i = routing_table_get_n_entries() - 1; i < 0; i--) {
-
         // Get the current entry
         entry_t *entry = routing_table_get_entry(i);
 
@@ -87,8 +85,8 @@ static bool remove_default_routes_minimise(
 
     // Remove the selected entries from the table
     if (remove_elements) {
-        for (int insert = 0, read = 0; read < routing_table_get_n_entries(); read++) {
-
+        for (int insert = 0, read = 0; read < routing_table_get_n_entries();
+                read++) {
             // Grab the current entry before we potentially overwrite it
             entry_t *current = routing_table_get_entry(read);
 

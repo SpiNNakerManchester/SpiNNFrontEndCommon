@@ -53,14 +53,13 @@ bool bit_set_clear(bit_set_t *b) {
 
     // Reset the count
     b->count = 0;
-
     return true;
 }
 
 //! \brief Create a new bitset
 //! \param[in] b: the bitset to create
 //! \param[in] length: the length of bits to make
-//! \return bool saying if the bitset was created or not
+//! \return whether the bitset was created
 static inline bool bit_set_init(bit_set_t *b, unsigned int length) {
     // Malloc space for the data
     unsigned int n_words = length / BITS_IN_A_WORD;
@@ -69,23 +68,21 @@ static inline bool bit_set_init(bit_set_t *b, unsigned int length) {
     }
 
     uint32_t *data = (uint32_t *) MALLOC(n_words * sizeof(uint32_t));
-
     if (data == NULL) {
         b->_data = NULL;
         b->n_elements = 0;
         b->n_words = 0;
         return false;
-    } else {
-        b->_data = data;
-        b->n_words = n_words;
-        b->n_elements = length;
-        bit_set_clear(b);
-        return true;
     }
-    log_debug("end bit set malloc");
+
+    b->_data = data;
+    b->n_words = n_words;
+    b->n_elements = length;
+    bit_set_clear(b);
+    return true;
 }
 
-//! \brief Destruct a bitset
+//! \brief Destroy a bitset
 //! \param[in] b: the bitset to delete
 static inline void bit_set_delete(bit_set_t *b) {
     // Free the storage
@@ -94,10 +91,10 @@ static inline void bit_set_delete(bit_set_t *b) {
     b->n_elements = 0;
 }
 
-// \brief Add an element to a bitset
+//! \brief Add an element to a bitset
 //! \param[in] b: the bitset to add to
 //! \param[in] i: the bit to set / add
-//! \return bool if the bit is added successfully false otherwise
+//! \return whether the bit is added successfully
 static inline bool bit_set_add(bit_set_t* b, unsigned int i) {
     if (b->n_elements <= i) {
         return false;
@@ -118,7 +115,7 @@ static inline bool bit_set_add(bit_set_t* b, unsigned int i) {
 //! \brief Test if an element is in a bitset
 //! \param[in] b: the bitset to check
 //! \param[in] i: the bit to check is set /added
-//! \return true if the bit is set/added in the bitfield
+//! \return whether the bit is set/added in the bitfield
 static inline bool bit_set_contains(bit_set_t *b, unsigned int i) {
     if (b->n_elements <= i) {
         return false;
@@ -126,14 +123,14 @@ static inline bool bit_set_contains(bit_set_t *b, unsigned int i) {
 
     // Determine the word and bit
     unsigned int word = i / BITS_IN_A_WORD;
-    uint32_t bit  = 1 << (i & 31);
+    uint32_t bit = 1 << (i & 31);
     return (bool) (b->_data[word] & bit);
 }
 
 //! \brief Remove an element from a bitset
 //! \param[in] b: the bitset to remove/unset the bit from
 //! \param[in] i: the bit to unset
-//! \return bool true if unset, false otherwise
+//! \return whether unset succeeded
 static inline bool bit_set_remove(bit_set_t *b, unsigned int i) {
     if (!bit_set_contains(b, i)) {
         return false;
@@ -151,50 +148,43 @@ static inline bool bit_set_remove(bit_set_t *b, unsigned int i) {
 }
 
 //! \brief This function prints out an individual word of a bit_field,
-// as a sequence of ones and zeros.
+//!     as a sequence of ones and zeros.
 //! \param[in] e The word of a bit_field to be printed.
 //! \param[in] offset: the offset in id
 static inline void print_bit_field_entry_v2(uint32_t e, int offset) {
-    counter_t i = 32;
-
-    for ( ; i > 0; i--) {
+    for (counter_t i = 32 ; i > 0; i--) {
         log_debug("%d,%c", offset + i, ((e & 0x1) == 0) ? ' ' : '1');
         e >>= 1;
     }
 }
 
 //! \brief This function prints out an entire bit_field,
-// as a sequence of ones and zeros.
+//!     as a sequence of ones and zeros.
 //! \param[in] b The sequence of words representing a bit_field.
 //! \param[in] s The size of the bit_field.
 void print_bit_field_bits_v2(bit_field_t b, size_t s) {
     use(b);
     use(s);
-    int i; //!< For indexing through the bit field
-
-    for (i = s; i > 0; i--) {
+    for (int i = s; i > 0; i--) {
 	    print_bit_field_entry_v2(b[i], ((i - 1) * 32));
     }
 }
 
 //! \brief This function prints out an entire bit_field,
-// as a sequence of ones and zeros.
+//!     as a sequence of ones and zeros.
 //! \param[in] b The sequence of words representing a bit_field.
 //! \param[in] s The size of the bit_field.
 void print_bit_set_bits(bit_field_t b, int s) {
     use(b);
     use(s);
-
-    //!< For indexing through the bit field
-    int i;
-    for (i = s; i > 0; i--) {
+    for (int i = s; i > 0; i--) {
 	    print_bit_field_entry_v2(b[i], ((i - 1) * BITS_IN_A_WORD));
     }
 }
 
 //! \brief prints a bit set
 //! \param[in] b: the bitset to print
-void print_bit_set(bit_set_t b){
+void print_bit_set(bit_set_t b) {
     print_bit_set_bits(b._data, b.n_words);
 }
 

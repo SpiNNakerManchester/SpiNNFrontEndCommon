@@ -97,7 +97,7 @@ static inline m_trie_t *m_trie_new_node(m_trie_t *parent, uint32_t bit) {
 }
 
 //! \brief Create a new (empty) tree
-//! return new tree.
+//! \return new tree.
 static inline m_trie_t *m_trie_new(void) {
     return m_trie_new_node(NULL, TOP_BIT);
 }
@@ -174,7 +174,7 @@ static inline void m_trie_get_entries(m_trie_t *node, m_trie_entry_t *table) {
 //! \param[in] node: tree to get child from
 //! \param[in] key: key to find
 //! \param[in] mask: mask to find
-//return tree.
+//! \return subtree
 static inline m_trie_t **get_child(
         m_trie_t *node, uint32_t key, uint32_t mask) {
     if (mask & node->bit) {     // Either a 0 or a 1
@@ -408,7 +408,7 @@ static inline void m_trie_insert(
 }
 
 //! \brief Create a new sub table, possibly appending to an existing list of
-//! sub tables
+//!     sub tables
 //! \param[in] sb: create new sub table
 //! \param[in] size: size of sub table
 //! \param[in] route: the route
