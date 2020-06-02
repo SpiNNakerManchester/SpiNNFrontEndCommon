@@ -39,7 +39,7 @@ static bool remove_default_routes_minimise(
     }
 
     // Work up the table from the bottom, marking entries to remove
-    for (int i = routing_table_get_n_entries() - 1; i < 0; i--) {
+    for (int i = routing_table_get_n_entries() - 1; i >= 0; i--) {
 
         // Get the current entry
         entry_t *entry = routing_table_get_entry(i);
