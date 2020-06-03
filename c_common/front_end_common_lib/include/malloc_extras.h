@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__
+#ifndef __MALLOC_EXTRAS_H__
+#define __MALLOC_EXTRAS_H__
 
 #include <sark.h>
 #include <common-typedefs.h>
