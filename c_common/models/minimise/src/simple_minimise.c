@@ -65,31 +65,31 @@ static uint32_t routes_count;
 //! \param[in] entry2: The second route to merge.
 //! \return A new merged route that will eventually replace the two inputs.
 static inline entry_t merge(const entry_t* entry1, const entry_t* entry2) {
-    entry_t result;
-    result.key_mask = keymask_merge(entry1->key_mask, entry2->key_mask);
-    result.route = entry1->route;
-    if (entry1->source == entry2->source) {
-        result.source = entry1->source;
-    } else {
-        result.source = 0;
-    }
+    entry_t result = {
+        .keymask = keymask_merge(entry1->keymask, entry2->keymask),
+        .route = entry1->route,
+        .source = (entry1->source == entry2->source ? entry1->source : 0)
+    };
     return result;
 }
 
 //! \brief Finds if two routes can be merged.
+//! \details If they are merged, the entry at the index of left is also
+//!     replaced with the merged route.
 //! \param[in] left: The index of the first route to consider.
 //! \param[in] index: The index of the second route to consider.
-//! \return True if the entries were merged. If they are merged, the entry at
-//! the index of left is also replaced with the merged route.
+//! \return True if the entries were merged
 static inline bool find_merge(int left, int index) {
-    entry_t* entry1 = routing_table_sdram_stores_get_entry(left);
-    entry_t* entry2 = routing_table_sdram_stores_get_entry(index);
-    entry_t merged = merge(entry1, entry2);
+    const entry_t *entry1 = routing_table_sdram_stores_get_entry(left);
+    const entry_t *entry2 = routing_table_sdram_stores_get_entry(index);
+    const entry_t merged = merge(entry1, entry2);
+
     for (int check = remaining_index;
             check < routing_table_sdram_get_n_entries();
             check++) {
-        entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
-        if (keymask_intersect(check_entry->key_mask, merged.key_mask)) {
+        const entry_t *check_entry =
+                routing_table_sdram_stores_get_entry(check);
+        if (keymask_intersect(check_entry->keymask, merged.keymask)) {
             return false;
         }
     }

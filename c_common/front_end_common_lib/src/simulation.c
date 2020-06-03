@@ -70,7 +70,7 @@ static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 //! Whether the simulation uses the timer or not (default true)
 static bool uses_timer = true;
 
-//! \brief handles the storing of basic provenance data
+//! \brief Store basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
     //! gets access to the diagnostics object from SARK
@@ -87,7 +87,7 @@ static void *simulation_store_provenance_data(void) {
     return prov->provenance_data_elements;
 }
 
-//! \brief helper private method for running provenance data storage
+//! \brief Run the provenance data storage
 static void execute_provenance_storage(void) {
     if (prov != NULL) {
         log_info("Starting basic provenance gathering");
@@ -116,8 +116,8 @@ void simulation_handle_pause_resume(resume_callback_t callback) {
     execute_provenance_storage();
 }
 
-//! \brief a helper method for people not using the auto pause and
-//! resume functionality
+//! \brief Exit the application.
+//! \details Helper when not using the auto pause and resume functionality
 void simulation_exit(void) {
     simulation_handle_pause_resume(NULL);
 }
@@ -126,8 +126,7 @@ void simulation_ready_to_read(void) {
     sark_cpu_state(CPU_STATE_WAIT);
 }
 
-//! \brief method for sending OK response to the host when a command message
-//! is received.
+//! \brief Send an OK response to the host when a command message is received.
 //! \param[in] msg: the message object to send to the host.
 static void send_ok_response(sdp_msg_t *msg) {
     msg->cmd_rc = RC_OK;
@@ -156,9 +155,9 @@ static void synchronise_start(uint unused0, uint unused1) {
     }
 }
 
-//! \brief handles the new commands needed to resume the binary with a new
-//! runtime counter, as well as switching off the binary when it truly needs
-//! to be stopped.
+//! \brief Handle the new commands needed to resume the binary with a new
+//!     runtime counter, as well as switching off the binary when it truly
+//!     needs to be stopped.
 //! \param[in] mailbox: The mailbox containing the SDP packet received
 //! \param[in] port: The port on which the packet was received
 static void simulation_control_scp_callback(uint mailbox, uint port) {

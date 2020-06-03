@@ -29,8 +29,8 @@
 //! Note that this function will RTE if the memory cannot be allocated.
 //!
 //! \param[in] bytes: The number of bytes to allocate.
-//! \return The allocated memory block. _Never equal to NULL._ Always aligned
-//! to at least a word boundary.
+//! \return The allocated memory block. _Never equal to `NULL`._ Always aligned
+//!     to at least a word boundary.
 static inline void *safe_malloc(uint bytes)
 {
     void *p = sark_xalloc(sark.heap, bytes, 0, 0);

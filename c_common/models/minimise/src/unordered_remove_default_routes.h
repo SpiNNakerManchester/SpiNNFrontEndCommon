@@ -42,7 +42,7 @@ static inline bool _opposite_links(entry_t *entry) {
     return ((dst >> 3) == (src & 0x7) && (src >> 3) == (dst & 0x7));
 }
 
-//! \brief Removes defaultable routes from a routing table if that helps.
+//! \brief Remove defaultable routes from a routing table if that helps.
 //! \param[in,out] table: The table to remove the routes from.
 static inline void remove_default_routes_minimise(table_t *table) {
     // Work out if removing defaultable links is worthwhile
