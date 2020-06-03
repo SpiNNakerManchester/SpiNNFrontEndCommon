@@ -76,9 +76,6 @@ install-makefiles: $(INSTALL_MAKEFILES)
 $(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
 	$(INSTALL) -c -m644 $< $(SPINN_LIB_DIR)
 
-$(SPINN_LIB_DIR)/%.dict: $(SPINN_COMMON_BUILD)/%.dict
-	$(INSTALL) -c -m644 $< $(SPINN_LIB_DIR)
-
 $(SPINN_INC_DIR)/%.h: include/%.h
 	$(INSTALL) -c -m644 $< $(SPINN_INC_DIR)
 
@@ -90,7 +87,7 @@ clean:
 	rm -rf $(MODIFIED_DIR)
 
 install-clean:
-	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(SPINN_LIB_DIR)/*.dict $(SPINN_LIB_DIR)/*.ranges
+	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(SPINN_DIRS)/logs.sqlite3
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
