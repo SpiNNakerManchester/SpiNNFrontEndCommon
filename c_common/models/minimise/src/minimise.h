@@ -60,6 +60,9 @@
  * will be freed on exit by this application.
  */
 
+//! \brief flag for if a rtr_mc_set failure.
+#define RTR_MC_SET_FAILED 0
+
 //! \brief The table being manipulated.
 //!
 //! This is common across all the functions in this file.
@@ -89,7 +92,7 @@ static inline entry_t* routing_table_sdram_stores_get_entry(int index) {
 //! \param[in] index: Where to write it.
 static inline void put_entry(const entry_t* entry, int index) {
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(index);
-    e_ptr->keymask = entry->keymask;
+    e_ptr->key_mask = entry->key_mask;
     e_ptr->route = entry->route;
     e_ptr->source = entry->source;
 }
@@ -109,12 +112,12 @@ static inline void swap_entries(int a, int b) {
     log_debug("swap %u %u", a, b);
     entry_t temp = *routing_table_sdram_stores_get_entry(a);
     log_debug("before %u %u %u %u",
-            temp.keymask.key, temp.keymask.mask, temp.route, temp.source);
+            temp.key_mask.key, temp.key_mask.mask, temp.route, temp.source);
     put_entry(routing_table_sdram_stores_get_entry(b), a);
     put_entry(&temp, b);
     entry_t temp2 = *routing_table_sdram_stores_get_entry(b);
     log_debug("before %u %u %u %u",
-            temp2.keymask.key, temp2.keymask.mask, temp2.route, temp2.source);
+            temp2.key_mask.key, temp2.key_mask.mask, temp2.route, temp2.source);
 }
 
 //! \brief prints the header object for debug purposes
@@ -161,8 +164,13 @@ bool load_routing_table(uint32_t app_id) {
     for (uint32_t i = 0; i < table->size; i++) {
         entry_t entry = table->entries[i];
         uint32_t route = entry.route | (app_id << 24);
-        rtr_mc_set(entry_id + i, entry.keymask.key, entry.keymask.mask,
-                route);
+        uint success = rtr_mc_set(
+            entry_id + i, entry.key_mask.key, entry.key_mask.mask, route);
+        if (success == RTR_MC_SET_FAILED) {
+            log_error(
+                "failed to set a router table entry at index %d",
+                entry_id + i);
+        }
     }
 
     // Indicate we were able to allocate routing table entries.

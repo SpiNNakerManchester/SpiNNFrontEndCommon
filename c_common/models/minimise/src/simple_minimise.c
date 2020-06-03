@@ -28,6 +28,12 @@
  * The memory address with tag "1" is expected contain the following struct
  * (entry_t is defined in `routing_table.h` but is described below).
  */
+#include <spin1_api.h>
+#include <debug.h>
+#include <common-typedefs.h>
+#include <malloc_extras.h>
+#include "unordered_remove_default_routes.h"
+#include "minimise.h"
 
 #include <spin1_api.h>
 #include <debug.h>
@@ -60,7 +66,7 @@ static uint32_t routes_count;
 //! \return A new merged route that will eventually replace the two inputs.
 static inline entry_t merge(const entry_t* entry1, const entry_t* entry2) {
     entry_t result;
-    result.keymask = keymask_merge(entry1->keymask, entry2->keymask);
+    result.key_mask = keymask_merge(entry1->key_mask, entry2->key_mask);
     result.route = entry1->route;
     if (entry1->source == entry2->source) {
         result.source = entry1->source;
@@ -83,7 +89,7 @@ static inline bool find_merge(int left, int index) {
             check < routing_table_sdram_get_n_entries();
             check++) {
         entry_t* check_entry = routing_table_sdram_stores_get_entry(check);
-        if (keymask_intersect(check_entry->keymask, merged.keymask)) {
+        if (keymask_intersect(check_entry->key_mask, merged.key_mask)) {
             return false;
         }
     }
@@ -162,7 +168,8 @@ static void quicksort_table(int low, int high) {
         int h_write = high - 1;
 
         while (check <= h_write) {
-            uint32_t check_route = routing_table_sdram_stores_get_entry(check)->route;
+            uint32_t check_route =
+                    routing_table_sdram_stores_get_entry(check)->route;
             int compare = compare_routes(check_route, pivot);
             if (compare < 0) {
                 // swap the check to the left, and then
@@ -302,7 +309,8 @@ static inline void simple_minimise(uint32_t target_length) {
         uint32_t left_route = routing_table_sdram_stores_get_entry(left)->route;
         log_info("A %u %u %u %u", left, max_index, right, left_route);
         while ((right < table_size - 1) &&
-                routing_table_sdram_stores_get_entry(right+1)->route == left_route) {
+                routing_table_sdram_stores_get_entry(right+1)->route ==
+                        left_route) {
             right++;
         }
         remaining_index = right + 1;
@@ -318,8 +326,8 @@ static inline void simple_minimise(uint32_t target_length) {
 }
 
 //! \brief Minimises the routing table.
-//! \param[in] target_length: How many entries we want the table to have after
-//!                           minimisation
+//! \param[in] target_length:
+//!     How many entries we want the table to have after minimisation
 void minimise(uint32_t target_length) {
     simple_minimise(target_length);
 }
@@ -327,6 +335,7 @@ void minimise(uint32_t target_length) {
 //! \brief the main entrance.
 void c_main(void) {
     log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
+    malloc_extras_turn_off_safety();
 
     // kick-start the process
     spin1_schedule_callback(compress_start, 0, 0, 3);
