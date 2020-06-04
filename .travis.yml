@@ -14,10 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 language: python
-python:
-  - 2.7
-  - 3.6
-  - 3.7
+jobs:
+  include:
+    - name: Py3.6 (and doc deploy)
+      python: 3.6
+      env:
+        - DEPLOY_DIR=$PWD/deploy
+    - name: Py3.7
+      python: 3.7
+    - name: Py2.7 (legacy)
+      python: 2.7
 dist: xenial
 addons:
   apt:
@@ -52,6 +58,9 @@ before_install:
   - support/gitclone.sh https://github.com/SpiNNakerManchester/spinnaker_tools.git
   - support/gitclone.sh https://github.com/SpiNNakerManchester/spinn_common.git
   - export SPINN_DIRS=$PWD/spinnaker_tools
+  - ROOT_DOC_DIR=$PWD/doc/global
+  - C_DOC_DIR=$PWD/c_common/html
+  - PY_DOC_DIR=$PWD/doc/source/_build/html
 
 install:
   # These things ought to be enough
@@ -88,3 +97,28 @@ script:
 after_success:
   - cd $TRAVIS_BUILD_DIR
   - coveralls
+
+before_deploy:
+  # Merge the doc trees
+  - >
+    [ -d $ROOT_DOC_DIR ] && cp -vaT $ROOT_DOC_DIR $DEPLOY_DIR
+  - >
+    [ -d $C_DOC_DIR ] && cp -vaT $C_DOC_DIR $DEPLOY_DIR/c
+  - >
+    [ -d $PY_DOC_DIR ] && cp -vaT $PY_DOC_DIR $DEPLOY_DIR/python
+after_deploy:
+  - rm -rf $DEPLOY_DIR
+deploy:
+  provider: pages
+  skip_cleanup: true
+  keep_history: true
+  # Inject magic environment variable from Travis Job Configuration page
+  token: $GITHUB_TOKEN
+  local_dir: $DEPLOY_DIR
+  on:
+    branch:
+      - master
+      - doxygen
+    python: 3.6
+    # Only enable deployment if we actually have supplied a token
+    condition: -n "$GITHUB_TOKEN"
