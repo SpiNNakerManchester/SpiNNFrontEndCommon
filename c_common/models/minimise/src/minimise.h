@@ -58,33 +58,36 @@
  * will be freed on exit by this application.
  */
 
+//! \brief flag for if a rtr_mc_set failure.
+#define RTR_MC_SET_FAILED 0
+
 table_t *table;
 
-static inline int Routing_table_sdram_get_n_entries(){
+static inline int Routing_table_sdram_get_n_entries(void) {
     return table->size;
 }
 
-static inline void routing_table_remove_from_size(int size_to_remove){
+static inline void routing_table_remove_from_size(int size_to_remove) {
     table->size -= size_to_remove;
 }
 
-static inline entry_t* routing_table_sdram_stores_get_entry(int index){
+static inline entry_t* routing_table_sdram_stores_get_entry(int index) {
     return &table->entries[index];
 }
 
-static inline void put_entry(entry_t* entry, int index){
+static inline void put_entry(entry_t* entry, int index) {
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(index);
     e_ptr->keymask = entry->keymask;
     e_ptr->route = entry->route;
     e_ptr->source = entry->source;
 }
 
-static inline void copy_entry(int new_index, int old_index){
+static inline void copy_entry(int new_index, int old_index) {
     entry_t* e_ptr = routing_table_sdram_stores_get_entry(old_index);
     put_entry(e_ptr, new_index);
 }
 
-static inline void swap_entries(int a, int b){
+static inline void swap_entries(int a, int b) {
     log_debug("swap %u %u", a, b);
     entry_t temp = *routing_table_sdram_stores_get_entry(a);
     log_debug("before %u %u %u %u", temp.keymask.key, temp.keymask.mask,
@@ -145,8 +148,13 @@ bool load_routing_table(uint32_t app_id) {
     for (uint32_t i = 0; i < table->size; i++) {
         entry_t entry = table->entries[i];
         uint32_t route = entry.route | (app_id << 24);
-        rtr_mc_set(entry_id + i, entry.keymask.key, entry.keymask.mask,
-                route);
+        uint success = rtr_mc_set(
+            entry_id + i, entry.keymask.key, entry.keymask.mask, route);
+        if (success == RTR_MC_SET_FAILED) {
+            log_error(
+                "failed to set a router table entry at index %d",
+                entry_id + i);
+        }
     }
 
     // Indicate we were able to allocate routing table entries.
@@ -172,7 +180,12 @@ void cleanup_and_exit(header_t *header) {
 void minimise(uint32_t target_length);
 
 //! \brief the callback for setting off the router compressor
-void compress_start() {
+//! \param[in] unused0: param 1 forced on us from api
+//! \param[in] unused1: param 2 forced on us from api
+void compress_start(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+
     uint32_t size_original;
 
     log_info("Starting on chip router compressor");

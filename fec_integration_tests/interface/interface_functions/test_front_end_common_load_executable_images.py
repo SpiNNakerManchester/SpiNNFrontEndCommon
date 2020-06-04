@@ -16,9 +16,9 @@
 import unittest
 from collections import defaultdict
 from spinnman.transceiver import Transceiver
-from pacman.model.placements import Placement
+from spinnman.model import ExecutableTargets
 from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+    ExecutableType)
 from spinn_front_end_common.interface.interface_functions import (
     LoadExecutableImages)
 
@@ -57,12 +57,12 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         transceiver = _MockTransceiver(self)
         loader = LoadExecutableImages()
         targets = ExecutableTargets()
-        targets.place_binary("test.aplx", Placement(None, 0, 0, 0), SIM)
-        targets.place_binary("test.aplx", Placement(None, 0, 0, 1), SIM)
-        targets.place_binary("test.aplx", Placement(None, 0, 0, 2), SIM)
-        targets.place_binary("test2.aplx", Placement(None, 0, 1, 0), SIM)
-        targets.place_binary("test2.aplx", Placement(None, 0, 1, 1), SIM)
-        targets.place_binary("test2.aplx", Placement(None, 0, 1, 2), SIM)
+        targets.add_processor("test.aplx", 0, 0, 0, SIM)
+        targets.add_processor("test.aplx", 0, 0, 1, SIM)
+        targets.add_processor("test.aplx", 0, 0, 2, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 0, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 1, SIM)
+        targets.add_processor("test2.aplx", 0, 1, 2, SIM)
         loader.load_app_images(targets, 30, transceiver)
 
 
