@@ -188,6 +188,7 @@ static inline void write_short(void *base, uint32_t index, uint32_t value) {
 }
 
 //! \brief Get how many events there are waiting to be sent
+//! \return The number of events waiting
 static inline uint8_t get_event_count(void) {
     uint8_t event_count = buffer_index;
     // If there are payloads, it takes two buffer values to encode them

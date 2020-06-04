@@ -18,8 +18,6 @@
 /*! \file
  *  \brief interface for recording data into "channels" on the SDRAM in a
  *         standard way, and storing buffers to be extracted during execution
- *
- *
  */
 
 #ifndef _RECORDING_H_
@@ -189,8 +187,9 @@ void recording_reset(void);
 //! \param[in] time: the current simulation time
 void recording_do_timestep_update(timer_t time);
 
-//! \brief Call once per step to ensure buffering is done - should only
-//!        be called if recording flags is not 0
+//! \brief Call once per step to ensure buffering is done
+//! \details should only be called if recording flags is not 0
+//! \param[in] step: the current simulation time
 static inline void recording_do_step_update(uint32_t step) {
     // Simply call the timestep version as this does the same thing;
     // This "copy" exists to make the interface nicer for untimed models

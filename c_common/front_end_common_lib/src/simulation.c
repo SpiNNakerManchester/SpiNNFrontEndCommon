@@ -29,12 +29,13 @@
 
 // Import things from spin1_api that are not explicitly exposed //
 
-//! Wait for interrupt - will return to just after this point after an
-//! interrupt has been raised
+//! \brief Wait for interrupt.
+//! \details Will return to just after this point after an
+//!     interrupt has been raised.
 extern void spin1_wfi(void);
 
-//! Indicate whether the SYNC signal has been received.  Return 0 (false) if
-//! not received and 1 (true) if received.
+//! \brief Indicate whether the SYNC signal has been received.
+//! \return 0 (false) if not received and 1 (true) if received.
 extern uint resume_wait(void);
 
 //! the pointer to the simulation time used by application models
@@ -140,6 +141,9 @@ static void send_ok_response(sdp_msg_t *msg) {
     spin1_send_sdp_msg(msg, 10);
 }
 
+//! \brief Callback when starting after synchronise
+//! \param unused0: unused
+//! \param unused1: unused
 static void synchronise_start(uint unused0, uint unused1) {
     while (resume_wait()) {
         spin1_wfi();

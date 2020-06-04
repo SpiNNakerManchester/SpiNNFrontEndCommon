@@ -313,10 +313,11 @@ static void recording_write_one_chunk(
 //! \param[in] channel: Which channel is being recorded to.
 //! \param[in] data: Pointer to what is being recorded.
 //! \param[in] length: Length of data to record.
-//! \param[in] callback: Optional callback. If not `NULL`, the recording will be
-//!                      done asynchronously by DMA and this callback will be
-//!                      called once the write is finished. If `NULL`, the
-//!                      recording will be done synchronously.
+//! \param[in] callback: Optional callback. If not `NULL`, the recording will
+//!     be done asynchronously by DMA and this callback will be called once the
+//!     write is finished. If `NULL`, the recording will be done synchronously.
+//! \return True if the recording was successfully written or enqueued for
+//!     writing.
 static inline bool recording_write_memory(
         uint8_t channel, void *data, uint32_t length,
         recording_complete_callback_t callback) {
