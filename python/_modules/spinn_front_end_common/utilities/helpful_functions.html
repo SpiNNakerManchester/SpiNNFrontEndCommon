@@ -1,0 +1,506 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.utilities.helpful_functions &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.helpful_functions</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="n">AbstractHasAssociatedBinary</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
+<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
+<span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
+<span class="kn">from</span> <span class="nn">spinnman.model.cpu_infos</span> <span class="kn">import</span> <span class="n">CPUInfos</span>
+<span class="kn">from</span> <span class="nn">data_specification</span> <span class="kn">import</span> <span class="n">utility_calls</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+<span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="locate_extra_monitor_mc_receiver"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">[docs]</a><span class="k">def</span> <span class="nf">locate_extra_monitor_mc_receiver</span><span class="p">(</span>
+        <span class="n">machine</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span>
+        <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param machine: The machine descriptor</span>
+<span class="sd">    :type machine: ~spinn_machine.Machine</span>
+<span class="sd">    :param placement_x: The X coordinate of the reference chip</span>
+<span class="sd">    :type placement_x: int</span>
+<span class="sd">    :param placement_y: The Y coordinate of the reference chip</span>
+<span class="sd">    :type placement_y: int</span>
+<span class="sd">    :param packet_gather_cores_to_ethernet_connection_map:</span>
+<span class="sd">    :type: dict(tuple(int,int),?)</span>
+<span class="sd">    :rtype: ?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">[</span>
+        <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">data_format</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Reads and converts a single data item from memory</span>
+
+<span class="sd">    :param x: chip x</span>
+<span class="sd">    :type x: int</span>
+<span class="sd">    :param y: chip y</span>
+<span class="sd">    :type y: int</span>
+<span class="sd">    :param address: base address of the SDRAM chip to read</span>
+<span class="sd">    :type address: int</span>
+<span class="sd">    :param length: length to read</span>
+<span class="sd">    :type length: int</span>
+<span class="sd">    :param data_format: the format to read memory (see `struct.pack`)</span>
+<span class="sd">    :type data_format: str</span>
+<span class="sd">    :param transceiver: the SpinnMan interface</span>
+<span class="sd">    :type transceiver: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-arguments</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data_format</span><span class="p">,</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="write_address_to_user0"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user0">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user0</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Writes the given address into the user_0 register of the given core.</span>
+
+<span class="sd">    :param txrx: The transceiver.</span>
+<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    :param x: Chip coordinate.</span>
+<span class="sd">    :type x: int</span>
+<span class="sd">    :param y: Chip coordinate.</span>
+<span class="sd">    :type y: int</span>
+<span class="sd">    :param p: Core ID on chip.</span>
+<span class="sd">    :type p: int</span>
+<span class="sd">    :param address: Value to write (32-bit integer)</span>
+<span class="sd">    :type address: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_0_address</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_user_0_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_0_address</span><span class="p">,</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">address</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the address of a region for a placement</span>
+
+<span class="sd">    :param region: the region to locate the base address of</span>
+<span class="sd">    :type region: int</span>
+<span class="sd">    :param placement: the placement object to get the region address of</span>
+<span class="sd">    :type placement: ~pacman.model.placements.Placement</span>
+<span class="sd">    :param transceiver: the python interface to the SpiNNaker machine</span>
+<span class="sd">    :type transceiver: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">regions_base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
+        <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Get the position of the region in the pointer table</span>
+    <span class="n">region_offset</span> <span class="o">=</span> <span class="n">utility_calls</span><span class="o">.</span><span class="n">get_region_base_address_offset</span><span class="p">(</span>
+        <span class="n">regions_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+
+    <span class="c1"># Get the actual address of the region</span>
+    <span class="n">region_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+        <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_offset</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">region_address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="convert_string_into_chip_and_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_string_into_chip_and_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_string_into_chip_and_core_subset</span><span class="p">(</span><span class="n">cores</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Translate a string list of cores into a core subset</span>
+
+<span class="sd">    :param cores:\</span>
+<span class="sd">        string representing down cores formatted as x,y,p[:x,y,p]*</span>
+<span class="sd">    :type cores: str or None</span>
+<span class="sd">    :rtype: ~spinn_machine.CoreSubsets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ignored_cores</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">cores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cores</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">downed_core</span> <span class="ow">in</span> <span class="n">cores</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">processor_id</span> <span class="o">=</span> <span class="n">downed_core</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="n">ignored_cores</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">processor_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ignored_cores</span></div>
+
+
+<div class="viewcode-block" id="flood_fill_binary_to_spinnaker"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker">[docs]</a><span class="k">def</span> <span class="nf">flood_fill_binary_to_spinnaker</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; flood fills a binary to spinnaker on a given app_id \</span>
+<span class="sd">    given the executable targets and binary.</span>
+
+<span class="sd">    :param executable_targets: the executable targets object</span>
+<span class="sd">    :type executable_targets: ExecutableTargets</span>
+<span class="sd">    :param binary: the (name of the) binary to flood fill</span>
+<span class="sd">    :type binary: str</span>
+<span class="sd">    :param txrx: spinnman instance</span>
+<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    :param app_id: the app id to load it on</span>
+<span class="sd">    :type app_id: int</span>
+<span class="sd">    :return: the number of cores it was loaded onto</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">core_subset</span> <span class="o">=</span> <span class="n">executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
+    <span class="n">txrx</span><span class="o">.</span><span class="n">execute_flood</span><span class="p">(</span>
+        <span class="n">core_subset</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_filename</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">core_subset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_config"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_config">[docs]</a><span class="k">def</span> <span class="nf">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the string value of a config item, returning None if the value\</span>
+<span class="sd">        is &quot;None&quot;</span>
+
+<span class="sd">    :param config: The configuration to look things up in.</span>
+<span class="sd">    :param section: The section name</span>
+<span class="sd">    :type section: str</span>
+<span class="sd">    :param item: The item name.</span>
+<span class="sd">    :type item: str</span>
+<span class="sd">    :rtype: str or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="read_config_int"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_config_int">[docs]</a><span class="k">def</span> <span class="nf">read_config_int</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the integer value of a config item, returning None if the value\</span>
+<span class="sd">        is &quot;None&quot;</span>
+
+<span class="sd">    :param config: The configuration to look things up in.</span>
+<span class="sd">    :param section: The section name</span>
+<span class="sd">    :type section: str</span>
+<span class="sd">    :param item: The item name.</span>
+<span class="sd">    :type item: str</span>
+<span class="sd">    :rtype: int or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<span class="n">_BOOLEAN_STATES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;true&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;yes&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;false&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="read_config_boolean"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_config_boolean">[docs]</a><span class="k">def</span> <span class="nf">read_config_boolean</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the boolean value of a config item, returning None if the value\</span>
+<span class="sd">        is &quot;None&quot;</span>
+
+<span class="sd">    :param config: The configuration to look things up in.</span>
+<span class="sd">    :param section: The section name</span>
+<span class="sd">    :type section: str</span>
+<span class="sd">    :param item: The item name.</span>
+<span class="sd">    :type item: str</span>
+<span class="sd">    :rtype: bool or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">_BOOLEAN_STATES</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_BOOLEAN_STATES</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown boolean value </span><span class="si">{}</span><span class="s2"> in configuration </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="generate_unique_folder_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.generate_unique_folder_name">[docs]</a><span class="k">def</span> <span class="nf">generate_unique_folder_name</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">extension</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generate a unique file name with a given extension in a given folder</span>
+
+<span class="sd">    :param folder: where to put this unique file</span>
+<span class="sd">    :type folder: str</span>
+<span class="sd">    :param filename: the name of the first part of the file without extension</span>
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param extension: extension of the file</span>
+<span class="sd">    :type extension: str</span>
+<span class="sd">    :return: file path with a unique addition</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">new_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">extension</span><span class="p">))</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_file_path</span><span class="p">):</span>
+        <span class="n">new_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">extension</span><span class="p">))</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">new_file_path</span></div>
+
+
+<div class="viewcode-block" id="get_ethernet_chip"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.get_ethernet_chip">[docs]</a><span class="k">def</span> <span class="nf">get_ethernet_chip</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">board_address</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Locate the chip with the given board IP address</span>
+
+<span class="sd">    :param machine: the SpiNNaker machine</span>
+<span class="sd">    :type machine: ~spinn_machine.Machine</span>
+<span class="sd">    :param board_address: the board address to locate the chip of.</span>
+<span class="sd">    :type board_address: str</span>
+<span class="sd">    :return: The chip that supports that board address</span>
+<span class="sd">    :rtype: ~spinn_machine.Chip</span>
+<span class="sd">    :raises ConfigurationException:\</span>
+<span class="sd">        when that board address has no chip associated with it</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span> <span class="o">==</span> <span class="n">board_address</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">chip</span>
+    <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+        <span class="s2">&quot;cannot find the Ethernet connected chip with the board address </span><span class="si">{}</span><span class="s2">&quot;</span>
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">board_address</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="convert_time_diff_to_total_milliseconds"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_time_diff_to_total_milliseconds">[docs]</a><span class="k">def</span> <span class="nf">convert_time_diff_to_total_milliseconds</span><span class="p">(</span><span class="n">sample</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Convert between a time diff and total milliseconds.</span>
+
+<span class="sd">    :return: total milliseconds</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="determine_flow_states"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.determine_flow_states">[docs]</a><span class="k">def</span> <span class="nf">determine_flow_states</span><span class="p">(</span><span class="n">executable_types</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the start and end states for these executable types.</span>
+
+<span class="sd">    :param executable_types: \</span>
+<span class="sd">        the execute types to locate start and end states from</span>
+<span class="sd">    :type executable_types: dict(ExecutableType,any)</span>
+<span class="sd">    :param no_sync_changes: the number of times sync signals been sent</span>
+<span class="sd">    :type no_sync_changes: int</span>
+<span class="sd">    :return: dict of executable type to states.</span>
+<span class="sd">    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),\</span>
+<span class="sd">        dict(ExecutableType,~spinnman.model.enums.CPUState))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">expected_start_states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">expected_end_states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">start_type</span> <span class="ow">in</span> <span class="n">executable_types</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+        <span class="c1"># cores that ignore all control and are just running</span>
+        <span class="k">if</span> <span class="n">start_type</span> <span class="o">==</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+            <span class="n">expected_start_states</span><span class="p">[</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">CPUState</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">]</span>
+            <span class="n">expected_end_states</span><span class="p">[</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">CPUState</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">]</span>
+
+        <span class="c1"># cores that require a sync barrier</span>
+        <span class="k">elif</span> <span class="n">start_type</span> <span class="o">==</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span><span class="p">:</span>
+            <span class="n">expected_start_states</span><span class="p">[</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">SYNC0</span><span class="p">]</span>
+            <span class="n">expected_end_states</span><span class="p">[</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">]</span>
+
+        <span class="c1"># cores that use our sim interface</span>
+        <span class="k">elif</span> <span class="n">start_type</span> <span class="o">==</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">no_sync_changes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">expected_start_states</span><span class="p">[</span><span class="n">start_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">SYNC0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">expected_start_states</span><span class="p">[</span><span class="n">start_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">SYNC1</span><span class="p">]</span>
+            <span class="n">expected_end_states</span><span class="p">[</span><span class="n">start_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">]</span>
+
+    <span class="c1"># if no states, go boom.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">expected_start_states</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+            <span class="s2">&quot;Unknown executable start types </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">executable_types</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">expected_start_states</span><span class="p">,</span> <span class="n">expected_end_states</span></div>
+
+
+<div class="viewcode-block" id="convert_vertices_to_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_vertices_to_core_subset</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Converts vertices into core subsets.</span>
+
+<span class="sd">    :param vertices: the vertices to convert to core subsets</span>
+<span class="sd">    :param placements: the placements object</span>
+<span class="sd">    :type placements: ~pacman.model.placements.Placements</span>
+<span class="sd">    :return: the CoreSubSets of the vertices</span>
+<span class="sd">    :rtype: ~spinn_machine.CoreSubsets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="n">core_subsets</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">core_subsets</span></div>
+
+
+<div class="viewcode-block" id="find_executable_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.find_executable_start_type">[docs]</a><span class="k">def</span> <span class="nf">find_executable_start_type</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="n">graph_mapper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">app_vertex</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+    <span class="c1"># pylint: disable=broad-except</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rte_count</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span>
+            <span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">)</span>
+        <span class="n">watchdog_count</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rte_count</span> <span class="ow">or</span> <span class="n">watchdog_count</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;unexpected core states (rte=</span><span class="si">{}</span><span class="s2">, wdog=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">),</span>
+                <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Could not read the status count - going to individual cores&quot;</span><span class="p">)</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">()</span>
+        <span class="n">infos</span> <span class="o">=</span> <span class="n">CPUInfos</span><span class="p">()</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">chip</span><span class="o">.</span><span class="n">processors</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">info</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
+                        <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">state</span> <span class="ow">in</span> <span class="p">(</span>
+                            <span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">):</span>
+                        <span class="n">infos</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">txrx</span><span class="o">.</span><span class="n">get_core_status_string</span><span class="p">(</span><span class="n">infos</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not read information from cores </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">errors</span><span class="p">))</span>
+
+
+<span class="c1"># TRICKY POINT: Have to delay the import to here because of import circularity</span>
+<span class="k">def</span> <span class="nf">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="c1"># pylint: disable=protected-access</span>
+    <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span>
+    <span class="n">extractor</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span>
+        <span class="n">recovery_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">filename_template</span><span class="o">=</span><span class="s2">&quot;emergency_iobuf_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.txt&quot;</span><span class="p">)</span>
+    <span class="n">extractor</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">sim</span><span class="o">.</span><span class="n">_executable_finder</span><span class="p">,</span>
+              <span class="n">sim</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">,</span> <span class="n">sim</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="emergency_recover_state_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_state_from_failure</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
+<span class="sd">    goes badly wrong. Not a replacement for what abstract spinnaker base does.</span>
+
+<span class="sd">    :param txrx: The transceiver.</span>
+<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    :param app_id: The ID of the application.</span>
+<span class="sd">    :type app_id: int</span>
+<span class="sd">    :param vertex: The vertex to retrieve the IOBUF from if it is suspected\</span>
+<span class="sd">        as being dead</span>
+<span class="sd">    :type vertex: \</span>
+<span class="sd">        ~spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span>
+<span class="sd">    :param placement: Where the vertex is located.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=protected-access</span>
+    <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">ExecutableTargets</span><span class="p">()</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">_executable_finder</span><span class="o">.</span><span class="n">get_executable_path</span><span class="p">(</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">())</span>
+    <span class="n">target</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span>
+        <span class="n">path</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">())</span>
+    <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="emergency_recover_states_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_states_from_failure</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
+<span class="sd">    goes badly wrong. Not a replacement for what abstract spinnaker base does.</span>
+
+<span class="sd">    :param txrx: The transceiver.</span>
+<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    :param app_id: The ID of the application.</span>
+<span class="sd">    :type app_id: int</span>
+<span class="sd">    :param executable_targets: The what/where mapping</span>
+<span class="sd">    :type executable_targets: ExecutableTargets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
+    <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

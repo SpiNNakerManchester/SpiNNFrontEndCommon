@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.interface_functions.hbp_allocator &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.hbp_allocator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MachineAllocationController</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractMachineAllocationController</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="n">PacmanConfigurationException</span>
+
+
+<span class="k">class</span> <span class="nc">_HBPJobController</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># the URLs to call the HBP system</span>
+        <span class="s2">&quot;_extend_lease_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_check_lease_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_release_machine_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_set_power_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_where_is_url&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_machine_name&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_power_on&quot;</span>
+    <span class="p">]</span>
+
+    <span class="n">_WAIT_TIME_MS</span> <span class="o">=</span> <span class="mi">10000</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extend_lease_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/extendLease&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_lease_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/checkLease&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_release_machine_url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_power_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/power&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_where_is_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/chipCoordinates&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_name</span> <span class="o">=</span> <span class="n">machine_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_power_on</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Lower the level of requests to WARNING to avoid extra messages</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;requests&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_HBPJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;HBPJobController&quot;</span><span class="p">)</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">extend_allocation</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">extend_allocation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_total_run_time</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extend_lease_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;runTime&quot;</span><span class="p">:</span> <span class="n">new_total_run_time</span><span class="p">})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_lease</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait_time</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_check_lease_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;waitTime&quot;</span><span class="p">:</span> <span class="n">wait_time</span><span class="p">})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_release_machine_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;machineName&quot;</span><span class="p">:</span> <span class="n">machine_name</span><span class="p">})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">,</span> <span class="n">power_on</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_power_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;machineName&quot;</span><span class="p">:</span> <span class="n">machine_name</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">power_on</span><span class="p">)})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_where_is</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_where_is_url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;machineName&quot;</span><span class="p">:</span> <span class="n">machine_name</span><span class="p">,</span> <span class="s2">&quot;chipX&quot;</span><span class="p">:</span> <span class="n">chip_x</span><span class="p">,</span>
+            <span class="s2">&quot;chipY&quot;</span><span class="p">:</span> <span class="n">chip_y</span><span class="p">})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_HBPJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_release</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_name</span><span class="p">)</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="o">.</span><span class="n">_teardown</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_release</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_power_on</span>
+
+    <span class="k">def</span> <span class="nf">set_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_power</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_name</span><span class="p">,</span> <span class="n">power</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_power_on</span> <span class="o">=</span> <span class="n">power</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">where_is_machine</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">where_is_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_where_is</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine_name</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="o">.</span><span class="n">_wait</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_lease</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_WAIT_TIME_MS</span><span class="p">)[</span><span class="s2">&quot;allocated&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="HBPAllocator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HBPAllocator">[docs]</a><span class="k">class</span> <span class="nc">HBPAllocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Request a machine from the HBP remote access server that will fit\</span>
+<span class="sd">        a number of chips.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">hbp_server_url</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">,</span> <span class="n">n_chips</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_boards</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param hbp_server_url: \</span>
+<span class="sd">            The URL of the HBP server from which to get the machine</span>
+<span class="sd">        :param total_run_time: The total run time to request</span>
+<span class="sd">        :param n_chips: The number of chips required.</span>
+<span class="sd">            Only used if n_boards is None</span>
+<span class="sd">        :param n_boards: The number of boards required</span>
+<span class="sd">        :raises PacmanConfigurationException:</span>
+<span class="sd">            If neither n_chips or n_baords provided</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">hbp_server_url</span>
+        <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">n_chips</span><span class="p">,</span> <span class="n">n_boards</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
+        <span class="n">hbp_job_controller</span> <span class="o">=</span> <span class="n">_HBPJobController</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">machine</span><span class="p">[</span><span class="s2">&quot;machineName&quot;</span><span class="p">])</span>
+
+        <span class="n">bmp_details</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s2">&quot;bmp_details&quot;</span> <span class="ow">in</span> <span class="n">machine</span><span class="p">:</span>
+            <span class="n">bmp_details</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s2">&quot;bmpDetails&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">machine</span><span class="p">[</span><span class="s2">&quot;machineName&quot;</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">machine</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]),</span>
+            <span class="n">bmp_details</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">hbp_job_controller</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">n_chips</span><span class="p">,</span> <span class="n">n_boards</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">n_boards</span><span class="p">:</span>
+            <span class="n">get_machine_request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;nBoards&quot;</span><span class="p">:</span> <span class="n">n_boards</span><span class="p">,</span> <span class="s2">&quot;runTime&quot;</span><span class="p">:</span> <span class="n">total_run_time</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="n">n_chips</span><span class="p">:</span>
+            <span class="n">get_machine_request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;nChips&quot;</span><span class="p">:</span> <span class="n">n_chips</span><span class="p">,</span> <span class="s2">&quot;runTime&quot;</span><span class="p">:</span> <span class="n">total_run_time</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PacmanConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;At least one of n_chips or n_boards must be provided&quot;</span><span class="p">)</span>
+
+        <span class="n">get_machine_request</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">get_machine_request</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

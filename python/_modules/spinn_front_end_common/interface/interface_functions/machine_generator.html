@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.interface_functions.machine_generator &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.machine_generator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">spinnman.connections</span> <span class="kn">import</span> <span class="n">SocketAddressWithChip</span>
+<span class="kn">from</span> <span class="nn">spinnman.transceiver</span> <span class="kn">import</span> <span class="n">create_transceiver_from_hostname</span>
+<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">BMPConnectionData</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+
+
+<div class="viewcode-block" id="MachineGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineGenerator">[docs]</a><span class="k">class</span> <span class="nc">MachineGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Makes a transceiver and a :py:class:`~spinn_machine.Machine` object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span> <span class="n">downed_chips</span><span class="p">,</span> <span class="n">downed_cores</span><span class="p">,</span>
+            <span class="n">downed_links</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span> <span class="n">auto_detect_bmp</span><span class="p">,</span>
+            <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">boot_port_num</span><span class="p">,</span> <span class="n">reset_machine_on_start_up</span><span class="p">,</span>
+            <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repair_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param hostname: the hostname or IP address of the SpiNNaker machine</span>
+<span class="sd">        :param bmp_details: the details of the BMP connections</span>
+<span class="sd">        :param downed_chips: \</span>
+<span class="sd">            the chips that are down which SARK thinks are alive</span>
+<span class="sd">        :param downed_cores: \</span>
+<span class="sd">            the cores that are down which SARK thinks are alive</span>
+<span class="sd">        :param board_version: the version of the boards being used within the\</span>
+<span class="sd">            machine (1, 2, 3, 4 or 5)</span>
+<span class="sd">        :param auto_detect_bmp: \</span>
+<span class="sd">            Whether the BMP should be automatically determined</span>
+<span class="sd">        :type auto_detect_bmp: bool</span>
+<span class="sd">        :param boot_port_num: the port number used for the boot connection</span>
+<span class="sd">        :type boot_port_num: int</span>
+<span class="sd">        :param scamp_connection_data: \</span>
+<span class="sd">            the list of SC&amp;MP connection data or None</span>
+<span class="sd">        :param max_sdram_size: the maximum SDRAM each chip can say it has\</span>
+<span class="sd">            (mainly used in debugging purposes)</span>
+<span class="sd">        :type max_sdram_size: int or None</span>
+<span class="sd">        :type reset_machine_on_start_up: bool</span>
+<span class="sd">        :param repair_machine: Flag to set the behaviour if a repairable error</span>
+<span class="sd">            is found on the machine.</span>
+<span class="sd">            If true will create a machine without the problematic bits.</span>
+<span class="sd">            (See machine_factory.machine_repair)</span>
+<span class="sd">            If False get machine will raise an Exception if a problematic</span>
+<span class="sd">            machine is discovered.</span>
+<span class="sd">        :type repair_machine: bool</span>
+<span class="sd">        :param ignore_bad_ethernets: Flag to say that ip_address information</span>
+<span class="sd">            on non-ethernet chips should be ignored.</span>
+<span class="sd">            None_ethernet chips are defined here as ones that do not report</span>
+<span class="sd">            themselves their nearest ethernet.</span>
+<span class="sd">            The bad IP address is always logged.</span>
+<span class="sd">            If True, the IP address is ignored.</span>
+<span class="sd">            If False, the chip with the bad IP address is removed.</span>
+<span class="sd">        :type ignore_bad_ethernets: bool</span>
+<span class="sd">        :return: Connection details and Transceiver</span>
+<span class="sd">        :rtype: tuple(~spinnman.transceiver.Transceiver, \</span>
+<span class="sd">            ~spinn_machine.Machine)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># if the end user gives you SCAMP data, use it and don&#39;t discover them</span>
+        <span class="k">if</span> <span class="n">scamp_connection_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scamp_connection_data</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parse_scamp_connection</span><span class="p">(</span><span class="n">piece</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">piece</span> <span class="ow">in</span> <span class="n">scamp_connection_data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)]</span>
+
+        <span class="n">txrx</span> <span class="o">=</span> <span class="n">create_transceiver_from_hostname</span><span class="p">(</span>
+            <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span>
+            <span class="n">bmp_connection_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_bmp_details</span><span class="p">(</span><span class="n">bmp_details</span><span class="p">),</span>
+            <span class="n">version</span><span class="o">=</span><span class="n">board_version</span><span class="p">,</span> <span class="n">ignore_chips</span><span class="o">=</span><span class="n">downed_chips</span><span class="p">,</span>
+            <span class="n">ignore_cores</span><span class="o">=</span><span class="n">downed_cores</span><span class="p">,</span> <span class="n">ignored_links</span><span class="o">=</span><span class="n">downed_links</span><span class="p">,</span>
+            <span class="n">auto_detect_bmp</span><span class="o">=</span><span class="n">auto_detect_bmp</span><span class="p">,</span> <span class="n">boot_port_no</span><span class="o">=</span><span class="n">boot_port_num</span><span class="p">,</span>
+            <span class="n">scamp_connections</span><span class="o">=</span><span class="n">scamp_connection_data</span><span class="p">,</span>
+            <span class="n">max_sdram_size</span><span class="o">=</span><span class="n">max_sdram_size</span><span class="p">,</span>
+            <span class="n">repair_machine</span><span class="o">=</span><span class="n">repair_machine</span><span class="p">,</span>
+            <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="n">ignore_bad_ethernets</span><span class="p">,</span>
+            <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reset_machine_on_start_up</span><span class="p">:</span>
+            <span class="n">txrx</span><span class="o">.</span><span class="n">power_off_machine</span><span class="p">()</span>
+
+        <span class="c1"># do auto boot if possible</span>
+        <span class="k">if</span> <span class="n">board_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;Please set a machine version number in the configuration &quot;</span>
+                <span class="s2">&quot;file (spynnaker.cfg or pacman.cfg)&quot;</span><span class="p">)</span>
+        <span class="n">txrx</span><span class="o">.</span><span class="n">ensure_board_is_ready</span><span class="p">()</span>
+        <span class="n">txrx</span><span class="o">.</span><span class="n">discover_scamp_connections</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">(),</span> <span class="n">txrx</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_scamp_connection</span><span class="p">(</span><span class="n">scamp_connection</span><span class="p">):</span>
+        <span class="n">pieces</span> <span class="o">=</span> <span class="n">scamp_connection</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pieces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">port_num</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">hostname</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span> <span class="o">=</span> <span class="n">pieces</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">pieces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">hostname</span><span class="p">,</span> <span class="n">port_num</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span> <span class="o">=</span> <span class="n">pieces</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;bad SC&amp;MP connection descriptor&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SocketAddressWithChip</span><span class="p">(</span>
+            <span class="n">hostname</span><span class="o">=</span><span class="n">hostname</span><span class="p">,</span>
+            <span class="n">port_num</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">port_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">port_num</span><span class="p">),</span>
+            <span class="n">chip_x</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">chip_x</span><span class="p">),</span>
+            <span class="n">chip_y</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">chip_y</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_bmp_cabinet_and_frame</span><span class="p">(</span><span class="n">bmp_cabinet_and_frame</span><span class="p">):</span>
+        <span class="n">split_string</span> <span class="o">=</span> <span class="n">bmp_cabinet_and_frame</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_string</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">host</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_string</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">host</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_bmp_boards</span><span class="p">(</span><span class="n">bmp_boards</span><span class="p">):</span>
+        <span class="c1"># If the string is a range of boards, get the range</span>
+        <span class="n">range_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)-(\d+)&quot;</span><span class="p">,</span> <span class="n">bmp_boards</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">range_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">range_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+                              <span class="nb">int</span><span class="p">(</span><span class="n">range_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># Otherwise, assume a list of boards</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">board</span><span class="p">)</span> <span class="k">for</span> <span class="n">board</span> <span class="ow">in</span> <span class="n">bmp_boards</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">_parse_bmp_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bmp_detail</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Parses one item of BMP connection data. Maximal format:\</span>
+<span class="sd">            `cabinet;frame;host,port/boards`</span>
+<span class="sd">            All parts except host can be omitted. Boards can be a \</span>
+<span class="sd">            hyphen-separated range or a comma-separated list.&quot;&quot;&quot;</span>
+        <span class="n">pieces</span> <span class="o">=</span> <span class="n">bmp_detail</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">cabinet</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">port_num</span><span class="p">)</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_parse_bmp_cabinet_and_frame</span><span class="p">(</span><span class="n">pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># if there is no split, then assume its one board, located at 0</span>
+        <span class="n">boards</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pieces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_bmp_boards</span><span class="p">(</span><span class="n">pieces</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">port_num</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">port_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">port_num</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BMPConnectionData</span><span class="p">(</span><span class="n">cabinet</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">boards</span><span class="p">,</span> <span class="n">port_num</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_bmp_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bmp_string</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Take a BMP line (a colon-separated list) and split it into the\</span>
+<span class="sd">            BMP connection data.</span>
+
+<span class="sd">        :param bmp_string: the BMP string to be converted</span>
+<span class="sd">        :return: the BMP connection data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bmp_string</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">bmp_string</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_parse_bmp_connection</span><span class="p">(</span><span class="n">bmp_connection</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">bmp_connection</span> <span class="ow">in</span> <span class="n">bmp_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

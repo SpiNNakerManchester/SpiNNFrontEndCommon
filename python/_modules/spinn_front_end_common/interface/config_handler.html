@@ -1,0 +1,507 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.config_handler &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.config_handler</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">spinn_utilities.conf_loader</span> <span class="k">as</span> <span class="nn">conf_loader</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">Machine</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">read_config</span><span class="p">,</span> <span class="n">read_config_boolean</span><span class="p">,</span> <span class="n">read_config_int</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+<span class="n">APP_DIRNAME</span> <span class="o">=</span> <span class="s1">&#39;application_generated_data_files&#39;</span>
+<span class="n">CONFIG_FILE</span> <span class="o">=</span> <span class="s2">&quot;spinnaker.cfg&quot;</span>
+<span class="n">FINISHED_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;finished&quot;</span>
+<span class="n">REPORTS_DIRNAME</span> <span class="o">=</span> <span class="s2">&quot;reports&quot;</span>
+<span class="n">TIMESTAMP_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;time_stamp&quot;</span>
+
+
+<div class="viewcode-block" id="ConfigHandler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler">[docs]</a><span class="k">class</span> <span class="nc">ConfigHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Superclass of AbstractSpinnakerBase that handles function only \</span>
+<span class="sd">        dependent of the config and the order its methods are called.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+
+        <span class="c1"># the interface to the cfg files. supports get get_int etc</span>
+        <span class="s2">&quot;_config&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_json_folder&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_provenance_file_path&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_app_provenance_file_path&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_system_provenance_file_path&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_report_default_directory&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_report_simulation_top_directory&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_this_run_time_string&quot;</span><span class="p">,</span>
+
+        <span class="c1">#</span>
+        <span class="s2">&quot;_use_virtual_board&quot;</span><span class="p">,</span>
+
+        <span class="c1"># If not None, path to append pacman executor provenance info to</span>
+        <span class="s2">&quot;_pacman_executor_provenance_path&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configfile</span><span class="p">,</span> <span class="n">default_config_paths</span><span class="p">,</span> <span class="n">validation_cfg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str configfile:</span>
+<span class="sd">            The base name of the configuration file(s).</span>
+<span class="sd">            Should not include any path components.</span>
+<span class="sd">        :param list(str) default_config_paths:</span>
+<span class="sd">            The list of files to get default configurations from.</span>
+<span class="sd">        :type default_config_paths: list(str) or None</span>
+<span class="sd">        :param validation_cfg:</span>
+<span class="sd">            The list of files to read a validation configuration from.</span>
+<span class="sd">            If None, no such validation is performed.</span>
+<span class="sd">        :type validation_cfg: list(str) or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># global params</span>
+        <span class="k">if</span> <span class="n">default_config_paths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">default_config_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">default_config_paths</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">CONFIG_FILE</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="n">conf_loader</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">configfile</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="n">default_config_paths</span><span class="p">,</span>
+            <span class="n">validation_cfg</span><span class="o">=</span><span class="n">validation_cfg</span><span class="p">)</span>
+
+        <span class="c1"># set up machine targeted data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+            <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Pass max_machine_cores to Machine so if effects everything!</span>
+        <span class="n">max_machine_core</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;max_machine_core&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_machine_core</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Machine</span><span class="o">.</span><span class="n">set_max_cores_per_chip</span><span class="p">(</span><span class="n">max_machine_core</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_adjust_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">debug_enable_opts</span><span class="p">,</span> <span class="n">report_disable_opts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adjust and checks config based on runtime and mode</span>
+
+<span class="sd">        :param runtime:</span>
+<span class="sd">        :type runtime: int or bool</span>
+<span class="sd">        :param frozenset(str) debug_enable_opts:</span>
+<span class="sd">        :param frozenset(str) report_disable_opts:</span>
+<span class="sd">        :raises ConfigurationException:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;Debug&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">):</span>
+                <span class="c1"># options names are all lower without _ inside config</span>
+                <span class="k">if</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">debug_enable_opts</span> <span class="ow">or</span> <span class="n">option</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;write&quot;</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;As mode == </span><span class="se">\&quot;</span><span class="s2">Debug</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                                        <span class="s2">&quot;has been set to True&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;reportsEnabled&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">):</span>
+                <span class="c1"># options names are all lower without _ inside config</span>
+                <span class="k">if</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">report_disable_opts</span> <span class="ow">or</span> <span class="n">option</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;write&quot;</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                                <span class="s2">&quot;As reportsEnabled == </span><span class="se">\&quot;</span><span class="s2">False</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                                <span class="s2">&quot;has been set to False&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                    <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
+                            <span class="s2">&quot;False as runtime is set to forever&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_bool</span><span class="p">(</span>
+                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[EnergySavings]turn_off_board_after_discovery has&quot;</span>
+                            <span class="s2">&quot; been set to False as runtime is set to forever&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                    <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
+                            <span class="s2">&quot;False as using virtual boards&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_bool</span><span class="p">(</span>
+                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                    <span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_board_after_discovery&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[EnergySavings]turn_off_board_after_discovery has&quot;</span>
+                            <span class="s2">&quot; been set to False as s using virtual boards&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+                    <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_board_chip_report has been set to&quot;</span>
+                            <span class="s2">&quot; False as using virtual boards&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigHandler.child_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">[docs]</a>    <span class="k">def</span> <span class="nf">child_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str parent:</span>
+<span class="sd">        :param str child_name:</span>
+<span class="sd">        :param bool must_create:</span>
+<span class="sd">            If `True`, the directory named by `child_name` (but not necessarily</span>
+<span class="sd">            its parents) must be created by this call, and an exception will be</span>
+<span class="sd">            thrown if this fails.</span>
+<span class="sd">        :return: The fully qualified name of the child folder.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :raises OSError: if the directory existed ahead of time and creation\</span>
+<span class="sd">            was required by the user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">child</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">must_create</span><span class="p">:</span>
+            <span class="c1"># Throws OSError or FileExistsError (a subclass of OSError) if the</span>
+            <span class="c1"># directory exists.</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">child</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">child</span></div>
+
+    <span class="k">def</span> <span class="nf">_remove_excess_folders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_kept</span><span class="p">,</span> <span class="n">starting_directory</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">files_in_report_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">starting_directory</span><span class="p">)</span>
+
+            <span class="c1"># while there&#39;s more than the valid max, remove the oldest one</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files_in_report_folder</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_kept</span><span class="p">:</span>
+
+                <span class="c1"># sort files into time frame</span>
+                <span class="n">files_in_report_folder</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">temp_file</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">starting_directory</span><span class="p">,</span> <span class="n">temp_file</span><span class="p">)))</span>
+
+                <span class="c1"># remove only the number of files required, and only if they</span>
+                <span class="c1"># have the finished flag file created</span>
+                <span class="n">num_files_to_remove</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files_in_report_folder</span><span class="p">)</span> <span class="o">-</span> <span class="n">max_kept</span>
+                <span class="n">files_removed</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">files_not_closed</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">current_oldest_file</span> <span class="ow">in</span> <span class="n">files_in_report_folder</span><span class="p">:</span>
+                    <span class="n">finished_flag</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="n">starting_directory</span><span class="p">,</span> <span class="n">current_oldest_file</span><span class="p">),</span>
+                        <span class="n">FINISHED_FILENAME</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">finished_flag</span><span class="p">):</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                            <span class="n">starting_directory</span><span class="p">,</span> <span class="n">current_oldest_file</span><span class="p">),</span>
+                            <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">files_removed</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">files_not_closed</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">files_removed</span> <span class="o">+</span> <span class="n">files_not_closed</span> <span class="o">&gt;=</span> <span class="n">num_files_to_remove</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">files_not_closed</span> <span class="o">&gt;</span> <span class="n">max_kept</span> <span class="o">//</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> old reports that have not been closed&quot;</span><span class="p">,</span>
+                        <span class="n">starting_directory</span><span class="p">,</span> <span class="n">files_not_closed</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="c1"># This might happen if there is an open file, or more than one</span>
+            <span class="c1"># process in the same folder, but we shouldn&#39;t die because of it</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_set_up_report_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_calls_to_run</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int n_calls_to_run:</span>
+<span class="sd">            the counter of how many times run has been called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">default_report_file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get_str</span><span class="p">(</span>
+            <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;default_report_file_path&quot;</span><span class="p">)</span>
+        <span class="c1"># determine common report folder</span>
+        <span class="k">if</span> <span class="n">default_report_file_path</span> <span class="o">==</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">:</span>
+            <span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+
+            <span class="c1"># global reports folder</span>
+            <span class="n">report_default_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
+                <span class="n">directory</span><span class="p">,</span> <span class="n">REPORTS_DIRNAME</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">default_report_file_path</span> <span class="o">==</span> <span class="s2">&quot;REPORTS&quot;</span><span class="p">:</span>
+            <span class="n">report_default_directory</span> <span class="o">=</span> <span class="n">REPORTS_DIRNAME</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">report_default_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
+                <span class="n">default_report_file_path</span><span class="p">,</span> <span class="n">REPORTS_DIRNAME</span><span class="p">)</span>
+
+        <span class="c1"># clear and clean out folders considered not useful anymore</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_excess_folders</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;max_reports_kept&quot;</span><span class="p">),</span>
+                <span class="n">report_default_directory</span><span class="p">)</span>
+
+        <span class="c1"># determine the time slot for later while also making the report folder</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__make_timestamp</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
+                        <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="n">timestamp</span>
+                    <span class="k">break</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
+                <span class="n">report_default_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span><span class="p">)</span>
+
+        <span class="c1"># create sub folder within reports for sub runs</span>
+        <span class="c1"># (where changes need to be recorded)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span> <span class="s2">&quot;run_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">n_calls_to_run</span><span class="p">))</span>
+
+        <span class="c1"># store timestamp in latest/time_stamp for provenance reasons</span>
+        <span class="n">time_of_run_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span> <span class="n">TIMESTAMP_FILENAME</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">time_of_run_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__make_timestamp</span><span class="p">():</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{:04}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">now</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+            <span class="n">now</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">second</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">microsecond</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_up_output_folders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_calls_to_run</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets up all outgoing folders by creating a new timestamp folder</span>
+<span class="sd">            for each and clearing</span>
+
+<span class="sd">        :param int n_calls_to_run:</span>
+<span class="sd">            the counter of how many times run has been called.</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># set up reports default folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_report_specifics</span><span class="p">(</span><span class="n">n_calls_to_run</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_boolean</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span>
+                                     <span class="s2">&quot;writePacmanExecutorProvenance&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pacman_executor_provenance_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span>
+                <span class="s2">&quot;pacman_executor_provenance.rpt&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span> <span class="s2">&quot;json_files&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
+
+        <span class="c1"># make a folder for the provenance data storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span> <span class="s2">&quot;provenance_data&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">)</span>
+
+        <span class="c1"># make application folder for provenance data storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">,</span> <span class="s2">&quot;app_provenance_data&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">)</span>
+
+        <span class="c1"># make system folder for provenance data storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">,</span> <span class="s2">&quot;system_provenance_data&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigHandler.write_finished_file"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.write_finished_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_finished_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write a finished file that allows file removal to only remove</span>
+<span class="sd">            folders that are finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">report_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span>
+                                        <span class="n">FINISHED_FILENAME</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s2">&quot;finished&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_read_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">read_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_read_config_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">read_config_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_read_config_boolean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">read_config_boolean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_time_step&quot;</span><span class="p">)</span>
+
+    <span class="nd">@machine_time_step</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The time scaling factor.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">)</span>
+
+    <span class="nd">@time_scale_factor</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigHandler.set_up_timings"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings">[docs]</a>    <span class="k">def</span> <span class="nf">set_up_timings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set up timings of the machine</span>
+
+<span class="sd">        :param machine_time_step:</span>
+<span class="sd">            An explicitly specified time step for the machine.  If None,</span>
+<span class="sd">            the value is read from the config</span>
+<span class="sd">        :type machine_time_step: int or None</span>
+<span class="sd">        :param time_scale_factor:</span>
+<span class="sd">            An explicitly specified time scale factor for the simulation.</span>
+<span class="sd">            If None, the value is read from the config</span>
+<span class="sd">        :type time_scale_factor: int or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># set up timings</span>
+        <span class="k">if</span> <span class="n">machine_time_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">=</span> <span class="n">machine_time_step</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                <span class="s2">&quot;invalid machine_time_step </span><span class="si">{}</span><span class="s2">: must greater than zero&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_scale_factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_make_dirs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="c1"># Workaround for Python 2/3 Compatibility (Python 3 raises on exists)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span><span class="p">:</span>
+                <span class="k">raise</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

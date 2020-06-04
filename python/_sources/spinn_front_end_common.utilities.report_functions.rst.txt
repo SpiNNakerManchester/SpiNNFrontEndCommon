@@ -1,0 +1,22 @@
+spinn_front_end_common.utilities.report_functions package
+=========================================================
+
+Submodules
+----------
+
+spinn_front_end_common.utilities.report_functions.energy_report module
+----------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.report_functions.energy_report
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.utilities.report_functions
+    :members:
+    :undoc-members:
+    :show-inheritance:

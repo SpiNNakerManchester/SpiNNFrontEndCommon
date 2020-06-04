@@ -1,0 +1,58 @@
+spinn_front_end_common.interface package
+========================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    spinn_front_end_common.interface.buffer_management
+    spinn_front_end_common.interface.ds
+    spinn_front_end_common.interface.interface_functions
+    spinn_front_end_common.interface.profiling
+    spinn_front_end_common.interface.provenance
+    spinn_front_end_common.interface.simulation
+
+Submodules
+----------
+
+spinn_front_end_common.interface.abstract_spinnaker_base module
+---------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.abstract_spinnaker_base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.interface.config_handler module
+------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.config_handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.interface.java_caller module
+---------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.java_caller
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.interface.simulator_state module
+-------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.simulator_state
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.interface
+    :members:
+    :undoc-members:
+    :show-inheritance:

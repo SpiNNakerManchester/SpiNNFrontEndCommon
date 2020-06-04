@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.utilities.notification_protocol package &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="spinn_front_end_common.utilities.report_functions package" href="spinn_front_end_common.utilities.report_functions.html" />
+    <link rel="prev" title="spinn_front_end_common.utilities.database package" href="spinn_front_end_common.utilities.database.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.utilities.report_functions.html" title="spinn_front_end_common.utilities.report_functions package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.utilities.database.html" title="spinn_front_end_common.utilities.database package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="spinn_front_end_common.utilities.html" accesskey="U">spinn_front_end_common.utilities package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">spinn_front_end_common.utilities.notification_protocol package</a><ul>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.notification_protocol">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.utilities.database.html"
+                        title="previous chapter">spinn_front_end_common.utilities.database package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.utilities.report_functions.html"
+                        title="next chapter">spinn_front_end_common.utilities.report_functions package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/spinn_front_end_common.utilities.notification_protocol.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="spinn-front-end-common-utilities-notification-protocol-package">
+<h1>spinn_front_end_common.utilities.notification_protocol package<a class="headerlink" href="#spinn-front-end-common-utilities-notification-protocol-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-spinn_front_end_common.utilities.notification_protocol">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.notification_protocol" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.notification_protocol.</code><code class="descname">NotificationProtocol</code><span class="sig-paren">(</span><em>socket_addresses</em>, <em>wait_for_read_confirmation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>The protocol which hand shakes with external devices about the        database and starting execution</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>socket_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><em>SocketAddress</em><em>)</em><em></em>) &#8211; Where to notify.</li>
+<li><strong>wait_for_read_confirmation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Whether to wait for the other side to acknowledge</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the thread pool</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">
+<code class="descname">send_read_notification</code><span class="sig-paren">(</span><em>database_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_read_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends notifications to all devices which have expressed an            interest in when the database has been written</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the path to the database file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification">
+<code class="descname">send_start_resume_notification</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_start_resume_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Either waits till all sources have confirmed read the database            and are configured, and/or just sends the start notification            (when the system is executing)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification">
+<code class="descname">send_stop_pause_notification</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_stop_pause_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the pause / stop notifications when the script has either            finished or paused</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation">
+<code class="descname">wait_for_confirmation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.wait_for_confirmation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation" title="Permalink to this definition">¶</a></dt>
+<dd><p>If asked to wait for confirmation, waits for all external systems            to confirm that they are configured and have read the database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.utilities.report_functions.html" title="spinn_front_end_common.utilities.report_functions package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.utilities.database.html" title="spinn_front_end_common.utilities.database package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="spinn_front_end_common.utilities.html" >spinn_front_end_common.utilities package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

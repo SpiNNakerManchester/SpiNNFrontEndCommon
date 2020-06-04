@@ -1,0 +1,408 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.executable_finder</span> <span class="kn">import</span> <span class="n">ExecutableFinder</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span><span class="p">,</span> <span class="n">Router</span>
+<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
+<span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">SpinnFrontEndException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">_FOUR_WORDS</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;IIII&quot;</span><span class="p">)</span>
+<span class="c1"># The SDRAM Tag used by the application - note this is fixed in the APLX</span>
+<span class="n">_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="mundy_on_chip_router_compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.mundy_on_chip_router_compression">[docs]</a><span class="k">def</span> <span class="nf">mundy_on_chip_router_compression</span><span class="p">(</span>
+        <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span>
+        <span class="n">system_provenance_folder</span><span class="p">,</span> <span class="n">compress_only_when_needed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Load routing tables and compress then using Mundy&#39;s algorithm</span>
+
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
+<span class="sd">        the memory routing tables to be compressed</span>
+<span class="sd">    :param ~spinnman.Transceiver transceiver: the spinnman interface</span>
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        the SpiNNaker machine representation</span>
+<span class="sd">    :param int app_id: the application ID used by the main application</span>
+<span class="sd">    :param str system_provenance_folder: the path to where to write the data</span>
+<span class="sd">    :param bool compress_as_much_as_possible:</span>
+<span class="sd">        If False, the compressor will only reduce the table until it fits in</span>
+<span class="sd">        the router space, otherwise it will try to reduce until it until it</span>
+<span class="sd">        can&#39;t reduce it any more</span>
+<span class="sd">    :param bool compress_only_when_needed:</span>
+<span class="sd">        If True, the compressor will only compress if the table doesn&#39;t fit in</span>
+<span class="sd">        the current router space, otherwise it will just load the table</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-arguments</span>
+    <span class="n">binary_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;rt_minimise.aplx&quot;</span><span class="p">)</span>
+    <span class="n">compression</span> <span class="o">=</span> <span class="n">Compression</span><span class="p">(</span>
+        <span class="n">app_id</span><span class="p">,</span> <span class="n">binary_path</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="p">,</span>
+        <span class="n">compress_only_when_needed</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">system_provenance_folder</span><span class="p">,</span>
+        <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+    <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="pair_compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.pair_compression">[docs]</a><span class="k">def</span> <span class="nf">pair_compression</span><span class="p">(</span>
+        <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
+        <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
+        <span class="n">compress_only_when_needed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Load routing tables and compress then using Pair Algorithm</span>
+
+<span class="sd">    See pacman/operations/router_compressors/pair_compressor.py which is the</span>
+<span class="sd">    exact same algorithm implemented in Python.</span>
+
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
+<span class="sd">        the memory routing tables to be compressed</span>
+<span class="sd">    :param ~spinnman.Transceiver transceiver: the spinnman interface</span>
+<span class="sd">    :param ~spinn_utilities.executable_finder.ExecutableFinder \</span>
+<span class="sd">            executable_finder:</span>
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        the SpiNNaker machine representation</span>
+<span class="sd">    :param int app_id: the application ID used by the main application</span>
+<span class="sd">    :param str provenance_file_path: the path to where to write the data</span>
+<span class="sd">    :param bool compress_as_much_as_possible:</span>
+<span class="sd">        If False, the compressor will only reduce the table until it fits in</span>
+<span class="sd">        the router space, otherwise it will try to reduce until it until it</span>
+<span class="sd">        can&#39;t reduce it any more</span>
+<span class="sd">    :param bool compress_only_when_needed:</span>
+<span class="sd">        If True, the compressor will only compress if the table doesn&#39;t fit in</span>
+<span class="sd">        the current router space, otherwise it will just load the table</span>
+<span class="sd">    :param executable_finder: tracker of binaries.</span>
+<span class="sd">     &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-arguments</span>
+    <span class="n">binary_path</span> <span class="o">=</span> <span class="n">executable_finder</span><span class="o">.</span><span class="n">get_executable_path</span><span class="p">(</span>
+        <span class="s2">&quot;simple_minimise.aplx&quot;</span><span class="p">)</span>
+    <span class="n">compression</span> <span class="o">=</span> <span class="n">Compression</span><span class="p">(</span>
+        <span class="n">app_id</span><span class="p">,</span> <span class="n">binary_path</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="p">,</span>
+        <span class="n">compress_only_when_needed</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
+        <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+    <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression">[docs]</a><span class="k">class</span> <span class="nc">Compression</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compressor that uses a on chip router compressor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+         <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_binary_path&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_compress_as_much_as_possible&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_compress_only_when_needed&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_compressor_app_id&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_provenance_file_path&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_transceiver&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;_routing_tables&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">binary_path</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="p">,</span>
+            <span class="n">compress_only_when_needed</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
+            <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int app_id: the application ID used by the main application</span>
+<span class="sd">        :param str binary_path: What</span>
+<span class="sd">        :param bool compress_as_much_as_possible:</span>
+<span class="sd">        :param bool compress_only_when_needed:</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        :param str provenance_file_path:</span>
+<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables</span>
+<span class="sd">                routing_tables:</span>
+<span class="sd">        :param ~spinnman.Transceiver transceiver:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binary_path</span> <span class="o">=</span> <span class="n">binary_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compress_as_much_as_possible</span> <span class="o">=</span> <span class="n">compress_as_much_as_possible</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compress_only_when_needed</span> <span class="o">=</span> <span class="n">compress_only_when_needed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span> <span class="o">=</span> <span class="n">provenance_file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span> <span class="o">=</span> <span class="n">transceiver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span> <span class="o">=</span> <span class="n">routing_tables</span>
+
+<div class="viewcode-block" id="Compression.compress"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.compress">[docs]</a>    <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Apply the on-machine compression algorithm.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># build progress bar</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;Running routing table compression on chip&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">get_new_id</span><span class="p">()</span>
+
+        <span class="c1"># figure size of SDRAM needed for each chip for storing the routing</span>
+        <span class="c1"># table</span>
+        <span class="k">for</span> <span class="n">routing_table</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_routing_table</span><span class="p">(</span><span class="n">routing_table</span><span class="p">)</span>
+
+        <span class="c1"># load the router compressor executable</span>
+        <span class="n">executable_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_executables</span><span class="p">()</span>
+
+        <span class="c1"># update progress bar</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="c1"># Wait for the executable to finish</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
+                <span class="n">executable_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">])</span>
+            <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># get the debug data</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">succeeded</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_handle_failure</span><span class="p">(</span>
+                    <span class="n">executable_targets</span><span class="p">)</span>
+
+        <span class="c1"># Check if any cores have not completed successfully</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_success</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
+
+        <span class="c1"># update progress bar</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="c1"># stop anything that&#39;s associated with the compressor binary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">free_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">)</span>
+
+        <span class="c1"># update the progress bar</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_routing_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables</span>
+<span class="sd">                routing_table:</span>
+<span class="sd">            the pacman router table instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_data</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+
+        <span class="c1"># go to spinnman and ask for a memory region of that size per chip.</span>
+        <span class="n">base_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">malloc_sdram</span><span class="p">(</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">,</span> <span class="n">_SDRAM_TAG</span><span class="p">)</span>
+
+        <span class="c1"># write SDRAM requirements per chip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_for_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Goes through the cores checking for cores that have failed to\</span>
+<span class="sd">            compress the routing tables to the level where they fit into the\</span>
+<span class="sd">            router</span>
+
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">core_subset</span> <span class="ow">in</span> <span class="n">executable_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                <span class="c1"># Read the result from USER0 register</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_user_0</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+
+                <span class="c1"># The result is 0 if success, otherwise failure</span>
+                <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_handle_failure</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
+
+                    <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
+                        <span class="s2">&quot;The router compressor on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> failed to complete&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_handle_failure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Router compressor has failed&quot;</span><span class="p">)</span>
+        <span class="n">iobuf_extractor</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">()</span>
+        <span class="n">executable_finder</span> <span class="o">=</span> <span class="n">ExecutableFinder</span><span class="p">(</span><span class="n">binary_search_paths</span><span class="o">=</span><span class="p">[])</span>
+        <span class="n">io_errors</span><span class="p">,</span> <span class="n">io_warnings</span> <span class="o">=</span> <span class="n">iobuf_extractor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">warning</span> <span class="ow">in</span> <span class="n">io_warnings</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">warning</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">io_errors</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">free_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_executables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads the router compressor onto the chips.</span>
+
+<span class="sd">        :return:\</span>
+<span class="sd">            the executable targets that represent all cores/chips which have\</span>
+<span class="sd">            active routing tables</span>
+<span class="sd">        :rtype: ExecutableTargets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># build core subsets</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">routing_table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="p">:</span>
+
+            <span class="c1"># get the first none monitor core</span>
+            <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">routing_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">routing_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">processor</span> <span class="o">=</span> <span class="n">chip</span><span class="o">.</span><span class="n">get_first_none_monitor_processor</span><span class="p">()</span>
+
+            <span class="c1"># add to the core subsets</span>
+            <span class="n">core_subsets</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span>
+                <span class="n">routing_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">routing_table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">processor</span><span class="o">.</span><span class="n">processor_id</span><span class="p">)</span>
+
+        <span class="c1"># build executable targets</span>
+        <span class="n">executable_targets</span> <span class="o">=</span> <span class="n">ExecutableTargets</span><span class="p">()</span>
+        <span class="n">executable_targets</span><span class="o">.</span><span class="n">add_subsets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_binary_path</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">,</span>
+                                       <span class="n">ExecutableType</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">execute_application</span><span class="p">(</span>
+            <span class="n">executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compressor_app_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">executable_targets</span>
+
+    <span class="k">def</span> <span class="nf">_build_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">routing_table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Convert the router table into the data needed by the router\</span>
+<span class="sd">            compressor c code.</span>
+
+<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables</span>
+<span class="sd">                routing_table:</span>
+<span class="sd">            the pacman router table instance</span>
+<span class="sd">        :return: The byte array of data</span>
+<span class="sd">        :rtype: bytearray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># write header data of the app ID to load the data, if to store</span>
+        <span class="c1"># results in SDRAM and the router table entries</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
+        <span class="n">data</span> <span class="o">+=</span> <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compress_only_when_needed</span><span class="p">),</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compress_as_much_as_possible</span><span class="p">),</span>
+            <span class="c1"># Write the size of the table</span>
+            <span class="n">routing_table</span><span class="o">.</span><span class="n">number_of_entries</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">routing_table</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">+=</span> <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+                <span class="n">entry</span><span class="o">.</span><span class="n">routing_entry_key</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span>
+                <span class="n">Router</span><span class="o">.</span><span class="n">convert_routing_table_entry_to_spinnaker_route</span><span class="p">(</span><span class="n">entry</span><span class="p">),</span>
+                <span class="n">Compression</span><span class="o">.</span><span class="n">make_source_hack</span><span class="p">(</span><span class="n">entry</span><span class="o">=</span><span class="n">entry</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Compression.make_source_hack"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.make_source_hack">[docs]</a>    <span class="k">def</span> <span class="nf">make_source_hack</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Hack to support the source requirement for the router compressor\</span>
+<span class="sd">            on chip</span>
+
+<span class="sd">        :param ~spinn_machine.MulticastRoutingEntry entry:</span>
+<span class="sd">            the multicast router table entry.</span>
+<span class="sd">        :return: return the source value</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">defaultable</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">link_ids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">%</span> <span class="mi">6</span>
+        <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">link_ids</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">link_ids</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="mi">0</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

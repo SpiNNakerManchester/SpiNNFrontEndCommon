@@ -1,0 +1,22 @@
+spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression package
+==================================================================================
+
+Submodules
+----------
+
+spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression module
+---------------------------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression
+    :members:
+    :undoc-members:
+    :show-inheritance:

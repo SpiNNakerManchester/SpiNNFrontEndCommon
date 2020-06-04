@@ -1,0 +1,509 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.buffer_management.buffer_models package &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="spinn_front_end_common.interface.buffer_management.storage_objects package" href="spinn_front_end_common.interface.buffer_management.storage_objects.html" />
+    <link rel="prev" title="spinn_front_end_common.interface.buffer_management package" href="spinn_front_end_common.interface.buffer_management.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.buffer_management.storage_objects.html" title="spinn_front_end_common.interface.buffer_management.storage_objects package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.buffer_management.html" title="spinn_front_end_common.interface.buffer_management package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="spinn_front_end_common.interface.html" >spinn_front_end_common.interface package</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="spinn_front_end_common.interface.buffer_management.html" accesskey="U">spinn_front_end_common.interface.buffer_management package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">spinn_front_end_common.interface.buffer_management.buffer_models package</a><ul>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.buffer_models">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.interface.buffer_management.html"
+                        title="previous chapter">spinn_front_end_common.interface.buffer_management package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html"
+                        title="next chapter">spinn_front_end_common.interface.buffer_management.storage_objects package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/spinn_front_end_common.interface.buffer_management.buffer_models.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="spinn-front-end-common-interface-buffer-management-buffer-models-package">
+<h1>spinn_front_end_common.interface.buffer_management.buffer_models package<a class="headerlink" href="#spinn-front-end-common-interface-buffer-management-buffer-models-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-spinn_front_end_common.interface.buffer_management.buffer_models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management.buffer_models" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.buffer_management.buffer_models.</code><code class="descname">AbstractReceiveBuffersToHost</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_receive_buffers_to_host.html#AbstractReceiveBuffersToHost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Indicates that this object can receive buffers.</p>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost.get_recorded_region_ids">
+<code class="descname">get_recorded_region_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_receive_buffers_to_host.html#AbstractReceiveBuffersToHost.get_recorded_region_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost.get_recorded_region_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the recording region IDs that have been recorded using buffering</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The region numbers that have active recording</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost.get_recording_region_base_address">
+<code class="descname">get_recording_region_base_address</code><span class="sig-paren">(</span><em>txrx</em>, <em>placement</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_receive_buffers_to_host.html#AbstractReceiveBuffersToHost.get_recording_region_base_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost.get_recording_region_base_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the recording region base address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpiNNMan instance</li>
+<li><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; the placement object of the core to find the address of</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the base address of the recording region</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.buffer_management.buffer_models.</code><code class="descname">AbstractSendsBuffersFromHost</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Interface to an object that sends buffers of keys to be        transmitted at given timestamps in the simulation.</p>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.buffering_input">
+<code class="descname">buffering_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.buffering_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.buffering_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the input of this vertex is to be buffered.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_key">
+<code class="descname">get_next_key</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.get_next_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the next key in the given region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the next key from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The next key, or None if there are no more keys</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_timestamp">
+<code class="descname">get_next_timestamp</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.get_next_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the next timestamp at which there are still keys to be sent            for the given region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the timestamp for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The timestamp of the next available keys</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_region_buffer_size">
+<code class="descname">get_region_buffer_size</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.get_region_buffer_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_region_buffer_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the size of the buffer to be used in SDRAM on the machine            for the region in bytes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the buffer size of</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The size of the buffer space in bytes</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_regions">
+<code class="descname">get_regions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.get_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the set of regions for which there are keys to be sent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Iterable of region IDs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_empty">
+<code class="descname">is_empty</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.is_empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if there are no spikes to be buffered for the            specified region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the next key from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether there are no keys to send for the region</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_key">
+<code class="descname">is_next_key</code><span class="sig-paren">(</span><em>region</em>, <em>timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.is_next_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there are still keys to be sent at the given            timestamp for the given region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to determine if there are keys for</li>
+<li><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The timestamp to determine if there are more keys for</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Whether there are more keys to send for the parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_timestamp">
+<code class="descname">is_next_timestamp</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.is_next_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there is another timestamp with data to be sent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to determine if there is more data for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether there is more data</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.rewind">
+<code class="descname">rewind</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/abstract_sends_buffers_from_host.html#AbstractSendsBuffersFromHost.rewind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rewinds the internal buffer in preparation of re-sending            the spikes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to rewind</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.buffer_management.buffer_models.</code><code class="descname">SendsBuffersFromHostPreBufferedImpl</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost</span></code></p>
+<p>Implementation of <a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost"><code class="xref py py-class docutils literal"><span class="pre">AbstractReceiveBuffersToHost</span></code></a>        which uses an existing set of buffers for the details.</p>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.buffering_input">
+<code class="descname">buffering_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.buffering_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.buffering_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the input of this vertex is to be buffered.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_next_key">
+<code class="descname">get_next_key</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.get_next_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_next_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the next key in the given region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the next key from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The next key, or None if there are no more keys</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_next_timestamp">
+<code class="descname">get_next_timestamp</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.get_next_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the next timestamp at which there are still keys to be sent            for the given region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the timestamp for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The timestamp of the next available keys</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_regions">
+<code class="descname">get_regions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.get_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the set of regions for which there are keys to be sent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Iterable of region IDs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_empty">
+<code class="descname">is_empty</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.is_empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if there are no spikes to be buffered for the            specified region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to get the next key from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether there are no keys to send for the region</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_next_key">
+<code class="descname">is_next_key</code><span class="sig-paren">(</span><em>region</em>, <em>timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.is_next_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_next_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there are still keys to be sent at the given            timestamp for the given region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to determine if there are keys for</li>
+<li><strong>timestamp</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The timestamp to determine if there are more keys for</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Whether there are more keys to send for the parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_next_timestamp">
+<code class="descname">is_next_timestamp</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.is_next_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_next_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there is another timestamp with data to be sent</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to determine if there is more data for</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Whether there is more data</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.rewind">
+<code class="descname">rewind</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_models/sends_buffers_from_host_pre_buffered_impl.html#SendsBuffersFromHostPreBufferedImpl.rewind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.rewind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rewinds the internal buffer in preparation of re-sending            the spikes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The region to rewind</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.send_buffers">
+<code class="descname">send_buffers</code><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.send_buffers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,
+<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion" title="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion">BufferedSendingRegion</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.buffer_management.storage_objects.html" title="spinn_front_end_common.interface.buffer_management.storage_objects package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.buffer_management.html" title="spinn_front_end_common.interface.buffer_management package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="spinn_front_end_common.interface.html" >spinn_front_end_common.interface package</a> &#187;</li>
+          <li class="nav-item nav-item-4"><a href="spinn_front_end_common.interface.buffer_management.html" >spinn_front_end_common.interface.buffer_management package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

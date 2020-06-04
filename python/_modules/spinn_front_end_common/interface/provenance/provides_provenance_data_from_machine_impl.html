@@ -1,0 +1,362 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">add_metaclass</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_base</span> <span class="kn">import</span> <span class="n">AbstractBase</span><span class="p">,</span> <span class="n">abstractproperty</span>
+<span class="kn">from</span> <span class="nn">data_specification.utility_calls</span> <span class="kn">import</span> <span class="n">get_region_base_address_offset</span>
+<span class="kn">from</span> <span class="nn">.abstract_provides_provenance_data_from_machine</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ProvenanceDataItem</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+
+<span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@add_metaclass</span><span class="p">(</span><span class="n">AbstractBase</span><span class="p">)</span>
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl">[docs]</a><span class="k">class</span> <span class="nc">ProvidesProvenanceDataFromMachineImpl</span><span class="p">(</span>
+        <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; An implementation that gets provenance data from a region of ints on\</span>
+<span class="sd">        the machine.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES">[docs]</a>    <span class="k">class</span> <span class="nc">PROVENANCE_DATA_ENTRIES</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Entries for the provenance data generated by models using provides\</span>
+<span class="sd">            provenance vertex.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#: The counter of transmission overflows</span>
+        <span class="n">TRANSMISSION_EVENT_OVERFLOW</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1">#: The counter of the number of times the callback queue was overloaded</span>
+        <span class="n">CALLBACK_QUEUE_OVERLOADED</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1">#: The counter of the number of times the DMA queue was overloaded</span>
+        <span class="n">DMA_QUEUE_OVERLOADED</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="c1">#: Whether the timer tick has overrun at all at any point</span>
+        <span class="n">TIMER_TIC_HAS_OVERRUN</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="c1">#: The counter of the number of times the timer tick overran</span>
+        <span class="n">MAX_NUMBER_OF_TIMER_TIC_OVERRUN</span> <span class="o">=</span> <span class="mi">4</span></div>
+
+    <span class="n">NUM_PROVENANCE_DATA_ENTRIES</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="p">)</span>
+
+    <span class="n">_TIMER_TICK_OVERRUN</span> <span class="o">=</span> <span class="s2">&quot;Times_the_timer_tic_over_ran&quot;</span>
+    <span class="n">_MAX_TIMER_TICK_OVERRUN</span> <span class="o">=</span> <span class="s2">&quot;max_number_of_times_timer_tic_over_ran&quot;</span>
+    <span class="n">_TIMES_DMA_QUEUE_OVERLOADED</span> <span class="o">=</span> <span class="s2">&quot;Times_the_dma_queue_was_overloaded&quot;</span>
+    <span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN</span> <span class="o">=</span> \
+        <span class="s2">&quot;Times_the_transmission_of_spikes_overran&quot;</span>
+    <span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED</span> <span class="o">=</span> \
+        <span class="s2">&quot;Times_the_callback_queue_was_overloaded&quot;</span>
+
+    <span class="nd">@abstractproperty</span>
+    <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: provenance_region_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractproperty</span>
+    <span class="k">def</span> <span class="nf">_n_additional_data_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: n_additional_data_items</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region">[docs]</a>    <span class="k">def</span> <span class="nf">reserve_provenance_data_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">            The data specification being written.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">),</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Provenance&quot;</span><span class="p">,</span> <span class="n">empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_provenance_data_size</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">n_additional_data_items</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int n_additional_data_items:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">NUM_PROVENANCE_DATA_ENTRIES</span>
+             <span class="o">+</span> <span class="n">n_additional_data_items</span><span class="p">)</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_provenance_region_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get the App Data for the core</span>
+        <span class="n">app_data_base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Get the provenance region base address</span>
+        <span class="n">base_address_offset</span> <span class="o">=</span> <span class="n">get_region_base_address_offset</span><span class="p">(</span>
+            <span class="n">app_data_base_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
+        <span class="n">base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">base_address_offset</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">base_address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_read_provenance_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :rtype: iterable(int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">provenance_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provenance_region_address</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">provenance_address</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">I&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">NUM_PROVENANCE_DATA_ENTRIES</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">),</span>
+            <span class="n">data</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_placement_details</span><span class="p">(</span><span class="n">placement</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :rtype: tuple(str,int,int,list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">label</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">names</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param iterable(str) names:</span>
+<span class="sd">        :param str name:</span>
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="n">new_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_names</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_names</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">extra_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param iterable(str) names:</span>
+<span class="sd">        :param iterable(str) extra_names:</span>
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="n">new_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra_names</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_names</span>
+
+    <span class="k">def</span> <span class="nf">_read_basic_provenance_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param iterable(int) provenance_data:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :rtype: list(ProvenanceDataItem)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transmission_event_overflow</span> <span class="o">=</span> <span class="n">provenance_data</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="o">.</span><span class="n">TRANSMISSION_EVENT_OVERFLOW</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+        <span class="n">callback_queue_overloaded</span> <span class="o">=</span> <span class="n">provenance_data</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="o">.</span><span class="n">CALLBACK_QUEUE_OVERLOADED</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+        <span class="n">dma_queue_overloaded</span> <span class="o">=</span> <span class="n">provenance_data</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="o">.</span><span class="n">DMA_QUEUE_OVERLOADED</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+        <span class="n">number_of_times_timer_tic_over_ran</span> <span class="o">=</span> <span class="n">provenance_data</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="o">.</span><span class="n">TIMER_TIC_HAS_OVERRUN</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+        <span class="n">max_number_of_times_timer_tic_over_ran</span> <span class="o">=</span> <span class="n">provenance_data</span><span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PROVENANCE_DATA_ENTRIES</span><span class="o">.</span><span class="n">MAX_NUMBER_OF_TIMER_TIC_OVERRUN</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+
+        <span class="c1"># create provenance data items for returning</span>
+        <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_placement_details</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
+        <span class="n">data_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_TRANSMISSION_SPIKES_OVERRAN</span><span class="p">),</span>
+            <span class="n">transmission_event_overflow</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">transmission_event_overflow</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;The transmission buffer for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> was blocked &quot;</span>
+                <span class="s2">&quot;on </span><span class="si">{}</span><span class="s2"> occasions. This is often a sign that the system is &quot;</span>
+                <span class="s2">&quot;experiencing back pressure from the communication fabric. &quot;</span>
+                <span class="s2">&quot;Please either: &quot;</span>
+                <span class="s2">&quot;1. spread the load over more cores, &quot;</span>
+                <span class="s2">&quot;2. reduce your peak transmission load,&quot;</span>
+                <span class="s2">&quot;3. adjust your mapping algorithm.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">transmission_event_overflow</span><span class="p">))))</span>
+
+        <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_CALLBACK_QUEUE_OVERLOADED</span><span class="p">),</span>
+            <span class="n">callback_queue_overloaded</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">callback_queue_overloaded</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;The callback queue for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> overloaded on </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;occasions. This is often a sign that the system is running &quot;</span>
+                <span class="s2">&quot;too quickly for the number of neurons per core.  Please &quot;</span>
+                <span class="s2">&quot;increase the machine time step or time_scale_factor or &quot;</span>
+                <span class="s2">&quot;decrease the number of neurons per core.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">callback_queue_overloaded</span><span class="p">))))</span>
+
+        <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMES_DMA_QUEUE_OVERLOADED</span><span class="p">),</span>
+            <span class="n">dma_queue_overloaded</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">dma_queue_overloaded</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;The DMA queue for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> overloaded on </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;occasions. This is often a sign that the system is running &quot;</span>
+                <span class="s2">&quot;too quickly for the number of neurons per core.  Please &quot;</span>
+                <span class="s2">&quot;increase the machine time step or time_scale_factor or &quot;</span>
+                <span class="s2">&quot;decrease the number of neurons per core.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">dma_queue_overloaded</span><span class="p">))))</span>
+
+        <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_TIMER_TICK_OVERRUN</span><span class="p">),</span>
+            <span class="n">number_of_times_timer_tic_over_ran</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">number_of_times_timer_tic_over_ran</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;A Timer tick callback was still executing when the next &quot;</span>
+                <span class="s2">&quot;timer tick callback was fired off for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;times. This is a sign of the system being overloaded and &quot;</span>
+                <span class="s2">&quot;therefore the results are likely incorrect.  Please increase &quot;</span>
+                <span class="s2">&quot;the machine time step or time_scale_factor or decrease the &quot;</span>
+                <span class="s2">&quot;number of neurons per core&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">number_of_times_timer_tic_over_ran</span><span class="p">))))</span>
+
+        <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MAX_TIMER_TICK_OVERRUN</span><span class="p">),</span>
+            <span class="n">max_number_of_times_timer_tic_over_ran</span><span class="p">,</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">max_number_of_times_timer_tic_over_ran</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;The timer for </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2"> fell behind by up to </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;ticks. This is a sign of the system being overloaded and &quot;</span>
+                <span class="s2">&quot;therefore the results are likely incorrect. Please increase &quot;</span>
+                <span class="s2">&quot;the machine time step or time_scale_factor or decrease the &quot;</span>
+                <span class="s2">&quot;number of neurons per core&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">max_number_of_times_timer_tic_over_ran</span><span class="p">))))</span>
+
+        <span class="k">return</span> <span class="n">data_items</span>
+
+    <span class="k">def</span> <span class="nf">_get_remaining_provenance_data_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(ProvenanceDataItem) provenance_data:</span>
+<span class="sd">        :rtype: list(ProvenanceDataItem)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">NUM_PROVENANCE_DATA_ENTRIES</span><span class="p">:]</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span>
+        <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="o">.</span>
+        <span class="n">get_provenance_data_from_machine</span><span class="p">,</span>
+        <span class="n">extend_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="viewcode-block" id="ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Retrieve the provenance data.</span>
+
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            How to talk to the machine</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">            Which vertex are we retrieving from, and where was it</span>
+<span class="sd">        :rtype: \</span>
+<span class="sd">            list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span>
+            <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_basic_provenance_items</span><span class="p">(</span><span class="n">provenance_data</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

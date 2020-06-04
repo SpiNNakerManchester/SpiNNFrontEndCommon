@@ -1,0 +1,10 @@
+spinn_front_end_common.abstract_models.impl package
+===================================================
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.abstract_models.impl
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.profiling.profile_data &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.profiling.profile_data</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+<span class="c1"># Define profiler time scale in ms</span>
+<span class="n">_MS_SCALE</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">200000.0</span><span class="p">)</span>
+
+<span class="c1"># Define the positions in tags</span>
+<span class="n">_START_TIME</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">_DURATION</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="ProfileData"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData">[docs]</a><span class="k">class</span> <span class="nc">ProfileData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A container for profile data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=assignment-from-no-return</span>
+
+    <span class="n">START_TIME</span> <span class="o">=</span> <span class="n">_START_TIME</span>
+    <span class="n">DURATION</span> <span class="o">=</span> <span class="n">_DURATION</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="c1"># A dictionary of tag label to numpy array of start times and durations</span>
+        <span class="s2">&quot;_tags&quot;</span><span class="p">,</span>
+
+        <span class="c1"># A list of tag labels indexed by the tag ID</span>
+        <span class="s2">&quot;_tag_labels&quot;</span><span class="p">,</span>
+
+        <span class="c1"># The maximum time recorded</span>
+        <span class="s2">&quot;_max_time&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag_labels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(str) tag_labels: A list of labels indexed by tag ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tag_labels</span> <span class="o">=</span> <span class="n">tag_labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ProfileData.add_data"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.add_data">[docs]</a>    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add profiling data read from the profile section</span>
+
+<span class="sd">        :param bytearray data:</span>
+<span class="sd">            Data read from the profile section on the machine</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;&lt;u4&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Slice data to separate times, tags and flags</span>
+        <span class="n">sample_times</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">sample_tags_and_flags</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># Further split the tags and flags word into separate arrays of tags</span>
+        <span class="c1"># and flags</span>
+        <span class="n">sample_tags</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">sample_tags_and_flags</span><span class="p">,</span> <span class="mh">0x7FFFFFFF</span><span class="p">)</span>
+        <span class="n">sample_flags</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">right_shift</span><span class="p">(</span><span class="n">sample_tags_and_flags</span><span class="p">,</span> <span class="mi">31</span><span class="p">)</span>
+
+        <span class="c1"># Find indices of samples relating to entries and exits</span>
+        <span class="n">sample_entry_indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sample_flags</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">sample_exit_indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">sample_flags</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Convert count-down times to count up times from 1st sample</span>
+        <span class="n">sample_times_ms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">numpy</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">sample_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sample_times</span><span class="p">),</span>
+            <span class="n">_MS_SCALE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+
+        <span class="c1"># Slice tags and times into entry and exits</span>
+        <span class="n">entry_tags</span> <span class="o">=</span> <span class="n">sample_tags</span><span class="p">[</span><span class="n">sample_entry_indices</span><span class="p">]</span>
+        <span class="n">entry_times_ms</span> <span class="o">=</span> <span class="n">sample_times_ms</span><span class="p">[</span><span class="n">sample_entry_indices</span><span class="p">]</span>
+        <span class="n">exit_tags</span> <span class="o">=</span> <span class="n">sample_tags</span><span class="p">[</span><span class="n">sample_exit_indices</span><span class="p">]</span>
+        <span class="n">exit_times_ms</span> <span class="o">=</span> <span class="n">sample_times_ms</span><span class="p">[</span><span class="n">sample_exit_indices</span><span class="p">]</span>
+
+        <span class="c1"># Loop through unique tags</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sample_tags</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_tag_data</span><span class="p">(</span>
+                <span class="n">entry_tags</span><span class="p">,</span> <span class="n">entry_times_ms</span><span class="p">,</span> <span class="n">exit_tags</span><span class="p">,</span> <span class="n">exit_times_ms</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_add_tag_data</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">entry_tags</span><span class="p">,</span> <span class="n">entry_times</span><span class="p">,</span> <span class="n">exit_tags</span><span class="p">,</span> <span class="n">exit_times</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~numpy.ndarray entry_tags:</span>
+<span class="sd">        :param ~numpy.ndarray entry_times:</span>
+<span class="sd">        :param ~numpy.ndarray exit_tags:</span>
+<span class="sd">        :param ~numpy.ndarray exit_times:</span>
+<span class="sd">        :param int tag:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="n">tag_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tag_labels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tag_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unknown tag </span><span class="si">{}</span><span class="s2"> in profile data&quot;</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+            <span class="n">tag_label</span> <span class="o">=</span> <span class="s2">&quot;UNKNOWN&quot;</span>
+
+        <span class="c1"># Get indices where these tags occur</span>
+        <span class="n">tag_entry_indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">entry_tags</span> <span class="o">==</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="n">tag_exit_indices</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exit_tags</span> <span class="o">==</span> <span class="n">tag</span><span class="p">)</span>
+
+        <span class="c1"># Use these to get subset for this tag</span>
+        <span class="n">tag_entry_times</span> <span class="o">=</span> <span class="n">entry_times</span><span class="p">[</span><span class="n">tag_entry_indices</span><span class="p">]</span>
+        <span class="n">tag_exit_times</span> <span class="o">=</span> <span class="n">exit_times</span><span class="p">[</span><span class="n">tag_exit_indices</span><span class="p">]</span>
+
+        <span class="c1"># If the first exit is before the first</span>
+        <span class="c1"># Entry, add a dummy entry at beginning</span>
+        <span class="k">if</span> <span class="n">tag_exit_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tag_entry_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Profile starts mid-tag&quot;</span><span class="p">)</span>
+            <span class="n">tag_entry_times</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tag_entry_times</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_entry_times</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_exit_times</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;profile finishes mid-tag&quot;</span><span class="p">)</span>
+            <span class="n">tag_entry_times</span> <span class="o">=</span> <span class="n">tag_entry_times</span><span class="p">[</span>
+                <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">tag_exit_times</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_entry_times</span><span class="p">)]</span>
+
+        <span class="c1"># Subtract entry times from exit times to get durations of each</span>
+        <span class="c1"># call in ms</span>
+        <span class="n">tag_durations</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">tag_exit_times</span><span class="p">,</span> <span class="n">tag_entry_times</span><span class="p">)</span>
+
+        <span class="c1"># Add entry times and durations to dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag_label</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tag_entry_times</span><span class="p">,</span> <span class="n">tag_durations</span><span class="p">)</span>
+
+        <span class="c1"># Keep track of the maximum time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tag_entry_times</span> <span class="o">+</span> <span class="n">tag_durations</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The tags recorded as labels</span>
+
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ProfileData.get_mean_ms"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the mean time in milliseconds spent on operations with the</span>
+<span class="sd">            given tag</span>
+
+<span class="sd">        :param str tag: The tag to get the mean time for</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_DURATION</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ProfileData.get_n_calls"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_n_calls">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the number of times the given tag was recorded</span>
+
+<span class="sd">        :param str tag: The tag to get the number of calls of</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_DURATION</span><span class="p">]</span><span class="o">.</span><span class="n">size</span></div>
+
+<div class="viewcode-block" id="ProfileData.get_mean_n_calls_per_ts"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_mean_n_calls_per_ts">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_n_calls_per_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the mean number of times the given tag was recorded per\</span>
+<span class="sd">            timestep</span>
+
+<span class="sd">        :param str tag: The tag to get the data for</span>
+<span class="sd">        :param int machine_time_step_ms:</span>
+<span class="sd">            The time step of the simulation in microseconds</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">/</span> <span class="n">machine_time_step_ms</span><span class="p">)</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">n_points</span> <span class="o">*</span> <span class="n">machine_time_step_ms</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">n_points</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_START_TIME</span><span class="p">],</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ProfileData.get_mean_ms_per_ts"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms_per_ts">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_ms_per_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the mean time in milliseconds spent on operations with the\</span>
+<span class="sd">            given tag per timestep</span>
+
+<span class="sd">        :param str tag: The tag to get the data for</span>
+<span class="sd">        :param int machine_time_step_ms:</span>
+<span class="sd">            The time step of the simulation in microseconds</span>
+<span class="sd">        :rtype: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_points</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">/</span> <span class="n">machine_time_step_ms</span><span class="p">)</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">n_points</span> <span class="o">*</span> <span class="n">machine_time_step_ms</span>
+        <span class="n">bins</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">n_points</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mean_per_ts</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">binned_statistic</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_START_TIME</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_DURATION</span><span class="p">],</span>
+            <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span><span class="o">.</span><span class="n">statistic</span>
+        <span class="n">mean_per_ts</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mean_per_ts</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">average</span><span class="p">(</span>
+            <span class="n">mean_per_ts</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">mean_per_ts</span><span class="p">))])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

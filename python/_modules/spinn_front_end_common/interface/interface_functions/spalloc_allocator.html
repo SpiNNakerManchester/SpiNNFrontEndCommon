@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.interface_functions.spalloc_allocator &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.spalloc_allocator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">Job</span>
+<span class="kn">from</span> <span class="nn">spalloc.states</span> <span class="kn">import</span> <span class="n">JobState</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractMachineAllocationController</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MachineAllocationController</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_SpallocJobController</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># the spalloc job object</span>
+        <span class="s2">&quot;_job&quot;</span><span class="p">,</span>
+        <span class="c1"># the current job&#39;s old state</span>
+        <span class="s2">&quot;_state&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;must have a real job&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job</span> <span class="o">=</span> <span class="n">job</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">state</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_SpallocJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;SpallocJobController&quot;</span><span class="p">)</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">extend_allocation</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">extend_allocation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_total_run_time</span><span class="p">):</span>
+        <span class="c1"># Does Nothing in this allocator - machines are held until exit</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_SpallocJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">power</span>
+
+    <span class="k">def</span> <span class="nf">set_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">set_power</span><span class="p">(</span><span class="n">power</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">power</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">wait_until_ready</span><span class="p">()</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractMachineAllocationController</span><span class="o">.</span><span class="n">where_is_machine</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">where_is_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">where_is_machine</span><span class="p">(</span><span class="n">chip_y</span><span class="o">=</span><span class="n">chip_y</span><span class="p">,</span> <span class="n">chip_x</span><span class="o">=</span><span class="n">chip_x</span><span class="p">)</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="o">.</span><span class="n">_wait</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">!=</span> <span class="n">JobState</span><span class="o">.</span><span class="n">destroyed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">wait_for_state_change</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exited</span><span class="p">:</span>
+                <span class="n">six</span><span class="o">.</span><span class="n">reraise</span><span class="p">(</span><span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">!=</span> <span class="n">JobState</span><span class="o">.</span><span class="n">destroyed</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineAllocationController</span><span class="o">.</span><span class="n">_teardown</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_teardown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exited</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_job</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_SpallocJobController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_teardown</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="SpallocAllocator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SpallocAllocator">[docs]</a><span class="k">class</span> <span class="nc">SpallocAllocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Request a machine from a SPALLOC server that will fit the given\</span>
+<span class="sd">        number of chips</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use a worst case calculation</span>
+    <span class="n">_N_CHIPS_PER_BOARD</span> <span class="o">=</span> <span class="mf">48.0</span>
+    <span class="n">_MACHINE_VERSION</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_user</span><span class="p">,</span> <span class="n">n_chips</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_boards</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">spalloc_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spalloc_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param spalloc_server: \</span>
+<span class="sd">            The server from which the machine should be requested</span>
+<span class="sd">        :param spalloc_port: The port of the SPALLOC server</span>
+<span class="sd">        :param spalloc_user: The user to allocate the machine to</span>
+<span class="sd">        :param n_chips: The number of chips required.</span>
+<span class="sd">            IGNORED if n_boards is not None</span>
+<span class="sd">        :param n_boards: The number of boards required</span>
+<span class="sd">        :param spalloc_port: The optional port number to speak to spalloc</span>
+<span class="sd">        :param spalloc_machine: The optional spalloc machine to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># Work out how many boards are needed</span>
+        <span class="k">if</span> <span class="n">n_boards</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">n_boards</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_chips</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_CHIPS_PER_BOARD</span>
+            <span class="c1"># If the number of boards rounded up is less than 10% of a board</span>
+            <span class="c1"># bigger than the actual number of boards,</span>
+            <span class="c1"># add another board just in case.</span>
+            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_boards</span><span class="p">)</span> <span class="o">-</span> <span class="n">n_boards</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
+                <span class="n">n_boards</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">n_boards</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_boards</span><span class="p">))</span>
+
+        <span class="n">spalloc_kw_args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">spalloc_server</span><span class="p">,</span>
+            <span class="s1">&#39;owner&#39;</span><span class="p">:</span> <span class="n">spalloc_user</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">spalloc_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spalloc_kw_args</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spalloc_port</span>
+        <span class="k">if</span> <span class="n">spalloc_machine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spalloc_kw_args</span><span class="p">[</span><span class="s1">&#39;machine&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">spalloc_machine</span>
+
+        <span class="n">job</span><span class="p">,</span> <span class="n">hostname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">)</span>
+        <span class="n">machine_allocation_controller</span> <span class="o">=</span> <span class="n">_SpallocJobController</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">hostname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MACHINE_VERSION</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">machine_allocation_controller</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_launch_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_boards</span><span class="p">,</span> <span class="n">spalloc_kw_args</span><span class="p">):</span>
+        <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">n_boards</span><span class="p">,</span> <span class="o">**</span><span class="n">spalloc_kw_args</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">wait_until_ready</span><span class="p">()</span>
+            <span class="c1"># get param from jobs before starting, so that hanging doesn&#39;t</span>
+            <span class="c1"># occur</span>
+            <span class="k">return</span> <span class="n">job</span><span class="p">,</span> <span class="n">job</span><span class="o">.</span><span class="n">hostname</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">job</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="k">raise</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+spinn_front_end_common.interface.buffer_management.storage_objects package
+==========================================================================
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.interface.buffer_management.storage_objects
+    :members:
+    :undoc-members:
+    :show-inheritance:

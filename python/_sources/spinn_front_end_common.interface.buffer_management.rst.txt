@@ -1,0 +1,18 @@
+spinn_front_end_common.interface.buffer_management package
+==========================================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    spinn_front_end_common.interface.buffer_management.buffer_models
+    spinn_front_end_common.interface.buffer_management.storage_objects
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.interface.buffer_management
+    :members:
+    :undoc-members:
+    :show-inheritance:

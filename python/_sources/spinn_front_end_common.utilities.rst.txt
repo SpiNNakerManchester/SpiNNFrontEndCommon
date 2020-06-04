@@ -1,0 +1,74 @@
+spinn_front_end_common.utilities package
+========================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    spinn_front_end_common.utilities.connections
+    spinn_front_end_common.utilities.database
+    spinn_front_end_common.utilities.notification_protocol
+    spinn_front_end_common.utilities.report_functions
+    spinn_front_end_common.utilities.scp
+    spinn_front_end_common.utilities.utility_objs
+
+Submodules
+----------
+
+spinn_front_end_common.utilities.constants module
+-------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.constants
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.utilities.exceptions module
+--------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.utilities.function_list module
+-----------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.function_list
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.utilities.globals_variables module
+---------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.globals_variables
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.utilities.helpful_functions module
+---------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.helpful_functions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+spinn_front_end_common.utilities.system_control_logic module
+------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.system_control_logic
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.utilities
+    :members:
+    :undoc-members:
+    :show-inheritance:

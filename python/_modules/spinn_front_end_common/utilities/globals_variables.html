@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.utilities.globals_variables &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.globals_variables</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">pacman.executor</span> <span class="kn">import</span> <span class="n">injection_decorator</span>
+
+<span class="c1"># pylint: disable=global-statement</span>
+<span class="n">_failed_state</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">_cached_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_simulator">[docs]</a><span class="k">def</span> <span class="nf">get_simulator</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Get the current simulator object.</span>
+
+<span class="sd">    :rtype: SimulatorInterface</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_failed_state</span>
+    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You must import one of the simulator classes &quot;</span>
+                             <span class="s2">&quot;before calling get_simulator&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_failed_state</span>
+    <span class="k">return</span> <span class="n">_simulator</span></div>
+
+
+<div class="viewcode-block" id="get_not_running_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_not_running_simulator">[docs]</a><span class="k">def</span> <span class="nf">get_not_running_simulator</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Get the current simulator object and verify that it is not running.</span>
+
+<span class="sd">    :rtype: SimulatorInterface</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_failed_state</span>
+    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You must import one of the simulator classes &quot;</span>
+                             <span class="s2">&quot;before calling get_simulator&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_failed_state</span>
+    <span class="n">_simulator</span><span class="o">.</span><span class="n">verify_not_running</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_simulator</span></div>
+
+
+<div class="viewcode-block" id="set_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.set_simulator">[docs]</a><span class="k">def</span> <span class="nf">set_simulator</span><span class="p">(</span><span class="n">new_simulator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Set the current simulator object.</span>
+
+<span class="sd">    :param SimulatorInterface new_simulator: The simulator to set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_failed_state</span><span class="p">,</span> <span class="n">_cached_simulator</span>
+    <span class="k">if</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unexpected call to set_simulator before &quot;</span>
+                         <span class="s2">&quot;set_failed_state&quot;</span><span class="p">)</span>
+    <span class="n">_simulator</span> <span class="o">=</span> <span class="n">new_simulator</span>
+    <span class="n">_cached_simulator</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="unset_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.unset_simulator">[docs]</a><span class="k">def</span> <span class="nf">unset_simulator</span><span class="p">(</span><span class="n">to_cache_simulator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Destroy the current simulator.</span>
+
+<span class="sd">    :param to_cache_simulator: \</span>
+<span class="sd">        a cached version for allowing data extraction</span>
+<span class="sd">    :type to_cache_simulator: SimulatorInterface</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_cached_simulator</span>
+    <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_cached_simulator</span> <span class="o">=</span> <span class="n">to_cache_simulator</span>
+
+    <span class="n">injection_decorator</span><span class="o">.</span><span class="n">_instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="has_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.has_simulator">[docs]</a><span class="k">def</span> <span class="nf">has_simulator</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Check if a simulator is operational.</span>
+
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_simulator</span>
+    <span class="k">return</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="set_failed_state"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.set_failed_state">[docs]</a><span class="k">def</span> <span class="nf">set_failed_state</span><span class="p">(</span><span class="n">new_failed_state</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Install a marker to say that the simulator has failed.</span>
+
+<span class="sd">    :param FailedState new_failed_state: the failure marker</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=unidiomatic-typecheck</span>
+    <span class="k">global</span> <span class="n">_failed_state</span>
+    <span class="k">if</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_failed_state</span> <span class="o">=</span> <span class="n">new_failed_state</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">new_failed_state</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="n">_failed_state</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You may only setup/init one type of simulator&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_generated_output"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_generated_output">[docs]</a><span class="k">def</span> <span class="nf">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_failed_state</span><span class="p">,</span> <span class="n">_cached_simulator</span>
+    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_failed_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_cached_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_cached_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
+                <span class="s2">&quot;generated output, and the simulator needs to be cached &quot;</span>
+                <span class="s2">&quot;before you can request outputs.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;There should be some sort of simulator set. Why am i here?!&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+spinn_front_end_common.common_model_binaries package
+====================================================
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.common_model_binaries
+    :members:
+    :undoc-members:
+    :show-inheritance:

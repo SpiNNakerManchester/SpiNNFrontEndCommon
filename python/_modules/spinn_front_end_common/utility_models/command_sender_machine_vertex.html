@@ -1,0 +1,408 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.utility_models.command_sender_machine_vertex &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utility_models.command_sender_machine_vertex</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
+<span class="kn">from</span> <span class="nn">pacman.model.constraints.key_allocator_constraints</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FixedKeyAndMaskConstraint</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">MachineEdge</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">ResourceContainer</span>
+<span class="kn">from</span> <span class="nn">pacman.model.routing_info</span> <span class="kn">import</span> <span class="n">BaseKeyAndMask</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">,</span>
+    <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulation.simulation_utilities</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_simulation_header_array</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SYSTEM_BYTES_REQUIREMENT</span><span class="p">,</span> <span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+
+
+<div class="viewcode-block" id="CommandSenderMachineVertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex">[docs]</a><span class="k">class</span> <span class="nc">CommandSenderMachineVertex</span><span class="p">(</span>
+        <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span>
+        <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
+        <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
+    <span class="c1"># Regions for populations</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.DATA_REGIONS"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.DATA_REGIONS">[docs]</a>    <span class="k">class</span> <span class="nc">DATA_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+        <span class="n">SYSTEM_REGION</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">COMMANDS_AT_START_RESUME</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">COMMANDS_AT_STOP_PAUSE</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">PROVENANCE_REGION</span> <span class="o">=</span> <span class="mi">4</span></div>
+
+    <span class="c1"># 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays</span>
+    <span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+
+    <span class="c1"># 4 for the time stamp</span>
+    <span class="n">_COMMAND_TIMESTAMP_SIZE</span> <span class="o">=</span> <span class="n">BYTES_PER_WORD</span>
+
+    <span class="c1"># 4 for the int to represent the number of commands</span>
+    <span class="n">_N_COMMANDS_SIZE</span> <span class="o">=</span> <span class="n">BYTES_PER_WORD</span>
+
+    <span class="c1"># bool for if the command has a payload (true = 1)</span>
+    <span class="n">_HAS_PAYLOAD</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># bool for if the command does not have a payload (false = 0)</span>
+    <span class="n">_HAS_NO_PAYLOAD</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># The name of the binary file</span>
+    <span class="n">BINARY_FILE_NAME</span> <span class="o">=</span> <span class="s1">&#39;command_sender_multicast_source.aplx&#39;</span>
+
+    <span class="c1"># all commands will use this mask</span>
+    <span class="n">_DEFAULT_COMMAND_MASK</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param label: The label of this vertex</span>
+<span class="sd">        :type label: str</span>
+<span class="sd">        :param constraints: Any initial constraints to this vertex</span>
+<span class="sd">        :type constraints: \</span>
+<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_to_keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="CommandSenderMachineVertex.add_commands"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.add_commands">[docs]</a>    <span class="k">def</span> <span class="nf">add_commands</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">start_resume_commands</span><span class="p">,</span> <span class="n">pause_stop_commands</span><span class="p">,</span>
+            <span class="n">timed_commands</span><span class="p">,</span> <span class="n">vertex_to_send_to</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add commands to be sent down a given edge</span>
+
+<span class="sd">        :param start_resume_commands: The commands to send when the simulation\</span>
+<span class="sd">            starts or resumes from pause</span>
+<span class="sd">        :type start_resume_commands: \</span>
+<span class="sd">            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)</span>
+<span class="sd">        :param pause_stop_commands: the commands to send when the simulation\</span>
+<span class="sd">            stops or pauses after running</span>
+<span class="sd">        :type pause_stop_commands: \</span>
+<span class="sd">            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)</span>
+<span class="sd">        :param timed_commands: The commands to send at specific times</span>
+<span class="sd">        :type timed_commands: \</span>
+<span class="sd">            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)</span>
+<span class="sd">        :param vertex_to_send_to: The vertex these commands are to be sent to</span>
+<span class="sd">        :type vertex_to_send_to: AbstractVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># container for keys for partition mapping (remove duplicates)</span>
+        <span class="n">command_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">[</span><span class="n">vertex_to_send_to</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="c1"># update holders</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">start_resume_commands</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pause_stop_commands</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">timed_commands</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">commands</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="n">start_resume_commands</span><span class="p">,</span> <span class="n">pause_stop_commands</span><span class="p">,</span> <span class="n">timed_commands</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+                <span class="c1"># track keys</span>
+                <span class="n">command_keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">[</span><span class="n">vertex_to_send_to</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="c1"># create mapping between keys and partitions via partition constraint</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">command_keys</span><span class="p">:</span>
+
+            <span class="n">partition_id</span> <span class="o">=</span> <span class="s2">&quot;COMMANDS</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">partition_id</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_to_keys</span><span class="p">[</span><span class="n">partition_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_n_additional_data_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sdram</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_timed_commands_bytes</span><span class="p">()</span> <span class="o">+</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">)</span> <span class="o">+</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">SYSTEM_BYTES_REQUIREMENT</span> <span class="o">+</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># Return the SDRAM and 1 core</span>
+        <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span><span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="n">sdram</span><span class="p">))</span>
+
+    <span class="nd">@inject_items</span><span class="p">({</span>
+        <span class="s2">&quot;machine_time_step&quot;</span><span class="p">:</span> <span class="s2">&quot;MachineTimeStep&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">:</span> <span class="s2">&quot;TimeScaleFactor&quot;</span>
+        <span class="p">})</span>
+    <span class="nd">@overrides</span><span class="p">(</span>
+        <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
+        <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">})</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.generate_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
+        <span class="n">timed_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timed_commands_bytes</span><span class="p">()</span>
+        <span class="n">start_resume_commands_size</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">)</span>
+        <span class="n">pause_stop_commands_size</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">)</span>
+
+        <span class="c1"># reverse memory regions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_memory_regions</span><span class="p">(</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">timed_commands_size</span><span class="p">,</span> <span class="n">start_resume_commands_size</span><span class="p">,</span>
+            <span class="n">pause_stop_commands_size</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
+
+        <span class="c1"># Write system region</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for multicast source ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
+            <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">(),</span> <span class="n">machine_time_step</span><span class="p">,</span>
+            <span class="n">time_scale_factor</span><span class="p">))</span>
+
+        <span class="c1"># write commands</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span>
+            <span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># write commands to spec for timed commands</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_timed_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+
+        <span class="c1"># write commands fired off during a start or resume</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span>
+            <span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+
+        <span class="c1"># write commands fired off during a pause or end</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span>
+            <span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+
+        <span class="c1"># End-of-Spec:</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="c1"># number of commands</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">))</span>
+
+        <span class="c1"># write commands to region</span>
+        <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_write_timed_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timed_commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">timed_commands</span><span class="p">))</span>
+
+        <span class="c1"># write commands</span>
+        <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">timed_commands</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">command</span><span class="o">.</span><span class="n">is_payload</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_HAS_PAYLOAD</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_HAS_NO_PAYLOAD</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">payload</span> <span class="k">if</span> <span class="n">command</span><span class="o">.</span><span class="n">is_payload</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">repeat</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">delay_between_repeats</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">time_command_size</span><span class="p">,</span> <span class="n">start_command_size</span><span class="p">,</span> <span class="n">end_command_size</span><span class="p">,</span>
+            <span class="n">vertex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Reserve SDRAM space for memory areas:</span>
+
+<span class="sd">        1. Area for information on what data to record</span>
+<span class="sd">        2. Area for start commands</span>
+<span class="sd">        3. Area for end commands</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reserving memory space for data regions:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Reserve memory:</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;system&#39;</span><span class="p">)</span>
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span>
+            <span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">time_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with arbitrary times&#39;</span><span class="p">)</span>
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span>
+            <span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">start_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with start resume times&#39;</span><span class="p">)</span>
+
+        <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
+            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span>
+            <span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">size</span><span class="o">=</span><span class="n">end_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with stop pause times&#39;</span><span class="p">)</span>
+
+        <span class="n">vertex</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_timed_commands_bytes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_timed_commands_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_timed_commands_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n_bytes</span> <span class="o">=</span> <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_N_COMMANDS_SIZE</span>
+        <span class="n">n_bytes</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_COMMAND_TIMESTAMP_SIZE</span> <span class="o">+</span>
+             <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span><span class="p">)</span> <span class="o">*</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">n_bytes</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_n_command_bytes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_command_bytes</span><span class="p">(</span><span class="n">commands</span><span class="p">):</span>
+        <span class="n">n_bytes</span> <span class="o">=</span> <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_N_COMMANDS_SIZE</span>
+        <span class="n">n_bytes</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span> <span class="o">*</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">n_bytes</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_binary_file_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">BINARY_FILE_NAME</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">)</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_binary_start_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="o">.</span>
+               <span class="n">get_outgoing_partition_constraints</span><span class="p">)</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_outgoing_partition_constraints"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_outgoing_partition_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">get_outgoing_partition_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">FixedKeyAndMaskConstraint</span><span class="p">([</span>
+            <span class="n">BaseKeyAndMask</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_to_keys</span><span class="p">[</span><span class="n">partition</span><span class="o">.</span><span class="n">identifier</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_COMMAND_MASK</span><span class="p">)</span>
+        <span class="p">])]</span></div>
+
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_vertex</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">partition_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">keys_added</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys_added</span><span class="p">:</span>
+                    <span class="n">keys_added</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                    <span class="n">app_edge</span> <span class="o">=</span> <span class="n">edge_type</span><span class="p">(</span><span class="n">pre_vertex</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span>
+                    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">app_edge</span><span class="p">)</span>
+                    <span class="n">partition_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span></div>
+
+<div class="viewcode-block" id="CommandSenderMachineVertex.edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MachineEdge</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

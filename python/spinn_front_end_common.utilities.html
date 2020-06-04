@@ -1,0 +1,1247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.utilities package &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="spinn_front_end_common.utilities.connections package" href="spinn_front_end_common.utilities.connections.html" />
+    <link rel="prev" title="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression package" href="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.utilities.connections.html" title="spinn_front_end_common.utilities.connections package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html" title="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" accesskey="U">spinn_front_end_common package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">spinn_front_end_common.utilities package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.constants">spinn_front_end_common.utilities.constants module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.exceptions">spinn_front_end_common.utilities.exceptions module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.function_list">spinn_front_end_common.utilities.function_list module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.globals_variables">spinn_front_end_common.utilities.globals_variables module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.helpful_functions">spinn_front_end_common.utilities.helpful_functions module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.system_control_logic">spinn_front_end_common.utilities.system_control_logic module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html"
+                        title="previous chapter">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.utilities.connections.html"
+                        title="next chapter">spinn_front_end_common.utilities.connections package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/spinn_front_end_common.utilities.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="spinn-front-end-common-utilities-package">
+<h1>spinn_front_end_common.utilities package<a class="headerlink" href="#spinn-front-end-common-utilities-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.connections.html">spinn_front_end_common.utilities.connections package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.connections.html#module-spinn_front_end_common.utilities.connections">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.database.html">spinn_front_end_common.utilities.database package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.database.html#module-spinn_front_end_common.utilities.database">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.notification_protocol.html">spinn_front_end_common.utilities.notification_protocol package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.notification_protocol.html#module-spinn_front_end_common.utilities.notification_protocol">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.report_functions.html">spinn_front_end_common.utilities.report_functions package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.report_functions.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.report_functions.html#module-spinn_front_end_common.utilities.report_functions.energy_report">spinn_front_end_common.utilities.report_functions.energy_report module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.report_functions.html#module-spinn_front_end_common.utilities.report_functions">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.scp.html">spinn_front_end_common.utilities.scp package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.scp.html#module-spinn_front_end_common.utilities.scp">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html">spinn_front_end_common.utilities.utility_objs package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.html">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.html#module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#module-spinn_front_end_common.utilities.utility_objs">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities.constants">
+<span id="spinn-front-end-common-utilities-constants-module"></span><h2>spinn_front_end_common.utilities.constants module<a class="headerlink" href="#module-spinn_front_end_common.utilities.constants" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.constants.</code><code class="descname">BUFFERING_OPERATIONS</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/constants.html#BUFFERING_OPERATIONS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">enum.Enum</span></code></a></p>
+<p>A listing of what SpiNNaker specific EIEIO commands there are.</p>
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS.BUFFER_READ">
+<code class="descname">BUFFER_READ</code><em class="property"> = 0</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS.BUFFER_READ" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS.BUFFER_WRITE">
+<code class="descname">BUFFER_WRITE</code><em class="property"> = 1</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS.BUFFER_WRITE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.constants.</code><code class="descname">SDP_PORTS</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/constants.html#SDP_PORTS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">enum.Enum</span></code></a></p>
+<p>SDP port handling output buffering data streaming</p>
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP">
+<code class="descname">EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP</code><em class="property"> = 6</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP">
+<code class="descname">EXTRA_MONITOR_CORE_DATA_SPEED_UP</code><em class="property"> = 5</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION">
+<code class="descname">EXTRA_MONITOR_CORE_REINJECTION</code><em class="property"> = 4</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT">
+<code class="descname">INPUT_BUFFERING_SDP_PORT</code><em class="property"> = 1</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT">
+<code class="descname">OUTPUT_BUFFERING_SDP_PORT</code><em class="property"> = 2</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT">
+<code class="descname">RUNNING_COMMAND_SDP_PORT</code><em class="property"> = 3</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.constants.</code><code class="descname">SDP_RUNNING_MESSAGE_CODES</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/constants.html#SDP_RUNNING_MESSAGE_CODES"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/enum.html#enum.Enum" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">enum.Enum</span></code></a></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE">
+<code class="descname">SDP_CLEAR_IOBUF_CODE</code><em class="property"> = 9</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE">
+<code class="descname">SDP_NEW_RUNTIME_ID_CODE</code><em class="property"> = 7</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_STOP_ID_CODE">
+<code class="descname">SDP_STOP_ID_CODE</code><em class="property"> = 6</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_STOP_ID_CODE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_UPDATE_PROVENCE_REGION_AND_EXIT">
+<code class="descname">SDP_UPDATE_PROVENCE_REGION_AND_EXIT</code><em class="property"> = 8</em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDP_RUNNING_MESSAGE_CODES.SDP_UPDATE_PROVENCE_REGION_AND_EXIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities.exceptions">
+<span id="spinn-front-end-common-utilities-exceptions-module"></span><h2>spinn_front_end_common.utilities.exceptions module<a class="headerlink" href="#module-spinn_front_end_common.utilities.exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.BufferableRegionTooSmall">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">BufferableRegionTooSmall</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#BufferableRegionTooSmall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.BufferableRegionTooSmall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when the SDRAM space of the region for buffered packets is        too small to contain any packet at all</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.BufferedRegionNotPresent">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">BufferedRegionNotPresent</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#BufferedRegionNotPresent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.BufferedRegionNotPresent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when trying to issue buffered packets for a region not managed</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.CantFindSDRAMToUseException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">CantFindSDRAMToUseException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#CantFindSDRAMToUseException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.CantFindSDRAMToUseException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when malloc and sdram stealing cannot occur.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.ConfigurationException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">ConfigurationException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#ConfigurationException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when the front end determines a input parameter is invalid</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.ExecutableFailedToStartException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">ExecutableFailedToStartException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#ExecutableFailedToStartException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.ExecutableFailedToStartException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when an executable has not entered the expected state during        start up</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">ExecutableFailedToStopException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#ExecutableFailedToStopException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when an executable has not entered the expected state during        execution</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.ExecutableNotFoundException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">ExecutableNotFoundException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#ExecutableNotFoundException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.ExecutableNotFoundException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when a specified executable could not be found</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.RallocException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">RallocException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#RallocException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.RallocException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.exceptions.SpinnFrontEndException</span></code></a></p>
+<p>Raised when there are not enough routing table entries</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException">
+<em class="property">exception </em><code class="descclassname">spinn_front_end_common.utilities.exceptions.</code><code class="descname">SpinnFrontEndException</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#SpinnFrontEndException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#Exception" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when the front end detects an error</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities.function_list">
+<span id="spinn-front-end-common-utilities-function-list-module"></span><h2>spinn_front_end_common.utilities.function_list module<a class="headerlink" href="#module-spinn_front_end_common.utilities.function_list" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.function_list.get_front_end_common_pacman_xml_paths">
+<code class="descclassname">spinn_front_end_common.utilities.function_list.</code><code class="descname">get_front_end_common_pacman_xml_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/function_list.html#get_front_end_common_pacman_xml_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.function_list.get_front_end_common_pacman_xml_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the XML path for the front end common interface functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities.globals_variables">
+<span id="spinn-front-end-common-utilities-globals-variables-module"></span><h2>spinn_front_end_common.utilities.globals_variables module<a class="headerlink" href="#module-spinn_front_end_common.utilities.globals_variables" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.get_generated_output">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">get_generated_output</code><span class="sig-paren">(</span><em>output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_generated_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_generated_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.get_not_running_simulator">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">get_not_running_simulator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_not_running_simulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_not_running_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current simulator object and verify that it is not running.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface">SimulatorInterface</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.get_simulator">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">get_simulator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_simulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current simulator object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface">SimulatorInterface</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.has_simulator">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">has_simulator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#has_simulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.has_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a simulator is operational.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.set_failed_state">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">set_failed_state</code><span class="sig-paren">(</span><em>new_failed_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#set_failed_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.set_failed_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install a marker to say that the simulator has failed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_failed_state</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.FailedState" title="spinn_front_end_common.utilities.FailedState"><em>FailedState</em></a>) &#8211; the failure marker</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.set_simulator">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">set_simulator</code><span class="sig-paren">(</span><em>new_simulator</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#set_simulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.set_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the current simulator object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_simulator</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><em>SimulatorInterface</em></a>) &#8211; The simulator to set.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.globals_variables.unset_simulator">
+<code class="descclassname">spinn_front_end_common.utilities.globals_variables.</code><code class="descname">unset_simulator</code><span class="sig-paren">(</span><em>to_cache_simulator=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#unset_simulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.unset_simulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destroy the current simulator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>to_cache_simulator</strong> (<a class="reference internal" href="#spinn_front_end_common.utilities.SimulatorInterface" title="spinn_front_end_common.utilities.SimulatorInterface"><em>SimulatorInterface</em></a>) &#8211; a cached version for allowing data extraction</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities.helpful_functions">
+<span id="spinn-front-end-common-utilities-helpful-functions-module"></span><h2>spinn_front_end_common.utilities.helpful_functions module<a class="headerlink" href="#module-spinn_front_end_common.utilities.helpful_functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.convert_string_into_chip_and_core_subset">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">convert_string_into_chip_and_core_subset</code><span class="sig-paren">(</span><em>cores</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#convert_string_into_chip_and_core_subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.convert_string_into_chip_and_core_subset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate a string list of cores into a core subset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; string representing down cores formatted as x,y,p[:x,y,p]*</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)">CoreSubsets</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.convert_time_diff_to_total_milliseconds">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">convert_time_diff_to_total_milliseconds</code><span class="sig-paren">(</span><em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#convert_time_diff_to_total_milliseconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.convert_time_diff_to_total_milliseconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert between a time diff and total milliseconds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">total milliseconds</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">convert_vertices_to_core_subset</code><span class="sig-paren">(</span><em>vertices</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#convert_vertices_to_core_subset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts vertices into core subsets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>vertices</strong> &#8211; the vertices to convert to core subsets</li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the CoreSubSets of the vertices</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)">CoreSubsets</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.determine_flow_states">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">determine_flow_states</code><span class="sig-paren">(</span><em>executable_types</em>, <em>no_sync_changes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#determine_flow_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.determine_flow_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the start and end states for these executable types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>executable_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType"><em>ExecutableType</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#any" title="(in Python v3.6)"><em>any</em></a><em>)</em><em></em>) &#8211; the execute types to locate start and end states from</li>
+<li><strong>no_sync_changes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the number of times sync signals been sent</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dict of executable type to states.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v)">CPUState</a>),        <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v)">CPUState</a>))</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">emergency_recover_state_from_failure</code><span class="sig-paren">(</span><em>txrx</em>, <em>app_id</em>, <em>vertex</em>, <em>placement</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#emergency_recover_state_from_failure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to get at least <em>some</em> information out of a core when something    goes badly wrong. Not a replacement for what abstract spinnaker base does.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; The transceiver.</li>
+<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The ID of the application.</li>
+<li><strong>vertex</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><em>AbstractHasAssociatedBinary</em></a>) &#8211; The vertex to retrieve the IOBUF from if it is suspected        as being dead</li>
+<li><strong>placement</strong> &#8211; Where the vertex is located.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">emergency_recover_states_from_failure</code><span class="sig-paren">(</span><em>txrx</em>, <em>app_id</em>, <em>executable_targets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#emergency_recover_states_from_failure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to get at least <em>some</em> information out of a core when something    goes badly wrong. Not a replacement for what abstract spinnaker base does.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; The transceiver.</li>
+<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The ID of the application.</li>
+<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; The what/where mapping</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.find_executable_start_type">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">find_executable_start_type</code><span class="sig-paren">(</span><em>machine_vertex</em>, <em>graph_mapper=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#find_executable_start_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.find_executable_start_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">flood_fill_binary_to_spinnaker</code><span class="sig-paren">(</span><em>executable_targets</em>, <em>binary</em>, <em>txrx</em>, <em>app_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#flood_fill_binary_to_spinnaker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker" title="Permalink to this definition">¶</a></dt>
+<dd><p>flood fills a binary to spinnaker on a given app_id     given the executable targets and binary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; the executable targets object</li>
+<li><strong>binary</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the (name of the) binary to flood fill</li>
+<li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; spinnman instance</li>
+<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the app id to load it on</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the number of cores it was loaded onto</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.generate_unique_folder_name">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">generate_unique_folder_name</code><span class="sig-paren">(</span><em>folder</em>, <em>filename</em>, <em>extension</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#generate_unique_folder_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.generate_unique_folder_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a unique file name with a given extension in a given folder</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; where to put this unique file</li>
+<li><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the name of the first part of the file without extension</li>
+<li><strong>extension</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; extension of the file</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">file path with a unique addition</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.get_ethernet_chip">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">get_ethernet_chip</code><span class="sig-paren">(</span><em>machine</em>, <em>board_address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#get_ethernet_chip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.get_ethernet_chip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Locate the chip with the given board IP address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the SpiNNaker machine</li>
+<li><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the board address to locate the chip of.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The chip that supports that board address</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Chip" title="(in SpiNNMachine v)">Chip</a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> &#8211; when that board address has no chip associated with it</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">locate_extra_monitor_mc_receiver</code><span class="sig-paren">(</span><em>machine</em>, <em>placement_x</em>, <em>placement_y</em>, <em>packet_gather_cores_to_ethernet_connection_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#locate_extra_monitor_mc_receiver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; The machine descriptor</li>
+<li><strong>placement_x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The X coordinate of the reference chip</li>
+<li><strong>placement_y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The Y coordinate of the reference chip</li>
+<li><strong>packet_gather_cores_to_ethernet_connection_map</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body"><p class="first">dict(tuple(int,int),?)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><p>?</p>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">locate_memory_region_for_placement</code><span class="sig-paren">(</span><em>placement</em>, <em>region</em>, <em>transceiver</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#locate_memory_region_for_placement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the address of a region for a placement</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the region to locate the base address of</li>
+<li><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; the placement object to get the region address of</li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the python interface to the SpiNNaker machine</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.read_config">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">read_config</code><span class="sig-paren">(</span><em>config</em>, <em>section</em>, <em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the string value of a config item, returning None if the value        is &#8220;None&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>config</strong> &#8211; The configuration to look things up in.</li>
+<li><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The section name</li>
+<li><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The item name.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.read_config_boolean">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">read_config_boolean</code><span class="sig-paren">(</span><em>config</em>, <em>section</em>, <em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config_boolean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config_boolean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the boolean value of a config item, returning None if the value        is &#8220;None&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>config</strong> &#8211; The configuration to look things up in.</li>
+<li><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The section name</li>
+<li><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The item name.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.read_config_int">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">read_config_int</code><span class="sig-paren">(</span><em>config</em>, <em>section</em>, <em>item</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_config_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_config_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the integer value of a config item, returning None if the value        is &#8220;None&#8221;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>config</strong> &#8211; The configuration to look things up in.</li>
+<li><strong>section</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The section name</li>
+<li><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The item name.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.read_data">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">read_data</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>address</em>, <em>length</em>, <em>data_format</em>, <em>transceiver</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#read_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.read_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and converts a single data item from memory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; chip x</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; chip y</li>
+<li><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; base address of the SDRAM chip to read</li>
+<li><strong>length</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; length to read</li>
+<li><strong>data_format</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the format to read memory (see <cite>struct.pack</cite>)</li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpinnMan interface</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.helpful_functions.write_address_to_user0">
+<code class="descclassname">spinn_front_end_common.utilities.helpful_functions.</code><code class="descname">write_address_to_user0</code><span class="sig-paren">(</span><em>txrx</em>, <em>x</em>, <em>y</em>, <em>p</em>, <em>address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#write_address_to_user0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.write_address_to_user0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the given address into the user_0 register of the given core.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; The transceiver.</li>
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Chip coordinate.</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Chip coordinate.</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Core ID on chip.</li>
+<li><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Value to write (32-bit integer)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities.system_control_logic">
+<span id="spinn-front-end-common-utilities-system-control-logic-module"></span><h2>spinn_front_end_common.utilities.system_control_logic module<a class="headerlink" href="#module-spinn_front_end_common.utilities.system_control_logic" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinn_front_end_common.utilities.system_control_logic.run_system_application">
+<code class="descclassname">spinn_front_end_common.utilities.system_control_logic.</code><code class="descname">run_system_application</code><span class="sig-paren">(</span><em>executable_cores</em>, <em>app_id</em>, <em>transceiver</em>, <em>provenance_file_path</em>, <em>executable_finder</em>, <em>read_algorithm_iobuf</em>, <em>check_for_success_function</em>, <em>handle_failure_function</em>, <em>cpu_end_states</em>, <em>needs_sync_barrier</em>, <em>no_sync_changes</em>, <em>filename_template</em>, <em>binaries_to_track=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/system_control_logic.html#run_system_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.system_control_logic.run_system_application" title="Permalink to this definition">¶</a></dt>
+<dd><p>executes the app</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>executable_cores</strong> &#8211; the cores to run the executable on</li>
+<li><strong>app_id</strong> &#8211; the appid for the executable</li>
+<li><strong>transceiver</strong> &#8211; the SpiNNMan instance</li>
+<li><strong>provenance_file_path</strong> &#8211; the path for where provenance data is    stored</li>
+<li><strong>filename_template</strong> &#8211; the iobuf filename template.</li>
+<li><strong>read_algorithm_iobuf</strong> &#8211; bool flag for report</li>
+<li><strong>executable_finder</strong> &#8211; finder for executable paths</li>
+<li><strong>check_for_success_function</strong> &#8211; function used to check success:     expects executable_cores, transceiver, as inputs</li>
+<li><strong>handle_failure_function</strong> &#8211; function used to deal with failures    expects executable_cores, transceiver, provenance_file_path,    app_id, executable_finder as inputs</li>
+<li><strong>needs_sync_barrier</strong> &#8211; bool flag for if needing sync barrier</li>
+<li><strong>no_sync_changes</strong> &#8211; the number of times sync signal been sent</li>
+<li><strong>binaries_to_track</strong> &#8211; a list of binary names to check for exit state.     Or None for all binaries</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-spinn_front_end_common.utilities">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.FailedState">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.</code><code class="descname">FailedState</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.simulator_interface.SimulatorInterface</span></code></p>
+<p>Marks that the simulator has failed (and replaces said simulator).</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Any method invoked on this object may fail with        <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><code class="xref py py-class docutils literal"><span class="pre">ConfigurationException</span></code></a>.</p>
+</div>
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.FailedState.add_socket_address">
+<code class="descname">add_socket_address</code><span class="sig-paren">(</span><em>socket_address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.add_socket_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.add_socket_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the address of a socket used in the run notification protocol.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>socket_address</strong> (<em>SocketAddress</em>) &#8211; The address of the socket</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.buffer_manager">
+<code class="descname">buffer_manager</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.buffer_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The buffer manager being used for loading/extracting buffers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager">BufferManager</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.config">
+<code class="descname">config</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides access to the configuration for front end interfaces.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ConfigHandler</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.graph_mapper">
+<code class="descname">graph_mapper</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.graph_mapper" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.has_ran">
+<code class="descname">has_ran</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.has_ran" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the simulation has executed anything at all.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.machine">
+<code class="descname">machine</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>The python machine description object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)">Machine</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.machine_time_step">
+<code class="descname">machine_time_step</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.machine_time_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>The machine timestep, in microseconds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.no_machine_time_steps">
+<code class="descname">no_machine_time_steps</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of machine time steps.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.placements">
+<code class="descname">placements</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.placements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where machine vertices are placed on the machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)">Placements</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.FailedState.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>run_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a simulation for a fixed amount of time</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the run duration in milliseconds.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.FailedState.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>End running of the simulation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.tags">
+<code class="descname">tags</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.tags" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v)">Tags</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.time_scale_factor">
+<code class="descname">time_scale_factor</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.time_scale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.transceiver">
+<code class="descname">transceiver</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.transceiver" title="Permalink to this definition">¶</a></dt>
+<dd><p>How to talk to the machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)">Transceiver</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.FailedState.use_virtual_board">
+<code class="descname">use_virtual_board</code><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.use_virtual_board" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.FailedState.verify_not_running">
+<code class="descname">verify_not_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/failed_state.html#FailedState.verify_not_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.FailedState.verify_not_running" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify that the simulator is in a state where it can start running.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.</code><code class="descname">SimulatorInterface</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.add_socket_address">
+<code class="descname">add_socket_address</code><span class="sig-paren">(</span><em>socket_address</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.add_socket_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.add_socket_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the address of a socket used in the run notification protocol.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>socket_address</strong> (<em>SocketAddress</em>) &#8211; The address of the socket</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.buffer_manager">
+<code class="descname">buffer_manager</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.buffer_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The buffer manager being used for loading/extracting buffers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager">BufferManager</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.config">
+<code class="descname">config</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides access to the configuration for front end interfaces.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">ConfigHandler</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.has_ran">
+<code class="descname">has_ran</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.has_ran" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether the simulation has executed anything at all.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.machine">
+<code class="descname">machine</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>The python machine description object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)">Machine</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.machine_time_step">
+<code class="descname">machine_time_step</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.machine_time_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>The machine timestep, in microseconds.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.no_machine_time_steps">
+<code class="descname">no_machine_time_steps</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of machine time steps.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.placements">
+<code class="descname">placements</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.placements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where machine vertices are placed on the machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)">Placements</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>run_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a simulation for a fixed amount of time</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the run duration in milliseconds.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>End running of the simulation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.tags">
+<code class="descname">tags</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.tags" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v)">Tags</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.time_scale_factor">
+<code class="descname">time_scale_factor</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.time_scale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.transceiver">
+<code class="descname">transceiver</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.transceiver" title="Permalink to this definition">¶</a></dt>
+<dd><p>How to talk to the machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)">Transceiver</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.use_virtual_board">
+<code class="descname">use_virtual_board</code><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.use_virtual_board" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.utilities.SimulatorInterface.verify_not_running">
+<code class="descname">verify_not_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/simulator_interface.html#SimulatorInterface.verify_not_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.SimulatorInterface.verify_not_running" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify that the simulator is in a state where it can start running.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.utilities.connections.html" title="spinn_front_end_common.utilities.connections package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html" title="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

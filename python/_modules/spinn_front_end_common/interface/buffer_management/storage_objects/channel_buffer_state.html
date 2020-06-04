@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.buffer_management.storage_objects.channel_buffer_state &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.buffer_management.storage_objects.channel_buffer_state</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BUFFERING_OPERATIONS</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+
+<span class="n">_CHANNEL_BUFFER_PATTERN</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;IIIIIBBBx&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ChannelBufferState"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState">[docs]</a><span class="k">class</span> <span class="nc">ChannelBufferState</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Stores information related to a single channel output buffering\</span>
+<span class="sd">        state, as it is retrieved at the end of a simulation on the\</span>
+<span class="sd">        SpiNNaker system.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1">#: start buffering area memory address (32 bits)</span>
+        <span class="s2">&quot;_start_address&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: address where data was last written (32 bits)</span>
+        <span class="s2">&quot;_current_write&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: address where the DMA write got up to (32 bits)</span>
+        <span class="s2">&quot;_current_dma_write&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: address where data was last read (32 bits)</span>
+        <span class="s2">&quot;_current_read&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: The address of first byte after the buffer (32 bits)</span>
+        <span class="s2">&quot;_end_address&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: The ID of the region (8 bits)</span>
+        <span class="s2">&quot;_region_id&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: True if the region overflowed during the simulation (8 bits)</span>
+        <span class="s2">&quot;_missing_info&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: Last operation performed on the buffer - read or write (8 bits)</span>
+        <span class="s2">&quot;_last_buffer_operation&quot;</span><span class="p">,</span>
+
+        <span class="c1">#: bool check for if its extracted data from machine</span>
+        <span class="s2">&quot;_update_completed&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1">#: 4 bytes for _start_address, 4 for _current_write,</span>
+    <span class="c1">#: 4 for current_dma_write,</span>
+    <span class="c1">#: 4 for _current_read, 4 for _end_address, 1 for _region_id,</span>
+    <span class="c1">#: 1 for _missing_info, 1 for _last_buffer_operation</span>
+    <span class="n">ChannelBufferStateSize</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">start_address</span><span class="p">,</span> <span class="n">current_write</span><span class="p">,</span> <span class="n">current_dma_write</span><span class="p">,</span>
+            <span class="n">current_read</span><span class="p">,</span> <span class="n">end_address</span><span class="p">,</span> <span class="n">region_id</span><span class="p">,</span> <span class="n">missing_info</span><span class="p">,</span>
+            <span class="n">last_buffer_operation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int start_address: start buffering area memory address (32 bits)</span>
+<span class="sd">        :param int current_write: address where data was last written (32 bits)</span>
+<span class="sd">        :param int current_read: address where data was last read (32 bits)</span>
+<span class="sd">        :param int end_address:</span>
+<span class="sd">            The address of first byte after the buffer (32 bits)</span>
+<span class="sd">        :param int region_id: The ID of the region (8 bits)</span>
+<span class="sd">        :param int missing_info:</span>
+<span class="sd">            True if the region overflowed during the simulation (8 bits)</span>
+<span class="sd">        :param int last_buffer_operation:</span>
+<span class="sd">            Last operation performed on the buffer - read or write (8 bits)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_address</span> <span class="o">=</span> <span class="n">start_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_write</span> <span class="o">=</span> <span class="n">current_write</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_dma_write</span> <span class="o">=</span> <span class="n">current_dma_write</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_read</span> <span class="o">=</span> <span class="n">current_read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_address</span> <span class="o">=</span> <span class="n">end_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_region_id</span> <span class="o">=</span> <span class="n">region_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_missing_info</span> <span class="o">=</span> <span class="n">missing_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_buffer_operation</span> <span class="o">=</span> <span class="n">last_buffer_operation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_completed</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">start_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; start buffering area memory address &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_address</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; address where data was last written &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_write</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; address where data was last read &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_read</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">end_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The address of first byte after the buffer &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_address</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The ID of the region &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_id</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">missing_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; True if the region overflowed during the simulation &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_missing_info</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">last_buffer_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Last operation performed on the buffer - read (0) or write (non-0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_buffer_operation</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_state_updated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; bool check for if its extracted data from machine &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_completed</span>
+
+<div class="viewcode-block" id="ChannelBufferState.update_last_operation"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.update_last_operation">[docs]</a>    <span class="k">def</span> <span class="nf">update_last_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_buffer_operation</span> <span class="o">=</span> <span class="n">operation</span></div>
+
+<div class="viewcode-block" id="ChannelBufferState.update_read_pointer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.update_read_pointer">[docs]</a>    <span class="k">def</span> <span class="nf">update_read_pointer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_ptr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_read</span> <span class="o">=</span> <span class="n">read_ptr</span></div>
+
+<div class="viewcode-block" id="ChannelBufferState.set_update_completed"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.set_update_completed">[docs]</a>    <span class="k">def</span> <span class="nf">set_update_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_completed</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ChannelBufferState.create_from_bytearray"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.create_from_bytearray">[docs]</a>    <span class="k">def</span> <span class="nf">create_from_bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bytearray data:</span>
+<span class="sd">            The contents of the buffer state structure on SpiNNaker.</span>
+<span class="sd">        :rtype: ChannelBufferState</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">start_address</span><span class="p">,</span> <span class="n">current_write</span><span class="p">,</span> <span class="n">current_dma_write</span><span class="p">,</span> <span class="n">current_read</span><span class="p">,</span>
+         <span class="n">end_address</span><span class="p">,</span> <span class="n">region_id</span><span class="p">,</span> <span class="n">missing_info</span><span class="p">,</span> <span class="n">last_buffer_operation</span><span class="p">)</span> <span class="o">=</span> \
+            <span class="n">_CHANNEL_BUFFER_PATTERN</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_buffer_operation</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">last_buffer_operation</span> <span class="o">=</span> <span class="n">BUFFERING_OPERATIONS</span><span class="o">.</span><span class="n">BUFFER_READ</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">last_buffer_operation</span> <span class="o">=</span> <span class="n">BUFFERING_OPERATIONS</span><span class="o">.</span><span class="n">BUFFER_WRITE</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">buffer_state</span> <span class="o">=</span> <span class="n">ChannelBufferState</span><span class="p">(</span>
+            <span class="n">start_address</span><span class="p">,</span> <span class="n">current_write</span><span class="p">,</span> <span class="n">current_dma_write</span><span class="p">,</span> <span class="n">current_read</span><span class="p">,</span>
+            <span class="n">end_address</span><span class="p">,</span> <span class="n">region_id</span><span class="p">,</span> <span class="n">missing_info</span><span class="p">,</span> <span class="n">last_buffer_operation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">buffer_state</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="ChannelBufferState.size_of_channel_state"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.ChannelBufferState.size_of_channel_state">[docs]</a>    <span class="k">def</span> <span class="nf">size_of_channel_state</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">ChannelBufferStateSize</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

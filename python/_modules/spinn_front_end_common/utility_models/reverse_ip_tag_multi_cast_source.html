@@ -1,0 +1,361 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationVertex</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CPUCyclesPerTickResource</span><span class="p">,</span> <span class="n">DTCMResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">,</span>
+    <span class="n">ReverseIPtagResource</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.constraints.placer_constraints</span> <span class="kn">import</span> <span class="n">BoardConstraint</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models.impl</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ProvidesKeyToAtomMappingImpl</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">SDP_PORTS</span>
+<span class="kn">from</span> <span class="nn">.reverse_ip_tag_multicast_source_machine_vertex</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">globals_variables</span>
+
+
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource">[docs]</a><span class="k">class</span> <span class="nc">ReverseIpTagMultiCastSource</span><span class="p">(</span>
+        <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
+        <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
+        <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">,</span>
+        <span class="n">ProvidesKeyToAtomMappingImpl</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; A model which will allow events to be injected into a SpiNNaker\</span>
+<span class="sd">        machine and converted into multicast packets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">max_atoms_per_core</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span><span class="p">,</span>
+
+            <span class="c1"># General parameters</span>
+            <span class="n">board_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+            <span class="c1"># Live input parameters</span>
+            <span class="n">receive_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">receive_sdp_port</span><span class="o">=</span><span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">INPUT_BUFFERING_SDP_PORT</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">receive_tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">receive_rate</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+
+            <span class="c1"># Key parameters</span>
+            <span class="n">virtual_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">prefix_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+
+            <span class="c1"># Send buffer parameters</span>
+            <span class="n">send_buffer_times</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">send_buffer_partition_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+            <span class="c1"># Extra flag for input without a reserved port</span>
+            <span class="n">reserve_reverse_ip_tag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+
+            <span class="c1"># Flag to indicate that data will be received to inject</span>
+            <span class="n">enable_injection</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param n_keys: The number of keys to be sent via this multicast source</span>
+<span class="sd">        :type n_keys: int</span>
+<span class="sd">        :param label: The label of this vertex</span>
+<span class="sd">        :type label: str</span>
+<span class="sd">        :param constraints: Any initial constraints to this vertex</span>
+<span class="sd">        :type constraints: \</span>
+<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
+<span class="sd">        :param max_atoms_per_core:</span>
+<span class="sd">        :type max_atoms_per_core: int</span>
+<span class="sd">        :param board_address: The IP address of the board on which to place\</span>
+<span class="sd">            this vertex if receiving data, either buffered or live (by\</span>
+<span class="sd">            default, any board is chosen)</span>
+<span class="sd">        :type board_address: str or None</span>
+<span class="sd">        :param receive_port: The port on the board that will listen for\</span>
+<span class="sd">            incoming event packets (default is to disable this feature; set a\</span>
+<span class="sd">            value to enable it)</span>
+<span class="sd">        :type receive_port: int or None</span>
+<span class="sd">        :param receive_sdp_port: The SDP port to listen on for incoming event\</span>
+<span class="sd">            packets (defaults to 1)</span>
+<span class="sd">        :type receive_sdp_port: int</span>
+<span class="sd">        :param receive_tag: The IP tag to use for receiving live events\</span>
+<span class="sd">            (uses any by default)</span>
+<span class="sd">        :type receive_tag: IPTag</span>
+<span class="sd">        :param receive_rate: The estimated rate of packets that will be sent\</span>
+<span class="sd">            by this source</span>
+<span class="sd">        :type receive_rate: float</span>
+<span class="sd">        :param virtual_key: The base multicast key to send received events\</span>
+<span class="sd">            with (assigned automatically by default)</span>
+<span class="sd">        :type virtual_key: int</span>
+<span class="sd">        :param prefix: The prefix to &quot;or&quot; with generated multicast keys\</span>
+<span class="sd">            (default is no prefix)</span>
+<span class="sd">        :type prefix: int</span>
+<span class="sd">        :param prefix_type: Whether the prefix should apply to the upper or\</span>
+<span class="sd">            lower half of the multicast keys (default is upper half)</span>
+<span class="sd">        :type prefix_type: ~spinnman.messages.eieio.EIEIOPrefix</span>
+<span class="sd">        :param check_keys: True if the keys of received events should be\</span>
+<span class="sd">            verified before sending (default False)</span>
+<span class="sd">        :type check_keys: bool</span>
+<span class="sd">        :param send_buffer_times: An array of arrays of times at which keys\</span>
+<span class="sd">            should be sent (one array for each key, default disabled)</span>
+<span class="sd">        :type send_buffer_times: \</span>
+<span class="sd">            numpy.ndarray(numpy.ndarray(numpy.int32)) or \</span>
+<span class="sd">            list(numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        :param send_buffer_partition_id: The ID of the partition containing\</span>
+<span class="sd">            the edges down which the events are to be sent</span>
+<span class="sd">        :type send_buffer_partition_id: str or None</span>
+<span class="sd">        :param reserve_reverse_ip_tag: \</span>
+<span class="sd">            Extra flag for input without a reserved port</span>
+<span class="sd">        :type reserve_reverse_ip_tag: bool</span>
+<span class="sd">        :param enable_injection:\</span>
+<span class="sd">            Flag to indicate that data will be received to inject</span>
+<span class="sd">        :type enable_injection: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReverseIpTagMultiCastSource</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">)</span>
+
+        <span class="c1"># basic items</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span> <span class="o">=</span> <span class="n">n_keys</span>
+
+        <span class="c1"># Store the parameters for EIEIO</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_board_address</span> <span class="o">=</span> <span class="n">board_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_receive_port</span> <span class="o">=</span> <span class="n">receive_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_receive_sdp_port</span> <span class="o">=</span> <span class="n">receive_sdp_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_receive_tag</span> <span class="o">=</span> <span class="n">receive_tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_receive_rate</span> <span class="o">=</span> <span class="n">receive_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="o">=</span> <span class="n">virtual_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span> <span class="o">=</span> <span class="n">prefix_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_keys</span> <span class="o">=</span> <span class="n">check_keys</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">receive_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">reserve_reverse_ip_tag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span> <span class="o">=</span> <span class="p">[</span><span class="n">ReverseIPtagResource</span><span class="p">(</span>
+                <span class="n">port</span><span class="o">=</span><span class="n">receive_port</span><span class="p">,</span> <span class="n">sdp_port</span><span class="o">=</span><span class="n">receive_sdp_port</span><span class="p">,</span>
+                <span class="n">tag</span><span class="o">=</span><span class="n">receive_tag</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">board_address</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="n">BoardConstraint</span><span class="p">(</span><span class="n">board_address</span><span class="p">))</span>
+
+        <span class="c1"># Store the send buffering details</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_send_buffer_times</span><span class="p">(</span>
+            <span class="n">send_buffer_times</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_partition_id</span> <span class="o">=</span> <span class="n">send_buffer_partition_id</span>
+
+        <span class="c1"># Store the buffering details</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_reverse_ip_tag</span> <span class="o">=</span> <span class="n">reserve_reverse_ip_tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_injection</span> <span class="o">=</span> <span class="n">enable_injection</span>
+
+        <span class="c1"># Store recording parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Keep the vertices for resuming runs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_validate_send_buffer_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+                    <span class="s2">&quot;The array or arrays of times </span><span class="si">{}</span><span class="s2"> does not have the &quot;</span>
+                    <span class="s2">&quot;expected length of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">send_buffer_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">send_buffer_times</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">get_resources_used_by_atoms</span><span class="p">)</span>
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.get_resources_used_by_atoms"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_resources_used_by_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_resources_used_by_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">):</span>
+        <span class="n">send_buffer_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span>
+        <span class="k">if</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="n">send_buffer_times</span> <span class="o">=</span> <span class="n">send_buffer_times</span><span class="p">[</span>
+                    <span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">:</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">hi_atom</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">sim</span> <span class="o">=</span> <span class="n">globals_variables</span><span class="o">.</span><span class="n">get_simulator</span><span class="p">()</span>
+        <span class="n">container</span> <span class="o">=</span> <span class="n">ResourceContainer</span><span class="p">(</span>
+            <span class="n">sdram</span><span class="o">=</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">(</span>
+                <span class="n">send_buffer_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span><span class="p">,</span> <span class="n">sim</span><span class="o">.</span><span class="n">machine_time_step</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_receive_rate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">),</span>
+            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span>
+                <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">get_dtcm_usage</span><span class="p">()),</span>
+            <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span>
+                <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
+            <span class="n">reverse_iptags</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">container</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">send_buffer_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; When messages will be sent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span>
+
+    <span class="nd">@send_buffer_times</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">send_buffer_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="o">=</span> <span class="n">send_buffer_times</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">vertex_slice</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertices</span><span class="p">:</span>
+            <span class="n">send_buffer_times_to_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span>
+            <span class="c1"># pylint: disable=len-as-condition</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                    <span class="n">send_buffer_times_to_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span><span class="p">[</span>
+                        <span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">:</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">hi_atom</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">vertex</span><span class="o">.</span><span class="n">send_buffer_times</span> <span class="o">=</span> <span class="n">send_buffer_times_to_set</span>
+
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.enable_recording"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.enable_recording">[docs]</a>    <span class="k">def</span> <span class="nf">enable_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_state</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span> <span class="o">=</span> <span class="n">new_state</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="o">.</span>
+               <span class="n">get_outgoing_partition_constraints</span><span class="p">)</span>
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.get_outgoing_partition_constraints"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_outgoing_partition_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">get_outgoing_partition_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">get_outgoing_partition_constraints</span><span class="p">(</span>
+            <span class="n">partition</span><span class="p">)</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_binary_file_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;reverse_iptag_multicast_source.aplx&#39;</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">)</span>
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_binary_start_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.generate_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span></div>
+
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">)</span>
+<div class="viewcode-block" id="ReverseIpTagMultiCastSource.create_machine_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.create_machine_vertex">[docs]</a>    <span class="k">def</span> <span class="nf">create_machine_vertex</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">,</span>
+            <span class="n">resources_required</span><span class="p">,</span>  <span class="c1"># @UnusedVariable</span>
+            <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">send_buffer_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span>
+        <span class="k">if</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                <span class="n">send_buffer_times</span> <span class="o">=</span> <span class="n">send_buffer_times</span><span class="p">[</span>
+                    <span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">:</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">hi_atom</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">vertex</span> <span class="o">=</span> <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="p">(</span>
+            <span class="n">n_keys</span><span class="o">=</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+            <span class="n">board_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_board_address</span><span class="p">,</span>
+            <span class="n">receive_port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_port</span><span class="p">,</span>
+            <span class="n">receive_sdp_port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_sdp_port</span><span class="p">,</span>
+            <span class="n">receive_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_tag</span><span class="p">,</span>
+            <span class="n">receive_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_rate</span><span class="p">,</span>
+            <span class="n">virtual_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span><span class="p">,</span>
+            <span class="n">prefix_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span><span class="p">,</span> <span class="n">check_keys</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_check_keys</span><span class="p">,</span>
+            <span class="n">send_buffer_times</span><span class="o">=</span><span class="n">send_buffer_times</span><span class="p">,</span>
+            <span class="n">send_buffer_partition_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_partition_id</span><span class="p">,</span>
+            <span class="n">reserve_reverse_ip_tag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reserve_reverse_ip_tag</span><span class="p">,</span>
+            <span class="n">enable_injection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_enable_injection</span><span class="p">)</span>
+        <span class="n">vertex</span><span class="o">.</span><span class="n">enable_recording</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">vertex_slice</span><span class="p">,</span> <span class="n">vertex</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">vertex</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

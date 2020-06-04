@@ -1,0 +1,17 @@
+spinn_front_end_common.abstract_models package
+==============================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    spinn_front_end_common.abstract_models.impl
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.abstract_models
+    :members:
+    :undoc-members:
+    :show-inheritance:

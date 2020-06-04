@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.ds package &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="spinn_front_end_common.interface.interface_functions package" href="spinn_front_end_common.interface.interface_functions.html" />
+    <link rel="prev" title="spinn_front_end_common.interface.buffer_management.storage_objects package" href="spinn_front_end_common.interface.buffer_management.storage_objects.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.interface_functions.html" title="spinn_front_end_common.interface.interface_functions package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.buffer_management.storage_objects.html" title="spinn_front_end_common.interface.buffer_management.storage_objects package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="spinn_front_end_common.interface.html" accesskey="U">spinn_front_end_common.interface package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">spinn_front_end_common.interface.ds package</a><ul>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.ds">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html"
+                        title="previous chapter">spinn_front_end_common.interface.buffer_management.storage_objects package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spinn_front_end_common.interface.interface_functions.html"
+                        title="next chapter">spinn_front_end_common.interface.interface_functions package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/spinn_front_end_common.interface.ds.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="spinn-front-end-common-interface-ds-package">
+<h1>spinn_front_end_common.interface.ds package<a class="headerlink" href="#spinn-front-end-common-interface-ds-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-spinn_front_end_common.interface.ds">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.ds" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spinn_front_end_common.interface.ds.DataRowReader">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.ds.</code><code class="descname">DataRowReader</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_data_reader.AbstractDataReader</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_context_manager.AbstractContextManager</span></code></p>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowReader.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does Nothing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowReader.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>n_bytes=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read some bytes of data from the underlying storage.  Will block            until some bytes are available, but might not return the full            <cite>n_bytes</cite>.  The size of the returned array indicates how many            bytes were read.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The number of bytes to read; if unspecified, read all            remaining bytes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The data that was read</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)">bytearray</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#IOError" title="(in Python v3.6)"><strong>IOError</strong></a> &#8211; If an error occurs reading from the underlying storage</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowReader.tell">
+<code class="descname">tell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_reader.html#DataRowReader.tell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowReader.tell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the position of the file cursor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Position of the file cursor</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.ds.</code><code class="descname">DataRowWriter</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>targets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_data_writer.AbstractDataWriter</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_storage_handlers.abstract_classes.abstract_context_manager.AbstractContextManager</span></code></p>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the writer if not already closed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataRowWriter.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_row_writer.html#DataRowWriter.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataRowWriter.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write some bytes of data to the underlying storage.            Does not return until all the bytes have been written.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytes" title="(in Python v3.6)"><em>bytes</em></a>) &#8211; The data to write</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Nothing is returned</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#IOError" title="(in Python v3.6)"><strong>IOError</strong></a> &#8211; If an error occurs writing to the underlying storage</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.ds.</code><code class="descname">DataSpecificationTargets</code><span class="sig-paren">(</span><em>machine</em>, <em>report_folder</em>, <em>init=None</em>, <em>clear=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/collections.abc.html#collections.abc.MutableMapping" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">collections.abc.MutableMapping</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; </li>
+<li><strong>report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
+<li><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; </li>
+<li><strong>clear</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.create_data_spec">
+<code class="descname">create_data_spec</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.create_data_spec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.create_data_spec" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter" title="spinn_front_end_common.interface.ds.DataRowWriter">DataRowWriter</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.get_app_id">
+<code class="descname">get_app_id</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.get_app_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.get_app_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the app_id set for this core</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core x</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core y</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core p</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.get_database">
+<code class="descname">get_database</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.get_database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.get_database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expose the database so it can be shared</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">DsAbstractDatabase</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.items">
+<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.items" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">iterator over the core locations and how to read the data
+spec for them</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowReader" title="spinn_front_end_common.interface.ds.DataRowReader">DataRowReader</a>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.iteritems">
+<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">iterator over the core locations and how to read the data
+spec for them</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowReader" title="spinn_front_end_common.interface.ds.DataRowReader">DataRowReader</a>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields the keys.</p>
+<p>As the more typical call is iteritems this makes use of that</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.mark_system_cores">
+<code class="descname">mark_system_cores</code><span class="sig-paren">(</span><em>core_subsets</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.mark_system_cores"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.mark_system_cores" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)"><em>CoreSubsets</em></a>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.n_targets">
+<code class="descname">n_targets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.n_targets" title="Permalink to this definition">¶</a></dt>
+<dd><p>TEMP implementation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.set_app_id">
+<code class="descname">set_app_id</code><span class="sig-paren">(</span><em>app_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.set_app_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.set_app_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the same app_id for all rows that have DS content</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; value to set</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DataSpecificationTargets.write_data_spec">
+<code class="descname">write_data_spec</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>ds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/data_specification_targets.html#DataSpecificationTargets.write_data_spec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DataSpecificationTargets.write_data_spec" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>ds</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.interface_functions.html" title="spinn_front_end_common.interface.interface_functions package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spinn_front_end_common.interface.buffer_management.storage_objects.html" title="spinn_front_end_common.interface.buffer_management.storage_objects package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="spinn_front_end_common.interface.html" >spinn_front_end_common.interface package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

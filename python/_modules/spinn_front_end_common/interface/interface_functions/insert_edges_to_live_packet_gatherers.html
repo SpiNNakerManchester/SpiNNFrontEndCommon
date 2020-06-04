@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.interface_functions.insert_edges_to_live_packet_gatherers &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.insert_edges_to_live_packet_gatherers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationEdge</span>
+<span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineEdge</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> \
+    <span class="n">EdgeToNKeysMapper</span>
+
+
+<div class="viewcode-block" id="InsertEdgesToLivePacketGatherers"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertEdgesToLivePacketGatherers">[docs]</a><span class="k">class</span> <span class="nc">InsertEdgesToLivePacketGatherers</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Add edges from the recorded vertices to the local Live PacketGatherers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+            <span class="n">live_packet_gatherers_to_vertex_mapping</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
+            <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">n_keys_map</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param live_packet_gatherer_parameters: the set of parameters</span>
+<span class="sd">        :param placements: the placements object</span>
+<span class="sd">        :param live_packet_gatherers_to_vertex_mapping:\</span>
+<span class="sd">            the mapping of LPG parameters and the machine vertices associated\</span>
+<span class="sd">            with it</span>
+<span class="sd">        :param machine: the SpiNNaker machine</span>
+<span class="sd">        :param machine_graph: the machine graph</span>
+<span class="sd">        :param application_graph: the application graph</span>
+<span class="sd">        :param graph_mapper: \</span>
+<span class="sd">            the mapping between application and machine graphs</span>
+<span class="sd">        :param n_keys_map: key map</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">live_packet_gatherer_parameters</span><span class="p">,</span>
+            <span class="n">string_describing_what_being_progressed</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;Adding edges to the machine graph between the vertices to &quot;</span>
+                <span class="s2">&quot;which live output has been requested and its local Live &quot;</span>
+                <span class="s2">&quot;Packet Gatherer&quot;</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">lpg_params</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">live_packet_gatherer_parameters</span><span class="p">):</span>
+            <span class="c1"># locate vertices needed to be connected to a LPG with these params</span>
+            <span class="k">for</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">p_ids</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">[</span><span class="n">lpg_params</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_connect_lpg_vertex</span><span class="p">(</span>
+                    <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
+                    <span class="n">placements</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span>
+                    <span class="n">live_packet_gatherers_to_vertex_mapping</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">p_ids</span><span class="p">,</span>
+                    <span class="n">n_keys_map</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_connect_lpg_vertex</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">app_graph</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">m_graph</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span>
+            <span class="n">lpg_to_vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># Find all Live Gatherer machine vertices</span>
+        <span class="n">m_lpgs</span> <span class="o">=</span> <span class="n">lpg_to_vertex</span><span class="p">[</span><span class="n">lpg_params</span><span class="p">]</span>
+
+        <span class="c1"># If it is an application graph, find the machine vertices</span>
+        <span class="k">if</span> <span class="n">app_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># flag for ensuring we don&#39;t add the edge to the app</span>
+            <span class="c1"># graph many times</span>
+            <span class="n">app_graph_edges</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="c1"># iterate through the associated machine vertices</span>
+            <span class="n">machine_vertices</span> <span class="o">=</span> <span class="n">mapper</span><span class="o">.</span><span class="n">get_machine_vertices</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">machine_vertex</span> <span class="ow">in</span> <span class="n">machine_vertices</span><span class="p">:</span>
+                <span class="c1"># add a edge between the closest LPG and the vertex</span>
+                <span class="n">machine_edges</span><span class="p">,</span> <span class="n">machine_lpg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_m_vertex</span><span class="p">(</span>
+                    <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">m_lpgs</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+                    <span class="n">m_graph</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">)</span>
+
+                <span class="c1"># update the app graph and graph mapper</span>
+                <span class="n">app_graph_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_app_graph_and_mapper</span><span class="p">(</span>
+                    <span class="n">app_graph</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">machine_lpg</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span>
+                    <span class="n">partition_ids</span><span class="p">,</span> <span class="n">machine_edges</span><span class="p">,</span> <span class="n">app_graph_edges</span><span class="p">,</span>
+                    <span class="n">n_keys_map</span><span class="p">,</span> <span class="n">m_graph</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># add a edge between the closest LPG and the vertex</span>
+            <span class="n">m_edges</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_m_vertex</span><span class="p">(</span>
+                <span class="n">vertex</span><span class="p">,</span> <span class="n">m_lpgs</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
+                <span class="n">m_graph</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">)</span>
+
+            <span class="c1"># update to add n_keys_map if needed</span>
+            <span class="k">if</span> <span class="n">n_keys_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="n">partition_ids</span><span class="p">:</span>
+                    <span class="n">partition</span> <span class="o">=</span> <span class="n">m_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span>
+                        <span class="n">m_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">])</span>
+                    <span class="n">EdgeToNKeysMapper</span><span class="o">.</span><span class="n">process_machine_partition</span><span class="p">(</span>
+                        <span class="n">partition</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_process_m_vertex</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">m_lpgs</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
+            <span class="n">placements</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Locates and places an edge for a machine vertex.</span>
+
+<span class="sd">        :param machine_vertex: the machine vertex that needs an edge to a LPG</span>
+<span class="sd">        :param m_lpgs:\</span>
+<span class="sd">            dict of chip placed on to gatherers that are associated with the\</span>
+<span class="sd">            parameters</span>
+<span class="sd">        :param machine: the SpiNNaker machine object</span>
+<span class="sd">        :param placements: the placements object</span>
+<span class="sd">        :param machine_graph: the machine graph object</span>
+<span class="sd">        :param partition_id: the partition ID to add to the edge</span>
+<span class="sd">        :return: machine edge and the LPG vertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># locate the LPG that&#39;s closest to this vertex</span>
+        <span class="n">machine_lpg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_closest_live_packet_gatherer</span><span class="p">(</span>
+            <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">m_lpgs</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+
+        <span class="c1"># add edge for the machine graph</span>
+        <span class="n">machine_edges</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="n">partition_ids</span><span class="p">:</span>
+            <span class="n">machine_edge</span> <span class="o">=</span> <span class="n">MachineEdge</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">machine_lpg</span><span class="p">)</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">machine_edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
+            <span class="n">machine_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_edge</span>
+
+        <span class="c1"># return the machine edge</span>
+        <span class="k">return</span> <span class="n">machine_edges</span><span class="p">,</span> <span class="n">machine_lpg</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_update_app_graph_and_mapper</span><span class="p">(</span>
+            <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span> <span class="n">machine_lpg</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span>
+            <span class="n">partition_ids</span><span class="p">,</span> <span class="n">machine_edges</span><span class="p">,</span> <span class="n">app_graph_edges</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">,</span>
+            <span class="n">m_graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles changes to the application graph and graph mapper.</span>
+
+<span class="sd">        :param application_graph: the application graph</span>
+<span class="sd">        :param graph_mapper: the graph mapper</span>
+<span class="sd">        :param machine_lpg: the machine LPG</span>
+<span class="sd">        :param vertex: the application vertex to link to</span>
+<span class="sd">        :param machine_edges: the machine edges</span>
+<span class="sd">        :param m_graph: the machine graph</span>
+<span class="sd">        :param partition_ids: the partition IDs to put the edge on</span>
+<span class="sd">        :param n_keys_map: map between partition and n keys</span>
+<span class="sd">        :return: the application edge for this vertex and LPG</span>
+<span class="sd">        :rtype: ~pacman.model.graph.application.ApplicationEdge</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># locate app vertex for LPG</span>
+        <span class="n">lpg_app_vertex</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span><span class="n">machine_lpg</span><span class="p">)</span>
+
+        <span class="c1"># if not built the app edge, add the app edge now</span>
+        <span class="k">if</span> <span class="n">app_graph_edges</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">app_graph_edges</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="n">partition_ids</span><span class="p">:</span>
+                <span class="n">app_graph_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">lpg_app_vertex</span><span class="p">)</span>
+                <span class="n">application_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">app_graph_edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
+                <span class="n">app_graph_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">app_graph_edge</span>
+
+        <span class="c1"># add mapping between the app edge and the machine edge</span>
+        <span class="k">for</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="n">partition_ids</span><span class="p">:</span>
+            <span class="n">graph_mapper</span><span class="o">.</span><span class="n">add_edge_mapping</span><span class="p">(</span>
+                <span class="n">machine_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">],</span> <span class="n">app_graph_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">])</span>
+
+            <span class="c1"># add n_keys_map if needed</span>
+            <span class="k">if</span> <span class="n">n_keys_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">partition</span> <span class="o">=</span> <span class="n">m_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span>
+                    <span class="n">machine_edges</span><span class="p">[</span><span class="n">partition_id</span><span class="p">])</span>
+                <span class="n">EdgeToNKeysMapper</span><span class="o">.</span><span class="n">process_application_partition</span><span class="p">(</span>
+                    <span class="n">partition</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">)</span>
+
+        <span class="c1"># return the app edge for reuse as needed</span>
+        <span class="k">return</span> <span class="n">app_graph_edges</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_find_closest_live_packet_gatherer</span><span class="p">(</span>
+            <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">machine_lpgs</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Locates the LPG on the nearest Ethernet-connected chip to the\</span>
+<span class="sd">            machine vertex in question, or the LPG on 0, 0 if a closer one\</span>
+<span class="sd">            can&#39;t be found.</span>
+
+<span class="sd">        :param machine_vertex: the machine vertex to locate the nearest LPG to</span>
+<span class="sd">        :param machine_lpgs: dict of gatherers by chip placed on</span>
+<span class="sd">        :param machine: the SpiNNaker machine object</span>
+<span class="sd">        :type machine: ~spinn_machine.Machine</span>
+<span class="sd">        :param placements: the placements object</span>
+<span class="sd">        :return: the local LPG</span>
+<span class="sd">        :raise ConfigurationException: if a local gatherer cannot be found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># locate location of vertex in machine</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># locate closest LPG</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span> <span class="ow">in</span> <span class="n">machine_lpgs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">machine_lpgs</span><span class="p">[</span>
+                <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">in</span> <span class="n">machine_lpgs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">machine_lpgs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># if got through all LPG vertices and not found the right one. go BOOM</span>
+        <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot find a Live Packet Gatherer from </span><span class="si">{}</span><span class="s2"> for the vertex </span><span class="si">{}</span><span class="s2">&quot;</span>
+            <span class="s2">&quot; located </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">machine_lpgs</span><span class="p">,</span> <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>

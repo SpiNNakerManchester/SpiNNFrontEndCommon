@@ -1,0 +1,622 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>spinn_front_end_common.interface.interface_functions.host_execute_data_specification &#8212; SpiNNFrontEndCommon  documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.interface_functions.host_execute_data_specification</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="kn">import</span> <span class="n">iteritems</span><span class="p">,</span> <span class="n">itervalues</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
+<span class="kn">from</span> <span class="nn">data_specification</span> <span class="kn">import</span> <span class="n">DataSpecificationExecutor</span>
+<span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="n">MAX_MEM_REGIONS</span>
+<span class="kn">from</span> <span class="nn">data_specification.exceptions</span> <span class="kn">import</span> <span class="n">DataSpecificationException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.ds.ds_write_info</span> <span class="kn">import</span> <span class="n">DsWriteInfo</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">write_address_to_user0</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ExecutableType</span><span class="p">,</span> <span class="n">DataWritten</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">emergency_recover_states_from_failure</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+<span class="n">_ONE_WORD</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">)</span>
+<span class="n">_MEM_REGIONS</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">MAX_MEM_REGIONS</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">system_cores</span><span class="p">(</span><span class="n">exec_targets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the subset of cores that are to be used for system operations.</span>
+
+<span class="sd">    :param ExecutableTargets exec_targets:</span>
+<span class="sd">    :rtype: ~spinn_machine.CoreSubsets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cores</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">binary</span> <span class="ow">in</span> <span class="n">exec_targets</span><span class="o">.</span><span class="n">get_binaries_of_executable_type</span><span class="p">(</span>
+            <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">):</span>
+        <span class="n">cores</span><span class="o">.</span><span class="n">add_core_subsets</span><span class="p">(</span><span class="n">exec_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cores</span>
+
+
+<span class="k">def</span> <span class="nf">filter_out_system_executables</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Select just the application DSG loading tasks</span>
+
+<span class="sd">    :param DataSpecificationTargets dsg_tagets:</span>
+<span class="sd">    :param ExecutableTargets executable_targets:</span>
+<span class="sd">    :rtype: dict(tuple(int,int,int), DataRowReader)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syscores</span> <span class="o">=</span> <span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">core</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">syscores</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">filter_out_app_executables</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Select just the system DSG loading tasks</span>
+
+<span class="sd">    :param DataSpecificationTargets dsg_tagets:</span>
+<span class="sd">    :param ExecutableTargets executable_targets:</span>
+<span class="sd">    :rtype: dict(tuple(int,int,int), DataRowReader)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">syscores</span> <span class="o">=</span> <span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">OrderedDict</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">core</span> <span class="ow">in</span> <span class="n">syscores</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="HostExecuteDataSpecification"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostExecuteDataSpecification">[docs]</a><span class="k">class</span> <span class="nc">HostExecuteDataSpecification</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Executes the host based data specification.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># the application ID of the simulation</span>
+        <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_core_to_conn_map&quot;</span><span class="p">,</span>
+        <span class="c1"># The path where the SQLite database holding the data will be placed,</span>
+        <span class="c1"># and where any java provenance can be written.</span>
+        <span class="s2">&quot;_db_folder&quot;</span><span class="p">,</span>
+        <span class="c1"># The support class to run via Java. If None pure python is used.</span>
+        <span class="s2">&quot;_java&quot;</span><span class="p">,</span>
+        <span class="c1"># The python representation of the SpiNNaker machine.</span>
+        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_monitors&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_placements&quot;</span><span class="p">,</span>
+        <span class="c1"># The spinnman instance.</span>
+        <span class="s2">&quot;_txrx&quot;</span><span class="p">,</span>
+        <span class="c1"># The write info; a dict of cores to a dict of</span>
+        <span class="c1"># &#39;start_address&#39;, &#39;memory_used&#39;, &#39;memory_written&#39;</span>
+        <span class="s2">&quot;_write_info_map&quot;</span><span class="p">]</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__java_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param DataSpecificationTargets dsg_tagets:</span>
+<span class="sd">        :param progress:</span>
+<span class="sd">        :param dict(tuple(int,int,int)int) region_sizes:</span>
+<span class="sd">        :rtype: DsWriteInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Copy data from WriteMemoryIOData to database</span>
+        <span class="n">dw_write_info</span> <span class="o">=</span> <span class="n">DsWriteInfo</span><span class="p">(</span><span class="n">dsg_targets</span><span class="o">.</span><span class="n">get_database</span><span class="p">())</span>
+        <span class="n">dw_write_info</span><span class="o">.</span><span class="n">clear_write_info</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="p">):</span>
+                <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="n">core</span>
+                <span class="n">dw_write_info</span><span class="o">.</span><span class="n">set_info</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">core</span> <span class="ow">in</span> <span class="n">region_sizes</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="n">core</span>
+            <span class="n">dw_write_info</span><span class="o">.</span><span class="n">set_size_info</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="n">dsg_targets</span><span class="o">.</span><span class="n">set_app_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">set_report_folder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">dw_write_info</span>
+
+    <span class="k">def</span> <span class="nf">__java_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Does the Data Specification Execution and loading using Java</span>
+
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">            map of placement to file path</span>
+<span class="sd">        :return: map of of cores to descriptions of what was written</span>
+<span class="sd">        :rtype: DsWriteInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a progress bar for end users</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;Executing data specifications and loading data using Java&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Copy data from WriteMemoryIOData to database</span>
+        <span class="n">dw_write_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_database</span><span class="p">(</span>
+            <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">execute_data_specification</span><span class="p">()</span>
+
+        <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">dw_write_info</span>
+
+    <span class="k">def</span> <span class="nf">__python_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Does the Data Specification Execution and loading using Python</span>
+
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">            map of placement to file path</span>
+<span class="sd">        :param dict(tuple(int,int,int),int) region_sizes:</span>
+<span class="sd">            map between vertex and list of region sizes</span>
+<span class="sd">        :return: dict of cores to descriptions of what was written</span>
+<span class="sd">        :rtype: dict(tuple(int,int,int), DataWritten)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># While the database supports having the info in it a python bugs does</span>
+        <span class="c1"># not like iterating over and writing intermingled so using a dict</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span>
+        <span class="k">if</span> <span class="n">results</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># create a progress bar for end users</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="n">dsg_targets</span><span class="o">.</span><span class="n">n_targets</span><span class="p">(),</span>
+            <span class="s2">&quot;Executing data specifications and loading data&quot;</span><span class="p">)</span>
+
+        <span class="c1"># allocate and set user 0 before loading data</span>
+        <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">):</span>
+            <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__malloc_region_storage</span><span class="p">(</span>
+                <span class="n">core</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)):</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_execute</span><span class="p">(</span>
+                <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">,</span>
+                <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">],</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">results</span>
+
+<div class="viewcode-block" id="HostExecuteDataSpecification.execute_application_data_specs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostExecuteDataSpecification.execute_application_data_specs">[docs]</a>    <span class="k">def</span> <span class="nf">execute_application_data_specs</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span>
+            <span class="n">uses_advanced_monitors</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">,</span>
+            <span class="n">placements</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">extra_monitor_cores_to_ethernet_connection_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">report_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">disable_advanced_monitor_usage</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Execute the data specs for all non-system targets.</span>
+
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">            the python representation of the SpiNNaker machine</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnman instance</span>
+<span class="sd">        :param int app_id: the application ID of the simulation</span>
+<span class="sd">        :param dict(tuple(int,int,int),int) region_sizes:</span>
+<span class="sd">            the coord for region sizes for each core</span>
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">            map of placement to file path</span>
+<span class="sd">        :param bool uses_advanced_monitors:</span>
+<span class="sd">            whether to use fast data in protocol</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">            what core will running what binary</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            where vertices are located</span>
+<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">            the deployed extra monitors, if any</span>
+<span class="sd">        :param extra_monitor_cores_to_ethernet_connection_map:</span>
+<span class="sd">            how to talk to extra monitor cores</span>
+<span class="sd">        :type extra_monitor_cores_to_ethernet_connection_map:</span>
+<span class="sd">            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
+<span class="sd">        :param processor_to_app_data_base_address:</span>
+<span class="sd">            map of placement and DSG data</span>
+<span class="sd">        :type processor_to_app_data_base_address:</span>
+<span class="sd">            dict(tuple(int,int,int), DsWriteInfo)</span>
+<span class="sd">        :param bool disable_advanced_monitor_usage:</span>
+<span class="sd">            whether to avoid using advanced monitors even if they&#39;re available</span>
+<span class="sd">        :return: map of placement and DSG data</span>
+<span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="k">if</span> <span class="n">processor_to_app_data_base_address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">processor_to_app_data_base_address</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span> <span class="o">=</span> <span class="n">processor_to_app_data_base_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span> <span class="o">=</span> <span class="n">report_folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span> <span class="o">=</span> <span class="n">java_caller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">transceiver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span> <span class="o">=</span> <span class="n">extra_monitor_cores_to_ethernet_connection_map</span>
+
+        <span class="c1"># Allow override to disable</span>
+        <span class="k">if</span> <span class="n">disable_advanced_monitor_usage</span><span class="p">:</span>
+            <span class="n">uses_advanced_monitors</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">impl_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_app</span> <span class="k">if</span> <span class="n">java_caller</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_app</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">impl_method</span><span class="p">(</span>
+                <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">uses_advanced_monitors</span><span class="p">,</span>
+                <span class="n">region_sizes</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+            <span class="k">if</span> <span class="n">uses_advanced_monitors</span><span class="p">:</span>
+                <span class="n">emergency_recover_states_from_failure</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span>
+            <span class="k">raise</span></div>
+
+    <span class="k">def</span> <span class="nf">__set_router_timeouts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">receiver</span> <span class="ow">in</span> <span class="n">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="p">):</span>
+            <span class="n">receiver</span><span class="o">.</span><span class="n">load_system_routing_tables</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="n">receiver</span><span class="o">.</span><span class="n">set_cores_for_data_streaming</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__reset_router_timeouts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># reset router timeouts</span>
+        <span class="k">for</span> <span class="n">receiver</span> <span class="ow">in</span> <span class="n">itervalues</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="p">):</span>
+            <span class="n">receiver</span><span class="o">.</span><span class="n">unset_cores_for_data_streaming</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="c1"># reset router tables</span>
+            <span class="n">receiver</span><span class="o">.</span><span class="n">load_application_routing_tables</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__select_writer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">ethernet_chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
+            <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
+        <span class="n">gatherer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_core_to_conn_map</span><span class="p">[</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">gatherer</span><span class="o">.</span><span class="n">send_data_into_spinnaker</span>
+
+    <span class="k">def</span> <span class="nf">__python_app</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">use_monitors</span><span class="p">,</span>
+            <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param bool use_monitors:</span>
+<span class="sd">        :param dict(tuple(int,int,int),int) region_sizes:</span>
+<span class="sd">        :return: dict of cores to descriptions of what was written</span>
+<span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dsg_targets</span> <span class="o">=</span> <span class="n">filter_out_system_executables</span><span class="p">(</span>
+            <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_monitors</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__set_router_timeouts</span><span class="p">()</span>
+
+        <span class="c1"># create a progress bar for end users</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;Executing data specifications and loading data for &quot;</span>
+            <span class="s2">&quot;application vertices&quot;</span><span class="p">)</span>
+
+        <span class="c1"># allocate and set user 0 before loading data</span>
+        <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+                <span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">),</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__malloc_region_storage</span><span class="p">(</span>
+                <span class="n">core</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">)):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_p</span> <span class="o">=</span> <span class="n">core</span>
+            <span class="c1"># write information for the memory map report</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_execute</span><span class="p">(</span>
+                <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__select_writer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">use_monitors</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">,</span>
+                <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">],</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">use_monitors</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__reset_router_timeouts</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span>
+
+    <span class="k">def</span> <span class="nf">__java_app</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">use_monitors</span><span class="p">,</span>
+            <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param bool use_monitors:</span>
+<span class="sd">        :param dict(tuple(int,int,int),int) region_sizes:</span>
+<span class="sd">        :return: map of cores to descriptions of what was written</span>
+<span class="sd">        :rtype: DsWriteInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a progress bar for end users</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;Executing data specifications and loading data for &quot;</span>
+            <span class="s2">&quot;application vertices using Java&quot;</span><span class="p">)</span>
+
+        <span class="n">dsg_targets</span><span class="o">.</span><span class="n">mark_system_cores</span><span class="p">(</span><span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">))</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="c1"># Copy data from WriteMemoryIOData to database</span>
+        <span class="n">dw_write_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_database</span><span class="p">(</span>
+            <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_monitors</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">set_placements</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">execute_app_data_specification</span><span class="p">(</span><span class="n">use_monitors</span><span class="p">)</span>
+
+        <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">dw_write_info</span>
+
+<div class="viewcode-block" id="HostExecuteDataSpecification.execute_system_data_specs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HostExecuteDataSpecification.execute_system_data_specs">[docs]</a>    <span class="k">def</span> <span class="nf">execute_system_data_specs</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">,</span>
+            <span class="n">executable_targets</span><span class="p">,</span> <span class="n">report_folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Execute the data specs for all system targets.</span>
+
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnman instance</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">            the python representation of the spinnaker machine</span>
+<span class="sd">        :param int app_id: the application ID of the simulation</span>
+<span class="sd">        :param dict(tuple(int,int,int),str) dsg_targets:</span>
+<span class="sd">            map of placement to file path</span>
+<span class="sd">        :param region_sizes: the coord for region sizes for each core</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">            the map between binaries and locations and executable types</span>
+<span class="sd">        :param str report_folder:</span>
+<span class="sd">        :param JavaCaller java_caller:</span>
+<span class="sd">        :param processor_to_app_data_base_address:</span>
+<span class="sd">        :type processor_to_app_data_base_address:</span>
+<span class="sd">            dict(tuple(int,int,int),DataWritten)</span>
+<span class="sd">        :return: map of placement and DSG data, and loaded data flag.</span>
+<span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="k">if</span> <span class="n">processor_to_app_data_base_address</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">processor_to_app_data_base_address</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span> <span class="o">=</span> <span class="n">processor_to_app_data_base_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">transceiver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db_folder</span> <span class="o">=</span> <span class="n">report_folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span> <span class="o">=</span> <span class="n">java_caller</span>
+        <span class="n">impl_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_sys</span> <span class="k">if</span> <span class="n">java_caller</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_sys</span>
+        <span class="k">return</span> <span class="n">impl_method</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__java_sys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Does the Data Specification Execution and loading using Java</span>
+
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">            map of placement to file path</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">            the map between binaries and locations and executable types</span>
+<span class="sd">        :param dict(tuple(int,int,int),int) region_sizes:</span>
+<span class="sd">            the coord for region sizes for each core</span>
+<span class="sd">        :return: map of cores to descriptions of what was written</span>
+<span class="sd">        :rtype: DsWriteInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a progress bar for end users</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;Executing data specifications and loading data for system &quot;</span>
+            <span class="s2">&quot;vertices using Java&quot;</span><span class="p">)</span>
+
+        <span class="n">dsg_targets</span><span class="o">.</span><span class="n">mark_system_cores</span><span class="p">(</span><span class="n">system_cores</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">))</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="c1"># Copy data from WriteMemoryIOData to database</span>
+        <span class="n">dw_write_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__java_database</span><span class="p">(</span>
+            <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java</span><span class="o">.</span><span class="n">execute_system_data_specification</span><span class="p">()</span>
+
+        <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">dw_write_info</span>
+
+    <span class="k">def</span> <span class="nf">__python_sys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Does the Data Specification Execution and loading using Python</span>
+
+<span class="sd">        :param DataSpecificationTargets dsg_targets:</span>
+<span class="sd">            map of placement to file path</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">            the map between binaries and locations and executable types</span>
+<span class="sd">        :param dict(tuple(int,int,int),int) region_sizes:</span>
+<span class="sd">            the coord for region sizes for each core</span>
+<span class="sd">        :return: dict of cores to descriptions of what was written</span>
+<span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># While the database supports having the info in it a python bugs does</span>
+        <span class="c1"># not like iterating over and writing intermingled so using a dict</span>
+        <span class="n">sys_targets</span> <span class="o">=</span> <span class="n">filter_out_app_executables</span><span class="p">(</span>
+            <span class="n">dsg_targets</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span>
+
+        <span class="c1"># create a progress bar for end users</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">sys_targets</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;Executing data specifications and loading data for &quot;</span>
+            <span class="s2">&quot;system vertices&quot;</span><span class="p">)</span>
+
+        <span class="c1"># allocate and set user 0 before loading data</span>
+        <span class="n">base_addresses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+                <span class="n">iteritems</span><span class="p">(</span><span class="n">sys_targets</span><span class="p">),</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__malloc_region_storage</span><span class="p">(</span>
+                <span class="n">core</span><span class="p">,</span> <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">iteritems</span><span class="p">(</span><span class="n">sys_targets</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__python_execute</span><span class="p">(</span>
+                <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">,</span> <span class="n">base_addresses</span><span class="p">[</span><span class="n">core</span><span class="p">],</span>
+                <span class="n">region_sizes</span><span class="p">[</span><span class="n">core</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_info_map</span>
+
+    <span class="k">def</span> <span class="nf">__malloc_region_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Allocates the storage for all DSG regions on the core and tells \</span>
+<span class="sd">            the core and our caller where that storage is.</span>
+
+<span class="sd">        :param tuple(int,int,int) core: Which core we&#39;re talking about.</span>
+<span class="sd">        :param int size:</span>
+<span class="sd">            The total size of all storage for regions on that core, including</span>
+<span class="sd">            for the header metadata.</span>
+<span class="sd">        :return: address of region header table (not yet filled)</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="o">=</span> <span class="n">core</span>
+
+        <span class="c1"># allocate memory where the app data is going to be written; this</span>
+        <span class="c1"># raises an exception in case there is not enough SDRAM to allocate</span>
+        <span class="n">start_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">malloc_sdram</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
+
+        <span class="c1"># set user 0 register appropriately to the application data</span>
+        <span class="n">write_address_to_user0</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">start_address</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">start_address</span>
+
+    <span class="k">def</span> <span class="nf">__python_execute</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="n">writer_func</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">size_allocated</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">core</span>
+
+        <span class="c1"># Maximum available memory.</span>
+        <span class="c1"># However, system updates the memory available independently, so the</span>
+        <span class="c1"># space available check actually happens when memory is allocated.</span>
+        <span class="n">memory_available</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sdram</span><span class="o">.</span><span class="n">size</span>
+
+        <span class="c1"># generate data spec executor</span>
+        <span class="n">executor</span> <span class="o">=</span> <span class="n">DataSpecificationExecutor</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">memory_available</span><span class="p">)</span>
+
+        <span class="c1"># run data spec executor</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">executor</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">DataSpecificationException</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Error executing data specification for </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+                         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># Do the actual writing ------------------------------------</span>
+
+        <span class="c1"># Write the header and pointer table</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_header</span><span class="p">()</span>
+        <span class="n">pointer_table</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_pointer_table</span><span class="p">(</span><span class="n">base_address</span><span class="p">)</span>
+        <span class="n">data_to_write</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">header</span><span class="p">,</span> <span class="n">pointer_table</span><span class="p">))</span><span class="o">.</span><span class="n">tostring</span><span class="p">()</span>
+
+        <span class="c1"># NB: DSE meta-block is always small (i.e., one SDP write)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data_to_write</span><span class="p">)</span>
+        <span class="n">bytes_written</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">)</span>
+
+        <span class="c1"># Write each region</span>
+        <span class="k">for</span> <span class="n">region_id</span> <span class="ow">in</span> <span class="n">_MEM_REGIONS</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_region</span><span class="p">(</span><span class="n">region_id</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">max_pointer</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">max_write_pointer</span>
+            <span class="k">if</span> <span class="n">region</span><span class="o">.</span><span class="n">unfilled</span> <span class="ow">or</span> <span class="n">max_pointer</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Get the data up to what has been written</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">region_data</span><span class="p">[:</span><span class="n">max_pointer</span><span class="p">]</span>
+
+            <span class="c1"># Write the data to the position</span>
+            <span class="n">writer_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">pointer_table</span><span class="p">[</span><span class="n">region_id</span><span class="p">],</span> <span class="n">data</span><span class="p">)</span>
+            <span class="n">bytes_written</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">DataWritten</span><span class="p">(</span><span class="n">base_address</span><span class="p">,</span> <span class="n">size_allocated</span><span class="p">,</span> <span class="n">bytes_written</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+    </div>
+  </body>
+</html>
