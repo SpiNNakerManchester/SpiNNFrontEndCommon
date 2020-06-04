@@ -19,10 +19,10 @@ import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 
@@ -56,11 +56,11 @@ def mundy_on_chip_router_compression(
     """
     # pylint: disable=too-many-arguments
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = _Compression(
+    compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, system_provenance_folder,
         routing_tables, transceiver)
-    compression._compress()
+    compression.compress()
 
 
 def pair_compression(
@@ -89,18 +89,19 @@ def pair_compression(
     :param bool compress_only_when_needed:
         If True, the compressor will only compress if the table doesn't fit in
         the current router space, otherwise it will just load the table
+    :param executable_finder: tracker of binaries.
      """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_minimise.aplx")
-    compression = _Compression(
+    compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
-    compression._compress()
+    compression.compress()
 
 
-class _Compression(object):
+class Compression(object):
     """ Compressor that uses a on chip router compressor
     """
 
@@ -139,7 +140,7 @@ class _Compression(object):
         self._transceiver = transceiver
         self._routing_tables = routing_tables
 
-    def _compress(self):
+    def compress(self):
         """ Apply the on-machine compression algorithm.
         """
         # pylint: disable=too-many-arguments
@@ -297,10 +298,11 @@ class _Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                self._make_source_hack(entry))
+                Compression.make_source_hack(entry=entry))
         return bytearray(data)
 
-    def _make_source_hack(self, entry):
+    @staticmethod
+    def make_source_hack(entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
 

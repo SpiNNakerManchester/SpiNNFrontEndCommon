@@ -30,6 +30,9 @@ class RouterProvenanceGatherer(object):
         the SpiNNaker machine
     :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
         the router tables that have been generated
+    :param bool using_reinjection: whether we are reinjecting packets
+    :param list(~.ProvenanceDataItem) provenance_data_objects:
+        any existing provenance information to add to
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
         vertices which represent the extra monitor code
     :param ~pacman.model.placements.Placements placements:
@@ -61,12 +64,15 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables,
-            extra_monitor_vertices=None, placements=None):
+            self, transceiver, machine, router_tables, using_reinjection,
+            provenance_data_objects=None, extra_monitor_vertices=None,
+            placements=None):
         """
         :param ~.Transceiver transceiver:
         :param ~.Machine machine:
         :param ~.MulticastRoutingTables router_tables:
+        :param bool using_reinjection:
+        :param list(~.ProvenanceDataItem) provenance_data_objects:
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
         :param ~.Placements placements:
         """
@@ -81,8 +87,13 @@ class RouterProvenanceGatherer(object):
         self._machine = machine
         self._placements = placements
 
-        prov_items = self._write_router_provenance_data(
-            router_tables, extra_monitor_vertices)
+        if provenance_data_objects is not None:
+            prov_items = provenance_data_objects
+        else:
+            prov_items = list()
+
+        prov_items.extend(self._write_router_provenance_data(
+            router_tables, extra_monitor_vertices))
 
         prov_items.append(ProvenanceDataItem(
             ["router_provenance", "total_multi_cast_sent_packets"],
@@ -357,7 +368,8 @@ class RouterProvenanceGatherer(object):
             items.append(ProvenanceDataItem(
                 self.__add_name(names, "Dumped_from_a_Link"),
                 str(reinjection_status.n_link_dumps),
-                report=reinjection_status.n_link_dumps > 0,
+                report=(reinjection_status.n_link_dumps > 0 and
+                        self._has_virtual_chip_connected(self._machine, x, y)),
                 message=(
                     "The extra monitor on {}, {} has detected that {} packets "
                     "were dumped from a outgoing link of this chip's router."
@@ -390,3 +402,12 @@ class RouterProvenanceGatherer(object):
                 " error count is {}".format(
                     x, y, router_diagnostic.errors_set,
                     router_diagnostic.error_count))))
+        return items
+
+    @staticmethod
+    def _has_virtual_chip_connected(machine, x, y):
+        for link in machine.get_chip_at(x, y).router.links:
+            if machine.get_chip_at(
+                    link.destination_x, link.destination_y).virtual:
+                return True
+        return False

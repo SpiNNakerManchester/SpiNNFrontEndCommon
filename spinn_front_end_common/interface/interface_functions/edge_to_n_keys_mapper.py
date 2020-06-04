@@ -71,8 +71,7 @@ class EdgeToNKeysMapper(object):
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    self._process_application_partition(
-                        partition, n_keys_map)
+                    self.process_application_partition(partition, n_keys_map)
 
         return n_keys_map
 
@@ -95,15 +94,17 @@ class EdgeToNKeysMapper(object):
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    self._process_machine_partition(partition, n_keys_map)
+                    self.process_machine_partition(partition, n_keys_map)
 
         return n_keys_map
 
     @staticmethod
-    def _process_application_partition(partition, n_keys_map):
+    def process_application_partition(partition, n_keys_map):
         """
-        :param ~.OutgoingEdgePartition partition:
-        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
+        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+        :param n_keys_map:
+        :type n_keys_map:
+            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
         vertex = partition.pre_vertex.app_vertex
 
@@ -114,10 +115,12 @@ class EdgeToNKeysMapper(object):
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
     @staticmethod
-    def _process_machine_partition(partition, n_keys_map):
+    def process_machine_partition(partition, n_keys_map):
         """
-        :param ~.OutgoingEdgePartition partition:
-        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
+        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+        :param n_keys_map:
+        :type n_keys_map:
+            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
         if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
             n_keys = partition.pre_vertex.get_n_keys_for_partition(partition)

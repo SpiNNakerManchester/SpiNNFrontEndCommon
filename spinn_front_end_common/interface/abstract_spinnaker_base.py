@@ -444,8 +444,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_tokens = None
         self._load_outputs = None
         self._load_tokens = None
-        self._last_run_outputs = None
-        self._last_run_tokens = None
+        self._last_run_outputs = list()
+        self._last_run_tokens = list()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
         self._version_provenance = list()
@@ -833,7 +833,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.verify_not_running()
 
         # verify that we can keep doing auto pause and resume
-        if self._has_ran:
+        if self._has_ran and not self._use_virtual_board:
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in self._executable_types)
@@ -916,10 +916,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
-        for executable_type in self._executable_types:
-            if not executable_type.supports_auto_pause_and_resume:
-                self._config.set("Buffers",
-                                 "use_auto_pause_and_resume", "False")
+        if not self._use_virtual_board:
+            for executable_type in self._executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    self._config.set("Buffers",
+                                     "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
@@ -956,7 +957,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load(graph_changed)
+                self._do_load(graph_changed, data_changed)
 
         # Run for each of the given steps
         if run_time is not None:
@@ -1535,6 +1536,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         inputs["SendStopNotifications"] = True
         inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
             "Reports", "write_data_speed_up_reports")
+        inputs["UsingReinjection"] = \
+            (self._config.getboolean("Machine", "enable_reinjection") and
+             self._config.getboolean(
+                 "Machine", "enable_advanced_monitor_support"))
+        inputs['CompressionTargetSize'] = self._config.getint(
+            "Mapping", "router_table_compression_target_length")
+        inputs["CompressionAsNeeded"] = self._config.getboolean(
+            "Mapping", "router_table_compress_as_needed")
+        inputs["CompressionAsFarAsPos"] = self._config.getboolean(
+            "Mapping", "router_table_compress_as_far_as_possible")
 
         algorithms = list()
 
@@ -1584,19 +1595,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_router_summary_report"):
                 algorithms.append("RouterSummaryReport")
-            if self._config.getboolean(
-                   "Reports", "write_compressed_router_summary_report") and \
-                    self.use_virtual_board:
-                algorithms.append("CompressedRouterSummaryReport")
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
-                optional_algorithms.append("unCompressedRoutingTableReports")
-                optional_algorithms.append("compressedRoutingTableReports")
-                optional_algorithms.append("comparisonOfRoutingTablesReport")
-            if self._config.getboolean(
-                    "Reports", "write_routing_tables_from_machine_report"):
-                optional_algorithms.append(
-                    "RoutingTableFromMachineReport")
 
             # only add board chip report if requested
             if self._config.getboolean("Reports", "write_board_chip_report"):
@@ -1664,14 +1662,18 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         algorithms.extend(full.replace(" ", "").split(","))
 
         # add check for algorithm start type
-        algorithms.append("LocateExecutableStartType")
+        if not self._use_virtual_board:
+            algorithms.append("LocateExecutableStartType")
 
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph", "ExecutableTypes"
+            "MemoryMachineGraph"
         ]
+
+        if not self._use_virtual_board:
+            outputs.append("ExecutableTypes")
 
         if add_data_speed_up:
             outputs.append("MemoryFixedRoutes")
@@ -1759,9 +1761,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             data_gen_timer.take_sample())
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
-    def _do_load(self, graph_changed):
+    def _do_load(self, graph_changed, data_changed):
         """
         :param bool graph_changed:
+        :param bool data_changed:
         """
         # set up timing
         load_timer = Timer()
@@ -1776,6 +1779,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._config.getboolean("Reports", "write_memory_map_report") and
             graph_changed
         )
+        inputs["NoSyncChanges"] = self._no_sync_changes
 
         if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1786,12 +1790,20 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board and graph_changed:
-            algorithms.append("RoutingSetup")
+            # only clear routing tables if we've not loaded them by now
+            found = False
+            for token in self._mapping_tokens:
+                if token.name == "DataLoaded":
+                    if token.part == "MulticastRoutesLoaded":
+                        found = True
+            if not found:
+                algorithms.append("RoutingSetup")
+
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
         loading_algorithm = self._read_config("Mapping", "loading_algorithms")
-        if loading_algorithm is not None and graph_changed:
+        if loading_algorithm is not None and (graph_changed or data_changed):
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
 
@@ -1804,12 +1816,19 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # Add reports that depend on compression
         routing_tables_needed = False
         if graph_changed:
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
+            if self._config.getboolean(
+                    "Reports", "write_routing_table_reports"):
                 routing_tables_needed = True
                 algorithms.append("unCompressedRoutingTableReports")
-                algorithms.append("compressedRoutingTableReports")
-                algorithms.append("comparisonOfRoutingTablesReport")
+
+                if self._config.getboolean(
+                        "Reports",
+                        "write_routing_tables_from_machine_reports"):
+                    algorithms.append("ReadRoutingTablesFromMachine")
+                    algorithms.append("compressedRoutingTableReports")
+                    algorithms.append("comparisonOfRoutingTablesReport")
+                    algorithms.append("CompressedRouterSummaryReport")
+                    algorithms.append("RoutingTableFromMachineReport")
             if self._config.getboolean(
                     "Reports", "write_routing_compression_checker_report"):
                 routing_tables_needed = True
@@ -1824,8 +1843,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # add optional algorithms
         optional_algorithms = list()
-        optional_algorithms.append("RoutingTableLoader")
-        optional_algorithms.append("TagsLoader")
+
+        if graph_changed or data_changed:
+            optional_algorithms.append("RoutingTableLoader")
+            optional_algorithms.append("TagsLoader")
+
         optional_algorithms.append("WriteMemoryIOData")
         optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
@@ -1848,6 +1870,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         executor = self._run_algorithms(
             inputs, algorithms, [], tokens, required_tokens, "loading",
             optional_algorithms)
+        self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._load_outputs = executor.get_items()
         self._load_tokens = executor.get_completed_tokens()
 
@@ -2155,7 +2178,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements)
+                placements=self._placements,
+                using_reinjection=self._config.getboolean(
+                    "Machine", "enable_reinjection"))
             if prov_item is not None:
                 prov_items.extend(prov_item)
         except Exception:

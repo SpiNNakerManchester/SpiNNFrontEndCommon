@@ -16,11 +16,11 @@
 import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, ExecutableTargets)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class LoadExecutableImages(object):
         :param str label
         """
         # Compute what work is to be done here
-        binaries, cores = self.__filter(executable_targets, filt)
+        binaries, cores = self.filter_targets(executable_targets, filt)
 
         # ISSUE: Loading order may be non-constant on older Python
         progress = ProgressBar(cores.total_processors + 1, label)
@@ -74,7 +74,7 @@ class LoadExecutableImages(object):
         progress.end()
 
     @staticmethod
-    def __filter(targets, filt):
+    def filter_targets(targets, filt):
         """
         :param ExecutableTargets executable_targets:
         :param callable(ExecutableType,bool) filt:
