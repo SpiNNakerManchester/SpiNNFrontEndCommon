@@ -52,6 +52,7 @@ struct lpg_config {
     uint32_t payload_right_shift;
     uint32_t sdp_tag;
     uint32_t sdp_dest;
+    //! Max packet to send per timestamp, or 0 for "send them all"
     uint32_t packets_per_timestamp;
 };
 
@@ -81,10 +82,10 @@ enum packet_types {
 // Globals
 static sdp_msg_t g_event_message;
 static uint16_t *sdp_msg_aer_header;
-static uint16_t *sdp_msg_aer_key_prefix;
-static void *sdp_msg_aer_payload_prefix;
-static void *sdp_msg_aer_data;
+static uint16_t *sdp_msg_aer_payload_prefix;
+static uint16_t *sdp_msg_aer_data;
 static uint32_t time;
+//! The number of packets sent so far this timestamp
 static uint32_t packets_sent;
 static uint32_t buffer_index;
 static uint16_t temp_header;
@@ -113,52 +114,61 @@ static struct lpg_config config;
 
 //! \brief Because WHY OH WHY would you use aligned memory? At least with this
 //! we don't get data aborts.
-static inline void write_unaligned(
-        void *base, uint32_t index, uint32_t value) {
+//! \param[in] base: place to write to
+//! \param[in] index: location in base to write to
+//! \param[in] value: the value to write to the base.
+static inline void write_word(void *base, uint32_t index, uint32_t value) {
     uint16_t *ary = base;
     uint32_t idx = index * 2;
     ary[idx++] = CLAMP16(value);
     ary[idx] = CLAMP16(value >> 16);
 }
 
+//! \brief Simple mirror of write_word() for true 16 bit values.
+//! \param[in] base: place to write to
+//! \param[in] index: location in base to write to
+//! \param[in] value: the value to write to the base.
+static inline void write_short(void *base, uint32_t index, uint32_t value) {
+    uint16_t *ary = base;
+    ary[index] = CLAMP16(value);
+}
+
+//! \brief Get how many events there are waiting to be sent
+static inline uint8_t get_event_count(void) {
+    uint8_t event_count = buffer_index;
+    // If there are payloads, it takes two buffer values to encode them
+    if (HAVE_PAYLOAD(config.packet_type)) {
+        event_count >>= 1;
+    }
+    return event_count;
+}
+
+//! \brief fills the SDP message and empties the buffer.
 static void flush_events(void) {
     // Send the event message only if there is data
-    if (buffer_index > 0) {
-        uint8_t event_count;
+    if ((buffer_index > 0) && (
+            (config.packets_per_timestamp == 0) ||
+            (packets_sent < config.packets_per_timestamp))) {
+        // Get the event count depending on if there is a payload or not
+        uint8_t event_count = get_event_count();
 
-        if ((config.packets_per_timestamp == 0)
-                || (packets_sent < config.packets_per_timestamp)) {
-            // Get the event count depending on if there is a payload or not
-            if (HAVE_PAYLOAD(config.packet_type)) {
-                event_count = buffer_index >> 1;
+        // insert appropriate header
+        sdp_msg_aer_header[0] = temp_header | CLAMP8(event_count);
+
+        g_event_message.length =
+                sizeof(sdp_hdr_t) + header_len + event_count * event_size;
+
+        // Add the timestamp if required
+        if (sdp_msg_aer_payload_prefix && config.payload_timestamp) {
+            if (!HAVE_WIDE_LOAD(config.packet_type)) {
+                write_short(sdp_msg_aer_payload_prefix, 0, time);
             } else {
-                event_count = buffer_index;
+                write_word(sdp_msg_aer_payload_prefix, 0, time);
             }
-
-            // insert appropriate header
-            sdp_msg_aer_header[0] = temp_header | CLAMP8(event_count);
-
-            g_event_message.length =
-                    sizeof(sdp_hdr_t) + header_len + event_count * event_size;
-
-            if (config.payload_apply_prefix && config.payload_timestamp) {
-                if (!HAVE_WIDE_LOAD(config.packet_type)) {
-                    uint16_t *temp = sdp_msg_aer_payload_prefix;
-                    temp[0] = CLAMP16(time);
-                } else {
-                    write_unaligned(sdp_msg_aer_payload_prefix, 0, time);
-                }
-            }
-
-            spin1_send_sdp_msg(&g_event_message, 1);
-            packets_sent++;
         }
 
-        // reset packet content
-        uint16_t words_to_clear = (buffer_index * event_size) >> 2;
-        for (uint32_t i = 0; i < words_to_clear; i++) {
-            write_unaligned(sdp_msg_aer_data, i, 0);
-        }
+        spin1_send_sdp_msg(&g_event_message, 1);
+        packets_sent++;
     }
 
     // reset counter
@@ -166,6 +176,7 @@ static void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
+//! \param[in] provenance_region_address: address for storing provenance
 static void record_provenance_data(address_t provenance_region_address) {
     struct provenance_data_struct *sdram = (void *) provenance_region_address;
     // Copy provenance data into SDRAM region
@@ -173,6 +184,9 @@ static void record_provenance_data(address_t provenance_region_address) {
 }
 
 // Callbacks
+//! \brief timer that clears packets stored and stops if required.
+//! \param[in] unused0: api limit.
+//! \param[in] unused1: api limit.
 static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -183,6 +197,9 @@ static void timer_callback(uint unused0, uint unused1) {
     // increase time variable to keep track of current timestep
     time++;
     log_debug("Timer tick %u", time);
+
+    // Reset the count of packets sent in the current timestep
+    packets_sent = 0;
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
@@ -196,84 +213,80 @@ static void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-static void flush_events_if_full(void) {
-    uint8_t event_count;
-
-    if (HAVE_PAYLOAD(config.packet_type)) {
-        event_count = buffer_index >> 1;
-    } else {
-        event_count = buffer_index;
-    }
-
-    if ((event_count + 1) * event_size > BUFFER_CAPACITY) {
+//! \brief checks if there's enough stored events to push to a SDP message
+//! and if so, fills and sends the SDP message.
+static inline void flush_events_if_full(void) {
+    if ((get_event_count() + 1) * event_size > BUFFER_CAPACITY) {
         flush_events();
     }
 }
 
-// processes an incoming multicast packet without payload
+//! \brief processes an incoming multicast packet without payload
+//! \param[in] key: multicast key.
 static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
     // process the received spike
     if (!HAVE_WIDE_LOAD(config.packet_type)) {
         // 16 bit packet
-        uint16_t *buf_pointer = sdp_msg_aer_data;
-        buf_pointer[buffer_index++] = CLAMP16(key >> config.key_right_shift);
+        write_short(sdp_msg_aer_data, buffer_index++,
+                key >> config.key_right_shift);
 
         // if there is a payload to be added
         if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            buf_pointer[buffer_index++] = 0;
+            write_short(sdp_msg_aer_data, buffer_index++, 0);
         } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            buf_pointer[buffer_index++] = CLAMP16(time);
+            write_short(sdp_msg_aer_data, buffer_index++, time);
         }
     } else {
         // 32 bit packet
-        write_unaligned(sdp_msg_aer_data, buffer_index++, key);
+        write_word(sdp_msg_aer_data, buffer_index++, key);
 
         // if there is a payload to be added
         if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            write_unaligned(sdp_msg_aer_data, buffer_index++, 0);
+            write_word(sdp_msg_aer_data, buffer_index++, 0);
         } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            write_unaligned(sdp_msg_aer_data, buffer_index++, time);
+            write_word(sdp_msg_aer_data, buffer_index++, time);
         }
     }
-
-    // send packet if enough data is stored
-    flush_events_if_full();
 }
 
-// processes an incoming multicast packet with payload
+//! \brief processes an incoming multicast packet with payload
+//! \param[in] key: multicast key.
+//! \param[in] payload: multicast payload.
 static void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 
     // process the received spike
     if (!HAVE_WIDE_LOAD(config.packet_type)) {
         //16 bit packet
-        uint16_t *buf_pointer = sdp_msg_aer_data;
-        buf_pointer[buffer_index++] = CLAMP16(key >> config.key_right_shift);
+        write_short(sdp_msg_aer_data, buffer_index++,
+                key >> config.key_right_shift);
 
         //if there is a payload to be added
         if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            buf_pointer[buffer_index++] = CLAMP16(payload >> config.payload_right_shift);
+            write_short(sdp_msg_aer_data, buffer_index++,
+                    payload >> config.payload_right_shift);
         } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            buf_pointer[buffer_index++] = CLAMP16(time);
+            write_short(sdp_msg_aer_data, buffer_index++, time);
         }
     } else {
         //32 bit packet
-        write_unaligned(sdp_msg_aer_data, buffer_index++, key);
+        write_word(sdp_msg_aer_data, buffer_index++, key);
 
         //if there is a payload to be added
         if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            write_unaligned(sdp_msg_aer_data, buffer_index++, payload);
+            write_word(sdp_msg_aer_data, buffer_index++, payload);
         } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            write_unaligned(sdp_msg_aer_data, buffer_index++, time);
+            write_word(sdp_msg_aer_data, buffer_index++, time);
         }
     }
-
-    // send packet if enough data is stored
-    flush_events_if_full();
 }
 
+//! \brief user interrupt for pulling out of the buffer and filling up a SDP
+//! message. Will sned SDP if more than 1 SDP message needed.
+//! \param[in] unused0: api limit.
+//! \param[in] unused1: api limit.
 static void incoming_event_process_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -288,10 +301,17 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
             process_incoming_event_payload(key, payload);
         } else {
             processing_events = false;
+            break;
         }
+
+        // send packet if enough data is stored
+        flush_events_if_full();
     } while (processing_events);
 }
 
+//! \brief callback for a multicast packet without a payload.
+//! \param[in] key: the multicast key.
+//! \param[in] unused: api limit.
 static void incoming_event_callback(uint key, uint unused) {
     use(unused);
     log_debug("Received key %x", key);
@@ -306,6 +326,9 @@ static void incoming_event_callback(uint key, uint unused) {
     }
 }
 
+//! \brief callback for a multicast packet with a payload.
+//! \param[in] key: the multicast key.
+//! \param[in] payload: the payload of the multicast packet.
 static void incoming_event_payload_callback(uint key, uint payload) {
     log_debug("Received key %x, payload %x", key, payload);
 
@@ -320,6 +343,8 @@ static void incoming_event_payload_callback(uint key, uint payload) {
     }
 }
 
+//! \brief init method.
+//! \param[in] sdram_config: sdram location for the lpg parameters.
 static void read_parameters(struct lpg_config *sdram_config) {
     // Faster to copy by field than to use spin1_memcpy()!
 
@@ -359,6 +384,9 @@ static void read_parameters(struct lpg_config *sdram_config) {
     log_info("packets_per_timestamp: %d", config.packets_per_timestamp);
 }
 
+//! \brief top level init method.
+//! \param[in] timer_period pointer to int where timer period will be stored.
+//! \return bool where True was successful init and  false otherwise.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -391,6 +419,8 @@ static bool initialize(uint32_t *timer_period) {
     return true;
 }
 
+//! \brief init for the sdp message
+//! \return bool where True was successful init and  false otherwise.
 static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg");
 
@@ -450,64 +480,45 @@ static bool configure_sdp_msg(void) {
     temp_header |= config.payload_timestamp << PAYLOAD_IS_TIMESTAMP;
     temp_header |= config.packet_type << PACKET_TYPE;
 
-    header_len = 2;
-
     // pointers for AER packet header, prefix and data
-    void *temp_ptr;
+    sdp_msg_aer_data = &sdp_msg_aer_header[1];
     if (config.apply_prefix) {
-        // pointer to key prefix
-        sdp_msg_aer_key_prefix = &sdp_msg_aer_header[1];
-        temp_ptr = &sdp_msg_aer_header[2];
-        sdp_msg_aer_key_prefix[0] = (uint16_t) config.prefix;
-        header_len += 2;
-    } else {
-        sdp_msg_aer_key_prefix = NULL;
-        temp_ptr = &sdp_msg_aer_header[1];
+        // pointer to key prefix, so data is one half-word further ahead
+        write_short(sdp_msg_aer_header, 1, config.prefix);
+        sdp_msg_aer_data++;
     }
 
     if (config.payload_apply_prefix) {
-        sdp_msg_aer_payload_prefix = temp_ptr;
-        uint16_t *a = sdp_msg_aer_payload_prefix;
-
-        log_debug("temp_ptr: %08x", temp_ptr);
-        log_debug("a: %08x", a);
-
         // pointer to payload prefix
-        sdp_msg_aer_payload_prefix = temp_ptr;
+        sdp_msg_aer_payload_prefix = sdp_msg_aer_data;
 
         if (!HAVE_WIDE_LOAD(config.packet_type)) {
-            //16 bit payload prefix
-            temp_ptr = &a[1];
-            header_len += 2;
+            //16 bit payload prefix; advance data position by one half word
+            sdp_msg_aer_data++;
             if (!config.payload_timestamp) {
                 // add payload prefix as required - not a timestamp
-                a[0] = config.payload_prefix;
+                write_short(sdp_msg_aer_payload_prefix, 0, config.payload_prefix);
             }
-            log_debug("16 bit - temp_ptr: %08x", temp_ptr);
         } else {
-            //32 bit payload prefix
-            temp_ptr = &a[2];
-            header_len += 4;
+            //32 bit payload prefix; advance data position by two half words
+            sdp_msg_aer_data += 2;
             if (!config.payload_timestamp) {
                 // add payload prefix as required - not a timestamp
-                a[0] = CLAMP16(config.payload_prefix);
-                a[1] = CLAMP16(config.payload_prefix >> 16);
+                write_word(sdp_msg_aer_payload_prefix, 0, config.payload_prefix);
             }
-            log_debug("32 bit - temp_ptr: %08x", temp_ptr);
         }
     } else {
         sdp_msg_aer_payload_prefix = NULL;
     }
 
-    // pointer to write data
-    sdp_msg_aer_data = temp_ptr;
+    // compute header length
+    header_len = (sdp_msg_aer_data - sdp_msg_aer_header) * sizeof(uint16_t);
 
     log_debug("sdp_msg_aer_header: %08x", sdp_msg_aer_header);
-    log_debug("sdp_msg_aer_key_prefix: %08x",
-            sdp_msg_aer_key_prefix);
     log_debug("sdp_msg_aer_payload_prefix: %08x",
             sdp_msg_aer_payload_prefix);
     log_debug("sdp_msg_aer_data: %08x", sdp_msg_aer_data);
+    log_debug("sdp_msg_header_len: %d", header_len);
 
     packets_sent = 0;
     buffer_index = 0;
@@ -540,8 +551,7 @@ void c_main(void) {
     spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, MC_PACKET);
     spin1_callback_on(
             MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
-    spin1_callback_on(
-            USER_EVENT, incoming_event_process_callback, USER);
+    spin1_callback_on(USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0
