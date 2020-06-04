@@ -59,7 +59,7 @@ before_install:
   - support/gitclone.sh https://github.com/SpiNNakerManchester/spinn_common.git
   - export SPINN_DIRS=$PWD/spinnaker_tools
   - ROOT_DOC_DIR=$PWD/doc/global
-  - C_DOC_DIR=$PWD/c_common/html
+  - C_DOC_DIR=$PWD/c_common/doc/html
   - PY_DOC_DIR=$PWD/doc/source/_build/html
 
 install:
