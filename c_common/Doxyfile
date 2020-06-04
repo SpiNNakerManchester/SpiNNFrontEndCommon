@@ -166,7 +166,8 @@ FILE_PATTERNS          =
 RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = */modified_src/* */build/* */eieio_interface.c
+EXCLUDE_PATTERNS       = */modified_src/* */eieio_interface.c \
+						 */models/*/build/* */front_end_common_lib/build/*
 EXCLUDE_SYMBOLS        = _*
 
 EXAMPLE_PATH           =
