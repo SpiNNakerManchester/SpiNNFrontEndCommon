@@ -16,6 +16,7 @@
  */
 
 //! \file
+//! \brief Structures and enumerations for the bitfield compressor sorter.
 #ifndef __COMPRESSOR_SORTER_STRUCTS_H__
 #define __COMPRESSOR_SORTER_STRUCTS_H__
 

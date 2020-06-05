@@ -16,6 +16,7 @@
  */
 
 //! \file
+//! \brief Compound routing table utilities.
 #ifndef __ROUTING_TABLE_UTILS_H__
 #define __ROUTING_TABLE_UTILS_H__
 

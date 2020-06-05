@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief An ordered covering of routing table entries
 #ifndef __ORDERED_COVERING_H__
 #define __ORDERED_COVERING_H__
 
@@ -26,17 +28,16 @@
 #include "remove_default_routes.h"
 #include "../common/routing_table.h"
 
-//! \brief ?????????
+//! \brief State of the ordered covering
 typedef struct _sets_t {
-    bit_set_t *best;
-    bit_set_t *working;
+    bit_set_t *best;    //!< The best covering found so far
+    bit_set_t *working; //!< The covering currently being worked on
 } __sets_t;
-
 
 //! \brief Get the index where the routing table entry resulting from a merge
 //!     should be inserted.
-//! \param[in] generality: ??????????
-//! \return the insertion point for this generality
+//! \param[in] generality: The number of least-significant bits masked out
+//! \return The insertion point for this generality factor
 static unsigned int oc_get_insertion_point(
         const unsigned int generality) {
     // Perform a binary search of the table to find entries of generality - 1
@@ -85,11 +86,13 @@ static unsigned int oc_get_insertion_point(
 
 //! \brief Remove from a merge any entries which would be covered by being
 //!     existing entries if they were included in the given merge.
-//! \param[in] merge: the merge to consider
-//! \param[in] min_goodness: ????????
-//! \param[in] stop_compressing: bool pointer for if compressor should stop
-//! \param[out] changed: whether the merge drops below goodness level
-//! \return whether the method was successful in completing or not
+//! \param[in] merge: The merge to consider
+//! \param[in] min_goodness:
+//!     Minimum goodness factor for a merge to be performed
+//! \param[in] stop_compressing: Whether the compressor should stop;
+//!     points to a variable _set by interrupt_
+//! \param[out] changed: Whether the merge drops below goodness level
+//! \return Whether the method was successful in completing or not
 static inline bool oc_up_check(
         merge_t *merge, int min_goodness,
         volatile bool *stop_compressing, bool *changed) {
@@ -148,12 +151,12 @@ static inline bool oc_up_check(
     return true;
 }
 
-//! \brief ????????????????
-//! \param[in] merge_km: ???????
-//! \param[in] covered_km: ????????
-//! \param[in] stringency: ????????
-//! \param[in] set_to_zero: ???????
-//! \param[in] set_to_one: ????????
+//! \brief Compute what bits can be set and cleared in the covering mask
+//! \param[in] merge_km: The merge being considered
+//! \param[in] covered_km: The key-mask that the merge must cover
+//! \param[in,out] stringency: Variable holding the number of masked out bits
+//! \param[in,out] set_to_zero: Variable holding the bits to set to zero
+//! \param[in,out] set_to_one: Variable holding the bits to set to one
 static void _get_settable(
         key_mask_t merge_km, key_mask_t covered_km, unsigned int *stringency,
         uint32_t *set_to_zero, uint32_t *set_to_one) {
@@ -179,13 +182,13 @@ static void _get_settable(
     }
 }
 
-//! \brief ???????????
+//! \brief Get candidates for removal
 //! \param[in] m: Merge from which entries will be removed
 //! \param[in] settable: Mask of bits to set
-//! \param[in] to_one:  True if setting to one, otherwise false
-//! \param[in] sets: bitfields of some form
-//! \return ????????????
-static __sets_t _get_removables(
+//! \param[in] to_one: True if setting to one, otherwise false
+//! \param[in] sets: The bitfields describing what is being considered
+//! \return The updated version of \p sets
+static inline __sets_t _get_removables(
         merge_t *m, uint32_t settable, bool to_one, __sets_t sets) {
     // For each bit which we are trying to set while the best set doesn't
     // contain only one entry.
@@ -242,17 +245,19 @@ static __sets_t _get_removables(
 
 //! \brief Remove entries from a merge such that the merge would not cover
 //!     existing entries positioned below the merge.
-//! \param[in] merge: the merge to eventually apply
-//! \param[in] min_goodness: ????????
-//! \param[in] a: ????????
-//! \param[out] failed_by_malloc: bool flag saying if it failed due to malloc
-//! \param[in] stop_compressing: bool pointer for if the compressor should stop
-//! \return whether it was successful or not
+//! \param[in] merge: The merge to eventually apply
+//! \param[in] min_goodness:
+//!     The minimum number of bits to mask out for removal to be considered
+//! \param[in] aliases: Describes what entries alias what other entries
+//! \param[out] failed_by_malloc:
+//!     Flag saying if it failed due to running out of memory
+//! \param[in] stop_compressing:
+//!     Variable saying whether the compressor should stop, _set by interrupt_
+//! \return Whether it was successful or not
 static bool oc_down_check(
         merge_t *merge, int min_goodness, aliases_t *aliases,
         bool *failed_by_malloc,
         volatile bool *stop_compressing) {
-
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     while (merge_goodness(merge) > min_goodness) {
@@ -439,11 +444,12 @@ static bool oc_down_check(
 
 
 //! \brief Get the best merge which can be applied to a routing table
-//! \param[in] aliases: ???????????
-//! \param[in] best: the best merge to find
-//! \param[out] failed_by_malloc: bool flag saying failed by malloc
-//! \param[in] stop_compressing: bool flag saying if compression should stop
-//! \return whether successful or not.
+//! \param[in] aliases: Describes what entries alias what other entries
+//! \param[in,out] best: The best merge found
+//! \param[out] failed_by_malloc: Flag saying failed by memory exhaustion
+//! \param[in] stop_compressing: Variable saying if compression should stop;
+//!     _set by interrupt_
+//! \return Whether successful or not.
 static inline bool oc_get_best_merge(
         aliases_t *aliases, merge_t *best, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
@@ -619,9 +625,10 @@ static inline bool oc_get_best_merge(
 
 
 //! \brief Apply a merge to the table against which it is defined
-//! \param[in] merge: the merge to apply to the routing tables
-//! \param[in] aliases: ??????????????
-//! \return whether successful or not
+//! \param[in] merge: The merge to apply to the routing tables
+//! \param[in] aliases: Describes what entries alias what other entries
+//! \param[out] failed_by_malloc: Flag saying failed by memory exhaustion
+//! \return Whether successful or not
 static inline bool oc_merge_apply(
         merge_t *merge, aliases_t *aliases, bool *failed_by_malloc) {
     // Get the new entry
@@ -760,20 +767,18 @@ static inline bool oc_merge_apply(
 //! \brief Apply the ordered covering algorithm to a routing table
 //! \details Minimise the table until either the table is shorter than the
 //!     target length or no more merges are possible.
-//! \param[in] target_length: the length to reach
-//! \param[out] failed_by_malloc: bool flag stating that it failed due to malloc
-//! \param[out] stop_compressing: bool flag that says compressor should stop
-//!    and return false
-//! \param[in] compress_only_when_needed: only compress when needed
-//! \param[in] compress_as_much_as_possible: only compress to normal routing
+//! \param[in] target_length: The length to reach
+//! \param[out] failed_by_malloc: Flag stating that it failed due to malloc
+//! \param[out] stop_compressing: Variable saying if the compressor should stop
+//!    and return false; _set by interrupt_
+//! \param[in] compress_only_when_needed: Only compress when needed
+//! \param[in] compress_as_much_as_possible: Only compress to normal routing
 //!       table length
-//! \return whether successful or not.
+//! \return Whether successful or not.
 static inline bool oc_minimise(
-        int target_length,
-        bool *failed_by_malloc,
+        int target_length, bool *failed_by_malloc,
         volatile bool *restrict stop_compressing,
-        bool compress_only_when_needed,
-        bool compress_as_much_as_possible) {
+        bool compress_only_when_needed, bool compress_as_much_as_possible) {
     // check if any compression actually needed
     log_debug("n entries before compression is %d",
             routing_table_get_n_entries());

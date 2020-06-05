@@ -15,6 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief SpiNNaker routing table minimisation with bitfield integration
+//! control processor.
+//!
+//! Controls the attempt to minimise the router entries with bitfield
+//! components.
+
 #include <spin1_api.h>
 #include <debug.h>
 #include <bit_field.h>
@@ -27,42 +34,35 @@
 #include "common/compressor_sorter_structs.h"
 #include "common/bit_field_table_generator.h"
 #include "sorter_includes/bit_field_reader.h"
-/*****************************************************************************/
-/* SpiNNaker routing table minimisation with bitfield integration control
- * processor.
- *
- * controls the attempt to minimise the router entries with bitfield
- * components.
- */
 
 //============================================================================
 // #defines and enums
 
-//! time step for safety timer tick interrupt
+//! Time step for safety timer tick interrupt
 #define TIME_STEP 1000
 
-//! used for debug. kills after how many time steps to kill the process
+//! After how many time steps to kill the process
 #define KILL_TIME 20000
 
-//! delay between checks of sdram polling
+//! Delay between checks of SDRAM polling
 #define SDRAM_POLL_DELAY 50
 
-//! attempts for sdram poll
+//! Number of attempts for SDRAM poll
 #define SDRAM_POLL_ATTEMPTS 20
 
-//! the magic +1 for inclusive coverage that 0 index is no bitfields
+//! The magic +1 for inclusive coverage that 0 index is no bitfields
 #define ADD_INCLUSIVE_BIT 1
 
-//! flag for if a rtr_mc failure.
+//! Flag for if a rtr_mc failure.
 #define RTR_MC_FAILED 0
 
-//! bit shift for the app id for the route
+//! Bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
 
-//! callback priorities
+//! Callback priorities
 typedef enum priorities {
-    COMPRESSION_START_PRIORITY = 3,
-    TIMER_TICK_PRIORITY = 0
+    COMPRESSION_START_PRIORITY = 3, //!< General processing is low priority
+    TIMER_TICK_PRIORITY = 0     //!< Timer tick is high priority
 } priorities;
 
 //============================================================================
@@ -71,17 +71,20 @@ typedef enum priorities {
 //! DEBUG variable: counter of how many time steps have passed
 uint32_t time_steps = 0;
 
-//! flag for saying found a stopping position
+//! Whether we found a stopping position
 volatile bool terminated = false;
 
-//! easier programming tracking of the user registers
-uncompressed_table_region_data_t *restrict uncompressed_router_table; // user1
+//! \brief The uncompressed router table
+//! \details Address comes from `vcpu->user1`
+uncompressed_table_region_data_t *restrict uncompressed_router_table;
 
-//! stores the locations of bitfields from app processors
-region_addresses_t *restrict region_addresses; // user2
+//! \brief The locations of bitfields from application processors
+//! \details Address comes from `vcpu->user2`
+region_addresses_t *restrict region_addresses;
 
-//! stores of sdram blocks the fake heap can use
-available_sdram_blocks *restrict usable_sdram_regions; // user3
+//! \brief SDRAM blocks that the fake heap can use
+//! \details Address comes from `vcpu->user3`
+available_sdram_blocks *restrict usable_sdram_regions;
 
 //! Best midpoint that record a success
 int best_success = FAILED_TO_FIND;
@@ -92,29 +95,29 @@ int lowest_failure;
 //! The minimum number of bitfields to be merged in
 uint32_t threshold_in_bitfields;
 
-//! the store for the last routing table that was compressed
+//! The store for the last routing table that was compressed
 table_t *restrict last_compressed_table = NULL;
 
-//! the compressor app id
+//! The compressor's SARK application id
 uint32_t app_id = 0;
 
 //! \brief the list of bitfields in sorted order based off best effect, and
 //!     processor ids.
 sorted_bit_fields_t *restrict sorted_bit_fields;
 
-//! stores which values have been tested
+//! Stores which values have been tested
 bit_field_t tested_mid_points;
 
 //! SDRAM used to communicate with the compressors
 comms_sdram_t *restrict comms_sdram;
 
-//! record if the last action was to reduce cores due to malloc
+//! Record if the last action was to reduce cores due to malloc
 bool just_reduced_cores_due_to_malloc = false;
 
 //============================================================================
 
 //! \brief Load the best routing table to the router.
-//! \return whether the table was loaded into the router or not
+//! \return Whether the table was loaded into the router or not
 static inline bool load_routing_table_into_router(void) {
     // Try to allocate sufficient room for the routing table.
     int start_entry = rtr_alloc_id(last_compressed_table->size, app_id);
@@ -149,10 +152,9 @@ static inline bool load_routing_table_into_router(void) {
     return true;
 }
 
-//! \brief sends a message forcing the processor to stop its compression
+//! \brief Send a message forcing the processor to stop its compression
 //!     attempt
-//! \param[in] processor_id: the processor id to send a force stop
-//!     compression attempt
+//! \param[in] processor_id: the processor ID to send a ::FORCE_TO_STOP to
 void send_force_stop_message(int processor_id) {
     if (comms_sdram[processor_id].sorter_instruction == RUN) {
         log_debug("sending stop to processor %d", processor_id);
@@ -160,11 +162,10 @@ void send_force_stop_message(int processor_id) {
     }
 }
 
-//! \brief sends a message telling the processor to prepare for the next run
+//! \brief Send a message telling the processor to prepare for the next run
 //! \details This is critical as it tells the processor to clear the result
 //!     field
-//! \param[in] processor_id: the processor id to send a prepare to
-//!     compression attempt
+//! \param[in] processor_id: the processor ID to send a ::PREPARE to
 void send_prepare_message(int processor_id) {
     // set message params
     log_debug("sending prepare to processor %d", processor_id);
@@ -172,15 +173,15 @@ void send_prepare_message(int processor_id) {
     comms_sdram[processor_id].mid_point = FAILED_TO_FIND;
 }
 
-//! \brief sets up the search bitfields.
-//! \return bool saying success or failure of the setup
+//! \brief Set up the search bitfields.
+//! \return True if the setup succeeded
 static inline bool set_up_tested_mid_points(void) {
     log_info("set_up_tested_mid_point n bf addresses is %d",
             sorted_bit_fields->n_bit_fields);
 
     uint32_t words = get_bit_field_size(
             sorted_bit_fields->n_bit_fields + ADD_INCLUSIVE_BIT);
-    tested_mid_points = (bit_field_t) MALLOC(words * sizeof(bit_field_t));
+    tested_mid_points = MALLOC(words * sizeof(bit_field_t));
 
     // check the malloc worked
     if (tested_mid_points == NULL) {
@@ -194,12 +195,12 @@ static inline bool set_up_tested_mid_points(void) {
     return true;
 }
 
-//! \brief stores the addresses for freeing when response code is sent
-//! \param[in] processor_id: the compressor processor id
-//! \param[in] mid_point: the point in the bitfields to work from
+//! \brief Store the addresses for freeing when response code is sent.
+//! \param[in] processor_id: The compressor processor ID
+//! \param[in] mid_point: The point in the bitfields to work from.
 //! \param[in] table_size: Number of entries that the uncompressed routing
 //!    tables need to hold.
-//! \return true if stored
+//! \return True if stored
 static inline bool pass_instructions_to_compressor(
     uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
 
@@ -224,12 +225,12 @@ static inline bool pass_instructions_to_compressor(
     return true;
 }
 
-//! \brief builds tables and tries to set off a compressor processor based off
-//!     midpoint
+//! \brief Build tables and tries to set off a compressor processor based off
+//!     a mid-point.
 //! \details If there is a problem will set reset the mid_point as untested and
-//!     set this and all unused compressors to do not use
-//! \param[in] mid_point: the mid point to start at
-//! \param[in] processor_id: the processor to run the compression on
+//!     set this and all unused compressors to ::DO_NOT_USE state.
+//! \param[in] mid_point: The mid-point to start at
+//! \param[in] processor_id: The processor to run the compression on
 static inline void malloc_tables_and_set_off_bit_compressor(
         int mid_point, int processor_id) {
     // free any previous routing tables
@@ -262,10 +263,12 @@ static inline void malloc_tables_and_set_off_bit_compressor(
     }
 }
 
-//! \brief finds the region id in the region addresses for this processor id
-//! \param[in] processor_id: the processor id to find the region id in the
+#if 0
+//! \brief Find the region ID in the region addresses for this processor ID
+//! \param[in] processor_id: The processor ID to find the region ID in the
 //!     addresses
-//! \return the address in the addresses region for the processor id
+//! \return The address in the addresses region for the processor ID, or
+//!     `NULL` if none found.
 static inline filter_region_t *find_processor_bit_field_region(
         int processor_id) {
     // find the right bitfield region
@@ -283,9 +286,10 @@ static inline filter_region_t *find_processor_bit_field_region(
     malloc_extras_terminate(EXIT_SWERR);
     return NULL;
 }
+#endif
 
-//! \brief set number of merged filters for every core with bitfield's
-//!     bitfield regions
+//! \brief Set the number of merged filters for every core with bitfield's
+//!     bitfield regions.
 static inline void set_n_merged_filters(void) {
     uint32_t highest_key[MAX_PROCESSORS];
     int highest_order[MAX_PROCESSORS];
@@ -334,8 +338,8 @@ static inline void set_n_merged_filters(void) {
     }
 }
 
-//! \brief locates the next valid midpoint to test
-//! \return int which is the midpoint or -1 if no midpoints left
+//! \brief Locate the next valid midpoint to test
+//! \return The midpoint, or #FAILED_TO_FIND if no midpoints left
 static inline int locate_next_mid_point(void) {
     if (sorted_bit_fields->n_bit_fields == 0) {
         return FAILED_TO_FIND;
@@ -419,8 +423,8 @@ static inline int locate_next_mid_point(void) {
     return new_mid_point;
 }
 
-//! \brief clean up when we've found a good compression
-//! \details handles the freeing of memory from compressor processors, waiting
+//! \brief Clean up when we've found a good compression
+//! \details Handles the freeing of memory from compressor processors, waiting
 //!     for compressor processors to finish and removing merged bitfields from
 //!     the bitfield regions.
 static inline void handle_best_cleanup(void) {
@@ -445,10 +449,10 @@ static inline void handle_best_cleanup(void) {
     malloc_extras_terminate(EXITED_CLEANLY);
 }
 
-//! \brief Prepares a processor for the first time.
+//! \brief Prepare a processor for the first time.
 //! \details This includes mallocing the comp_instruction_t user
-//! \param[in] mid_point: the mid point this processor will use
-//! \return the processor id of the next available processor, or -1 if none
+//! \param[in] processor_id: The ID of the processor to prepare
+//! \return True if the preparation succeeded.
 bool prepare_processor_first_time(int processor_id) {
     comms_sdram[processor_id].sorter_instruction = PREPARE;
 
@@ -483,10 +487,10 @@ bool prepare_processor_first_time(int processor_id) {
     return true;
 }
 
-//! \brief Returns the next processor id which is ready to run a compression.
-//! may result in preparing a processor in the process.
-//! \param[in] mid_point: the mid point this processor will use
-//! \return the processor id of the next available processor or -1 if none
+//! \brief Get the next processor id which is ready to run a compression.
+//! \details May result in preparing a processor in the process.
+//! \return The processor ID of the next available processor, or
+//!     #FAILED_TO_FIND if none
 int find_prepared_processor(void) {
     // Look for a prepared one
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
@@ -518,9 +522,10 @@ int find_prepared_processor(void) {
     return FAILED_TO_FIND;
 }
 
-//! \brief Returns the next processor id which is ready to run a compression
-//! \param[in] mid_point: the mid point this processor will use
-//! \return the processor id of the next available processor or -1 if none
+//! \brief Get the next processor ID which is ready to run a compression.
+//! \param[in] midpoint: The mid-point this processor will use
+//! \return The processor ID of the next available processor, or
+//!     #FAILED_TO_FIND if none
 int find_compressor_processor_and_set_tracker(int midpoint) {
     int processor_id = find_prepared_processor();
     if (processor_id > FAILED_TO_FIND) {
@@ -534,8 +539,8 @@ int find_compressor_processor_and_set_tracker(int midpoint) {
     return processor_id;
 }
 
-//! \brief sets up the compression attempt for the no bitfield version.
-//! \return whether setting off the compression attempt was successful.
+//! \brief Set up the compression attempt for the no bitfield version.
+//! \return Whether setting off the compression attempt was successful.
 bool setup_no_bitfields_attempt(void) {
     if (threshold_in_bitfields > 0) {
         log_info("No bitfields attempt skipped due to threshold of %d percent",
@@ -558,8 +563,8 @@ bool setup_no_bitfields_attempt(void) {
     return true;
 }
 
-//! \brief Check if a compressor processor is available
-//! \return true if at least one processor is ready to compress
+//! \brief Check if a compressor processor is available.
+//! \return Whether at least one processor is ready to compress
 bool all_compressor_processors_busy(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         log_debug("processor_id %d status %d",
@@ -591,9 +596,9 @@ bool all_compressor_processors_done(void) {
     return true;
 }
 
-//! \brief check if all processors are done and if yes run best exit
-//! \return false if at least one compressors not Done.
-//!     Should never return true but does in case the terminate fails.
+//! \brief Check if all processors are done; if yes, run best and exit
+//! \return False if at least one compressors is not done.
+//!     True if termination fails (which shouldn't happen...)
 bool exit_carry_on_if_all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (comms_sdram[processor_id].sorter_instruction >= PREPARE) {
@@ -686,9 +691,9 @@ void carry_on_binary_search(void) {
     log_debug("end create at time step: %u", time_steps);
 }
 
-//! \brief timer interrupt for controlling time taken to try to compress table
-//! \param[in] unused0: not used
-//! \param[in] unused1: not used
+//! \brief Timer interrupt for controlling time taken to try to compress table
+//! \param[in] unused0: unused
+//! \param[in] unused1: unused
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -705,9 +710,9 @@ void timer_callback(uint unused0, uint unused1) {
 #endif
 }
 
-//! \brief handle the fact that a midpoint was successful.
-//! \param[in] mid_point: the mid point that failed
-//! \param[in] processor_id: the compressor processor id
+//! \brief Handle the fact that a midpoint was successful.
+//! \param[in] mid_point: The mid-point that succeeded.
+//! \param[in] processor_id: The compressor processor ID
 void process_success(int mid_point, int processor_id) {
     // if the mid point is better than seen before, store results for final.
     if (best_success <= mid_point) {
@@ -738,9 +743,9 @@ void process_success(int mid_point, int processor_id) {
     log_debug("finished process of successful compression");
 }
 
-//! \brief handle the fact that a midpoint failed due to a malloc
-//! \param[in] mid_point: the mid point that failed
-//! \param[in] processor_id: the compressor processor id
+//! \brief Handle the fact that a midpoint failed due to insufficient memory
+//! \param[in] mid_point: The mid-point that failed
+//! \param[in] processor_id: The compressor processor ID
 void process_failed_malloc(int mid_point, int processor_id) {
     routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
     // Remove the flag that say this midpoint has been checked
@@ -759,12 +764,13 @@ void process_failed_malloc(int mid_point, int processor_id) {
     }
 }
 
-//! \brief handle the fact that a midpoint failed.
-//! \param[in] mid_point: the mid point that failed
-//! \param[in] processor_id: the compressor processor id
+//! \brief Handle the fact that a midpoint failed for reasons other than
+//!     memory allocation.
+//! \param[in] mid_point: The mid-point that failed
+//! \param[in] processor_id: The compressor processor ID
 void process_failed(int mid_point, int processor_id) {
     // safety check to ensure we dont go on if the uncompressed failed
-    if (mid_point <= (int) threshold_in_bitfields)  {
+    if (mid_point <= (int) threshold_in_bitfields) {
         if (threshold_in_bitfields == NO_BIT_FIELDS) {
             log_error("The no bitfields attempted failed! Giving up");
         } else {
@@ -799,9 +805,9 @@ void process_failed(int mid_point, int processor_id) {
     just_reduced_cores_due_to_malloc = false;
 }
 
-//! \brief processes the response from the compressor attempt
-//! \param[in] processor_id: the compressor processor id
-//! \param[in] finished_state: the response code
+//! \brief Process the response from a compressor's attempt to compress.
+//! \param[in] processor_id: The compressor processor ID
+//! \param[in] finished_state: The response code
 void process_compressor_response(
         int processor_id, compressor_states finished_state) {
     // locate this responses midpoint
@@ -860,9 +866,9 @@ void process_compressor_response(
     }
 }
 
-//! \brief check compressors till its finished
-//! \param[in] unused0: api
-//! \param[in] unused1: api
+//! \brief Check compressors' state till they're finished.
+//! \param[in] unused0: unused
+//! \param[in] unused1: unused
 void check_compressors(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -894,8 +900,8 @@ void check_compressors(uint unused0, uint unused1) {
     log_info("exiting the interrupt, to allow the binary to finish");
 }
 
-//! \brief Starts binary search on all compressor diving the bitfields as even
-//! as possible
+//! \brief Start binary search on all compressors dividing the bitfields as
+//!     evenly as possible.
 void start_binary_search(void) {
     // Find the number of available processors
     uint32_t available = 0;
@@ -905,7 +911,8 @@ void start_binary_search(void) {
         }
     }
 
-    // Set off the worse acceptable (note no bitfield would have been set off earlier)
+    // Set off the worse acceptable (note no bitfield would have been set off
+    // earlier)
     if (threshold_in_bitfields > 0) {
         int processor_id = find_compressor_processor_and_set_tracker(
                 threshold_in_bitfields);
@@ -934,9 +941,9 @@ void start_binary_search(void) {
     }
 }
 
-//! \brief starts the work for the compression search
-//! \param[in] unused0: api
-//! \param[in] unused1: api
+//! \brief Start the work for the compression search
+//! \param[in] unused0: unused
+//! \param[in] unused1: unused
 void start_compression_process(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
@@ -1011,7 +1018,7 @@ static inline vcpu_t *get_this_vcpu_info(void) {
     return this_vcpu_info;
 }
 
-//! \brief sets up a tracker for the user registers so that its easier to use
+//! \brief Set up a tracker for the user registers so that its easier to use
 //!     during coding.
 static void initialise_user_register_tracker(void) {
     log_debug("set up user register tracker (easier reading)");
@@ -1024,7 +1031,7 @@ static void initialise_user_register_tracker(void) {
             (uncompressed_table_region_data_t *) this_vcpu_info->user1;
     region_addresses = (region_addresses_t *) this_vcpu_info->user2;
 
-    comms_sdram = (comms_sdram_t*)region_addresses->comms_sdram;
+    comms_sdram = region_addresses->comms_sdram;
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         comms_sdram[processor_id].compressor_state = UNUSED;
         comms_sdram[processor_id].sorter_instruction = NOT_COMPRESSOR;
@@ -1043,15 +1050,16 @@ static void initialise_user_register_tracker(void) {
             region_addresses, usable_sdram_regions);
 }
 
-//! \brief reads in router table setup params
+//! \brief Read in router table setup parameters.
 static void initialise_routing_control_flags(void) {
     app_id = uncompressed_router_table->app_id;
     log_debug("app id %d, uncompress total entries %d",
             app_id, uncompressed_router_table->uncompressed_table.size);
 }
 
-//! \brief get compressor processors
-//! \return whether the init compressor succeeded or not.
+//! \brief Set things up for the compressor processors so they are ready to be
+//!     compressing
+//! \return Whether the initialisation of compressors succeeded
 bool initialise_compressor_processors(void) {
     // allocate DTCM memory for the processor status trackers
     log_info("allocate and step compressor processor status");
@@ -1069,8 +1077,8 @@ bool initialise_compressor_processors(void) {
     return true;
 }
 
-//! \brief the callback for setting off the router compressor
-//! \return bool which says if the initialisation was successful or not.
+//! \brief Callback to set off the router compressor.
+//! \return Whether the initialisation was successful
 static bool initialise(void) {
     log_debug("Setting up stuff to allow bitfield compressor control process"
             " to occur.");
@@ -1112,7 +1120,7 @@ static bool initialise(void) {
     return true;
 }
 
-//! \brief the main entrance.
+//! \brief The main entrance.
 void c_main(void) {
     if (!initialise()) {
         log_error("failed to init");
