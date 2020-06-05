@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['safety_5fflag',['SAFETY_FLAG',['../malloc__extras_8h.html#a40175efbe638934c27fe8442f0127b10',1,'malloc_extras.h']]],
   ['sdp_5freply_5fheader_5flen',['SDP_REPLY_HEADER_LEN',['../common_8h.html#aaff45b29c1f1c2cc4023b2a77b6af54a',1,'common.h']]],
   ['sdp_5ftimeout',['SDP_TIMEOUT',['../data__speed__up__packet__gatherer_8c.html#a513c440043429953dc2e3ca3b36fd759',1,'SDP_TIMEOUT():&#160;data_speed_up_packet_gatherer.c'],['../extra__monitor__support_8c.html#a513c440043429953dc2e3ca3b36fd759',1,'SDP_TIMEOUT():&#160;extra_monitor_support.c']]],
   ['sdram_5fvs_5fdtcm_5fthreshold',['SDRAM_VS_DTCM_THRESHOLD',['../data__speed__up__packet__gatherer_8c.html#a0c6d4d4c5ec0fcbf62278e0ef7458f91',1,'data_speed_up_packet_gatherer.c']]],

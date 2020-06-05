@@ -28,6 +28,11 @@ var searchData=
   ['event_5fstop_5fcommands',['EVENT_STOP_COMMANDS',['../buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154acd433713fe08bf0672f9e4614ebc7699',1,'buffered_eieio_defs.h']]],
   ['execute_5fprovenance_5fstorage',['execute_provenance_storage',['../simulation_8c.html#a4970b42d5eba02a0b3fe52edbd5d0a97',1,'simulation.c']]],
   ['exit_5fcallback_5ft',['exit_callback_t',['../simulation_8h.html#a2da0c81f277d8bac42313f3b01186da8',1,'simulation.h']]],
+  ['exit_5ffail',['EXIT_FAIL',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572aa79a9cd74d0a705ad96bd17b5181c56b',1,'malloc_extras.h']]],
+  ['exit_5fmalloc',['EXIT_MALLOC',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572ace6a5af7573c1cc48533acf408307ad3',1,'malloc_extras.h']]],
+  ['exit_5fstates_5ffor_5fuser_5fone',['exit_states_for_user_one',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572',1,'malloc_extras.h']]],
+  ['exit_5fswerr',['EXIT_SWERR',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572adf50834e361027bbbe08aad6ebd36d19',1,'malloc_extras.h']]],
+  ['exited_5fcleanly',['EXITED_CLEANLY',['../malloc__extras_8h.html#a4cbf58bc77fc32df9066c3139c128572a012df54a47467268a8bb9acb9d9a2473',1,'malloc_extras.h']]],
   ['extra_5fmonitor_5fsupport_2ec',['extra_monitor_support.c',['../extra__monitor__support_8c.html',1,'']]],
   ['extract_5ftime_5ffrom_5feieio_5fmsg',['extract_time_from_eieio_msg',['../reverse__iptag__multicast__source_8c.html#af834204da94598645c321198c665b8d1',1,'reverse_iptag_multicast_source.c']]]
 ];

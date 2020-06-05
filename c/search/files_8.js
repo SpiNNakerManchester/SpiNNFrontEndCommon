@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['simple_5fminimise_2ec',['simple_minimise.c',['../simple__minimise_8c.html',1,'']]],
-  ['simulation_2ec',['simulation.c',['../simulation_8c.html',1,'']]],
-  ['simulation_2eh',['simulation.h',['../simulation_8h.html',1,'']]]
+  ['platform_2eh',['platform.h',['../platform_8h.html',1,'']]],
+  ['profiler_2ec',['profiler.c',['../profiler_8c.html',1,'']]],
+  ['profiler_2eh',['profiler.h',['../profiler_8h.html',1,'']]]
 ];

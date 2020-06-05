@@ -6,7 +6,7 @@ var searchData=
   ['bit_5ffields',['bit_fields',['../structsorted__bit__fields__t.html#a6adeafbfed85221d82b0340a70e9f1d0',1,'sorted_bit_fields_t']]],
   ['bit_5fset_5ft',['bit_set_t',['../structbit__set__t.html',1,'']]],
   ['bits',['BITS',['../reverse__iptag__multicast__source_8c.html#a184a0172580a1906407f49db8076d02e',1,'reverse_iptag_multicast_source.c']]],
-  ['blocks',['blocks',['../structavailable__sdram__blocks.html#a06dbb45b3adfdd060638a2156d68f74d',1,'available_sdram_blocks']]],
+  ['blocks',['blocks',['../malloc__extras_8h.html#a06dbb45b3adfdd060638a2156d68f74d',1,'available_sdram_blocks']]],
   ['boundary_5fkey_5foffset',['BOUNDARY_KEY_OFFSET',['../data__speed__up__packet__gatherer_8c.html#a29b4f717863f7cad6b6e5329637389e1a41ed3c7c8f08e26cf95b5dac8e3028c6',1,'data_speed_up_packet_gatherer.c']]],
   ['boundary_5fmc_5fkey',['boundary_mc_key',['../extra__monitor__support_8c.html#a8d9604b491d768f328203ae519319d90',1,'data_in_data_items_t']]],
   ['buffer_5fcapacity',['BUFFER_CAPACITY',['../live__packet__gather_8c.html#a473776433ac44bc525b8cd5186969b4b',1,'live_packet_gather.c']]],

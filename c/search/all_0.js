@@ -20,5 +20,5 @@ var searchData=
   ['apply_5fprefix',['apply_prefix',['../live__packet__gather_8c.html#af0b7923976db1f1037c17a3aeeaac926',1,'lpg_config::apply_prefix()'],['../reverse__iptag__multicast__source_8c.html#a53993735ce0a4e1720a6bbcf18e73a6f',1,'config::apply_prefix()'],['../reverse__iptag__multicast__source_8c.html#a179a69c31a96ce21778d651d6a33ee8a',1,'apply_prefix():&#160;reverse_iptag_multicast_source.c'],['../eieio_8h.html#a98c84b768810c66978490a5848b743c3acdd4d6b9b775bca34233b6d3ac4b0850',1,'APPLY_PREFIX():&#160;eieio.h']]],
   ['apply_5fprefix_5fmask',['APPLY_PREFIX_MASK',['../eieio_8h.html#a15df3ade1aa767973c78d9443fb89896ae7a749912240eda6dc7e83a33c048197',1,'eieio.h']]],
   ['as_5fint',['as_int',['../uniona__key__t.html#a40e8e923daf5ac0cb335333baae13561',1,'a_key_t']]],
-  ['available_5fsdram_5fblocks',['available_sdram_blocks',['../structavailable__sdram__blocks.html',1,'']]]
+  ['available_5fsdram_5fblocks',['available_sdram_blocks',['../malloc__extras_8h.html#structavailable__sdram__blocks',1,'']]]
 ];
