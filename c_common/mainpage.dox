@@ -1,0 +1,48 @@
+/*!
+* @mainpage Support Library and Binaries for SpiNNaker Applications
+*
+* @section intro Introduction
+*
+* SpiNNFrontEndCommon includes two key parts:
+*
+* 1. `front_end_common_lib`, which provides miscellaneous utilities for working
+*    with high level SpiNNaker applications as supported by the
+*    SpiNNFrontEndCommon Python library.
+*
+* 2. `models`, which contains various binaries that SpiNNFrontEndCommon deploys
+*    to SpiNNaker to support its operations.
+*
+* @section fec_lib The Front End Common library
+*
+* The library particularly includes the simulation control framework, the data
+* specification access code, and the buffered recording code. For details, see:
+*
+* * simulation.h
+* * data_specification.h
+* * recording.h
+*
+* @section support_models The Support Binaries
+*
+* These are:
+*
+* * The chip power monitor, which helps determine the real power consumption of
+*   programs running on SpiNNaker. See chip_power_monitor.c
+* * The command sender, which is responsible for injecting messages into
+*   SpiNNaker from the host system at specified times or in response to key
+*   events. See command_sender_multicast_source.c
+* * The bitfield compressor system, which reduces the number of messages being
+*   delivered to individual cores. See bit_field_sorter_and_searcher.c and
+*   bit_field_compressor.c
+* * The live packet gatherer, which directs SpiNNaker packets out to the host
+*   system while a simulation is running. See live_packet_gather.c
+* * The routing table minimiser, which compresses routing tables so they
+*   actually fit into SpiNNaker's hardware. See simple_minimise.c
+* * The reverse IPTag multicast source, which injects live messages into a
+*   running SpiNNaker system. See reverse_iptag_multicast_source.c
+* * The extra monitor, which handles packet reinjection when the SpiNNaker
+*   network is heavily loaded, and also assists in fast data transfer with
+*   non-ethernet chips. See extra_monitor_support.c
+* * The data transfer supporter, which handles fast bulk data transfer between
+*   the controlling host and SpiNNaker chips. See
+*   data_speed_up_packet_gatherer.c
+*/
