@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['support_20library_20and_20binaries_20for_20spinnaker_20applications',['Support Library and Binaries for SpiNNaker Applications',['../index.html',1,'']]],
   ['safe_5fmalloc',['safe_malloc',['../platform_8h.html#ae294a233242e0fea63ed0aa05cd45057',1,'platform.h']]],
   ['safe_5fxfree',['safe_xfree',['../platform_8h.html#a46b58838ca7ca3586fab4aef89fc6f70',1,'platform.h']]],
   ['sample_5fcount',['sample_count',['../chip__power__monitor_8c.html#a1090838c106af7b7afaaec0ee969e174',1,'chip_power_monitor.c']]],
