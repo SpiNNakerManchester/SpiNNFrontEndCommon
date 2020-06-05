@@ -65,8 +65,10 @@ Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.wi
 
 Documentation
 =============
-[SpiNNFrontEndCommon Python documentation](http://spinnakergraphfrontend.readthedocs.io)
+[SpiNNFrontEndCommon Python documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/python/)
+<br>
+[SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
 [Combined PyNN7 python documentation](http://spinnaker7manchester.readthedocs.io)
-
+<br>
 [Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)
