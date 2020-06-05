@@ -118,7 +118,6 @@ deploy:
   on:
     branch:
       - master
-      - doxygen
     python: 3.6
     # Only enable deployment if we actually have supplied a token
     condition: -n "$GITHUB_TOKEN"
