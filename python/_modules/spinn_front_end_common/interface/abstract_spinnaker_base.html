@@ -1886,10 +1886,6 @@
                     <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;comparisonOfRoutingTablesReport&quot;</span><span class="p">)</span>
                     <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;CompressedRouterSummaryReport&quot;</span><span class="p">)</span>
                     <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;RoutingTableFromMachineReport&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
-                    <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_routing_compression_checker_report&quot;</span><span class="p">):</span>
-                <span class="n">routing_tables_needed</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">algorithms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;routingCompressionCheckerReport&quot;</span><span class="p">)</span>
 
         <span class="c1"># handle extra monitor functionality</span>
         <span class="n">enable_advanced_monitor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
