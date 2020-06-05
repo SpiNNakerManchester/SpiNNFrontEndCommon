@@ -16,5 +16,6 @@ var searchData=
   ['dma_5ftag_5fread_5ffor_5ftransmission',['DMA_TAG_READ_FOR_TRANSMISSION',['../extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045faf02163dfe7681d77de744cfaad973703',1,'extra_monitor_support.c']]],
   ['dma_5ftag_5fretransmission_5freading',['DMA_TAG_RETRANSMISSION_READING',['../extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fae3a1a5680add9bd61574b24599ac9185',1,'extra_monitor_support.c']]],
   ['dma_5ftimeout_5fslot',['DMA_TIMEOUT_SLOT',['../extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a1375671dff545ffd4c86fac72236812a',1,'extra_monitor_support.c']]],
-  ['dma_5fwrite',['DMA_WRITE',['../extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa7b131f1a056b52cb5dbca2960c1130fb',1,'extra_monitor_support.c']]]
+  ['dma_5fwrite',['DMA_WRITE',['../extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa7b131f1a056b52cb5dbca2960c1130fb',1,'extra_monitor_support.c']]],
+  ['do_5fnot_5fuse',['DO_NOT_USE',['../compressor__sorter__structs_8h.html#aa3e340fc51f415aead32fee83ef70de3a3373d705e500da21f936be7ec6b57802',1,'compressor_sorter_structs.h']]]
 ];

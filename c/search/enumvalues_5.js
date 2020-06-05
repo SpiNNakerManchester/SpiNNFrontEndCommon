@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['host_5fdata_5fread',['HOST_DATA_READ',['../buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a78bd33182d3446399b98f456a154a626',1,'buffered_eieio_defs.h']]],
-  ['host_5fdata_5fread_5fack',['HOST_DATA_READ_ACK',['../buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254',1,'buffered_eieio_defs.h']]],
-  ['host_5fsend_5fsequenced_5fdata',['HOST_SEND_SEQUENCED_DATA',['../buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a553036ced5cf1677cfea25a1a686ca42',1,'buffered_eieio_defs.h']]]
+  ['failed_5fmalloc',['FAILED_MALLOC',['../compressor__sorter__structs_8h.html#ac124d280cf92fb450e1e72a58b88253fa4d8a6f033344df4f3b8fa419b8db0edb',1,'compressor_sorter_structs.h']]],
+  ['failed_5fto_5fcompress',['FAILED_TO_COMPRESS',['../compressor__sorter__structs_8h.html#ac124d280cf92fb450e1e72a58b88253fa7c1602ccad57389b8999601cd8025a95',1,'compressor_sorter_structs.h']]],
+  ['force_5fto_5fstop',['FORCE_TO_STOP',['../compressor__sorter__structs_8h.html#aa3e340fc51f415aead32fee83ef70de3a179a40541f7c969c4effd946f5fd72b9',1,'compressor_sorter_structs.h']]],
+  ['forced_5fby_5fcompressor_5fcontrol',['FORCED_BY_COMPRESSOR_CONTROL',['../compressor__sorter__structs_8h.html#ac124d280cf92fb450e1e72a58b88253facd1b57bf58f3e2dc4ef7ddf051739cf8',1,'compressor_sorter_structs.h']]]
 ];

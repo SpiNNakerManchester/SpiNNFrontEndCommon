@@ -104,6 +104,7 @@ var searchData=
   ['dma_5ftimeout_5fslot',['DMA_TIMEOUT_SLOT',['../extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a1375671dff545ffd4c86fac72236812a',1,'extra_monitor_support.c']]],
   ['dma_5fwidth',['DMA_WIDTH',['../extra__monitor__support_8c.html#ad0b14f1d4cda14aea7d53c987af502b1',1,'extra_monitor_support.c']]],
   ['dma_5fwrite',['DMA_WRITE',['../extra__monitor__support_8c.html#a80155586fa275b28773c9b203f52cabaa7b131f1a056b52cb5dbca2960c1130fb',1,'extra_monitor_support.c']]],
+  ['do_5fnot_5fuse',['DO_NOT_USE',['../compressor__sorter__structs_8h.html#aa3e340fc51f415aead32fee83ef70de3a3373d705e500da21f936be7ec6b57802',1,'compressor_sorter_structs.h']]],
   ['double_5fto_5flower',['double_to_lower',['../debug_8h.html#ae8b70f4001e3d9cf1dc6377f5c527929',1,'debug.h']]],
   ['double_5fto_5fupper',['double_to_upper',['../debug_8h.html#a1db77a14352845038c02da9b050e9d50',1,'debug.h']]],
   ['dse_5fmagic_5fnumber',['dse_magic_number',['../extra__monitor__support_8c.html#a406db90b5e45aaebf77cb6173588e4b1',1,'dsg_header_t']]],

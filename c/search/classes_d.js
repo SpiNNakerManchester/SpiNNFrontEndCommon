@@ -7,6 +7,6 @@ var searchData=
   ['sdram_5fblock',['sdram_block',['../malloc__extras_8h.html#structsdram__block',1,'']]],
   ['simulation_5fconfig',['simulation_config',['../simulation_8h.html#structsimulation__config',1,'']]],
   ['simulation_5fprovenance',['simulation_provenance',['../simulation_8h.html#structsimulation__provenance',1,'']]],
-  ['sorted_5fbit_5ffields_5ft',['sorted_bit_fields_t',['../structsorted__bit__fields__t.html',1,'']]],
+  ['sorted_5fbit_5ffields_5ft',['sorted_bit_fields_t',['../compressor__sorter__structs_8h.html#structsorted__bit__fields__t',1,'']]],
   ['sub_5ftable_5ft',['sub_table_t',['../structsub__table__t.html',1,'']]]
 ];

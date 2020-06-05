@@ -110,7 +110,8 @@ Data Structures</h2></td></tr>
 Enumerations</h2></td></tr>
 <tr class="memitem:adc29c2ff13d900c2f185ee95427fb06c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="sdp__no__scp_8h.html#adc29c2ff13d900c2f185ee95427fb06ca83634fa5d88b9e8e880513f8e11e028c">ITEMS_PER_DATA_PACKET</a> = 68, 
 <a class="el" href="sdp__no__scp_8h.html#adc29c2ff13d900c2f185ee95427fb06cad92ffcc0192209f37d454a861ed5ed64">LENGTH_OF_SDP_HEADER</a> = 8
- }</td></tr>
+ }<tr class="memdesc:adc29c2ff13d900c2f185ee95427fb06c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Miscellaneous sizes.  <a href="sdp__no__scp_8h.html#adc29c2ff13d900c2f185ee95427fb06c">More...</a><br /></td></tr>
+</td></tr>
 <tr class="separator:adc29c2ff13d900c2f185ee95427fb06c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -140,64 +141,58 @@ Next in free list. </td></tr>
 <td class="fieldname">
 length</td>
 <td class="fielddoc">
-Next in free list. <p>length </p>
+Length (measured from <code>flags</code> field start) <p>length </p>
 </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="a9fdcf93b3b74a3e0b4da1e9e5e3f4563"></a>uint16_t</td>
 <td class="fieldname">
 checksum</td>
 <td class="fielddoc">
-Length (measured from <code>flags</code> field start) <p>checksum (if used) </p>
+Checksum (if used) <p>checksum (if used) </p>
 </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="a1d9e53a9dcbcd7d3d68d5503c6a0bdf1"></a>uint8_t</td>
 <td class="fieldname">
 flags</td>
 <td class="fielddoc">
-Checksum (if used) <p>SDP flag byte; first byte actually sent. </p>
+SDP flag byte. <p>SDP flag byte; first byte actually sent. </p>
 </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="ab5c7fd82afec6c24bee6c40355f57c25"></a>uint8_t</td>
 <td class="fieldname">
 tag</td>
 <td class="fielddoc">
-SDP flag byte. <p>SDP IPtag. </p>
-</td></tr>
+SDP IPtag. </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="a71a170687f8c21652122279e87acd1db"></a>uint8_t</td>
 <td class="fieldname">
 dest_port</td>
 <td class="fielddoc">
-SDP IPtag. <p>SDP destination port/CPU. </p>
-</td></tr>
+SDP destination port/CPU. </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="a32a97d1bd89d8057b284cb486372e0ea"></a>uint8_t</td>
 <td class="fieldname">
 srce_port</td>
 <td class="fielddoc">
-SDP destination port/CPU. <p>SDP source port/CPU. </p>
-</td></tr>
+SDP source port/CPU. </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="a84a436850435471576039f4e65e55780"></a>uint16_t</td>
 <td class="fieldname">
 dest_addr</td>
 <td class="fielddoc">
-SDP source port/CPU. <p>SDP destination address. </p>
-</td></tr>
+SDP destination address. </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="ad9ea00ebf91ee83fe268f77107100497"></a>uint16_t</td>
 <td class="fieldname">
 srce_addr</td>
 <td class="fielddoc">
-SDP destination address. <p>SDP source address. </p>
-</td></tr>
+SDP source address. </td></tr>
 <tr><td class="fieldtype">
 <a class="anchor" id="a680ad77ce4eb53a274f4fefe86ac6315"></a>uint32_t</td>
 <td class="fieldname">
 data[<a class="el" href="common_8h.html#abc5c98fcc1211af2b80116dd6e0a035da83634fa5d88b9e8e880513f8e11e028c">ITEMS_PER_DATA_PACKET</a>]</td>
 <td class="fielddoc">
-SDP source address. <p>User data (272 bytes when no SCP header) </p>
-</td></tr>
+User data (272 bytes when no SCP header) </td></tr>
 </table>
 
 </div>
@@ -212,6 +207,8 @@ SDP source address. <p>User data (272 bytes when no SCP header) </p>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Miscellaneous sizes. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="adc29c2ff13d900c2f185ee95427fb06ca83634fa5d88b9e8e880513f8e11e028c"></a>ITEMS_PER_DATA_PACKET&#160;</td><td class="fielddoc">
 <p>How many multicast packets are to be received per SDP packet. </p>

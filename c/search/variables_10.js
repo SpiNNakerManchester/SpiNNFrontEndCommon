@@ -46,5 +46,5 @@ var searchData=
   ['routes',['routes',['../simple__minimise_8c.html#a414a0fd4b1ce89a06538d30f3617097d',1,'simple_minimise.c']]],
   ['routes_5fcount',['routes_count',['../simple__minimise_8c.html#ae7e5727c2d116ef83d21c9ccc9fe4011',1,'simple_minimise.c']]],
   ['routes_5ffrequency',['routes_frequency',['../simple__minimise_8c.html#af8f8457fea4e51267751f29b6dbacb70',1,'simple_minimise.c']]],
-  ['routing_5ftables',['routing_tables',['../structcomms__sdram__t.html#a51efd0e36bf8f32e7fae4670b84dff91',1,'comms_sdram_t']]]
+  ['routing_5ftables',['routing_tables',['../compressor__sorter__structs_8h.html#a51efd0e36bf8f32e7fae4670b84dff91',1,'comms_sdram_t']]]
 ];

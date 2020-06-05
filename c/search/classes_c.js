@@ -7,7 +7,7 @@ var searchData=
   ['recorded_5fpacket_5ft',['recorded_packet_t',['../reverse__iptag__multicast__source_8c.html#structrecorded__packet__t',1,'']]],
   ['recording_5fchannel_5ft',['recording_channel_t',['../recording_8c.html#structrecording__channel__t',1,'']]],
   ['recording_5fdata_5ft',['recording_data_t',['../recording_8c.html#structrecording__data__t',1,'']]],
-  ['region_5faddresses_5ft',['region_addresses_t',['../structregion__addresses__t.html',1,'']]],
+  ['region_5faddresses_5ft',['region_addresses_t',['../compressor__sorter__structs_8h.html#structregion__addresses__t',1,'']]],
   ['reinject_5fconfig_5ft',['reinject_config_t',['../extra__monitor__support_8c.html#structreinject__config__t',1,'']]],
   ['reinjector_5fstatus_5fresponse_5fpacket_5ft',['reinjector_status_response_packet_t',['../extra__monitor__support_8c.html#structreinjector__status__response__packet__t',1,'']]],
   ['req_5fpacket_5fsdp_5ft',['req_packet_sdp_t',['../reverse__iptag__multicast__source_8c.html#structreq__packet__sdp__t',1,'']]],
