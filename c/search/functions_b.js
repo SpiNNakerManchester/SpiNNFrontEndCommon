@@ -1,5 +1,14 @@
 var searchData=
 [
+  ['m_5ftrie_5fcount',['m_trie_count',['../m__trie_8h.html#ab5d62378020b4f1aeceece3f8c9efd23',1,'m_trie.h']]],
+  ['m_5ftrie_5fdelete',['m_trie_delete',['../m__trie_8h.html#a06937fdd86acca7f6febd035ecc59435',1,'m_trie.h']]],
+  ['m_5ftrie_5fget_5fentries',['m_trie_get_entries',['../m__trie_8h.html#a7d0a68dfd490b9511b1cf424c632926f',1,'m_trie.h']]],
+  ['m_5ftrie_5finsert',['m_trie_insert',['../m__trie_8h.html#aec1853857e55abaeddf82ed939ab60ab',1,'m_trie.h']]],
+  ['m_5ftrie_5fminimise',['m_trie_minimise',['../m__trie_8h.html#aefa1a0382e111e45a35922717136b36e',1,'m_trie.h']]],
+  ['m_5ftrie_5fnew',['m_trie_new',['../m__trie_8h.html#ac692940a75ca345405aa79615d59a113',1,'m_trie.h']]],
+  ['m_5ftrie_5fnew_5fnode',['m_trie_new_node',['../m__trie_8h.html#a6f90aeadc777b07ea2c578baf023db4b',1,'m_trie.h']]],
+  ['m_5ftrie_5ftraverse',['m_trie_traverse',['../m__trie_8h.html#af7499fcb4c0f4ffc0393f720804750db',1,'m_trie.h']]],
+  ['m_5ftrie_5fun_5ftraverse',['m_trie_un_traverse',['../m__trie_8h.html#a217632a237a84949f9e307bd5ba6a8ad',1,'m_trie.h']]],
   ['malloc_5fextras_5fcheck',['malloc_extras_check',['../malloc__extras_8h.html#a5f742f332e0cf6b776a27813f55feda1',1,'malloc_extras.c']]],
   ['malloc_5fextras_5fcheck_5fall',['malloc_extras_check_all',['../malloc__extras_8h.html#abb3cda3d80001855304b4644975884fe',1,'malloc_extras.c']]],
   ['malloc_5fextras_5fcheck_5fall_5fmarked',['malloc_extras_check_all_marked',['../malloc__extras_8h.html#a695672411d7b3d27011c0a593e145e18',1,'malloc_extras.c']]],
@@ -16,6 +25,14 @@ var searchData=
   ['malloc_5fextras_5fturn_5foff_5fprint',['malloc_extras_turn_off_print',['../malloc__extras_8h.html#ae354f5a76607da9894cc06a78dc49f46',1,'malloc_extras.c']]],
   ['malloc_5fextras_5fturn_5foff_5fsafety',['malloc_extras_turn_off_safety',['../malloc__extras_8h.html#a61b28e08827e6631200d756a30403064',1,'malloc_extras.c']]],
   ['malloc_5fextras_5fturn_5fon_5fprint',['malloc_extras_turn_on_print',['../malloc__extras_8h.html#ae8efb82bf3bc5b84c80c5acb1a62b6c9',1,'malloc_extras.c']]],
+  ['malloc_5ftables_5fand_5fset_5foff_5fbit_5fcompressor',['malloc_tables_and_set_off_bit_compressor',['../bit__field__sorter__and__searcher_8c.html#a2dfa6ebebc99da76f7dc8f92dfe8cbf1',1,'bit_field_sorter_and_searcher.c']]],
   ['merge',['merge',['../simple__minimise_8c.html#a1c915f60128891589ee02f38896399ea',1,'simple_minimise.c']]],
+  ['merge_5fadd',['merge_add',['../merge_8h.html#ae5226d62b2a4a50668353da7eb38a610',1,'merge.h']]],
+  ['merge_5fclear',['merge_clear',['../merge_8h.html#a523cb5a3edf3d5cd3a416eb38bf6f7e8',1,'merge.h']]],
+  ['merge_5fcontains',['merge_contains',['../merge_8h.html#a78bb81c14ef40d11c511e1f8c3f096ff',1,'merge.h']]],
+  ['merge_5fdelete',['merge_delete',['../merge_8h.html#aab86d75744b43c77cd1f9c92d84ea751',1,'merge.h']]],
+  ['merge_5fgoodness',['merge_goodness',['../merge_8h.html#a38340885a75c11abfc35ee979cfdafd8',1,'merge.h']]],
+  ['merge_5finit',['merge_init',['../merge_8h.html#ac59564b9e36394e1437b89a6c99d8838',1,'merge.h']]],
+  ['merge_5fremove',['merge_remove',['../merge_8h.html#aad49dfc8e5d55e32ed08bf99450ee77c',1,'merge.h']]],
   ['minimise',['minimise',['../minimise_8h.html#af63a058c7131360d0ae9cff8e31edf37',1,'minimise(uint32_t target_length):&#160;simple_minimise.c'],['../simple__minimise_8c.html#af63a058c7131360d0ae9cff8e31edf37',1,'minimise(uint32_t target_length):&#160;simple_minimise.c']]]
 ];

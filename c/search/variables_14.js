@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['val',['val',['../structnode__t.html#ae1cb5bb0e613117d2cfe482152354d34',1,'node_t']]],
-  ['version',['version',['../data__specification_8h.html#aa708b30c87ba6b79671c657232a23ce6',1,'data_specification_metadata_t']]]
+  ['uncompressed_5frouter_5ftable',['uncompressed_router_table',['../compressor__sorter__structs_8h.html#a69f0516a2f97f34460eea02de697034e',1,'comms_sdram_t::uncompressed_router_table()'],['../bit__field__sorter__and__searcher_8c.html#a66694d23d312a1356159273319534c93',1,'uncompressed_router_table():&#160;bit_field_sorter_and_searcher.c']]],
+  ['uncompressed_5ftable',['uncompressed_table',['../compressor__sorter__structs_8h.html#a8082501788d19b0833dc0d130c0bd796',1,'uncompressed_table_region_data_t']]],
+  ['usable_5fsdram_5fregions',['usable_sdram_regions',['../bit__field__sorter__and__searcher_8c.html#ac2f679e18140a40be26be97edb8bb1a9',1,'bit_field_sorter_and_searcher.c']]],
+  ['uses_5ftimer',['uses_timer',['../simulation_8c.html#aca76fb1ad481f24208277f1d19ef1c3a',1,'simulation.c']]]
 ];

@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['platform_2eh',['platform.h',['../platform_8h.html',1,'']]],
-  ['profiler_2ec',['profiler.c',['../profiler_8c.html',1,'']]],
-  ['profiler_2eh',['profiler.h',['../profiler_8h.html',1,'']]]
+  ['m_5ftrie_2eh',['m_trie.h',['../m__trie_8h.html',1,'']]],
+  ['malloc_5fextras_2eh',['malloc_extras.h',['../malloc__extras_8h.html',1,'']]],
+  ['merge_2eh',['merge.h',['../merge_8h.html',1,'']]],
+  ['minimise_2eh',['minimise.h',['../minimise_8h.html',1,'']]]
 ];

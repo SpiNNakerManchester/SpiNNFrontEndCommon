@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['vic_5finterrupt_5fdone',['vic_interrupt_done',['../extra__monitor__support_8c.html#a28cb6a39c61408fb29e5aa70c50ac72e',1,'extra_monitor_support.c']]]
+  ['un_5ftraverse_5fin_5fchild',['un_traverse_in_child',['../m__trie_8h.html#a560a5b69266cd2f9fd0d0e56b69ff3a7',1,'m_trie.h']]],
+  ['update_5ffrequency',['update_frequency',['../simple__minimise_8c.html#a359b9647590b3fa82bf0999b986cc077',1,'simple_minimise.c']]]
 ];

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>SpiNNFrontEndCommon: m_trie_entry_t Struct Reference</title>
+<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/compressor_includes/remove_default_routes.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -41,8 +41,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
-      <li><a href="files.html"><span>Files</span></a></li>
+      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
+      <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -63,9 +63,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
-      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
-      <li><a href="classes.html"><span>Data&#160;Structure&#160;Index</span></a></li>
-      <li><a href="functions.html"><span>Data&#160;Fields</span></a></li>
+      <li><a href="files.html"><span>File&#160;List</span></a></li>
+      <li><a href="globals.html"><span>Globals</span></a></li>
     </ul>
   </div>
 <!-- window showing the filter options -->
@@ -82,65 +81,80 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_68929be46b5e429180cf406a8b7650db.html">compressor_includes</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-attribs">Data Fields</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">m_trie_entry_t Struct Reference</div>  </div>
+<div class="title">remove_default_routes.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Short routing table entry resulting from an m-trie.  
- <a href="structm__trie__entry__t.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="m__trie_8h_source.html">m_trie.h</a>&gt;</code></p>
+<p>How to remove defaultable routes from a table.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="bit__set_8h_source.html">bit_set.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="compressor__bit__field__models_2src_2common_2routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
+</div>
+<p><a href="remove__default__routes_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Data Fields</h2></td></tr>
-<tr class="memitem:ae4d71adc65fba1464d8721134e14af80"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae4d71adc65fba1464d8721134e14af80"></a>
-<a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm__trie__entry__t.html#ae4d71adc65fba1464d8721134e14af80">key_mask</a></td></tr>
-<tr class="memdesc:ae4d71adc65fba1464d8721134e14af80"><td class="mdescLeft">&#160;</td><td class="mdescRight">key_mask of the entry <br /></td></tr>
-<tr class="separator:ae4d71adc65fba1464d8721134e14af80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a964925f76686f053724a10427704d202"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a964925f76686f053724a10427704d202"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structm__trie__entry__t.html#a964925f76686f053724a10427704d202">source</a></td></tr>
-<tr class="memdesc:a964925f76686f053724a10427704d202"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sources of packets in the entry. <br /></td></tr>
-<tr class="separator:a964925f76686f053724a10427704d202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ab218a8bf15c6dc0ec659b1166b28b464"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="remove__default__routes_8h.html#ab218a8bf15c6dc0ec659b1166b28b464">remove_default_routes_minimise</a> (int *new_size, bool remove_elements)</td></tr>
+<tr class="memdesc:ab218a8bf15c6dc0ec659b1166b28b464"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove defaultable routes from the routing tables.  <a href="#ab218a8bf15c6dc0ec659b1166b28b464">More...</a><br /></td></tr>
+<tr class="separator:ab218a8bf15c6dc0ec659b1166b28b464"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Short routing table entry resulting from an m-trie. </p>
-</div><h2 class="groupheader">Field Documentation</h2>
-<a class="anchor" id="ae4d71adc65fba1464d8721134e14af80"></a>
+<div class="textblock"><p>How to remove defaultable routes from a table. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ab218a8bf15c6dc0ec659b1166b28b464"></a>
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> m_trie_entry_t::key_mask</td>
+          <td class="memname">static bool remove_default_routes_minimise </td>
+          <td>(</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>new_size</em>, </td>
         </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>key_mask of the entry </p>
-
-</div>
-</div>
-<a class="anchor" id="a964925f76686f053724a10427704d202"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
         <tr>
-          <td class="memname">uint32_t m_trie_entry_t::source</td>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>remove_elements</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Sources of packets in the entry. </p>
+<p>Remove defaultable routes from the routing tables. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">new_size</td><td>Variable holding size of routing table; will be updated with new size to set without removing elements from table </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">remove_elements</td><td>Flag to actually remove elements from table </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Whether successful or not </dd></dl>
 
 </div>
 </div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>models/compressor_bit_field_models/src/compressor_includes/<a class="el" href="m__trie_8h_source.html">m_trie.h</a></li>
-</ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
