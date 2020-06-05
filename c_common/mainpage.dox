@@ -62,4 +62,14 @@
 * * The data transfer supporter, which handles fast bulk data transfer between
 *   the controlling host and SpiNNaker chips. See
 *   data_speed_up_packet_gatherer.c
+*
+* @section cite Preferred Citation
+*
+* Rowley, A., Brenninkmeijer, C., Davidson, S., Fellows, D., Gait, A.,
+* Lester, D., Plana, L., Rhodes, O., Stokes, A., Furber, S.
+* __SpiNNTools: The Execution Engine for the SpiNNaker Platform.__
+* _Frontiers in Neuroscience,_
+* vol 13, pp 231,
+* 2019.
+* DOI: [10.3389/fnins.2019.00231](https://doi.org/10.3389/fnins.2019.00231)
 */
