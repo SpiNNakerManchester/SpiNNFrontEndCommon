@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Utilities for a single routing table
 #ifndef __ROUTING_TABLE_H__
 #define __ROUTING_TABLE_H__
 
@@ -55,21 +57,15 @@ entry_t* routing_table_get_entry_marked(uint32_t entry_id_to_find, int marker) {
 }
 
 //! \brief Gets a pointer to where this entry is stored
-//!
-//! Will not check if there is an entry with this id but will RTE if the id
-//! is too large
+//! \details Will not check if there is an entry with this id but will RTE if
+//!     the id is too large
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \return pointer to the entry's location
 entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
     return routing_table_get_entry_marked(entry_id_to_find, -1);
 }
 
-//! \brief Gets a pointer to where this entry is stored
-//!
-//! Will not check if there is an entry with this id but
-//! may RTE if the id is too large but this behaviour should not be
-//! counted on in the future.
-//! \param[in] entry_id_to_find: Id of entry to find pointer to
+//! \brief Gets a pointer to where to append an entry to the routing table.
 //! \return pointer to the entry's location
 entry_t* routing_table_append_get_entry(void) {
     // check that we're not hitting the max entries supported by the table
@@ -102,9 +98,9 @@ entry_t* routing_table_append_get_entry(void) {
     return &multi_table.sub_tables[table_id]->entries[local_id];
 }
 
-//! Inserts a deep copy of an entry after the last known entry in the table.
-//!
-//! will RTE if is this appended fails.
+//! \brief Inserts a deep copy of an entry after the last known entry in the
+//!     table.
+//! \details will RTE if is this appended fails.
 //! \param[in] original_entry: The Routing Table entry to be copied in
 void routing_table_append_entry(entry_t original_entry) {
     entry_t *new_entry = routing_table_append_get_entry();
@@ -153,9 +149,8 @@ void routing_tables_init(multi_table_t* table) {
     }
 }
 
-//! \brief Saves the Metadata to the multi_table object
-//!
-//! \param[in] table: Pointer to the metadata to save to
+//! \brief Saves the metadata to the multi_table object we are managing
+//! \param[in] tables: Pointer to the metadata to save to
 void routing_tables_save(multi_table_t *restrict tables) {
     tables->sub_tables = multi_table.sub_tables;
     tables->n_sub_tables = multi_table.n_sub_tables;
@@ -178,11 +173,10 @@ void routing_table_remove_from_size(int size_to_remove) {
     multi_table.n_entries -= size_to_remove;
 }
 
-//! \brief Clones an Original table into this format.
-//!
-//! Will NOT Free the space any previous tables held
-//! Makes a Deep copy of the original
-//! \return True if and only if all table(s) could be malloced
+//! \brief Clones an original table into this format.
+//! \details Will _not_ free the space any previous tables held.
+//!     Makes a Deep copy of the original.
+//! \param[in] original: the table to be cloned
 void routing_table_clone_table(table_t *restrict original) {
     for (uint32_t i = 0; i < original->size; i++) {
         routing_table_append_entry(original->entries[i]);

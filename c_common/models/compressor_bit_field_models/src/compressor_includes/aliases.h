@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Aliases in the routing tree.
+//! \details Aliases are built using a trie structure as this avoids the need
+//! for rebalancing at the cost of more memory.
 #ifndef __ALIASES_H__
 #define __ALIASES_H__
-
-/* Aliases are built using a trie structure as this avoids the need for
- * rebalancing at the cost of more memory.
- */
 
 #include <malloc_extras.h>
 #include "../common/routing_table.h"
@@ -97,7 +97,7 @@ static alias_element_t alias_list_get(alias_list_t *as, unsigned int i) {
 
 //! \brief Append a list to an existing list
 //! \param[in] a: alias list to append to
-//! \param[in] b:al;ias list to append
+//! \param[in] b: alias list to append
 static void alias_list_join(alias_list_t *a, alias_list_t *b) {
     // Traverse the list elements until we reach the end.
     while (a->next != NULL) {

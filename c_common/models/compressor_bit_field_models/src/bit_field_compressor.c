@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief The bitfield compressor
 #include <spin1_api.h>
 #include <debug.h>
 #include <bit_field.h>
@@ -31,33 +33,36 @@
 /*****************************************************************************/
 
 //! interrupt priorities
-typedef enum interrupt_priority{
-    TIMER_TICK_PRIORITY = -1,
-    COMPRESSION_START_PRIORITY = 3
-} interrupt_priority;
+enum compressor_interrupt_priorities {
+    TIMER_TICK_PRIORITY = -1,           //!< Timer uses FIQ!
+    COMPRESSION_START_PRIORITY = 3      //!< Compression start is low priority
+};
 
-//! \brief number of timer iterations to ensure close to matching tracker
+//! \brief Number of timer iterations to ensure close to matching tracker
 #define TIMER_ITERATIONS 1000
 
-//! \timer controls, as it seems timer in massive waits doesnt engage properly
+//! \brief Timer controls, as it seems timer in massive waits doesn't
+//!     necessarily engage properly. Ticks once per millisecond.
 int counter = 0;
+//! \brief Maximum value of ::counter, at which point the compressor should
+//!     shut itself down. Number of milliseconds to allow for a compressor run.
 int max_counter = 0;
 
-//! \brief bool saying if the compressor should shut down
+//! Whether the compressor should shut down
 volatile bool stop_compressing = false;
 
-//! bool flag pointer to allow minimise to report if it failed due to malloc
-//! issues
+//! Allows minimise to report if it failed due to malloc issues
 bool failed_by_malloc = false;
 
-//! control flag for running compression only when needed
+//! Whether to run compression only when needed
 bool compress_only_when_needed = false;
 
-//! control flag for compressing as much as possible
+//! Whether to compress as much as possible
 bool compress_as_much_as_possible = false;
 
-// values for debug logging in wait_for_instructions
+//! Debugging for wait_for_instructions(): old state of sorter
 instructions_to_compressor previous_sorter_state = NOT_COMPRESSOR;
+//! Debugging for wait_for_instructions(): old state of compressor
 compressor_states previous_compressor_state = UNUSED;
 
 //! SDRAM are used for communication between sorter and THIS compressor
@@ -69,7 +74,7 @@ bool hack_malloc_failed = false;
 #endif
 // ---------------------------------------------------------------------
 
-//! \brief handles the compression process
+//! \brief Handle the compression process
 void start_compression_process(void) {
     log_debug("in compression phase");
 
@@ -97,38 +102,40 @@ void start_compression_process(void) {
 
     // run compression
     bool success = oc_minimise(
-            TARGET_LENGTH, &failed_by_malloc,
-            &stop_compressing, compress_only_when_needed,
-            compress_as_much_as_possible);
+            TARGET_LENGTH, &failed_by_malloc, &stop_compressing,
+            compress_only_when_needed, compress_as_much_as_possible);
 
     // turn off timer and set us into pause state
     spin1_pause();
 
+    // Decode whether we succeeded or failed.
     if (success && (routing_table_get_n_entries() <= TARGET_LENGTH)) {
-        log_info("Passed oc minimise with success %d", success);
+        log_info("Passed oc_minimise() with success code: %d", success);
         routing_tables_save(comms_sdram->routing_tables);
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
-    } else {  // if not a success, could be one of 4 states
-        log_info("Failed oc minimise with success %d", success);
-        if (failed_by_malloc) {  // malloc failed somewhere
-            log_debug("failed malloc response");
-            comms_sdram->compressor_state = FAILED_MALLOC;
-        } else if (comms_sdram->sorter_instruction != RUN) {  // control killed it
-            log_debug("force fail response");
-            comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
-            log_debug("send ack");
-        } else if (stop_compressing) {  // ran out of time
-            log_debug("time fail response");
-            comms_sdram->compressor_state = RAN_OUT_OF_TIME;
-        } else { // after finishing compression, still could not fit into table.
-            log_debug("failed by space response");
-            comms_sdram->compressor_state = FAILED_TO_COMPRESS;
-        }
+        return;
+    }
+
+    // Not a success, could be one of 4 failure states
+    log_info("Failed oc_minimise() with success code: %d", success);
+    if (failed_by_malloc) {  // malloc failed somewhere
+        log_debug("failed malloc response");
+        comms_sdram->compressor_state = FAILED_MALLOC;
+    } else if (comms_sdram->sorter_instruction != RUN) {  // control killed it
+        log_debug("force fail response");
+        comms_sdram->compressor_state = FORCED_BY_COMPRESSOR_CONTROL;
+        log_debug("send ack");
+    } else if (stop_compressing) {  // ran out of time
+        log_debug("time fail response");
+        comms_sdram->compressor_state = RAN_OUT_OF_TIME;
+    } else { // after finishing compression, still could not fit into table.
+        log_debug("failed by space response");
+        comms_sdram->compressor_state = FAILED_TO_COMPRESS;
     }
 }
 
-//! \brief initialise the abstraction layer of many routing tables as 1 big
-//!     table
+//! \brief Initialise the abstraction layer of many routing tables as single
+//!     big table.
 void setup_routing_tables(void) {
     log_info("table init for %d entries (should be zero) and %d tables and "
             "%d mid_point out of %d bitfields",
@@ -147,7 +154,7 @@ void setup_routing_tables(void) {
     }
 }
 
-//! \brief Runs the compressors process as requested
+//! \brief Run the compressor process as requested
 void run_compression_process(void) {
     log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);
@@ -167,9 +174,10 @@ void run_compression_process(void) {
     start_compression_process();
 }
 
-//! \brief Check what to do if anything as Sorter has asked to RUN.
+//! \brief Check what to do if anything as sorter has asked to ::RUN
 //! \details May do nothing if the previous run has already finished
-//! \returns whether the RUN made sense with the current Compressor sate
+//! \param[in] compressor_state: The current state of the compressor
+//! \returns Whether the ::RUN made sense with the current compressor state
 static inline bool process_run(compressor_states compressor_state) {
     switch (compressor_state) {
     case PREPARED:
@@ -194,9 +202,10 @@ static inline bool process_run(compressor_states compressor_state) {
     return false;
 }
 
-//! \brief Check what to do if anything as Sorter has asked to PREPARE.
+//! \brief Check what to do if anything as sorter has asked to ::PREPARE
 //! \details Mainly used to clear result of previous run
-//! \returns whether the PREPARE made sense with the current Compressor state
+//! \param[in] compressor_state: The current state of the compressor
+//! \returns Whether the ::PREPARE made sense with the current compressor state
 static inline bool process_prepare(compressor_states compressor_state) {
     switch (compressor_state) {
     case UNUSED:
@@ -223,11 +232,12 @@ static inline bool process_prepare(compressor_states compressor_state) {
     return false;
 }
 
-//! \brief Check what to do if anything as Sorter has asked to FORCE_TO_STOP
+//! \brief Check what to do if anything as sorter has asked to ::FORCE_TO_STOP
 //! \details Mainly used to clear result of previous run
-//!     The wait loop that calls this does not run during compressing
-//!     timer_callback picks up the sorter change during compression
-//! \returns whether the FORCE_TO_STOP made sense with the current Compressor
+//!     The wait loop that calls this does not run during compressing;
+//!     timer_callback() picks up the sorter change during compression
+//! \param[in] compressor_state: The current state of the compressor
+//! \returns Whether the ::FORCE_TO_STOP made sense with the current compressor
 //!     state
 static inline bool process_force(compressor_states compressor_state) {
    switch (compressor_state) {
@@ -254,10 +264,12 @@ static inline bool process_force(compressor_states compressor_state) {
    return false;
 }
 
-//! \brief busy waits until there is a new instruction from the sorter
-//! \param[in] unused0: param 1 forced on us from api
-//! \param[in] unused1: param 2 forced on us from api
-void wait_for_instructions(uint unused0, uint unused1) {
+//! \brief Busy-wait until there is a new instruction from the sorter.
+//! \details Note that this is done at very low priority so that interrupts
+//!     (including to deliver instructions to us to work) will breeze past.
+//! \param[in] unused0: unused
+//! \param[in] unused1: unused
+static void wait_for_instructions(uint unused0, uint unused1) {
     //api requirements
     use(unused0);
     use(unused1);
@@ -309,12 +321,12 @@ void wait_for_instructions(uint unused0, uint unused1) {
     }
 }
 
-//! \brief timer interrupt for controlling stopping compression
-//! \details Could be due to time taken to try to compress table
-//!     Could be because sorter has cancelled run request
+//! \brief Timer interrupt for controlling stopping compression.
+//! \details Could be due to time taken to try to compress table.
+//!     Could be because sorter has cancelled run request.
 //! \param[in] unused0: not used
 //! \param[in] unused1: not used
-void timer_callback(uint unused0, uint unused1) {
+static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     counter++;
@@ -333,8 +345,8 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-//! \brief the callback for setting off the router compressor
-void initialise(void) {
+//! \brief Set up the callback for setting off the router compressor.
+static void initialise(void) {
     log_info("Setting up stuff to allow bitfield compressor to occur.");
 
     log_info("reading time_for_compression_attempt");
@@ -343,7 +355,8 @@ void initialise(void) {
             &sark_virtual_processor_info[spin1_get_core_id()];
 
     uint32_t time_for_compression_attempt = this_vcpu_info->user1;
-    log_info("time_for_compression_attempt = %d", time_for_compression_attempt);
+    log_info("time_for_compression_attempt = %d",
+            time_for_compression_attempt);
 
     // bit 0 = compress_only_when_needed
     // bit 1 = compress_as_much_as_possible

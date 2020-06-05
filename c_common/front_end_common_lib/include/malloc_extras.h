@@ -15,22 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__
+//! \file
+//! \brief Support for adding debugging information to dynamic allocation
+#ifndef __MALLOC_EXTRAS_H__
+#define __MALLOC_EXTRAS_H__
 
 #include <sark.h>
 #include <common-typedefs.h>
 #include <debug.h>
 
-//! debug flag to lock in safety features
-#define SAFETY_FLAG 0xDEADBEEF
-#define EXTRA_BYTES 64
-#define MINUS_POINT 60
-#define BYTE_TO_WORD 4
-#define BUFFER_WORDS 15
-#define MIN_SIZE_HEAP 32
-
-//! enum for the different states to report through the user1 address.
+//! The different states to report through `vcpu->user1`
 typedef enum exit_states_for_user_one {
     //! Everything is fine
     EXITED_CLEANLY = 0,
@@ -44,21 +38,18 @@ typedef enum exit_states_for_user_one {
     DETECTED_MALLOC_FAILURE = 4
 } exit_states_for_user_one;
 
-
-//! a sdram block outside the heap
+//! An SDRAM block outside the heap
 typedef struct sdram_block {
     //! Base address of where the SDRAM block starts
     uchar *sdram_base_address;
-
     //! Size of block in bytes
     uint size;
 } sdram_block;
 
-//! the struct for holding host based sdram blocks outside the heap
+//! Holds host-allocated SDRAM blocks outside the heap
 typedef struct available_sdram_blocks {
     //! Number of blocks of SDRAM which can be utilised outside of alloc
     int n_blocks;
-
     //! VLA of SDRAM blocks
     sdram_block blocks[];
 } available_sdram_blocks;
@@ -103,8 +94,9 @@ void malloc_extras_check_all_marked(int marker);
 //!     easy marker to track back to the application user code.
 void malloc_extras_check_all(void);
 
-//! \brief Update heap
+//! \brief Update heap to join in the extra space from another heap.
 //! \param[in] heap_location: address where heap is located
+//! \return true states the initialisation was successful (or not)
 bool malloc_extras_initialise_with_fake_heap(heap_t *heap_location);
 
 //! \brief Builds a new heap based off stolen sdram blocks from cores
@@ -150,9 +142,13 @@ void *malloc_extras_malloc(uint bytes);
 //! \return the biggest block size in the heaps.
 uint malloc_extras_max_available_block_size(void);
 
+//! An easily-insertable name for the memory allocator
 #define MALLOC          malloc_extras_malloc
+//! An easily-insertable name for the memory free
 #define FREE            malloc_extras_free
+//! An easily-insertable name for the alternate memory free
 #define FREE_MARKED     malloc_extras_free_marked
+//! An easily-insertable name for the memory allocator that uses the large pool
 #define MALLOC_SDRAM    malloc_extras_sdram_malloc_wrapper
 
 #endif  // __PLATFORM_H__
