@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['key_5fatom_5fdata_5ft_879',['key_atom_data_t',['../structkey__atom__data__t.html',1,'']]],
-  ['key_5fatom_5fpair_5ft_880',['key_atom_pair_t',['../structkey__atom__pair__t.html',1,'']]],
-  ['key_5fmask_5ft_881',['key_mask_t',['../structkey__mask__t.html',1,'']]],
-  ['keymask_5ft_882',['keymask_t',['../minimise_2src_2routing__table_8h.html#structkeymask__t',1,'']]]
+  ['header_5ft',['header_t',['../minimise_2src_2routing__table_8h.html#structheader__t',1,'']]],
+  ['host_5fdata_5fread_5fack_5fpacket_5fheader',['host_data_read_ack_packet_header',['../recording_8h.html#structhost__data__read__ack__packet__header',1,'']]],
+  ['host_5fdata_5fread_5fpacket_5fdata',['host_data_read_packet_data',['../recording_8h.html#structhost__data__read__packet__data',1,'']]],
+  ['host_5fdata_5fread_5fpacket_5fheader',['host_data_read_packet_header',['../recording_8h.html#structhost__data__read__packet__header',1,'']]]
 ];
