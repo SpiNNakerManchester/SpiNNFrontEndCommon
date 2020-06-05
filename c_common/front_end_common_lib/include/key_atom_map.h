@@ -15,23 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Data structures describing a key-to-atom mapping
 #ifndef __KEY_ATOM_MAP_H__
+#define __KEY_ATOM_MAP_H__
 
-//! \brief struct for key and atoms
+//! \brief A pair containing a multicast key and the number of contiguous
+//!     atoms (neurons, etc.) to which it applies.
 typedef struct key_atom_pair_t {
-    //! key
+    //! Multicast key.
     uint32_t key;
-    //! number of atoms for the key
+    //! Number of atoms for the key.
     int n_atoms;
 } key_atom_pair_t;
 
-//! \brief key atom map struct
-typedef struct key_atom_data_t{
-    //! how many key-atom maps
+//! \brief A mapping from multicast keys to sections of a contiguous range of
+//!     atoms (neurons, etc.)
+typedef struct key_atom_data_t {
+    //! How many key-atom maps are present?
     int n_pairs;
-    //! the array of maps
+    //! The array of mappings.
     key_atom_pair_t pairs[];
 } key_atom_data_t;
 
-#define __KEY_ATOM_MAP_H__
 #endif  // __KEY_ATOM_MAP_H__

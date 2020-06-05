@@ -15,9 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Describes a pure SDP message (without SCP payload)
 #ifndef _SDP_NO_SCP_H_
 #define _SDP_NO_SCP_H_
 
+// Miscellaneous sizes
 enum {
     //! How many multicast packets are to be received per SDP packet
     ITEMS_PER_DATA_PACKET = 68,
@@ -25,7 +28,7 @@ enum {
     LENGTH_OF_SDP_HEADER = 8
 };
 
-//! struct for a SDP message with pure data, no SCP header
+//! An SDP message with purely data, no SCP header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     struct sdp_msg *next;   //! Next in free list
     uint16_t length;        //! Length (measured from \p flags field start)

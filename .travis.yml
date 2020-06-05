@@ -20,6 +20,9 @@ jobs:
       python: 3.6
       env:
         - DEPLOY_DIR=$PWD/deploy
+        - ROOT_DOC_DIR=$PWD/doc/global
+        - C_DOC_DIR=$PWD/c_common/doc/html
+        - PY_DOC_DIR=$PWD/doc/source/_build/html
     - name: Py3.7
       python: 3.7
     - name: Py2.7 (legacy)
@@ -58,9 +61,6 @@ before_install:
   - support/gitclone.sh https://github.com/SpiNNakerManchester/spinnaker_tools.git
   - support/gitclone.sh https://github.com/SpiNNakerManchester/spinn_common.git
   - export SPINN_DIRS=$PWD/spinnaker_tools
-  - ROOT_DOC_DIR=$PWD/doc/global
-  - C_DOC_DIR=$PWD/c_common/doc/html
-  - PY_DOC_DIR=$PWD/doc/source/_build/html
 
 install:
   # These things ought to be enough

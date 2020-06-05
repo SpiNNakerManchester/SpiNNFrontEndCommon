@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Support for adding debugging information to dynamic allocation
 #ifndef __MALLOC_EXTRAS_H__
 #define __MALLOC_EXTRAS_H__
 
@@ -23,14 +25,14 @@
 #include <debug.h>
 
 //! debug flag to lock in safety features
-#define SAFETY_FLAG 0xDEADBEEF
-#define EXTRA_BYTES 64
-#define MINUS_POINT 60
-#define BYTE_TO_WORD 4
-#define BUFFER_WORDS 15
-#define MIN_SIZE_HEAP 32
+#define SAFETY_FLAG     0xDEADBEEF
+#define EXTRA_BYTES     64
+#define MINUS_POINT     60
+#define BYTE_TO_WORD    4
+#define BUFFER_WORDS    15
+#define MIN_SIZE_HEAP   32
 
-//! enum for the different states to report through the user1 address.
+//! The different states to report through `vcpu->user1`
 typedef enum exit_states_for_user_one {
     //! Everything is fine
     EXITED_CLEANLY = 0,
@@ -44,21 +46,18 @@ typedef enum exit_states_for_user_one {
     DETECTED_MALLOC_FAILURE = 4
 } exit_states_for_user_one;
 
-
-//! a sdram block outside the heap
+//! An SDRAM block outside the heap
 typedef struct sdram_block {
     //! Base address of where the SDRAM block starts
     uchar *sdram_base_address;
-
     //! Size of block in bytes
     uint size;
 } sdram_block;
 
-//! the struct for holding host based sdram blocks outside the heap
+//! Holds host-allocated SDRAM blocks outside the heap
 typedef struct available_sdram_blocks {
     //! Number of blocks of SDRAM which can be utilised outside of alloc
     int n_blocks;
-
     //! VLA of SDRAM blocks
     sdram_block blocks[];
 } available_sdram_blocks;
