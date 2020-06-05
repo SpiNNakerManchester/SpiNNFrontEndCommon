@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
 #ifndef __ROUTING_TABLE_UTILS_H__
 #define __ROUTING_TABLE_UTILS_H__
 
@@ -70,6 +71,7 @@ static void routing_table_utils_free_all(multi_table_t *restrict tables) {
 //! on in the future.
 //!
 //! Will NOT Free the space any previous tables held
+//! \param[in] tables: the collection of tables to prepare
 //! \param[in] max_entries: maximum number of entries table should hold
 //! \return True if and only if all table(s) could be malloced
 static inline bool routing_table_utils_malloc(
@@ -131,6 +133,7 @@ static inline bool routing_table_utils_malloc(
 //! \brief Converts the multitable to a single routing table and free the rest
 //!
 //! will RTE if the routing table has too many entries to fit into a router
+//! \param[in] tables: the multitable to convert
 //! \return A pointer to a traditional router table
 static inline table_t* routing_table_utils_convert(
         multi_table_t *restrict tables) {

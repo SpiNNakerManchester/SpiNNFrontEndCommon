@@ -24,14 +24,6 @@
 #include <common-typedefs.h>
 #include <debug.h>
 
-//! debug flag to lock in safety features
-#define SAFETY_FLAG     0xDEADBEEF
-#define EXTRA_BYTES     64
-#define MINUS_POINT     60
-#define BYTE_TO_WORD    4
-#define BUFFER_WORDS    15
-#define MIN_SIZE_HEAP   32
-
 //! The different states to report through `vcpu->user1`
 typedef enum exit_states_for_user_one {
     //! Everything is fine
@@ -102,8 +94,9 @@ void malloc_extras_check_all_marked(int marker);
 //!     easy marker to track back to the application user code.
 void malloc_extras_check_all(void);
 
-//! \brief Update heap
+//! \brief Update heap to join in the extra space from another heap.
 //! \param[in] heap_location: address where heap is located
+//! \return true states the initialisation was successful (or not)
 bool malloc_extras_initialise_with_fake_heap(heap_t *heap_location);
 
 //! \brief Builds a new heap based off stolen sdram blocks from cores
@@ -149,9 +142,13 @@ void *malloc_extras_malloc(uint bytes);
 //! \return the biggest block size in the heaps.
 uint malloc_extras_max_available_block_size(void);
 
+//! An easily-insertable name for the memory allocator
 #define MALLOC          malloc_extras_malloc
+//! An easily-insertable name for the memory free
 #define FREE            malloc_extras_free
+//! An easily-insertable name for the alternate memory free
 #define FREE_MARKED     malloc_extras_free_marked
+//! An easily-insertable name for the memory allocator that uses the large pool
 #define MALLOC_SDRAM    malloc_extras_sdram_malloc_wrapper
 
 #endif  // __PLATFORM_H__

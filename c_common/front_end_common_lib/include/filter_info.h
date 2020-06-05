@@ -21,7 +21,7 @@
 #ifndef __FILTER_INFO_H__
 #define __FILTER_INFO_H__
 
-//! \brief Describes a single filter, which is a wrapper for ::bit_field_t
+//! \brief Describes a single filter, which is a wrapper for bit_field_t
 typedef struct filter_info_t {
     //! Bit field master population key
     uint32_t key;

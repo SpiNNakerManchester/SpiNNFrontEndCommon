@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
 #ifndef __COMPRESSOR_SORTER_STRUCTS_H__
 #define __COMPRESSOR_SORTER_STRUCTS_H__
 
@@ -60,12 +61,12 @@ typedef enum instructions_to_compressor {
     RUN = 44,
     //! Flag to say processor should stop as result no longer needed
     FORCE_TO_STOP = 45
-}  instructions_to_compressor;
+} instructions_to_compressor;
 
 //!=========================================================================
 //! structs
 
-//! \brief struct holding key and mask
+//! \brief Holds key and mask
 typedef struct key_mask_t {
     //! Key for the key_mask
     uint32_t key;
@@ -74,7 +75,7 @@ typedef struct key_mask_t {
     uint32_t mask;
 } key_mask_t;
 
-//! \brief struct holding routing table entry data
+//! \brief Holds data for a routing table entry
 typedef struct entry_t {
     //! Key and mask
     key_mask_t key_mask;
@@ -86,7 +87,7 @@ typedef struct entry_t {
     uint32_t source;
 } entry_t;
 
-//! \brief struct for holding table entries
+//! \brief Holds a routing table description
 typedef struct table_t {
     //! Number of entries in the table
     uint32_t size;
@@ -95,7 +96,7 @@ typedef struct table_t {
     entry_t entries[];
 } table_t;
 
-//! \brief struct for holding the data to init routing_table.h
+//! \brief Holds the data to initialise routing_table.h
 typedef struct multi_table_t {
     //! The individual subtables
     table_t** sub_tables;
@@ -118,20 +119,20 @@ typedef struct compressor_processors_top_t {
 } compressor_processors_top_t;
 
 //! \brief uncompressed routing table region
-typedef struct uncompressed_table_region_data_t{
-    //! the app id
+typedef struct uncompressed_table_region_data_t {
+    //! the application ID
     uint32_t app_id;
     //! table struct
     table_t uncompressed_table;
 } uncompressed_table_region_data_t;
 
-//! \brief holder for the list of bitfield associated processor ids.
-//! \details sorted order based off best effort linked to sorted_bit_fields,
+//! \brief Holds the list of bitfield associated processor IDs.
+//! \details sorted order based off best effort linked to sorted_bit_fields(),
 //!     but separate to avoid SDRAM rewrites
-typedef struct sorted_bit_fields_t{
-    //! len of the arrays
+typedef struct sorted_bit_fields_t {
+    //! length of the arrays
     int n_bit_fields;
-    //! list of bitfield associated processor ids.
+    //! list of bitfield associated processor IDs.
     int* processor_ids;
     //! the list of bitfields in sorted order based off best effect.
     filter_info_t** bit_fields;
