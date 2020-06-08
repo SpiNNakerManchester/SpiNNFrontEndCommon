@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Sets of bits.
 #ifndef __BIT_SET_H__
 #define __BIT_SET_H__
 

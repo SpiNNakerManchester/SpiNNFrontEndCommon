@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief How to merge routing table entries
 #ifndef __MERGE_H__
 #define __MERGE_H__
 
@@ -50,7 +52,7 @@ typedef struct merge_t {
 #define INIT_ROUTE 0x0
 
 //! \brief Get the goodness for a merge
-//! /param[in] merge: the merge
+//! \param[in] merge: the merge
 //! \return the goodness of the merge.
 static int merge_goodness(merge_t *merge) {
     return merge->entries.count - 1;
