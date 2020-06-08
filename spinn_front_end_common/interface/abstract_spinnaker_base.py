@@ -1,98 +1,110 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 main interface for the SpiNNaker tools
 """
-import spinn_utilities.conf_loader as conf_loader
+from __future__ import division
+from collections import defaultdict
+import logging
+import math
+import signal
+import sys
+import time
+import threading
+from threading import Condition
+from six import iteritems, reraise
+from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities import __version__ as spinn_utils_version
-
-# pacman imports
-from pacman.executor.injection_decorator import provide_injectables, \
-    clear_injectables
+from spinn_machine import CoreSubsets
+from spinn_machine import __version__ as spinn_machine_version
+from spinn_machine.ignores import IgnoreChip, IgnoreCore, IgnoreLink
+from spinnman.model.enums.cpu_state import CPUState
+from spinnman import __version__ as spinnman_version
+from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinnman.model.cpu_infos import CPUInfos
+from spinn_storage_handlers import __version__ as spinn_storage_version
+from data_specification import __version__ as data_spec_version
+from spalloc import __version__ as spalloc_version
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
-from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.application import (
+    ApplicationGraph, ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import PreAllocatedResourceContainer
+from pacman.model.resources import (PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
-
-# common front end imports
-from spinn_front_end_common.abstract_models import \
-    AbstractSendMeMulticastCommandsVertex, AbstractRecordable, \
-    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
+from spinn_front_end_common.abstract_models import (
+    AbstractSendMeMulticastCommandsVertex,
+    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
+    AbstractCanReset)
+from spinn_front_end_common.utilities import (
+    globals_variables, SimulatorInterface)
+from spinn_front_end_common.utilities.constants import (
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities \
-    import helpful_functions, globals_variables, SimulatorInterface
-from spinn_front_end_common.utilities import function_list
-from spinn_front_end_common.utilities.utility_objs \
-    import ExecutableType, ProvenanceDataItem
+from spinn_front_end_common.utilities.function_list import (
+    get_front_end_common_pacman_xml_paths)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import EnergyReport
-from spinn_front_end_common.utility_models import \
-    CommandSender, DataSpeedUpPacketGatherMachineVertex
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.provenance \
-    import PacmanProvenanceExtractor
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ProvenanceDataItem)
+from spinn_front_end_common.utility_models import (
+    CommandSender, CommandSenderMachineVertex,
+    DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.interface.config_handler import ConfigHandler
+from spinn_front_end_common.interface.provenance import (
+    PacmanProvenanceExtractor)
 from spinn_front_end_common.interface.simulator_state import Simulator_State
-from spinn_front_end_common.interface.interface_functions \
-    import ProvenanceXMLWriter
-from spinn_front_end_common.interface.interface_functions \
-    import ProvenanceJSONWriter
-from spinn_front_end_common.interface.interface_functions \
-    import ChipProvenanceUpdater
-from spinn_front_end_common.interface.interface_functions \
-    import PlacementsProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import RouterProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
+from spinn_front_end_common.interface.interface_functions import (
+    ProvenanceJSONWriter, ProvenanceSQLWriter, ProvenanceXMLWriter,
+    ChipProvenanceUpdater,  PlacementsProvenanceGatherer,
+    RouterProvenanceGatherer, ChipIOBufExtractor)
 from spinn_front_end_common import __version__ as fec_version
-
-# spinnman imports
-from spinnman.model.enums.cpu_state import CPUState
-from spinnman import __version__ as spinnman_version
-
-# spinnmachine imports
-from spinn_machine import CoreSubsets
-from spinn_machine import __version__ as spinn_machine_version
-
-# general imports
-from collections import defaultdict
-import logging
-import math
-import os
-import signal
-from six import iteritems, iterkeys, reraise
-import sys
-
-# Version number imports
-from numpy import __version__ as numpy_version
 try:
     from scipy import __version__ as scipy_version
 except ImportError:
     scipy_version = "scipy not installed"
-from data_specification import __version__ as data_spec_version
-from spinn_storage_handlers import __version__ as spinn_storage_version
-from spalloc import __version__ as spalloc_version
-
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-CONFIG_FILE = "spinnaker.cfg"
+#: Number of cores to be used when using a Virtual Machine and not specified
+DEFAULT_N_VIRTUAL_CORES = 16
+
+#: The minimum time a board is kept in the off state, in seconds
+MINIMUM_OFF_STATE_TIME = 20
+
+# 0-15 are reserved for system use (per lplana)
+ALANS_DEFAULT_RANDOM_APP_ID = 16
+
+# Number of provenace items before auto changes to sql format
+PROVENANCE_TYPE_CUTOFF = 20000
 
 
-class AbstractSpinnakerBase(SimulatorInterface):
+class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow
     """
+    # pylint: disable=broad-except
 
     __slots__ = [
-        # the interface to the cfg files. supports get get_int etc
-        "_config",
-
         # the object that contains a set of file paths, which should encompass
         # all locations where binaries are for this simulation.
         "_executable_finder",
@@ -100,6 +112,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # the number of chips required for this simulation to run, mainly tied
         # to the spalloc system
         "_n_chips_required",
+
+        # the number of boards required for this simulation to run, mainly tied
+        # to the spalloc system
+        "_n_boards_required",
 
         # The IP-address of the SpiNNaker machine
         "_hostname",
@@ -132,6 +148,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # represent cores.
         "_original_machine_graph",
 
+        # boolean for empty graphs
+        "_empty_graphs",
+
         # the mapping interface between application and machine graphs.
         "_graph_mapper",
 
@@ -156,10 +175,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # simulation is going to run on
         "_machine",
 
-        # The python representation of the largest SpiNNaker machine that this
-        # simulation has available to it
-        "_max_machine_available",
-
         # The SpiNNMan interface instance.
         "_txrx",
 
@@ -167,11 +182,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # machine
         "_buffer_manager",
 
+        # Handler for keep all the calls to Java in a single space.
+        # May be null is configs request not to use Java
+        "_java_caller",
+
         #
         "_ip_address",
-
-        # the outputs generated from the max machine generation phase
-        "_max_machine_outputs",
 
         #
         "_machine_outputs",
@@ -225,9 +241,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_dsg_algorithm",
 
         #
-        "_none_labelled_vertex_count",
-
-        #
         "_none_labelled_edge_count",
 
         #
@@ -240,13 +253,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_create_database",
 
         #
-        "_database_file_path",
-
-        #
         "_has_ran",
 
         #
         "_state",
+
+        #
+        "_state_condition",
 
         #
         "_has_reset_last",
@@ -258,34 +271,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_no_sync_changes",
 
         #
-        "_minimum_step_generated",
+        "_max_run_time_steps",
 
         #
         "_no_machine_time_steps",
 
-        #
-        "_machine_time_step",
+        # The lowest values auto pause resume may use as steps
+        "_minimum_auto_time_steps",
 
-        #
-        "_time_scale_factor",
+        # Set when run_until_complete is specified by the user
+        "_run_until_complete",
 
         #
         "_app_id",
-
-        #
-        "_report_default_directory",
-
-        # If not None path to append pacman exutor provenance info to
-        "_pacman_executor_provenance_path",
-
-        #
-        "_app_data_runtime_folder",
-
-        #
-        "_json_folder",
-
-        #
-        "_provenance_file_path",
 
         #
         "_do_timings",
@@ -297,31 +295,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_provenance_format",
 
         #
-        "_exec_dse_on_host",
-
-        #
-        "_use_virtual_board",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
         "_n_calls_to_run",
 
         #
-        "_this_run_time_string",
-
-        #
-        "_report_simulation_top_directory",
-
-        #
-        "_app_data_top_simulation_folder",
-
-        #
         "_command_sender",
-
-        # Run for infinite time
-        "_infinite_run",
 
         # iobuf cores
         "_cores_to_read_iobuf",
@@ -348,6 +328,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # the time takes to execute the simulation
         "_execute_time",
+        # the timer used to log the execute time
+        "_run_timer",
 
         # time takes to do data generation
         "_dsg_time",
@@ -355,30 +337,56 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # time taken by the front end extracting things
         "_extraction_time",
 
-        # power save mode. Only True if power saver has turned off board
+        # power save mode. time board turned off or None if not turned off
         "_machine_is_turned_off",
 
         # Version information from the front end
         "_front_end_versions",
 
-        "_last_except_hook"
+        "_last_except_hook",
+
+        "_vertices_or_edges_added",
+
+        # Version provenance
+        "_version_provenance"
     ]
 
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None, default_config_paths=None,
+            n_chips_required=None, n_boards_required=None,
+            default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
+        """
+        :param configfile: What the configuration file is called
+        :type configfile: str
+        :param executable_finder: How to find APLX files to deploy to SpiNNaker
+        :type executable_finder: \
+            ~spinn_utilities.executable_finder.ExecutableFinder
+        :param graph_label: A label for the overall application graph
+        :type graph_label: str
+        :param database_socket_addresses: How to talk to notification databases
+        :type database_socket_addresses: \
+            iterable(~spinn_utilities.socket_address.SocketAddress)
+        :param extra_algorithm_xml_paths: \
+            Where to load definitions of extra algorithms from
+        :type extra_algorithm_xml_paths: iterable(str)
+        :param n_chips_required: \
+            Overrides the number of chips to allocate from spalloc
+        :type n_chips_required: int
+        :param n_boards_required: \
+            Overrides the number of boards to allocate from spalloc
+        :type n_boards_required: int
+        :param default_config_paths: Directories to load configurations from
+        :type default_config_paths: list(str)
+        :param validation_cfg: How to validate configuration files
+        :type validation_cfg: str
+        :param front_end_versions: information about what software is in use
+        :type front_end_versions: list(tuple(str,str))
+        """
         # pylint: disable=too-many-arguments
-
-        # global params
-        if default_config_paths is None:
-            default_config_paths = []
-        default_config_paths.insert(0, os.path.join(
-            os.path.dirname(__file__), CONFIG_FILE))
-
-        self._load_config(filename=configfile, defaults=default_config_paths,
-                          validation_cfg=validation_cfg)
+        ConfigHandler.__init__(
+            self, configfile, default_config_paths, validation_cfg)
 
         # timings
         self._mapping_time = 0.0
@@ -394,7 +402,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Will search these locations for binaries: {}",
             self._executable_finder.binary_paths)
 
-        self._n_chips_required = n_chips_required
+        if n_chips_required is None or n_boards_required is None:
+            self._n_chips_required = n_chips_required
+            self._n_boards_required = n_boards_required
+        else:
+            raise ConfigurationException(
+                "Please use at most one of n_chips_required or "
+                "n_boards_required")
         self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
@@ -417,6 +431,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._original_application_graph = \
             ApplicationGraph(label=self._graph_label)
         self._original_machine_graph = MachineGraph(label=self._graph_label)
+        self._empty_graphs = False
 
         self._graph_mapper = None
         self._placements = None
@@ -427,24 +442,24 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._machine_graph = None
         self._tags = None
         self._machine = None
-        self._max_machine_available = None
         self._txrx = None
         self._buffer_manager = None
+        self._java_caller = None
         self._ip_address = None
         self._executable_types = None
 
         # pacman executor objects
-        self._max_machine_outputs = None
         self._machine_outputs = None
         self._machine_tokens = None
         self._mapping_outputs = None
         self._mapping_tokens = None
         self._load_outputs = None
         self._load_tokens = None
-        self._last_run_outputs = None
-        self._last_run_tokens = None
+        self._last_run_outputs = list()
+        self._last_run_tokens = list()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
+        self._version_provenance = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
         # extra algorithms and inputs for runs, should disappear in future
@@ -459,7 +474,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._dsg_algorithm = "GraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
-        self._none_labelled_vertex_count = 0
         self._none_labelled_edge_count = 0
 
         # database objects
@@ -468,43 +482,26 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._database_socket_addresses.update(database_socket_addresses)
         self._database_interface = None
         self._create_database = None
-        self._database_file_path = None
 
-        # holder for timing related values
+        # holder for timing and running related values
+        self._run_until_complete = False
         self._has_ran = False
         self._state = Simulator_State.INIT
+        self._state_condition = Condition()
         self._has_reset_last = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
-        self._minimum_step_generated = None
+        self._max_run_time_steps = None
         self._no_machine_time_steps = None
-        self._machine_time_step = None
-        self._time_scale_factor = None
-        self._this_run_time_string = None
-        self._infinite_run = False
+        self._minimum_auto_time_steps = self._config.getint(
+                "Buffers", "minimum_auto_time_steps")
 
-        self._app_id = helpful_functions.read_config_int(
-            self._config, "Machine", "app_id")
+        self._app_id = self._read_config_int("Machine", "app_id")
 
         # folders
-        self._report_default_directory = None
-        self._report_simulation_top_directory = None
-        self._app_data_runtime_folder = None
-        self._app_data_top_simulation_folder = None
         self._pacman_executor_provenance_path = None
-        self._set_up_output_folders()
-
-        self._json_folder = os.path.join(
-            self._report_default_directory, "json_files")
-        if not os.path.exists(self._json_folder):
-            os.makedirs(self._json_folder)
-
-        # make a folder for the provenance data storage
-        self._provenance_file_path = os.path.join(
-            self._report_default_directory, "provenance_data")
-        if not os.path.exists(self._provenance_file_path):
-            os.makedirs(self._provenance_file_path)
+        self._set_up_output_folders(self._n_calls_to_run)
 
         # timing provenance elements
         self._do_timings = self._config.getboolean(
@@ -513,21 +510,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Reports", "display_algorithm_timings")
         self._provenance_format = self._config.get(
             "Reports", "provenance_format")
-        if self._provenance_format not in ["xml", "json"]:
+        if self._provenance_format not in ["xml", "json", "sql", "auto"]:
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
-        self._exec_dse_on_host = self._config.getboolean(
-            "SpecExecution", "spec_exec_on_host")
-
-        # set up machine targeted data
-        self._use_virtual_board = self._config.getboolean(
-            "Machine", "virtual_board")
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
         # By default board is kept on once started later
-        self._machine_is_turned_off = False
+        self._machine_is_turned_off = None
 
         globals_variables.set_simulator(self)
 
@@ -535,71 +526,129 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._front_end_versions = front_end_versions
 
         self._last_except_hook = sys.excepthook
+        self._vertices_or_edges_added = False
+
+    def set_n_boards_required(self, n_boards_required):
+        """
+        Sets the machine requirements.
+
+        Warning: This method should not be called after the machine
+        requirements have be computed based on the graph.
+
+        :param n_boards_required: The number of boards required
+        :raises: ConfigurationException
+            If any machine requirements have already been set
+        """
+        # Catch the unchanged case including leaving it None
+        if n_boards_required == self._n_boards_required:
+            return
+        if self._n_boards_required is not None:
+            raise ConfigurationException(
+                "Illegal attempt to change previously set value.")
+        if self._n_chips_required is not None:
+            raise ConfigurationException(
+                "Clash with n_chips_required.")
+        self._n_boards_required = n_boards_required
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
+        """ Supply extra inputs to the mapping algorithms. Mappings are from\
+            known names (the logical type names) to the values to bind to them.
+
+        :param extra_inputs: The additional inputs to provide
+        :type extra_inputs: dict(str,any)
+        """
         if self.has_ran:
-            msg = "Changing mapping inputs is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing mapping inputs is not supported after run")
         if extra_mapping_inputs is not None:
             self._extra_mapping_inputs.update(extra_mapping_inputs)
 
     def update_extra_inputs(self, extra_inputs):
+        """ Supply extra inputs to the runtime algorithms. Mappings are from\
+            known names (the logical type names) to the values to bind to them.
+
+        :param extra_inputs: The additional inputs to provide
+        :type extra_inputs: dict(str,any)
+        """
         if self.has_ran:
-            msg = "Changing inputs is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing inputs is not supported after run")
         if extra_inputs is not None:
             self._extra_inputs.update(extra_inputs)
 
     def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
+        """ Add custom mapping algorithms to the end of the sequence of \
+            mapping algorithms to be run.
+
+        :param extra_mapping_algorithms: Algorithms to add
+        :type extra_mapping_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_mapping_algorithms is not None:
             self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
 
     def prepend_extra_pre_run_algorithms(self, extra_pre_run_algorithms):
+        """ Add custom pre-execution algorithms to the front of the sequence \
+            of algorithms to be run.
+
+        :param extra_pre_run_algorithms: Algorithms to add
+        :type extra_pre_run_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_pre_run_algorithms is not None:
             self._extra_pre_run_algorithms[0:0] = extra_pre_run_algorithms
 
     def extend_extra_post_run_algorithms(self, extra_post_run_algorithms):
+        """ Add custom post-execution algorithms to the sequence of \
+            such algorithms to be run.
+
+        :param extra_post_run_algorithms: Algorithms to add
+        :type extra_post_run_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
 
     def extend_extra_load_algorithms(self, extra_load_algorithms):
+        """ Add custom data-loading algorithms to the sequence of \
+            such algorithms to be run.
+
+        :param extra_load_algorithms: Algorithms to add
+        :type extra_load_algorithms: list
+        """
         if self.has_ran:
-            msg = "Changing algorithms is not supported after run"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Changing algorithms is not supported after run")
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
 
-    def set_n_chips_required(self, n_chips_required):
-        if self.has_ran:
-            msg = "Setting n_chips_required is not supported after run"
-            raise ConfigurationException(msg)
-        self._n_chips_required = n_chips_required
-
     def add_extraction_timing(self, timing):
-        ms = helpful_functions.convert_time_diff_to_total_milliseconds(timing)
+        """ Record the time taken for doing data extraction.
+        """
+        ms = convert_time_diff_to_total_milliseconds(timing)
         self._extraction_time += ms
 
     def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from):
+            self, live_packet_gatherer_params, vertex_to_record_from,
+            partition_ids):
         """ Adds params for a new LPG if needed, or adds to the tracker for\
             same params.
 
         :param live_packet_gatherer_params: params to look for a LPG
         :param vertex_to_record_from: \
             the vertex that needs to send to a given LPG
+        :param partition_ids: \
+            the IDs of the partitions to connect from the vertex
         :rtype: None
         """
         self._live_packet_recorder_params[live_packet_gatherer_params].append(
-            vertex_to_record_from)
+            (vertex_to_record_from, partition_ids))
 
         # verify that the vertices being added are of one vertex type.
         if self._live_packet_recorders_associated_vertex_type is None:
@@ -609,156 +658,25 @@ class AbstractSpinnakerBase(SimulatorInterface):
             else:
                 self._live_packet_recorders_associated_vertex_type = \
                     MachineVertex
-        else:
-            if not isinstance(
-                    vertex_to_record_from,
-                    self._live_packet_recorders_associated_vertex_type):
-                raise ConfigurationException(
-                    "Only one type of graph can be used during live output. "
-                    "Please fix and try again")
-
-    def _load_config(self, filename, defaults, validation_cfg):
-        self._config = conf_loader.load_config(
-            filename=filename, defaults=defaults,
-            validation_cfg=validation_cfg)
+        elif not isinstance(
+                vertex_to_record_from,
+                self._live_packet_recorders_associated_vertex_type):
+            raise ConfigurationException(
+                "Only one type of graph can be used during live output. "
+                "Please fix and try again")
 
     # options names are all lower without _ inside config
-    DEBUG_ENABLE_OPTS = frozenset([
-        "reportsenabled", "displayalgorithmtimings",
+    _DEBUG_ENABLE_OPTS = frozenset([
+        "reportsenabled",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-    REPORT_DISABLE_OPTS = frozenset([
-        "displayalgorithmtimings",
+    _REPORT_DISABLE_OPTS = frozenset([
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-
-    def _adjust_config(self, runtime):
-        """ Adjust and checks config based on runtime and mode
-
-        :param runtime:
-        :type runtime: int or bool
-        :raises ConfigurationException
-        """
-        if self._config.get("Mode", "mode") == "Debug":
-            for option in self._config.options("Reports"):
-                # options names are all lower without _ inside config
-                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
-                    try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "True")
-                            logger.info("As mode == \"Debug\", [Reports] {} "
-                                        "has been set to True", option)
-                    except ValueError:
-                        pass
-        elif not self._config.getboolean("Reports", "reportsEnabled"):
-            for option in self._config.options("Reports"):
-                # options names are all lower without _ inside config
-                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
-                    try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "False")
-                            logger.info(
-                                "As reportsEnabled == \"False\", [Reports] {} "
-                                "has been set to False", option)
-                    except ValueError:
-                        pass
-
-        if runtime is None:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as runtime is set to forever")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as runtime is set to forever")
-
-        if self._use_virtual_board:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as using virtual boards")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as s using virtual boards")
-            if self._config.getboolean(
-                    "Reports", "write_board_chip_report") is True:
-                self._config.set("Reports", "write_board_chip_report", "False")
-                logger.info("[Reports]write_board_chip_report has been set to"
-                            " False as using virtual boards")
-
-    def _set_up_output_folders(self):
-        """ Sets up the outgoing folders (reports and app data) by creating\
-            a new timestamp folder for each and clearing
-
-        :rtype: None
-        """
-
-        # set up reports default folder
-        (self._report_default_directory, self._report_simulation_top_directory,
-         self._this_run_time_string) = \
-            helpful_functions.set_up_report_specifics(
-                default_report_file_path=self._config.get(
-                    "Reports", "default_report_file_path"),
-                max_reports_kept=self._config.getint(
-                    "Reports", "max_reports_kept"),
-                n_calls_to_run=self._n_calls_to_run,
-                this_run_time_string=self._this_run_time_string)
-
-        # set up application report folder
-        self._app_data_runtime_folder, self._app_data_top_simulation_folder = \
-            helpful_functions.set_up_output_application_data_specifics(
-                max_application_binaries_kept=self._config.getint(
-                    "Reports", "max_application_binaries_kept"),
-                where_to_write_application_data_files=self._config.get(
-                    "Reports", "default_application_data_file_path"),
-                n_calls_to_run=self._n_calls_to_run,
-                this_run_time_string=self._this_run_time_string)
-
-        if self._read_config_boolean("Reports",
-                                     "writePacmanExecutorProvenance"):
-            self._pacman_executor_provenance_path = os.path.join(
-                self._report_default_directory,
-                "pacman_executor_provenance.rpt")
-
-    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
-        """ Set up timings of the machine
-
-        :param machine_time_step:\
-            An explicitly specified time step for the machine.  If None,\
-            the value is read from the config
-        :param time_scale_factor:\
-            An explicitly specified time scale factor for the simulation.\
-            If None, the value is read from the config
-        """
-
-        # set up timings
-        if machine_time_step is None:
-            self._machine_time_step = \
-                self._config.getint("Machine", "machine_time_step")
-        else:
-            self._machine_time_step = machine_time_step
-
-        if self._machine_time_step <= 0:
-            raise ConfigurationException(
-                "invalid machine_time_step {}: must greater than zero".format(
-                    self._machine_time_step))
-
-        if time_scale_factor is None:
-            self._time_scale_factor = self._read_config_int(
-                "Machine", "time_scale_factor")
-        else:
-            self._time_scale_factor = time_scale_factor
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
         :param hostname: machine name
+        :type hostname: str
         :rtype: None
         """
         if hostname is not None:
@@ -771,6 +689,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "spalloc_server")
             self._remote_spinnaker_url = self._read_config(
                 "Machine", "remote_spinnaker_url")
+
         if (self._hostname is None and self._spalloc_server is None and
                 self._remote_spinnaker_url is None and
                 not self._use_virtual_board):
@@ -796,7 +715,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
 
-    def signal_handler(self, _signal, _frame):
+    def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
 
         :param _signal: the signal received (ignored)
@@ -821,20 +740,27 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
+    @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
         if self._state in [Simulator_State.IN_RUN,
                            Simulator_State.RUN_FOREVER]:
-            msg = "Illegal call while a simulation is already running"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Illegal call while a simulation is already running")
         if self._state in [Simulator_State.SHUTDOWN]:
-            msg = "Illegal call after simulation is shutdown"
-            raise ConfigurationException(msg)
+            raise ConfigurationException(
+                "Illegal call after simulation is shutdown")
 
-    def run_until_complete(self):
+    def run_until_complete(self, n_steps=None):
         """ Run a simulation until it completes
-        """
-        self._run(None, run_until_complete=True)
 
+        :param n_steps: If not None, this specifies that the simulation should\
+            be requested to run for the given number of steps.  The host will\
+            still wait until the simulation itself says it has completed
+        """
+        self._run_until_complete = True
+        self._run(n_steps)
+
+    @overrides(SimulatorInterface.run)
     def run(self, run_time):
         """ Run a simulation for a fixed amount of time
 
@@ -842,7 +768,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         self._run(run_time)
 
-    def _build_graphs_for_usege(self):
+    def _build_graphs_for_usage(self):
         # sort out app graph
         self._application_graph = ApplicationGraph(
             label=self._original_application_graph.label)
@@ -853,6 +779,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             for edge in outgoing_partition.edges:
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
+
         # sort out machine graph
         self._machine_graph = MachineGraph(
             label=self._original_machine_graph.label)
@@ -860,11 +787,61 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
                 self._original_machine_graph.outgoing_edge_partitions:
+            self._machine_graph.add_outgoing_edge_partition(outgoing_partition)
             for edge in outgoing_partition.edges:
                 self._machine_graph.add_edge(
                     edge, outgoing_partition.identifier)
 
-    def _run(self, run_time, run_until_complete=False):
+    def _calc_run_time(self, run_time):
+        """
+        Calculates n_machine_time_steps and total_run_time based on run_time\
+        and machine_time_step
+
+        This method rounds the run up to the next timestep as discussed in\
+        https://github.com/SpiNNakerManchester/sPyNNaker/issues/149
+
+        If run_time is None (run forever) both values will be None
+
+        :param run_time: time user requested to run for in milliseconds
+        :type run_time: float or None
+        :return: n_machine_time_steps as a whole int and\
+            total_run_time in milliseconds
+        :rtype: (int,float) or (None, None)
+        """
+        if run_time is None:
+            return None, None
+        machine_time_step_ms = (
+            self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION)
+        n_machine_time_steps = math.ceil(run_time / machine_time_step_ms)
+        calc_run_time = n_machine_time_steps * machine_time_step_ms
+
+        # Allow for minor float errors
+        if abs(run_time - calc_run_time) > 0.00001:
+            logger.warning(
+                "Your requested runtime of {}ms "
+                "is not a multiple of the machine time step of {}ms "
+                "and has therefor been rounded up to {}ms",
+                run_time, machine_time_step_ms, calc_run_time)
+
+        total_run_timesteps = (
+            self._current_run_timesteps + n_machine_time_steps)
+        total_run_time = (
+            total_run_timesteps * machine_time_step_ms *
+            self.time_scale_factor)
+
+        # Convert dt into microseconds and divide by
+        # realtime proportion to get hardware timestep
+        hardware_timestep_us = int(round(
+            float(self.machine_time_step) / float(self.time_scale_factor)))
+
+        logger.info(
+            "Simulating for {} {}ms timesteps "
+            "using a hardware timestep of {}us",
+            n_machine_time_steps,  machine_time_step_ms, hardware_timestep_us)
+
+        return n_machine_time_steps, total_run_time
+
+    def _run(self, run_time):
         """ The main internal run function
 
         :param run_time: the run duration in milliseconds.
@@ -872,71 +849,60 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self.verify_not_running()
 
         # verify that we can keep doing auto pause and resume
-        can_keep_running = True
-        if self._has_ran:
+        if self._has_ran and not self._use_virtual_board:
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in self._executable_types)
-
-        if self._has_ran and not can_keep_running:
-            raise NotImplementedError(
-                "Only binaries that use the simulation interface can be run"
-                " more than once")
+            if not can_keep_running:
+                raise NotImplementedError(
+                    "Only binaries that use the simulation interface can be"
+                    " run more than once")
 
         self._state = Simulator_State.IN_RUN
 
-        self._adjust_config(run_time)
+        self._adjust_config(
+            run_time, self._DEBUG_ENABLE_OPTS, self._REPORT_DISABLE_OPTS)
 
         # Install the Control-C handler
-        signal.signal(signal.SIGINT, self.signal_handler)
-        self._raise_keyboard_interrupt = True
-        sys.excepthook = self._last_except_hook
+        if isinstance(threading.current_thread(), threading._MainThread):
+            signal.signal(signal.SIGINT, self.__signal_handler)
+            self._raise_keyboard_interrupt = True
+            sys.excepthook = self._last_except_hook
 
         logger.info("Starting execution process")
 
-        n_machine_time_steps = None
-        total_run_time = None
-        self._infinite_run = True
-        if run_time is not None:
-            n_machine_time_steps = int(
-                (run_time * 1000.0) / self._machine_time_step)
-            total_run_timesteps = (
-                self._current_run_timesteps + n_machine_time_steps)
-            total_run_time = (
-                total_run_timesteps *
-                (float(self._machine_time_step) / 1000.0) *
-                self._time_scale_factor)
-            self._infinite_run = False
+        n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
-        application_graph_changed = self._detect_if_graph_has_changed(True)
+        graph_changed, data_changed = self._detect_if_graph_has_changed(True)
+        if graph_changed and self._has_ran and not self._has_reset_last:
+            self.stop()
+            raise NotImplementedError(
+                "The network cannot be changed between runs without"
+                " resetting")
+
+        # If we have reset and the graph has changed, stop any running
+        # application
+        if (graph_changed or data_changed) and self._has_ran:
+            if self._txrx is not None:
+                self._txrx.stop_application(self._app_id)
+
+            # change number of resets as loading the binary again resets the
+            # sync to 0
+            self._no_sync_changes = 0
+
+            # create new sub-folder for reporting data
+            self._set_up_output_folders(self._n_calls_to_run)
 
         # build the graphs to modify with system requirements
-        if (self._has_reset_last or not self._has_ran or
-                application_graph_changed):
-            self._build_graphs_for_usege()
+        if not self._has_ran or graph_changed:
+            self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
-
-        # create new sub-folder for reporting data if the graph has changed and
-        # reset has been called.
-        if (self._has_ran and application_graph_changed and
-                self._has_reset_last):
-            self._set_up_output_folders()
-
-        # verify that the if graph has changed, and has ran, that a reset has
-        # been called, otherwise system go boom boom
-        if not self._has_ran or application_graph_changed:
-            if (application_graph_changed and self._has_ran and
-                    not self._has_reset_last):
-                self.stop()
-                raise NotImplementedError(
-                    "The network cannot be changed between runs without"
-                    " resetting")
 
             # Reset the machine graph if there is an application graph
             if self._application_graph.n_vertices:
@@ -944,95 +910,104 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._graph_mapper = None
 
             # Reset the machine if the graph has changed
-            if (self._has_ran and application_graph_changed and
-                    not self._use_virtual_board):
+            if not self._use_virtual_board and self._n_calls_to_run > 1:
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._machine = None
                 self._buffer_manager = None
+                self._java_caller = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
                 if self._machine_allocation_controller is not None:
                     self._machine_allocation_controller.close()
+                self._max_run_time_steps = None
 
             if self._machine is None:
-                self._get_real_machine(total_run_time, n_machine_time_steps)
-            self._do_mapping(run_time, n_machine_time_steps, total_run_time)
+                self._get_machine(total_run_time, n_machine_time_steps)
+            self._do_mapping(run_time, total_run_time)
 
-        # Check if anything is recording and buffered
-        is_buffered_recording = self._is_buffered_recording()
+        # Check if anything has per-timestep SDRAM usage
+        is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
-        for executable_type in self._executable_types:
-            if not executable_type.supports_auto_pause_and_resume:
-                self._config.set("Buffers",
-                                 "use_auto_pause_and_resume", "False")
+        if not self._use_virtual_board:
+            for executable_type in self._executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    self._config.set("Buffers",
+                                     "use_auto_pause_and_resume", "False")
+
+        # Work out the maximum run duration given all recordings
+        if self._max_run_time_steps is None:
+            self._max_run_time_steps = self._deduce_data_n_timesteps()
 
         # Work out an array of timesteps to perform
+        steps = None
         if (not self._config.getboolean("Buffers", "use_auto_pause_and_resume")
-                or not is_buffered_recording):
+                or not is_per_timestep_sdram):
 
-            # Not currently possible to run the second time for more than the
-            # first time without auto pause and resume
-            if (is_buffered_recording and
-                    self._minimum_step_generated is not None and
-                    (self._minimum_step_generated < n_machine_time_steps or
+            # Runs should only be in units of max_run_time_steps at most
+            if (is_per_timestep_sdram and
+                    (self._max_run_time_steps < n_machine_time_steps or
                         n_machine_time_steps is None)):
                 self._state = Simulator_State.FINISHED
                 raise ConfigurationException(
-                    "Second and subsequent run time must be less than or equal"
-                    " to the first run time")
+                    "The SDRAM required by one or more vertices is based on"
+                    " the run time, so the run time is limited to"
+                    " {} time steps".format(self._max_run_time_steps))
 
             steps = [n_machine_time_steps]
-            self._minimum_step_generated = steps[0]
-        else:
-            if run_time is None:
-                self._state = Simulator_State.FINISHED
-                raise Exception(
-                    "Cannot use automatic pause and resume with an infinite "
-                    "run time")
+        elif run_time is not None:
 
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            if self._minimum_step_generated is not None:
-                steps = self._generate_steps(
-                    n_machine_time_steps, self._minimum_step_generated)
-            else:
-                steps = self._deduce_number_of_iterations(n_machine_time_steps)
-                self._minimum_step_generated = steps[0]
+            steps = self._generate_steps(
+                n_machine_time_steps, self._max_run_time_steps)
 
-        # Keep track of if loading was done; if loading is done before run,
-        # run doesn't need to rewrite data again
-        loading_done = False
-
-        # If we have never run before, or the graph has changed, or a reset
-        # has been requested, load the data
-        if (not self._has_ran or application_graph_changed or
-                self._has_reset_last):
-
-            # Data generation needs to be done if not already done
-            if not self._has_ran or application_graph_changed:
-                self._do_data_generation(steps[0])
+        # If we have never run before, or the graph has changed, or data has
+        # been changed, generate and load the data
+        if not self._has_ran or graph_changed or data_changed:
+            self._do_data_generation(self._max_run_time_steps)
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load(application_graph_changed)
-                loading_done = True
+                self._do_load(graph_changed, data_changed)
 
         # Run for each of the given steps
-        logger.info("Running for {} steps for a total of {}ms",
-                    len(steps), run_time)
-        for i, step in enumerate(steps):
-            logger.info("Run {} of {}", i + 1, len(steps))
-            self._do_run(step, loading_done, run_until_complete)
+        if run_time is not None:
+            logger.info("Running for {} steps for a total of {}ms",
+                        len(steps), run_time)
+            for i, step in enumerate(steps):
+                logger.info("Run {} of {}", i + 1, len(steps))
+                self._do_run(step, graph_changed)
+        elif run_time is None and self._run_until_complete:
+            logger.info("Running until complete")
+            self._do_run(None, graph_changed)
+        elif (not self._config.getboolean(
+                "Buffers", "use_auto_pause_and_resume") or
+                not is_per_timestep_sdram):
+            logger.info("Running forever")
+            self._do_run(None, graph_changed)
+            logger.info("Waiting for stop request")
+            with self._state_condition:
+                while self._state != Simulator_State.STOP_REQUESTED:
+                    self._state_condition.wait()
+        else:
+            logger.info("Running forever in steps of {}ms".format(
+                self._max_run_time_steps))
+            i = 0
+            while self._state != Simulator_State.STOP_REQUESTED:
+                logger.info("Run {}".format(i + 1))
+                self._do_run(self._max_run_time_steps, graph_changed)
+                i += 1
 
         # Indicate that the signal handler needs to act
-        self._raise_keyboard_interrupt = False
-        self._last_except_hook = sys.excepthook
-        sys.excepthook = self.exception_handler
+        if isinstance(threading.current_thread(), threading._MainThread):
+            self._raise_keyboard_interrupt = False
+            self._last_except_hook = sys.excepthook
+            sys.excepthook = self.exception_handler
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
@@ -1041,23 +1016,27 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             self._state = Simulator_State.RUN_FOREVER
 
-    def _is_buffered_recording(self):
+    def _is_per_timestep_sdram(self):
         for placement in self._placements.placements:
-            vertex = placement.vertex
-            if (isinstance(vertex, AbstractReceiveBuffersToHost) and
-                    isinstance(vertex, AbstractRecordable) and
-                    vertex.is_recording()):
+            if placement.vertex.resources_required.sdram.per_timestep:
                 return True
         return False
 
     def _add_commands_to_command_sender(self):
-        for vertex in self._application_graph.vertices:
+        vertices = self._application_graph.vertices
+        graph = self._application_graph
+        command_sender_vertex = CommandSender
+        if len(vertices) == 0:
+            vertices = self._machine_graph.vertices
+            graph = self._machine_graph
+            command_sender_vertex = CommandSenderMachineVertex
+        for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
                 if self._command_sender is None:
-                    self._command_sender = CommandSender(
+                    self._command_sender = command_sender_vertex(
                         "auto_added_command_sender", None)
-                    self._application_graph.add_vertex(self._command_sender)
+                    graph.add_vertex(self._command_sender)
 
                 # allow the command sender to create key to partition map
                 self._command_sender.add_commands(
@@ -1069,7 +1048,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._command_sender is not None:
             edges, partition_ids = self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
-                self._application_graph.add_edge(edge, partition_id)
+                graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
@@ -1087,58 +1066,34 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_number_of_iterations(self, n_machine_time_steps):
+    def _deduce_data_n_timesteps(self):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
 
-        :param n_machine_time_steps: the total timer ticks to be ran
-        :type n_machine_time_steps: int
-        :return: list of timer steps.
+        :return: max time a simulation can run.
         """
-        # Go through the placements and find how much SDRAM is available
+        # Go through the placements and find how much SDRAM is used
         # on each chip
-        sdram_tracker = dict()
-        vertex_by_chip = defaultdict(list)
-
-        # horrible hack. This needs to be fixed somehow
-        provide_injectables({
-            "MachineTimeStep": self._machine_time_step,
-            "TotalMachineTimeSteps": n_machine_time_steps,
-            "TimeScaleFactor": self._time_scale_factor})
+        usage_by_chip = dict()
 
         for placement in self._placements.placements:
-            vertex = placement.vertex
-            if isinstance(vertex, AbstractReceiveBuffersToHost):
-
-                resources = vertex.resources_required
-                if (placement.x, placement.y) not in sdram_tracker:
-                    sdram_tracker[placement.x, placement.y] = \
-                        self._machine.get_chip_at(
-                            placement.x, placement.y).sdram.size
-                sdram = (
-                    resources.sdram.get_value() -
-                    vertex.get_minimum_buffer_sdram_usage())
-                sdram_tracker[placement.x, placement.y] -= sdram
-                vertex_by_chip[placement.x, placement.y].append(vertex)
+            sdram_required = placement.vertex.resources_required.sdram
+            if (placement.x, placement.y) in usage_by_chip:
+                usage_by_chip[placement.x, placement.y] += sdram_required
+            else:
+                usage_by_chip[placement.x, placement.y] = sdram_required
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        min_time_steps = None
-        for x, y in vertex_by_chip:
-            vertices_on_chip = vertex_by_chip[x, y]
-            sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
-            min_time_steps = min(
-                int(vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex, self._machine_time_step))
-                for vertex in vertices_on_chip)
+        max_time_steps = sys.maxsize
+        for (x, y), sdram in usage_by_chip.items():
+            size = self._machine.get_chip_at(x, y).sdram.size
+            if sdram.per_timestep:
+                max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
+                max_time_steps = min(max_time_steps, max_this_chip)
 
-        # clear injectable
-        clear_injectables()
-
-        if min_time_steps is None:
-            return [n_machine_time_steps]
-        return self._generate_steps(n_machine_time_steps, min_time_steps)
+        return max_time_steps
 
     @staticmethod
     def _generate_steps(n_steps, n_steps_per_segment):
@@ -1151,9 +1106,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :type n_steps_per_segment: int
         :return: list of time steps
         """
+        if n_steps == 0:
+            return [0]
         n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
         left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
-
         steps = [int(n_steps_per_segment)] * n_full_iterations
         if left_over_steps:
             steps.append(int(left_over_steps))
@@ -1166,16 +1122,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             return total_timesteps
 
         self._no_machine_time_steps = None
-        for vtx in self._application_graph.vertices:
-            if isinstance(vtx, AbstractRecordable) and vtx.is_recording():
-                raise ConfigurationException(
-                    "recording a vertex when set to infinite runtime "
-                    "is not currently supported")
-        for vtx in self._machine_graph.vertices:
-            if isinstance(vtx, AbstractRecordable) and vtx.is_recording():
-                raise ConfigurationException(
-                    "recording a vertex when set to infinite runtime "
-                    "is not currently supported")
         return None
 
     def _run_algorithms(
@@ -1190,7 +1136,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param required_tokens: The tokens that must be generated
         :param optional_algorithms: optional algorithms to use
         :param provenance_name: the name for provenance
-        :return:  None
+        :return: None
         """
         # pylint: disable=too-many-arguments
         optional = optional_algorithms
@@ -1218,115 +1164,287 @@ class AbstractSpinnakerBase(SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                helpful_functions.write_finished_file(
-                    self._app_data_top_simulation_folder,
-                    self._report_simulation_top_directory)
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
 
-    def _get_max_available_machine(self):
-        """ supports locating the max machine available based off what machine \
-        access route is being used (spalloc, physical, HBP, virtual)
-        """
-
-        if self._max_machine_available is not None:
-            return self._max_machine_available
-
-        inputs = dict(self._extra_inputs)
-        algorithms = list()
-        outputs = list()
-
-        # Set up common machine details
-        self._handle_machine_common_config(inputs)
+    def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+        if self._machine is not None:
+            return self._machine
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
-            inputs["IPAddress"] = self._hostname
-            inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            inputs["AutoDetectBMPFlag"] = self._config.getboolean(
-                "Machine", "auto_detect_bmp")
-            inputs["ScampConnectionData"] = self._read_config(
-                "Machine", "scamp_connections_data")
-            inputs["MaxCoreId"] = self._read_config_int(
-                "Machine", "core_limit")
+            self._machine_by_hostname(n_machine_time_steps, total_run_time)
 
-            algorithms.append("MachineGenerator")
+        elif self._use_virtual_board:
+            self._machine_by_virtual(n_machine_time_steps, total_run_time)
+        else:
+            # must be remote due to set_up_machine_specifics()
+            self._machine_by_remote(n_machine_time_steps, total_run_time)
 
-            outputs.append("MemoryMachine")
-            outputs.append("MemoryTransceiver")
+        if self._app_id is None:
+            if self._txrx is None:
+                self._app_id = ALANS_DEFAULT_RANDOM_APP_ID
+            else:
+                self._app_id = self._txrx.app_id_tracker.get_new_id()
 
-            executor = self._run_algorithms(
-                inputs, algorithms, outputs, [], [], "machine_generation")
-            self._machine = executor.get_item("MemoryMachine")
-            self._max_machine_available = self._machine
-            self._txrx = executor.get_item("MemoryTransceiver")
-            self._max_machine_outputs = executor.get_items()
-            self._machine_outputs = self._max_machine_outputs
-            self._machine_tokens = executor.get_completed_tokens()
+        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
 
-        if self._use_virtual_board:
-            inputs["IPAddress"] = "virtual"
-            inputs["NumberOfBoards"] = self._read_config_int(
-                "Machine", "number_of_boards")
-            inputs["MachineWidth"] = self._read_config_int(
-                "Machine", "width")
-            inputs["MachineHeight"] = self._read_config_int(
-                "Machine", "height")
-            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
-                "Machine", "requires_wrap_arounds")
-            inputs["BMPDetails"] = None
-            inputs["AutoDetectBMPFlag"] = False
-            inputs["ScampConnectionData"] = None
-            inputs["CPUsPerVirtualChip"] = 16
+        if self._n_chips_required:
+            if self._machine.n_chips < self._n_chips_required:
+                raise ConfigurationException(
+                    "Failure to detect machine of with {} chips as requested. "
+                    "Only found {}".format(self._n_chips_required,
+                                           self._machine))
+        if self._n_boards_required:
+            if len(self._machine.ethernet_connected_chips) \
+                    < self._n_boards_required:
+                raise ConfigurationException(
+                    "Failure to detect machine with {} boards as requested. "
+                    "Only found {}".format(self._n_boards_required,
+                                           self._machine))
 
-            # add max SDRAM size which we're going to allow (debug purposes)
-            inputs["MaxSDRAMSize"] = self._read_config_int(
-                "Machine", "max_sdram_allowed_per_chip")
+        return self._machine
 
-            algorithms.append("VirtualMachineGenerator")
+    def _machine_by_hostname(self, n_machine_time_steps, total_run_time):
+        inputs, algorithms = self._get_machine_common(
+            n_machine_time_steps, total_run_time)
+        outputs = list()
+        inputs["IPAddress"] = self._hostname
+        inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
+        inputs["AutoDetectBMPFlag"] = self._config.getboolean(
+            "Machine", "auto_detect_bmp")
+        inputs["ScampConnectionData"] = self._read_config(
+            "Machine", "scamp_connections_data")
+        inputs['ReportFolder'] = self._report_default_directory
+        algorithms.append("MachineGenerator")
 
-            outputs.append("MemoryMachine")
+        outputs.append("MemoryMachine")
+        outputs.append("MemoryTransceiver")
 
-            executor = self._run_algorithms(
-                inputs, algorithms, outputs, [], [], "machine_generation")
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, [], [], "machine_generation")
+        self._machine = executor.get_item("MemoryMachine")
+        self._txrx = executor.get_item("MemoryTransceiver")
+        self._machine_outputs = executor.get_items()
+        self._machine_tokens = executor.get_completed_tokens()
 
-            self._max_machine_outputs = executor.get_items()
-            self._machine_outputs = self._max_machine_outputs
-            self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryMachine")
-            self._max_machine_available = self._machine
+    def _machine_by_virtual(self, n_machine_time_steps, total_run_time):
+        inputs, algorithms = self._get_machine_common(
+            n_machine_time_steps, total_run_time)
+        outputs = list()
 
-        if (self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None):
-            # if using spalloc system
-            if self._spalloc_server is not None:
-                inputs["SpallocServer"] = self._spalloc_server
-                inputs["SpallocPort"] = self._read_config_int(
-                    "Machine", "spalloc_port")
-                inputs["SpallocUser"] = self._read_config(
-                    "Machine", "spalloc_user")
-                inputs["SpallocMachine"] = self._read_config(
-                    "Machine", "spalloc_machine")
-                if self._n_chips_required is None:
-                    algorithms.append("SpallocMaxMachineGenerator")
+        inputs["IPAddress"] = "virtual"
+        inputs["NumberOfBoards"] = self._read_config_int(
+            "Machine", "number_of_boards")
+        inputs["MachineWidth"] = self._read_config_int(
+            "Machine", "width")
+        inputs["MachineHeight"] = self._read_config_int(
+            "Machine", "height")
+        inputs["MachineJsonPath"] = self._read_config(
+            "Machine", "json_path")
+        inputs["BMPDetails"] = None
+        inputs["AutoDetectBMPFlag"] = False
+        inputs["ScampConnectionData"] = None
+        inputs["RouterTableEntriesPerRouter"] = \
+            self._read_config_int("Machine", "RouterTableEntriesPerRouter")
 
-            # if using HBP server system
-            if self._remote_spinnaker_url is not None:
-                inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-                if self._n_chips_required is None:
-                    algorithms.append("HBPMaxMachineGenerator")
+        algorithms.append("VirtualMachineGenerator")
 
-            executor = self._run_algorithms(
-                inputs, algorithms, outputs, [], [],
-                "max_available_machine_generation")
+        outputs.append("MemoryMachine")
 
-            self._max_machine_outputs = executor.get_items()
-            self._max_machine_available = \
-                executor.get_item("MemoryVirtualMachine")
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, [], [], "machine_generation")
+        self._machine_outputs = executor.get_items()
+        self._machine_tokens = executor.get_completed_tokens()
+        self._machine = executor.get_item("MemoryMachine")
 
-    def _generate_machine_provenance(self):
+    def _machine_by_remote(self, n_machine_time_steps, total_run_time):
+        """
+        Gets a machine when we know one of self._spalloc_server or\
+            self._remote_spinnaker_url is defined
+        """
+        inputs, algorithms = self._get_machine_common(
+            n_machine_time_steps, total_run_time)
+        outputs = list()
+
+        do_partitioning = self._machine_by_size(inputs, algorithms, outputs)
+        inputs['ReportFolder'] = self._report_default_directory
+
+        # if using spalloc system
+        if self._spalloc_server is not None:
+            inputs["SpallocServer"] = self._spalloc_server
+            inputs["SpallocPort"] = self._read_config_int(
+                "Machine", "spalloc_port")
+            inputs["SpallocUser"] = self._read_config(
+                "Machine", "spalloc_user")
+            inputs["SpallocMachine"] = self._read_config(
+                "Machine", "spalloc_machine")
+        else:
+            # must be using HBP server system
+            inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
+
+        if self._spalloc_server is not None:
+            algorithms.append("SpallocAllocator")
+        elif self._remote_spinnaker_url is not None:
+            algorithms.append("HBPAllocator")
+
+        algorithms.append("MachineGenerator")
+
+        outputs.append("MemoryMachine")
+        outputs.append("IPAddress")
+        outputs.append("MemoryTransceiver")
+        outputs.append("MachineAllocationController")
+
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, [], [], "machine_generation")
+
+        self._machine_outputs = executor.get_items()
+        self._machine_tokens = executor.get_completed_tokens()
+        self._machine = executor.get_item("MemoryMachine")
+        self._ip_address = executor.get_item("IPAddress")
+        self._txrx = executor.get_item("MemoryTransceiver")
+        self._machine_allocation_controller = executor.get_item(
+            "MachineAllocationController")
+
+        if do_partitioning:
+            self._machine_graph = executor.get_item(
+                "MemoryMachineGraph")
+            self._graph_mapper = executor.get_item(
+                "MemoryGraphMapper")
+
+    def _machine_by_size(self, inputs, algorithms, outputs):
+        """
+        Checks if we can get a remote machine by size of if we have to use a\
+        virtual machine to get the size
+
+        Adds the requires info to inputs, algorithms, outputs
+
+        :param inputs: Data to go into executor
+        :param algorithms: Algorithms to execute
+        :param outputs: Data needed after execution
+        :return: True if and only if the required steps included partitioning
+        """
+        # If we are using an allocation server but have been told how
+        # many chips to use, just use that as an input
+        if self._n_chips_required:
+            inputs["NChipsRequired"] = self._n_chips_required
+            return False
+        if self._n_boards_required:
+            inputs["NBoardsRequired"] = self._n_boards_required
+            return False
+
+        # only add machine graph is it has vertices.
+        if (self._machine_graph is not None and
+                self._machine_graph.n_vertices != 0):
+            inputs["MemoryMachineGraph"] = self._machine_graph
+            algorithms.append("GraphMeasurer")
+            do_partitioning = False
+        # If we are using an allocation server, and we need a virtual
+        # board, we need to use the virtual board to get the number of
+        # chips to be allocated either by partitioning, or by measuring
+        # the graph
+        elif (self._application_graph is not None and
+                self._application_graph.n_vertices > 0):
+            inputs["MemoryApplicationGraph"] = self._application_graph
+            algorithms.extend(self._config.get(
+                "Mapping",
+                "application_to_machine_graph_algorithms").split(","))
+            outputs.append("MemoryMachineGraph")
+            outputs.append("MemoryGraphMapper")
+            do_partitioning = True
+        else:
+            # No way to decided size so default to one board
+            logger.warning(
+                "Your graph has no vertices in it. "
+                "Will default to a machine with 1 board.")
+            inputs["NBoardsRequired"] = 1
+            return False
+
+        # Ok we do need a virtual machine
+        if self._spalloc_server is not None:
+            algorithms.append("SpallocMaxMachineGenerator")
+        else:
+            algorithms.append("HBPMaxMachineGenerator")
+
+        return do_partitioning
+
+    def _get_machine_common(self, n_machine_time_steps, total_run_time):
+        inputs = dict(self._extra_inputs)
+        algorithms = list()
+
+        self._create_version_provenance()
+        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        inputs["DisableAdvancedMonitorUsageForDataIn"] = \
+            self._config.getboolean(
+                "Machine", "disable_advanced_monitor_usage_for_data_in")
+
+        if self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
+            inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
+        else:
+            inputs["PlanNTimeSteps"] = n_machine_time_steps
+
+        # add max SDRAM size and n_cores which we're going to allow
+        # (debug purposes)
+        inputs["MaxSDRAMSize"] = self._read_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
+        # Set the total run time
+        inputs["TotalRunTime"] = total_run_time
+        inputs["MaxMachineCoreReduction"] = self._read_config_int(
+            "Machine", "max_machine_core_reduction")
+        inputs["MachineTimeStep"] = self.machine_time_step
+        inputs["TimeScaleFactor"] = self.time_scale_factor
+
+        inputs["DownedChipsDetails"] = IgnoreChip.parse_string(
+            self._config.get("Machine", "down_chips"))
+        inputs["DownedCoresDetails"] = IgnoreCore.parse_string(
+            self._config.get("Machine", "down_cores"))
+        inputs["DownedLinksDetails"] = IgnoreLink.parse_string(
+            self._config.get("Machine", "down_links"))
+        inputs["BoardVersion"] = self._read_config_int(
+            "Machine", "version")
+        inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
+            "Machine", "reset_machine_on_startup")
+        inputs["BootPortNum"] = self._read_config_int(
+            "Machine", "boot_connection_port_num")
+        inputs["RepairMachine"] = self._config.getboolean(
+            "Machine", "repair_machine")
+        inputs["IgnoreBadEthernets"] = self._config.getboolean(
+            "Machine", "ignore_bad_ethernets")
+
+        # add algorithms for handling LPG placement and edge insertion
+        if self._live_packet_recorder_params:
+            algorithms.append("PreAllocateResourcesForLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorder_params
+
+        if self._config.getboolean("Reports", "write_energy_report"):
+            algorithms.append("PreAllocateResourcesForChipPowerMonitor")
+            inputs['MemorySamplingFrequency'] = self._config.getint(
+                "EnergyMonitor", "sampling_frequency")
+            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
+                self._config.getint(
+                    "EnergyMonitor", "n_samples_per_recording_entry")
+
+        # add algorithms for handling extra monitor code
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
+            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
+
+        # add the application and machine graphs as needed
+        if (self._application_graph is not None and
+                self._application_graph.n_vertices > 0):
+            inputs["MemoryApplicationGraph"] = self._application_graph
+        elif (self._machine_graph is not None and
+                self._machine_graph.n_vertices > 0):
+            inputs["MemoryMachineGraph"] = self._machine_graph
+
+        return inputs, algorithms
+
+    def _create_version_provenance(self):
         # Add the version information to the provenance data at the start
         version_provenance = list()
         version_provenance.append(ProvenanceDataItem(
@@ -1354,202 +1472,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             for name, value in self._front_end_versions:
                 version_provenance.append(ProvenanceDataItem(
                     names=["version_data", name], value=value))
-        return version_provenance
+        self._version_provenance = version_provenance
 
-    def _get_system_functionality_algorithms_and_inputs(self):
-        """ determines which algorithms and inputs are needed for the \
-        system functionality
-
-        :return: inputs dict and algorithm list.
-        """
-        inputs = dict()
-        algorithms = list()
-        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
-            "Machine", "enable_advanced_monitor_support")
-
-        # add algorithms for handling LPG placement and edge insertion
-        if self._live_packet_recorder_params:
-            algorithms.append("PreAllocateResourcesForLivePacketGatherers")
-            inputs['LivePacketRecorderParameters'] = \
-                self._live_packet_recorder_params
-
-        if self._config.getboolean("Reports", "write_energy_report"):
-            algorithms.append("PreAllocateResourcesForChipPowerMonitor")
-            inputs['MemorySamplingFrequency'] = self._config.getint(
-                "EnergyMonitor", "sampling_frequency")
-            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                self._config.getint(
-                    "EnergyMonitor", "n_samples_per_recording_entry")
-
-        # add algorithms for handling extra monitor code
-        if (self._config.getboolean("Machine",
-                                    "enable_advanced_monitor_support") or
-                self._config.getboolean("Machine", "enable_reinjection")):
-            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
-        return inputs, algorithms
-
-    def _get_real_machine(self, total_run_time=0.0, n_machine_time_steps=None):
-        if self._machine is not None:
-            return self._machine
-
-        # get the biggest machine available to the system (might be the real
-        # machine when using virtual or a physical machine)
-        self._get_max_available_machine()
-        if self._machine is not None:
-            return self._machine
-
-        inputs = dict(self._max_machine_outputs)
-        # set up machine provenance
-        inputs["ProvenanceItems"] = self._generate_machine_provenance()
-
-        algorithms = list()
-        outputs = list()
-
-        # add system algorithms/inputs as required
-        system_inputs, system_algorithms = \
-            self._get_system_functionality_algorithms_and_inputs()
-        inputs.update(system_inputs)
-        algorithms.extend(system_algorithms)
-
-        # add the application and machine graphs as needed
-        if (self._application_graph is not None and
-                self._application_graph.n_vertices > 0):
-            inputs["MemoryApplicationGraph"] = self._application_graph
-        elif (self._machine_graph is not None and
-                self._machine_graph.n_vertices > 0):
-            inputs["MemoryMachineGraph"] = self._machine_graph
-
-        # add max SDRAM size which we're going to allow (debug purposes)
-        inputs["MaxSDRAMSize"] = self._read_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
-
-        # Set the total run time
-        inputs["TotalRunTime"] = total_run_time
-        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
-        inputs["MachineTimeStep"] = self._machine_time_step
-        inputs["TimeScaleFactor"] = self._time_scale_factor
-
-        if (self._application_graph is not None and
-                self._application_graph.n_vertices == 0 and
-                self._machine_graph is not None and
-                self._machine_graph.n_vertices == 0):
-            if self._config.getboolean(
-                    "Mode", "violate_no_vertex_in_graphs_restriction"):
-                logger.warning(
-                    "you graph has no vertices in it, but you have "
-                    "requested that we still execute.")
-            else:
-                raise ConfigurationException(
-                    "A allocated machine has been requested but there are "
-                    "no vertices to work out the size of the machine "
-                    "required and n_chips_required has not been set")
-
-        do_partitioning = False
-        # if the end user has requested violating the no vertex check,
-        # add the app graph and let the rest work out.
-        if (self._application_graph.n_vertices != 0 or (
-                self._config.getboolean(
-                    "Mode",
-                    "violate_no_vertex_in_graphs_restriction") and
-                self._machine_graph.n_vertices == 0)):
-            inputs["MemoryApplicationGraph"] = self._application_graph
-            algorithms.extend(self._config.get(
-                "Mapping",
-                "application_to_machine_graph_algorithms").split(","))
-            outputs.append("MemoryMachineGraph")
-            outputs.append("MemoryGraphMapper")
-            do_partitioning = True
-
-        # only add machine graph is it has vertices. as the check for
-        # no vertices in both graphs is checked above.
-        elif self._machine_graph.n_vertices != 0:
-            inputs["MemoryMachineGraph"] = self._machine_graph
-            algorithms.append("GraphMeasurer")
-        else:
-            # If we are using an allocation server but have been told how
-            # many chips to use, just use that as an input
-            inputs["NChipsRequired"] = self._n_chips_required
-
-        if self._spalloc_server is not None:
-            algorithms.append("SpallocAllocator")
-        elif self._remote_spinnaker_url is not None:
-            algorithms.append("HBPAllocator")
-
-        algorithms.append("MachineGenerator")
-
-        outputs.append("MemoryMachine")
-        outputs.append("IPAddress")
-        outputs.append("MemoryTransceiver")
-        outputs.append("MachineAllocationController")
-
-        executor = self._run_algorithms(
-            inputs, algorithms, outputs, [], [], "real_machine_generation")
-
-        self._machine_outputs = executor.get_items()
-        self._machine_tokens = executor.get_completed_tokens()
-        self._machine = executor.get_item("MemoryMachine")
-        self._ip_address = executor.get_item("IPAddress")
-        self._txrx = executor.get_item("MemoryTransceiver")
-        self._machine_allocation_controller = executor.get_item(
-            "MachineAllocationController")
-
-        if do_partitioning:
-            self._machine_graph = executor.get_item(
-                "MemoryMachineGraph")
-            self._graph_mapper = executor.get_item(
-                "MemoryGraphMapper")
-
-        if self._txrx is not None and self._app_id is None:
-            self._app_id = self._txrx.app_id_tracker.get_new_id()
-
-        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
-
-        if self._n_chips_required:
-            if self._machine.n_chips < self._n_chips_required:
-                raise ConfigurationException(
-                    "Failure to detect machine of with {} chips as requested. "
-                    "Only found {}".format(self._n_chips_required,
-                                           self._machine))
-
-        return self._machine
-
-    def _handle_machine_common_config(self, inputs):
-        """ Adds common parts of the machine configuration
-
-        :param inputs: the input dict
-        :rtype: None
-        """
-        down_chips, down_cores, down_links = \
-            helpful_functions.sort_out_downed_chips_cores_links(
-                self._config.get("Machine", "down_chips"),
-                self._config.get("Machine", "down_cores"),
-                self._config.get("Machine", "down_links"))
-        inputs["DownedChipsDetails"] = down_chips
-        inputs["DownedCoresDetails"] = down_cores
-        inputs["DownedLinksDetails"] = down_links
-        inputs["BoardVersion"] = self._read_config_int(
-            "Machine", "version")
-        inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
-            "Machine", "reset_machine_on_startup")
-        inputs["BootPortNum"] = self._read_config_int(
-            "Machine", "boot_connection_port_num")
-
-    def generate_file_machine(self):
-        inputs = {
-            "MemoryMachine": self.machine,
-            "FileMachineFilePath": os.path.join(
-                self._json_folder, "machine.json")
-        }
-        outputs = ["FileMachine"]
-        executor = PACMANAlgorithmExecutor(
-            algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
-            xml_paths=self._xml_paths,
-            required_outputs=outputs, required_output_tokens=[],
-            do_timings=self._do_timings, print_timings=self._print_timings,
-            provenance_path=self._pacman_executor_provenance_path)
-        executor.execute_mapping()
-
-    def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
+    def _do_mapping(self, run_time, total_run_time):
 
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
@@ -1561,9 +1486,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
+        # runtime full runtime from pynn
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
-        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
+
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
@@ -1575,26 +1501,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
-        elif self._config.getboolean(
-                "Mode", "violate_no_vertex_in_graphs_restriction"):
+        else:
+            self._empty_graphs = True
             logger.warning(
-                "you graph has no vertices in it, but you have requested that"
-                " we still execute.")
+                "Your graph has no vertices in it.")
             inputs["MemoryApplicationGraph"] = self._application_graph
             inputs["MemoryGraphMapper"] = GraphMapper()
             inputs['MemoryMachineGraph'] = self._machine_graph
-        else:
-            raise ConfigurationException(
-                "There needs to be a graph which contains at least one vertex"
-                " for the tool chain to map anything.")
 
         inputs['ReportFolder'] = self._report_default_directory
-        inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["ProvenanceFilePath"] = self._provenance_file_path
+        inputs["AppProvenanceFilePath"] = self._app_provenance_file_path
+        inputs["SystemProvenanceFilePath"] = self._system_provenance_file_path
+        inputs["JsonFolder"] = self._json_folder
         inputs["APPID"] = self._app_id
-        inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
-        inputs["TimeScaleFactor"] = self._time_scale_factor
-        inputs["MachineTimeStep"] = self._machine_time_step
+        inputs["TimeScaleFactor"] = self.time_scale_factor
+        inputs["MachineTimeStep"] = self.machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
         inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
@@ -1605,28 +1527,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["ExecutableFinder"] = self._executable_finder
         inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
-        inputs["SendStartNotifications"] = self._config.getboolean(
-            "Database", "send_start_notification")
-        inputs["SendStopNotifications"] = self._config.getboolean(
-            "Database", "send_stop_notification")
-        inputs["WriteDataSpeedUpReportFlag"] = self._config.getboolean(
-            "Reports", "write_data_speed_up_report")
-
-        # add paths for each file based version
-        inputs["FileCoreAllocationsFilePath"] = os.path.join(
-            self._json_folder, "core_allocations.json")
-        inputs["FileSDRAMAllocationsFilePath"] = os.path.join(
-            self._json_folder, "sdram_allocations.json")
-        inputs["FileMachineFilePath"] = os.path.join(
-            self._json_folder, "machine.json")
-        inputs["FileMachineGraphFilePath"] = os.path.join(
-            self._json_folder, "machine_graph.json")
-        inputs["FilePlacementFilePath"] = os.path.join(
-            self._json_folder, "placements.json")
-        inputs["FileRoutingPathsFilePath"] = os.path.join(
-            self._json_folder, "routing_paths.json")
-        inputs["FileConstraintsFilePath"] = os.path.join(
-            self._json_folder, "constraints.json")
+        inputs["SendStartNotifications"] = True
+        inputs["SendStopNotifications"] = True
+        inputs["WriteDataSpeedUpReportsFlag"] = self._config.getboolean(
+            "Reports", "write_data_speed_up_reports")
+        inputs["UsingReinjection"] = \
+            (self._config.getboolean("Machine", "enable_reinjection") and
+             self._config.getboolean(
+                 "Machine", "enable_advanced_monitor_support"))
+        inputs['CompressionTargetSize'] = self._config.getint(
+            "Mapping", "router_table_compression_target_length")
+        inputs["CompressionAsNeeded"] = self._config.getboolean(
+            "Mapping", "router_table_compress_as_needed")
+        inputs["CompressionAsFarAsPos"] = self._config.getboolean(
+            "Mapping", "router_table_compress_as_far_as_possible")
 
         algorithms = list()
 
@@ -1640,10 +1554,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append(
                 "InsertChipPowerMonitorsToGraphs")
-            inputs['MemorySamplingFrequency'] = self._config.getfloat(
+            inputs['MemorySamplingFrequency'] = self._config.getint(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                self._config.getfloat(
+                self._config.getint(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
@@ -1653,6 +1567,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("SystemMulticastRoutingGenerator")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
@@ -1672,15 +1587,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingInfoReports")
             if self._config.getboolean("Reports", "write_router_reports"):
                 algorithms.append("RouterReports")
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
-                optional_algorithms.append("unCompressedRoutingTableReports")
-                optional_algorithms.append("compressedRoutingTableReports")
-                optional_algorithms.append("comparisonOfRoutingTablesReport")
             if self._config.getboolean(
-                    "Reports", "write_routing_tables_from_machine_report"):
-                optional_algorithms.append(
-                    "RoutingTableFromMachineReport")
+                    "Reports", "write_router_summary_report"):
+                algorithms.append("RouterSummaryReport")
 
             # only add board chip report if requested
             if self._config.getboolean("Reports", "write_board_chip_report"):
@@ -1702,6 +1611,26 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if self._config.getboolean(
                     "Reports", "write_machine_graph_placer_report"):
                 algorithms.append("PlacerReportWithoutApplicationGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine"):
+                algorithms.append("WriteJsonMachine")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_machine_graph"):
+                algorithms.append("WriteJsonMachineGraph")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_placements"):
+                algorithms.append("WriteJsonPlacements")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_routing_tables"):
+                algorithms.append("WriteJsonRoutingTables")
+
+            if self._config.getboolean(
+                    "Reports", "write_json_partition_n_keys_map"):
+                algorithms.append("WriteJsonPartitionNKeysMap")
 
             # only add network specification report if there's
             # application vertices.
@@ -1728,14 +1657,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms.extend(full.replace(" ", "").split(","))
 
         # add check for algorithm start type
-        algorithms.append("LocateExecutableStartType")
+        if not self._use_virtual_board:
+            algorithms.append("LocateExecutableStartType")
 
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph", "ExecutableTypes"
+            "MemoryMachineGraph"
         ]
+
+        if not self._use_virtual_board:
+            outputs.append("ExecutableTypes")
 
         if add_data_speed_up:
             outputs.append("MemoryFixedRoutes")
@@ -1746,12 +1679,21 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
-                inputs["StoreBufferDataInFile"] = self._config.getboolean(
-                    "Buffers", "store_buffer_data_in_file")
                 algorithms.append("BufferManagerCreator")
                 outputs.append("BufferManager")
             else:
                 inputs["BufferManager"] = self._buffer_manager
+            if self._java_caller is None:
+                if self._config.getboolean("Java", "use_java"):
+                    java_call = self._config.get("Java", "java_call")
+                    java_spinnaker_path = self._config.get_str(
+                        "Java", "java_spinnaker_path")
+                    java_properties = self._config.get_str(
+                        "Java", "java_properties")
+                    self._java_caller = JavaCaller(
+                        self._json_folder, java_call, java_spinnaker_path,
+                        java_properties)
+            inputs["JavaCaller"] = self._java_caller
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1777,9 +1719,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
 
-        self._mapping_time += \
-            helpful_functions.convert_time_diff_to_total_milliseconds(
-                mapping_total_timer.take_sample())
+        self._mapping_time += convert_time_diff_to_total_milliseconds(
+            mapping_total_timer.take_sample())
+        self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1790,9 +1732,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
-        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
+        inputs["RunUntilTimeSteps"] = n_machine_time_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+
+        # This is done twice to make things nicer for things which don't have
+        # time steps without breaking existing code; it is purely aesthetic
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
+        inputs["RunTimeSteps"] = n_machine_time_steps
+
+        # This is done twice to make things nicer for things which don't have
+        # time steps without breaking existing code; it is purely aesthetic
+        inputs["DataNTimeSteps"] = self._max_run_time_steps
+        inputs["DataNSteps"] = self._max_run_time_steps
 
         # Run the data generation algorithms
         outputs = []
@@ -1803,11 +1754,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._mapping_outputs = executor.get_items()
         self._mapping_tokens = executor.get_completed_tokens()
 
-        self._dsg_time += \
-            helpful_functions.convert_time_diff_to_total_milliseconds(
-                data_gen_timer.take_sample())
+        self._dsg_time += convert_time_diff_to_total_milliseconds(
+            data_gen_timer.take_sample())
+        self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
-    def _do_load(self, application_graph_changed):
+    def _do_load(self, graph_changed, data_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1819,10 +1770,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         tokens = list(self._mapping_tokens)
         inputs["WriteMemoryMapReportFlag"] = (
             self._config.getboolean("Reports", "write_memory_map_report") and
-            application_graph_changed
+            graph_changed
         )
+        inputs["NoSyncChanges"] = self._no_sync_changes
 
-        if not application_graph_changed and self._has_ran:
+        if not graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
 
@@ -1830,35 +1782,46 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board and application_graph_changed:
-            algorithms.append("RoutingSetup")
+        if not self._use_virtual_board and graph_changed:
+            # only clear routing tables if we've not loaded them by now
+            found = False
+            for token in self._mapping_tokens:
+                if token.name == "DataLoaded":
+                    if token.part == "MulticastRoutesLoaded":
+                        found = True
+            if not found:
+                algorithms.append("RoutingSetup")
+
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = helpful_functions.read_config(
-            self._config, "Mapping", "loading_algorithms")
-        if loading_algorithm is not None and application_graph_changed:
+        loading_algorithm = self._read_config("Mapping", "loading_algorithms")
+        if loading_algorithm is not None and (graph_changed or data_changed):
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
             "Reports", "write_memory_map_report")
-        if write_memory_report and application_graph_changed:
-            if self._exec_dse_on_host:
-                algorithms.append("MemoryMapOnHostReport")
-                algorithms.append("MemoryMapOnHostChipReport")
-            else:
-                algorithms.append("MemoryMapOnChipReport")
+        if write_memory_report and graph_changed:
+            algorithms.append("MemoryMapOnHostReport")
+            algorithms.append("MemoryMapOnHostChipReport")
 
         # Add reports that depend on compression
         routing_tables_needed = False
-        if application_graph_changed:
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
+        if graph_changed:
+            if self._config.getboolean(
+                    "Reports", "write_routing_table_reports"):
                 routing_tables_needed = True
                 algorithms.append("unCompressedRoutingTableReports")
-                algorithms.append("compressedRoutingTableReports")
-                algorithms.append("comparisonOfRoutingTablesReport")
+
+                if self._config.getboolean(
+                        "Reports",
+                        "write_routing_tables_from_machine_reports"):
+                    algorithms.append("ReadRoutingTablesFromMachine")
+                    algorithms.append("compressedRoutingTableReports")
+                    algorithms.append("comparisonOfRoutingTablesReport")
+                    algorithms.append("CompressedRouterSummaryReport")
+                    algorithms.append("RoutingTableFromMachineReport")
             if self._config.getboolean(
                     "Reports", "write_routing_compression_checker_report"):
                 routing_tables_needed = True
@@ -1867,32 +1830,27 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         enable_advanced_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
-        if (enable_advanced_monitor and
-                (application_graph_changed or not self._has_ran)):
+        if enable_advanced_monitor and (graph_changed or not self._has_ran):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
         # add optional algorithms
         optional_algorithms = list()
-        optional_algorithms.append("RoutingTableLoader")
-        optional_algorithms.append("TagsLoader")
+
+        if graph_changed or data_changed:
+            optional_algorithms.append("RoutingTableLoader")
+            optional_algorithms.append("TagsLoader")
+
         optional_algorithms.append("WriteMemoryIOData")
-
-        if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteDataSpecification")
-        else:
-            optional_algorithms.append("MachineExecuteDataSpecification")
-
-        # Reload any parameters over the loaded data if we have already
-        # run and not using a virtual board
-        if self._has_ran and not self._use_virtual_board:
-            optional_algorithms.append("DSGRegionReloader")
+        optional_algorithms.append("HostExecuteApplicationDataSpecification")
 
         # Get the executable targets
         optional_algorithms.append("GraphBinaryGatherer")
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
-        optional_algorithms.append("LoadExecutableImages")
+        optional_algorithms.append("LoadApplicationExecutableImages")
+        algorithms.append("HostExecuteSystemDataSpecification")
+        algorithms.append("LoadSystemExecutableImages")
 
         # Something probably a report needs the routing tables
         # This report is one way to get them if done on machine
@@ -1905,48 +1863,79 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = self._run_algorithms(
             inputs, algorithms, [], tokens, required_tokens, "loading",
             optional_algorithms)
+        self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._load_outputs = executor.get_items()
         self._load_tokens = executor.get_completed_tokens()
 
-        self._load_time += \
-            helpful_functions.convert_time_diff_to_total_milliseconds(
-                load_timer.take_sample())
+        self._load_time += convert_time_diff_to_total_milliseconds(
+            load_timer.take_sample())
+        self._load_outputs["LoadTimeMs"] = self._load_time
 
-    def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
+    def _end_of_run_timing(self):
+        """
+        :return:
+            mapping_time, dsg_time, load_time, execute_time, extraction_time
+        :rtype: tuple(float, float, float, float, float)
+        """
+        timer = self._run_timer
+        if timer is not None:
+            self._execute_time += convert_time_diff_to_total_milliseconds(
+                self._run_timer.take_sample())
+        return (
+            self._mapping_time, self._dsg_time, self._load_time,
+            self._execute_time, self._extraction_time)
+
+    def _gather_provenance_for_writing(self, executor):
+        """ handled the gathering of prov items for writer.
+
+        :param executor: the pacman executor.
+        :return:
+        """
+        prov_items = list()
+        if self._version_provenance is not None:
+            prov_items.extend(self._version_provenance)
+        prov_items.extend(self._pacman_provenance.data_items)
+        prov_item = executor.get_item("GraphProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        prov_item = executor.get_item("PlacementsProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        prov_item = executor.get_item("RouterProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        prov_item = executor.get_item("PowerProvenanceItems")
+        if prov_item is not None:
+            prov_items.extend(prov_item)
+        self._pacman_provenance.clear()
+        self._version_provenance = list()
+        self._write_provenance(prov_items)
+        self._all_provenance_items.append(prov_items)
+
+    def _do_run(self, n_machine_time_steps, graph_changed):
         # start timer
-        run_timer = Timer()
-        run_timer.start_timing()
+        self._run_timer = Timer()
+        self._run_timer.start_timing()
 
         run_complete = False
-        executor, total_run_timesteps = self._create_execute_workflow(
-            n_machine_time_steps, loading_done, run_until_complete)
+        executor, self._current_run_timesteps = self._create_execute_workflow(
+            n_machine_time_steps, graph_changed)
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             run_complete = True
 
             # write provenance to file if necessary
-            if (self._config.getboolean(
-                    "Reports", "write_provenance_data") and
-                    not self._use_virtual_board and
+            if (self._config.getboolean("Reports", "write_provenance_data") and
                     n_machine_time_steps is not None):
-                prov_items = executor.get_item("ProvenanceItems")
-                prov_items.extend(self._pacman_provenance.data_items)
-                self._pacman_provenance.clear()
-                self._write_provenance(prov_items)
-                self._all_provenance_items.append(prov_items)
+                self._gather_provenance_for_writing(executor)
 
             # move data around
             self._last_run_outputs = executor.get_items()
             self._last_run_tokens = executor.get_completed_tokens()
-            self._current_run_timesteps = total_run_timesteps
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
-
-            self._execute_time += \
-                helpful_functions.convert_time_diff_to_total_milliseconds(
-                    run_timer.take_sample())
 
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
@@ -1971,8 +1960,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         " please read previous error message to locate its"
                         " error")
             except Exception:
-                logger.error("Error when attempting to recover from error",
-                             exc_info=True)
+                logger.exception("Error when attempting to recover from error")
 
             # if in debug mode, do not shut down machine
             if self._config.get("Mode", "mode") != "Debug":
@@ -1981,20 +1969,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         turn_off_machine=False, clear_routing_tables=False,
                         clear_tags=False)
                 except Exception:
-                    logger.error("Error when attempting to stop",
-                                 exc_info=True)
+                    logger.exception("Error when attempting to stop")
 
             # reraise exception
             reraise(*e_inf)
 
-    def _create_execute_workflow(
-            self, n_machine_time_steps, loading_done, run_until_complete):
+    def _create_execute_workflow(self, n_machine_time_steps, graph_changed):
         # calculate number of machine time steps
-        total_run_timesteps = self._calculate_number_of_machine_time_steps(
+        run_until_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = n_machine_time_steps * self._machine_time_step / 1000.0
+            run_time = (
+                n_machine_time_steps * self.machine_time_step /
+                MICRO_TO_MILLISECOND_CONVERSION)
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -2007,20 +1995,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["TotalMachineTimeSteps"] = total_run_timesteps
+        inputs["RunUntilTimeSteps"] = run_until_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
-        if run_until_complete:
+        if self._run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
-        if not self._use_virtual_board:
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._load_outputs["ExecutableTargets"],
-                    self._executable_finder)
+        inputs["ExtractIobufFromCores"] = self._config.get(
+            "Reports", "extract_iobuf_from_cores")
+        inputs["ExtractIobufFromBinaryTypes"] = self._read_config(
+            "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -2028,17 +2012,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms = list()
 
-        # clear iobuf if were in multirun mode
-        if (self._has_ran and not self._has_reset_last and
-                not self._use_virtual_board and
+        if self._config.getboolean(
+                "Reports", "write_sdram_usage_report_per_chip"):
+            algorithms.append("SdramUsageReportPerChip")
+
+        # Clear iobuf from machine
+        if (not self._run_until_complete and
+            not self._use_virtual_board and not self._empty_graphs and
                 self._config.getboolean("Reports", "clear_iobuf_during_run")):
             algorithms.append("ChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
-        # been regenerated during a load
-        if (self._has_ran and not self._use_virtual_board and
-                not loading_done):
+        # been regenerated
+        if self._has_ran and not self._use_virtual_board and not graph_changed:
             algorithms.append("DSGRegionReloader")
 
         # Update the run time if not using a virtual board
@@ -2048,13 +2035,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("ChipRuntimeUpdater")
 
         # Add the database writer in case it is needed
-        algorithms.append("DatabaseInterface")
+        if not self._has_ran or graph_changed:
+            algorithms.append("DatabaseInterface")
+        else:
+            inputs["DatabaseFilePath"] = (
+                self._last_run_outputs["DatabaseFilePath"])
         if not self._use_virtual_board:
-            algorithms.append("NotificationProtocol")
-
-        # Sort out reload if needed
-        if self._config.getboolean("Reports", "write_reload_steps"):
-            logger.warning("Reload script is not supported in this version")
+            algorithms.append("CreateNotificationProtocol")
 
         outputs = [
             "NoSyncChanges"
@@ -2068,15 +2055,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
             logger.warning(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
+            tokens.append("ApplicationRun")
         else:
             algorithms.append("ApplicationRunner")
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board:
+        if ((self._run_until_complete or n_machine_time_steps is not None)
+                and not self._use_virtual_board):
             algorithms.append("BufferExtractor")
 
-        if self._config.getboolean("Reports", "write_provenance_data"):
+        read_prov = self._config.getboolean(
+            "Reports", "read_provenance_data")
+        if read_prov:
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
@@ -2087,18 +2078,23 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run") and
-                not self._use_virtual_board and
-                n_machine_time_steps is not None):
+                not self._use_virtual_board):
             algorithms.append("ChipIOBufExtractor")
 
+        # add in the timing finalisation
+        if not self._use_virtual_board:
+            algorithms.append("FinaliseTimingData")
+            if self._config.getboolean("Reports", "write_energy_report"):
+                algorithms.append("ComputeEnergyUsed")
+                if read_prov:
+                    algorithms.append("EnergyProvenanceReporter")
+
         # add extractor of provenance if needed
-        if (self._config.getboolean("Reports", "write_provenance_data") and
-                not self._use_virtual_board and
+        if (read_prov and not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
-            outputs.append("ProvenanceItems")
 
         # Decide what needs done
         required_tokens = []
@@ -2111,24 +2107,33 @@ class AbstractSpinnakerBase(SimulatorInterface):
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path,
-            provenance_name="Execution"), total_run_timesteps
+            provenance_name="Execution"), run_until_timesteps
 
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
         """
+
         writer = None
         if self._provenance_format == "xml":
             writer = ProvenanceXMLWriter()
         elif self._provenance_format == "json":
             writer = ProvenanceJSONWriter()
+        elif self._provenance_format == "sql":
+            writer = ProvenanceSQLWriter()
+        elif len(provenance_data_items) < PROVENANCE_TYPE_CUTOFF:
+            writer = ProvenanceXMLWriter()
+        else:
+            writer = ProvenanceSQLWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
+        real_exception = exception
         if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
             logger.error(exception.exception, exc_info=exc_info)
+            real_exception = exception.exception
         else:
             logger.error(exception, exc_info=exc_info)
 
@@ -2144,29 +2149,33 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 extra_monitor_vertices = self._last_run_outputs[
                     "MemoryExtraMonitorVertices"]
             router_provenance = RouterProvenanceGatherer()
-            prov_items = router_provenance(
+            prov_item = router_provenance(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
                 extra_monitor_vertices=extra_monitor_vertices,
-                placements=self._placements)
+                placements=self._placements,
+                using_reinjection=self._config.getboolean(
+                    "Machine", "enable_reinjection"))
+            if prov_item is not None:
+                prov_items.extend(prov_item)
         except Exception:
             logger.exception("Error reading router provenance")
 
         # Find the cores that are not in an expected state
-        unsuccessful_cores = self._txrx.get_cores_not_in_state(
-            executable_targets.all_core_subsets,
-            {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED})
+        unsuccessful_cores = CPUInfos()
+        if isinstance(real_exception, SpiNNManCoresNotInStateException):
+            unsuccessful_cores = real_exception.failed_core_states()
 
         # If there are no cores in a bad state, find those not yet in
         # their finished state
-        unsuccessful_core_subset = CoreSubsets()
         if not unsuccessful_cores:
             for executable_type in self._executable_types:
-                unsuccessful_cores = self._txrx.get_cores_not_in_state(
+                failed_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for x, y, p in iterkeys(unsuccessful_cores):
-                    unsuccessful_core_subset.add_processor(x, y, p)
+                for (x, y, p) in failed_cores:
+                    unsuccessful_cores.add_processor(
+                        x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
         for (x, y, p), core_info in iteritems(unsuccessful_cores):
@@ -2217,8 +2226,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # Extract any written provenance data
             try:
-                extracter = PlacementsProvenanceGatherer()
-                extracter(self._txrx, placements, prov_items)
+                extractor = PlacementsProvenanceGatherer()
+                prov_item = extractor(self._txrx, placements)
+                if prov_item is not None:
+                    prov_items.extend(prov_item)
             except Exception:
                 logger.exception("Could not read provenance")
 
@@ -2229,14 +2240,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf_cores = CoreSubsets()
-        for placement in self._placements:
-            iobuf_cores.add_processor(placement.x, placement.y, placement.p)
-
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores, self._provenance_file_path)
+                self._txrx, executable_targets, self._executable_finder,
+                self._app_provenance_file_path,
+                self._system_provenance_file_path,
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_binary_types")
+            )
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2256,10 +2268,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
 
         logger.info("Resetting")
-        if self._txrx is not None:
-
-            # Stop the application
-            self._txrx.stop_application(self._app_id)
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
@@ -2270,13 +2278,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # has ran for over multiple calls to run
         self._current_run_timesteps = 0
 
-        # change number of resets as loading the binary again resets the sync\
-        # to 0
-        self._no_sync_changes = 0
-
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
+
+        # Reset the graph off the machine, to set things to time 0
+        self.__reset_graph_elements()
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
         # add the extra xml files from the config file
@@ -2286,8 +2293,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             xml_paths = xml_paths.split(",")
 
-        xml_paths.extend(
-            function_list.get_front_end_common_pacman_xml_paths())
+        xml_paths.extend(get_front_end_common_pacman_xml_paths())
 
         if extra_algorithm_xml_paths is not None:
             xml_paths.extend(extra_algorithm_xml_paths)
@@ -2298,6 +2304,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """ Iterates though the original graphs and look for changes
         """
         changed = False
+        data_changed = False
+        if self._vertices_or_edges_added:
+            self._vertices_or_edges_added = False
+            # Set changed - note that we can't return yet as we still have to
+            # mark vertices as not changed, otherwise they will keep reporting
+            # that they have changed when they haven't
+            changed = True
 
         # if application graph is filled, check their changes
         if self._original_application_graph.n_vertices:
@@ -2305,6 +2318,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
+                    if vertex.requires_data_generation:
+                        data_changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
             for partition in \
@@ -2313,6 +2328,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
                             changed = True
+                        if edge.requires_data_generation:
+                            data_changed = True
                         if reset_flags:
                             edge.mark_no_changes()
 
@@ -2322,6 +2339,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
+                    if machine_vertex.requires_data_generation:
+                        data_changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
             for partition in \
@@ -2330,33 +2349,26 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:
                             changed = True
+                        if machine_edge.requires_data_generation:
+                            data_changed = True
                         if reset_flags:
                             machine_edge.mark_no_changes()
-        return changed
+        return changed, data_changed
 
     @property
+    @overrides(SimulatorInterface.has_ran)
     def has_ran(self):
         return self._has_ran
 
     @property
-    def machine_time_step(self):
-        return self._machine_time_step
-
-    @property
+    @overrides(SimulatorInterface.machine)
     def machine(self):
-        """ The python machine object
-
-        :rtype: :py:class:`spinn_machine.Machine`
-        """
-        return self._get_real_machine()
+        return self._get_machine()
 
     @property
+    @overrides(SimulatorInterface.no_machine_time_steps)
     def no_machine_time_steps(self):
         return self._no_machine_time_steps
-
-    @property
-    def timescale_factor(self):
-        return self._time_scale_factor
 
     @property
     def machine_graph(self):
@@ -2372,6 +2384,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     @property
     def application_graph(self):
+        """ The application graph used to derive the runtime machine \
+            configuration.
+        """
         return self._application_graph
 
     @property
@@ -2387,6 +2402,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._placements
 
     @property
+    @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
         return self._txrx
 
@@ -2399,16 +2415,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._tags
 
     @property
+    @overrides(SimulatorInterface.buffer_manager)
     def buffer_manager(self):
-        """ The buffer manager being used for loading/extracting buffers
-
-        """
         return self._buffer_manager
 
     @property
     def dsg_algorithm(self):
         """ The DSG algorithm used by the tools
-
         """
         return self._dsg_algorithm
 
@@ -2420,17 +2433,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
         self._dsg_algorithm = new_dsg_algorithm
-
-    @property
-    def none_labelled_vertex_count(self):
-        """ The number of times vertices have not been labelled.
-        """
-        return self._none_labelled_vertex_count
-
-    def increment_none_labelled_vertex_count(self):
-        """ Increment the number of new vertices which have not been labelled.
-        """
-        self._none_labelled_vertex_count += 1
 
     @property
     def none_labelled_edge_count(self):
@@ -2450,39 +2452,60 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._use_virtual_board
 
     def get_current_time(self):
+        """ Get the current simulation time.
+
+        :rtype: float
+        """
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
-                (self._machine_time_step / 1000.0))
+                (self.machine_time_step / MICRO_TO_MILLISECOND_CONVERSION))
         return 0.0
 
     def get_generated_output(self, name_of_variable):
-        if name_of_variable in self._last_run_outputs:
-            return self._last_run_outputs[name_of_variable]
-        return None
+        """ Get the value of an inter-algorithm variable.
+
+        :param name_of_variable: The variable to retrieve
+        :type name_of_variable: str
+        :return: The value (of arbitrary type), or None if the variable is \
+            not found.
+        """
+        if self._has_ran:
+            if name_of_variable in self._last_run_outputs:
+                return self._last_run_outputs[name_of_variable]
+            return None
+        raise ConfigurationException(
+            "Cannot call this function until after a simulation has ran.")
 
     def __repr__(self):
-        return "general front end instance for machine {}"\
-            .format(self._hostname)
+        return "general front end instance for machine {}".format(
+            self._hostname)
 
-    def add_application_vertex(self, vertex_to_add):
+    def add_application_vertex(self, vertex):
         """
-        :param vertex_to_add: the vertex to add to the graph
+        :param vertex: the vertex to add to the graph
+        :type: ApplicationVertex
         :rtype: None
-        :raises: ConfigurationException when both graphs contain vertices
+        :raises ConfigurationException: when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         if (self._original_machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        self._original_application_graph.add_vertex(vertex_to_add)
+        self._original_application_graph.add_vertex(vertex)
+        self._vertices_or_edges_added = True
 
     def add_machine_vertex(self, vertex):
         """
         :param vertex: the vertex to add to the graph
+        :type: MachineVertex
         :rtype: None
-        :raises: ConfigurationException when both graphs contain vertices
+        :raises ConfigurationException: when both graphs contain vertices
+        :raises PacmanConfigurationException:
+            If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
         if self._original_application_graph.n_vertices > 0:
@@ -2490,26 +2513,32 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         self._original_machine_graph.add_vertex(vertex)
+        self._vertices_or_edges_added = True
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
         :param edge_to_add:
+        :type: ApplicationEdge
         :param partition_identifier: \
             the partition identifier for the outgoing edge partition
+        :type partition_identifier: str
         :rtype: None
         """
-
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
+        self._vertices_or_edges_added = True
 
     def add_machine_edge(self, edge, partition_id):
         """
         :param edge: the edge to add to the graph
+        :type: MachineEdge
         :param partition_id: \
             the partition identifier for the outgoing edge partition
+        :type partition_id: str
         :rtype: None
         """
         self._original_machine_graph.add_edge(edge, partition_id)
+        self._vertices_or_edges_added = True
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
@@ -2520,7 +2549,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._use_virtual_board:
             return
 
-        if self._machine_is_turned_off:
+        if self._machine_is_turned_off is not None:
             logger.info("Shutdown skipped as board is off for power save")
             return
 
@@ -2546,6 +2575,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self.__close_transceiver(turn_off_machine)
         self.__close_allocation_controller()
         self._state = Simulator_State.SHUTDOWN
+
+        try:
+            if self._last_run_outputs and \
+                    "NotificationInterface" in self._last_run_outputs:
+                self._last_run_outputs["NotificationInterface"].close()
+        except Exception:
+            logger.exception(
+                "Error when closing Notifications")
 
     def __clear(self, clear_tags, clear_routing_tables):
         # if stopping on machine, clear IP tags and
@@ -2586,8 +2623,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None):
+    @overrides(SimulatorInterface.stop,
+               extend_defaults=True, additional_arguments=(
+                   "turn_off_machine", "clear_routing_tables", "clear_tags"))
+    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
+             clear_routing_tables=None, clear_tags=None):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -2610,7 +2650,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
-                not self._use_virtual_board):
+                not self._use_virtual_board and not self._run_until_complete):
             executor = self._create_stop_workflow()
             run_complete = False
             try:
@@ -2619,12 +2659,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 run_complete = True
 
                 # write provenance to file if necessary
-                if self._config.getboolean("Reports", "writeProvenanceData"):
-                    prov_items = executor.get_item("ProvenanceItems")
-                    prov_items.extend(self._pacman_provenance.data_items)
-                    self._pacman_provenance.clear()
-                    self._write_provenance(prov_items)
-                    self._all_provenance_items.append(prov_items)
+                if self._config.getboolean("Reports", "write_provenance_data"):
+                    self._gather_provenance_for_writing(executor)
             except Exception as e:
                 exc_info = sys.exc_info()
 
@@ -2640,12 +2676,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     logger.exception(
                         "Error when attempting to recover from error")
 
-        if self._config.getboolean("Reports", "write_energy_report"):
-            self._do_energy_report()
+        if not self._use_virtual_board:
+            if self._config.getboolean("Reports", "write_energy_report"):
+                self._do_energy_report()
 
-        # handle iobuf extraction if never extracted it yet but requested to
-        if self._config.getboolean("Reports", "extract_iobuf"):
-            self._extract_iobufs()
+            # handle iobuf extraction
+            if self._config.getboolean("Reports", "extract_iobuf"):
+                self._extract_iobufs()
 
         # shut down the machine properly
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
@@ -2657,12 +2694,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 message = "Provenance from run {}".format(i)
             self._check_provenance(provenance_items, message)
 
-        helpful_functions.write_finished_file(
-            self._app_data_top_simulation_folder,
-            self._report_simulation_top_directory)
+            # Reset provenance
+            self._all_provenance_items = list()
 
         if exc_info is not None:
             reraise(*exc_info)
+        self.write_finished_file()
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
@@ -2675,17 +2712,26 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types:
             algorithms.append("ApplicationFinisher")
 
+        # Add the buffer extractor just in case
+        algorithms.append("BufferExtractor")
+
+        read_prov = self._config.getboolean("Reports", "read_provenance_data")
+
         # add extractor of iobuf if needed
         if self._config.getboolean("Reports", "extract_iobuf") and \
                 self._config.getboolean("Reports", "extract_iobuf_during_run"):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
-        if self._config.getboolean("Reports", "writeProvenanceData"):
+        if read_prov:
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
             algorithms.append("ProfileDataGatherer")
-            outputs.append("ProvenanceItems")
+        if (self._config.getboolean("Reports", "write_energy_report") and
+                not self._use_virtual_board):
+            algorithms.append("ComputeEnergyUsed")
+            if read_prov:
+                algorithms.append("EnergyProvenanceReporter")
 
         # Assemble how to run the algorithms
         return PACMANAlgorithmExecutor(
@@ -2698,38 +2744,25 @@ class AbstractSpinnakerBase(SimulatorInterface):
             provenance_name="stopping")
 
     def _do_energy_report(self):
-        if self._buffer_manager is None:
+        # create energy reporter
+        energy_reporter = EnergyReport(
+            self._report_default_directory,
+            self._read_config_int("Machine", "version"), self._spalloc_server,
+            self._remote_spinnaker_url, self.time_scale_factor)
+
+        if self._buffer_manager is None or self._last_run_outputs is None:
             return
-        # create energy report
-        energy_report = EnergyReport()
-
         # acquire provenance items
-        if self._last_run_outputs is not None:
-            prov_items = self._last_run_outputs["ProvenanceItems"]
-            pacman_provenance = list()
-            router_provenance = list()
+        router_provenance = self._last_run_outputs.get(
+            "RouterProvenanceItems", None)
+        power_used = self._last_run_outputs.get("PowerUsed", None)
+        if router_provenance is None or power_used is None:
+            return
 
-            # group them by name type
-            grouped_items = sorted(
-                prov_items, key=lambda item: item.names[0])
-            for element in grouped_items:
-                if element.names[0] == 'pacman':
-                    pacman_provenance.append(element)
-                if element.names[0] == 'router_provenance':
-                    router_provenance.append(element)
-
-            # run energy report
-            energy_report(
-                self._placements, self._machine,
-                self._report_default_directory,
-                self._read_config_int("Machine", "version"),
-                self._spalloc_server, self._remote_spinnaker_url,
-                self._time_scale_factor, self._machine_time_step,
-                pacman_provenance, router_provenance, self._machine_graph,
-                self._current_run_timesteps, self._buffer_manager,
-                self._mapping_time, self._load_time, self._execute_time,
-                self._dsg_time, self._extraction_time,
-                self._machine_allocation_controller)
+        # run energy report
+        energy_reporter.write_energy_report(
+            self._placements, self._machine, self._current_run_timesteps,
+            self._buffer_manager, power_used)
 
     def _extract_iobufs(self):
         if self._config.getboolean("Reports", "extract_iobuf_during_run"):
@@ -2739,19 +2772,23 @@ class AbstractSpinnakerBase(SimulatorInterface):
         extractor = ChipIOBufExtractor()
         extractor(
             transceiver=self._txrx,
-            core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
-            provenance_file_path=self._provenance_file_path)
+            executable_targets=self._last_run_outputs["ExecutableTargets"],
+            executable_finder=self._executable_finder,
+            app_provenance_file_path=self._app_provenance_file_path,
+            system_provenance_file_path=self._system_provenance_file_path)
 
+    @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
         """
-        :param socket_address:
+        :param socket_address: The address of the database socket
+        :type socket_address: ~spinn_utilities.socket_address.SocketAddress
         :rtype: None
         """
         self._database_socket_addresses.add(socket_address)
 
     @staticmethod
     def _check_provenance(items, initial_message=None):
-        """ Display any errors from provenance data
+        """ Display any errors from provenance data.
         """
         initial_message_printed = False
         for item in items:
@@ -2760,16 +2797,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     print(initial_message)
                     initial_message_printed = True
                 logger.warning(item.message)
-
-    def _read_config(self, section, item):
-        return helpful_functions.read_config(self._config, section, item)
-
-    def _read_config_int(self, section, item):
-        return helpful_functions.read_config_int(self._config, section, item)
-
-    def _read_config_boolean(self, section, item):
-        return helpful_functions.read_config_boolean(
-            self._config, section, item)
 
     def _turn_off_on_board_to_save_power(self, config_flag):
         """ Executes the power saving mode of either on or off of the\
@@ -2780,8 +2807,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
         # check if machine should be turned off
-        turn_off = helpful_functions.read_config_boolean(
-            self._config, "EnergySavings", config_flag)
+        turn_off = self._read_config_boolean("EnergySavings", config_flag)
         if turn_off is None:
             return
 
@@ -2797,28 +2823,39 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """ Executes the power saving mode of turning off the SpiNNaker\
             machine.
 
-        :return: bool when successful, false otherwise
+        :return: true when successful, false otherwise
         :rtype: bool
         """
         # already off or no machine to turn off
-        if self._machine_is_turned_off or self._use_virtual_board:
+        if self._machine_is_turned_off is not None or self._use_virtual_board:
             return False
 
         if self._machine_allocation_controller is not None:
             # switch power state if needed
             if self._machine_allocation_controller.power:
                 self._machine_allocation_controller.set_power(False)
+        else:
+            self._txrx.power_off_machine()
 
-        self._txrx.power_off_machine()
-
-        self._machine_is_turned_off = True
+        self._machine_is_turned_off = time.time()
         return True
 
     def _turn_on_board_if_saving_power(self):
         # Only required if previously turned off which never happens
         # on virtual machine
-        if not self._machine_is_turned_off:
+        if self._machine_is_turned_off is None:
             return False
+
+        # Ensure the machine is completely powered down and
+        # all residual electrons have gone
+        already_off = time.time() - self._machine_is_turned_off
+        if already_off < MINIMUM_OFF_STATE_TIME:
+            delay = MINIMUM_OFF_STATE_TIME - already_off
+            logger.warning(
+                "Delaying turning machine back on for {} seconds. Consider "
+                "disabling turn_off_board_after_discovery for scripts that "
+                "have short preparation time.".format(delay))
+            time.sleep(delay)
 
         if self._machine_allocation_controller is not None:
             # switch power state if needed
@@ -2828,7 +2865,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx.power_on_machine()
 
         self._txrx.ensure_board_is_ready()
-        self._machine_is_turned_off = False
+        self._machine_is_turned_off = None
         return True
 
     @property
@@ -2836,24 +2873,21 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._has_reset_last
 
     @property
+    @overrides(SimulatorInterface.config)
     def config(self):
-        """ Helper method for the front end implementations until we remove\
-            config
-        """
         return self._config
 
     @property
     def get_number_of_available_cores_on_machine(self):
-        """ Returns the number of available cores on the machine after taking\
-            into account preallocated resources
+        """ The number of available cores on the machine after taking\
+            into account preallocated resources.
 
         :return: number of available cores
         :rtype: int
         """
-
         # get machine if not got already
         if self._machine is None:
-            self._get_real_machine()
+            self._get_machine()
 
         # get cores of machine
         cores = self._machine.total_available_user_cores
@@ -2868,3 +2902,37 @@ class AbstractSpinnakerBase(SimulatorInterface):
             cores -= self._machine.n_chips
             cores -= len(self._machine.ethernet_connected_chips)
         return cores
+
+    def stop_run(self):
+        """ Request that the current infinite run stop.
+
+        .. note::
+            This will need to be called from another thread as the infinite \
+            run call is blocking.
+        """
+        if self._state is not Simulator_State.IN_RUN:
+            return
+        with self._state_condition:
+            self._state = Simulator_State.STOP_REQUESTED
+            self._state_condition.notify_all()
+
+    @staticmethod
+    def __reset_object(obj):
+        # Reset an object if appropriate
+        if isinstance(obj, AbstractCanReset):
+            obj.reset_to_first_timestep()
+
+    def __reset_graph_elements(self):
+        # Reset any object that can reset
+        if self._original_application_graph.n_vertices:
+            for vertex in self._original_application_graph.vertices:
+                self.__reset_object(vertex)
+            for p in self._original_application_graph.outgoing_edge_partitions:
+                for edge in p.edges:
+                    self.__reset_object(edge)
+        elif self._original_machine_graph.n_vertices:
+            for machine_vertex in self._original_machine_graph.vertices:
+                self.__reset_object(machine_vertex)
+            for p in self._original_machine_graph.outgoing_edge_partitions:
+                for machine_edge in p.edges:
+                    self.__reset_object(machine_edge)

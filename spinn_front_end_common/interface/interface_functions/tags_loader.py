@@ -1,3 +1,18 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.constants import MAX_TAG_ID
 
@@ -11,8 +26,8 @@ class TagsLoader(object):
     def __call__(
             self, transceiver, tags=None, iptags=None, reverse_iptags=None):
         """
-        :param tags: the tags object which contains IP and reverse IP tags.
-            could be none if these are being given in separate lists
+        :param tags: the tags object which contains IP and reverse IP tags;
+            could be `None` if these are being given in separate lists
         :param iptags: a list of IP tags, given when tags is none
         :param reverse_iptags: a list of reverse IP tags when tags is none.
         :param transceiver: the transceiver object

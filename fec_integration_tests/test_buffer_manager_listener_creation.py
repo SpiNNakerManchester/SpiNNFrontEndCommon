@@ -1,13 +1,29 @@
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import tempfile
 import unittest
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.interface.buffer_management import BufferManager
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
-from spinnman.transceiver import Transceiver
-from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinn_machine.tags import IPTag
+from spinnman.transceiver import Transceiver
+from spinnman.connections.udp_packet_connections import (
+    SCAMPConnection, EIEIOConnection)
+from spinn_front_end_common.interface.buffer_management import BufferManager
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
@@ -52,8 +68,15 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
+        testdir = tempfile.mkdtemp()
+        print(testdir)
         # Create buffer manager
-        bm = BufferManager(pl, t, trnx, None, None, None, None, None, False)
+        bm = BufferManager(
+            placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
+            packet_gather_cores_to_ethernet_connection_map=None,
+            extra_monitor_to_chip_mapping=None, machine=None,
+            fixed_routes=None, uses_advanced_monitors=True,
+            report_folder=testdir)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one

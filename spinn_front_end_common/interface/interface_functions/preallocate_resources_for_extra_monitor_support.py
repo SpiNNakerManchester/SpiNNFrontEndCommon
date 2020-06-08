@@ -1,23 +1,36 @@
-from pacman.model.resources import SpecificChipSDRAMResource, CoreResource, \
-    PreAllocatedResourceContainer
-from pacman.model.resources.specific_board_iptag_resource import \
-    SpecificBoardTagResource
-from spinn_front_end_common.utility_models import \
-    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.resources import (
+    SpecificChipSDRAMResource, CoreResource,
+    PreAllocatedResourceContainer, SpecificBoardIPtagResource)
 from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
-from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
-
     def __call__(
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
         """
         :param machine: SpiNNaker machine object
-        :param pre_allocated_resources: resources already pre allocated
-        :param n_cores_to_allocate: config params for how many gatherers to use
+        :param pre_allocated_resources: resources already preallocated
+        :param n_cores_to_allocate: how many gatherers to use
         """
 
         progress = ProgressBar(
@@ -59,12 +72,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param progress: the progress bar to operate one
         :rtype: None
         """
-        sdram_usage = \
+        extra_usage = \
             ExtraMonitorSupportMachineVertex.static_resources_required()
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
             sdrams.append(SpecificChipSDRAMResource(
-                chip=chip, sdram_usage=sdram_usage.sdram.get_value()))
+                chip=chip, sdram_usage=extra_usage.sdram))
 
     @staticmethod
     def _handle_packet_gathering_support(
@@ -84,7 +97,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # pylint: disable=too-many-arguments
 
         # get resources from packet gatherer
-        resources = DataSpeedUp.static_resources_required()
+        resources = DataSpeedUpPacketGatherMachineVertex.\
+            static_resources_required()
 
         # locate Ethernet connected chips that the vertices reside on
         for ethernet_connected_chip in \
@@ -93,10 +107,10 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             # do resources. SDRAM, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
-                sdram_usage=resources.sdram.get_value()))
+                sdram_usage=resources.sdram))
             cores.append(CoreResource(
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
-            tags.append(SpecificBoardTagResource(
+            tags.append(SpecificBoardIPtagResource(
                 board=ethernet_connected_chip.ip_address,
                 ip_address=resources.iptags[0].ip_address,
                 port=resources.iptags[0].port,

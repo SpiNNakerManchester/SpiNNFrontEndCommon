@@ -1,13 +1,24 @@
-import unittest
+# Copyright (c) 2017-2019 The University of Manchester
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import unittest
 from pacman.model.graphs.machine import MachineVertex, MachineGraph
 from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement
-
-from spinn_front_end_common.interface.interface_functions \
-    import GraphBinaryGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import LocateExecutableStartType
+from spinn_front_end_common.interface.interface_functions import (
+    GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
@@ -63,8 +74,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_4, 0, 0, 3)])
 
         gatherer = GraphBinaryGatherer()
-        targets = gatherer.__call__(
-            placements, graph, _TestExecutableFinder())
+        targets = gatherer.__call__(placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph, placements)
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
@@ -95,7 +105,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph.add_vertices([vertex_1, vertex_2])
 
         gatherer = LocateExecutableStartType()
-        results = gatherer.__call__(graph, placements=placements)
+        results = gatherer.__call__(graph, placements)
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)
