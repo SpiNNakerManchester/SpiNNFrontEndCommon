@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief Support files for the bitfield sorter
+//! \file
+//! \brief Code for reading bitfields in SDRAM
 #ifndef __BIT_FIELD_READER_H__
 #define __BIT_FIELD_READER_H__
 
@@ -29,9 +33,9 @@ static int processor_heads[MAX_PROCESSORS];
 //! Sum of packets per processor for bitfields with redundancy not yet ordered
 static uint32_t processor_totals[MAX_PROCESSORS];
 
-//! \brief reads a bitfield and deduces how many bits are not set
-//! \param[in] filter_info_struct: the struct holding a bitfield
-//! \return how many redundant packets there are
+//! \brief Read a bitfield and deduces how many bits are not set
+//! \param[in] filter_info: The bitfield to look for redundancy in
+//! \return How many redundant packets there are
 static uint32_t detect_redundant_packet_count(
         filter_info_t *restrict filter_info) {
     uint32_t n_filtered_packets = 0;
@@ -44,8 +48,8 @@ static uint32_t detect_redundant_packet_count(
     return n_filtered_packets;
 }
 
-//! \brief Fills in the order column based on packet reduction
-//! \param[in] sorted_bit_fields: data to be ordered
+//! \brief Fill in the order column based on packet reduction
+//! \param[in] sorted_bit_fields: Data to be ordered
 static inline void order_bitfields(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // Semantic sugar to avoid extra lookup all the time
@@ -100,16 +104,17 @@ static inline void order_bitfields(
     }
 }
 
-//! \brief Sorts the data bases on the sort_order array
-//! \param[in] sorted_bit_fields: data to be ordered
-//! \internal DEAD code but felt as it shows how it could be sorted by order
-//!     fast
+//! \brief Sort the data bases on the sort_order array
+//! \param[in] sorted_bit_fields: Data to be ordered
+//! \internal
+//!     DEAD code but left as it shows how it could be sorted by order fast
 static inline void sort_by_order(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
-    // Everytime there is a swap at least one of the rows is moved to the
-    //         final place.
-    //  There is one check per row in the for loop plus if the first fails
-    //        up to one more for each row about to be moved to the correct place.
+    // Every time there is a swap at least one of the rows is moved to the
+    // final place.
+    //
+    // There is one check per row in the for loop plus if the first fails
+    // up to one more for each row about to be moved to the correct place.
 
     int *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
@@ -136,8 +141,8 @@ static inline void sort_by_order(
     }
 }
 
-//! \brief Sorts the data bases on the bitfield key.
-//! \param[in] sorted_bit_fields: data to be ordered
+//! \brief Sort the data based on the bitfield key
+//! \param[in] sorted_bit_fields: Data to be ordered
 static inline void sort_by_key(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // Semantic sugar to avoid extra lookup all the time
@@ -170,9 +175,9 @@ static inline void sort_by_key(
     }
 }
 
-//! \brief debugger support for bit_field_reader_read_in_bit_fields().
-//!     prints sorted bitfields and tests malloc.
-//! \param[in] sorted_bit_fields: the sorted bitfields
+//! \brief Debugging support for bit_field_reader_read_in_bit_fields();
+//!     prints sorted bitfields and tests memory allocation
+//! \param[in] sorted_bit_fields: The sorted bitfields
 static inline void print_structs(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // useful for debugging
@@ -188,16 +193,16 @@ static inline void print_structs(
     }
 }
 
-//! \brief fills in the sorted bit-field struct and builds tracker of
+//! \brief Fill in the sorted bit-field struct and builds tracker of
 //!     incoming packet counts.
-//! \param[in] region_addresses: the addresses of the regions to read
-//! \param[in] sorted_bit_fields: the sorted bitfield struct with bitfields
+//! \param[in] region_addresses: The addresses of the regions to read
+//! \param[in] sorted_bit_fields: The sorted bitfield struct with bitfields
 //!     in sorted order.
 static inline void fills_in_sorted_bit_fields_and_tracker(
         region_addresses_t *restrict region_addresses,
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // iterate through a processors bitfield region and add to the bf by
-    // processor struct, whilst updating n bf total param.
+    // processor struct, whilst updating num of total param.
     for (int r_id = 0, index = 0; r_id < region_addresses->n_triples; r_id++) {
         // locate data for malloc memory calcs
         filter_region_t *restrict filter_region =
@@ -234,9 +239,9 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
 }
 
 
-//! \brief reads in bitfields
-//! \param[in] region_addresses: the addresses of the regions to read
-//! \param[in] sorted_bit_fields_t: the sorted bitfield struct to which
+//! \brief Read in bitfields
+//! \param[in] region_addresses: The addresses of the regions to read
+//! \param[in] sorted_bit_fields: The sorted bitfield structure to which
 //!     bitfields in sorted order will be populated.
 static inline void bit_field_reader_read_in_bit_fields(
         region_addresses_t *restrict region_addresses,
@@ -281,12 +286,11 @@ static inline void bit_field_reader_read_in_bit_fields(
 #endif
 }
 
-
-//! \brief sets up initial sorted bitfield struct
-//! \param[in] region_addresses: the address that holds all the chips
-//!     bitfield addresses
-//! \return the pointer to the sorted memory tracker, or `NULL` if any of the
-//!     MALLOC's failed for any reason.
+//! \brief Sets up the initial sorted bitfield struct
+//! \param[in] region_addresses:
+//!     The address that holds all the chips' bitfield addresses
+//! \return The pointer to the sorted memory tracker, or `NULL` if any of the
+//!     #MALLOC's failed for any reason.
 static inline sorted_bit_fields_t * bit_field_reader_initialise(
         region_addresses_t *restrict region_addresses) {
     sorted_bit_fields_t *restrict sorted_bit_fields = MALLOC_SDRAM(

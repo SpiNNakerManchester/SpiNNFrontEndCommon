@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief How to remove defaultable routes from a table
 #ifndef __REMOVE_DEFAULT_ROUTES_H__
 #define __REMOVE_DEFAULT_ROUTES_H__
 
@@ -22,13 +24,13 @@
 #include "bit_set.h"
 #include "../common/routing_table.h"
 
-//! \brief removes default routes from the routing tables
-//! \param[in] remove_elements: bool flag to actually remove elements from table
-//! \param[in/out] pointer_to_new_size: new size to set without removing
-//!     elements from table
-//! \return: whether successful or not
+//! \brief Remove defaultable routes from the routing tables
+//! \param[in,out] new_size: Variable holding size of routing table; will be
+//!     updated with new size to set without removing elements from table
+//! \param[in] remove_elements: Flag to actually remove elements from table
+//! \return Whether successful or not
 static bool remove_default_routes_minimise(
-        int *pointer_to_new_size, bool remove_elements) {
+        int *new_size, bool remove_elements) {
     // Mark the entries to be removed from the table
     bit_set_t remove;
     bool success = bit_set_init(&remove, routing_table_get_n_entries());
@@ -105,7 +107,7 @@ static bool remove_default_routes_minimise(
         routing_table_remove_from_size(remove.count);
     }
 
-    *pointer_to_new_size -= remove.count;
+    *new_size -= remove.count;
 
     // Clear up
     bit_set_delete(&remove);

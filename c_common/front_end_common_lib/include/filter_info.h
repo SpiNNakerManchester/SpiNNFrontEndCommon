@@ -15,29 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Data structures used by code that needs to be aware of bitfield
+//!     filtering
 #ifndef __FILTER_INFO_H__
+#define __FILTER_INFO_H__
 
-//! \brief the elements in a filter info (bitfield wrapper)
+//! \brief Describes a single filter, which is a wrapper for bit_field_t
 typedef struct filter_info_t {
-    //! bit field master pop key
+    //! Bit field master population key
     uint32_t key;
-    //! number of words representing the bitfield
+    //! Number of words representing the bitfield
     uint32_t n_atoms;
-    //! the words of the bitfield
+    //! The words of the bitfield
     bit_field_t data;
 } filter_info_t;
 
-//! \brief the elements in the bitfield region
+//! \brief The contents of the bitfield region in SDRAM
 typedef struct filter_region_t {
-    //! how many filters have been merged into routing tables
+    //! How many filters have been merged into routing tables.
     int n_merged_filters;
-    //! total number of filters with redundant packets. (merged or not)
+    //! Total number of filters with redundant packets. (merged or not)
     int n_redundancy_filters;
-    //! total number of filters including with and without redundancy
+    //! Total number of filters including with and without redundancy
     int n_filters;
-    //! the filters
+    //! The filters themselves.
     filter_info_t filters[];
 } filter_region_t;
 
-#define __FILTER_INFO_H__
 #endif  // __FILTER_INFO_H__

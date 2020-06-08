@@ -14,10 +14,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 language: python
-python:
-  - 2.7
-  - 3.6
-  - 3.7
+jobs:
+  include:
+    - name: Py3.6 (and doc deploy)
+      python: 3.6
+      env:
+        - DEPLOY_DIR=$PWD/deploy
+        - ROOT_DOC_DIR=$PWD/doc/global
+        - C_DOC_DIR=$PWD/c_common/doc/html
+        - PY_DOC_DIR=$PWD/doc/source/_build/html
+    - name: Py3.7
+      python: 3.7
+    - name: Py2.7 (legacy)
+      python: 2.7
 dist: xenial
 addons:
   apt:
@@ -29,6 +38,7 @@ addons:
       - libnewlib-arm-none-eabi
       - openjdk-8-jre-headless
       - ant
+      - doxygen
 cache: pip
 
 before_install:
@@ -82,7 +92,32 @@ script:
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -q -T -b json -d _build/doctrees-json -D language=en . _build/json
   - support/travis-sphinx.sh singlehtml -q -T -b singlehtml -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
+  - ( cd $TRAVIS_BUILD_DIR/c_common && exec doxygen )
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
   - coveralls
+
+before_deploy:
+  # Merge the doc trees
+  - >
+    [ -d $ROOT_DOC_DIR ] && cp -vaT $ROOT_DOC_DIR $DEPLOY_DIR
+  - >
+    [ -d $C_DOC_DIR ] && cp -vaT $C_DOC_DIR $DEPLOY_DIR/c
+  - >
+    [ -d $PY_DOC_DIR ] && cp -vaT $PY_DOC_DIR $DEPLOY_DIR/python
+after_deploy:
+  - rm -rf $DEPLOY_DIR
+deploy:
+  provider: pages
+  skip_cleanup: true
+  keep_history: true
+  # Inject magic environment variable from Travis Job Configuration page
+  token: $GITHUB_TOKEN
+  local_dir: $DEPLOY_DIR
+  on:
+    branch:
+      - master
+    python: 3.6
+    # Only enable deployment if we actually have supplied a token
+    condition: -n "$GITHUB_TOKEN"
