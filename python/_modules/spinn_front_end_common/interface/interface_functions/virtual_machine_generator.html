@@ -100,13 +100,12 @@
 <span class="sd">        :param width: The width of the machine in chips</span>
 <span class="sd">        :param height: The height of the machine in chips</span>
 <span class="sd">        :param version: The version of board to create</span>
-<span class="sd">        :param with_monitors: If true, CPU 0 will be marked as a monitor</span>
 <span class="sd">        :param down_chips: The set of chips that should be considered broken</span>
 <span class="sd">        :param down_cores: The set of cores that should be considered broken</span>
 <span class="sd">        :param down_links: The set of links that should be considered broken</span>
 <span class="sd">        :param max_sdram_size: The SDRAM that should be given to each chip</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># For backward compatibily support version in csf files for now</span>
+        <span class="c1"># For backward compatibility support version in csf files for now</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">height</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -152,6 +151,10 @@
         <span class="c1"># Work out and add the SpiNNaker links and FPGA links</span>
         <span class="n">machine</span><span class="o">.</span><span class="n">add_spinnaker_links</span><span class="p">()</span>
         <span class="n">machine</span><span class="o">.</span><span class="n">add_fpga_links</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Created a virtual machine which has </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">machine</span><span class="o">.</span><span class="n">cores_and_link_output_string</span><span class="p">()))</span>
 
         <span class="k">return</span> <span class="n">machine</span></div>
 </pre></div>
