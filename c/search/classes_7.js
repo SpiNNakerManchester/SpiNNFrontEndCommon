@@ -1,7 +1,4 @@
 var searchData=
 [
-  ['key_5fatom_5fdata_5ft',['key_atom_data_t',['../key__atom__map_8h.html#structkey__atom__data__t',1,'']]],
-  ['key_5fatom_5fpair_5ft',['key_atom_pair_t',['../key__atom__map_8h.html#structkey__atom__pair__t',1,'']]],
-  ['key_5fmask_5ft',['key_mask_t',['../compressor__sorter__structs_8h.html#structkey__mask__t',1,'']]],
-  ['keymask_5ft',['keymask_t',['../minimise_2src_2routing__table_8h.html#structkeymask__t',1,'']]]
+  ['lpg_5fconfig_1108',['lpg_config',['../live__packet__gather_8c.html#structlpg__config',1,'']]]
 ];

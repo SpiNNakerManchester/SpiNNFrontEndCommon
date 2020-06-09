@@ -1,15 +1,12 @@
 var searchData=
 [
-  ['read_5frequest_5fpacket_5fdata',['read_request_packet_data',['../recording_8h.html#structread__request__packet__data',1,'']]],
-  ['read_5frequest_5fpacket_5fheader',['read_request_packet_header',['../recording_8h.html#structread__request__packet__header',1,'']]],
-  ['receive_5fdata_5fto_5flocation_5fmsg_5ft',['receive_data_to_location_msg_t',['../data__speed__up__packet__gatherer_8c.html#structreceive__data__to__location__msg__t',1,'']]],
-  ['receive_5fseq_5fdata_5fmsg_5ft',['receive_seq_data_msg_t',['../data__speed__up__packet__gatherer_8c.html#structreceive__seq__data__msg__t',1,'']]],
-  ['recorded_5fpacket_5ft',['recorded_packet_t',['../reverse__iptag__multicast__source_8c.html#structrecorded__packet__t',1,'']]],
-  ['recording_5fchannel_5ft',['recording_channel_t',['../recording_8c.html#structrecording__channel__t',1,'']]],
-  ['recording_5fdata_5ft',['recording_data_t',['../recording_8c.html#structrecording__data__t',1,'']]],
-  ['region_5faddresses_5ft',['region_addresses_t',['../compressor__sorter__structs_8h.html#structregion__addresses__t',1,'']]],
-  ['reinject_5fconfig_5ft',['reinject_config_t',['../extra__monitor__support_8c.html#structreinject__config__t',1,'']]],
-  ['reinjector_5fstatus_5fresponse_5fpacket_5ft',['reinjector_status_response_packet_t',['../extra__monitor__support_8c.html#structreinjector__status__response__packet__t',1,'']]],
-  ['req_5fpacket_5fsdp_5ft',['req_packet_sdp_t',['../reverse__iptag__multicast__source_8c.html#structreq__packet__sdp__t',1,'']]],
-  ['router_5fentry_5ft',['router_entry_t',['../extra__monitor__support_8c.html#structrouter__entry__t',1,'']]]
+  ['sample_5fparams_1131',['sample_params',['../chip__power__monitor_8c.html#structsample__params',1,'']]],
+  ['sdp_5fdata_5fout_5ft_1132',['sdp_data_out_t',['../extra__monitor__support_8c.html#structsdp__data__out__t',1,'']]],
+  ['sdp_5fmsg_5fout_5fpayload_5ft_1133',['sdp_msg_out_payload_t',['../data__speed__up__packet__gatherer_8c.html#structsdp__msg__out__payload__t',1,'']]],
+  ['sdp_5fmsg_5fpure_5fdata_1134',['sdp_msg_pure_data',['../common_8h.html#structsdp__msg__pure__data',1,'']]],
+  ['sdram_5fblock_1135',['sdram_block',['../malloc__extras_8h.html#structsdram__block',1,'']]],
+  ['simulation_5fconfig_1136',['simulation_config',['../simulation_8h.html#structsimulation__config',1,'']]],
+  ['simulation_5fprovenance_1137',['simulation_provenance',['../simulation_8h.html#structsimulation__provenance',1,'']]],
+  ['sorted_5fbit_5ffields_5ft_1138',['sorted_bit_fields_t',['../compressor__sorter__structs_8h.html#structsorted__bit__fields__t',1,'']]],
+  ['sub_5ftable_5ft_1139',['sub_table_t',['../m__trie_8h.html#structsub__table__t',1,'']]]
 ];
