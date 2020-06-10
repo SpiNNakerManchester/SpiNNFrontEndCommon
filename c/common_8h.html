@@ -68,7 +68,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
@@ -81,15 +80,10 @@ $(function() {
 <p>Common definitions for the non-SCAMP system binaries.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="sdp__no__scp_8h_source.html">sdp_no_scp.h</a>&gt;</code><br />
 </div>
 <p><a href="common_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Data Structures</h2></td></tr>
-<tr class="memitem:structsdp__msg__pure__data"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="common_8h.html#structsdp__msg__pure__data">sdp_msg_pure_data</a></td></tr>
-<tr class="memdesc:structsdp__msg__pure__data"><td class="mdescLeft">&#160;</td><td class="mdescRight">An SDP message with purely data, no SCP header.  <a href="common_8h.html#structsdp__msg__pure__data">More...</a><br /></td></tr>
-<tr class="separator:structsdp__msg__pure__data"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:aaff45b29c1f1c2cc4023b2a77b6af54a"><td class="memItemLeft" align="right" valign="top"><a id="aaff45b29c1f1c2cc4023b2a77b6af54a"></a>
@@ -122,10 +116,6 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a7dd31086a7b003c055e9719e5f652a2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Human readable definitions of the offsets for multicast key elements for reinjection.  <a href="common_8h.html#a7dd31086a7b003c055e9719e5f652a2d">More...</a><br /></td></tr>
 <tr class="separator:a7dd31086a7b003c055e9719e5f652a2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc5c98fcc1211af2b80116dd6e0a035d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="common_8h.html#abc5c98fcc1211af2b80116dd6e0a035da83634fa5d88b9e8e880513f8e11e028c">ITEMS_PER_DATA_PACKET</a> = 68
- }</td></tr>
-<tr class="memdesc:abc5c98fcc1211af2b80116dd6e0a035d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Misc constants.  <a href="common_8h.html#abc5c98fcc1211af2b80116dd6e0a035d">More...</a><br /></td></tr>
-<tr class="separator:abc5c98fcc1211af2b80116dd6e0a035d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -153,90 +143,7 @@ static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Common definitions for the non-SCAMP system binaries. </p>
-</div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
-<a name="structsdp__msg__pure__data" id="structsdp__msg__pure__data"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structsdp__msg__pure__data">&#9670;&nbsp;</a></span>sdp_msg_pure_data</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct sdp_msg_pure_data</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>An SDP message with purely data, no SCP header. </p>
-<p>An SDP message with pure data, no SCP header. </p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="ad0be2c6bad5b61e9e0dd303cf4e02265"></a>struct sdp_msg *</td>
-<td class="fieldname">
-next</td>
-<td class="fielddoc">
-Next in free list. </td></tr>
-<tr><td class="fieldtype">
-<a id="a4c20a70da0a3e7bcc92270143b6fd54d"></a>uint16_t</td>
-<td class="fieldname">
-length</td>
-<td class="fielddoc">
-Length (measured from <code>flags</code> field start) <p>length </p>
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a9fdcf93b3b74a3e0b4da1e9e5e3f4563"></a>uint16_t</td>
-<td class="fieldname">
-checksum</td>
-<td class="fielddoc">
-Checksum (if used) <p>checksum (if used) </p>
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a1d9e53a9dcbcd7d3d68d5503c6a0bdf1"></a>uint8_t</td>
-<td class="fieldname">
-flags</td>
-<td class="fielddoc">
-SDP flag byte. <p>SDP flag byte; first byte actually sent. </p>
-</td></tr>
-<tr><td class="fieldtype">
-<a id="ab5c7fd82afec6c24bee6c40355f57c25"></a>uint8_t</td>
-<td class="fieldname">
-tag</td>
-<td class="fielddoc">
-SDP IPtag. </td></tr>
-<tr><td class="fieldtype">
-<a id="a71a170687f8c21652122279e87acd1db"></a>uint8_t</td>
-<td class="fieldname">
-dest_port</td>
-<td class="fielddoc">
-SDP destination port/CPU. </td></tr>
-<tr><td class="fieldtype">
-<a id="a32a97d1bd89d8057b284cb486372e0ea"></a>uint8_t</td>
-<td class="fieldname">
-srce_port</td>
-<td class="fielddoc">
-SDP source port/CPU. </td></tr>
-<tr><td class="fieldtype">
-<a id="a84a436850435471576039f4e65e55780"></a>uint16_t</td>
-<td class="fieldname">
-dest_addr</td>
-<td class="fielddoc">
-SDP destination address. </td></tr>
-<tr><td class="fieldtype">
-<a id="ad9ea00ebf91ee83fe268f77107100497"></a>uint16_t</td>
-<td class="fieldname">
-srce_addr</td>
-<td class="fielddoc">
-SDP source address. </td></tr>
-<tr><td class="fieldtype">
-<a id="a680ad77ce4eb53a274f4fefe86ac6315"></a>uint32_t</td>
-<td class="fieldname">
-data[<a class="el" href="common_8h.html#abc5c98fcc1211af2b80116dd6e0a035da83634fa5d88b9e8e880513f8e11e028c">ITEMS_PER_DATA_PACKET</a>]</td>
-<td class="fielddoc">
-User data (272 bytes when no SCP header) </td></tr>
-</table>
-
-</div>
-</div>
-<h2 class="groupheader">Enumeration Type Documentation</h2>
+</div><h2 class="groupheader">Enumeration Type Documentation</h2>
 <a id="a69014a01720326e5c4bf44cb8ae87e52"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a69014a01720326e5c4bf44cb8ae87e52">&#9670;&nbsp;</a></span>reinjector_command_codes</h2>
 
@@ -289,26 +196,6 @@ User data (272 bytes when no SCP header) </td></tr>
 <tr><td class="fieldname"><a id="a7dd31086a7b003c055e9719e5f652a2da19c7040d9dd3ebfccb573cd3380585b4"></a>ROUTER_EMERGENCY_TIMEOUT_OFFSET&#160;</td><td class="fielddoc"><p>Set the router's wait2 timeout. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a7dd31086a7b003c055e9719e5f652a2daeb0f4d0aafd7eefa4481793dbb0a5540"></a>REINJECTOR_CLEAR_QUEUE_OFFSET&#160;</td><td class="fielddoc"><p>Clear the reinjection queue. </p>
-</td></tr>
-</table>
-
-</div>
-</div>
-<a id="abc5c98fcc1211af2b80116dd6e0a035d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc5c98fcc1211af2b80116dd6e0a035d">&#9670;&nbsp;</a></span>anonymous enum</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">anonymous enum</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Misc constants. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="abc5c98fcc1211af2b80116dd6e0a035da83634fa5d88b9e8e880513f8e11e028c"></a>ITEMS_PER_DATA_PACKET&#160;</td><td class="fielddoc"><p>How many payload words are in an SDP packet. </p>
 </td></tr>
 </table>
 

@@ -400,6 +400,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span><span class="p">]:</span>
+            <span class="c1"># Note that this is inverted! Why... I dunno!</span>
             <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="ow">not</span> <span class="n">value</span><span class="p">))</span>
 
         <span class="c1"># add the reinjection mc interface</span>
