@@ -66,8 +66,15 @@ static inline void safe_xfree(void *ptr)
     }
 }
 
+#ifdef MALLOC
+#warning Redefinining MALLOC and FREE from malloc_extras.h
+#undef MALLOC
+#undef FREE
+#endif
+
 //! Selects the correct malloc implementation
 #define MALLOC safe_malloc
+
 //! Selects the correct free implementation
 #define FREE   safe_xfree
 
