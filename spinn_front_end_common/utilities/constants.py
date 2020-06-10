@@ -15,6 +15,8 @@
 
 from enum import Enum
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
+from pacman.utilities.constants import SARK_PER_MALLOC_SDRAM_USAGE
+
 
 # conversion from words to bytes
 BYTES_PER_WORD = 4
@@ -27,9 +29,6 @@ SPIKE_INJECTOR_CORE_APPLICATION_ID = 0xAC9
 
 # how many bits there are in a word
 BITS_PER_WORD = 32.0
-
-# how many bytes there are in a word
-BYTES_PER_WORS = 4
 
 # start of where SDRAM starts (either unbuffered or buffered)
 SDRAM_BASE_ADDR = 0x70000000
@@ -50,9 +49,6 @@ MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * BYTES_PER_KB
 
 # The default size of a recording buffer before receive request is sent
 DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * BYTES_PER_KB
-
-# The number of bytes used by SARK per memory allocation
-SARK_PER_MALLOC_SDRAM_USAGE = 2 * BYTES_PER_WORD
 
 # The number of words in the AbstractDataSpecable basic setup information
 # This is the amount required by the pointer table plus a SARK allocation
