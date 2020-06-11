@@ -891,6 +891,12 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
         reinject_nn = true;
     }
 
+    io_printf(
+        IO_BUF,
+        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
+        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        reinject_mc, reinject_pp, reinject_fr, reinject_nn);
+
     // set the reinjection mc api
     initialise_reinjection_mc_api(config->reinjection_base_mc_key);
 
@@ -962,6 +968,12 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     io_printf(IO_BUF, "set reinjection (MC,PP,FR,NN) to (%d,%d,%d,%d)\n",
             reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
+    io_printf(
+        IO_BUF,
+        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
+        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        reinject_mc, reinject_pp, reinject_fr, reinject_nn);
+
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
@@ -992,10 +1004,10 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
 
     // Put the current services enabled in the packet
     data->packet_types_reinjected = 0;
-    int values_to_check[] = {
-            reinject_mc, reinject_pp, reinject_nn, reinject_fr};
-    for (uint i = 0; i < 4; i++) {
-        data->packet_types_reinjected |= values_to_check[i] << i;
+    bool values_to_check[] = {reinject_mc, reinject_pp,
+                              reinject_nn, reinject_fr};
+    for (int i = 0; i < 4; i++) {
+        data->packet_types_reinjected |= (values_to_check[i] << i);
     }
 
     // set SCP command to OK, as successfully completed
