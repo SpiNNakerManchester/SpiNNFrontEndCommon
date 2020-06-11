@@ -28,9 +28,6 @@ SPIKE_INJECTOR_CORE_APPLICATION_ID = 0xAC9
 # how many bits there are in a word
 BITS_PER_WORD = 32.0
 
-# how many bytes there are in a word
-BYTES_PER_WORS = 4
-
 # start of where SDRAM starts (either unbuffered or buffered)
 SDRAM_BASE_ADDR = 0x70000000
 
