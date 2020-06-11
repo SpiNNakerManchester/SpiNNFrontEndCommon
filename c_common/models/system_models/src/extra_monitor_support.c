@@ -264,9 +264,9 @@ enum dma_tags_for_data_speed_up {
 
 //! \brief message payload for the data speed up out SDP messages
 typedef struct sdp_data_out_t {
-    //! What operation are we dealing with
+    //! What operation are we dealing with?
     data_out_sdp_commands command;
-    //! \brief What is the transaction ID
+    //! \brief What is the transaction ID?
     //!
     //! This is used to stop confusion when critical packets get lost
     uint transaction_id;
@@ -308,13 +308,13 @@ enum missing_seq_num_data_positions {
 typedef struct reinjector_status_response_packet_t {
     //! \brief The current router timeout
     //!
-    //! See [SpiNNaker Data Sheet][datasheet], Section 10.11, register r0, field wait1
+    //! See [SpiNNaker Data Sheet][datasheet], Section 10.11, register `r0`, field `wait1`
     //!
     //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
     uint router_timeout;
     //! \brief The current router emergency timeout
     //!
-    //! See [SpiNNaker Data Sheet][datasheet], Section 10.11, register r0, field wait2
+    //! See [SpiNNaker Data Sheet][datasheet], Section 10.11, register `r0`, field `wait2`
     //!
     //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
     uint router_emergency_timeout;
@@ -334,7 +334,7 @@ typedef struct reinjector_status_response_packet_t {
     uint packet_types_reinjected;
 } reinjector_status_response_packet_t;
 
-//! how the reinjection configuration is laid out in memory.
+//! How the reinjection configuration is laid out in SDRAM.
 typedef struct reinject_config_t {
     //! \brief Whether we are reinjecting multicast packets
     //! \warning The sense is inverted; 0 means inject, and 1 means don't
@@ -911,11 +911,9 @@ static inline void reinjection_set_emergency_timeout(uint payload) {
 }
 
 //! \brief Set the router wait1 timeout.
-//!
-//! Delegates to reinjection_set_timeout()
-//!
+//! \details Delegates to reinjection_set_timeout()
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
     io_printf(IO_BUF, "setting router timeouts via sdp\n");
@@ -923,18 +921,19 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
         msg->cmd_rc = RC_ARG;
         return 0;
     }
+
     reinjection_set_timeout(msg->arg1);
+    io_printf(IO_BUF, "set router ctl.wait1 = 0x%02x\n", msg->arg1);
+
     // set SCP command to OK , as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
 
 //! \brief Set the router wait2 timeout.
-//!
-//! Delegates to reinjection_set_emergency_timeout()
-//!
+//! \details Delegates to reinjection_set_emergency_timeout()
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
     io_printf(IO_BUF, "setting router emergency timeouts via sdp\n");
@@ -944,6 +943,7 @@ static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
     }
 
     reinjection_set_emergency_timeout(msg->arg1);
+    io_printf(IO_BUF, "set router ctl.wait2 = 0x%02x\n", msg->arg1);
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
@@ -952,13 +952,15 @@ static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
 
 //! \brief Set the re-injection options.
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_mc = msg->arg1;
     reinject_pp = msg->arg2;
     reinject_fr = msg->arg3;
     reinject_nn = msg->data[0];
+    io_printf(IO_BUF, "set reinjection (MC,PP,FR,NN) to (%d,%d,%d,%d)\n",
+            reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
@@ -967,7 +969,7 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
 
 //! \brief Get the status and put it in the packet
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_get_status(sdp_msg_t *msg) {
     reinjector_status_response_packet_t *data =
@@ -1007,7 +1009,7 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
 
 //! \brief Reset the counters
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_reset_counters(sdp_msg_t *msg) {
     reinject_n_dropped_packets = 0;
@@ -1024,9 +1026,10 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
 
 //! \brief Stop the reinjector.
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_exit(sdp_msg_t *msg) {
+    io_printf(IO_BUF, "shutting down reinjector\n");
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
     vic[VIC_DISABLE] = int_select;
     reinjection_disable_comms_interrupt();
@@ -1052,19 +1055,21 @@ static void reinjection_clear(void) {
 }
 
 //! \brief Clear the queue of messages to reinject.
+//! \details Delegates to reinjection_clear()
 //! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//!     response
 //! \return The payload size of the response message.
 static inline int reinjection_clear_message(sdp_msg_t *msg) {
+    io_printf(IO_BUF, "clearing reinjection queue\n");
     reinjection_clear();
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
 }
 
-//! \brief handles the commands for the reinjector code.
+//! \brief Handle the commands for the reinjector code.
 //! \param[in,out] msg: The message with the command. Will be updated with
-//! response.
+//!     response.
 //! \return the length of extra data put into the message for return
 static uint reinjection_sdp_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
