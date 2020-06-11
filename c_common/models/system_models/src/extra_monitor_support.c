@@ -992,13 +992,10 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
 
     // Put the current services enabled in the packet
     data->packet_types_reinjected = 0;
-    bool values_to_check[] = {reinject_mc, reinject_pp,
-                              reinject_nn, reinject_fr};
-    int flags[] = {PKT_TYPE_MC, PKT_TYPE_PP, PKT_TYPE_NN, PKT_TYPE_FR};
-    for (int i = 0; i < 4; i++) {
-        if (values_to_check[i]) {
-            data->packet_types_reinjected |= flags[i];
-        }
+    int values_to_check[] = {
+            reinject_mc, reinject_pp, reinject_nn, reinject_fr};
+    for (uint i = 0; i < 4; i++) {
+        data->packet_types_reinjected |= values_to_check[i] << i;
     }
 
     // set SCP command to OK, as successfully completed
