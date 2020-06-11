@@ -336,6 +336,7 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
                 self._reinject_nearest_neighbour]:
+            # Note that this is inverted! Why... I dunno!
             spec.write_value(int(not value))
 
         # add the reinjection mc interface

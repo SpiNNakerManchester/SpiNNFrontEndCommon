@@ -35,7 +35,7 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     uint16_t checksum;      //!< Checksum (if used)
 
     // next part must match sdp_hdr_t
-    uint8_t flags;          //!< SDP flag byte
+    uint8_t flags;          //!< SDP flag byte; first byte actually sent
     uint8_t tag;            //!< SDP IPtag
     uint8_t dest_port;      //!< SDP destination port/CPU
     uint8_t srce_port;      //!< SDP source port/CPU
