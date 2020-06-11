@@ -887,6 +887,12 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
         reinject_nn = true;
     }
 
+    io_printf(
+        IO_BUF,
+        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
+        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        reinject_mc, reinject_pp, reinject_fr, reinject_nn);
+
     // set the reinjection mc api
     initialise_reinjection_mc_api(config->reinjection_base_mc_key);
 
@@ -956,6 +962,12 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_fr = msg->arg3;
     reinject_nn = msg->data[0];
 
+    io_printf(
+        IO_BUF,
+        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
+        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
+        reinject_mc, reinject_pp, reinject_fr, reinject_nn);
+
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
     return 0;
@@ -988,11 +1000,8 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
     data->packet_types_reinjected = 0;
     bool values_to_check[] = {reinject_mc, reinject_pp,
                               reinject_nn, reinject_fr};
-    int flags[] = {PKT_TYPE_MC, PKT_TYPE_PP, PKT_TYPE_NN, PKT_TYPE_FR};
     for (int i = 0; i < 4; i++) {
-        if (values_to_check[i]) {
-            data->packet_types_reinjected |= flags[i];
-        }
+        data->packet_types_reinjected |= (values_to_check[i] << i);
     }
 
     // set SCP command to OK, as successfully completed
