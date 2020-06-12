@@ -28,6 +28,14 @@ class TestImportAllModule(unittest.TestCase):
             package_loader.load_module(
                 "spinn_front_end_common", remove_pyc_files=True)
 
+    def test_import_all_tools(self):
+        if os.environ.get('CONTINUOUS_INTEGRATION', 'false').lower() == 'true':
+            package_loader.load_module(
+                "tools", remove_pyc_files=False)
+        else:
+            package_loader.load_module(
+                "tools", remove_pyc_files=True)
+
 
 if __name__ == "__main__":
     unittest.main()
