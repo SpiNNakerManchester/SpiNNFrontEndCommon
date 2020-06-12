@@ -90,9 +90,8 @@ class ChipIOBufExtractor(object):
                     from_cores, binary_types)
             else:
                 self._run_from_cores(
-                    transceiver, executable_targets, executable_finder,
-                    app_provenance_file_path, system_provenance_file_path,
-                    from_cores)
+                    transceiver, executable_targets, app_provenance_file_path,
+                    system_provenance_file_path, from_cores)
         else:
             if binary_types:
                 self._run_binary_types(
@@ -149,9 +148,9 @@ class ChipIOBufExtractor(object):
                     self._run_for_core_subsets(
                         core_subsets, replacer, transceiver, prov_path)
 
-    def _run_from_cores(self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
-            from_cores):
+    def _run_from_cores(
+            self, transceiver, executable_targets, app_provenance_file_path,
+            system_provenance_file_path, from_cores):
         # some hard coded cores
         progress = ProgressBar(len(executable_targets.binaries), self._label)
         iocores = convert_string_into_chip_and_core_subset(from_cores)
@@ -167,7 +166,8 @@ class ChipIOBufExtractor(object):
                     self._run_for_core_subsets(
                         core_subsets, replacer, transceiver, prov_path)
 
-    def _run_binary_types(self, transceiver, executable_targets, executable_finder,
+    def _run_binary_types(
+            self, transceiver, executable_targets, executable_finder,
             app_provenance_file_path, system_provenance_file_path,
             binary_types):
         # some binaries
