@@ -50,8 +50,9 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables,
-            extra_monitor_vertices=None, placements=None):
+            self, transceiver, machine, router_tables, using_reinjection,
+            provenance_data_objects=None, extra_monitor_vertices=None,
+            placements=None):
         """
         :param transceiver: the SpiNNMan interface object
         :type transceiver: ~spinnman.transceiver.Transceiver
@@ -62,6 +63,8 @@ class RouterProvenanceGatherer(object):
         :param provenance_data_objects: other provenance data items
         :param extra_monitor_vertices: \
             vertices which represent the extra monitor code
+        :param using_reinjection: bool flag for if the extra monitor is in \
+            reinjection mode
         :param placements: the placements object
         """
         # pylint: disable=too-many-arguments
@@ -75,7 +78,10 @@ class RouterProvenanceGatherer(object):
         self._machine = machine
         self._placements = placements
 
-        prov_items = list()
+        if provenance_data_objects is not None:
+            prov_items = provenance_data_objects
+        else:
+            prov_items = list()
 
         prov_items.extend(self._write_router_provenance_data(
             router_tables, extra_monitor_vertices))
@@ -326,7 +332,8 @@ class RouterProvenanceGatherer(object):
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Dumped_from_a_Link"),
                 str(reinjection_status.n_link_dumps),
-                report=reinjection_status.n_link_dumps > 0,
+                report=(reinjection_status.n_link_dumps > 0 and
+                        self._has_virtual_chip_connected(self._machine, x, y)),
                 message=(
                     "The extra monitor on {}, {} has detected that {} packets "
                     "were dumped from a outgoing link of this chip's router."
@@ -360,3 +367,11 @@ class RouterProvenanceGatherer(object):
                     x, y, router_diagnostic.errors_set,
                     router_diagnostic.error_count))))
         return items
+
+    @staticmethod
+    def _has_virtual_chip_connected(machine, x, y):
+        for link in machine.get_chip_at(x, y).router.links:
+            if machine.get_chip_at(
+                    link.destination_x, link.destination_y).virtual:
+                return True
+        return False

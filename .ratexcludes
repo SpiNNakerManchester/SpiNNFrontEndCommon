@@ -9,3 +9,4 @@
 **/iobuf_for_*.txt
 **/test_output/**
 **/tools/boot/*.conf
+**/.nojekyll
