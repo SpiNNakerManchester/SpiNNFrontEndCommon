@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief An m-Trie implementation
 #ifndef __M_TRIE_H__
 #define __M_TRIE_H__
 
@@ -43,7 +45,6 @@ typedef struct m_trie_entry_t {
 
 //! \brief m-Trie structure
 typedef struct m_trie_t {
-
     //! Our parent
     struct _m_trie_node_t *parent;
 
@@ -117,7 +118,7 @@ static void m_trie_delete(m_trie_t *node) {
 }
 
 //! \brief Count the number of paths travelling through a node
-//! \param[in] the free to count
+//! \param[in] node: the node to count paths through
 //! \return the number of nodes in the tree
 static unsigned int m_trie_count(m_trie_t *node) {
     if (node == NULL) {

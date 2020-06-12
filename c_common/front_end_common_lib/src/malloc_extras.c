@@ -20,17 +20,30 @@
 #include <debug.h>
 #include <malloc_extras.h>
 
+//! debug flag to lock in safety features
+#define SAFETY_FLAG     0xDEADBEEF
+//! amount of extra space _per allocation_ to add for the safety checker code
+#define EXTRA_BYTES     64
+//! offset used to compute location of the heap block metadata
+#define MINUS_POINT     60
+//! the number of bytes in a word
+#define BYTE_TO_WORD    4
+//! number of words to fill with debug canaries
+#define BUFFER_WORDS    (MINUS_POINT / BYTE_TO_WORD)
+//! minimum size of heap to steal from SARK
+#define MIN_SIZE_HEAP   32
+
 //============================================================================
 // control flags
 
 //! debug flag to lock in safety features
 bool safety = true;
 
-//! \brief bool flag to help with debugging
+//! \brief flag to help with debugging
 bool to_print = false;
 
 //! \brief use DTCM at all?
-//! \name ONLY TURN THIS ON IF YOUR SURE STACK OVERFLOWS WILL NOT HAPPEN
+//! \details ONLY TURN THIS ON IF YOU'RE SURE STACK OVERFLOWS WILL NOT HAPPEN
 bool use_dtcm = true;
 
 //============================================================================
@@ -39,10 +52,10 @@ bool use_dtcm = true;
 //! a extra heap, that exploits SDRAM which can be easily regenerated.
 static heap_t *stolen_sdram_heap = NULL;
 
-//! \brief tracker for mallocs
+//! tracker for mallocs
 void **malloc_points = NULL;
 
-//! \brief base line for the tracker array size. will grow with usage
+//! base line for the tracker array size. will grow with usage
 int malloc_points_size = 4;
 
 // ===========================================================================
@@ -337,7 +350,7 @@ static inline void make_heap_structure(
     stolen_sdram_heap->last->next = NULL;
 }
 
-//! \brief prints out the fake heap as if the spin1 alloc was operating over it
+//! prints out the fake heap as if the spin1 alloc was operating over it
 static inline void print_free_sizes_in_heap(void) {
     block_t *free_blk = stolen_sdram_heap->free;
     uint total_size = 0;
@@ -357,17 +370,14 @@ static inline void print_free_sizes_in_heap(void) {
     log_info("total free size is %d", total_size);
 }
 
-//! \brief stores a generated heap pointer. sets up trackers for this
-//!     core if asked.
+//! \details sets up trackers for this core if asked.
 //! \note DOES NOT REBUILD THE FAKE HEAP!
-//! \param[in] heap_location: address where heap is location
-//! \return bool where true states the initialisation was successful or not
 bool malloc_extras_initialise_with_fake_heap(
         heap_t *heap_location) {
     stolen_sdram_heap = heap_location;
 
     // if no real stolen SDRAM heap. point at the original SDRAM heap.
-    if (stolen_sdram_heap == NULL){
+    if (stolen_sdram_heap == NULL) {
         stolen_sdram_heap = sv->sdram_heap;
     }
 
@@ -563,8 +573,10 @@ static void *safe_sdram_malloc(uint bytes) {
     return (void *) p;
 }
 
-//! \brief adds the len and buffers to a given malloc pointer. Stores in the
-//! malloc tracker and prints index if required.
+//! \brief adds the len and buffers to a given malloc pointer.
+//! \details Stores in the malloc tracker and prints index if required.
+//! \param[in] p: The allocated buffer
+//! \param[in] bytes: The size of the buffer in \p p
 static void add_safety_len_and_padding(int *p, uint bytes) {
     // add len
     int n_words = (int) ((bytes - MINUS_POINT) / BYTE_TO_WORD);

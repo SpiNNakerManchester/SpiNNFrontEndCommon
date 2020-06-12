@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief The table generator support code
 #ifndef __BIT_FIELD_TABLE_GENERATOR_H__
 #define __BIT_FIELD_TABLE_GENERATOR_H__
 
@@ -28,15 +30,16 @@
 //! neuron level mask
 #define NEURON_LEVEL_MASK       0xFFFFFFFF
 
-//! \brief counts the number of unique keys in the list up to the midpoint
+//! \brief Count the number of unique keys in the list up to the midpoint.
 //! \details Works on the assumption that the list is grouped (sorted) by key
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
-//! \param[in] mid_point: where in the sorted bitfields to go to
+//! \param[in] midpoint: where in the sorted bitfields to go to
+//! \return the number of unique keys
 int count_unique_keys(
         sorted_bit_fields_t *restrict sorted_bit_fields, int midpoint) {
     // semantic sugar
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
-    int *restrict restrict sort_order =  sorted_bit_fields->sort_order;
+    int *restrict sort_order = sorted_bit_fields->sort_order;
     int n_bit_fields = sorted_bit_fields->n_bit_fields;
 
     // as the sorted bitfields are sorted by key. checking key changes when
@@ -52,11 +55,11 @@ int count_unique_keys(
     return count;
 }
 
-//! \brief Generates a routing tables by merging an entry and a list of
-//!     bitfields by processor
+//! \brief Generate a routing tables by merging an entry and a list of
+//!     bitfields by processor.
 //! \param[in] original_entry: The Routing Table entry in the original table
 //! \param[in] filters: List of the bitfields to me merged in
-//! \param[in] bit_field_processor: List of the processors for each bitfield
+//! \param[in] bit_field_processors: List of the processors for each bitfield
 //! \param[in] bf_found: Number of bitfields found.
 void generate_table(
         entry_t original_entry, filter_info_t **restrict filters,
@@ -68,7 +71,7 @@ void generate_table(
         // Safety code to be removed
         if (!bit_field_test(&stripped_route,
                 bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
-            log_error("WHAT THE FUCK!");
+            log_error("WHAT THE F***!");
         }
         bit_field_clear(&stripped_route,
                 bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
@@ -101,10 +104,10 @@ void generate_table(
             routing_table_get_n_entries());
 }
 
-//! \brief Takes a midpoint and reads the sorted bitfields,
+//! \brief Take a midpoint and read the sorted bitfields,
 //!     computing the max size of the routing table.
 //! \param[in] mid_point: where in the sorted bitfields to go to
-//! \param[in] uncompressed_router_table: the uncompressed router table
+//! \param[in] uncompressed_table: the uncompressed router table
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 //! \return size of table(s) to be generated in entries
 static inline uint32_t bit_field_table_generator_max_size(
@@ -125,6 +128,7 @@ static inline uint32_t bit_field_table_generator_max_size(
         if (sort_order[bf_i] < mid_point) {
             if (used_key != bit_fields[bf_i]->key) {
                 used_key = bit_fields[bf_i]->key;
+
                 // One entry per atom but we can remove the uncompressed one
                 max_size += bit_fields[bf_i]->n_atoms -1;
                 log_debug("key %d size %d",
@@ -137,11 +141,11 @@ static inline uint32_t bit_field_table_generator_max_size(
     return max_size;
 }
 
-//! \brief Takes a midpoint and reads the sorted bitfields up to that point
-//!     generating bitfield routing tables and loading them into sdram for
+//! \brief Take a midpoint and read the sorted bitfields up to that point,
+//!     generating bitfield routing tables and loading them into SDRAM for
 //!     transfer to a compressor processor
 //! \param[in] mid_point: where in the sorted bitfields to go to
-//! \param[in] uncompressed_router_table: the uncompressed router table
+//! \param[in] uncompressed_table: the uncompressed router table
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
 static inline void bit_field_table_generator_create_bit_field_router_tables(
         int mid_point,
@@ -164,6 +168,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
         uint32_t key = original[rt_i].key_mask.key;
         log_debug("key %d", key);
         int bf_found = 0;
+
         while ((bf_i < n_bit_fields) && (bit_fields[bf_i]->key == key)) {
             if (sort_order[bf_i] < mid_point) {
                 filters[bf_found] = bit_fields[bf_i];
@@ -172,6 +177,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
             }
             bf_i++;
         }
+
         if (bf_found > 0) {
             generate_table(original[rt_i], filters, bit_field_processors,
                     bf_found);
@@ -200,7 +206,8 @@ void print_table(table_t *table) {
 void sort_table_by_key(table_t *table) {
     uint32_t size = table->size;
     entry_t *entries = table->entries;
-    for (uint32_t i = 0; i < size - 1; i++){
+
+    for (uint32_t i = 0; i < size - 1; i++) {
         for (uint32_t j = i + 1; j < size; j++) {
             if (entries[i].key_mask.key > entries[j].key_mask.key) {
                 uint32_t temp = entries[i].key_mask.key;

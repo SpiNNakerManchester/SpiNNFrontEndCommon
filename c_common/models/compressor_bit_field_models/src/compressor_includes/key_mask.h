@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief Support includes for the bitfield compressor
+//! \file
+//! \brief Operations on a ::key_mask_t
 #ifndef __KEY_MASK_H__
 #define __KEY_MASK_H__
 
