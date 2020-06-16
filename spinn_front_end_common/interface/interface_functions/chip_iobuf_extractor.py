@@ -33,6 +33,11 @@ ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
 
+class _DummyProgress(object):
+    def over(self, values):
+        return values
+
+
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
@@ -50,16 +55,19 @@ class ChipIOBufExtractor(object):
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
-                 "__app_path", "__sys_path", "__transceiver"]
+                 "__app_path", "__sys_path", "__transceiver",
+                 "__suppress_progress"]
 
     def __init__(self, recovery_mode=False,
-                 filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
+                 filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
+                 suppress_progress=False):
         """
         :param bool recovery_mode:
         :param str filename_template:
         """
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
+        self.__suppress_progress = bool(suppress_progress)
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
@@ -110,6 +118,8 @@ class ChipIOBufExtractor(object):
         :param list bins:
         :rtype: ~.ProgressBar
         """
+        if self.__suppress_progress:
+            return _DummyProgress()
         label = (("Recovering" if self._recovery_mode else "Extracting")
                  + " IOBUF from the machine")
         return ProgressBar(len(bins), label)

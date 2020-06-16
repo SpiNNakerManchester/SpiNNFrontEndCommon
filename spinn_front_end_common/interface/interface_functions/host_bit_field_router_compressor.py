@@ -32,13 +32,13 @@ from pacman.model.routing_tables import (
 from pacman.operations.algorithm_reports.reports import format_route
 from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.mundys_router_compressor import (
-    ordered_covering as \
-        rigs_compressor)
+    ordered_covering as
+    rigs_compressor)
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesNKeysForPartition)
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
-    AbstractSupportsBitFieldRoutingCompression)
+        AbstractSupportsBitFieldRoutingCompression)
 
 
 class _BitFieldData(object):
@@ -253,8 +253,8 @@ class HostBasedBitFieldRouterCompressor(object):
         return key_to_n_atoms_map
 
     def generate_report_path(self, default_report_folder):
-        report_folder_path = \
-            os.path.join(default_report_folder, self._REPORT_FOLDER_NAME)
+        report_folder_path = os.path.join(
+            default_report_folder, self._REPORT_FOLDER_NAME)
         if not os.path.exists(report_folder_path):
             os.mkdir(report_folder_path)
         return report_folder_path
@@ -289,26 +289,17 @@ class HostBasedBitFieldRouterCompressor(object):
         :return: None
         """
 
-        # create report file
-        report_out = None
-        if produce_report:
-            report_file_path = os.path.join(
-                report_folder_path,
-                self._REPORT_NAME.format(router_table.x, router_table.y))
-            report_out = open(report_file_path, "w")
-
         # iterate through bitfields on this chip and convert to router
         # table
         bit_field_chip_base_addresses = bit_field_sdram_base_addresses[
             (router_table.x, router_table.y)]
 
         # read in bitfields.
-        bit_fields_by_processor, sorted_bit_fields = \
-            self._read_in_bit_fields(
-                transceiver, router_table.x, router_table.y,
-                bit_field_chip_base_addresses, machine_graph,
-                placements, machine.get_chip_at(
-                    router_table.x, router_table.y).n_processors)
+        bit_fields_by_processor, sorted_bit_fields = self._read_in_bit_fields(
+            transceiver, router_table.x, router_table.y,
+            bit_field_chip_base_addresses, machine_graph,
+            placements, machine.get_chip_at(
+                router_table.x, router_table.y).n_processors)
 
         # execute binary search
         self._start_binary_search(
@@ -333,12 +324,14 @@ class HostBasedBitFieldRouterCompressor(object):
             router_table.y, transceiver,
             bit_field_chip_base_addresses, bit_fields_by_processor)
 
-        # report
+        # create report file if required
         if produce_report:
-            self._create_table_report(
-                router_table, sorted_bit_fields, report_out)
-            report_out.flush()
-            report_out.close()
+            report_file_path = os.path.join(
+                report_folder_path,
+                self._REPORT_NAME.format(router_table.x, router_table.y))
+            with open(report_file_path, "w") as report_out:
+                self._create_table_report(
+                    router_table, sorted_bit_fields, report_out)
 
     def _convert_bitfields_into_router_tables(
             self, router_table, bitfields_by_key, key_to_n_atoms_map):
@@ -360,13 +353,12 @@ class HostBasedBitFieldRouterCompressor(object):
 
             bit_field_original_entry = \
                 router_table.get_entry_by_routing_entry_key(master_pop_key)
-            bit_field_entries = \
-                UnCompressedMulticastRoutingTable(
-                    router_table.x, router_table.y,
-                    multicast_routing_entries=(
-                        self._generate_entries_from_bitfield(
-                            bitfields_by_key[master_pop_key],
-                            bit_field_original_entry, key_to_n_atoms_map)))
+            bit_field_entries = UnCompressedMulticastRoutingTable(
+                router_table.x, router_table.y,
+                multicast_routing_entries=(
+                    self._generate_entries_from_bitfield(
+                        bitfields_by_key[master_pop_key],
+                        bit_field_original_entry, key_to_n_atoms_map)))
 
             # add to the list
             bit_field_router_tables.append(bit_field_entries)
@@ -476,11 +468,10 @@ class HostBasedBitFieldRouterCompressor(object):
             # read in each bitfield
             for _ in range(0, n_bit_field_entries):
                 # master pop key, n words and read pointer
-                (master_pop_key, n_words_to_read, read_pointer) = \
-                    struct.unpack(
-                        "<III", transceiver.read_memory(
-                            chip_x, chip_y, reading_address,
-                            self._BYTES_PER_WORD * 3))
+                master_pop_key, n_words_to_read, read_pointer = struct.unpack(
+                    "<III", transceiver.read_memory(
+                        chip_x, chip_y, reading_address,
+                        self._BYTES_PER_WORD * 3))
                 reading_address += self._BYTES_PER_WORD * 3
 
                 # get bitfield words
@@ -537,8 +528,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
                 valid = self.locate_vertex_with_the_api(vertex)
                 if valid is not None:
-                    most_costly_cores[processor_id] = \
-                        len(machine_graph.get_edges_ending_at_vertex(vertex))
+                    most_costly_cores[processor_id] = len(
+                        machine_graph.get_edges_ending_at_vertex(vertex))
 
         # get cores that are the most likely to have the worst time and order
         #  bitfields accordingly
@@ -587,8 +578,8 @@ class HostBasedBitFieldRouterCompressor(object):
         return sorted_bit_fields
 
     def _detect_redundant_packet_count(self, bitfield):
-        """ locate in the bitfield how many possible packets it can filter /
-        away when integrated into the router table.
+        """ locate in the bitfield how many possible packets it can filter \
+            away when integrated into the router table.
 
         :param bitfield: the memory blocks that represent the bitfield
         :return: the number of redundant packets being captured.
@@ -666,12 +657,10 @@ class HostBasedBitFieldRouterCompressor(object):
 
         # try to compress
         try:
-            self._best_routing_table = \
-                self._run_algorithm(
-                    bit_field_router_tables, target_length,
-                    time_to_try_for_each_iteration, use_timer_cut_off)
-            self._best_bit_fields_by_processor = \
-                new_bit_field_by_processor
+            self._best_routing_table = self._run_algorithm(
+                bit_field_router_tables, target_length,
+                time_to_try_for_each_iteration, use_timer_cut_off)
+            self._best_bit_fields_by_processor = new_bit_field_by_processor
             return True
         except MinimisationFailedError:
             return False

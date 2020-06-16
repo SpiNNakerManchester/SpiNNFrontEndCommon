@@ -96,7 +96,6 @@ class InsertEdgesToLivePacketGatherers(object):
                         application_graph, vertex, lpg_params, p_ids,
                         n_keys_map)
 
-
     def _connect_lpg_vertex_in_application_graph(
             self, app_graph, app_vertex, lpg_params, p_ids, n_keys_map):
         """

@@ -112,8 +112,8 @@ class InsertLivePacketGatherersToGraphs(object):
         :param LivePacketGatherParameters params:
         :rtype: LivePacketGatherMachineVertex
         """
-        vtx = LivePacketGatherMachineVertex(params,
-            app_vertex=None, vertex_slice=_LPG_SLICE,
+        vtx = LivePacketGatherMachineVertex(
+            params, app_vertex=None, vertex_slice=_LPG_SLICE,
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
         machine_graph.add_vertex(vtx)
         return vtx
