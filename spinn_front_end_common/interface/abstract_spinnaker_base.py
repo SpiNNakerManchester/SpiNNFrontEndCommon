@@ -418,9 +418,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._graph_label = graph_label
 
         # pacman objects
-        self._original_application_graph = \
-            ApplicationGraph(label=self._graph_label)
-        self._original_machine_graph = MachineGraph(label=self._graph_label)
+        self._original_application_graph = ApplicationGraph(
+            label=self._graph_label)
+        self._original_machine_graph = MachineGraph(
+            label=self._graph_label,
+            application_graph=self._original_application_graph)
         self._empty_graphs = False
 
         self._placements = None
@@ -766,7 +768,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # sort out machine graph
         self._machine_graph = MachineGraph(
-            label=self._original_machine_graph.label)
+            label=self._original_machine_graph.label,
+            application_graph=self._application_graph)
         for vertex in self._original_machine_graph.vertices:
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
@@ -890,8 +893,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
             # Reset the machine graph if there is an application graph
             if self._application_graph.n_vertices:
-                self._machine_graph = MachineGraph(self._graph_label)
                 self._application_graph.forget_machine_graph()
+                self._machine_graph = MachineGraph(
+                    self._graph_label, self._application_graph)
 
             # Reset the machine if the graph has changed
             if not self._use_virtual_board and self._n_calls_to_run > 1:
