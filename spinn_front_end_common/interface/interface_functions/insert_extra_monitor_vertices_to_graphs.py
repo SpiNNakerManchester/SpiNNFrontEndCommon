@@ -98,7 +98,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
             application_graph.add_vertex(app_vertex)
             vertex = app_vertex.machine_vertex
             machine_graph.add_vertex(vertex)
-            app_vertex.remember_associated_machine_vertex(vertex)
             vertex_to_chip_map[chip.x, chip.y] = vertex
             extra_monitor_vertices.append(vertex)
 
@@ -150,10 +149,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
         for chip in progress.over(machine.ethernet_connected_chips):
             # add to application graph
             app_vertex = self.__new_app_gatherer(chip, vertex_to_chip_map)
+            application_graph.add_vertex(app_vertex)
             vertex = app_vertex.machine_vertex
             machine_graph.add_vertex(vertex)
-            application_graph.add_vertex(app_vertex)
-            app_vertex.remember_associated_machine_vertex(vertex)
             # update mapping for edge builder
             chip_to_gatherer_map[chip.x, chip.y] = vertex
 
@@ -180,16 +178,25 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     @staticmethod
     def __new_app_monitor(chip):
+        """
+        :rtype: ExtraMonitorSupport
+        """
         return ExtraMonitorSupport(constraints=[
             ChipAndCoreConstraint(x=chip.x, y=chip.y)])
 
     @staticmethod
     def __new_mach_monitor(chip):
+        """
+        :rtype: ExtraMonitorSupportMachineVertex
+        """
         return ExtraMonitorSupportMachineVertex(
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
             app_vertex=None)
 
     def __new_app_gatherer(self, ethernet_chip, vertex_to_chip_map):
+        """
+        :rtype: DataSpeedUpPacketGather
+        """
         return DataSpeedUpPacketGather(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
@@ -200,6 +207,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
             write_data_speed_up_reports=self._write_reports)
 
     def __new_mach_gatherer(self, ethernet_chip, vertex_to_chip_map):
+        """
+        :rtype: DataSpeedUpPacketGatherMachineVertex
+        """
         return DataSpeedUpPacketGatherMachineVertex(
             app_vertex=None, x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,

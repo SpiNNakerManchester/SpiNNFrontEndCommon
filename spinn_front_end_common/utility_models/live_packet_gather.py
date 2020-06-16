@@ -46,10 +46,8 @@ class LivePacketGather(
     def create_machine_vertex(
             self, vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
-        m_vtx = LivePacketGatherMachineVertex(
+        return LivePacketGatherMachineVertex(
             self._lpg_params, self, vertex_slice, label, constraints)
-        self.remember_associated_machine_vertex(m_vtx)
-        return m_vtx
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
