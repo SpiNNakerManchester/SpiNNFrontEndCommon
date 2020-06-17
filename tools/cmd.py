@@ -37,7 +37,7 @@ def _word(a, b, c, d):
 # -----------------------------------------------------------------------------
 
 
-class CMD(IntEnum):
+class SCP_CMD(IntEnum):
     VER = 0
     RUN = 1
     READ = 2
@@ -122,7 +122,7 @@ class Cmd(SCP):
     # -------------------------------------------------------------------------
 
     def ver(self, raw=False, **kwargs):
-        data = self.scp_cmd(CMD.VER, **kwargs)
+        data = self.scp_cmd(SCP_CMD.VER, **kwargs)
         vc, pc, cy, cx, size, ver_num, timestamp = struct.unpack_from(
             "<4B 2H I", data)
         ver_str = data[12:]
@@ -173,7 +173,7 @@ class Cmd(SCP):
         while length:
             _l = min(self._buf_size, length)
             data += self.scp_cmd(
-                CMD.READ, arg1=base, arg2=_l, arg3=type, **kwargs)
+                SCP_CMD.READ, arg1=base, arg2=_l, arg3=type, **kwargs)
             length -= _l
             base += _l
 
@@ -189,7 +189,7 @@ class Cmd(SCP):
         while length:
             _l = min(self._buf_size, length)
             data += self.scp_cmd(
-                CMD.LINK_READ, arg1=base, arg2=_l, arg3=link, **kwargs)
+                SCP_CMD.LINK_READ, arg1=base, arg2=_l, arg3=link, **kwargs)
             length -= _l
             base += _l
 
@@ -226,7 +226,7 @@ class Cmd(SCP):
         type = Mem_type[type]  # @ReservedAssignment
 
         for buf in self._chunk(data):
-            self.scp_cmd(CMD.WRITE, arg1=base, arg2=len(buf), arg3=type,
+            self.scp_cmd(SCP_CMD.WRITE, arg1=base, arg2=len(buf), arg3=type,
                          data=buf, **kwargs)
             base += len(buf)
 
@@ -238,14 +238,14 @@ class Cmd(SCP):
 
         for buf in self._chunk(data):
             length = len(buf)
-            self.scp_cmd(CMD.LINK_WRITE, arg1=base, arg2=length, arg3=link,
+            self.scp_cmd(SCP_CMD.LINK_WRITE, arg1=base, arg2=length, arg3=link,
                          data=buf, **kwargs)
             base += length
 
     # -------------------------------------------------------------------------
 
     def led(self, leds, **kwargs):
-        self.scp_cmd(CMD.LED, arg1=leds, arg2=1 << self._c, **kwargs)
+        self.scp_cmd(SCP_CMD.LED, arg1=leds, arg2=1 << self._c, **kwargs)
 
     # -------------------------------------------------------------------------
 
@@ -257,7 +257,7 @@ class Cmd(SCP):
         if length <= 0:
             raise ValueError("length not positive")
 
-        self.scp_cmd(CMD.FILL, arg1=base, arg2=data, arg3=length, **kwargs)
+        self.scp_cmd(SCP_CMD.FILL, arg1=base, arg2=data, arg3=length, **kwargs)
 
     # -------------------------------------------------------------------------
 
@@ -275,17 +275,17 @@ class Cmd(SCP):
                 int, socket.gethostbyname(host).split("."))))
         arg1 = (flag << 28) | (IPTAG.SET << 16) | (dest_port << 8) | tag
         arg2 = (dest_addr << 16) | port
-        self.scp_cmd(CMD.IPTAG, arg1=arg1, arg2=arg2, arg3=ip, **kwargs)
+        self.scp_cmd(SCP_CMD.IPTAG, arg1=arg1, arg2=arg2, arg3=ip, **kwargs)
 
     def iptag_clear(self, tag, **kwargs):
-        self.scp_cmd(CMD.IPTAG, arg1=(IPTAG.CLR << 16) | tag, **kwargs)
+        self.scp_cmd(SCP_CMD.IPTAG, arg1=(IPTAG.CLR << 16) | tag, **kwargs)
 
     def iptag_get(self, tag, count, **kwargs):
-        return self.scp_cmd(CMD.IPTAG, arg1=(IPTAG.GET << 16) | tag,
+        return self.scp_cmd(SCP_CMD.IPTAG, arg1=(IPTAG.GET << 16) | tag,
                             arg2=count, **kwargs)
 
     def iptag_tto(self, tto, **kwargs):
-        return self.scp_cmd(CMD.IPTAG, arg1=IPTAG.TTO << 16, arg2=tto,
+        return self.scp_cmd(SCP_CMD.IPTAG, arg1=IPTAG.TTO << 16, arg2=tto,
                             **kwargs)
 
 # -------------------------------------------------------------------------
