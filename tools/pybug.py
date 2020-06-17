@@ -351,7 +351,7 @@ def cmd_rtr_load(cli):
 
     addr = 0x67800000
     spin.write(addr, buf)
-    base = spin.scp_cmd(
+    base, = spin.scp_cmd(
         SCAMP_CMD.ALLOC, arg1=(app_id << 8) + 3, arg2=size, unpack="<I")
     if not base:
         raise RuntimeError("no room in router heap")

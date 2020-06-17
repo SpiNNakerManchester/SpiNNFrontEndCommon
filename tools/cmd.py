@@ -54,7 +54,7 @@ class CMD(IntEnum):
     TUBE = 64
 
 
-class SCAMP_CMD(CMD):
+class SCAMP_CMD(IntEnum):
     # SCAMP only
     APLX = 4
     REMAP = 16
@@ -70,7 +70,7 @@ class SCAMP_CMD(CMD):
     INFO = 31
 
 
-class BMP_CMD(CMD):
+class BMP_CMD(IntEnum):
     # BMP only
     FLASH_COPY = 49
     FLASH_ERASE = 50
