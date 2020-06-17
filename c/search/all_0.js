@@ -25,14 +25,13 @@ var searchData=
   ['all_5fcompressor_5fprocessors_5fdone_22',['all_compressor_processors_done',['../bit__field__sorter__and__searcher_8c.html#a49520fa4fcbd652ababa3ed7e9e002ee',1,'bit_field_sorter_and_searcher.c']]],
   ['all_5fmissing_5fflag_23',['ALL_MISSING_FLAG',['../data__speed__up__packet__gatherer_8c.html#a36a83348b69b2192c50545926575783c',1,'data_speed_up_packet_gatherer.c']]],
   ['alloc_5fin_5fsdram_24',['alloc_in_sdram',['../data__speed__up__packet__gatherer_8c.html#a7756051aab3e618777307b23504d23b3',1,'data_speed_up_packet_gatherer.c']]],
-  ['app_5fexit_25',['app_exit',['../platform_8h.html#a3b9b58736a46415e712780e6721e5191',1,'platform.h']]],
-  ['app_5fid_26',['app_id',['../compressor__sorter__structs_8h.html#a9abf6c1ac9c19615539601f10f760a28',1,'uncompressed_table_region_data_t::app_id()'],['../minimise_2src_2routing__table_8h.html#a0110afd82ae5867cd4e14b58b72f8895',1,'header_t::app_id()'],['../bit__field__sorter__and__searcher_8c.html#ab580a14d287e81d47a1720fb92e2a199',1,'app_id():&#160;bit_field_sorter_and_searcher.c']]],
-  ['app_5fid_5fmask_5ffrom_5ffree_27',['APP_ID_MASK_FROM_FREE',['../extra__monitor__support_8c.html#a2224f95f9bc87d0a29a31f9827ceb9b5',1,'extra_monitor_support.c']]],
-  ['app_5fid_5foffset_5ffrom_5ffree_28',['APP_ID_OFFSET_FROM_FREE',['../extra__monitor__support_8c.html#a9f37fd1513af350e6547d9be126ac0c0',1,'extra_monitor_support.c']]],
-  ['apply_5fpayload_5fprefix_29',['APPLY_PAYLOAD_PREFIX',['../eieio_8h.html#a98c84b768810c66978490a5848b743c3abc8242835ff8e9ff30e6ce6218ebf4ea',1,'eieio.h']]],
-  ['apply_5fpayload_5fprefix_5fmask_30',['APPLY_PAYLOAD_PREFIX_MASK',['../eieio_8h.html#a15df3ade1aa767973c78d9443fb89896a03ea463b84cdcce34313d611f4548f48',1,'eieio.h']]],
-  ['apply_5fprefix_31',['apply_prefix',['../live__packet__gather_8c.html#af0b7923976db1f1037c17a3aeeaac926',1,'lpg_config::apply_prefix()'],['../reverse__iptag__multicast__source_8c.html#a53993735ce0a4e1720a6bbcf18e73a6f',1,'config::apply_prefix()'],['../reverse__iptag__multicast__source_8c.html#a179a69c31a96ce21778d651d6a33ee8a',1,'apply_prefix():&#160;reverse_iptag_multicast_source.c'],['../eieio_8h.html#a98c84b768810c66978490a5848b743c3acdd4d6b9b775bca34233b6d3ac4b0850',1,'APPLY_PREFIX():&#160;eieio.h']]],
-  ['apply_5fprefix_5fmask_32',['APPLY_PREFIX_MASK',['../eieio_8h.html#a15df3ade1aa767973c78d9443fb89896ae7a749912240eda6dc7e83a33c048197',1,'eieio.h']]],
-  ['as_5fint_33',['as_int',['../aliases_8h.html#a40e8e923daf5ac0cb335333baae13561',1,'a_key_t']]],
-  ['available_5fsdram_5fblocks_34',['available_sdram_blocks',['../malloc__extras_8h.html#structavailable__sdram__blocks',1,'']]]
+  ['app_5fid_25',['app_id',['../compressor__sorter__structs_8h.html#a9abf6c1ac9c19615539601f10f760a28',1,'uncompressed_table_region_data_t::app_id()'],['../minimise_2src_2routing__table_8h.html#a0110afd82ae5867cd4e14b58b72f8895',1,'header_t::app_id()'],['../bit__field__sorter__and__searcher_8c.html#ab580a14d287e81d47a1720fb92e2a199',1,'app_id():&#160;bit_field_sorter_and_searcher.c']]],
+  ['app_5fid_5fmask_5ffrom_5ffree_26',['APP_ID_MASK_FROM_FREE',['../extra__monitor__support_8c.html#a2224f95f9bc87d0a29a31f9827ceb9b5',1,'extra_monitor_support.c']]],
+  ['app_5fid_5foffset_5ffrom_5ffree_27',['APP_ID_OFFSET_FROM_FREE',['../extra__monitor__support_8c.html#a9f37fd1513af350e6547d9be126ac0c0',1,'extra_monitor_support.c']]],
+  ['apply_5fpayload_5fprefix_28',['APPLY_PAYLOAD_PREFIX',['../eieio_8h.html#a98c84b768810c66978490a5848b743c3abc8242835ff8e9ff30e6ce6218ebf4ea',1,'eieio.h']]],
+  ['apply_5fpayload_5fprefix_5fmask_29',['APPLY_PAYLOAD_PREFIX_MASK',['../eieio_8h.html#a15df3ade1aa767973c78d9443fb89896a03ea463b84cdcce34313d611f4548f48',1,'eieio.h']]],
+  ['apply_5fprefix_30',['apply_prefix',['../live__packet__gather_8c.html#af0b7923976db1f1037c17a3aeeaac926',1,'lpg_config::apply_prefix()'],['../reverse__iptag__multicast__source_8c.html#a53993735ce0a4e1720a6bbcf18e73a6f',1,'config::apply_prefix()'],['../reverse__iptag__multicast__source_8c.html#a179a69c31a96ce21778d651d6a33ee8a',1,'apply_prefix():&#160;reverse_iptag_multicast_source.c'],['../eieio_8h.html#a98c84b768810c66978490a5848b743c3acdd4d6b9b775bca34233b6d3ac4b0850',1,'APPLY_PREFIX():&#160;eieio.h']]],
+  ['apply_5fprefix_5fmask_31',['APPLY_PREFIX_MASK',['../eieio_8h.html#a15df3ade1aa767973c78d9443fb89896ae7a749912240eda6dc7e83a33c048197',1,'eieio.h']]],
+  ['as_5fint_32',['as_int',['../aliases_8h.html#a40e8e923daf5ac0cb335333baae13561',1,'a_key_t']]],
+  ['available_5fsdram_5fblocks_33',['available_sdram_blocks',['../malloc__extras_8h.html#structavailable__sdram__blocks',1,'']]]
 ];
