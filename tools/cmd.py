@@ -308,7 +308,7 @@ class SCAMPCmd(Cmd):
         debug   - a debug value (integers>0 cause debug output; defaults to 0)
         delay   - delay (seconds) before sending (to throttle packets)
         """
-        super().__init__(self, *args, **kwargs)
+        super(SCAMPCmd, self).__init__(self, *args, **kwargs)
         self._nn_id = 0
 
     def _next_id(self):
