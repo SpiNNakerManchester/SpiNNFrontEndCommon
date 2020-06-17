@@ -44,27 +44,27 @@ class CLI(object):
         if delete:
             self._commands = {
                 "pause": (
-                    self._Pause,
+                    self._cmd_pause,
                     "<text.S>",
                     "Print string and wait for Enter key"),
                 "echo": (
-                    self._Echo,
+                    self._cmd_echo,
                     "<text.S>",
                     "Print string"),
                 "quit": (
-                    self._Quit,
+                    self._cmd_quit,
                     "",
                     "Quit"),
                 "help": (
-                    self._Help,
+                    self._cmd_help,
                     "",
                     "Provide help"),
                 "@": (
-                    self._At,
+                    self._cmd_at,
                     "<file.F> [quiet]",
                     "Read commands from file"),
                 "?": (
-                    self._Query,
+                    self._cmd_query,
                     "",
                     "List commands"),
             }
@@ -125,21 +125,21 @@ class CLI(object):
 
     # Default commands of a CLI object; always present!
 
-    def _Pause(self):
+    def _cmd_pause(self):
         """ print a string and wait for Enter key """
         self.__write(" ".join(self.args).replace(r"\n", "\n"))
         self._channel.readline()
 
-    def _Echo(self):
+    def _cmd_echo(self):
         """ print a string """
         self.__write(" ".join(self.args).replace(r"\n", "\n"))
 
-    def _Quit(self):
+    def _cmd_quit(self):
         if self.count:
             raise BadArgs
         return 1
 
-    def _Help(self):
+    def _cmd_help(self):
         """ command to print help information on CLI commands """
         if self.count == 1:
             cmd = self.arg(0)
@@ -157,7 +157,7 @@ class CLI(object):
             info = self._commands[cmd]
             print(" {:<12s} {:<30s} - {}".format(cmd, info[1], info[2]))
 
-    def _At(self):
+    def _cmd_at(self):
         """ command to read CLI commands from a file """
         if not 1 <= self.count <= 2:
             raise BadArgs
@@ -180,7 +180,7 @@ class CLI(object):
             finally:
                 self.state = state
 
-    def _Query(self):
+    def _cmd_query(self):
         """ command to print a list of CLI commands """
         cmds = list(self._commands)
         cmds.sort()

@@ -1445,7 +1445,7 @@ expert_cmds = {
 
 
 def usage():
-    print("usage: pybug <options> <hostname>", file=sys.stderr)
+    print("usage: pybug <options> <spiNNakerBoardIPAddress>", file=sys.stderr)
     print("  -bmp  <name>[/<slots>]   - set BMP target", file=sys.stderr)
     print("  -version                 - print version number", file=sys.stderr)
     print("  -norl                    - don't use 'ReadLine'", file=sys.stderr)
@@ -1531,6 +1531,14 @@ def init_readline():
 
 
 def main():
+    """ Main entry-point of pybug script.
+
+    Usage:
+
+        pybug <options> <spiNNakerBoardIPAddress>
+
+    Try `pybug -help` for more information (which calls :py:func:`usage`).
+    """
     global _cli
     prompt = process_args()
     rl = init_readline()
