@@ -214,7 +214,7 @@ class Cmd(SCP):
 
     def write(self, base, data,
               type="byte",  # pylint: disable=redefined-builtin
-               **kwargs):
+              **kwargs):
         if type not in Mem_type:
             raise ValueError("bad memory type")
         if type == "word" and base & 3:
@@ -369,7 +369,8 @@ class SCAMPCmd(Cmd):
         self.scp_cmd(SCAMP_CMD.AR, arg1=arg, **kwargs)
 
     def signal(self, type, data, mask, **kwargs):  # @ReservedAssignment
-        self.scp_cmd(SCAMP_CMD.SIG, arg1=type, arg2=data, arg3=mask, **kwargs)
+        return self.scp_cmd(
+            SCAMP_CMD.SIG, arg1=type, arg2=data, arg3=mask, **kwargs)
 
     def p2pc(self, x, y, **kwargs):
         _id = self._next_id()
