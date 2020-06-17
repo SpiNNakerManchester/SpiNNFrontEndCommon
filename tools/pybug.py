@@ -28,7 +28,7 @@ from tools.exn import BadArgs, SpinnException, SpinnTooManyRetriesException
 from tools.cli import CLI
 from tools.boot import boot
 from tools.sv import Struct
-from tools.cmd import SCAMPCmd, BMPCmd, SCAMP_CMD
+from tools.cmd import SCAMPCmd, BMPCmd
 from tools.util import (
     read_file, hex_dump, parse_cores, parse_region, parse_apps, parse_bits)
 
@@ -351,12 +351,10 @@ def cmd_rtr_load(cli):
 
     addr = 0x67800000
     spin.write(addr, buf)
-    base, = spin.scp_cmd(
-        SCAMP_CMD.ALLOC, arg1=(app_id << 8) + 3, arg2=size, unpack="<I")
+    base = spin.rtr_alloc(app_id, size)
     if not base:
         raise RuntimeError("no room in router heap")
-    spin.scp_cmd(SCAMP_CMD.RTR,
-                 arg1=(size << 16) + (app_id << 8 + 2), arg2=addr, arg3=base)
+    spin.rtr_load(app_id, addr, size, base)
 
 
 # ------------------------------------------------------------------------------
@@ -993,7 +991,7 @@ def cmd_remap(cli):
         raise BadArgs
     map_type = map_type == "phys"
 
-    spin.scp_cmd(SCAMP_CMD.REMAP, arg1=proc, arg2=map_type)
+    spin.remap(proc, map_type)
 
 
 # ------------------------------------------------------------------------------
@@ -1069,7 +1067,7 @@ def rtr_dump(buf, fr):
 def cmd_rtr_init(cli):
     if cli.count:
         raise BadArgs
-    spin.scp_cmd(SCAMP_CMD.RTR)
+    spin.rtr_init()
 
 
 def cmd_rtr_dump(cli):

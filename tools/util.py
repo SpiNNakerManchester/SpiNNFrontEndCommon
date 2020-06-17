@@ -20,6 +20,7 @@ _RANGE_RE = re.compile(r"^(\d+)(?:-(\d+))?$")
 _REGION_RE = re.compile(r"^(\d+),(\d+)$")
 
 
+# pylint: disable=redefined-builtin
 def hex_dump(data, format="byte",  # @ReservedAssignment
              width=None, addr=0, start=0, length=None, prefix="",
              do_print=True):

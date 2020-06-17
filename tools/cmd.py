@@ -149,18 +149,15 @@ class Cmd(SCP):
 
     # -------------------------------------------------------------------------
 
-    def _decode(self, data, unpack, fmt):
+    def _decode(self, data, unpack):
         if unpack:
-            original = data
             # Important! Some use cases have more data than we unpack
             data = struct.unpack_from(unpack, data)
-            if fmt:
-                data += [original]
-                data = fmt.format(*data)
         return data
 
     def read(self, base, length, unpack=None,
-             type="byte", format=None, **kwargs):  # @ReservedAssignment
+             type="byte",  # pylint: disable=redefined-builtin
+             **kwargs):
         data = b''
         if type not in Mem_type:
             raise ValueError("bad memory type")
@@ -177,10 +174,9 @@ class Cmd(SCP):
             length -= _l
             base += _l
 
-        return self._decode(data, unpack, format)
+        return self._decode(data, unpack)
 
-    def link_read(self, link, base, length, unpack=None,
-                  format=None, **kwargs):  # @ReservedAssignment
+    def link_read(self, link, base, length, unpack=None, **kwargs):
         if not 0 <= link <= 5:
             raise ValueError("bad link")
 
@@ -193,7 +189,7 @@ class Cmd(SCP):
             length -= _l
             base += _l
 
-        return self._decode(data, unpack, format)
+        return self._decode(data, unpack)
 
     # -------------------------------------------------------------------------
 
@@ -216,7 +212,9 @@ class Cmd(SCP):
                 self.write(base, data, type=ty, **kwargs)
                 base += len(data)
 
-    def write(self, base, data, type="byte", **kwargs):  # @ReservedAssignment
+    def write(self, base, data,
+              type="byte",  # pylint: disable=redefined-builtin
+               **kwargs):
         if type not in Mem_type:
             raise ValueError("bad memory type")
         if type == "word" and base & 3:
@@ -294,6 +292,7 @@ class Cmd(SCP):
 class SCAMPCmd(Cmd):
     """ SCAMP-specific operations
     """
+    # pylint: disable=redefined-builtin
     __slots__ = ("_nn_id", )
 
     def __init__(self, *args, **kwargs):
@@ -316,6 +315,48 @@ class SCAMPCmd(Cmd):
         next_id = (self._nn_id % 127) + 1
         self._nn_id = next_id
         return next_id * 2
+
+    # -------------------------------------------------------------------------
+
+    def rtr_alloc(self, app_id, size, **kwargs):
+        alloc_op = 3  # ALLOC_RTR
+        base_entry_id, = self.scp_cmd(
+            SCAMP_CMD.ALLOC, arg1=(app_id << 8) + alloc_op, arg2=size,
+            unpack="<I", **kwargs)
+        return base_entry_id
+
+    def rtr_init(self, **kwargs):
+        rtr_op = 0  # RTR_INIT
+        self.scp_cmd(SCAMP_CMD.RTR, arg1=rtr_op, **kwargs)
+
+    def rtr_clear(self, start, count, **kwargs):
+        rtr_op = 1  # RTR_CLEAR
+        self.scp_cmd(
+            SCAMP_CMD.RTR, arg1=(count << 16) | rtr_op, arg2=start, **kwargs)
+
+    def rtr_load(self, app_id, mem_addr, size, base_entry_id, **kwargs):
+        rtr_op = 2  # RTR_MC_LOAD
+        self.scp_cmd(
+            SCAMP_CMD.RTR, arg1=(size << 16) | (app_id << 8) | rtr_op,
+            arg2=mem_addr, arg3=base_entry_id, **kwargs)
+
+    def rtr_fr_get(self, **kwargs):
+        rtr_op = 3  # RTR_FR
+        route, = self.scp_cmd(
+            SCAMP_CMD.RTR, arg1=rtr_op, arg2=-1, unpack="<I", **kwargs)
+        return route
+
+    def rtr_fr_set(self, route, **kwargs):
+        if route & (1 << 31):
+            raise ValueError("route must not have top bit set")
+        rtr_op = 3  # RTR_FR
+        self.scp_cmd(SCAMP_CMD.RTR, arg1=rtr_op, arg2=route, **kwargs)
+
+    # -------------------------------------------------------------------------
+
+    def remap(self, proc_id, proc_id_is_physical=False, **kwargs):
+        self.scp_cmd(
+            SCAMP_CMD.REMAP, arg1=proc_id, arg2=proc_id_is_physical, **kwargs)
 
     # -------------------------------------------------------------------------
 
@@ -343,8 +384,7 @@ class SCAMPCmd(Cmd):
 
     # -------------------------------------------------------------------------
 
-    def srom_read(self, base, length, unpack=None, addr_size=24,
-                  format=None, **kwargs):  # @ReservedAssignment
+    def srom_read(self, base, length, unpack=None, addr_size=24, **kwargs):
         data = b""
         while length:
             _l = min(length, self._buf_size)
@@ -355,7 +395,7 @@ class SCAMPCmd(Cmd):
             length -= _l
             base += _l
 
-        return self._decode(data, unpack, format)
+        return self._decode(data, unpack)
 
     def srom_write(self, base, data, page_size=256, addr_size=24, **kwargs):
         for buf in self._chunk(data, page_size):
