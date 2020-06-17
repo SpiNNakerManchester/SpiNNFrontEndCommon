@@ -182,7 +182,7 @@ static inline void print_structs(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // useful for debugging
     for (int index = 0; index < sorted_bit_fields->n_bit_fields; index++) {
-        log_debug("index %u processor: %u, key: %u, data %u redundant %u "
+        log_info("index %u processor: %u, key: %u, data %u redundant %u "
                 "order %u", index,
                 sorted_bit_fields->processor_ids[index],
                 sorted_bit_fields->bit_fields[index]->key,
@@ -211,7 +211,7 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
 
         if (filter_region->n_redundancy_filters == 0) {
             // no bitfields to point at or sort so total can stay zero
-            break;
+            continue;
         }
 
         // store the index in bitfields list where this processors bitfields

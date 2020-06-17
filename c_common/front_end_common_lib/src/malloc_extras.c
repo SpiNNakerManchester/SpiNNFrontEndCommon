@@ -168,7 +168,6 @@ void malloc_extras_check_all_marked(int marker) {
                 log_error("the malloc with index %d has overran", index);
                 log_error("this test is marked by marker %d", marker);
                 failed = true;
-                break;
             }
         }
 
