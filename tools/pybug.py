@@ -686,7 +686,14 @@ def cpu_dump_header(fmt):
         print("---- -----  -----------       --   -----  --------")
 
 
-def cpu_dump(num, long, fmt):
+class _CpuDumpFormat(IntEnum):
+    TIMESTAMPS = 0
+    REG_HEX = 1
+    REG_DEC = 2
+    PHYSICAL = 3
+
+
+def cpu_dump(num, long_form=False, fmt=_CpuDumpFormat.TIMESTAMPS):
     base = sv.read_var("sv.vcpu_base")
     sv.base("vcpu", base + sv.size("vcpu") * num)
     sv.read_struct("vcpu")
@@ -700,7 +707,7 @@ def cpu_dump(num, long, fmt):
         _time = " " * 12
         et = " " * 9
 
-    if long:
+    if long_form:
         rt_code = sv.get_var("vcpu.rt_code")
         print(
             "Core {:2d}: app \"{}\", state {}, app_id {}, running {} "
@@ -730,15 +737,15 @@ def cpu_dump(num, long, fmt):
         print("{:3d}  {:<6s} {:<16s} {:3d} ".format(
             num, Cs[sv.get_var("vcpu.cpu_state")],
             sv.get_var("vcpu.app_name"), sv.get_var("vcpu.app_id")), end="")
-        if fmt == 1:
+        if fmt == _CpuDumpFormat.REG_HEX:
             print("    {:08x}   {:08x}   {:08x}   {:08x}".format(
                 sv.get_var("vcpu.user0"), sv.get_var("vcpu.user1"),
                 sv.get_var("vcpu.user2"), sv.get_var("vcpu.user3")))
-        elif fmt == 2:
+        elif fmt == _CpuDumpFormat.REG_DEC:
             print("  {:10u} {:10u} {:10u} {:10u}".format(
                 sv.get_var("vcpu.user0"), sv.get_var("vcpu.user1"),
                 sv.get_var("vcpu.user2"), sv.get_var("vcpu.user3")))
-        elif fmt == 3:
+        elif fmt == _CpuDumpFormat.PHYSICAL:
             v = sv.get_var("vcpu.sw_ver")
             print("   {:2u}    {}.{}.{}".format(
                 sv.get_var("vcpu.phys_cpu"),
@@ -757,17 +764,18 @@ def cmd_ps(cli):
         vc = cli.arg_i(0)
         if not 0 <= vc < 18:
             raise BadArgs
-        cpu_dump(vc, 1, 0)
+        cpu_dump(vc, long_form=True)
     elif cli.count == 1 and cli.arg(0) in ("x", "d", "p"):
         arg = cli.arg(0)
-        fmt = 1 if arg == "x" else 2 if arg == "d" else 3
+        fmt = _CpuDumpFormat.REG_HEX if arg == "x" else \
+            _CpuDumpFormat.REG_DEC if arg == "d" else _CpuDumpFormat.PHYSICAL
         cpu_dump_header(fmt)
         for vc in range(18):
-            cpu_dump(vc, 0, fmt)
+            cpu_dump(vc, fmt=fmt)
     else:
         cpu_dump_header(0)
         for vc in range(18):
-            cpu_dump(vc, 0, 0)
+            cpu_dump(vc, fmt=_CpuDumpFormat.TIMESTAMPS)
 
 
 # ------------------------------------------------------------------------------
@@ -871,7 +879,7 @@ def check_ip(s):
     return v
 
 
-def get_srom_info(long):
+def get_srom_info(long_form):
     addr = 8
     length = 32
 
@@ -887,7 +895,7 @@ def get_srom_info(long):
     nm = ".".join(map(str, d[19:15:-1]))
     port = d[22]
 
-    if long:
+    if long_form:
         print("Flag: {:04x}".format(flag))
         print("MAC:  {}".format(mac))
         print("IP:   {}".format(ip))
@@ -901,7 +909,7 @@ def get_srom_info(long):
 
 def cmd_srom_init(cli):
     if cli.count == 0:
-        get_srom_info(0)
+        get_srom_info(False)
         return
     elif cli.count != 6:
         raise BadArgs
@@ -927,12 +935,12 @@ def cmd_srom_init(cli):
         mac[3]] + addresses + [0, 0, port, 0, 0, 0xAAAAAAAA]))
     info = Srom_info[srom_type]
     spin.srom_write(0, data, page_size=info.PAGE, addr_size=info.ADDR)
-    get_srom_info(1)
+    get_srom_info(True)
 
 
 def cmd_srom_ip(cli):
     if cli.count == 0:
-        get_srom_info(1)
+        get_srom_info(True)
         return
     if not 0 <= cli.count <= 3:
         raise BadArgs
@@ -950,7 +958,7 @@ def cmd_srom_ip(cli):
 
     print("Checking...")
 
-    get_srom_info(1)
+    get_srom_info(True)
     rdata = spin.srom_read(addr, length, addr_size=info.ADDR)
     if len(rdata) != length or data != rdata:
         print("Oops! Try again?")

@@ -292,7 +292,6 @@ class Cmd(SCP):
 class SCAMPCmd(Cmd):
     """ SCAMP-specific operations
     """
-    # pylint: disable=redefined-builtin
     __slots__ = ("_nn_id", )
 
     def __init__(self, *args, **kwargs):
@@ -368,7 +367,8 @@ class SCAMPCmd(Cmd):
         arg = (app_id << 24) | (app_flags << 18) | mask
         self.scp_cmd(SCAMP_CMD.AR, arg1=arg, **kwargs)
 
-    def signal(self, type, data, mask, **kwargs):  # @ReservedAssignment
+    def signal(self, type,  # pylint: disable=redefined-builtin
+               data, mask, **kwargs):
         return self.scp_cmd(
             SCAMP_CMD.SIG, arg1=type, arg2=data, arg3=mask, **kwargs)
 
