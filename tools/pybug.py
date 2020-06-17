@@ -1502,7 +1502,7 @@ def open_targets():
         bmp = BMPCmd(target=bmp_target, port=bmp_port, debug=debug)
 
 
-class Completer(object):
+class _Completer(object):
     def __init__(self, rl):
         self._rl = rl
         self._stored = [None]
@@ -1526,7 +1526,7 @@ def init_readline():
         return None
 
     import readline
-    readline.set_completer(Completer(readline))
+    readline.set_completer(_Completer(readline))
     return readline
 
 
