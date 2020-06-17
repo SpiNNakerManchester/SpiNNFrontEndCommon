@@ -42,20 +42,6 @@ class EdgeToNKeysMapper(object):
                 "A machine graph is required for this mapper. "
                 "Please choose and try again")
 
-        av = None
-        for mv in machine_graph.vertices:
-            av = mv.app_vertex
-            break
-        if av is not None:
-            return self._allocate_by_app_graph_simple(machine_graph)
-        else:
-            return self._allocate_by_machine_graph_only(machine_graph)
-
-    def _allocate_by_app_graph_simple(self, machine_graph):
-        """
-        :param ~.MachineGraph machine_graph:
-        :rtype: ~.DictBasedMachinePartitionNKeysMap
-        """
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
@@ -71,59 +57,26 @@ class EdgeToNKeysMapper(object):
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    self.process_application_partition(partition, n_keys_map)
-
-        return n_keys_map
-
-    def _allocate_by_machine_graph_only(self, machine_graph):
-        """
-        :param ~.MachineGraph machine_graph:
-        :rtype: ~.DictBasedMachinePartitionNKeysMap
-        """
-        # Generate an n_keys map for the graph and add constraints
-        n_keys_map = DictBasedMachinePartitionNKeysMap()
-
-        # generate progress bar
-        progress = ProgressBar(
-            machine_graph.n_vertices,
-            "Getting number of keys required by each edge using "
-            "machine graph")
-
-        for vertex in progress.over(machine_graph.vertices):
-            for partition in machine_graph.\
-                    get_outgoing_edge_partitions_starting_at_vertex(
-                        vertex):
-                if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    self.process_machine_partition(partition, n_keys_map)
+                    self.process_partition(partition, n_keys_map)
 
         return n_keys_map
 
     @staticmethod
-    def process_application_partition(partition, n_keys_map):
+    def process_partition(partition, n_keys_map):
         """
         :param ~pacman.model.graphs.OutgoingEdgePartition partition:
         :param n_keys_map:
         :type n_keys_map:
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
-        vertex = partition.pre_vertex.app_vertex
-
-        if isinstance(vertex, AbstractProvidesNKeysForPartition):
-            n_keys = vertex.get_n_keys_for_partition(partition)
+        pre_vertex = partition.pre_vertex
+        if pre_vertex.app_vertex:
+            specific_pre_vertex = pre_vertex.app_vertex
         else:
-            n_keys = partition.pre_vertex.vertex_slice.n_atoms
-        n_keys_map.set_n_keys_for_partition(partition, n_keys)
+            specific_pre_vertex = pre_vertex
 
-    @staticmethod
-    def process_machine_partition(partition, n_keys_map):
-        """
-        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
-        :param n_keys_map:
-        :type n_keys_map:
-            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
-        """
-        if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
-            n_keys = partition.pre_vertex.get_n_keys_for_partition(partition)
+        if isinstance(specific_pre_vertex, AbstractProvidesNKeysForPartition):
+            n_keys = specific_pre_vertex.get_n_keys_for_partition(partition)
         else:
-            n_keys = 1
+            n_keys = pre_vertex.vertex_slice.n_atoms
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
