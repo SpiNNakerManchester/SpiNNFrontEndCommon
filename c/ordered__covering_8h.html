@@ -103,9 +103,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac8f7b6172a620fc686eedfa606584801"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#ac8f7b6172a620fc686eedfa606584801">oc_merge_apply</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="simple__minimise_8c.html#a1c915f60128891589ee02f38896399ea">merge</a>, <a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *aliases, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>)</td></tr>
 <tr class="memdesc:ac8f7b6172a620fc686eedfa606584801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a merge to the table against which it is defined.  <a href="ordered__covering_8h.html#ac8f7b6172a620fc686eedfa606584801">More...</a><br /></td></tr>
 <tr class="separator:ac8f7b6172a620fc686eedfa606584801"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7dc5a1924eea23a6134870e38ea9dbc6"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a7dc5a1924eea23a6134870e38ea9dbc6">oc_minimise</a> (int target_length, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *restrict <a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>, bool <a class="el" href="bit__field__compressor_8c.html#a27499168ecd781568c0aedcd623d545a">compress_only_when_needed</a>, bool <a class="el" href="bit__field__compressor_8c.html#a9701f3483027add11f0bffb0863baa2e">compress_as_much_as_possible</a>)</td></tr>
-<tr class="memdesc:a7dc5a1924eea23a6134870e38ea9dbc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the ordered covering algorithm to a routing table.  <a href="ordered__covering_8h.html#a7dc5a1924eea23a6134870e38ea9dbc6">More...</a><br /></td></tr>
-<tr class="separator:a7dc5a1924eea23a6134870e38ea9dbc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbfc14b5cbfc6529554581ba2821b5cb"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#acbfc14b5cbfc6529554581ba2821b5cb">oc_minimise</a> (int target_length, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>, bool <a class="el" href="bit__field__compressor_8c.html#a27499168ecd781568c0aedcd623d545a">compress_only_when_needed</a>, bool <a class="el" href="bit__field__compressor_8c.html#a9701f3483027add11f0bffb0863baa2e">compress_as_much_as_possible</a>)</td></tr>
+<tr class="memdesc:acbfc14b5cbfc6529554581ba2821b5cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the ordered covering algorithm to a routing table.  <a href="ordered__covering_8h.html#acbfc14b5cbfc6529554581ba2821b5cb">More...</a><br /></td></tr>
+<tr class="separator:acbfc14b5cbfc6529554581ba2821b5cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>An ordered covering of routing table entries. </p>
@@ -385,8 +385,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7dc5a1924eea23a6134870e38ea9dbc6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7dc5a1924eea23a6134870e38ea9dbc6">&#9670;&nbsp;</a></span>oc_minimise()</h2>
+<a id="acbfc14b5cbfc6529554581ba2821b5cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbfc14b5cbfc6529554581ba2821b5cb">&#9670;&nbsp;</a></span>oc_minimise()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -409,7 +409,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">volatile bool *restrict&#160;</td>
+          <td class="paramtype">volatile bool *&#160;</td>
           <td class="paramname"><em>stop_compressing</em>, </td>
         </tr>
         <tr>
@@ -442,7 +442,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">target_length</td><td>The length to reach </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">failed_by_malloc</td><td>Flag stating that it failed due to malloc </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">stop_compressing</td><td>Variable saying if the compressor should stop and return false; <em>set by interrupt</em> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">stop_compressing</td><td>Variable saying if the compressor should stop and return false; <em>set by interrupt</em> DURING the run of this method! </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">compress_only_when_needed</td><td>Only compress when needed </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">compress_as_much_as_possible</td><td>Only compress to normal routing table length </td></tr>
   </table>
