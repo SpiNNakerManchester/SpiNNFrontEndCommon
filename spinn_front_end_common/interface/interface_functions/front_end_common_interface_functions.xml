@@ -1259,7 +1259,6 @@
             <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
-                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>

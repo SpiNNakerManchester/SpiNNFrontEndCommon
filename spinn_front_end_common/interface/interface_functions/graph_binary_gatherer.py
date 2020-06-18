@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.model import ExecutableTargets
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableNotFoundException)
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinnman.model import ExecutableTargets
 
 
 class GraphBinaryGatherer(object):
@@ -58,9 +58,6 @@ class GraphBinaryGatherer(object):
         :param ~.Placement placement:
         :param ~.AbstractVertex vertex:
         """
-        # If we've got junk input (shouldn't happen), ignore it
-        if vertex is None:
-            return
         # if the vertex cannot be executed, ignore it
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             return
