@@ -70,13 +70,12 @@ class EdgeToNKeysMapper(object):
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
         pre_vertex = partition.pre_vertex
-        if pre_vertex.app_vertex:
-            specific_pre_vertex = pre_vertex.app_vertex
+        if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
+            n_keys = pre_vertex.get_n_keys_for_partition(partition)
         else:
-            specific_pre_vertex = pre_vertex
-
-        if isinstance(specific_pre_vertex, AbstractProvidesNKeysForPartition):
-            n_keys = specific_pre_vertex.get_n_keys_for_partition(partition)
-        else:
-            n_keys = pre_vertex.vertex_slice.n_atoms
+            pre_vertex = partition.pre_vertex.app_vertex
+            if isinstance(pre_vertex, AbstractProvidesNKeysForPartition):
+                n_keys = pre_vertex.get_n_keys_for_partition(partition)
+            else:
+                n_keys = pre_vertex.vertex_slice.n_atoms
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
