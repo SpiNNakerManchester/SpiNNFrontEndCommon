@@ -493,8 +493,6 @@ class MachineBitFieldRouterCompressor(object):
                 value = 2
             else:
                 value = 1
-            if compress_only_when_needed:
-                value += 1
             transceiver.write_memory(
                 chip_x, chip_y, user2_base_address,
                 self._ONE_WORDS.pack(value),
