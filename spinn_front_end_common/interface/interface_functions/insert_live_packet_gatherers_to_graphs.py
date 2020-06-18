@@ -20,8 +20,6 @@ from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 
-_LPG_SLICE = Slice(0, 0)
-
 
 class InsertLivePacketGatherersToGraphs(object):
     """ Adds LPGs as required into a given graph.
@@ -98,7 +96,8 @@ class InsertLivePacketGatherersToGraphs(object):
         app_graph.add_vertex(app_vtx)
         # No need to handle resources when allocating; LPG has core to itself
         vtx = app_vtx.create_machine_vertex(
-            _LPG_SLICE, resources_required=None, label="LivePacketGatherer",
+            vertex_slice=None, resources_required=None,
+            label="LivePacketGatherer",
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
         app_graph.machine_graph.add_vertex(vtx)
         return vtx
@@ -113,7 +112,7 @@ class InsertLivePacketGatherersToGraphs(object):
         :rtype: LivePacketGatherMachineVertex
         """
         vtx = LivePacketGatherMachineVertex(
-            params, app_vertex=None, vertex_slice=_LPG_SLICE,
+            params, app_vertex=None, vertex_slice=None,
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
         machine_graph.add_vertex(vtx)
         return vtx

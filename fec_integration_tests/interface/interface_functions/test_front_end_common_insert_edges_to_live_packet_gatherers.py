@@ -74,7 +74,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             extended["label"] = "test"
             vertex = LivePacketGatherMachineVertex(
                 LivePacketGatherParameters(**extended),
-                app_vertex=None, vertex_slice=Slice(0, 0))
+                app_vertex=None, vertex_slice=None)
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -164,7 +164,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             extended = dict(default_params)
             vertex = LivePacketGatherMachineVertex(
                 LivePacketGatherParameters(**extended),
-                app_vertex=None, vertex_slice=Slice(0, 0), label='test')
+                app_vertex=None, vertex_slice=None, label='test')
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -181,7 +181,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(
                 LivePacketGatherParameters(**extended),
-                app_vertex=None, vertex_slice=Slice(0, 0))
+                app_vertex=None, vertex_slice=None)
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2
             placements.add_placement(Placement(
                 x=chip.x, y=chip.y, p=3, vertex=vertex))
@@ -278,7 +278,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             vertex = LivePacketGather(
                 LivePacketGatherParameters(**new_params))
             app_graph.add_vertex(vertex)
-            vertex_slice = Slice(0, 0)
+            vertex_slice = None
             resources_required = vertex.get_resources_used_by_atoms(
                 vertex_slice)
             mac_vertex = vertex.create_machine_vertex(
