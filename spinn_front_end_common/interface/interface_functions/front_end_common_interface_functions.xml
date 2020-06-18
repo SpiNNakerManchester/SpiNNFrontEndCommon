@@ -1281,7 +1281,6 @@
             <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
-                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -2110,11 +2109,6 @@
         <python_class>WriteMemoryIOData</python_class>
         <input_definitions>
             <parameter>
-                <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -2129,6 +2123,10 @@
             <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -2152,13 +2150,13 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>graph</param_name>
             <param_name>placements</param_name>
             <param_name>app_id</param_name>
             <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
         </required_inputs>
         <optional_inputs>
+            <param_name>graph</param_name>
             <param_name>transceiver</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>uses_advanced_monitors</param_name>
