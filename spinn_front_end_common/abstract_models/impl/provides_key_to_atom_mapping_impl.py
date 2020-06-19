@@ -25,10 +25,6 @@ class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
         AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping)
     def routing_key_partition_atom_mapping(self, routing_info, partition):
         vertex_slice = partition.pre_vertex.vertex_slice
-        if vertex_slice is not None:
-            keys = routing_info.get_keys(vertex_slice.n_atoms)
-            start = vertex_slice.lo_atom
-        else:
-            keys = routing_info.get_keys(1)
-            start = 0
+        keys = routing_info.get_keys(vertex_slice.n_atoms)
+        start = vertex_slice.lo_atom
         return list(enumerate(keys, start))
