@@ -42,6 +42,10 @@ class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
+    """ Used to gather multicast packets coming from cores and stream them \
+        out to a receiving application on host. Only ever deployed on chips \
+        with a working Ethernet connection.
+    """
     class _REGIONS(Enum):
         SYSTEM = 0
         CONFIG = 1
@@ -150,6 +154,11 @@ class LivePacketGatherMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, tags):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param ~pacman.model.tags.Tags tags:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
@@ -163,7 +172,9 @@ class LivePacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Reserve SDRAM space for memory areas
+        """ Reserve SDRAM space for memory areas.
+
+        :param ~data_specification.DataSpecificationGenerator spec:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -180,11 +191,12 @@ class LivePacketGatherMachineVertex(
     def _write_configuration_region(self, spec, iptags):
         """ Write the configuration region to the spec
 
-        :param spec: the spec object for the DSG
-        :type spec: ~data_specification.DataSpecificationGenerator
-        :param iptags: The set of IP tags assigned to the object
-        :type iptags: iterable(~spinn_machine.tags.IPTag)
-        :raise DataSpecificationException: \
+        :param ~.DataSpecificationGenerator spec:
+        :param iterable(~.IPTag) iptags:
+            The set of IP tags assigned to the object
+        :raise ConfigurationException:
+            if `iptags` is empty
+        :raise DataSpecificationException:
             when something goes wrong with the DSG generation
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
@@ -215,6 +227,10 @@ class LivePacketGatherMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
+
+        :param ~data_specification.DataSpecificationGenerator spec:
+        :param int machine_time_step:
+        :param int time_scale_factor:
         """
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
@@ -225,25 +241,23 @@ class LivePacketGatherMachineVertex(
     def get_cpu_usage():
         """ Get the CPU used by this vertex
 
-        :return:  0
+        :return: 0
         :rtype: int
         """
         return 0
 
-    @staticmethod
-    def get_sdram_usage():
+    @classmethod
+    def get_sdram_usage(cls):
         """ Get the SDRAM used by this vertex
 
         :rtype: int
         """
         return (
-            SYSTEM_BYTES_REQUIREMENT +
-            LivePacketGatherMachineVertex._CONFIG_SIZE +
-            LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex._N_ADDITIONAL_PROVENANCE_ITEMS))
+            SYSTEM_BYTES_REQUIREMENT + cls._CONFIG_SIZE +
+            cls.get_provenance_data_size(cls._N_ADDITIONAL_PROVENANCE_ITEMS))
 
-    @staticmethod
-    def get_dtcm_usage():
+    @classmethod
+    def get_dtcm_usage(cls):
         """ Get the DTCM used by this vertex
         """
-        return LivePacketGatherMachineVertex._CONFIG_SIZE
+        return cls._CONFIG_SIZE

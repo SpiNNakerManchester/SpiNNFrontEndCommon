@@ -61,6 +61,39 @@ MERGED_NAME = "bit_fields_merged"
 
 
 class MachineBitFieldRouterCompressor(object):
+    """ On-machine bitfield-aware routing table compression.
+
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+        routing tables
+    :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
+    :param ~spinn_machine.Machine machine: spinnMachine instance
+    :param int app_id: app id of the application
+    :param str provenance_file_path: file path for prov data
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param ~pacman.model.placements.Placements placements:
+        placements on machine
+    :param ExecutableFinder executable_finder: where are binaries are located
+    :param bool read_algorithm_iobuf: flag saying if read iobuf
+    :param bool produce_report:
+    :param str default_report_folder:
+    :param bool use_timer_cut_off:
+    :param int machine_time_step:
+    :param int time_scale_factor:
+    :param int no_sync_changes:
+    :param int threshold_percentage: the percentage of bitfields to do on chip\
+        before its considered a success
+    :param ExecutableTargets executable_targets:
+        the set of targets and executables
+    :param graph_mapper: mapping between graphs (could be none)
+    :param bool compress_only_when_needed:
+        whether to compress only when needed
+    :param bool compress_as_much_as_possible:
+        whether to compress as much as possible
+    :param list(ProvenanceDataItem) provenance_data_objects:
+    :return: where the compressors ran, and the provenance they generated
+    :rtype: tuple(ExecutableTargets, list(ProvenanceDataItem))
+    """
 
     __slots__ = []
 
@@ -125,24 +158,28 @@ class MachineBitFieldRouterCompressor(object):
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
-        :param routing_tables: routing tables
-        :param transceiver: spinnman instance
-        :param machine: spinnMachine instance
-        :param app_id: app id of the application
-        :param provenance_file_path: file path for prov data
-        :param machine_graph: machine graph
+        :param ~.MulticastRoutingTables routing_tables:
+        :param ~.Transceiver transceiver:
+        :param ~.Machine machine:
+        :param int app_id:
+        :param str provenance_file_path:
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :param ~.ExecutableFinder executable_finder:
+        :param bool read_algorithm_iobuf:
+        :param bool produce_report:
+        :param str default_report_folder:
+        :param bool use_timer_cut_off:
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param int no_sync_changes:
+        :param int threshold_percentage:
+        :param ExecutableTargets executable_targets:
         :param graph_mapper: mapping between graphs (could be none)
-        :param placements: placements on machine
-        :param threshold_percentage: the percentage of bitfields to do on chip\
-         before its considered a success
-        :param executable_finder: where are binaries are located
-        :param read_algorithm_iobuf: bool flag saying if read iobuf
-        :param compress_only_when_needed: bool flag asking if compress only \
-        when needed
-        :param compress_as_much_as_possible: bool flag asking if should \
-        compress as much as possible
-        :param executable_targets: the set of targets and executables
-        :rtype: executable targets
+        :param bool compress_only_when_needed:
+        :param bool compress_as_much_as_possible:
+        :param list(ProvenanceDataItem) provenance_data_objects:
+        :rtype: tuple(ExecutableTargets,list(ProvenanceDataItem))
         """
 
         # build provenance data objects

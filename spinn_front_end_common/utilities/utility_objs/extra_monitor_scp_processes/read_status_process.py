@@ -13,11 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
-    import GetReinjectionStatusMessage
-from spinnman.processes import AbstractMultiConnectionProcess
 import logging
 import traceback
+from spinnman.processes import AbstractMultiConnectionProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
+    import (
+        GetReinjectionStatusMessage)
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
     def __init__(self, connection_selector):
         """
         :param \
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
+            ~spinnman.processes.AbstractMultiConnectionProcessConnectionSelector\
             connection_selector:
         """
         super(ReadStatusProcess, self).__init__(connection_selector)

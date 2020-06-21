@@ -62,8 +62,29 @@ class _BitFieldData(object):
 
 
 class HostBasedBitFieldRouterCompressor(object):
-    """ host based fancy router compressor using the bitfield filters of the \
-    cores.
+    """ Host-based fancy router compressor using the bitfield filters of the \
+        cores. Compresses bitfields and router table entries together as \
+        much as feasible.
+
+    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
+        routing tables (uncompressed)
+    :param ~spinn_machine.Machine machine: SpiNNMachine instance
+    :param ~pacman.model.placements.Placements placements: placements
+    :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
+    :param str default_report_folder: report folder
+    :param bool produce_report: flag for producing report
+    :param bool use_timer_cut_off:
+        flag for whether to use timer for compressor
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph level
+    :param ~pacman.model.routing_info.RoutingInfo routing_info:
+        routing information
+    :param int machine_time_step: time step
+    :param int time_scale_factor: time scale factor
+    :param int target_length: length of table entries to get to.
+    :param int time_to_try_for_each_iteration: time to try per iteration
+    :return: compressed routing table entries
+    :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
 
     __slots__ = [
@@ -130,25 +151,22 @@ class HostBasedBitFieldRouterCompressor(object):
             use_timer_cut_off, machine_graph, routing_infos,
             machine_time_step, time_scale_factor, target_length=None,
             time_to_try_for_each_iteration=None, graph_mapper=None):
-        """ compresses bitfields and router table entries together as /
-        feasible as possible
-
-        :param router_tables: routing tables (uncompressed)
-        :param machine: SpiNNMachine instance
-        :param placements: placements
-        :param transceiver: SpiNNMan instance
+        """
+        :param ~.MulticastRoutingTables router_tables:
+        :param ~.Machine machine:
+        :param ~.Placements placements:
+        :param ~.Transceiver transceiver:
+        :param str default_report_folder:
+        :param bool produce_report:
+        :param bool use_timer_cut_off:
+        :param ~.MachineGraph machine_graph:
+        :param ~.RoutingInfo routing_infos:
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param int target_length:
+        :param int time_to_try_for_each_iteration:
         :param graph_mapper: mapping between graphs
-        :param produce_report: boolean flag for producing report
-        :param default_report_folder: report folder
-        :param machine_time_step: time step
-        :type machine_time_step: int
-        :param time_scale_factor: time scale factor
-        :type time_scale_factor: int
-        :param machine_graph: the machine graph level
-        :param target_length: length of table entries to get to.
-        :param use_timer_cut_off: bool flag for using timer or not for \
-            compressor
-        :return: compressed routing table entries
+        :rtype: ~.MulticastRoutingTables
         """
 
         if target_length is None:
@@ -226,7 +244,7 @@ class HostBasedBitFieldRouterCompressor(object):
         """ THIS IS NEEDED due to the link from key to edge being lost.
 
         :param machine_graph: machine graph
-        :param routing_infos: routing infos
+        :param ~.RoutingInfo routing_infos: routing infos
         :param graph_mapper: graph mapper
         :return: key to atom map based of key to n atoms
         """

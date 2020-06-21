@@ -22,6 +22,12 @@ from spinnman.model import ExecutableTargets
 
 class GraphBinaryGatherer(object):
     """ Extracts binaries to be executed.
+
+    :param ~pacman.model.placements.Placements placements:
+    :param ~pacman.model.graphs.machine.MachineGraph graph:
+    :param ~spinn_utilities.executable_finder.ExecutableFinder \
+            executable_finder:
+    :rtype: ExecutableTargets
     """
 
     __slots__ = ["_exe_finder", "_exe_targets"]
@@ -32,6 +38,12 @@ class GraphBinaryGatherer(object):
 
     def __call__(
             self, placements, graph, executable_finder, graph_mapper=None):
+        """
+        :param ~.Placements placements:
+        :param ~.MachineGraph graph:
+        :param ExecutableFinder executable_finder:
+        :rtype: ExecutableTargets
+        """
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
@@ -45,6 +57,10 @@ class GraphBinaryGatherer(object):
         return self._exe_targets
 
     def __get_binary(self, placement, vertex):
+        """
+        :param ~.Placement placement:
+        :param ~.AbstractVertex vertex:
+        """
         # If we've got junk input (shouldn't happen), ignore it
         if vertex is None:
             return
