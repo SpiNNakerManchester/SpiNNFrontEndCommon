@@ -56,30 +56,22 @@ class InsertChipPowerMonitorsToGraphs(object):
         app_vertex = None
         if application_graph is None:
             app_vertex = ChipPowerMonitor(
-                label=_LABEL.format("ChipPowerMonitor"),
+                label="ChipPowerMonitor",
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording)
             application_graph.add_vertex(app_vertex)
-
-        for chip in progress.over(machine.chips):
-            self._add_power_monitor_for_chip(
-                chip, app_vertex, machine_graph, sampling_frequency,
-                n_samples_per_recording)
-
-    @staticmethod
-    def _add_power_monitor_for_chip(
-            chip, app_vertex, machine_graph, sampling_frequency,
-            n_samples_per_recording):
-        # build constraint
-        constraint = ChipAndCoreConstraint(chip.x, chip.y)
-
-        # build machine vert
-        machine_vertex = ChipPowerMonitorMachineVertex(
-            label=_LABEL.format("machine", chip.x, chip.y),
-            constraints=[constraint],
-            app_vertex=app_vertex,
-            sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording)
-
-        # add vert to graph
-        machine_graph.add_vertex(machine_vertex)
+            for chip in progress.over(machine.chips):
+                machine_vertex = app_vertex.create_machine_vertex(
+                    vertex_slice=None, resources_required=None,
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
+                machine_graph.add_vertex(machine_vertex)
+        else:
+            for chip in progress.over(machine.chips):
+                machine_vertex = ChipPowerMonitorMachineVertex(
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
+                    app_vertex=app_vertex,
+                    sampling_frequency=sampling_frequency,
+                    n_samples_per_recording=n_samples_per_recording)
+                machine_graph.add_vertex(machine_vertex)
