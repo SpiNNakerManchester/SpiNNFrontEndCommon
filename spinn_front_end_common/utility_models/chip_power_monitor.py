@@ -51,14 +51,9 @@ class ChipPowerMonitor(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice=None,
-            resources_required=None,  # @UnusedVariable
-            label=None, constraints=None):
-        return ChipPowerMonitorMachineVertex(
-            constraints=constraints, label=label, app_vertex=self,
-            n_samples_per_recording=self._n_samples_per_recording,
-            sampling_frequency=self._sampling_frequency,
-            vertex_slice=vertex_slice)
+            self, vertex_slice, resources_required, label=None,
+            constraints=None):
+        raise NotImplementedError("Create Machine vertex dirictly")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
