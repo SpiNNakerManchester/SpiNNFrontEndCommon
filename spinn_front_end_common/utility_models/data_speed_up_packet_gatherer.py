@@ -27,7 +27,7 @@ class DataSpeedUpPacketGather(
     """ The gatherer for the data speed up protocols. Gatherers are only ever\
         deployed on chips with an ethernet connection.
     """
-    __slots__ = ["_machine_vertex"]
+    __slots__ = []
 
     def __init__(
             self, x, y, ip_address, extra_monitors_by_chip,
@@ -51,16 +51,13 @@ class DataSpeedUpPacketGather(
         super(DataSpeedUpPacketGather, self).__init__(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
-        self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
+        # Create the machine vertex at the same time
+        DataSpeedUpPacketGatherMachineVertex(
             app_vertex=self,
             x=x, y=y, ip_address=ip_address, constraints=constraints,
             extra_monitors_by_chip=extra_monitors_by_chip,
             report_default_directory=report_default_directory,
             write_data_speed_up_reports=write_data_speed_up_reports)
-
-    @property
-    def machine_vertex(self):
-        return self._machine_vertex
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -73,7 +70,13 @@ class DataSpeedUpPacketGather(
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        return self._machine_vertex
+        raise NotImplementedError("Use machine_vertices[0]")
+
+    @overrides(ApplicationVertex.remember_associated_machine_vertex)
+    def remember_associated_machine_vertex(self, machine_vertex):
+        super(DataSpeedUpPacketGather, self).remember_associated_machine_vertex(
+            machine_vertex)
+        assert(len(self.machine_vertices) == 1)
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):

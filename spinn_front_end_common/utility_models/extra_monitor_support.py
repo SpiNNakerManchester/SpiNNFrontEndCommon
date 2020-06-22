@@ -26,7 +26,7 @@ class ExtraMonitorSupport(
         AbstractGeneratesDataSpecification):
     """ Control over the extra monitors.
     """
-    __slots__ = ["machine_vertex"]
+    __slots__ = []
 
     def __init__(self, constraints):
         """
@@ -36,13 +36,20 @@ class ExtraMonitorSupport(
         """
         super(ExtraMonitorSupport, self).__init__(
             label="ExtraMonitorSupport", constraints=constraints)
-        self.machine_vertex = ExtraMonitorSupportMachineVertex(
+        # Create the machine vertex at the same time
+        ExtraMonitorSupportMachineVertex(
             constraints=constraints, app_vertex=self)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        return self.machine_vertex
+        raise NotImplementedError("Use machine_vertices[0]")
+
+    @overrides(ApplicationVertex.remember_associated_machine_vertex)
+    def remember_associated_machine_vertex(self, machine_vertex):
+        super(ExtraMonitorSupport, self).remember_associated_machine_vertex(
+            machine_vertex)
+        assert (len(self.machine_vertices) == 1)
 
     @property
     @overrides(ApplicationVertex.n_atoms)

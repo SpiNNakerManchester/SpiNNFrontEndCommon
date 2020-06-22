@@ -101,7 +101,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             # add to both application graph and machine graph
             app_vertex = self.__new_app_monitor(chip)
             application_graph.add_vertex(app_vertex)
-            vertex = app_vertex.machine_vertex
+            vertex = app_vertex.machine_vertices[0]
             machine_graph.add_vertex(vertex)
             vertex_to_chip_map[chip.x, chip.y] = vertex
             extra_monitor_vertices.append(vertex)
@@ -155,7 +155,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             # add to application graph
             app_vertex = self.__new_app_gatherer(chip, vertex_to_chip_map)
             application_graph.add_vertex(app_vertex)
-            vertex = app_vertex.machine_vertex
+            vertex = app_vertex.machine_vertices[0]
             machine_graph.add_vertex(vertex)
             # update mapping for edge builder
             chip_to_gatherer_map[chip.x, chip.y] = vertex
