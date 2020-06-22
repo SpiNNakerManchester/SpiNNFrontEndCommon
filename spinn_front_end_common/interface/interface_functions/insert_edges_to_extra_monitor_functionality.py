@@ -39,14 +39,26 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         the application graph
     """
 
+    __slots__ = [
+        # Map of Chip(x,y) to the (Gather) vertex
+        "_chip_to_gatherer_map",
+        # Description of the machine on which job is being run
+        "_machine",
+        # Map of Core(x,y,p) to the Placement on that core
+        "_placements"
+    ]
+
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None):
         """
         :param ~.MachineGraph machine_graph:
         :param ~.Placements placements:
+            Map of Core(x,y,p) to the Placement on that core
         :param ~.Machine machine:
+            Description of the machine on which job is being run
         :param vertex_to_ethernet_connected_chip_mapping:
+            Map of Chip(x,y) to the (Gather) vertex
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param ~.ApplicationGraph application_graph:

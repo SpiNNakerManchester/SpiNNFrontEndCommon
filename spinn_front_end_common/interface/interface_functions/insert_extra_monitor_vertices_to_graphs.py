@@ -25,6 +25,13 @@ class InsertExtraMonitorVerticesToGraphs(object):
         the extra monitor cores required.
     """
 
+    __slots__ = [
+        # the directory where reports go
+        "_report_dir",
+        #  flag indicating whether to write the reports for data speed up
+        "_write_reports",
+    ]
+
     def __call__(
             self, machine, machine_graph, default_report_directory,
             write_data_speed_up_reports, application_graph=None):
@@ -32,10 +39,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
         :param default_report_directory: the directory where reports go
-        :param write_data_speed_up_out_report:
-            determine whether to write the report for data speed up out
-        :param write_data_speed_up_in_report:
-            determine whether to write the report for data speed up in
+        :param write_data_speed_up_report:
+            determine whether to write the reports for data speed up
         :param application_graph: app graph.
         :return: Ethernet chip to gatherer vertex map,
             list of extra_monitor vertices, vertex_to_chip_map

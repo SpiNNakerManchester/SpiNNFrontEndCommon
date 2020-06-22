@@ -46,6 +46,15 @@ class InsertEdgesToLivePacketGatherers(object):
         ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     """
 
+    __slots__ = [
+        # the mapping of LPG parameters to machine vertices
+        "_lpg_to_vertex",
+        # the SpiNNaker machine
+        "_machine",
+        # the placements object
+        "_placements"
+    ]
+
     def __call__(
             self, live_packet_gatherer_parameters, placements,
             live_packet_gatherers_to_vertex_mapping, machine,
