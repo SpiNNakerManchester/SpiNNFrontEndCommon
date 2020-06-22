@@ -83,8 +83,9 @@ class ChipPowerMonitor(
         # pylint: disable=protected-access
 
         # generate spec for the machine vertex
-        placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
+        placement.vertex.generate_data_specification(
+            spec, placement, machine_time_step, time_scale_factor,
+            n_machine_time_steps)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

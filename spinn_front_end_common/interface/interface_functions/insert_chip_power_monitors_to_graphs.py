@@ -20,7 +20,6 @@ from spinn_front_end_common.utility_models import (
     ChipPowerMonitor, ChipPowerMonitorMachineVertex)
 
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
-_SLICE = Slice(0, 0)
 
 
 class InsertChipPowerMonitorsToGraphs(object):
@@ -54,65 +53,34 @@ class InsertChipPowerMonitorsToGraphs(object):
         progress = ProgressBar(
             machine.n_chips, "Adding Chip power monitors to Graph")
 
+        app_vertex = None
         if application_graph is None:
-            for chip in progress.over(machine.chips):
-                self._add_power_monitor_for_chip_without_application_graph(
-                    chip, machine_graph, sampling_frequency,
-                    n_samples_per_recording)
-        else:
-            for chip in progress.over(machine.chips):
-                self._add_power_monitor_for_chip_with_application_graph(
-                    chip, machine_graph, application_graph,
-                    sampling_frequency, n_samples_per_recording)
+            app_vertex = ChipPowerMonitor(
+                label=_LABEL.format("ChipPowerMonitor"),
+                sampling_frequency=sampling_frequency,
+                n_samples_per_recording=n_samples_per_recording)
+            application_graph..add_vertex(app_vertex)
+
+        for chip in progress.over(machine.chips):
+            self._add_power_monitor_for_chip(
+                chip, app_vertex, machine_graph, sampling_frequency,
+                n_samples_per_recording)
 
     @staticmethod
-    def _add_power_monitor_for_chip_with_application_graph(
-            chip, machine_graph, application_graph,
-            sampling_frequency, n_samples_per_recording):
-        """
-        :param ~.Chip chip:
-        :param ~.MachineGraph machine_graph:
-        :param ~.ApplicationGraph application_graph:
-        :param int sampling_frequency:
-        :param int n_samples_per_recording:
-        """
+    def _add_power_monitor_for_chip(
+            chip, app_vertex, machine_graph, sampling_frequency,
+            n_samples_per_recording):
         # build constraint
         constraint = ChipAndCoreConstraint(chip.x, chip.y)
 
-        # build app vertex
-        app_vertex = ChipPowerMonitor(
-            label=_LABEL.format("application", chip.x, chip.y),
+        # build machine vert
+        machine_vertex = ChipPowerMonitorMachineVertex(
+            label=_LABEL.format("machine", chip.x, chip.y),
             constraints=[constraint],
-            sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording)
-        # add to graph
-        application_graph.add_vertex(app_vertex)
-        # build machine vert
-        vertex = app_vertex.create_machine_vertex(
-            label=_LABEL.format("machine", chip.x, chip.y),
-            vertex_slice=_SLICE, resources_required=None,
-            constraints=[constraint])
-        # add vert to graph
-        machine_graph.add_vertex(vertex)
-
-    @staticmethod
-    def _add_power_monitor_for_chip_without_application_graph(
-            chip, machine_graph, sampling_frequency, n_samples_per_recording):
-        """
-        :param ~.Chip chip:
-        :param ~.MachineGraph machine_graph:
-        :param int sampling_frequency:
-        :param int n_samples_per_recording:
-        """
-        # build constraint
-        constraint = ChipAndCoreConstraint(chip.x, chip.y)
-
-        # build machine vert
-        vertex = ChipPowerMonitorMachineVertex(
-            label=_LABEL.format("machine", chip.x, chip.y),
+            app_vertex=app_vertex,
             sampling_frequency=sampling_frequency,
             n_samples_per_recording=n_samples_per_recording,
-            constraints=[constraint], app_vertex=None,
-            vertex_slice=_SLICE)
+            )
+
         # add vert to graph
-        machine_graph.add_vertex(vertex)
+        machine_graph.add_vertex(machine_vertex)
