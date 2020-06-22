@@ -281,9 +281,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     _TAG_INITIAL_PORT = 10000
 
     def __init__(
-            self, app_vertex, x, y, extra_monitors_by_chip, ip_address,
+            self, x, y, extra_monitors_by_chip, ip_address,
             report_default_directory,
-            write_data_speed_up_reports, constraints=None):
+            write_data_speed_up_reports, app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.

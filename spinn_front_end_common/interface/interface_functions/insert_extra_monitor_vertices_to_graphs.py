@@ -216,7 +216,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
         return DataSpeedUpPacketGatherMachineVertex(
-            app_vertex=None, x=ethernet_chip.x, y=ethernet_chip.y,
+            x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
