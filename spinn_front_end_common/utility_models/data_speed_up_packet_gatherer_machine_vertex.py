@@ -297,6 +297,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             Whether to write low-level reports on data transfer speeds.
         :param iterable(~pacman.model.constraints.AbstractConstraint) \
                 constraints:
+        :param app_vertex:
+            The application vertex that caused this machine vertex to be
+            created. If None, there is no such application vertex.
+        :type app_vertex: ApplicationVertex or None
         """
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
