@@ -79,7 +79,6 @@ class ChipIOBufExtractor(object):
         :param ExecutableFinder executable_finder:
         :param str app_provenance_file_path:
         :param str system_provenance_file_path:
-        :param dict(str,ExecutableType) binary_executable_types:
         :param str from_cores:
         :param str binary_types:
         :return: error_entries, warn_entries
