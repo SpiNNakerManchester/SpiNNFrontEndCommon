@@ -59,7 +59,7 @@ class InsertChipPowerMonitorsToGraphs(object):
                 label=_LABEL.format("ChipPowerMonitor"),
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording)
-            application_graph..add_vertex(app_vertex)
+            application_graph.add_vertex(app_vertex)
 
         for chip in progress.over(machine.chips):
             self._add_power_monitor_for_chip(
@@ -79,8 +79,7 @@ class InsertChipPowerMonitorsToGraphs(object):
             constraints=[constraint],
             app_vertex=app_vertex,
             sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording,
-            )
+            n_samples_per_recording=n_samples_per_recording)
 
         # add vert to graph
         machine_graph.add_vertex(machine_vertex)
