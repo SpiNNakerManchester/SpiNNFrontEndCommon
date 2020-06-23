@@ -76,7 +76,7 @@ class CommandSenderMachineVertex(
         :param CommandSender app_vertex:
         """
         super(CommandSenderMachineVertex, self).__init__(
-            label, constraints, app_vertex, Slice(0, 0))
+            label, constraints, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()
