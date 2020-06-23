@@ -102,13 +102,15 @@ class InsertEdgesToLivePacketGatherers(object):
                 for vertex, p_ids in live_packet_gatherer_parameters[
                         lpg_params]:
                     self._connect_lpg_vertex_in_application_graph(
-                        application_graph, vertex, lpg_params, p_ids,
-                        n_keys_map)
+                        application_graph, machine_graph, vertex, lpg_params,
+                        p_ids, n_keys_map)
 
     def _connect_lpg_vertex_in_application_graph(
-            self, app_graph, app_vertex, lpg_params, p_ids, n_keys_map):
+            self, app_graph, m_graph, app_vertex, lpg_params, p_ids,
+            n_keys_map):
         """
         :param ~.ApplicationGraph app_graph:
+        :param ~.MachineGraph m_graph:
         :param ~.ApplicationVertex app_vertex:
         :param LivePacketGatherParameters lpg_params:
         :param list(str) p_ids:
@@ -117,10 +119,8 @@ class InsertEdgesToLivePacketGatherers(object):
         if not app_vertex.machine_vertices or not p_ids:
             return
 
-        # flag for ensuring we don't add the edge to the app
-        # graph many times
+        # flag for ensuring we don't add the edge to the app graph many times
         app_edges = dict()
-        m_graph = app_graph.machine_graph
         m_partitions = set()
 
         # iterate through the associated machine vertices
@@ -147,8 +147,7 @@ class InsertEdgesToLivePacketGatherers(object):
                         machine_edge))
 
         for partition in m_partitions:
-            EdgeToNKeysMapper.process_application_partition(
-                partition, n_keys_map)
+            EdgeToNKeysMapper.process_partition(partition, n_keys_map)
 
     def _connect_lpg_vertex_in_machine_graph(
             self, m_graph, m_vertex, lpg_params, p_ids, n_keys_map):
@@ -172,7 +171,7 @@ class InsertEdgesToLivePacketGatherers(object):
                 partitions.add(m_graph.get_outgoing_partition_for_edge(edge))
 
         for partition in partitions:
-            EdgeToNKeysMapper.process_machine_partition(partition, n_keys_map)
+            EdgeToNKeysMapper.process_partition(partition, n_keys_map)
 
     def _find_closest_live_packet_gatherer(self, m_vertex, lpg_params):
         """ Locates the LPG on the nearest Ethernet-connected chip to the\
