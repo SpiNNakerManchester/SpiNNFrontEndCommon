@@ -13,12 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .one_to_one_applcaition_vertex import OneToOneApplicationVertex
+from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
 from .extra_monitor_support_machine_vertex import (
     ExtraMonitorSupportMachineVertex)
 
 
-class ExtraMonitorSupport(OneToOneApplicationVertex):
+class ExtraMonitorSupport(AbstractOneAppOneMachineVertex):
     """ Control over the extra monitors.
     """
     __slots__ = []
@@ -32,5 +32,6 @@ class ExtraMonitorSupport(OneToOneApplicationVertex):
         super(ExtraMonitorSupport, self).__init__(
             label="ExtraMonitorSupport", constraints=constraints)
         # Create the machine vertex at the same time
-        ExtraMonitorSupportMachineVertex(
+        # As with any MachineVertex this also triggers remember_...
+        self._machine_vertex = ExtraMonitorSupportMachineVertex(
             constraints=constraints, app_vertex=self)
