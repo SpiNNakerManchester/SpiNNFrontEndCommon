@@ -45,8 +45,10 @@ class ChipIOBufExtractor(object):
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param ExecutableTargets executable_targets:
     :param ExecutableFinder executable_finder:
-    :param str app_provenance_file_path:
-    :param str system_provenance_file_path:
+    :param app_provenance_file_path:
+    :type app_provenance_file_path: str or None
+    :param system_provenance_file_path:
+    :type system_provenance_file_path: str or None
     :param dict(str,ExecutableType) binary_executable_types:
     :param str from_cores:
     :param str binary_types:
