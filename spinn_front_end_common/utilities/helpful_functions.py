@@ -26,7 +26,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .globals_variables import get_simulator
-from .constants import BYTES_PER_WORD
+from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -238,7 +238,8 @@ def convert_time_diff_to_total_milliseconds(sample):
     :return: total milliseconds
     :rtype: float
     """
-    return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)
+    return (sample.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) + \
+           (sample.microseconds / MICRO_TO_MILLISECOND_CONVERSION)
 
 
 def determine_flow_states(executable_types, no_sync_changes):
