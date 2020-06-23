@@ -521,7 +521,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 prov_items.append(ProvenanceDataItem(
                     [top_level_name, "extraction_time", chip_name, last_name,
                      iteration_name],
-                    time_taken, report=False, message=None))
+                    time_taken, report=False))
                 times_extracted_the_same_thing += 1
 
                 # handle lost sequence numbers
