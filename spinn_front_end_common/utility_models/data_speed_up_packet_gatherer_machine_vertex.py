@@ -304,8 +304,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
-            constraints=constraints, app_vertex=app_vertex,
-            vertex_slice=Slice(0, 0))
+            constraints=constraints, app_vertex=app_vertex)
 
         # data holders for the output, and sequence numbers
         self._view = None
@@ -713,7 +712,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         :param ~pacman.model.placements.Placement placement:
         :param SDP_PORTS port:
-        :param bytearray payload:
+        :param payload:
+        :type payload: bytes or bytearray
         :rtype: ~spinnman.messages.sdp.SDPMessage
         """
         return SDPMessage(
@@ -834,7 +834,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _read_in_missing_seq_nums(self, data, position, seq_nums):
         """ handles a missing seq num packet from spinnaker
 
-        :param bytearray data: the data to translate into missing seq nums
+        :param data: the data to translate into missing seq nums
+        :type data: bytearray or bytes
         :param int position: the position in the data to write.
         :param set(int) seq_nums: a set of sequence numbers to add to
         :return: seen_last flag and seen_all flag
