@@ -55,12 +55,10 @@ class LivePacketGatherMachineVertex(
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
     def __init__(
-            self, lpg_params, app_vertex, vertex_slice, label=None,
-            constraints=None):
+            self, lpg_params, app_vertex=None, label=None, constraints=None):
         """
         :param LivePacketGatherParams lpg_params:
         :param LivePacketGather app_vertex:
-        :param ~pacman.model.graphs.common.Slice vertex_slice:
         :param str label:
         :param constraints:
         :type constraints:
@@ -69,7 +67,7 @@ class LivePacketGatherMachineVertex(
         # inheritance
         super(LivePacketGatherMachineVertex, self).__init__(
             label or lpg_params.label, constraints=constraints,
-            app_vertex=app_vertex, vertex_slice=vertex_slice)
+            app_vertex=app_vertex)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
