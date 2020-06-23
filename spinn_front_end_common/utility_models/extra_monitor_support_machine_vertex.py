@@ -121,7 +121,7 @@ class ExtraMonitorSupportMachineVertex(
         # pylint: disable=too-many-arguments
         super(ExtraMonitorSupportMachineVertex, self).__init__(
             label="SYSTEM:ExtraMonitor", constraints=constraints,
-            app_vertex=app_vertex, vertex_slice=None)
+            app_vertex=app_vertex)
 
         if reinject_multicast is None:
             config = globals_variables.get_simulator().config
