@@ -73,8 +73,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             extended = dict(default_params)
             extended["label"] = "test"
             vertex = LivePacketGatherMachineVertex(
-                LivePacketGatherParameters(**extended),
-                app_vertex=None, vertex_slice=None)
+                LivePacketGatherParameters(**extended))
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -163,8 +162,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
             vertex = LivePacketGatherMachineVertex(
-                LivePacketGatherParameters(**extended),
-                app_vertex=None, vertex_slice=None, label='test')
+                LivePacketGatherParameters(**extended), label='test')
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -180,8 +178,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             extended = dict(default_params)
             extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(
-                LivePacketGatherParameters(**extended),
-                app_vertex=None, vertex_slice=None)
+                LivePacketGatherParameters(**extended))
             specific_data_holders[(chip.x, chip.y)] = default_params_holder2
             placements.add_placement(Placement(
                 x=chip.x, y=chip.y, p=3, vertex=vertex))
