@@ -101,10 +101,10 @@ class InsertExtraMonitorVerticesToGraphs(object):
             # add to both application graph and machine graph
             app_vertex = self.__new_app_monitor(chip)
             application_graph.add_vertex(app_vertex)
-            vertex = app_vertex.machine_vertices[0]
-            machine_graph.add_vertex(vertex)
-            vertex_to_chip_map[chip.x, chip.y] = vertex
-            extra_monitor_vertices.append(vertex)
+            machine_vertex = next(iter(app_vertex.machine_vertices))
+            machine_graph.add_vertex(machine_vertex)
+            vertex_to_chip_map[chip.x, chip.y] = machine_vertex
+            extra_monitor_vertices.append(machine_vertex)
 
         return extra_monitor_vertices
 
@@ -155,10 +155,10 @@ class InsertExtraMonitorVerticesToGraphs(object):
             # add to application graph
             app_vertex = self.__new_app_gatherer(chip, vertex_to_chip_map)
             application_graph.add_vertex(app_vertex)
-            vertex = app_vertex.machine_vertices[0]
-            machine_graph.add_vertex(vertex)
+            machine_vertex = next(iter(app_vertex.machine_vertices))
+            machine_graph.add_vertex(machine_vertex)
             # update mapping for edge builder
-            chip_to_gatherer_map[chip.x, chip.y] = vertex
+            chip_to_gatherer_map[chip.x, chip.y] = machine_vertex
 
     def _add_data_extraction_vertices_mach_graph(
             self, progress, machine, machine_graph,
@@ -216,7 +216,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
         return DataSpeedUpPacketGatherMachineVertex(
-            x=ethernet_chip.x, y=ethernet_chip.y,
+            app_vertex=None, x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
