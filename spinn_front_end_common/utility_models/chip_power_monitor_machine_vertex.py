@@ -67,8 +67,8 @@ class ChipPowerMonitorMachineVertex(
     _SAMPLE_RECORDING_CHANNEL = 0
 
     def __init__(
-            self, label, constraints, app_vertex, vertex_slice,
-            n_samples_per_recording, sampling_frequency):
+            self, label, constraints, n_samples_per_recording,
+            sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
         :param iterable(~pacman.model.constraints.AbstractConstraint)

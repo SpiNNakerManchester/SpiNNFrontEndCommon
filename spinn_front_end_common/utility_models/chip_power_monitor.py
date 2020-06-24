@@ -29,8 +29,8 @@ class ChipPowerMonitor(
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
-            sampling_frequency):
+            self, label, n_samples_per_recording, sampling_frequency,
+            constraints=None):
         """
         :param str label: vertex label
         :param constraints: constraints for the vertex
