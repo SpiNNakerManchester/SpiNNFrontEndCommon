@@ -245,7 +245,7 @@ class ReverseIpTagMultiCastSource(
             if hasattr(send_buffer_times[0], "__len__"):
                 send_buffer_times = send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-        vertex = ReverseIPTagMulticastSourceMachineVertex(
+        machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, constraints=constraints, app_vertex=self,
             board_address=self._board_address,
@@ -259,8 +259,10 @@ class ReverseIpTagMultiCastSource(
             send_buffer_partition_id=self._send_buffer_partition_id,
             reserve_reverse_ip_tag=self._reserve_reverse_ip_tag,
             enable_injection=self._enable_injection)
-        vertex.enable_recording(self._is_recording)
-        return vertex
+        machine_vertex.enable_recording(self._is_recording)
+        if resources_required:
+            assert (resources_required == machine_vertex.resources_required)
+        return machine_vertex
 
     def __repr__(self):
         return self._label

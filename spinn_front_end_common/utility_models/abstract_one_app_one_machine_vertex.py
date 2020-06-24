@@ -53,7 +53,16 @@ class AbstractOneAppOneMachineVertex(
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        raise NotImplementedError("Use next(iter(foo.machine_vertices))")
+        if vertex_slice:
+            assert (vertex_slice == self._machine_vertex.vertex_slice)
+        if resources_required:
+            assert (resources_required ==
+                    self._machine_vertex.resources_required)
+        if label:
+            assert (label == self._machine_vertex.label)
+        if constraints:
+            assert (constraints == self._machine_vertex.constraints)
+        return self._machine_vertex
 
     @overrides(ApplicationVertex.remember_associated_machine_vertex)
     def remember_associated_machine_vertex(self, machine_vertex):

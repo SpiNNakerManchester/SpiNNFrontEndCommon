@@ -46,10 +46,13 @@ class LivePacketGather(
     def create_machine_vertex(
             self, vertex_slice, resources_required,
             label=None, constraints=None):
-        assert(vertex_slice is None)
-        assert(resources_required is None)
-        return LivePacketGatherMachineVertex(
+        machine_vertex = LivePacketGatherMachineVertex(
             self._lpg_params, self, label, constraints)
+        if vertex_slice:
+            assert (vertex_slice == machine_vertex.vertex_slice)
+        if resources_required:
+            assert (resources_required == machine_vertex.resources_required)
+        return machine_vertex
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
