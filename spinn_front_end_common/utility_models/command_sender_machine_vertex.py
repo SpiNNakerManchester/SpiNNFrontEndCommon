@@ -66,7 +66,7 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    def __init__(self, label, constraints, app_vertex):
+    def __init__(self, label, constraints, app_vertex=None):
         """
         :param str label: The label of this vertex
         :param iterable(~pacman.model.constraints.AbstractConstraint) \
