@@ -490,15 +490,16 @@ class MachineBitFieldRouterCompressor(object):
                 self._ONE_WORDS.pack(
                     time_per_iteration * SECOND_TO_MICRO_SECOND),
                 self._USER_BYTES)
+            compressor_setting = 0
             # bit 0 = compress_only_when_needed
+            if compress_only_when_needed:
+                compressor_setting += 1
             # bit 1 = compress_as_much_as_possible
             if compress_as_much_as_possible:
-                value = 2
-            else:
-                value = 1
+                compressor_setting += 2
             transceiver.write_memory(
                 chip_x, chip_y, user2_base_address,
-                self._ONE_WORDS.pack(value),
+                self._ONE_WORDS.pack(compressor_setting),
                 self._USER_BYTES)
             transceiver.write_memory(
                 chip_x, chip_y, user3_base_address,
