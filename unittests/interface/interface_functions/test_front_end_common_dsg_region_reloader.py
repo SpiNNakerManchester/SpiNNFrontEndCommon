@@ -156,9 +156,6 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         m_vertex_1 = vertex.create_machine_vertex(m_slice_1, None, None, None)
         m_vertex_2 = vertex.create_machine_vertex(m_slice_2, None, None, None)
 
-        vertex.remember_associated_machine_vertex(m_vertex_1)
-        vertex.remember_associated_machine_vertex(m_vertex_2)
-
         placements = Placements([
             Placement(m_vertex_1, 0, 0, 1),
             Placement(m_vertex_2, 0, 0, 2)
