@@ -65,6 +65,7 @@ class ProvidesProvenanceDataFromMachineImpl(
     def _provenance_region_id(self):
         """
         :return: provenance_region_id
+        :rtype: int
         """
 
     @abstractproperty
