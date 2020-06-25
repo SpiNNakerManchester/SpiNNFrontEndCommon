@@ -57,7 +57,7 @@ class ChipPowerMonitor(
         machine_vertex = ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label,
             n_samples_per_recording=self._n_samples_per_recording,
-            sampling_frequency=self._sampling_frequency)
+            sampling_frequency=self._sampling_frequency,  app_vertex=self)
         if vertex_slice:
             assert (vertex_slice == machine_vertex.vertex_slice)
         if resources_required:
