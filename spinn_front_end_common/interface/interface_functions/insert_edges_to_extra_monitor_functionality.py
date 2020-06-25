@@ -48,6 +48,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         "_placements"
     ]
 
+    EDGE_LABEL = "edge between {} and {}"
+
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None):
@@ -116,7 +118,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 application_graph.add_edge(
                     app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             # Use the application edge to build the machine edge
-            edge = app_edge.create_machine_edge(vertex, gatherer)
+            edge = app_edge.create_machine_edge(
+                vertex, gatherer, self.EDGE_LABEL.format(vertex, gatherer))
             machine_graph.add_edge(
                 edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 

@@ -97,7 +97,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         The SDP port to listen on for incoming event packets (defaults to 1)
     :param int receive_tag:
         The IP tag to use for receiving live events (uses any by default)
-    :param int receive_rate:
+    :param float receive_rate:
     :param int virtual_key:
         The base multicast key to send received events with (assigned
         automatically by default)

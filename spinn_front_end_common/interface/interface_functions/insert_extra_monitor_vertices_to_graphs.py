@@ -39,7 +39,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
         :param default_report_directory: the directory where reports go
-        :param write_data_speed_up_report:
+        :param write_data_speed_up_reports:
             determine whether to write the reports for data speed up
         :param application_graph: app graph.
         :return: Ethernet chip to gatherer vertex map,
@@ -216,7 +216,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
         return DataSpeedUpPacketGatherMachineVertex(
-            app_vertex=None, x=ethernet_chip.x, y=ethernet_chip.y,
+            x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
