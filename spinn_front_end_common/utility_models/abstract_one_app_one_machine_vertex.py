@@ -58,8 +58,7 @@ class AbstractOneAppOneMachineVertex(
         if resources_required:
             assert (resources_required ==
                     self._machine_vertex.resources_required)
-        if label:
-            assert (label == self._machine_vertex.label)
+        # The label may now include x, y. p so need to ignore that
         if constraints:
             assert (constraints == self._machine_vertex.constraints)
         return self._machine_vertex
