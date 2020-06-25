@@ -238,8 +238,8 @@ def convert_time_diff_to_total_milliseconds(sample):
     :return: total milliseconds
     :rtype: float
     """
-    return (sample.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) + \
-           (sample.microseconds / MICRO_TO_MILLISECOND_CONVERSION)
+    return ((sample.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+            (sample.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
 
 def determine_flow_states(executable_types, no_sync_changes):
