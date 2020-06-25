@@ -97,7 +97,6 @@ def run_system_application(
             suppress_progress=succeeded)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
-            app_provenance_file_path=None,
             system_provenance_file_path=provenance_file_path)
 
     # stop anything that's associated with the compressor binary

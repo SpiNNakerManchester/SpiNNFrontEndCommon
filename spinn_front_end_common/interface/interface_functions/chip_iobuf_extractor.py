@@ -73,14 +73,14 @@ class ChipIOBufExtractor(object):
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
+            app_provenance_file_path=None, system_provenance_file_path=None,
             from_cores="ALL", binary_types=None):
         """
         :param ~.Transceiver transceiver:
         :param ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
-        :param str app_provenance_file_path:
-        :param str system_provenance_file_path:
+        :param str or None app_provenance_file_path:
+        :param str or None system_provenance_file_path:
         :param str from_cores:
         :param str binary_types:
         :return: error_entries, warn_entries

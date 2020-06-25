@@ -446,8 +446,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_tokens = None
         self._load_outputs = None
         self._load_tokens = None
-        self._last_run_outputs = list()
-        self._last_run_tokens = list()
+        self._last_run_outputs = dict()
+        self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
         self._version_provenance = list()
