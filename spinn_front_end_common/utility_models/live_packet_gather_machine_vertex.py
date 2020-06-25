@@ -55,7 +55,7 @@ class LivePacketGatherMachineVertex(
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
     def __init__(
-            self, lpg_params, app_vertex=None, label=None, constraints=None):
+            self, lpg_params, constraints=None, app_vertex=None, label=None):
         """
         :param LivePacketGatherParams lpg_params:
         :param LivePacketGather app_vertex:
