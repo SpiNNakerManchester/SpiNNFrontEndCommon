@@ -1659,7 +1659,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
         """ Debug helper method for figuring out if everything been received
 
-        :param int seq_nums: sequence numbers received
+        :param list(int) seq_nums: sequence numbers received
         :param int max_needed: biggest expected to have
         """
         if len(seq_nums) != max_needed:
