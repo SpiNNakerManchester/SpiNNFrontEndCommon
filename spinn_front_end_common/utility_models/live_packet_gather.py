@@ -47,7 +47,7 @@ class LivePacketGather(
             self, vertex_slice, resources_required,
             label=None, constraints=None):
         machine_vertex = LivePacketGatherMachineVertex(
-            self._lpg_params, self, label, constraints)
+            self._lpg_params, constraints, self, label)
         if vertex_slice:
             assert (vertex_slice == machine_vertex.vertex_slice)
         if resources_required:
