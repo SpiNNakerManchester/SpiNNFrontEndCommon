@@ -21,7 +21,8 @@ from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 
-class CommandSender(AbstractOneAppOneMachineVertex,
+class CommandSender(
+        AbstractOneAppOneMachineVertex,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
