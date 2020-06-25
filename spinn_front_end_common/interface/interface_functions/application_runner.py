@@ -109,7 +109,7 @@ class ApplicationRunner(object):
         :param float time_threshold:
         """
         if not run_until_complete:
-            factor =  time_scale_factor / MICRO_TO_MILLISECOND_CONVERSION
+            factor = time_scale_factor / MICRO_TO_MILLISECOND_CONVERSION
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
             logger.info(

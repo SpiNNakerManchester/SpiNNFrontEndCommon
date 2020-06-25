@@ -53,16 +53,7 @@ class ChipPowerMonitor(
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        if vertex_slice:
-            assert (vertex_slice == self._machine_vertex.vertex_slice)
-        if resources_required:
-            assert (resources_required ==
-                    self._machine_vertex.resources_required)
-        if label:
-            assert (label == self._machine_vertex.label)
-        if constraints:
-            assert (constraints == self._machine_vertex.constraints)
-        return self._machine_vertex
+        raise NotImplementedError("Call init on ChipPowerMonitorMachineVertex")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
