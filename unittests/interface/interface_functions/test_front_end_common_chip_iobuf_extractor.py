@@ -90,8 +90,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
-            executable_finder=None, app_provenance_file_path=folder,
-            system_provenance_file_path=None)
+            executable_finder=None, app_provenance_file_path=folder)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
