@@ -891,12 +891,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
-            # Reset the machine graph if there is an application graph
-            if self._application_graph.n_vertices:
-                self._application_graph.forget_machine_graph()
-                self._machine_graph = MachineGraph(
-                    self._graph_label, self._application_graph)
-
             # Reset the machine if the graph has changed
             if not self._use_virtual_board and self._n_calls_to_run > 1:
 
