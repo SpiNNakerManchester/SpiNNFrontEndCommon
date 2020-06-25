@@ -124,7 +124,7 @@
         <span class="n">app_id</span><span class="p">,</span> <span class="n">binary_path</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="p">,</span>
         <span class="n">compress_only_when_needed</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">system_provenance_folder</span><span class="p">,</span>
         <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
-    <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span></div>
+    <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">register</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="pair_compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.pair_compression">[docs]</a><span class="k">def</span> <span class="nf">pair_compression</span><span class="p">(</span>
@@ -162,7 +162,7 @@
         <span class="n">app_id</span><span class="p">,</span> <span class="n">binary_path</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="p">,</span>
         <span class="n">compress_only_when_needed</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
         <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
-    <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span></div>
+    <span class="n">compression</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="n">register</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression">[docs]</a><span class="k">class</span> <span class="nc">Compression</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -204,8 +204,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span> <span class="o">=</span> <span class="n">transceiver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span> <span class="o">=</span> <span class="n">routing_tables</span>
 
-<div class="viewcode-block" id="Compression.compress"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.compress">[docs]</a>    <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Compression.compress"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.compress">[docs]</a>    <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Apply the on-machine compression algorithm.</span>
+<span class="sd">        :param int register: number of user register to check</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
@@ -241,7 +242,7 @@
                     <span class="n">executable_targets</span><span class="p">)</span>
 
         <span class="c1"># Check if any cores have not completed successfully</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_success</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_success</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">register</span><span class="p">)</span>
 
         <span class="c1"># update progress bar</span>
         <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
@@ -268,20 +269,27 @@
         <span class="c1"># write SDRAM requirements per chip</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_check_for_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_check_for_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">register</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Goes through the cores checking for cores that have failed to\</span>
 <span class="sd">            compress the routing tables to the level where they fit into the\</span>
 <span class="sd">            router</span>
 
 <span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param int register: number of user register to check</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">core_subset</span> <span class="ow">in</span> <span class="n">executable_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">x</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">y</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">core_subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
-                <span class="c1"># Read the result from USER0 register</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_user_0</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
-
+                <span class="c1"># Read the result from specified register</span>
+                <span class="k">if</span> <span class="n">register</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_user_0</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">register</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">register</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_user_2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Incorrect register&quot;</span><span class="p">)</span>
                 <span class="c1"># The result is 0 if success, otherwise failure</span>
                 <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_handle_failure</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">)</span>
