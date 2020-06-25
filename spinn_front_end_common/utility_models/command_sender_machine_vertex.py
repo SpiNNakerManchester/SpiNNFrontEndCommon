@@ -18,7 +18,6 @@ from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
-from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask

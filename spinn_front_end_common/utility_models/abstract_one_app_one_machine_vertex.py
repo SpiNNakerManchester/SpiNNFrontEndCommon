@@ -58,8 +58,7 @@ class AbstractOneAppOneMachineVertex(
         if resources_required:
             assert (resources_required ==
                     self._machine_vertex.resources_required)
-        if label:
-            assert (label == self._machine_vertex.label)
+        # The label may now include x, y. p so need to ignore that
         if constraints:
             assert (constraints == self._machine_vertex.constraints)
         return self._machine_vertex
@@ -71,6 +70,10 @@ class AbstractOneAppOneMachineVertex(
             assert (machine_vertex == self._machine_vertex)
         super(AbstractOneAppOneMachineVertex, self).\
             remember_associated_machine_vertex(machine_vertex)
+
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
+        placement.vertex.generate_data_specification(spec, placement)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
