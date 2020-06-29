@@ -95,6 +95,7 @@ class _HBPJobController(MachineAllocationController):
         self._set_power(self._machine_name, power)
         self._power_on = power
 
+    @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
         return self._where_is(self._machine_name, chip_x, chip_y)
 
@@ -111,7 +112,6 @@ class HBPAllocator(object):
     def __call__(
             self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
-
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request

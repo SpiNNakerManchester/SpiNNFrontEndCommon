@@ -50,19 +50,21 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables,
+            self, transceiver, machine, router_tables, using_reinjection,
             provenance_data_objects=None, extra_monitor_vertices=None,
             placements=None):
         """
         :param transceiver: the SpiNNMan interface object
-        :type transceiver: :py:class:`~spinnman.Transceiver`
+        :type transceiver: ~spinnman.transceiver.Transceiver
         :param machine: the SpiNNaker machine
-        :type machine: :py:class:`~spinn_machine.Machine`
+        :type machine: ~spinn_machine.Machine
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran
         :param provenance_data_objects: other provenance data items
         :param extra_monitor_vertices: \
             vertices which represent the extra monitor code
+        :param using_reinjection: bool flag for if the extra monitor is in \
+            reinjection mode
         :param placements: the placements object
         """
         # pylint: disable=too-many-arguments
@@ -330,7 +332,8 @@ class RouterProvenanceGatherer(object):
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Dumped_from_a_Link"),
                 str(reinjection_status.n_link_dumps),
-                report=reinjection_status.n_link_dumps > 0,
+                report=(reinjection_status.n_link_dumps > 0 and
+                        self._has_virtual_chip_connected(self._machine, x, y)),
                 message=(
                     "The extra monitor on {}, {} has detected that {} packets "
                     "were dumped from a outgoing link of this chip's router."
@@ -352,4 +355,23 @@ class RouterProvenanceGatherer(object):
                     " each packet. These packets were reinjected and so this"
                     " number is likely a overestimate.".format(
                         x, y, reinjection_status.n_processor_dumps))))
+
+        items.append(ProvenanceDataItem(
+            self._add_name(names, "Error status"),
+            str(router_diagnostic.error_status),
+            report=router_diagnostic.error_status > 0,
+            message=(
+                "The router on {}, {} has a non-zero error status.  This could"
+                " indicate a hardware fault.  The errors set are {}, and the"
+                " error count is {}".format(
+                    x, y, router_diagnostic.errors_set,
+                    router_diagnostic.error_count))))
         return items
+
+    @staticmethod
+    def _has_virtual_chip_connected(machine, x, y):
+        for link in machine.get_chip_at(x, y).router.links:
+            if machine.get_chip_at(
+                    link.destination_x, link.destination_y).virtual:
+                return True
+        return False

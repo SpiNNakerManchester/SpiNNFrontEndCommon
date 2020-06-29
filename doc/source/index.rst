@@ -24,7 +24,7 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-   spinn_front_end_common
+   modules
 
 
 Indices and tables

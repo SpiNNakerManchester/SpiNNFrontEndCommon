@@ -21,9 +21,14 @@ from spinnman.processes.abstract_multi_connection_process import (
 
 
 class LoadSystemMCRoutesProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to load the configured system multicast routing\
+        tables (and save the application routing tables).
+    """
+
     def load_system_mc_routes(self, core_subsets):
         """
-        :param core_subsets: sets of cores to send command to
+        :param ~spinn_machine.CoreSubsets core_subsets:
+            sets of cores to send command to
         :rtype: None
         """
         for core_subset in core_subsets.core_subsets:

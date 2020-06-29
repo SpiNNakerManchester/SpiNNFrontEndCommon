@@ -14,10 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.utility_objs import ExecutableTargets
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableNotFoundException)
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinnman.model import ExecutableTargets
 
 
 class GraphBinaryGatherer(object):

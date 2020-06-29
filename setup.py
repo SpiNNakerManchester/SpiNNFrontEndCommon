@@ -14,10 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from setuptools import setup
-try:
-    from collections.abc import defaultdict
-except ImportError:
-    from collections import defaultdict
+from collections import defaultdict
 import os
 
 __version__ = None
@@ -70,13 +67,13 @@ setup(
     ],
     packages=packages,
     package_data=package_data,
-    install_requires=['SpiNNUtilities >= 1!5.0.1, < 1!6.0.0',
-                      'SpiNNStorageHandlers >= 1!5.0.1, < 1!6.0.0',
-                      'SpiNNMachine >= 1!5.0.1, < 1!6.0.0',
-                      'SpiNNMan >= 1!5.0.1, < 1!6.0.0',
-                      'SpiNNaker_PACMAN >= 1!5.0.1, < 1!6.0.0',
-                      'SpiNNaker_DataSpecification >= 1!5.0.1, < 1!6.0.0',
-                      'spalloc >= 2.0.1, < 3.0.0',
+    install_requires=['SpiNNUtilities >= 1!5.1.1, < 1!6.0.0',
+                      'SpiNNStorageHandlers >= 1!5.1.1, < 1!6.0.0',
+                      'SpiNNMachine >= 1!5.1.1, < 1!6.0.0',
+                      'SpiNNMan >= 1!5.1.1, < 1!6.0.0',
+                      'SpiNNaker_PACMAN >= 1!5.1.1, < 1!6.0.0',
+                      'SpiNNaker_DataSpecification >= 1!5.1.1, < 1!6.0.0',
+                      'spalloc >= 2.0.2, < 3.0.0',
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',

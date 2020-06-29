@@ -20,10 +20,10 @@ from spinn_utilities.abstract_base import (
 
 @add_metaclass(AbstractBase)
 class AbstractCanReset(object):
-    """ Indicates an object that can be reset to time 0
+    """ Indicates an object that can be reset to time 0.
     """
 
     @abstractmethod
     def reset_to_first_timestep(self):
-        """ Reset the object to first time step
+        """ Reset the object to first time step.
         """

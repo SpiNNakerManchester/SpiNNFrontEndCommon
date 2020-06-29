@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/SpiNNakerManchester/SpiNNFrontEndCommon.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/SpiNNFrontEndCommon)
+[![Build Status](https://travis-ci.com/SpiNNakerManchester/SpiNNFrontEndCommon.svg?branch=master)](https://travis-ci.com/SpiNNakerManchester/SpiNNFrontEndCommon)
+[![Documentation Status](https://readthedocs.org/projects/spinnfrontendcommon/badge/?version=latest)](https://spinnfrontendcommon.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/SpiNNakerManchester/SpiNNFrontEndCommon/badge.svg?branch=master)](https://coveralls.io/github/SpiNNakerManchester/SpiNNFrontEndCommon?branch=master)
 
 This package provides functionality which are common to front ends that
@@ -64,8 +65,10 @@ Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.wi
 
 Documentation
 =============
-[SpiNNFrontEndCommon Python documentation](http://spinnakergraphfrontend.readthedocs.io)
+[SpiNNFrontEndCommon Python documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/python/)
+<br>
+[SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
 [Combined PyNN7 python documentation](http://spinnaker7manchester.readthedocs.io)
-
+<br>
 [Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)

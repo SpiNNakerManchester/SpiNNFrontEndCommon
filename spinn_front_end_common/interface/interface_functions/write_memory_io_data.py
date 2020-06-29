@@ -21,6 +21,7 @@ from spinnman.processes.fill_process import FillDataType
 from spinnman.utilities.io import MemoryIO, FileIO
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition as SV
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
+from spinn_front_end_common.utilities.constants import BYTES_PER_KB
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as
@@ -73,7 +74,7 @@ class WriteMemoryIOData(object):
         self._use_monitors = False
 
     def __call__(
-            self, graph, placements, app_id, app_data_runtime_folder, hostname,
+            self, graph, placements, app_id, report_folder, hostname,
             transceiver=None, graph_mapper=None, uses_advanced_monitors=False,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
@@ -81,7 +82,7 @@ class WriteMemoryIOData(object):
         :param graph: The graph to process
         :param placements: The placements of vertices of the graph
         :param app_id: The ID of the application
-        :param app_data_runtime_folder: The location of data files
+        :param report_folder: The location of data files
         :param hostname: The host name of the machine
         :param transceiver:\
             The transceiver to write data using; if None only data files\
@@ -101,7 +102,7 @@ class WriteMemoryIOData(object):
         self._txrx = transceiver
         self._use_monitors = uses_advanced_monitors
         self._monitor_map = extra_monitor_cores_to_ethernet_connection_map
-        self._data_folder = app_data_runtime_folder
+        self._data_folder = report_folder
 
         if isinstance(graph, ApplicationGraph):
             for placement in progress.over(placements.placements):
@@ -138,7 +139,7 @@ class WriteMemoryIOData(object):
                     self._monitor_map))
         buffer_size = 256
         if self._use_monitors:
-            buffer_size = 120 * 2024 * 1024
+            buffer_size = 120 * 1024 * BYTES_PER_KB
         return write_memory_function, buffer_size
 
     @staticmethod

@@ -29,6 +29,11 @@ class AbstractRewritesDataSpecification(object):
     def regenerate_data_specification(self, spec, placement):
         """ Regenerate the data specification, only generating regions that\
             have changed and need to be reloaded
+
+        :param ~data_specification.DataSpecificationGenerator spec:
+            Where to write the regenerated spec
+        :param ~pacman.model.placements.Placement placement:
+            Where are we regenerating for?
         """
 
     @abstractmethod

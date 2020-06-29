@@ -22,6 +22,7 @@ from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from .reinjector_scp_commands import ReinjectorSCPCommands
+from spinn_utilities.overrides import overrides
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
@@ -64,10 +65,8 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         self._reinjection_functionality_status = None
         self._command_code = command_code
 
+    @overrides(AbstractSCPResponse.read_data_bytestring)
     def read_data_bytestring(self, data, offset):
-        """ See\
-            :py:meth:`spinnman.messages.scp.abstract_scp_response.AbstractSCPResponse.read_data_bytestring`
-        """
         result = self.scp_response_header.result
         if result != SCPResult.RC_OK:
             raise SpinnmanUnexpectedResponseCodeException(

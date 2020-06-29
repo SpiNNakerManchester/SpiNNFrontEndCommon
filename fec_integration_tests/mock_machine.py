@@ -14,10 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from threading import Thread
-try:
-    from collections.abc import deque
-except ImportError:
-    from collections import deque
+from collections import deque
 import struct
 import traceback
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag

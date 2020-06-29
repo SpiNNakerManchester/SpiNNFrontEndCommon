@@ -59,6 +59,7 @@ class _SpallocJobController(MachineAllocationController):
         if power:
             self._job.wait_until_ready()
 
+    @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
@@ -69,7 +70,7 @@ class _SpallocJobController(MachineAllocationController):
                 self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             if not self._exited:
                 six.reraise(*sys.exc_info())
         return self._state != JobState.destroyed

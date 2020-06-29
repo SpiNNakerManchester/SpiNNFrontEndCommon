@@ -20,10 +20,21 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class ResetCountersProcess(AbstractMultiConnectionProcess):
+    """ How to send messages to clear the reinjection state counters.
+    """
+
     def __init__(self, connection_selector):
+        """
+        :param \
+            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
+            connection_selector:
+        """
         super(ResetCountersProcess, self).__init__(connection_selector)
 
     def reset_counters(self, core_subsets):
+        """
+        :param ~spinn_machine.CoreSubsets core_subsets:
+        """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(ResetCountersMessage(

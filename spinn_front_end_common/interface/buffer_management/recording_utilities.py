@@ -17,13 +17,13 @@ import struct
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     import ChannelBufferState
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS)
+    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, BYTES_PER_WORD)
 
 # The offset of the last sequence number field in bytes
-_LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6
+_LAST_SEQUENCE_NUMBER_OFFSET = BYTES_PER_WORD * 6
 
 # The offset of the memory addresses in bytes
-_FIRST_REGION_ADDRESS_OFFSET = 4 * 7
+_FIRST_REGION_ADDRESS_OFFSET = BYTES_PER_WORD * 7
 
 # the number of data elements inside the recording region before
 # recording regions sizes are stored.
@@ -39,26 +39,23 @@ _TWO_SHORTS = struct.Struct("<HH")
 def get_recording_header_size(n_recorded_regions):
     """ Get the size of the data to be written for the recording header
 
-    :param n_recorded_regions: The number of regions to be recorded
+    :param int n_recorded_regions: The number of regions to be recorded
+    :rtype: int
     """
-
     # See recording.h/recording_initialise for data included in the header
     return (_RECORDING_ELEMENTS_BEFORE_REGION_SIZES +
-            (2 * n_recorded_regions)) * 4
+            (2 * n_recorded_regions)) * BYTES_PER_WORD
 
 
 def get_recording_data_constant_size(n_recorded_regions):
     """ Get the size of the recorded data to be reserved that doesn't
 
-    :param n_recorded_regions: The number of regions to be recorded
+    :param int n_recorded_regions: The number of regions to be recorded
     :rtype: int
     """
     return (
-
         # The storage of the recording state
-        (n_recorded_regions *
-         ChannelBufferState.size_of_channel_state()) +
-
+        (n_recorded_regions * ChannelBufferState.size_of_channel_state()) +
         # The SARK allocation of SDRAM overhead
         (n_recorded_regions * SARK_PER_MALLOC_SDRAM_USAGE))
 
@@ -69,15 +66,17 @@ def get_recording_header_array(
         buffering_tag=None):
     """ Get data to be written for the recording header
 
-    :param recorded_region_sizes:\
-        A list of sizes of each region to be recorded.\
+    :param list(int) recorded_region_sizes:
+        A list of sizes of each region to be recorded.
         A size of 0 is acceptable.
-    :param time_between_triggers:\
+    :param int time_between_triggers:
         The minimum time between requesting reads of any region
-    :param buffer_size_before_request:\
+    :param int buffer_size_before_request:
         The amount of buffer to fill before a read request is sent
-    :param ip_tags: A list of IP tags to extract the buffer tag from
-    :param buffering_tag: The tag to use for buffering requests
+    :param list(~spinn_machine.tags.AbstractTag) ip_tags:
+        A list of IP tags to extract the buffer tag from
+    :param ~spinn_machine.tags.AbstractTag buffering_tag:
+        The tag to use for buffering requests
     :return: An array of values to be written as the header
     :rtype: list(int)
     """
@@ -132,30 +131,34 @@ def get_recording_header_array(
 def get_last_sequence_number(placement, transceiver, recording_data_address):
     """ Read the last sequence number from the data
 
-    :param placement: The placement from which to read the sequence number
-    :param transceiver: The transceiver to use to read the sequence number
-    :param recording_data_address:\
+    :param ~pacman.model.placements.Placement placement:
+        The placement from which to read the sequence number
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        The transceiver to use to read the sequence number
+    :param int recording_data_address:
         The address of the recording data from which to read the number
     :rtype: int
     """
     data = transceiver.read_memory(
         placement.x, placement.y,
-        recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, 4)
+        recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, BYTES_PER_WORD)
     return _ONE_WORD.unpack_from(data)[0]
 
 
 def get_region_pointer(placement, transceiver, recording_data_address, region):
     """ Get a pointer to a recording region
 
-    :param placement: The placement from which to read the pointer
-    :param transceiver: The transceiver to use to read the pointer
-    :param recording_data_address:\
+    :param ~pacman.model.placements.Placement placement:
+        The placement from which to read the pointer
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        The transceiver to use to read the pointer
+    :param int recording_data_address:
         The address of the recording data from which to read the pointer
-    :param region: The index of the region to get the pointer of
+    :param int region: The index of the region to get the pointer of
     :rtype: int
     """
     data = transceiver.read_memory(
         placement.x, placement.y,
-        recording_data_address + _FIRST_REGION_ADDRESS_OFFSET + (region * 4),
-        4)
+        recording_data_address + _FIRST_REGION_ADDRESS_OFFSET +
+        (region * BYTES_PER_WORD), BYTES_PER_WORD)
     return _ONE_WORD.unpack_from(data)[0]
