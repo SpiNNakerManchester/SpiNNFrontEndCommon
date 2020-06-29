@@ -84,6 +84,7 @@ try:
 except ImportError:
     scipy_version = "scipy not installed"
 
+
 logger = FormatAdapter(logging.getLogger(__name__))
 
 #: Number of cores to be used when using a Virtual Machine and not specified
