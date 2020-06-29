@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from pacman.model.partitioner_interfaces import SplitterByAtoms
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
