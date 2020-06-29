@@ -31,6 +31,6 @@ class AbstractProvidesNKeysForPartition(object):
 
         :param ~pacman.model.graphs.OutgoingEdgePartition partition:
             An partition that comes out of this vertex
-        :return: A list of constraints
-        :rtype: list(~pacman.model.constraints.AbstractConstraint)
+        :return: The number of keys required
+        :rtype: int
         """
