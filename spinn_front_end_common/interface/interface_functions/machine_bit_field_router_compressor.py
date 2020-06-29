@@ -87,6 +87,12 @@ class MachineBitFieldRouterCompressor(object):
     # sdram regions to steal
     _MIN_SIZE_FOR_HEAP = 32
 
+    # bit offset for compress only when needed
+    _ONLY_WHEN_NEEDED_BIT_OFFSET = 1
+
+    # bit offset for compress as much as possible
+    _AS_MUCH_AS_POSS_BIT_OFFSET = 2
+
     # structs for performance requirements.
     _FOUR_WORDS = struct.Struct("<IIII")
 
@@ -493,10 +499,10 @@ class MachineBitFieldRouterCompressor(object):
             compressor_setting = 0
             # bit 0 = compress_only_when_needed
             if compress_only_when_needed:
-                compressor_setting += 1
+                compressor_setting |= 1 << self._ONLY_WHEN_NEEDED_BIT_OFFSET
             # bit 1 = compress_as_much_as_possible
             if compress_as_much_as_possible:
-                compressor_setting += 2
+                compressor_setting |= 1 << self._AS_MUCH_AS_POSS_BIT_OFFSET
             transceiver.write_memory(
                 chip_x, chip_y, user2_base_address,
                 self._ONE_WORDS.pack(compressor_setting),
