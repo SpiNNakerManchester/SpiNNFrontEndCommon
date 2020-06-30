@@ -26,20 +26,31 @@ from spinn_front_end_common.utility_models import (
 class InsertEdgesToExtraMonitorFunctionality(object):
     """ Inserts edges between vertices who use MC speed up and its local\
         MC data gatherer.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph instance
+    :param ~pacman.model.placements.Placements placements: the placements
+    :param ~spinn_machine.Machine machine: the machine object
+    :param vertex_to_ethernet_connected_chip_mapping:
+        mapping between ethernet connected chips and packet gatherers
+    :type vertex_to_ethernet_connected_chip_mapping:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
     """
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None, graph_mapper=None):
         """
-        :param machine_graph: the machine graph instance
-        :param placements: the placements
-        :param machine: the machine object
-        :param application_graph: the application graph
-        :param vertex_to_ethernet_connected_chip_mapping: \
-            mapping between ethernet connected chips and packet gatherers
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :param ~.Machine machine:
+        :param vertex_to_ethernet_connected_chip_mapping:
+        :type vertex_to_ethernet_connected_chip_mapping:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param ~.ApplicationGraph application_graph:
         :param graph_mapper: the graph mapper
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
         n_app_vertices = 0
@@ -126,9 +137,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
     def _has_edge_already(source, destination, graph):
         """ Checks if a edge already exists
 
-        :param source: the source of the edge
-        :param destination: destination of the edge
-        :param graph: which graph to look in
+        :param ~.AbstractVertex source: the source of the edge
+        :param ~.AbstractVertex destination: destination of the edge
+        :param ~.Graph graph: which graph to look in
         :return: Whether the edge was found
         :rtype: bool
         """

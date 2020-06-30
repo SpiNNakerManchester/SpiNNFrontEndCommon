@@ -31,7 +31,7 @@ class SqlLiteDatabase(object):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
-        NOT THREAD SAFE ON THE SAME DB. \
+        NOT THREAD SAFE ON THE SAME DB.
         Threads can access different DBs just fine.
 
     .. note::
@@ -97,18 +97,25 @@ class SqlLiteDatabase(object):
         """
         with self._db:
             self._db.executemany(
-                "INSERT OR IGNORE INTO source(source_name) VALUES(?)",
-                self.__unique_names(items, 0))
+                """
+                INSERT OR IGNORE INTO source(source_name) VALUES(?)
+                """, self.__unique_names(items, 0))
             self._db.executemany(
-                "INSERT OR IGNORE INTO description(description_name) "
-                "VALUES(?)",
-                self.__unique_names(items, -1))
+                """
+                INSERT OR IGNORE INTO description(description_name)
+                VALUES(?)
+                """, self.__unique_names(items, -1))
             self._db.executemany(
-                "INSERT INTO provenance(source_id, description_id, the_value) "
-                "VALUES((SELECT source_id FROM source WHERE source_name = ?), "
-                "(SELECT description_id FROM description "
-                "WHERE description_name = ?), ?)",
-                map(self.__condition_row, items))
+                """
+                INSERT INTO provenance(
+                    source_id, description_id, the_value)
+                VALUES((
+                    SELECT source_id FROM source WHERE source_name = ?
+                ), (
+                    SELECT description_id FROM description
+                    WHERE description_name = ?
+                ), ?)
+                """, map(self.__condition_row, items))
 
     @staticmethod
     def __unique_names(items, index):

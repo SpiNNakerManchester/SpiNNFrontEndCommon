@@ -15,27 +15,38 @@
 
 import os
 import logging
-
-from spinn_front_end_common.utilities.constants import \
-    MICRO_TO_MILLISECOND_CONVERSION
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.constants import (
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 
 logger = logging.getLogger(__name__)
 
 
 class ProfileDataGatherer(object):
+    """ Gets all the profiling data recorded by vertices and writes it to\
+        files.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the SpiNNMan interface object
+    :param ~pacman.model.placements.Placements placements:
+        The placements of the vertices
+    :param str provenance_file_path:
+        The location to store the profile data
+    :param int machine_time_step:
+        machine time step in ms
+    """
+
     __slots__ = []
 
     def __call__(
             self, transceiver, placements, provenance_file_path,
             machine_time_step):
         """
-        :param transceiver: the SpiNNMan interface object
-        :param placements: The placements of the vertices
-        :param has_ran: token that states that the simulation has ran
-        :param provenance_file_path: The location to store the profile data
-        :param machine_time_step: machine time step in ms
+        :param ~.Transceiver transceiver:
+        :param ~.Placements placements:
+        :param str provenance_file_path:
+        :param int machine_time_step:
         """
         # pylint: disable=too-many-arguments
         machine_time_step_ms = (
@@ -55,6 +66,12 @@ class ProfileDataGatherer(object):
                                 provenance_file_path)
 
     def _write(self, p, profile_data, machine_time_step_ms, directory):
+        """
+        :param ~.Placement p:
+        :param ProfileData profile_data:
+        :param float machine_time_step_ms:
+        :param str directory:
+        """
         # pylint: disable=too-many-arguments
         max_tag_len = max(len(tag) for tag in profile_data.tags)
 

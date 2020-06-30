@@ -36,32 +36,66 @@ ENTRY_TEXT = 2
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param ExecutableTargets executable_targets:
+    :param ExecutableFinder executable_finder:
+    :param str app_provenance_file_path:
+    :param str system_provenance_file_path:
+    :param dict(str,ExecutableType) binary_executable_types:
+    :param str from_cores:
+    :param str binary_types:
+    :return: error_entries, warn_entries
+    :rtype: tuple(list(str),list(str))
     """
 
     __slots__ = ["_filename_template", "_recovery_mode"]
 
     def __init__(self, recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt"):
+        """
+        :param bool recovery_mode:
+        :param str filename_template:
+        """
         self._filename_template = filename_template
         self._recovery_mode = bool(recovery_mode)
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
-            binary_executable_types, from_cores="ALL", binary_types=None):
-
+            app_provenance_file_path=None, system_provenance_file_path=None,
+            from_cores="ALL", binary_types=None):
+        """
+        :param ~.Transceiver transceiver:
+        :param ExecutableTargets executable_targets:
+        :param ExecutableFinder executable_finder:
+        :param app_provenance_file_path:
+        :type app_provenance_file_path: str or None
+        :param system_provenance_file_path:
+        :type system_provenance_file_path: str or None
+        :param dict(str,ExecutableType) binary_executable_types:
+        :param str from_cores:
+        :param str binary_types:
+        :return: error_entries, warn_entries
+        :rtype: tuple(list(str),list(str))
+        """
         error_entries = list()
         warn_entries = list()
         label = (("Recovering" if self._recovery_mode else "Extracting")
                  + " IOBUF from the machine")
+
+        system_binaries = {}
+        try:
+            system_binaries = executable_targets.\
+                get_binaries_of_executable_type(ExecutableType.SYSTEM)
+        except KeyError:
+            pass
 
         # all the cores
         if from_cores == "ALL":
             progress = ProgressBar(len(executable_targets.binaries), label)
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
-                if (binary_executable_types[binary].value ==
-                        ExecutableType.SYSTEM.value):
+                if binary in system_binaries:
                     prov_path = system_provenance_file_path
                 else:
                     prov_path = app_provenance_file_path
@@ -83,8 +117,7 @@ class ChipIOBufExtractor(object):
                         core_subsets = iocores.intersect(
                             executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
-                        if (binary_executable_types[binary] ==
-                                ExecutableType.SYSTEM):
+                        if binary in system_binaries:
                             prov_path = system_provenance_file_path
                         else:
                             prov_path = app_provenance_file_path
@@ -100,8 +133,7 @@ class ChipIOBufExtractor(object):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
                     if core_subsets:
-                        if (binary_executable_types[binary] ==
-                                ExecutableType.SYSTEM):
+                        if binary in system_binaries:
                             prov_path = system_provenance_file_path
                         else:
                             prov_path = app_provenance_file_path
@@ -116,8 +148,7 @@ class ChipIOBufExtractor(object):
                 for binary in progress.over(binaries):
                     core_subsets = executable_targets.get_cores_for_binary(
                         binary)
-                    if (binary_executable_types[binary] ==
-                            ExecutableType.SYSTEM):
+                    if binary in system_binaries:
                         prov_path = system_provenance_file_path
                     else:
                         prov_path = app_provenance_file_path
