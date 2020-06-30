@@ -142,6 +142,7 @@ class Compression(object):
 
     def compress(self, register):
         """ Apply the on-machine compression algorithm.
+
         :param int register: number of user register to check
         """
         # pylint: disable=too-many-arguments
