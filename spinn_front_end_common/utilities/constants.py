@@ -50,9 +50,6 @@ MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * BYTES_PER_KB
 #: The default size of a recording buffer before receive request is sent
 DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * BYTES_PER_KB
 
-#: The number of bytes used by SARK per memory allocation
-SARK_PER_MALLOC_SDRAM_USAGE = 2 * BYTES_PER_WORD
-
 #: The number of words in the AbstractDataSpecable basic setup information.
 #: This is the amount required by the pointer table plus a SARK allocation.
 DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = (
