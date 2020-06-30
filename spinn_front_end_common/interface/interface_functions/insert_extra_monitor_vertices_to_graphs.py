@@ -24,6 +24,23 @@ from spinn_front_end_common.utility_models import (
 class InsertExtraMonitorVerticesToGraphs(object):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
+
+    :param ~spinn_machine.Machine machine: spinnMachine instance
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param str default_report_directory: the directory where reports go
+    :param bool write_data_speed_up_reports:
+        determine whether to write the reports for data speed up
+    :param int n_cores_to_allocate: number of cores to allocate for reception
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        app graph
+    :return: vertex to Ethernet connection map,
+        list of extra_monitor_vertices,
+        vertex_to_chip_map
+    :rtype: tuple(
+        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
+        list(ExtraMonitorSupportMachineVertex),
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
 
     def __call__(
@@ -31,19 +48,17 @@ class InsertExtraMonitorVerticesToGraphs(object):
             write_data_speed_up_reports, n_cores_to_allocate=1,
             graph_mapper=None, application_graph=None):
         """
-        :param machine: spinnMachine instance
-        :param machine_graph: machine graph
-        :param n_cores_to_allocate: n cores to allocate for reception
-        :param default_report_directory: the directory where reports go
-        :param write_data_speed_up_out_report: \
-            determine whether to write the report for data speed up out
-        :param write_data_speed_up_in_report: \
-            determine whether to write the report for data speed up in
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param int n_cores_to_allocate:
+        :param str default_report_directory:
+        :param bool write_data_speed_up_reports:
         :param graph_mapper: graph mapper
-        :param application_graph: app graph.
-        :return: vertex to Ethernet connection map, \
-            list of extra_monitor_vertices, \
-            vertex_to_chip_map
+        :param ~.ApplicationGraph application_graph:
+        :rtype: tuple(
+            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
+            list(ExtraMonitorSupportMachineVertex),
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
         # pylint: disable=too-many-arguments
 

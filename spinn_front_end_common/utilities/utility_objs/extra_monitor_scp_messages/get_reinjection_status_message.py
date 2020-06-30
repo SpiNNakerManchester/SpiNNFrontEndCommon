@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import (
     AbstractSCPRequest, AbstractSCPResponse)
@@ -22,24 +23,20 @@ from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from .reinjector_scp_commands import ReinjectorSCPCommands
-from spinn_utilities.overrides import overrides
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
-    """ An SCP Request to get the status of the dropped packet reinjection
+    """ An SCP Request to get the status of the dropped packet reinjection.
     """
 
     __slots__ = []
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
         """
 
         super(GetReinjectionStatusMessage, self).__init__(
@@ -51,6 +48,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
                 destination_chip_y=y),
             SCPRequestHeader(command=ReinjectorSCPCommands.GET_STATUS))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
         return GetReinjectionStatusMessageResponse(
             ReinjectorSCPCommands.GET_STATUS)

@@ -21,10 +21,28 @@ _CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES = 200
 
 
 class TDMAAgendaBuilder(object):
-    """ Algorithm that builds an agenda for transmissions. It uses a TDMA \
+    """ Algorithm that builds an agenda for transmissions. It uses a TDMA\
         (time-division multiple access) system and graph colouring to deduce\
         the agenda set up. Ensures parallel transmissions so that the\
         destination should never be overloaded.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the graph for which we are planning an agenda
+    :param int number_of_cpu_cycles_per_receive:
+        how long the packet reception callback takes in CPU cycles
+    :param int other_cpu_demands_in_cpu_cycles:
+        extra costs (e.g. timer tick callback etc.)
+    :param int n_packets_per_time_window:
+        how many packets are to be sent per time window
+    :param int machine_time_step: the timer tick in microseconds
+    :param int time_scale_factor:
+        the multiplicative factor on the machine time step.
+    :param float safety_factor: the end user safely factor
+    :return:
+        the agenda for each vertex on its time window and its offset
+        between spike transmissions
+    :rtype: dict(~pacman.model.graphs.machine.MachineVertex,dict(str,int))
+    :raises ConfigurationException: If colouring fails
     """
 
     def __call__(
@@ -32,6 +50,16 @@ class TDMAAgendaBuilder(object):
             other_cpu_demands_in_cpu_cycles,
             n_packets_per_time_window, machine_time_step, time_scale_factor,
             safety_factor=1):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param int number_of_cpu_cycles_per_receive:
+        :param int other_cpu_demands_in_cpu_cycles:
+        :param int n_packets_per_time_window:
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param float safety_factor:
+        :rtype: dict(~.MachineVertex,dict(str,int))
+        """
         # pylint: disable=too-many-arguments
         time_offset = dict()
 
@@ -60,15 +88,17 @@ class TDMAAgendaBuilder(object):
             n_packets_per_time_window):
         """ Builds the TDMA system.
 
-        :param machine_graph: the machine graph of the application
-        :param cpu_cycles_needed_per_window:\
+        :param ~.MachineGraph machine_graph:
+            the machine graph of the application
+        :param int cycles_per_window:
             how long the receive function takes
-        :param time_offset: the colouring offsets
-        :param n_packets_per_time_window:\
+        :param int time_offset: the colouring offsets
+        :param int packets_per_window:
             the packets expected to be sent per window
-        :return:\
-            the agenda for each vertex on its time window and its offset\
+        :return:
+            the agenda for each vertex on its time window and its offset
             between spike transmissions
+        :rtype: dict(~.MachineVertex,dict(str,int))
         """
         # pylint: disable=too-many-arguments
         agenda = dict()
@@ -87,9 +117,11 @@ class TDMAAgendaBuilder(object):
     def _calculate_max_edges(machine_graph):
         """ Deduces the max incoming edges for any vertex
 
-        :param machine_graph: the machine graph of the application
-        :return:\
+        :param ~.MachineGraph machine_graph:
+            the machine graph of the application
+        :return:
             the max number of incoming edges to any vertex in the application
+        :rtype: int
         """
         max_in_edges = 0
         for vertex in machine_graph.vertices:
@@ -102,11 +134,11 @@ class TDMAAgendaBuilder(object):
     def _handle_colouring(self, max_in_edges, machine_graph, time_offset):
         """ Operates the graph colouring greedy code.
 
-        :param max_in_edges: the number of colours to colour the graph
-        :param machine_graph:\
+        :param int max_in_edges: the number of colours to colour the graph
+        :param ~.MachineGraph machine_graph:
             the machine graph representation of the application
-        :param time_offset: the dict holding vertex to time offset mapping
-        :return: the dict holding vertex to time offset mapping
+        :return: vertex to time offset mapping
+        :rtype: dict(~.MachineVertex, int)
         """
         colours = list()
         for colour in range(0, max_in_edges + 1):  # plus 1 to include myself
@@ -120,14 +152,17 @@ class TDMAAgendaBuilder(object):
 
     def _get_colour_for_vertex(
             self, vertex, machine_graph, colours, colour_mapping):
-        """ Cycles though available colours
+        """ Cycles though available colours to find a colour that can be used\
+            for a particular vertex, and assigns it once it finds one.
 
-        :param vertex: the vertex in question
-        :param machine_graph:\
+        :param ~.MachineVertex vertex: the vertex to be coloured
+        :param ~.MachineGraph machine_graph:
             the machine graph representation of the application
-        :param colours: the available colours for the graph colouring
-        :param colour_mapping: the mapping between vertex and colour
-        :return: the colour of this vertex
+        :param list(int) colours:
+            the available colours for the graph colouring
+        :param dict(~.MachineVertex,int) colour_mapping:
+            the mapping between vertex and colour
+        :raises ConfigurationException: If no colouring can be found
         """
         for colour in colours:
             if self._available(colour, vertex, machine_graph, colour_mapping):
@@ -161,22 +196,22 @@ class TDMAAgendaBuilder(object):
         """ Calculates the CPU cycles per window, and therefore verifies if\
             there is enough time to do so with a end user safety margin
 
-        :param number_of_cpu_cycles_per_receive:\
+        :param int number_of_cpu_cycles_per_receive:
             how long the packet reception callback takes in CPU cycles
-        :param machine_time_step: the timer tick in microseconds
-        :param time_scale_factor:\
+        :param int machine_time_step: the timer tick in microseconds
+        :param int time_scale_factor:
             the multiplicative factor on the machine time step.
-        :param n_packets_per_time_window:\
+        :param float n_packets_per_time_window:
             how many packets are to be sent per time window
-        :param max_in_edges:\
+        :param int max_in_edges:
             the max number of edges going into any vertex in the machine graph
-        :param safety_factor: the end user safely factor
-        :param other_cpu_demands_in_cpu_cycles:\
+        :param float safety_factor: the end user safely factor
+        :param int other_cpu_demands_in_cpu_cycles:
             extra costs (e.g. timer tick callback etc.)
         :return: CPU cycles available per window.
         :rtype: float
-        :raises ConfigurationException:\
-            if the overall time is below what is possible to receive packets\
+        :raises ConfigurationException:
+            if the overall time is below what is possible to receive packets
             with
         """
         # pylint: disable=too-many-arguments

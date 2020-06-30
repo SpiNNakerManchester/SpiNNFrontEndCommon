@@ -33,23 +33,29 @@ _FILE_NAME = "bit_field_compressed_summary.rpt"
 
 
 class BitFieldCompressorReport(object):
+    """ Generates a report that shows the impact of the compression of \
+        bitfields into the routing table.
 
+    :param str report_default_directory: report folder
+    :param list(ProvenanceDataItem) provenance_items: prov items
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.placements.Placements placements: the placements
+    :return: a summary
+    :rtype: BitFieldSummary
+    """
     def __call__(
             self, report_default_directory, provenance_items, machine_graph,
             placements, graph_mapper):
-        """ generates a report that shows the impact of the compression of
-        bitfields into the routing table
-
-        :param report_default_directory: report folder
-        :param provenance_items: prov items
-        :param machine_graph: the machine graph
-        :param placements: the placements
-        :param graph_mapper: the graph mapper
-        :return:
         """
-
+        :param str report_default_directory:
+        :param list(ProvenanceDataItem) provenance_items:
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :param graph_mapper: the graph mapper
+        :rtype: BitFieldSummary
+        """
         file_name = os.path.join(report_default_directory, _FILE_NAME)
-
         try:
             with open(file_name, "w") as f:
                 return self._write_report(
@@ -63,13 +69,14 @@ class BitFieldCompressorReport(object):
     def _merged_component(provenance_items, writer):
         """ reporting how many bitfields were merged into the router
 
-        :param provenance_items: prov items
-        :param writer: file writer.
+        :param list(ProvenanceDataItem) provenance_items: prov items
+        :param ~io.FileIO writer: file writer.
         :return: tuple containing 4 elements.
          1. min_bit_fields merged in a chip,
          2. the max bit_fields merged in a chip,
          3. the total bit_fields_merged into all the routers.
          4. average number of bit-fields merged on the routers.
+        :rtype: tuple(int or str,int or str,int or str,float or str)
         """
         top_bit_field = 0
         min_bit_field = sys.maxsize
@@ -107,6 +114,11 @@ class BitFieldCompressorReport(object):
 
     @staticmethod
     def _before_merge_component(machine_graph, placements, graph_mapper):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :rtype: tuple(int, int, int, float or int)
+        """
         total_to_merge = 0
         to_merge_per_chip = defaultdict(int)
 
@@ -149,12 +161,13 @@ class BitFieldCompressorReport(object):
             graph_mapper):
         """ writes the report
 
-        :param writer: the file writer
-        :param provenance_items: the prov items
-        :param machine_graph: the machine graph
-        :param placements: the placements
+        :param ~io.FileIO writer: the file writer
+        :param list(ProvenanceDataItem) provenance_items: the prov items
+        :param ~.MachineGraph machine_graph: the machine graph
+        :param ~.Placements placements: the placements
         :param graph_mapper: the graph mapper
-        :return: a BitFieldSummary.
+        :return: a summary
+        :rtype: BitFieldSummary
         """
 
         (min_bit_field, top_bit_field, total_bit_fields_merged,
