@@ -119,6 +119,9 @@
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str database_directory: Where the database will be written</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_done</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">database_directory</span><span class="p">,</span> <span class="n">DB_NAME</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="kc">None</span>
@@ -147,9 +150,10 @@
 <div class="viewcode-block" id="DatabaseWriter.auto_detect_database"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">[docs]</a>    <span class="k">def</span> <span class="nf">auto_detect_database</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Auto detects if there is a need to activate the database system</span>
 
-<span class="sd">        :param machine_graph: the machine graph of the application\</span>
-<span class="sd">            problem space.</span>
-<span class="sd">        :return: a bool which represents if the database is needed</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph of the application problem space.</span>
+<span class="sd">        :return: whether the database is needed for the application</span>
+<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">)</span>
                    <span class="ow">and</span> <span class="n">vertex</span><span class="o">.</span><span class="n">is_in_injection_mode</span>
@@ -157,9 +161,16 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">database_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span>
 
     <span class="k">def</span> <span class="nf">__insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str sql:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
@@ -179,7 +190,6 @@
         <span class="sd">&quot;&quot;&quot; Store the machine object into the database</span>
 
 <span class="sd">        :param ~spinn_machine.Machine machine: the machine object.</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__machine_to_id</span><span class="p">[</span><span class="n">machine</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__insert</span><span class="p">(</span>
@@ -221,11 +231,8 @@
 
 <div class="viewcode-block" id="DatabaseWriter.add_application_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param application_graph: not None</span>
-<span class="sd">        :type application_graph:</span>
-<span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph \</span>
+<span class="sd">                application_graph:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="c1"># add vertices</span>
@@ -269,9 +276,9 @@
 <div class="viewcode-block" id="DatabaseWriter.add_system_params"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write system params into the database</span>
 
-<span class="sd">        :param time_scale_factor: the time scale factor used in timing</span>
-<span class="sd">        :param machine_time_step: the machine time step used in timing</span>
-<span class="sd">        :param runtime: the amount of time the application is to run for</span>
+<span class="sd">        :param int time_scale_factor: the time scale factor used in timing</span>
+<span class="sd">        :param int machine_time_step: the machine time step used in timing</span>
+<span class="sd">        :param int runtime: the amount of time the application is to run for</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
@@ -290,12 +297,13 @@
         <span class="sd">&quot;&quot;&quot; Add the machine graph, graph mapper and application graph \</span>
 <span class="sd">            into the database.</span>
 
-<span class="sd">        :param machine_graph: the machine graph object</span>
-<span class="sd">        :param data_n_timesteps: The number of timesteps for which data space\</span>
-<span class="sd">            will been reserved</span>
-<span class="sd">        :param graph_mapper: the graph mapper object</span>
-<span class="sd">        :param application_graph: the application graph object</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            The machine graph object</span>
+<span class="sd">        :param int data_n_timesteps:</span>
+<span class="sd">            The number of timesteps for which data space will been reserved</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph \</span>
+<span class="sd">                application_graph:</span>
+<span class="sd">            The application graph object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
@@ -365,9 +373,8 @@
 <div class="viewcode-block" id="DatabaseWriter.add_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">[docs]</a>    <span class="k">def</span> <span class="nf">add_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the placements objects into the database</span>
 
-<span class="sd">        :param placements: the placements object</span>
-<span class="sd">        :param machine_graph: the machine graph object</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">            the placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="c1"># add records</span>
@@ -384,9 +391,10 @@
 <div class="viewcode-block" id="DatabaseWriter.add_routing_infos"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_infos">[docs]</a>    <span class="k">def</span> <span class="nf">add_routing_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the routing information (key masks etc) into the database</span>
 
-<span class="sd">        :param routing_infos: the routing information object</span>
-<span class="sd">        :param machine_graph: the machine graph object</span>
-<span class="sd">        :rtype: None:</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
+<span class="sd">            the routing information object</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Filter just the MULTICAST partitions first</span>
         <span class="n">partitions_and_routing_info</span> <span class="o">=</span> <span class="p">(</span>
@@ -409,8 +417,9 @@
 <div class="viewcode-block" id="DatabaseWriter.add_routing_tables"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_routing_tables">[docs]</a>    <span class="k">def</span> <span class="nf">add_routing_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">routing_tables</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the routing tables into the database</span>
 
-<span class="sd">        :param routing_tables: the routing tables object</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables \</span>
+<span class="sd">                routing_tables:</span>
+<span class="sd">            the routing tables object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
@@ -429,9 +438,9 @@
 <div class="viewcode-block" id="DatabaseWriter.add_tags"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">[docs]</a>    <span class="k">def</span> <span class="nf">add_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the tags into the database</span>
 
-<span class="sd">        :param machine_graph: the machine graph object</span>
-<span class="sd">        :param tags: the tags object</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph object</span>
+<span class="sd">        :param ~pacman.model.tags.Tags tags: the tags object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
@@ -460,12 +469,10 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span>
             <span class="n">graph_mapper</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param application_graph:</span>
-<span class="sd">        :param machine_graph:</span>
-<span class="sd">        :param routing_infos:</span>
-<span class="sd">        :param graph_mapper:</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph \</span>
+<span class="sd">                application_graph:</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="c1"># We will be asking application vertices for key/atom mappings</span>

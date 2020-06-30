@@ -85,10 +85,28 @@
 
 
 <div class="viewcode-block" id="TDMAAgendaBuilder"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.TDMAAgendaBuilder">[docs]</a><span class="k">class</span> <span class="nc">TDMAAgendaBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Algorithm that builds an agenda for transmissions. It uses a TDMA \</span>
+    <span class="sd">&quot;&quot;&quot; Algorithm that builds an agenda for transmissions. It uses a TDMA\</span>
 <span class="sd">        (time-division multiple access) system and graph colouring to deduce\</span>
 <span class="sd">        the agenda set up. Ensures parallel transmissions so that the\</span>
 <span class="sd">        destination should never be overloaded.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        the graph for which we are planning an agenda</span>
+<span class="sd">    :param int number_of_cpu_cycles_per_receive:</span>
+<span class="sd">        how long the packet reception callback takes in CPU cycles</span>
+<span class="sd">    :param int other_cpu_demands_in_cpu_cycles:</span>
+<span class="sd">        extra costs (e.g. timer tick callback etc.)</span>
+<span class="sd">    :param int n_packets_per_time_window:</span>
+<span class="sd">        how many packets are to be sent per time window</span>
+<span class="sd">    :param int machine_time_step: the timer tick in microseconds</span>
+<span class="sd">    :param int time_scale_factor:</span>
+<span class="sd">        the multiplicative factor on the machine time step.</span>
+<span class="sd">    :param float safety_factor: the end user safely factor</span>
+<span class="sd">    :return:</span>
+<span class="sd">        the agenda for each vertex on its time window and its offset</span>
+<span class="sd">        between spike transmissions</span>
+<span class="sd">    :rtype: dict(~pacman.model.graphs.machine.MachineVertex,dict(str,int))</span>
+<span class="sd">    :raises ConfigurationException: If colouring fails</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -96,6 +114,16 @@
             <span class="n">other_cpu_demands_in_cpu_cycles</span><span class="p">,</span>
             <span class="n">n_packets_per_time_window</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
             <span class="n">safety_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param int number_of_cpu_cycles_per_receive:</span>
+<span class="sd">        :param int other_cpu_demands_in_cpu_cycles:</span>
+<span class="sd">        :param int n_packets_per_time_window:</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param float safety_factor:</span>
+<span class="sd">        :rtype: dict(~.MachineVertex,dict(str,int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">time_offset</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
@@ -124,15 +152,17 @@
             <span class="n">n_packets_per_time_window</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Builds the TDMA system.</span>
 
-<span class="sd">        :param machine_graph: the machine graph of the application</span>
-<span class="sd">        :param cpu_cycles_needed_per_window:\</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph of the application</span>
+<span class="sd">        :param int cycles_per_window:</span>
 <span class="sd">            how long the receive function takes</span>
-<span class="sd">        :param time_offset: the colouring offsets</span>
-<span class="sd">        :param n_packets_per_time_window:\</span>
+<span class="sd">        :param int time_offset: the colouring offsets</span>
+<span class="sd">        :param int packets_per_window:</span>
 <span class="sd">            the packets expected to be sent per window</span>
-<span class="sd">        :return:\</span>
-<span class="sd">            the agenda for each vertex on its time window and its offset\</span>
+<span class="sd">        :return:</span>
+<span class="sd">            the agenda for each vertex on its time window and its offset</span>
 <span class="sd">            between spike transmissions</span>
+<span class="sd">        :rtype: dict(~.MachineVertex,dict(str,int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">agenda</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -151,9 +181,11 @@
     <span class="k">def</span> <span class="nf">_calculate_max_edges</span><span class="p">(</span><span class="n">machine_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Deduces the max incoming edges for any vertex</span>
 
-<span class="sd">        :param machine_graph: the machine graph of the application</span>
-<span class="sd">        :return:\</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">            the machine graph of the application</span>
+<span class="sd">        :return:</span>
 <span class="sd">            the max number of incoming edges to any vertex in the application</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">max_in_edges</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
@@ -166,11 +198,11 @@
     <span class="k">def</span> <span class="nf">_handle_colouring</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_in_edges</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">time_offset</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Operates the graph colouring greedy code.</span>
 
-<span class="sd">        :param max_in_edges: the number of colours to colour the graph</span>
-<span class="sd">        :param machine_graph:\</span>
+<span class="sd">        :param int max_in_edges: the number of colours to colour the graph</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
 <span class="sd">            the machine graph representation of the application</span>
-<span class="sd">        :param time_offset: the dict holding vertex to time offset mapping</span>
-<span class="sd">        :return: the dict holding vertex to time offset mapping</span>
+<span class="sd">        :return: vertex to time offset mapping</span>
+<span class="sd">        :rtype: dict(~.MachineVertex, int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">colours</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">colour</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_in_edges</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>  <span class="c1"># plus 1 to include myself</span>
@@ -184,14 +216,17 @@
 
     <span class="k">def</span> <span class="nf">_get_colour_for_vertex</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">colours</span><span class="p">,</span> <span class="n">colour_mapping</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Cycles though available colours</span>
+        <span class="sd">&quot;&quot;&quot; Cycles though available colours to find a colour that can be used\</span>
+<span class="sd">            for a particular vertex, and assigns it once it finds one.</span>
 
-<span class="sd">        :param vertex: the vertex in question</span>
-<span class="sd">        :param machine_graph:\</span>
+<span class="sd">        :param ~.MachineVertex vertex: the vertex to be coloured</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
 <span class="sd">            the machine graph representation of the application</span>
-<span class="sd">        :param colours: the available colours for the graph colouring</span>
-<span class="sd">        :param colour_mapping: the mapping between vertex and colour</span>
-<span class="sd">        :return: the colour of this vertex</span>
+<span class="sd">        :param list(int) colours:</span>
+<span class="sd">            the available colours for the graph colouring</span>
+<span class="sd">        :param dict(~.MachineVertex,int) colour_mapping:</span>
+<span class="sd">            the mapping between vertex and colour</span>
+<span class="sd">        :raises ConfigurationException: If no colouring can be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">colour</span> <span class="ow">in</span> <span class="n">colours</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available</span><span class="p">(</span><span class="n">colour</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">colour_mapping</span><span class="p">):</span>
@@ -225,22 +260,22 @@
         <span class="sd">&quot;&quot;&quot; Calculates the CPU cycles per window, and therefore verifies if\</span>
 <span class="sd">            there is enough time to do so with a end user safety margin</span>
 
-<span class="sd">        :param number_of_cpu_cycles_per_receive:\</span>
+<span class="sd">        :param int number_of_cpu_cycles_per_receive:</span>
 <span class="sd">            how long the packet reception callback takes in CPU cycles</span>
-<span class="sd">        :param machine_time_step: the timer tick in microseconds</span>
-<span class="sd">        :param time_scale_factor:\</span>
+<span class="sd">        :param int machine_time_step: the timer tick in microseconds</span>
+<span class="sd">        :param int time_scale_factor:</span>
 <span class="sd">            the multiplicative factor on the machine time step.</span>
-<span class="sd">        :param n_packets_per_time_window:\</span>
+<span class="sd">        :param float n_packets_per_time_window:</span>
 <span class="sd">            how many packets are to be sent per time window</span>
-<span class="sd">        :param max_in_edges:\</span>
+<span class="sd">        :param int max_in_edges:</span>
 <span class="sd">            the max number of edges going into any vertex in the machine graph</span>
-<span class="sd">        :param safety_factor: the end user safely factor</span>
-<span class="sd">        :param other_cpu_demands_in_cpu_cycles:\</span>
+<span class="sd">        :param float safety_factor: the end user safely factor</span>
+<span class="sd">        :param int other_cpu_demands_in_cpu_cycles:</span>
 <span class="sd">            extra costs (e.g. timer tick callback etc.)</span>
 <span class="sd">        :return: CPU cycles available per window.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        :raises ConfigurationException:\</span>
-<span class="sd">            if the overall time is below what is possible to receive packets\</span>
+<span class="sd">        :raises ConfigurationException:</span>
+<span class="sd">            if the overall time is below what is possible to receive packets</span>
 <span class="sd">            with</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>

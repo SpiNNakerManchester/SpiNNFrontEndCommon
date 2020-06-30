@@ -90,20 +90,31 @@
 <div class="viewcode-block" id="InsertEdgesToExtraMonitorFunctionality"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertEdgesToExtraMonitorFunctionality">[docs]</a><span class="k">class</span> <span class="nc">InsertEdgesToExtraMonitorFunctionality</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Inserts edges between vertices who use MC speed up and its local\</span>
 <span class="sd">        MC data gatherer.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        the machine graph instance</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements: the placements</span>
+<span class="sd">    :param ~spinn_machine.Machine machine: the machine object</span>
+<span class="sd">    :param vertex_to_ethernet_connected_chip_mapping:</span>
+<span class="sd">        mapping between ethernet connected chips and packet gatherers</span>
+<span class="sd">    :type vertex_to_ethernet_connected_chip_mapping:</span>
+<span class="sd">        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">        the application graph</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
                  <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
                  <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param machine_graph: the machine graph instance</span>
-<span class="sd">        :param placements: the placements</span>
-<span class="sd">        :param machine: the machine object</span>
-<span class="sd">        :param application_graph: the application graph</span>
-<span class="sd">        :param vertex_to_ethernet_connected_chip_mapping: \</span>
-<span class="sd">            mapping between ethernet connected chips and packet gatherers</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param vertex_to_ethernet_connected_chip_mapping:</span>
+<span class="sd">        :type vertex_to_ethernet_connected_chip_mapping:</span>
+<span class="sd">            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
 <span class="sd">        :param graph_mapper: the graph mapper</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">n_app_vertices</span> <span class="o">=</span> <span class="mi">0</span>
@@ -190,9 +201,9 @@
     <span class="k">def</span> <span class="nf">_has_edge_already</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Checks if a edge already exists</span>
 
-<span class="sd">        :param source: the source of the edge</span>
-<span class="sd">        :param destination: destination of the edge</span>
-<span class="sd">        :param graph: which graph to look in</span>
+<span class="sd">        :param ~.AbstractVertex source: the source of the edge</span>
+<span class="sd">        :param ~.AbstractVertex destination: destination of the edge</span>
+<span class="sd">        :param ~.Graph graph: which graph to look in</span>
 <span class="sd">        :return: Whether the edge was found</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>

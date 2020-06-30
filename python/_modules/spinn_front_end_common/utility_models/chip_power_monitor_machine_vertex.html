@@ -79,7 +79,7 @@
 
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">from</span> <span class="nn">data_specification.enums</span> <span class="kn">import</span> <span class="n">DataType</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="p">(</span>
@@ -118,20 +118,10 @@
         <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractReceiveBuffersToHost</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Machine vertex for C code representing functionality to record\</span>
 <span class="sd">        idle times in a machine graph.</span>
-
-<span class="sd">    :param label: vertex label</span>
-<span class="sd">    :type label: str</span>
-<span class="sd">    :param constraints: constraints on this vertex</span>
-<span class="sd">    :type constraints: \</span>
-<span class="sd">        iterable(~pacman.model.constraints.AbstractConstraint)</span>
-<span class="sd">    :param n_samples_per_recording: how may samples between recording entry</span>
-<span class="sd">    :type n_samples_per_recording: int</span>
-<span class="sd">    :param sampling_frequency: how often to sample, in microseconds</span>
-<span class="sd">    :type sampling_frequency: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_n_samples_per_recording&quot;</span><span class="p">,</span> <span class="s2">&quot;_sampling_frequency&quot;</span><span class="p">]</span>
 
-    <span class="k">class</span> <span class="nc">_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
         <span class="c1"># data regions</span>
         <span class="n">SYSTEM</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">CONFIG</span> <span class="o">=</span> <span class="mi">1</span>
@@ -143,6 +133,15 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">,</span>
             <span class="n">sampling_frequency</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str label: vertex label</span>
+<span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
+<span class="sd">                constraints:</span>
+<span class="sd">            constraints on this vertex</span>
+<span class="sd">        :param int n_samples_per_recording:</span>
+<span class="sd">            how may samples between recording entry</span>
+<span class="sd">        :param int sampling_frequency: how often to sample, in microseconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ChipPowerMonitorMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples_per_recording</span> <span class="o">=</span> <span class="n">n_samples_per_recording</span>
@@ -150,10 +149,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sampling_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; how often to sample, in microseconds</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_samples_per_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; how may samples between recording entries</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples_per_recording</span>
 
     <span class="nd">@property</span>
@@ -171,6 +178,10 @@
             <span class="n">n_samples_per_recording</span><span class="p">,</span> <span class="n">sampling_frequency</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the resources used by this vertex</span>
 
+<span class="sd">        :param int time_step:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param int n_samples_per_recording:</span>
+<span class="sd">        :param float sampling_frequency:</span>
 <span class="sd">        :rtype: ~pacman.model.resources.ResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-locals</span>
@@ -189,11 +200,10 @@
             <span class="n">fixed_sdram</span> <span class="o">+</span> <span class="n">overflow_recordings</span> <span class="o">*</span> <span class="n">RECORDING_SIZE_PER_ENTRY</span><span class="p">)</span>
         <span class="n">per_timestep</span> <span class="o">=</span> <span class="n">recording_per_step</span> <span class="o">*</span> <span class="n">RECORDING_SIZE_PER_ENTRY</span>
 
-        <span class="n">container</span> <span class="o">=</span> <span class="n">ResourceContainer</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span>
             <span class="n">sdram</span><span class="o">=</span><span class="n">VariableSDRAM</span><span class="p">(</span><span class="n">with_overflow</span><span class="p">,</span> <span class="n">per_timestep</span><span class="p">),</span>
             <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span>
-            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">container</span></div>
+            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span></div>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_binary_file_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -217,6 +227,11 @@
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.generate_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span>  <span class="c1"># @UnusedVariable</span>
             <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">data_n_time_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int machine_time_step: machine time step</span>
+<span class="sd">        :param int time_scale_factor: time scale factor</span>
+<span class="sd">        :param int data_n_time_steps: timesteps to reserve data for</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate_data_specification</span><span class="p">(</span>
             <span class="n">spec</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">data_n_time_steps</span><span class="p">)</span></div>
@@ -226,11 +241,10 @@
             <span class="n">data_n_time_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Supports the application vertex calling this directly</span>
 
-<span class="sd">        :param spec: data spec</span>
-<span class="sd">        :param machine_time_step: machine time step</span>
-<span class="sd">        :param time_scale_factor: time scale factor</span>
-<span class="sd">        :param data_n_time_steps: timesteps to reserve data for</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec: data spec</span>
+<span class="sd">        :param int machine_time_step: machine time step</span>
+<span class="sd">        :param int time_scale_factor: time scale factor</span>
+<span class="sd">        :param int data_n_time_steps: timesteps to reserve data for</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for ChipPowerMonitor Instance ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -247,10 +261,10 @@
     <span class="k">def</span> <span class="nf">_write_configuration_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write the data needed by the C code to configure itself</span>
 
-<span class="sd">        :param spec: spec object</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">            spec object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_samples_per_recording</span><span class="p">,</span>
                          <span class="n">data_type</span><span class="o">=</span><span class="n">DataType</span><span class="o">.</span><span class="n">UINT32</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">DataType</span><span class="o">.</span><span class="n">UINT32</span><span class="p">)</span>
@@ -260,17 +274,17 @@
             <span class="n">n_machine_time_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Writes the system data as required.</span>
 
-<span class="sd">        :param spec: the DSG spec writer</span>
-<span class="sd">        :param machine_time_step: the machine time step</span>
-<span class="sd">        :param time_scale_factor: the time scale factor</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">            the DSG spec writer</span>
+<span class="sd">        :param int machine_time_step: the machine time step</span>
+<span class="sd">        :param int time_scale_factor: the time scale factor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">(),</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">))</span>
 
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="p">)</span>
         <span class="n">recorded_region_sizes</span> <span class="o">=</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deduce_sdram_requirements_per_timer_tick</span><span class="p">(</span>
                 <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_machine_time_steps</span><span class="p">]</span>
@@ -280,21 +294,21 @@
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Reserve the DSG memory regions as required</span>
 
-<span class="sd">        :param spec: the DSG specification to reserve in</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">            the DSG specification to reserve in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reserving memory space for data regions:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Reserve memory:</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">SIMULATION_N_BYTES</span><span class="p">,</span>
             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;system&#39;</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">CONFIG_SIZE_IN_BYTES</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;config&#39;</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">recording_utilities</span><span class="o">.</span><span class="n">get_recording_header_size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Recording&quot;</span><span class="p">)</span>
 
@@ -314,7 +328,7 @@
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractReceiveBuffersToHost</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">)</span>
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_recording_region_base_address"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_recording_region_base_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_recording_region_base_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">locate_memory_region_for_placement</span><span class="p">(</span>
-            <span class="n">placement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">txrx</span><span class="p">)</span></div>
+            <span class="n">placement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="p">,</span> <span class="n">txrx</span><span class="p">)</span></div>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractReceiveBuffersToHost</span><span class="o">.</span><span class="n">get_recorded_region_ids</span><span class="p">)</span>
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_recorded_region_ids"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_recorded_region_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_recorded_region_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -324,8 +338,8 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Deduce SDRAM usage per timer tick</span>
 
-<span class="sd">        :param machine_time_step: the machine time step</span>
-<span class="sd">        :param time_scale_factor: the time scale factor</span>
+<span class="sd">        :param int machine_time_step: the machine time step</span>
+<span class="sd">        :param float time_scale_factor: the time scale factor</span>
 <span class="sd">        :return: the SDRAM usage</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">timer_tick_in_micro_seconds</span> <span class="o">=</span> <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span>
@@ -337,13 +351,12 @@
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_recorded_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_recorded_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_recorded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get data from SDRAM given placement and buffer manager</span>
 
-<span class="sd">        :param placement: the location on machine to get data from</span>
-<span class="sd">        :type placement: ~pacman.model.placements.Placement</span>
-<span class="sd">        :param buffer_manager: the buffer manager that might have data</span>
-<span class="sd">        :type buffer_manager: \</span>
-<span class="sd">            ~spinn_front_end_common.interface.buffer_management.BufferManager</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">            the location on machine to get data from</span>
+<span class="sd">        :param BufferManager buffer_manager:</span>
+<span class="sd">            the buffer manager that might have data</span>
 <span class="sd">        :return: results, an array with 1 dimension of uint32 values</span>
-<span class="sd">        :rtype: numpy.ndarray</span>
+<span class="sd">        :rtype: ~numpy.ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># for buffering output info is taken form the buffer manager</span>
         <span class="c1"># get raw data as a byte array</span>

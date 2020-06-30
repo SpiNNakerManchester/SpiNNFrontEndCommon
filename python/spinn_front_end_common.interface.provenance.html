@@ -100,11 +100,11 @@
 <dt id="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.provenance.</code><code class="descname">AbstractProvidesLocalProvenanceData</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_local_provenance_data.html#AbstractProvidesLocalProvenanceData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>Indicates an object that provides locally obtained provenance data</p>
+<p>Indicates an object that provides locally obtained provenance data.</p>
 <dl class="method">
 <dt id="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data">
 <code class="descname">get_local_provenance_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_local_provenance_data.html#AbstractProvidesLocalProvenanceData.get_local_provenance_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterable of provenance data items</p>
+<dd><p>Get an iterable of provenance data items.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -123,11 +123,11 @@
 <dt id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.provenance.</code><code class="descname">AbstractProvidesProvenanceDataFromMachine</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>Indicates that an object provides provenance data retrieved from the        machine</p>
+<p>Indicates that an object provides provenance data retrieved from the        machine.</p>
 <dl class="method">
 <dt id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine">
 <code class="descname">get_provenance_data_from_machine</code><span class="sig-paren">(</span><em>transceiver</em>, <em>placement</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterable of provenance data items</p>
+<dd><p>Get an iterable of provenance data items.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -294,6 +294,51 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v)"><em>DataSpecificationGenerator</em></a>) &#8211; The data specification being written.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.provenance.</code><code class="descname">SqlLiteDatabase</code><span class="sig-paren">(</span><em>database_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Specific implementation of the Database for SQLite 3.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">NOT THREAD SAFE ON THE SAME DB.
+Threads can access different DBs just fine.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This totally relies on the way SQLite&#8217;s type affinities function.
+You can&#8217;t port to a different database engine without a lot of work.</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The name of a file that contains (or will            contain) an SQLite database holding the data. If omitted, an            unshared in-memory database will be used.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalises and closes the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items">
+<code class="descname">insert_items</code><span class="sig-paren">(</span><em>items</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/sqllite_database.html#SqlLiteDatabase.insert_items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.SqlLiteDatabase.insert_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a bulk insert of the items into the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>items</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem"><em>ProvenanceDataItem</em></a><em>)</em><em></em>) &#8211; The items to insert</td>
 </tr>
 </tbody>
 </table>

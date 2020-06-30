@@ -118,8 +118,24 @@
 <dt id="spinn_front_end_common.mapping_algorithms.find_application_chips_used.FindApplicationChipsUsed">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.mapping_algorithms.find_application_chips_used.</code><code class="descname">FindApplicationChipsUsed</code><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/find_application_chips_used.html#FindApplicationChipsUsed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.find_application_chips_used.FindApplicationChipsUsed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>builds a set of stats on how many chips were used for application
-sided cores.</p>
+<p>Builds a set of stats on how many chips were used for application        cores.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a tuple with 4 elements.</td>
+</tr>
+</tbody>
+</table>
+<ol class="arabic simple">
+<li>how many chips were used</li>
+<li>the max application cores on any given chip</li>
+<li>the lowest number of application cores on any given chip</li>
+</ol>
+<p>4. the average number of application cores on any given chip
+:rtype: tuple(int,int,int,float)</p>
 </dd></dl>
 
 </div>

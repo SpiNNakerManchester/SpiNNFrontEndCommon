@@ -86,8 +86,19 @@
 
 
 <div class="viewcode-block" id="ProcessPartitionConstraints"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProcessPartitionConstraints">[docs]</a><span class="k">class</span> <span class="nc">ProcessPartitionConstraints</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Adds constraints to partitions if the vertices at either end of the\</span>
+<span class="sd">        partition request it.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">machine_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -129,6 +140,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_process_application_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.OutgoingEdgePartition partition:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">vertex</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span>
             <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span>
@@ -145,6 +159,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_process_machine_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.OutgoingEdgePartition partition:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="p">,</span>
                       <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
             <span class="n">partition</span><span class="o">.</span><span class="n">add_constraints</span><span class="p">(</span>

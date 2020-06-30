@@ -86,6 +86,24 @@
 
 <div class="viewcode-block" id="VirtualMachineGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.VirtualMachineGenerator">[docs]</a><span class="k">class</span> <span class="nc">VirtualMachineGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Generates a virtual machine with given dimensions and configuration.</span>
+
+<span class="sd">    :param int width: The width of the machine in chips</span>
+<span class="sd">    :param int height: The height of the machine in chips</span>
+<span class="sd">    :param int version: The version of board to create</span>
+<span class="sd">    :param list(tuple(int,int)) down_chips:</span>
+<span class="sd">        The set of chips that should be considered broken</span>
+<span class="sd">    :param list(tuple(int,int,int)) down_cores:</span>
+<span class="sd">        The set of cores that should be considered broken</span>
+<span class="sd">    :param list(tuple(int,int,int)) down_links:</span>
+<span class="sd">        The set of links that should be considered broken</span>
+<span class="sd">    :param int max_sdram_size: The SDRAM that should be given to each chip</span>
+<span class="sd">    :param int router_entries_per_chip:</span>
+<span class="sd">        The number of router entries to allocate.</span>
+<span class="sd">    :param str json_path:</span>
+<span class="sd">        Where to load a JSON description of the machine from, if anywhere.</span>
+<span class="sd">    :return: The virtual machine.</span>
+<span class="sd">    :rtype: ~spinn_machine.Machine</span>
+<span class="sd">    :raises Exception: If given bad arguments</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
@@ -97,13 +115,17 @@
             <span class="n">router_entries_per_chip</span><span class="o">=</span><span class="n">Router</span><span class="o">.</span><span class="n">ROUTER_DEFAULT_AVAILABLE_ENTRIES</span><span class="p">,</span>
             <span class="n">json_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param width: The width of the machine in chips</span>
-<span class="sd">        :param height: The height of the machine in chips</span>
-<span class="sd">        :param version: The version of board to create</span>
-<span class="sd">        :param down_chips: The set of chips that should be considered broken</span>
-<span class="sd">        :param down_cores: The set of cores that should be considered broken</span>
-<span class="sd">        :param down_links: The set of links that should be considered broken</span>
-<span class="sd">        :param max_sdram_size: The SDRAM that should be given to each chip</span>
+<span class="sd">        :param int width:</span>
+<span class="sd">        :param int height:</span>
+<span class="sd">        :param int version:</span>
+<span class="sd">        :param list(tuple(int,int)) down_chips:</span>
+<span class="sd">        :param list(tuple(int,int,int)) down_cores:</span>
+<span class="sd">        :param list(tuple(int,int,int)) down_links:</span>
+<span class="sd">        :param int max_sdram_size:</span>
+<span class="sd">        :param int router_entries_per_chip:</span>
+<span class="sd">        :param str json_path:</span>
+<span class="sd">        :rtype: ~.Machine</span>
+<span class="sd">        :raises Exception:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># For backward compatibility support version in csf files for now</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

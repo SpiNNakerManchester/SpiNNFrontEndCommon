@@ -95,11 +95,20 @@
 
 <div class="viewcode-block" id="ChipProvenanceUpdater"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ChipProvenanceUpdater">[docs]</a><span class="k">class</span> <span class="nc">ChipProvenanceUpdater</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Forces all cores to generate provenance data, and then exit</span>
+
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx:</span>
+<span class="sd">    :param int app_id:</span>
+<span class="sd">    :param ~spinn_machine.CoreSubsets all_core_subsets:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">all_core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~.CoreSubsets all_core_subsets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check that the right number of processors are in sync</span>
         <span class="n">processors_completed</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span>
             <span class="n">app_id</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
@@ -132,6 +141,14 @@
 
     <span class="k">def</span> <span class="nf">_update_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">total_processors</span><span class="p">,</span> <span class="n">processors_completed</span><span class="p">,</span>
                            <span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param int total_processors:</span>
+<span class="sd">        :param int processors_completed:</span>
+<span class="sd">        :param ~.CoreSubsets all_core_subsets:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~.ProgressBar progress:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">left_to_do_cores</span> <span class="o">=</span> <span class="n">total_processors</span> <span class="o">-</span> <span class="n">processors_completed</span>
         <span class="n">attempts</span> <span class="o">=</span> <span class="mi">0</span>
@@ -158,6 +175,12 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_send_chip_update_provenance_and_exit</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="n">SDP_RUNNING_MESSAGE_CODES</span><span class="o">.</span><span class="n">SDP_UPDATE_PROVENCE_REGION_AND_EXIT</span>
         <span class="n">port</span> <span class="o">=</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">RUNNING_COMMAND_SDP_PORT</span>
 

@@ -85,6 +85,25 @@
 
 
 <div class="viewcode-block" id="BufferManagerCreator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.BufferManagerCreator">[docs]</a><span class="k">class</span> <span class="nc">BufferManagerCreator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Creates a buffer manager.</span>
+
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">    :param ~pacman.model.tags.Tags tags:</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx:</span>
+<span class="sd">    :param bool uses_advanced_monitors:</span>
+<span class="sd">    :param str report_folder:</span>
+<span class="sd">        The path where the SQLite database holding the data will be placed,</span>
+<span class="sd">        and where any java provenance can be written.</span>
+<span class="sd">    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">    :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \</span>
+<span class="sd">            extra_monitor_to_chip_mapping:</span>
+<span class="sd">    :param dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex) \</span>
+<span class="sd">            packet_gather_cores_to_ethernet_connection_map:</span>
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">    :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) fixed_routes:</span>
+<span class="sd">    :param JavaCaller java_caller:</span>
+<span class="sd">    :rtype: BufferManager</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -99,16 +118,13 @@
 <span class="sd">        :param ~spinnman.transceiever.Transceiver txrx:</span>
 <span class="sd">        :param bool uses_advanced_monitors:</span>
 <span class="sd">        :param str report_folder:</span>
-<span class="sd">            The path where the SQLite database holding the data will be placed,</span>
-<span class="sd">            and where any java provenance can be written.</span>
 <span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
 <span class="sd">        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \</span>
 <span class="sd">                extra_monitor_to_chip_mapping:</span>
 <span class="sd">        :param dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex) \</span>
 <span class="sd">                packet_gather_cores_to_ethernet_connection_map:</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
-<span class="sd">        :param dict(tuple(int,int),~spinn_machine.FixedRouteEntry) \</span>
-<span class="sd">                fixed_routes:</span>
+<span class="sd">        :param dict(tuple(int,int),~.FixedRouteEntry) fixed_routes:</span>
 <span class="sd">        :param JavaCaller java_caller:</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>

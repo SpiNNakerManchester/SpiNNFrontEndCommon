@@ -79,27 +79,38 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> \
-    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.profiling</span> <span class="kn">import</span> <span class="n">AbstractHasProfileData</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ProfileDataGatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProfileDataGatherer">[docs]</a><span class="k">class</span> <span class="nc">ProfileDataGatherer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Gets all the profiling data recorded by vertices and writes it to\</span>
+<span class="sd">        files.</span>
+
+<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        the SpiNNMan interface object</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        The placements of the vertices</span>
+<span class="sd">    :param str provenance_file_path:</span>
+<span class="sd">        The location to store the profile data</span>
+<span class="sd">    :param int machine_time_step:</span>
+<span class="sd">        machine time step in ms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
             <span class="n">machine_time_step</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param transceiver: the SpiNNMan interface object</span>
-<span class="sd">        :param placements: The placements of the vertices</span>
-<span class="sd">        :param has_ran: token that states that the simulation has ran</span>
-<span class="sd">        :param provenance_file_path: The location to store the profile data</span>
-<span class="sd">        :param machine_time_step: machine time step in ms</span>
+<span class="sd">        :param ~.Transceiver transceiver:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param str provenance_file_path:</span>
+<span class="sd">        :param int machine_time_step:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">machine_time_step_ms</span> <span class="o">=</span> <span class="p">(</span>
@@ -119,6 +130,12 @@
                                 <span class="n">provenance_file_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">profile_data</span><span class="p">,</span> <span class="n">machine_time_step_ms</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Placement p:</span>
+<span class="sd">        :param ProfileData profile_data:</span>
+<span class="sd">        :param float machine_time_step_ms:</span>
+<span class="sd">        :param str directory:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">max_tag_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">profile_data</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
 

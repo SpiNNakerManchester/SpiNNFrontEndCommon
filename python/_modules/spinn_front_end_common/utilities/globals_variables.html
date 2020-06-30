@@ -130,9 +130,8 @@
 <div class="viewcode-block" id="unset_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.unset_simulator">[docs]</a><span class="k">def</span> <span class="nf">unset_simulator</span><span class="p">(</span><span class="n">to_cache_simulator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Destroy the current simulator.</span>
 
-<span class="sd">    :param to_cache_simulator: \</span>
+<span class="sd">    :param SimulatorInterface to_cache_simulator:</span>
 <span class="sd">        a cached version for allowing data extraction</span>
-<span class="sd">    :type to_cache_simulator: SimulatorInterface</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_cached_simulator</span>
     <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
@@ -164,6 +163,14 @@
 
 
 <div class="viewcode-block" id="get_generated_output"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_generated_output">[docs]</a><span class="k">def</span> <span class="nf">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get one of the simulator outputs by name.</span>
+
+<span class="sd">    :param str output: The name of the output to retrieve.</span>
+<span class="sd">    :return: The value (of arbitrary type, dependent on which output),</span>
+<span class="sd">        or `None` if the variable is not found.</span>
+<span class="sd">    :raises ValueError:</span>
+<span class="sd">        if the system is in a state where outputs can&#39;t be retrieved</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_failed_state</span><span class="p">,</span> <span class="n">_cached_simulator</span>
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>

@@ -77,54 +77,62 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">SpecificChipSDRAMResource</span><span class="p">,</span> \
-    <span class="n">PreAllocatedResourceContainer</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span> \
-    <span class="n">machine_bit_field_router_compressor</span> \
-    <span class="kn">import</span> <span class="nn">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SpecificChipSDRAMResource</span><span class="p">,</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span> \
+    <span class="n">machine_bit_field_router_compressor</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="PreAllocateForBitFieldRouterCompressor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateForBitFieldRouterCompressor">[docs]</a><span class="k">class</span> <span class="nc">PreAllocateForBitFieldRouterCompressor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Preallocates resources required for bitfield router compression.</span>
+
+<span class="sd">    :param pre_allocated_resources: other preallocated resources</span>
+<span class="sd">    :type pre_allocated_resources:</span>
+<span class="sd">        ~pacman.model.resources.PreAllocatedResourceContainer</span>
+<span class="sd">    :param int sdram_to_pre_alloc_for_bit_fields:</span>
+<span class="sd">        SDRAM end user managed to help with bitfield compressions. Basically</span>
+<span class="sd">        ensuring some SDRAM is available in the case where there is no SDRAM</span>
+<span class="sd">        available to steal/use.</span>
+<span class="sd">    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered</span>
+<span class="sd">    :return: preallocated resources</span>
+<span class="sd">    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">sdram_to_pre_alloc_for_bit_fields</span><span class="p">,</span>
                  <span class="n">pre_allocated_resources</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param pre_allocated_resources: other pre allocated resources</span>
-<span class="sd">        :param sdram_to_pre_alloc_for_bit_fields: sdram end user managed to \</span>
-<span class="sd">        help with bitfield compressions. Basically ensuring some sdram is \</span>
-<span class="sd">        available in the use case where there is no sdram available to \</span>
-<span class="sd">        steal/use.</span>
-<span class="sd">        :param machine: the SpiNNaker machine as discovered</span>
-<span class="sd">        :return: pre allocated resources</span>
+<span class="sd">        :param ~.PreAllocatedResourceContainer pre_allocated_resources:</span>
+<span class="sd">        :param int sdram_to_pre_alloc_for_bit_fields:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :rtype: ~.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-            <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span><span class="p">,</span> <span class="s2">&quot;Pre allocating resources for bit field &quot;</span><span class="p">)</span>
+            <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span><span class="p">,</span>
+            <span class="s2">&quot;Preallocating resources for bit field compressor&quot;</span><span class="p">)</span>
 
         <span class="c1"># for every Ethernet connected chip, get the resources needed by the</span>
         <span class="c1"># live packet gatherers</span>
         <span class="n">sdrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
-            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">SpecificChipSDRAMResource</span><span class="p">(</span>
-                    <span class="n">chip</span><span class="p">,</span>
-                    <span class="p">(</span><span class="n">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span> <span class="o">*</span>
-                     <span class="n">chip</span><span class="o">.</span><span class="n">n_user_processors</span><span class="p">)</span> <span class="o">+</span>
-                    <span class="n">sdram_to_pre_alloc_for_bit_fields</span><span class="p">))</span>
+            <span class="n">sdrams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SpecificChipSDRAMResource</span><span class="p">(</span>
+                <span class="n">chip</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span> <span class="o">*</span> <span class="n">chip</span><span class="o">.</span><span class="n">n_user_processors</span><span class="p">)</span> <span class="o">+</span>
+                <span class="n">sdram_to_pre_alloc_for_bit_fields</span><span class="p">))</span>
 
-        <span class="c1"># create pre allocated resource container</span>
-        <span class="n">pre_allocated_resource_container</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
+        <span class="c1"># create preallocated resource container</span>
+        <span class="n">resource_container</span> <span class="o">=</span> <span class="n">PreAllocatedResourceContainer</span><span class="p">(</span>
             <span class="n">specific_sdram_usage</span><span class="o">=</span><span class="n">sdrams</span><span class="p">)</span>
 
-        <span class="c1"># add other pre allocated resources</span>
+        <span class="c1"># add other preallocated resources</span>
         <span class="k">if</span> <span class="n">pre_allocated_resources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">pre_allocated_resource_container</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-                <span class="n">pre_allocated_resources</span><span class="p">)</span>
+            <span class="n">resource_container</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pre_allocated_resources</span><span class="p">)</span>
 
-        <span class="c1"># return pre allocated resources</span>
-        <span class="k">return</span> <span class="n">pre_allocated_resource_container</span></div>
+        <span class="c1"># return preallocated resources</span>
+        <span class="k">return</span> <span class="n">resource_container</span></div>
 </pre></div>
 
           </div>

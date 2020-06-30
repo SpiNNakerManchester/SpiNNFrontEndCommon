@@ -77,10 +77,10 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">from</span> <span class="nn">spinnman.processes</span> <span class="kn">import</span> <span class="n">AbstractMultiConnectionProcess</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages</span>\
     <span class="kn">import</span> <span class="p">(</span>
         <span class="n">SetRouterEmergencyTimeoutMessage</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinnman.processes</span> <span class="kn">import</span> <span class="n">AbstractMultiConnectionProcess</span>
 
 
 <div class="viewcode-block" id="SetRouterEmergencyTimeoutProcess"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterEmergencyTimeoutProcess">[docs]</a><span class="k">class</span> <span class="nc">SetRouterEmergencyTimeoutProcess</span><span class="p">(</span><span class="n">AbstractMultiConnectionProcess</span><span class="p">):</span>
@@ -88,16 +88,8 @@
 
 <span class="sd">    Note that timeouts are specified in a weird fixed point format, and that\</span>
 <span class="sd">    the emergency message routing system is not normally enabled.</span>
+<span class="sd">    See the SpiNNaker datasheet for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_selector</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param \</span>
-<span class="sd">            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\</span>
-<span class="sd">            connection_selector:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SetRouterEmergencyTimeoutProcess</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">connection_selector</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SetRouterEmergencyTimeoutProcess.set_timeout"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterEmergencyTimeoutProcess.set_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

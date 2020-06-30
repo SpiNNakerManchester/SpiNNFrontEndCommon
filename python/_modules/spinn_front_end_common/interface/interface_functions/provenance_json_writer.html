@@ -89,11 +89,18 @@
 
 <div class="viewcode-block" id="ProvenanceJSONWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ProvenanceJSONWriter">[docs]</a><span class="k">class</span> <span class="nc">ProvenanceJSONWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Write provenance data into JSON</span>
+
+<span class="sd">    :param list(ProvenanceDataItem) provenance_data_items:</span>
+<span class="sd">    :param str provenance_data_path:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provenance_data_items</span><span class="p">,</span> <span class="n">provenance_data_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(ProvenanceDataItem) provenance_data_items:</span>
+<span class="sd">        :param str provenance_data_path:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Group data by the first name</span>
         <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">provenance_data_items</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
@@ -115,6 +122,11 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_build_path</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param dict(str,object) root:</span>
+<span class="sd">        :param ProvenanceDataItem item:</span>
+<span class="sd">        :rtype: dict(str,str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="n">root</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">parent</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">dict</span><span class="p">)):</span>
@@ -126,6 +138,11 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str path:</span>
+<span class="sd">        :param str name:</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">remapped</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_VALID_CHARS</span> <span class="k">else</span> <span class="s1">&#39;_&#39;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">generate_unique_folder_name</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">remapped</span><span class="p">,</span> <span class="s2">&quot;.json&quot;</span><span class="p">)</span></div>
 </pre></div>

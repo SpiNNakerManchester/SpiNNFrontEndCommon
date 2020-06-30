@@ -87,6 +87,27 @@
 
 <div class="viewcode-block" id="InsertEdgesToLivePacketGatherers"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertEdgesToLivePacketGatherers">[docs]</a><span class="k">class</span> <span class="nc">InsertEdgesToLivePacketGatherers</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Add edges from the recorded vertices to the local Live PacketGatherers.</span>
+
+<span class="sd">    :param live_packet_gatherer_parameters: the set of parameters</span>
+<span class="sd">    :type live_packet_gatherer_parameters:</span>
+<span class="sd">        dict(LivePacketGatherParameters,</span>
+<span class="sd">        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        the placements object</span>
+<span class="sd">    :param live_packet_gatherers_to_vertex_mapping:</span>
+<span class="sd">        the mapping of LPG parameters and the machine vertices associated</span>
+<span class="sd">        with it</span>
+<span class="sd">    :type live_packet_gatherers_to_vertex_mapping:</span>
+<span class="sd">        dict(LivePacketGatherParameters,</span>
+<span class="sd">        dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
+<span class="sd">    :param ~spinn_machine.Machine machine: the SpiNNaker machine</span>
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        the machine graph</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">        the application graph</span>
+<span class="sd">    :param n_keys_map: key map</span>
+<span class="sd">    :type n_keys_map:</span>
+<span class="sd">        ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -95,18 +116,21 @@
             <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">n_keys_map</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param live_packet_gatherer_parameters: the set of parameters</span>
-<span class="sd">        :param placements: the placements object</span>
-<span class="sd">        :param live_packet_gatherers_to_vertex_mapping:\</span>
-<span class="sd">            the mapping of LPG parameters and the machine vertices associated\</span>
-<span class="sd">            with it</span>
-<span class="sd">        :param machine: the SpiNNaker machine</span>
-<span class="sd">        :param machine_graph: the machine graph</span>
-<span class="sd">        :param application_graph: the application graph</span>
+<span class="sd">        :param live_packet_gatherer_parameters:</span>
+<span class="sd">        :type live_packet_gatherer_parameters:</span>
+<span class="sd">            dict(LivePacketGatherParameters,</span>
+<span class="sd">            list(tuple(~.AbstractVertex, list(str))))</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param live_packet_gatherers_to_vertex_mapping:</span>
+<span class="sd">        :type live_packet_gatherers_to_vertex_mapping:</span>
+<span class="sd">            dict(LivePacketGatherParameters,</span>
+<span class="sd">            dict(tuple(int,int), LivePacketGatherMachineVertex))</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
 <span class="sd">        :param graph_mapper: \</span>
 <span class="sd">            the mapping between application and machine graphs</span>
-<span class="sd">        :param n_keys_map: key map</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
@@ -213,7 +237,7 @@
 <span class="sd">        :param partition_ids: the partition IDs to put the edge on</span>
 <span class="sd">        :param n_keys_map: map between partition and n keys</span>
 <span class="sd">        :return: the application edge for this vertex and LPG</span>
-<span class="sd">        :rtype: ~pacman.model.graph.application.ApplicationEdge</span>
+<span class="sd">        :rtype: ~pacman.model.graphs.application.ApplicationEdge</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
@@ -250,12 +274,14 @@
 <span class="sd">            machine vertex in question, or the LPG on 0, 0 if a closer one\</span>
 <span class="sd">            can&#39;t be found.</span>
 
-<span class="sd">        :param machine_vertex: the machine vertex to locate the nearest LPG to</span>
-<span class="sd">        :param machine_lpgs: dict of gatherers by chip placed on</span>
-<span class="sd">        :param machine: the SpiNNaker machine object</span>
-<span class="sd">        :type machine: ~spinn_machine.Machine</span>
-<span class="sd">        :param placements: the placements object</span>
+<span class="sd">        :param ~.MachineVertex machine_vertex:</span>
+<span class="sd">            the machine vertex to locate the nearest LPG to</span>
+<span class="sd">        :param dict(tuple(int,int),LivePacketGatherMachineVertex) machine_lpgs:</span>
+<span class="sd">            gatherers by chip placed on</span>
+<span class="sd">        :param ~.Machine machine: the SpiNNaker machine object</span>
+<span class="sd">        :param ~.Placements placements: the placements object</span>
 <span class="sd">        :return: the local LPG</span>
+<span class="sd">        :rtype: LivePacketGatherMachineVertex</span>
 <span class="sd">        :raise ConfigurationException: if a local gatherer cannot be found</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 

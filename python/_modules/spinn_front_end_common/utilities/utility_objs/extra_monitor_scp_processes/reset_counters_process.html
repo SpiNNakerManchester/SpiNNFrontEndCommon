@@ -77,23 +77,15 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">from</span> <span class="nn">spinnman.processes</span> <span class="kn">import</span> <span class="n">AbstractMultiConnectionProcess</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages</span>\
     <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ResetCountersMessage</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinnman.processes</span> <span class="kn">import</span> <span class="n">AbstractMultiConnectionProcess</span>
 
 
 <div class="viewcode-block" id="ResetCountersProcess"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess">[docs]</a><span class="k">class</span> <span class="nc">ResetCountersProcess</span><span class="p">(</span><span class="n">AbstractMultiConnectionProcess</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; How to send messages to clear the reinjection state counters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection_selector</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param \</span>
-<span class="sd">            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\</span>
-<span class="sd">            connection_selector:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ResetCountersProcess</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection_selector</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ResetCountersProcess.reset_counters"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess.reset_counters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_counters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

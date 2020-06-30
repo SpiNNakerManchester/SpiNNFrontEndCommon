@@ -97,16 +97,33 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="LoadExecutableImages.load_app_images"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.LoadExecutableImages.load_app_images">[docs]</a>    <span class="k">def</span> <span class="nf">load_app_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__load_images</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
                            <span class="k">lambda</span> <span class="n">ty</span><span class="p">:</span> <span class="n">ty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                            <span class="s2">&quot;Loading executables onto the machine&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LoadExecutableImages.load_sys_images"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.LoadExecutableImages.load_sys_images">[docs]</a>    <span class="k">def</span> <span class="nf">load_sys_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__load_images</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
                            <span class="k">lambda</span> <span class="n">ty</span><span class="p">:</span> <span class="n">ty</span> <span class="ow">is</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
                            <span class="s2">&quot;Loading system executables onto the machine&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__load_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param callable(ExecutableType,bool) filt:</span>
+<span class="sd">        :param str label</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Compute what work is to be done here</span>
         <span class="n">binaries</span><span class="p">,</span> <span class="n">cores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_targets</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">filt</span><span class="p">)</span>
 
@@ -122,6 +139,11 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="LoadExecutableImages.filter_targets"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.LoadExecutableImages.filter_targets">[docs]</a>    <span class="k">def</span> <span class="nf">filter_targets</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">filt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param callable(ExecutableType,bool) filt:</span>
+<span class="sd">        :rtype: tuple(list(str), ExecutableTargets)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">binaries</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">cores</span> <span class="o">=</span> <span class="n">ExecutableTargets</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">exe_type</span> <span class="ow">in</span> <span class="n">targets</span><span class="o">.</span><span class="n">executable_types_in_binary_set</span><span class="p">():</span>
@@ -134,6 +156,11 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__start_simulation</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">txrx</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
             <span class="n">executable_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">READY</span><span class="p">])</span>
         <span class="n">txrx</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">Signal</span><span class="o">.</span><span class="n">START</span><span class="p">)</span></div>

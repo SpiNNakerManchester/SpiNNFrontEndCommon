@@ -106,7 +106,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.processes/#spinnman.processes.AbstractMultiConnectionProcessConnectionSelector" title="(in SpiNNMan v)"><em>AbstractMultiConnectionProcessConnectionSelector</em></a>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -150,14 +150,14 @@
 
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">ResetCountersProcess</code><span class="sig-paren">(</span><em>connection_selector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/reset_counters_process.html#ResetCountersProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">ResetCountersProcess</code><span class="sig-paren">(</span><em>next_connection_selector</em>, <em>n_retries=10</em>, <em>timeout=1.0</em>, <em>n_channels=8</em>, <em>intermediate_channel_waits=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/reset_counters_process.html#ResetCountersProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
 <p>How to send messages to clear the reinjection state counters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -178,14 +178,14 @@
 
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetPacketTypesProcess">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">SetPacketTypesProcess</code><span class="sig-paren">(</span><em>connection_selector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/set_packet_types_process.html#SetPacketTypesProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetPacketTypesProcess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">SetPacketTypesProcess</code><span class="sig-paren">(</span><em>next_connection_selector</em>, <em>n_retries=10</em>, <em>timeout=1.0</em>, <em>n_channels=8</em>, <em>intermediate_channel_waits=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/set_packet_types_process.html#SetPacketTypesProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetPacketTypesProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
 <p>How to send messages to control what messages are reinjected.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -197,16 +197,13 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)"><em>CoreSubsets</em></a>) &#8211; sets of cores to send command to</li>
 <li><strong>point_to_point</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If point-to-point should be set</li>
 <li><strong>multicast</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If multicast should be set</li>
 <li><strong>nearest_neighbour</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If nearest neighbour should be set</li>
 <li><strong>fixed_route</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If fixed route should be set</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -217,15 +214,16 @@
 
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterEmergencyTimeoutProcess">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">SetRouterEmergencyTimeoutProcess</code><span class="sig-paren">(</span><em>connection_selector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/set_router_emergency_timeout_process.html#SetRouterEmergencyTimeoutProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterEmergencyTimeoutProcess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">SetRouterEmergencyTimeoutProcess</code><span class="sig-paren">(</span><em>next_connection_selector</em>, <em>n_retries=10</em>, <em>timeout=1.0</em>, <em>n_channels=8</em>, <em>intermediate_channel_waits=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/set_router_emergency_timeout_process.html#SetRouterEmergencyTimeoutProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterEmergencyTimeoutProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
 <p>How to send messages to set the router emergency timeouts.</p>
-<p>Note that timeouts are specified in a weird fixed point format, and that    the emergency message routing system is not normally enabled.</p>
+<p>Note that timeouts are specified in a weird fixed point format, and that    the emergency message routing system is not normally enabled.
+See the SpiNNaker datasheet for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -251,15 +249,16 @@
 
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">SetRouterTimeoutProcess</code><span class="sig-paren">(</span><em>connection_selector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/set_router_timeout_process.html#SetRouterTimeoutProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">SetRouterTimeoutProcess</code><span class="sig-paren">(</span><em>next_connection_selector</em>, <em>n_retries=10</em>, <em>timeout=1.0</em>, <em>n_channels=8</em>, <em>intermediate_channel_waits=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/set_router_timeout_process.html#SetRouterTimeoutProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
 <p>How to send messages to set the router timeouts.</p>
-<p>Note that timeouts are specified in a weird fixed point format.</p>
+<p>Note that timeouts are specified in a weird fixed point format.
+See the SpiNNaker datasheet for details.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -285,14 +284,14 @@
 
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ClearQueueProcess">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">ClearQueueProcess</code><span class="sig-paren">(</span><em>connection_selector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/clear_queue_process.html#ClearQueueProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ClearQueueProcess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">ClearQueueProcess</code><span class="sig-paren">(</span><em>next_connection_selector</em>, <em>n_retries=10</em>, <em>timeout=1.0</em>, <em>n_channels=8</em>, <em>intermediate_channel_waits=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/clear_queue_process.html#ClearQueueProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ClearQueueProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
 <p>How to send messages to clear the reinjection queue.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -333,8 +332,6 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)"><em>CoreSubsets</em></a>) &#8211; sets of cores to send command to</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
-</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -362,8 +359,6 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)"><em>CoreSubsets</em></a>) &#8211; sets of cores to send command to</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
 </tr>
 </tbody>
 </table>

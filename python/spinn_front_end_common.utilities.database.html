@@ -429,6 +429,14 @@ response will be sent.</td>
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.database.</code><code class="descname">DatabaseWriter</code><span class="sig-paren">(</span><em>database_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>The interface for the database system for main front ends.        Any special tables needed from a front end should be done        by sub classes of this interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database_directory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Where the database will be written</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">
 <code class="descname">add_application_vertices</code><span class="sig-paren">(</span><em>application_graph</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_application_vertices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices" title="Permalink to this definition">¶</a></dt>
@@ -436,9 +444,7 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)"><em>ApplicationGraph</em></a>) &#8211; not None</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)"><em>ApplicationGraph</em></a>) &#8211; </td>
 </tr>
 </tbody>
 </table>
@@ -454,8 +460,6 @@ response will be sent.</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the machine object.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
-</tr>
 </tbody>
 </table>
 </dd></dl>
@@ -468,14 +472,7 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>placements</strong> &#8211; the placements object</li>
-<li><strong>machine_graph</strong> &#8211; the machine graph object</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements object</td>
 </tr>
 </tbody>
 </table>
@@ -489,13 +486,10 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>routing_infos</strong> &#8211; the routing information object</li>
-<li><strong>machine_graph</strong> &#8211; the machine graph object</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v)"><em>RoutingInfo</em></a>) &#8211; the routing information object</li>
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; the machine graph object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None:</p>
 </td>
 </tr>
 </tbody>
@@ -510,9 +504,7 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>routing_tables</strong> &#8211; the routing tables object</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; the routing tables object</td>
 </tr>
 </tbody>
 </table>
@@ -527,9 +519,9 @@ response will be sent.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time_scale_factor</strong> &#8211; the time scale factor used in timing</li>
-<li><strong>machine_time_step</strong> &#8211; the machine time step used in timing</li>
-<li><strong>runtime</strong> &#8211; the amount of time the application is to run for</li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the time scale factor used in timing</li>
+<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the machine time step used in timing</li>
+<li><strong>runtime</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the amount of time the application is to run for</li>
 </ul>
 </td>
 </tr>
@@ -545,13 +537,10 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>machine_graph</strong> &#8211; the machine graph object</li>
-<li><strong>tags</strong> &#8211; the tags object</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; the machine graph object</li>
+<li><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v)"><em>Tags</em></a>) &#8211; the tags object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -566,15 +555,11 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>machine_graph</strong> &#8211; the machine graph object</li>
-<li><strong>data_n_timesteps</strong> &#8211; The number of timesteps for which data space            will been reserved</li>
-<li><strong>graph_mapper</strong> &#8211; the graph mapper object</li>
-<li><strong>application_graph</strong> &#8211; the application graph object</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; The machine graph object</li>
+<li><strong>data_n_timesteps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The number of timesteps for which data space will been reserved</li>
+<li><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)"><em>ApplicationGraph</em></a>) &#8211; The application graph object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -589,9 +574,11 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine_graph</strong> &#8211; the machine graph of the application            problem space.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; the machine graph of the application problem space.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a bool which represents if the database is needed</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether the database is needed for the application</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
 </tr>
 </tbody>
 </table>
@@ -604,15 +591,11 @@ response will be sent.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>application_graph</strong> &#8211; </li>
-<li><strong>machine_graph</strong> &#8211; </li>
-<li><strong>routing_infos</strong> &#8211; </li>
-<li><strong>graph_mapper</strong> &#8211; </li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)"><em>ApplicationGraph</em></a>) &#8211; </li>
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; </li>
+<li><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v)"><em>RoutingInfo</em></a>) &#8211; </li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -622,7 +605,15 @@ response will be sent.</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.utilities.database.DatabaseWriter.database_path">
 <code class="descname">database_path</code><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.database_path" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 

@@ -83,16 +83,22 @@
 
 
 <div class="viewcode-block" id="GraphProvenanceGatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.GraphProvenanceGatherer">[docs]</a><span class="k">class</span> <span class="nc">GraphProvenanceGatherer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Gets provenance information from the graphs.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        The machine graph to inspect</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">        The optional application graph</span>
+<span class="sd">    :rtype: list(ProvenanceDataItem)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param machine_graph: The machine graph to inspect</span>
-<span class="sd">        :param application_graph: The optional application graph</span>
-<span class="sd">        :param provenance_data_objects: Any existing objects to append to</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        :rtype: list(ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">prov_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>

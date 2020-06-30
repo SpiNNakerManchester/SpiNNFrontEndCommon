@@ -86,7 +86,24 @@
 
 
 <div class="viewcode-block" id="DatabaseInterface"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.DatabaseInterface">[docs]</a><span class="k">class</span> <span class="nc">DatabaseInterface</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Writes a database of the graph(s) and other information</span>
+    <span class="sd">&quot;&quot;&quot; Writes a database of the graph(s) and other information.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">    :param str user_create_database:</span>
+<span class="sd">    :param ~pacman.model.tags.Tags tags:</span>
+<span class="sd">    :param int runtime:</span>
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">    :param int data_n_timesteps:</span>
+<span class="sd">    :param int time_scale_factor:</span>
+<span class="sd">    :param int machine_time_step:</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">    :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:</span>
+<span class="sd">    :param str report_folder: Where the database will be put.</span>
+<span class="sd">    :param bool create_atom_to_event_id_mapping:</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">    :return: Database interface, where the database is located</span>
+<span class="sd">    :rtype: tuple(DatabaseInterface, str)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -111,6 +128,23 @@
             <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span>
             <span class="n">report_folder</span><span class="p">,</span> <span class="n">create_atom_to_event_id_mapping</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param str user_create_database:</span>
+<span class="sd">        :param ~.Tags tags:</span>
+<span class="sd">        :param int runtime:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param int data_n_timesteps:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param ~.RoutingInfo routing_infos:</span>
+<span class="sd">        :param ~.MulticastRoutingTables router_tables:</span>
+<span class="sd">        :param str report_folder:</span>
+<span class="sd">        :param bool create_atom_to_event_id_mapping:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        :rtype: tuple(DatabaseInterface, str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span> <span class="o">=</span> <span class="n">DatabaseWriter</span><span class="p">(</span><span class="n">report_folder</span><span class="p">)</span>
@@ -131,12 +165,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">needs_database</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_create_database</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_needs_db</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_create_database</span> <span class="o">==</span> <span class="s2">&quot;True&quot;</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">database_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: str or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">needs_database</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">database_path</span>
         <span class="k">return</span> <span class="kc">None</span>
@@ -147,20 +187,20 @@
             <span class="n">graph_mapper</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">router_tables</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span>
             <span class="n">create_atom_to_event_id_mapping</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param machine:</span>
-<span class="sd">        :param time_scale_factor:</span>
-<span class="sd">        :param machine_time_step:</span>
-<span class="sd">        :param runtime:</span>
-<span class="sd">        :param application_graph:</span>
-<span class="sd">        :param machine_graph:</span>
-<span class="sd">        :param data_n_timesteps: \</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param int runtime:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param int data_n_timesteps:</span>
 <span class="sd">            The number of timesteps for which data space will been reserved</span>
 <span class="sd">        :param graph_mapper:</span>
-<span class="sd">        :param placements:</span>
-<span class="sd">        :param routing_infos:</span>
-<span class="sd">        :param router_tables:</span>
-<span class="sd">        :param tags:</span>
-<span class="sd">        :param create_atom_to_event_id_mapping:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param ~.RoutingInfo routing_infos:</span>
+<span class="sd">        :param ~.MulticastRoutingTables router_tables:</span>
+<span class="sd">        :param ~.Tags tags:</span>
+<span class="sd">        :param bool create_atom_to_event_id_mapping:</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>

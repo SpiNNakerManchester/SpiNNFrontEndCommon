@@ -88,23 +88,23 @@
 
 <div class="viewcode-block" id="GraphMeasurer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.GraphMeasurer">[docs]</a><span class="k">class</span> <span class="nc">GraphMeasurer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Works out how many chips a machine graph needs.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        The machine_graph to measure.</span>
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        The machine with respect to which to partition the application graph.</span>
+<span class="sd">    :param int plan_n_timesteps: Number of timesteps to plan for.</span>
+<span class="sd">    :return: The size of the graph in number of chips.</span>
+<span class="sd">    :rtype: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">plan_n_timesteps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param machine_graph: The machine_graph to measure</span>
-<span class="sd">        :type machine_graph:\</span>
-<span class="sd">            :py:class:`pacman.model.graph.machine.MachineGraph`</span>
-<span class="sd">                    :py:class:`pacman.model.graph.machine.MachineGraph`</span>
-<span class="sd">        :param machine:\</span>
-<span class="sd">            The machine with respect to which to partition the application\</span>
-<span class="sd">            graph</span>
-<span class="sd">        :type machine: :py:class:`spinn_machine.Machine`</span>
-<span class="sd">        :param plan_n_timesteps: number of timesteps to plan for</span>
-<span class="sd">        :type  plan_n_timesteps: int</span>
-<span class="sd">        :return: The size of the graph in number of chips</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param int plan_n_timesteps:</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 

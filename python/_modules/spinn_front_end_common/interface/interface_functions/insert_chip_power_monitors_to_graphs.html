@@ -88,6 +88,15 @@
 
 <div class="viewcode-block" id="InsertChipPowerMonitorsToGraphs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertChipPowerMonitorsToGraphs">[docs]</a><span class="k">class</span> <span class="nc">InsertChipPowerMonitorsToGraphs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Adds chip power monitors into a given graph.</span>
+
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        the SpiNNaker machine as discovered</span>
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        the machine graph</span>
+<span class="sd">    :param int n_samples_per_recording:</span>
+<span class="sd">    :param int sampling_frequency:</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">        the application graph</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -96,10 +105,11 @@
         <span class="sd">&quot;&quot;&quot; Adds chip power monitor vertices on Ethernet connected chips as\</span>
 <span class="sd">            required.</span>
 
-<span class="sd">        :param machine: the SpiNNaker machine as discovered</span>
-<span class="sd">        :param application_graph: the application graph</span>
-<span class="sd">        :param machine_graph: the machine graph</span>
-<span class="sd">        :return: mapping between LPG parameters and LPG vertex</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param int n_samples_per_recording:</span>
+<span class="sd">        :param int sampling_frequency:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
@@ -116,6 +126,13 @@
     <span class="k">def</span> <span class="nf">_add_power_monitor_for_chip</span><span class="p">(</span>
             <span class="n">chip</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
             <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        :param int sampling_frequency:</span>
+<span class="sd">        :param int n_samples_per_recording:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># build constraint</span>
         <span class="n">constraint</span> <span class="o">=</span> <span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 

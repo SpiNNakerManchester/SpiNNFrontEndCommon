@@ -88,6 +88,23 @@
 <div class="viewcode-block" id="InsertExtraMonitorVerticesToGraphs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertExtraMonitorVerticesToGraphs">[docs]</a><span class="k">class</span> <span class="nc">InsertExtraMonitorVerticesToGraphs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Inserts the extra monitor vertices into the graph that correspond to\</span>
 <span class="sd">        the extra monitor cores required.</span>
+
+<span class="sd">    :param ~spinn_machine.Machine machine: spinnMachine instance</span>
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        machine graph</span>
+<span class="sd">    :param str default_report_directory: the directory where reports go</span>
+<span class="sd">    :param bool write_data_speed_up_reports:</span>
+<span class="sd">        determine whether to write the reports for data speed up</span>
+<span class="sd">    :param int n_cores_to_allocate: number of cores to allocate for reception</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">        app graph</span>
+<span class="sd">    :return: vertex to Ethernet connection map,</span>
+<span class="sd">        list of extra_monitor_vertices,</span>
+<span class="sd">        vertex_to_chip_map</span>
+<span class="sd">    :rtype: tuple(</span>
+<span class="sd">        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),</span>
+<span class="sd">        list(ExtraMonitorSupportMachineVertex),</span>
+<span class="sd">        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -95,19 +112,17 @@
             <span class="n">write_data_speed_up_reports</span><span class="p">,</span> <span class="n">n_cores_to_allocate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param machine: spinnMachine instance</span>
-<span class="sd">        :param machine_graph: machine graph</span>
-<span class="sd">        :param n_cores_to_allocate: n cores to allocate for reception</span>
-<span class="sd">        :param default_report_directory: the directory where reports go</span>
-<span class="sd">        :param write_data_speed_up_out_report: \</span>
-<span class="sd">            determine whether to write the report for data speed up out</span>
-<span class="sd">        :param write_data_speed_up_in_report: \</span>
-<span class="sd">            determine whether to write the report for data speed up in</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param int n_cores_to_allocate:</span>
+<span class="sd">        :param str default_report_directory:</span>
+<span class="sd">        :param bool write_data_speed_up_reports:</span>
 <span class="sd">        :param graph_mapper: graph mapper</span>
-<span class="sd">        :param application_graph: app graph.</span>
-<span class="sd">        :return: vertex to Ethernet connection map, \</span>
-<span class="sd">            list of extra_monitor_vertices, \</span>
-<span class="sd">            vertex_to_chip_map</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        :rtype: tuple(</span>
+<span class="sd">            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),</span>
+<span class="sd">            list(ExtraMonitorSupportMachineVertex),</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 

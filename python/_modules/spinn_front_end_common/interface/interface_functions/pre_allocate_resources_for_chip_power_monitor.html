@@ -85,7 +85,19 @@
 
 
 <div class="viewcode-block" id="PreAllocateResourcesForChipPowerMonitor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForChipPowerMonitor">[docs]</a><span class="k">class</span> <span class="nc">PreAllocateResourcesForChipPowerMonitor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Adds chip power monitor resources as required for a machine</span>
+    <span class="sd">&quot;&quot;&quot; Adds chip power monitor resources as required for a machine.</span>
+
+<span class="sd">    :param pre_allocated_resources: other preallocated resources</span>
+<span class="sd">    :type pre_allocated_resources:</span>
+<span class="sd">        ~pacman.model.resources.PreAllocatedResourceContainer</span>
+<span class="sd">    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered</span>
+<span class="sd">    :param int n_samples_per_recording:</span>
+<span class="sd">        how many samples between record entries</span>
+<span class="sd">    :param int sampling_frequency: the frequency of sampling</span>
+<span class="sd">    :param int time_scale_factor: the time scale factor</span>
+<span class="sd">    :param int machine_time_step: the machine time step</span>
+<span class="sd">    :return: preallocated resources</span>
+<span class="sd">    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -93,13 +105,13 @@
             <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
             <span class="n">pre_allocated_resources</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param pre_allocated_resources: other preallocated resources</span>
-<span class="sd">        :param machine: the SpiNNaker machine as discovered</span>
-<span class="sd">        :param n_samples_per_recording: how many samples between record entries</span>
-<span class="sd">        :param sampling_frequency: the frequency of sampling</span>
-<span class="sd">        :param time_scale_factor: the time scale factor</span>
-<span class="sd">        :param machine_time_step: the machine time step</span>
-<span class="sd">        :return: preallocated resources</span>
+<span class="sd">        :param ~.PreAllocatedResourceContainer pre_allocated_resources:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param int n_samples_per_recording:</span>
+<span class="sd">        :param int sampling_frequency:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :rtype: ~.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 

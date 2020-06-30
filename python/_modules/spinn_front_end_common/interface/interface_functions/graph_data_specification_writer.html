@@ -92,6 +92,23 @@
 
 <div class="viewcode-block" id="GraphDataSpecificationWriter"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.GraphDataSpecificationWriter">[docs]</a><span class="k">class</span> <span class="nc">GraphDataSpecificationWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Executes the data specification generation step.</span>
+
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        placements of machine graph to cores</span>
+<span class="sd">    :param str hostname: SpiNNaker machine name</span>
+<span class="sd">    :param str report_default_directory: the location where reports are stored</span>
+<span class="sd">    :param bool write_text_specs:</span>
+<span class="sd">        True if the textual version of the specification is to be written</span>
+<span class="sd">    :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        the python representation of the SpiNNaker machine</span>
+<span class="sd">    :param int data_n_timesteps:</span>
+<span class="sd">        The number of timesteps for which data space will been reserved</span>
+<span class="sd">    :param list(~pacman.model.placements.Placement) placement_order:</span>
+<span class="sd">        the optional order in which placements should be examined</span>
+<span class="sd">    :return: DSG targets (map of placement tuple and filename)</span>
+<span class="sd">    :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))</span>
+<span class="sd">    :raises ConfigurationException:</span>
+<span class="sd">        If the DSG asks to use more SDRAM than is available.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
@@ -122,19 +139,17 @@
             <span class="n">machine</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">placement_order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param placements: placements of machine graph to cores</span>
-<span class="sd">        :param hostname: SpiNNaker machine name</span>
-<span class="sd">        :param report_default_directory: the location where reports are stored</span>
-<span class="sd">        :param write_text_specs:\</span>
-<span class="sd">            True if the textual version of the specification is to be written</span>
-<span class="sd">        :param machine: the python representation of the SpiNNaker machine</span>
-<span class="sd">        :param data_n_timesteps: The number of timesteps for which data space\</span>
-<span class="sd">            will been reserved</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param str hostname:</span>
+<span class="sd">        :param str report_default_directory:</span>
+<span class="sd">        :param bool write_text_specs:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param int data_n_timesteps:</span>
 <span class="sd">        :param graph_mapper:\</span>
 <span class="sd">            the mapping between application and machine graph</span>
-<span class="sd">        :param placement:\</span>
-<span class="sd">            the optional order in which placements should be examined</span>
-<span class="sd">        :return: DSG targets (map of placement tuple and filename)</span>
+<span class="sd">        :param list(~.Placement) placement_order:</span>
+<span class="sd">        :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))</span>
+<span class="sd">        :raises ConfigurationException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
         <span class="c1"># pylint: disable=attribute-defined-outside-init</span>
@@ -182,11 +197,12 @@
     <span class="k">def</span> <span class="nf">__generate_data_spec_for_vertices</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">pl</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param pl: placement of machine graph to cores</span>
-<span class="sd">        :param vertex: the specific vertex to write DSG for.</span>
-<span class="sd">        :param targets: DataSpecificationTargets</span>
+<span class="sd">        :param ~.Placement pl: placement of machine graph to cores</span>
+<span class="sd">        :param ~.AbstractVertex vertex: the specific vertex to write DSG for.</span>
+<span class="sd">        :param DataSpecificationTargets targets:</span>
 <span class="sd">        :return: True if the vertex was data spec-able, False otherwise</span>
 <span class="sd">        :rtype: bool</span>
+<span class="sd">        :raises ConfigurationException: if things don&#39;t fit</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if the vertex can generate a DSG, call it</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">):</span>

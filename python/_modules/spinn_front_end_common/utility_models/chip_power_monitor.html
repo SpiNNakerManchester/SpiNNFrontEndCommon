@@ -96,16 +96,13 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">,</span>
             <span class="n">sampling_frequency</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param label: vertex label</span>
-<span class="sd">        :type label: str</span>
+<span class="sd">        :param str label: vertex label</span>
 <span class="sd">        :param constraints: constraints for the vertex</span>
-<span class="sd">        :type constraints: \</span>
+<span class="sd">        :type constraints:</span>
 <span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
-<span class="sd">        :param n_samples_per_recording: \</span>
+<span class="sd">        :param int n_samples_per_recording:</span>
 <span class="sd">            how many samples to take before recording to SDRAM the total</span>
-<span class="sd">        :type n_samples_per_recording: int</span>
-<span class="sd">        :param sampling_frequency: how many microseconds between sampling</span>
-<span class="sd">        :type sampling_frequency: int</span>
+<span class="sd">        :param int sampling_frequency: how many microseconds between sampling</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ChipPowerMonitor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples_per_recording</span> <span class="o">=</span> <span class="n">n_samples_per_recording</span>

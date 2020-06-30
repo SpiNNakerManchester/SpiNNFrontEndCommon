@@ -89,18 +89,32 @@
 
 
 <div class="viewcode-block" id="PreAllocateResourcesForLivePacketGatherers"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForLivePacketGatherers">[docs]</a><span class="k">class</span> <span class="nc">PreAllocateResourcesForLivePacketGatherers</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Adds Live Packet Gatherer resources as required for a machine</span>
+    <span class="sd">&quot;&quot;&quot; Adds Live Packet Gatherer resources as required for a machine.</span>
+
+<span class="sd">    :param live_packet_gatherer_parameters:</span>
+<span class="sd">        the LPG parameters requested by the script</span>
+<span class="sd">    :type live_packet_gatherer_parameters:</span>
+<span class="sd">        dict(LivePacketGatherParameters,</span>
+<span class="sd">        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))</span>
+<span class="sd">    :param ~pacman.model.resources.PreAllocatedResourceContainer \</span>
+<span class="sd">            pre_allocated_resources:</span>
+<span class="sd">        other preallocated resources</span>
+<span class="sd">    :param ~.Machine machine: the SpiNNaker machine as discovered</span>
+<span class="sd">    :return: preallocated resources</span>
+<span class="sd">    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
             <span class="n">pre_allocated_resources</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param live_packet_gatherer_parameters:\</span>
-<span class="sd">            the LPG parameters requested by the script</span>
-<span class="sd">        :param previous_allocated_resources: other preallocated resources</span>
-<span class="sd">        :param machine: the SpiNNaker machine as discovered</span>
-<span class="sd">        :return: preallocated resources</span>
+<span class="sd">        :param live_packet_gatherer_parameters:</span>
+<span class="sd">        :type live_packet_gatherer_parameters:</span>
+<span class="sd">            dict(LivePacketGatherParameters,</span>
+<span class="sd">            list(tuple(~.AbstractVertex, list(str))))</span>
+<span class="sd">        :param ~.PreAllocatedResourceContainer pre_allocated_resources:</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :rtype: ~.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
@@ -135,6 +149,17 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_add_chip_lpg_reqs</span><span class="p">(</span>
             <span class="n">lpg_parameters</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">lpg_sdram</span><span class="p">,</span> <span class="n">sdrams</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">iptags</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param lpg_parameters:</span>
+<span class="sd">        :type lpg_parameters:</span>
+<span class="sd">            dict(LivePacketGatherParameters,</span>
+<span class="sd">            list(tuple(~.AbstractVertex, list(str))))</span>
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :param int lpg_sdram:</span>
+<span class="sd">        :param list(~.SpecificChipSDRAMResource) sdrams:</span>
+<span class="sd">        :param list(~.CoreResource) cores:</span>
+<span class="sd">        :param list(~.SpecificBoardTagResource) iptags:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">sdram_reqs</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">core_reqs</span> <span class="o">=</span> <span class="mi">0</span>

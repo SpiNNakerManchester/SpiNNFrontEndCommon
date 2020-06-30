@@ -86,7 +86,22 @@
 
 
 <div class="viewcode-block" id="InsertLivePacketGatherersToGraphs"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertLivePacketGatherersToGraphs">[docs]</a><span class="k">class</span> <span class="nc">InsertLivePacketGatherersToGraphs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Adds LPGs as required into a given graph</span>
+    <span class="sd">&quot;&quot;&quot; Adds LPGs as required into a given graph.</span>
+
+<span class="sd">    :param live_packet_gatherer_parameters:</span>
+<span class="sd">        the Live Packet Gatherer parameters requested by the script</span>
+<span class="sd">    :type live_packet_gatherer_parameters:</span>
+<span class="sd">        dict(LivePacketGatherParameters,</span>
+<span class="sd">        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))</span>
+<span class="sd">    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered</span>
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        the machine graph</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:</span>
+<span class="sd">        the application graph</span>
+<span class="sd">    :return: mapping between LPG parameters and LPG vertex</span>
+<span class="sd">    :rtype: dict(LivePacketGatherParameters,</span>
+<span class="sd">        dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -94,12 +109,15 @@
             <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add LPG vertices on Ethernet connected chips as required.</span>
 
-<span class="sd">        :param live_packet_gatherer_parameters:\</span>
-<span class="sd">            the Live Packet Gatherer parameters requested by the script</span>
-<span class="sd">        :param machine: the SpiNNaker machine as discovered</span>
-<span class="sd">        :param application_graph: the application graph</span>
-<span class="sd">        :param machine_graph: the machine graph</span>
-<span class="sd">        :return: mapping between LPG parameters and LPG vertex</span>
+<span class="sd">        :param live_packet_gatherer_parameters:</span>
+<span class="sd">        :type live_packet_gatherer_parameters:</span>
+<span class="sd">            dict(LivePacketGatherParameters,</span>
+<span class="sd">            list(tuple(~.AbstractVertex, list(str))))</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
+<span class="sd">        :rtype: dict(LivePacketGatherParameters,</span>
+<span class="sd">            dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 

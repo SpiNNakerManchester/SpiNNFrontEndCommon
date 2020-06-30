@@ -87,12 +87,20 @@
 
 <div class="viewcode-block" id="EdgeToNKeysMapper"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper">[docs]</a><span class="k">class</span> <span class="nc">EdgeToNKeysMapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Works out the number of keys needed for each edge.</span>
+
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">    :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap</span>
+<span class="sd">    :raises: ConfigurationException</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">        :rtype: ~.DictBasedMachinePartitionNKeysMap</span>
+<span class="sd">        :raises: ConfigurationException</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">machine_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;A machine graph is required for this mapper. &quot;</span>

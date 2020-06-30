@@ -101,6 +101,9 @@
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span>
         <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
         <span class="n">AbstractProvidesOutgoingPartitionConstraints</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Machine vertex for injecting packets at particular times or in \</span>
+<span class="sd">        response to particular events into a SpiNNaker application.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Regions for populations</span>
 <div class="viewcode-block" id="CommandSenderMachineVertex.DATA_REGIONS"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.DATA_REGIONS">[docs]</a>    <span class="k">class</span> <span class="nc">DATA_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
         <span class="n">SYSTEM_REGION</span> <span class="o">=</span> <span class="mi">0</span>
@@ -132,11 +135,10 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param label: The label of this vertex</span>
-<span class="sd">        :type label: str</span>
-<span class="sd">        :param constraints: Any initial constraints to this vertex</span>
-<span class="sd">        :type constraints: \</span>
-<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
+<span class="sd">        :param str label: The label of this vertex</span>
+<span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
+<span class="sd">                constraints:</span>
+<span class="sd">            Any initial constraints to this vertex</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
 
@@ -153,21 +155,17 @@
             <span class="n">timed_commands</span><span class="p">,</span> <span class="n">vertex_to_send_to</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add commands to be sent down a given edge</span>
 
-<span class="sd">        :param start_resume_commands: The commands to send when the simulation\</span>
-<span class="sd">            starts or resumes from pause</span>
-<span class="sd">        :type start_resume_commands: \</span>
-<span class="sd">            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)</span>
-<span class="sd">        :param pause_stop_commands: the commands to send when the simulation\</span>
-<span class="sd">            stops or pauses after running</span>
-<span class="sd">        :type pause_stop_commands: \</span>
-<span class="sd">            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)</span>
-<span class="sd">        :param timed_commands: The commands to send at specific times</span>
-<span class="sd">        :type timed_commands: \</span>
-<span class="sd">            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)</span>
-<span class="sd">        :param vertex_to_send_to: The vertex these commands are to be sent to</span>
-<span class="sd">        :type vertex_to_send_to: AbstractVertex</span>
+<span class="sd">        :param iterable(MultiCastCommand) start_resume_commands:</span>
+<span class="sd">            The commands to send when the simulation starts or resumes from</span>
+<span class="sd">            pause</span>
+<span class="sd">        :param iterable(MultiCastCommand) pause_stop_commands:</span>
+<span class="sd">            the commands to send when the simulation stops or pauses after</span>
+<span class="sd">            running</span>
+<span class="sd">        :param iterable(MultiCastCommand) timed_commands:</span>
+<span class="sd">            The commands to send at specific times</span>
+<span class="sd">        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:</span>
+<span class="sd">            The vertex these commands are to be sent to</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># container for keys for partition mapping (remove duplicates)</span>
         <span class="n">command_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">[</span><span class="n">vertex_to_send_to</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -224,6 +222,10 @@
         <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">})</span>
 <div class="viewcode-block" id="CommandSenderMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.generate_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
         <span class="n">timed_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timed_commands_bytes</span><span class="p">()</span>
         <span class="n">start_resume_commands_size</span> <span class="o">=</span> \
@@ -239,30 +241,27 @@
         <span class="c1"># Write system region</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for multicast source ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">(),</span> <span class="n">machine_time_step</span><span class="p">,</span>
             <span class="n">time_scale_factor</span><span class="p">))</span>
 
         <span class="c1"># write commands</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span>
-            <span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="c1"># write commands to spec for timed commands</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_timed_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
         <span class="c1"># write commands fired off during a start or resume</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span>
-            <span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
         <span class="c1"># write commands fired off during a pause or end</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span>
-            <span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
@@ -270,6 +269,10 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_write_basic_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(MultiCastCommand) commands:</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># number of commands</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">))</span>
 
@@ -278,6 +281,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_timed_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timed_commands</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(MultiCastCommand) commands:</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">timed_commands</span><span class="p">))</span>
 
         <span class="c1"># write commands</span>
@@ -285,67 +292,77 @@
             <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_write_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_write_command</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param MultiCastCommand command:</span>
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">command</span><span class="o">.</span><span class="n">is_payload</span><span class="p">:</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_HAS_PAYLOAD</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_HAS_PAYLOAD</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_HAS_NO_PAYLOAD</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_HAS_NO_PAYLOAD</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">payload</span> <span class="k">if</span> <span class="n">command</span><span class="o">.</span><span class="n">is_payload</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">repeat</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">delay_between_repeats</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span>
-            <span class="n">spec</span><span class="p">,</span> <span class="n">time_command_size</span><span class="p">,</span> <span class="n">start_command_size</span><span class="p">,</span> <span class="n">end_command_size</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">time_command_size</span><span class="p">,</span> <span class="n">start_command_size</span><span class="p">,</span> <span class="n">end_command_size</span><span class="p">,</span>
             <span class="n">vertex</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Reserve SDRAM space for memory areas:</span>
 
-<span class="sd">        1. Area for information on what data to record</span>
+<span class="sd">        1. Area for general system information</span>
+<span class="sd">        2. Area for timed commands</span>
 <span class="sd">        2. Area for start commands</span>
 <span class="sd">        3. Area for end commands</span>
+
+<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">        :param int time_command_size:</span>
+<span class="sd">        :param int start_command_size:</span>
+<span class="sd">        :param int end_command_size:</span>
+<span class="sd">        :param ProvidesProvenanceDataFromMachineImpl vertex:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reserving memory space for data regions:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Reserve memory:</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">SYSTEM_REGION</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;system&#39;</span><span class="p">)</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span>
-            <span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_WITH_ARBITRARY_TIMES</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">time_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with arbitrary times&#39;</span><span class="p">)</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span>
-            <span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_START_RESUME</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">start_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with start resume times&#39;</span><span class="p">)</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span>
-            <span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">DATA_REGIONS</span><span class="o">.</span><span class="n">COMMANDS_AT_STOP_PAUSE</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">end_command_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;commands with stop pause times&#39;</span><span class="p">)</span>
 
         <span class="n">vertex</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
 
 <div class="viewcode-block" id="CommandSenderMachineVertex.get_timed_commands_bytes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_timed_commands_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_timed_commands_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">n_bytes</span> <span class="o">=</span> <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_N_COMMANDS_SIZE</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_N_COMMANDS_SIZE</span>
         <span class="n">n_bytes</span> <span class="o">+=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_COMMAND_TIMESTAMP_SIZE</span> <span class="o">+</span>
-             <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span><span class="p">)</span> <span class="o">*</span>
-            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="p">)</span>
-        <span class="p">)</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_COMMAND_TIMESTAMP_SIZE</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span><span class="p">)</span> <span class="o">*</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">n_bytes</span></div>
 
-    <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="CommandSenderMachineVertex.get_n_command_bytes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_command_bytes</span><span class="p">(</span><span class="n">commands</span><span class="p">):</span>
-        <span class="n">n_bytes</span> <span class="o">=</span> <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_N_COMMANDS_SIZE</span>
-        <span class="n">n_bytes</span> <span class="o">+=</span> <span class="p">(</span>
-            <span class="n">CommandSenderMachineVertex</span><span class="o">.</span><span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span> <span class="o">*</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span>
-        <span class="p">)</span>
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_n_command_bytes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_command_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">commands</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(MultiCastCommand) commands:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_bytes</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_N_COMMANDS_SIZE</span>
+        <span class="n">n_bytes</span> <span class="o">+=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_COMMAND_WITH_PAYLOAD_SIZE</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">n_bytes</span></div>
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
@@ -362,24 +379,46 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">FixedKeyAndMaskConstraint</span><span class="p">([</span>
             <span class="n">BaseKeyAndMask</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_to_keys</span><span class="p">[</span><span class="n">partition</span><span class="o">.</span><span class="n">identifier</span><span class="p">],</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_COMMAND_MASK</span><span class="p">)</span>
-        <span class="p">])]</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_COMMAND_MASK</span><span class="p">)])]</span></div>
 
-<div class="viewcode-block" id="CommandSenderMachineVertex.get_edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_vertex</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_vertex</span><span class="p">,</span> <span class="n">vertex_type</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Construct edges from this vertex to the vertices that this vertex\</span>
+<span class="sd">            knows how to target (and has keys allocated for).</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            Do not call this directly from outside either a</span>
+<span class="sd">            :py:class:`CommandSender` or a</span>
+<span class="sd">            :py:class:`CommandSenderMachineVertex`.</span>
+
+<span class="sd">        :param pre_vertex:</span>
+<span class="sd">        :type pre_vertex: CommandSender or CommandSenderMachineVertex</span>
+<span class="sd">        :param type vertex_type: subclass of :py:class:`~.AbstractVertex`</span>
+<span class="sd">        :param callable edge_type: subclass of :py:class:`~.AbstractEdge`</span>
+<span class="sd">        :return: edges, partition IDs</span>
+<span class="sd">        :rtype: tuple(list(~.AbstractEdge), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">partition_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">keys_added</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">vertex_type</span><span class="p">):</span>
+                <span class="k">continue</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span><span class="p">[</span><span class="n">vertex</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys_added</span><span class="p">:</span>
                     <span class="n">keys_added</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-                    <span class="n">app_edge</span> <span class="o">=</span> <span class="n">edge_type</span><span class="p">(</span><span class="n">pre_vertex</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span>
-                    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">app_edge</span><span class="p">)</span>
+                    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge_type</span><span class="p">(</span><span class="n">pre_vertex</span><span class="p">,</span> <span class="n">vertex</span><span class="p">))</span>
                     <span class="n">partition_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span></div>
+        <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span>
 
 <div class="viewcode-block" id="CommandSenderMachineVertex.edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MachineEdge</span><span class="p">)</span></div></div>
+        <span class="sd">&quot;&quot;&quot; Construct machine edges from this vertex to the machine vertices\</span>
+<span class="sd">            that this vertex knows how to target (and has keys allocated for).</span>
+
+<span class="sd">        :return: edges, partition IDs</span>
+<span class="sd">        :rtype:</span>
+<span class="sd">            tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">MachineEdge</span><span class="p">)</span></div></div>
 </pre></div>
 
           </div>

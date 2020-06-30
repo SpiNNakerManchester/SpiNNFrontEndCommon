@@ -548,6 +548,14 @@
 
     <span class="k">def</span> <span class="nf">__python_execute</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="n">writer_func</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">size_allocated</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param tuple(int,int,int) core:</span>
+<span class="sd">        :param ~.AbstractDataReader reader:</span>
+<span class="sd">        :param callable(tuple(int,int,int,bytearray),None) writer_func:</span>
+<span class="sd">        :param int base_address:</span>
+<span class="sd">        :param int size_allocated:</span>
+<span class="sd">        :rtype: DataWritten</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">core</span>
 
         <span class="c1"># Maximum available memory.</span>

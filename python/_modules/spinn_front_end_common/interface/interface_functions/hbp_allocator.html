@@ -102,6 +102,10 @@
     <span class="n">_WAIT_TIME_MS</span> <span class="o">=</span> <span class="mi">10000</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str url:</span>
+<span class="sd">        :param str machine_name:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_extend_lease_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/extendLease&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_lease_url</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/checkLease&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_release_machine_url</span> <span class="o">=</span> <span class="n">url</span>
@@ -171,19 +175,32 @@
 <div class="viewcode-block" id="HBPAllocator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.HBPAllocator">[docs]</a><span class="k">class</span> <span class="nc">HBPAllocator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Request a machine from the HBP remote access server that will fit\</span>
 <span class="sd">        a number of chips.</span>
+
+<span class="sd">    :param str hbp_server_url:</span>
+<span class="sd">        The URL of the HBP server from which to get the machine</span>
+<span class="sd">    :param int total_run_time: The total run time to request</span>
+<span class="sd">    :param int n_chips: The number of chips required.</span>
+<span class="sd">        Only used if n_boards is None</span>
+<span class="sd">    :param int n_boards: The number of boards required</span>
+<span class="sd">    :return: machine name, machine version, BMP details (if any),</span>
+<span class="sd">        reset on startup flag, auto-detect BMP, SCAMP connection details,</span>
+<span class="sd">        boot port, allocation controller</span>
+<span class="sd">    :rtype: tuple(str, int, object, bool, bool, object, object,</span>
+<span class="sd">        MachineAllocationController)</span>
+<span class="sd">    :raises PacmanConfigurationException:</span>
+<span class="sd">        If neither `n_chips` or `n_boards` provided</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">hbp_server_url</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">,</span> <span class="n">n_chips</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_boards</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param hbp_server_url: \</span>
-<span class="sd">            The URL of the HBP server from which to get the machine</span>
-<span class="sd">        :param total_run_time: The total run time to request</span>
-<span class="sd">        :param n_chips: The number of chips required.</span>
-<span class="sd">            Only used if n_boards is None</span>
-<span class="sd">        :param n_boards: The number of boards required</span>
+<span class="sd">        :param hbp_server_url:</span>
+<span class="sd">        :param int total_run_time:</span>
+<span class="sd">        :param int n_chips:</span>
+<span class="sd">        :param int n_boards:</span>
+<span class="sd">        :rtype: tuple(str, int, object, bool, bool, object, object,</span>
+<span class="sd">            MachineAllocationController)</span>
 <span class="sd">        :raises PacmanConfigurationException:</span>
-<span class="sd">            If neither n_chips or n_baords provided</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">url</span> <span class="o">=</span> <span class="n">hbp_server_url</span>
@@ -203,6 +220,13 @@
             <span class="n">hbp_job_controller</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">n_chips</span><span class="p">,</span> <span class="n">n_boards</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str url:</span>
+<span class="sd">        :param int n_chips:</span>
+<span class="sd">        :param int n_boards:</span>
+<span class="sd">        :param int total_run_time:</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">n_boards</span><span class="p">:</span>
             <span class="n">get_machine_request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
                 <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;nBoards&quot;</span><span class="p">:</span> <span class="n">n_boards</span><span class="p">,</span> <span class="s2">&quot;runTime&quot;</span><span class="p">:</span> <span class="n">total_run_time</span><span class="p">})</span>

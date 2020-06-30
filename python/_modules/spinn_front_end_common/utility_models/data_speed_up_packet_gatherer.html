@@ -98,23 +98,18 @@
             <span class="n">report_default_directory</span><span class="p">,</span>
             <span class="n">write_data_speed_up_reports</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param x: Where this gatherer is.</span>
-<span class="sd">        :type x: int</span>
-<span class="sd">        :param y: Where this gatherer is.</span>
-<span class="sd">        :type y: int</span>
+<span class="sd">        :param int x: Where this gatherer is.</span>
+<span class="sd">        :param int y: Where this gatherer is.</span>
 <span class="sd">        :param extra_monitors_by_chip: UNUSED</span>
-<span class="sd">        :type extra_monitors_by_chip: \</span>
+<span class="sd">        :type extra_monitors_by_chip:</span>
 <span class="sd">            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)</span>
-<span class="sd">        :param ip_address: \</span>
+<span class="sd">        :param str ip_address:</span>
 <span class="sd">            How to talk directly to the chip where the gatherer is.</span>
-<span class="sd">        :type ip_address: str</span>
-<span class="sd">        :param report_default_directory: Where reporting is done.</span>
-<span class="sd">        :type report_default_directory: str</span>
-<span class="sd">        :param write_data_speed_up_reports: \</span>
+<span class="sd">        :param str report_default_directory: Where reporting is done.</span>
+<span class="sd">        :param bool write_data_speed_up_reports:</span>
 <span class="sd">            Whether to write low-level reports on data transfer speeds.</span>
-<span class="sd">        :type write_data_speed_up_reports: bool</span>
 <span class="sd">        :param constraints:</span>
-<span class="sd">        :type constraints: \</span>
+<span class="sd">        :type constraints:</span>
 <span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DataSpeedUpPacketGather</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>

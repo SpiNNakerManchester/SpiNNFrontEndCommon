@@ -80,7 +80,7 @@
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
 <span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="n">xrange</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOPrefix</span><span class="p">,</span> <span class="n">EIEIOType</span>
@@ -100,7 +100,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SendsBuffersFromHostPreBufferedImpl</span><span class="p">,</span> <span class="n">AbstractReceiveBuffersToHost</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span>\
-    <span class="o">.</span><span class="n">buffered_sending_region</span> <span class="kn">import</span> <span class="nn">get_n_bytes</span>
+    <span class="o">.</span><span class="n">buffered_sending_region</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">get_n_bytes</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">globals_variables</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
     <span class="kn">import</span> <span class="p">(</span>
@@ -140,68 +141,59 @@
         <span class="n">SendsBuffersFromHostPreBufferedImpl</span><span class="p">,</span>
         <span class="n">AbstractReceiveBuffersToHost</span><span class="p">,</span> <span class="n">AbstractRecordable</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A model which allows events to be injected into SpiNNaker and\</span>
-<span class="sd">        converted in to multicast packets</span>
+<span class="sd">        converted in to multicast packets.</span>
 
-<span class="sd">    :param n_keys: The number of keys to be sent via this multicast source</span>
-<span class="sd">    :type n_keys: int</span>
-<span class="sd">    :param label: The label of this vertex</span>
-<span class="sd">    :type label: str</span>
-<span class="sd">    :param constraints: Any initial constraints to this vertex</span>
-<span class="sd">    :type constraints: \</span>
-<span class="sd">        iterable(~pacman.model.constraints.AbstractConstraint)</span>
-<span class="sd">    :param board_address: The IP address of the board on which to place\</span>
-<span class="sd">        this vertex if receiving data, either buffered or live (by\</span>
-<span class="sd">        default, any board is chosen)</span>
-<span class="sd">    :type board_address: str or None</span>
-<span class="sd">    :param receive_port: The port on the board that will listen for\</span>
-<span class="sd">        incoming event packets (default is to disable this feature; set a\</span>
-<span class="sd">        value to enable it)</span>
-<span class="sd">    :type receive_port: int or None</span>
-<span class="sd">    :param receive_sdp_port: The SDP port to listen on for incoming event\</span>
-<span class="sd">        packets (defaults to 1)</span>
-<span class="sd">    :type receive_sdp_port: int</span>
-<span class="sd">    :param receive_tag: The IP tag to use for receiving live events\</span>
-<span class="sd">        (uses any by default)</span>
-<span class="sd">    :type receive_tag: IPTag</span>
-<span class="sd">    :param receive_rate: The estimated rate of packets that will be sent\</span>
-<span class="sd">        by this source</span>
-<span class="sd">    :type receive_rate: float</span>
-<span class="sd">    :param virtual_key: The base multicast key to send received events\</span>
-<span class="sd">        with (assigned automatically by default)</span>
-<span class="sd">    :type virtual_key: int</span>
-<span class="sd">    :param prefix: The prefix to &quot;or&quot; with generated multicast keys\</span>
-<span class="sd">        (default is no prefix)</span>
-<span class="sd">    :type prefix: int</span>
-<span class="sd">    :param prefix_type: Whether the prefix should apply to the upper or\</span>
-<span class="sd">        lower half of the multicast keys (default is upper half)</span>
-<span class="sd">    :type prefix_type: ~spinnman.messages.eieio.EIEIOPrefix</span>
-<span class="sd">    :param check_keys: True if the keys of received events should be\</span>
-<span class="sd">        verified before sending (default False)</span>
-<span class="sd">    :type check_keys: bool</span>
-<span class="sd">    :param send_buffer_times: An array of arrays of times at which keys\</span>
-<span class="sd">        should be sent (one array for each key, default disabled)</span>
-<span class="sd">    :type send_buffer_times: \</span>
-<span class="sd">        numpy.ndarray(numpy.ndarray(numpy.int32)) or \</span>
-<span class="sd">        list(numpy.ndarray(numpy.int32)) or None</span>
-<span class="sd">    :param send_buffer_partition_id: The ID of the partition containing\</span>
-<span class="sd">        the edges down which the events are to be sent</span>
-<span class="sd">    :type send_buffer_partition_id: str or None</span>
-<span class="sd">    :param reserve_reverse_ip_tag: \</span>
-<span class="sd">        Extra flag for input without a reserved port</span>
-<span class="sd">    :type reserve_reverse_ip_tag: bool</span>
-<span class="sd">    :param enable_injection:\</span>
+<span class="sd">    :param int n_keys: The number of keys to be sent via this multicast source</span>
+<span class="sd">    :param str label: The label of this vertex</span>
+<span class="sd">    :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:</span>
+<span class="sd">        Any initial constraints to this vertex</span>
+<span class="sd">    :param str board_address:</span>
+<span class="sd">        The IP address of the board on which to place this vertex if receiving</span>
+<span class="sd">        data, either buffered or live (by default, any board is chosen)</span>
+<span class="sd">    :param int receive_port:</span>
+<span class="sd">        The port on the board that will listen for incoming event packets</span>
+<span class="sd">        (default is to disable this feature; set a value to enable it, or set</span>
+<span class="sd">        the `reserve_reverse_ip_tag parameter` to True if a random port is to</span>
+<span class="sd">        be used)</span>
+<span class="sd">    :param int receive_sdp_port:</span>
+<span class="sd">        The SDP port to listen on for incoming event packets (defaults to 1)</span>
+<span class="sd">    :param int receive_tag:</span>
+<span class="sd">        The IP tag to use for receiving live events (uses any by default)</span>
+<span class="sd">    :param float receive_rate:</span>
+<span class="sd">    :param int virtual_key:</span>
+<span class="sd">        The base multicast key to send received events with (assigned</span>
+<span class="sd">        automatically by default)</span>
+<span class="sd">    :param int prefix:</span>
+<span class="sd">        The prefix to &quot;or&quot; with generated multicast keys (default is no prefix)</span>
+<span class="sd">    :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:</span>
+<span class="sd">        Whether the prefix should apply to the upper or lower half of the</span>
+<span class="sd">        multicast keys (default is upper half)</span>
+<span class="sd">    :param bool check_keys:</span>
+<span class="sd">        True if the keys of received events should be verified before sending</span>
+<span class="sd">        (default False)</span>
+<span class="sd">    :param ~numpy.ndarray send_buffer_times:</span>
+<span class="sd">        An array of arrays of time steps at which keys should be sent (one</span>
+<span class="sd">        array for each key, default disabled)</span>
+<span class="sd">    :param str send_buffer_partition_id:</span>
+<span class="sd">        The ID of the partition containing the edges down which the events are</span>
+<span class="sd">        to be sent</span>
+<span class="sd">    :param bool reserve_reverse_ip_tag:</span>
+<span class="sd">        True if the source should set up a tag through which it can receive</span>
+<span class="sd">        packets; if port is set to None this can be used to enable the</span>
+<span class="sd">        reception of packets on a randomly assigned port, which can be read</span>
+<span class="sd">        from the database</span>
+<span class="sd">    :param bool enable_injection:</span>
 <span class="sd">        Flag to indicate that data will be received to inject</span>
-<span class="sd">    :type enable_injection: bool</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">class</span> <span class="nc">_REGIONS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
         <span class="n">SYSTEM</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">CONFIGURATION</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">RECORDING</span> <span class="o">=</span> <span class="mi">2</span>
         <span class="n">SEND_BUFFER</span> <span class="o">=</span> <span class="mi">3</span>
         <span class="n">PROVENANCE_REGION</span> <span class="o">=</span> <span class="mi">4</span>
 
-    <span class="k">class</span> <span class="nc">_PROVENANCE_ITEMS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">_PROVENANCE_ITEMS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
         <span class="n">N_RECEIVED_PACKETS</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">N_SENT_PACKETS</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">INCORRECT_KEYS</span> <span class="o">=</span> <span class="mi">2</span>
@@ -245,34 +237,52 @@
             <span class="c1"># Flag to indicate that data will be received to inject</span>
             <span class="n">enable_injection</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param n_keys: The number of keys to be sent via this multicast source</span>
-<span class="sd">        :param label: The label of this vertex</span>
-<span class="sd">        :param constraints: Any initial constraints to this vertex</span>
-<span class="sd">        :param board_address: The IP address of the board on which to place\</span>
-<span class="sd">            this vertex if receiving data, either buffered or live (by\</span>
-<span class="sd">            default, any board is chosen)</span>
-<span class="sd">        :param receive_port: The port on the board that will listen for\</span>
-<span class="sd">            incoming event packets (default is to disable this feature; set a\</span>
-<span class="sd">            value to enable it, or set the reserve_reverse_ip_tag parameter\</span>
-<span class="sd">            to True if a random port is to be used)</span>
-<span class="sd">        :param receive_sdp_port: The SDP port to listen on for incoming event\</span>
-<span class="sd">            packets (defaults to 1)</span>
-<span class="sd">        :param receive_tag: The IP tag to use for receiving live events\</span>
-<span class="sd">            (uses any by default)</span>
-<span class="sd">        :param virtual_key: The base multicast key to send received events\</span>
-<span class="sd">            with (assigned automatically by default)</span>
-<span class="sd">        :param prefix: The prefix to &quot;or&quot; with generated multicast keys\</span>
-<span class="sd">            (default is no prefix)</span>
-<span class="sd">        :param prefix_type: Whether the prefix should apply to the upper or\</span>
-<span class="sd">            lower half of the multicast keys (default is upper half)</span>
-<span class="sd">        :param check_keys: True if the keys of received events should be\</span>
-<span class="sd">            verified before sending (default False)</span>
-<span class="sd">        :param send_buffer_times: An array of arrays of time steps at which\</span>
-<span class="sd">            keys should be sent (one array for each key, default disabled)</span>
-<span class="sd">        :param reserve_reverse_ip_tag: True if the source should set up a tag\</span>
-<span class="sd">            through which it can receive packets; if port is set to None this\</span>
-<span class="sd">            can be used to enable the reception of packets on a randomly\</span>
-<span class="sd">            assigned port, which can be read from the database</span>
+<span class="sd">        :param int n_keys:</span>
+<span class="sd">            The number of keys to be sent via this multicast source</span>
+<span class="sd">        :param str label: The label of this vertex</span>
+<span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
+<span class="sd">                constraints:</span>
+<span class="sd">            Any initial constraints to this vertex</span>
+<span class="sd">        :param str board_address:</span>
+<span class="sd">            The IP address of the board on which to place this vertex if</span>
+<span class="sd">            receiving data, either buffered or live (by default, any board is</span>
+<span class="sd">            chosen)</span>
+<span class="sd">        :param int receive_port:</span>
+<span class="sd">            The port on the board that will listen for incoming event packets</span>
+<span class="sd">            (default is to disable this feature; set a value to enable it, or</span>
+<span class="sd">            set the `reserve_reverse_ip_tag parameter` to True if a random port</span>
+<span class="sd">            is to be used)</span>
+<span class="sd">        :param int receive_sdp_port:</span>
+<span class="sd">            The SDP port to listen on for incoming event packets</span>
+<span class="sd">            (defaults to 1)</span>
+<span class="sd">        :param int receive_tag:</span>
+<span class="sd">            The IP tag to use for receiving live events (uses any by default)</span>
+<span class="sd">        :param int receive_rate:</span>
+<span class="sd">        :param int virtual_key:</span>
+<span class="sd">            The base multicast key to send received events with (assigned</span>
+<span class="sd">            automatically by default)</span>
+<span class="sd">        :param int prefix:</span>
+<span class="sd">            The prefix to &quot;or&quot; with generated multicast keys (default is no</span>
+<span class="sd">            prefix)</span>
+<span class="sd">        :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:</span>
+<span class="sd">            Whether the prefix should apply to the upper or lower half of the</span>
+<span class="sd">            multicast keys (default is upper half)</span>
+<span class="sd">        :param bool check_keys:</span>
+<span class="sd">            True if the keys of received events should be verified before</span>
+<span class="sd">            sending (default False)</span>
+<span class="sd">        :param ~numpy.ndarray send_buffer_times:</span>
+<span class="sd">            An array of arrays of time steps at which keys should be sent (one</span>
+<span class="sd">            array for each key, default disabled)</span>
+<span class="sd">        :param str send_buffer_partition_id:</span>
+<span class="sd">            The ID of the partition containing the edges down which the events</span>
+<span class="sd">            are to be sent</span>
+<span class="sd">        :param bool reserve_reverse_ip_tag:</span>
+<span class="sd">            True if the source should set up a tag through which it can receive</span>
+<span class="sd">            packets; if port is set to None this can be used to enable the</span>
+<span class="sd">            reception of packets on a randomly assigned port, which can be read</span>
+<span class="sd">            from the database</span>
+<span class="sd">        :param bool enable_injection:</span>
+<span class="sd">            Flag to indicate that data will be received to inject</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -339,6 +349,14 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_max_send_buffer_keys_per_timestep</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param send_buffer_times: When events will be sent</span>
+<span class="sd">        :type send_buffer_times:</span>
+<span class="sd">            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
+<span class="sd">            list(~numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        :param int n_keys:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
             <span class="n">counts</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">))</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
@@ -351,45 +369,61 @@
             <span class="k">return</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="mi">0</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_send_buffer_sdram_per_timestep</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_send_buffer_sdram_per_timestep</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Determine the amount of SDRAM required per timestep.</span>
+
+<span class="sd">        :param send_buffer_times:</span>
+<span class="sd">        :type send_buffer_times:</span>
+<span class="sd">            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
+<span class="sd">            list(~numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        :param int n_keys:</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If there is a send buffer, calculate the keys per timestep</span>
         <span class="k">if</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">sdram</span> <span class="o">=</span> <span class="n">get_n_bytes</span><span class="p">(</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span>
-                                <span class="o">.</span><span class="n">_max_send_buffer_keys_per_timestep</span><span class="p">(</span>
-                                    <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">sdram</span>
+            <span class="k">return</span> <span class="n">get_n_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_max_send_buffer_keys_per_timestep</span><span class="p">(</span>
+                <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">))</span>
         <span class="k">return</span> <span class="mi">0</span>
 
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_recording_sdram_per_timestep</span><span class="p">(</span>
-            <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">is_recording</span><span class="p">,</span> <span class="n">receive_rate</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">,</span>
-            <span class="n">n_keys</span><span class="p">):</span>
-
-        <span class="c1"># If recording live data, use the user provided receive rate</span>
-        <span class="k">if</span> <span class="n">is_recording</span> <span class="ow">and</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">keys_per_timestep</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">receive_rate</span> <span class="o">/</span> <span class="p">(</span>
-                    <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1.1</span>
-            <span class="p">)</span>
-            <span class="n">header_size</span> <span class="o">=</span> <span class="n">EIEIODataHeader</span><span class="o">.</span><span class="n">get_header_size</span><span class="p">(</span>
-                <span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_32_BIT</span><span class="p">,</span> <span class="n">is_payload_base</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="c1"># Maximum size is one packet per key</span>
-            <span class="k">return</span> <span class="p">((</span><span class="n">header_size</span> <span class="o">+</span> <span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_32_BIT</span><span class="o">.</span><span class="n">key_bytes</span><span class="p">)</span> <span class="o">*</span>
-                    <span class="n">keys_per_timestep</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">is_recording</span><span class="p">,</span> <span class="n">receive_rate</span><span class="p">,</span>
+            <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param bool is_recording:</span>
+<span class="sd">        :param float receive_rate:</span>
+<span class="sd">        :param send_buffer_times:</span>
+<span class="sd">        :type send_buffer_times:</span>
+<span class="sd">            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
+<span class="sd">            list(~numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        :param int n_keys:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If not recording, no SDRAM needed per timestep</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_recording</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
 
         <span class="c1"># If recording send data, the recorded size is the send size</span>
-        <span class="k">if</span> <span class="n">is_recording</span> <span class="ow">and</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span>
-                    <span class="o">.</span><span class="n">_send_buffer_sdram_per_timestep</span><span class="p">(</span>
-                        <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">send_buffer_times</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_send_buffer_sdram_per_timestep</span><span class="p">(</span>
+                <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">)</span>
 
-        <span class="c1"># Not recording no SDRAM needed per timestep</span>
-        <span class="k">return</span> <span class="mi">0</span>
+        <span class="c1"># Recording live data, use the user provided receive rate</span>
+        <span class="n">keys_per_timestep</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+            <span class="n">receive_rate</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span>
+        <span class="n">header_size</span> <span class="o">=</span> <span class="n">EIEIODataHeader</span><span class="o">.</span><span class="n">get_header_size</span><span class="p">(</span>
+            <span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_32_BIT</span><span class="p">,</span> <span class="n">is_payload_base</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Maximum size is one packet per key</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">header_size</span> <span class="o">+</span> <span class="n">EIEIOType</span><span class="o">.</span><span class="n">KEY_32_BIT</span><span class="o">.</span><span class="n">key_bytes</span><span class="p">)</span> <span class="o">*</span>
+                <span class="n">keys_per_timestep</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_install_send_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~numpy.ndarray send_buffer_times:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
             <span class="c1"># Working with a list of lists so check length</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span><span class="p">:</span>
@@ -401,10 +435,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer</span> <span class="o">=</span> <span class="n">BufferedSendingRegion</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="o">=</span> <span class="n">send_buffer_times</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SEND_BUFFER</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SEND_BUFFER</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer</span>
         <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">_install_virtual_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int n_keys:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check that virtual key is valid</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="s2">&quot;Virtual keys must be positive&quot;</span><span class="p">)</span>
@@ -429,7 +466,7 @@
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">PROVENANCE_REGION</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_n_additional_data_items</span><span class="p">)</span>
@@ -451,38 +488,30 @@
             <span class="n">reverse_iptags</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">resources</span>
 
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage">[docs]</a>    <span class="k">def</span> <span class="nf">get_sdram_usage</span><span class="p">(</span>
-            <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">recording_enabled</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">recording_enabled</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
             <span class="n">receive_rate</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param send_buffer_times: When events will be sent</span>
-<span class="sd">        :type send_buffer_times: \</span>
-<span class="sd">            numpy.ndarray(numpy.ndarray(numpy.int32)) or \</span>
-<span class="sd">            list(numpy.ndarray(numpy.int32)) or None</span>
-<span class="sd">        :param recording_enabled: Whether recording is done</span>
-<span class="sd">        :type recording_enabled: bool</span>
-<span class="sd">        :param machine_time_step: What the machine timestep is</span>
-<span class="sd">        :type machine_time_step: int</span>
-<span class="sd">        :param receive_rate: What the expected message receive rate is</span>
-<span class="sd">        :type receive_rate: float</span>
-<span class="sd">        :param n_keys: How many keys are being sent</span>
-<span class="sd">        :type n_keys: int</span>
+<span class="sd">        :type send_buffer_times:</span>
+<span class="sd">            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
+<span class="sd">            list(~numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        :param bool recording_enabled: Whether recording is done</span>
+<span class="sd">        :param int machine_time_step: What the machine timestep is</span>
+<span class="sd">        :param float receive_rate: What the expected message receive rate is</span>
+<span class="sd">        :param int n_keys: How many keys are being sent</span>
+<span class="sd">        :rtype: ~pacman.model.resources.VariableSDRAM</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">static_usage</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">SYSTEM_BYTES_REQUIREMENT</span> <span class="o">+</span>
-            <span class="p">(</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span>
-                <span class="n">_CONFIGURATION_REGION_SIZE</span><span class="p">)</span> <span class="o">+</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_CONFIGURATION_REGION_SIZE</span> <span class="o">+</span>
             <span class="n">get_recording_header_size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
             <span class="n">get_recording_data_constant_size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
-            <span class="p">(</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span>
-                <span class="n">get_provenance_data_size</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
         <span class="n">per_timestep</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">ReverseIPTagMulticastSourceMachineVertex</span>
-            <span class="o">.</span><span class="n">_send_buffer_sdram_per_timestep</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">)</span> <span class="o">+</span>
-            <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span>
-            <span class="n">_recording_sdram_per_timestep</span><span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_send_buffer_sdram_per_timestep</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">)</span> <span class="o">+</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_recording_sdram_per_timestep</span><span class="p">(</span>
                 <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">recording_enabled</span><span class="p">,</span> <span class="n">receive_rate</span><span class="p">,</span>
                 <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">))</span>
         <span class="n">static_usage</span> <span class="o">+=</span> <span class="n">per_timestep</span>
@@ -499,6 +528,10 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_n_regions_to_allocate</span><span class="p">(</span><span class="n">send_buffering</span><span class="p">,</span> <span class="n">recording</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the number of regions that will be allocated</span>
+
+<span class="sd">        :param bool send_buffering:</span>
+<span class="sd">        :param bool recording:</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">recording</span> <span class="ow">and</span> <span class="n">send_buffering</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">5</span>
@@ -508,24 +541,44 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">send_buffer_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; When events will be sent.</span>
+
+<span class="sd">        :rtype:</span>
+<span class="sd">            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
+<span class="sd">            list(~numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span>
 
     <span class="nd">@send_buffer_times</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">send_buffer_times</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :type send_buffer_times:</span>
+<span class="sd">            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
+<span class="sd">            list(~numpy.ndarray(numpy.int32)) or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_install_send_buffer</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span>
 
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_is_in_range</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">time_stamp_in_ticks</span><span class="p">,</span>
+            <span class="n">time_stamp_in_ticks</span><span class="p">,</span>
             <span class="n">first_machine_time_step</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int time_stamp_in_ticks:</span>
+<span class="sd">        :param int first_machine_time_step:</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">n_machine_time_steps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
             <span class="n">first_machine_time_step</span> <span class="o">&lt;=</span> <span class="n">time_stamp_in_ticks</span> <span class="o">&lt;</span>
             <span class="n">n_machine_time_steps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_fill_send_buffer</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">first_machine_time_step</span><span class="p">,</span> <span class="n">run_until_timesteps</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Fill the send buffer with keys to send</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Fill the send buffer with keys to send.</span>
 
+<span class="sd">        :param int first_machine_time_step:</span>
+<span class="sd">        :param int run_until_timesteps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key_to_send</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">key_to_send</span> <span class="o">=</span> <span class="mi">0</span>
@@ -545,6 +598,11 @@
 
     <span class="k">def</span> <span class="nf">__fill_send_buffer_2d</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">key_base</span><span class="p">,</span> <span class="n">first_time_step</span><span class="p">,</span> <span class="n">n_time_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int key_base:</span>
+<span class="sd">        :param int first_time_step:</span>
+<span class="sd">        :param int n_time_steps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_in_range</span><span class="p">(</span><span class="n">tick</span><span class="p">,</span> <span class="n">first_time_step</span><span class="p">,</span> <span class="n">n_time_steps</span><span class="p">):</span>
@@ -552,6 +610,11 @@
 
     <span class="k">def</span> <span class="nf">__fill_send_buffer_1d</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">key_base</span><span class="p">,</span> <span class="n">first_time_step</span><span class="p">,</span> <span class="n">n_time_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int key_base:</span>
+<span class="sd">        :param int first_time_step:</span>
+<span class="sd">        :param int n_time_steps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">key_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="o">+</span> <span class="n">key_base</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span><span class="p">)]</span>
         <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_in_range</span><span class="p">(</span><span class="n">tick</span><span class="p">,</span> <span class="n">first_time_step</span><span class="p">,</span> <span class="n">n_time_steps</span><span class="p">):</span>
@@ -559,34 +622,49 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_generate_prefix</span><span class="p">(</span><span class="n">virtual_key</span><span class="p">,</span> <span class="n">prefix_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.EIEIOPrefix prefix_type:</span>
+<span class="sd">        :param int virtual_key:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">prefix_type</span> <span class="o">==</span> <span class="n">EIEIOPrefix</span><span class="o">.</span><span class="n">LOWER_HALF_WORD</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">virtual_key</span> <span class="o">&amp;</span> <span class="mh">0xFFFF</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">virtual_key</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFFFF</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_calculate_mask</span><span class="p">(</span><span class="n">n_neurons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int n_neurons:</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">temp_value</span> <span class="o">=</span> <span class="n">n_neurons</span><span class="o">.</span><span class="n">bit_length</span><span class="p">()</span>
         <span class="n">max_key</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">temp_value</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span> <span class="o">-</span> <span class="n">max_key</span>
         <span class="k">return</span> <span class="n">mask</span>
 
 <div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.enable_recording"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.enable_recording">[docs]</a>    <span class="k">def</span> <span class="nf">enable_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_state</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Enable recording of the keys sent</span>
+        <span class="sd">&quot;&quot;&quot; Enable recording of the keys sent.</span>
+
+<span class="sd">        :param bool new_state:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span> <span class="o">=</span> <span class="n">new_state</span></div>
 
     <span class="k">def</span> <span class="nf">_reserve_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
+<span class="sd">        :param int n_machine_time_steps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Reserve system and configuration memory regions:</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SYSTEM&#39;</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIGURATION</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIGURATION</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_CONFIGURATION_REGION_SIZE</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CONFIGURATION&#39;</span><span class="p">)</span>
 
         <span class="c1"># Reserve recording buffer regions if required</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">get_recording_header_size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;RECORDING&quot;</span><span class="p">)</span>
 
@@ -598,16 +676,19 @@
                 <span class="n">n_machine_time_steps</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_size</span><span class="p">:</span>
                 <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
-                    <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SEND_BUFFER</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                    <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SEND_BUFFER</span><span class="p">,</span>
                     <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_size</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SEND_BUFFER&quot;</span><span class="p">,</span>
                     <span class="n">empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_update_virtual_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info:</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_partition_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-
                 <span class="n">rinfo</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_routing_info_from_pre_vertex</span><span class="p">(</span>
                     <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_partition_id</span><span class="p">)</span>
 
@@ -615,7 +696,6 @@
                 <span class="k">if</span> <span class="n">rinfo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="o">=</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">first_key</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">first_mask</span>
-
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">partitions</span> <span class="o">=</span> <span class="n">machine_graph</span>\
                     <span class="o">.</span><span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -631,9 +711,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span> <span class="o">=</span> <span class="n">EIEIOPrefix</span><span class="o">.</span><span class="n">UPPER_HALF_WORD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span>
 
-    <span class="k">def</span> <span class="nf">_write_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span>
-                             <span class="n">time_scale_factor</span><span class="p">):</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIGURATION</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_write_configuration</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIGURATION</span><span class="p">)</span>
 
         <span class="c1"># Write apply_prefix and prefix and prefix_type</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -706,6 +791,15 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span>  <span class="c1"># @UnusedVariable</span>
             <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span>
             <span class="n">first_machine_time_step</span><span class="p">,</span> <span class="n">data_n_time_steps</span><span class="p">,</span> <span class="n">run_until_timesteps</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int machine_time_step:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info:</span>
+<span class="sd">        :param int first_machine_time_step:</span>
+<span class="sd">        :param int data_n_time_steps:</span>
+<span class="sd">        :param int run_until_timesteps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_virtual_key</span><span class="p">(</span><span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fill_send_buffer</span><span class="p">(</span><span class="n">first_machine_time_step</span><span class="p">,</span> <span class="n">run_until_timesteps</span><span class="p">)</span>
@@ -714,13 +808,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_regions</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">data_n_time_steps</span><span class="p">)</span>
 
         <span class="c1"># Write the system region</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">(),</span> <span class="n">machine_time_step</span><span class="p">,</span>
             <span class="n">time_scale_factor</span><span class="p">))</span>
 
         <span class="c1"># Write the additional recording information</span>
-        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="p">)</span>
         <span class="n">recording_size</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span><span class="p">:</span>
             <span class="n">per_timestep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recording_sdram_per_timestep</span><span class="p">(</span>
@@ -754,10 +848,16 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">virtual_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: int or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: int or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span>
 
     <span class="nd">@property</span>
@@ -778,12 +878,10 @@
         <span class="sd">&quot;&quot;&quot; Updates the buffers on specification of the first machine timestep.</span>
 <span class="sd">            Note: This is called by injection.</span>
 
-<span class="sd">        :param first_machine_time_step:\</span>
+<span class="sd">        :param int first_machine_time_step:</span>
 <span class="sd">            The first machine time step in the simulation</span>
-<span class="sd">        :type first_machine_time_step: int</span>
-<span class="sd">        :param run_until_timesteps:\</span>
+<span class="sd">        :param int run_until_timesteps:</span>
 <span class="sd">            The last machine time step in the simulation</span>
-<span class="sd">        :type run_until_timesteps: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fill_send_buffer</span><span class="p">(</span>
@@ -798,10 +896,13 @@
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractReceiveBuffersToHost</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">)</span>
 <div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_recording_region_base_address"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_recording_region_base_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_recording_region_base_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">locate_memory_region_for_placement</span><span class="p">(</span>
-            <span class="n">placement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">txrx</span><span class="p">)</span></div>
+            <span class="n">placement</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">RECORDING</span><span class="p">,</span> <span class="n">txrx</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">send_buffers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: dict(int,BufferedSendingRegion)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span>
 
     <span class="nd">@send_buffers</span><span class="o">.</span><span class="n">setter</span>
@@ -809,7 +910,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffers</span> <span class="o">=</span> <span class="n">value</span>
 
 <div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_region_buffer_size"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_region_buffer_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_region_buffer_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SEND_BUFFER</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int region: Region ID</span>
+<span class="sd">        :return: Size of buffer, in bytes.</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">region</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SEND_BUFFER</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_size</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
@@ -825,10 +931,10 @@
 
         <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;received_sdp_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_RECEIVED_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_RECEIVED_PACKETS</span><span class="p">],</span>
             <span class="n">report</span><span class="o">=</span><span class="p">(</span>
                 <span class="n">provenance_data</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_RECEIVED_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_RECEIVED_PACKETS</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;No SDP packets were received by </span><span class="si">{}</span><span class="s2">.  If you expected packets&quot;</span>
@@ -836,35 +942,32 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
         <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;send_multicast_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_SENT_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_SENT_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_SENT_PACKETS</span><span class="p">],</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">N_SENT_PACKETS</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;No multicast packets were sent by </span><span class="si">{}</span><span class="s2">.  If you expected&quot;</span>
                 <span class="s2">&quot; packets to be sent this could indicate an error&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
         <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;incorrect_keys&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_KEYS</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_KEYS</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_KEYS</span><span class="p">],</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_KEYS</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;Keys were received by </span><span class="si">{}</span><span class="s2"> that did not match the key </span><span class="si">{}</span><span class="s2"> and&quot;</span>
                 <span class="s2">&quot; mask </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span><span class="p">))))</span>
         <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;incorrect_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
+            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_PACKETS</span><span class="p">],</span>
             <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">INCORRECT_PACKETS</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;SDP Packets were received by </span><span class="si">{}</span><span class="s2"> that were not correct&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>
         <span class="n">provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_name</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="s2">&quot;late_packets&quot;</span><span class="p">),</span>
-            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">LATE_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">],</span>
-            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">LATE_PACKETS</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">LATE_PACKETS</span><span class="p">],</span>
+            <span class="n">report</span><span class="o">=</span><span class="n">provenance_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_PROVENANCE_ITEMS</span><span class="o">.</span><span class="n">LATE_PACKETS</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
             <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;SDP Packets were received by </span><span class="si">{}</span><span class="s2"> that were too late to be&quot;</span>
                 <span class="s2">&quot; transmitted in the simulation&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">))))</span>

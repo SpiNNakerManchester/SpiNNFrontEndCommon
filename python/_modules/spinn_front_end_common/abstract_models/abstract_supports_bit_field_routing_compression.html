@@ -83,36 +83,43 @@
 
 <span class="nd">@add_metaclass</span><span class="p">(</span><span class="n">AbstractBase</span><span class="p">)</span>
 <div class="viewcode-block" id="AbstractSupportsBitFieldRoutingCompression"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">[docs]</a><span class="k">class</span> <span class="nc">AbstractSupportsBitFieldRoutingCompression</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Marks a vertex that can support having the on-chip bitfield \</span>
+<span class="sd">        compressor running on its core.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.key_to_atom_map_region_base_address">[docs]</a>    <span class="k">def</span> <span class="nf">key_to_atom_map_region_base_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; returns the sdram address for the region that contains key to \</span>
-<span class="sd">        atom data</span>
+        <span class="sd">&quot;&quot;&quot; Returns the SDRAM address for the region that contains \</span>
+<span class="sd">            key-to-atom data.</span>
 
-<span class="sd">        :param transceiver: txrx</span>
-<span class="sd">        :param placement: placement</span>
-<span class="sd">        :return: the sdram address for the  key to atom data</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :return: the SDRAM address for the key-to-atom data</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractSupportsBitFieldRoutingCompression.bit_field_base_address"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address">[docs]</a>    <span class="k">def</span> <span class="nf">bit_field_base_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; returns the sdram address for the bit field table data</span>
+        <span class="sd">&quot;&quot;&quot; Returns the SDRAM address for the bit-field table data.</span>
 
-<span class="sd">        :param transceiver: txrx</span>
-<span class="sd">        :param placement: placement</span>
-<span class="sd">        :return: the sdram address for the bitfield address</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :return: the SDRAM address for the bitfield address</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes">[docs]</a>    <span class="k">def</span> <span class="nf">regeneratable_sdram_blocks_and_sizes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; returns the sdram address&#39;s for the core&#39;s sdram that can be used \</span>
-<span class="sd">        to generate bitfield tables loaded</span>
+        <span class="sd">&quot;&quot;&quot; Returns the SDRAM addresses and sizes for the cores&#39; SDRAM that \</span>
+<span class="sd">            are available (borrowed) for generating bitfield tables.</span>
 
-<span class="sd">        :param transceiver: txrx</span>
-<span class="sd">        :param placement: placement</span>
-<span class="sd">        :return: list of tuple containing (the sdram address for the cores \</span>
-<span class="sd">        sdram address&#39;s for the core&#39;s sdram that can be used \</span>
-<span class="sd">        to generate bitfield tables loaded</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        :return: list of tuples containing (the SDRAM address for the cores</span>
+<span class="sd">            SDRAM address&#39;s for the core&#39;s SDRAM that can be used to generate</span>
+<span class="sd">            bitfield tables loaded, and the size of memory chunks located</span>
+<span class="sd">            there)</span>
+<span class="sd">        :rtype: list(tuple(int,int))</span>
 <span class="sd">        &quot;&quot;&quot;</span></div></div>
 </pre></div>
 

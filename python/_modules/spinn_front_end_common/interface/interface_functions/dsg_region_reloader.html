@@ -96,6 +96,17 @@
 
 <div class="viewcode-block" id="DSGRegionReloader"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.DSGRegionReloader">[docs]</a><span class="k">class</span> <span class="nc">DSGRegionReloader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Regenerates and reloads the data specifications.</span>
+
+<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        SpiNNMan transceiver for communication</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        the list of placements of the machine graph to cores</span>
+<span class="sd">    :param str hostname:</span>
+<span class="sd">        the machine name</span>
+<span class="sd">    :param str report_directory:</span>
+<span class="sd">        the location where reports are stored</span>
+<span class="sd">    :param bool write_text_specs:</span>
+<span class="sd">        True if the textual version of the specification is to be written</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -103,12 +114,11 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">report_directory</span><span class="p">,</span>
             <span class="n">write_text_specs</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param transceiver: SpiNNMan transceiver for communication</span>
-<span class="sd">        :param placements: the list of placements of the machine graph to cores</span>
-<span class="sd">        :param hostname: the machine name</span>
-<span class="sd">        :param report_directory: the location where reports are stored</span>
-<span class="sd">        :param write_text_specs:\</span>
-<span class="sd">            True if the textual version of the specification is to be written</span>
+<span class="sd">        :param ~.Transceiver transceiver:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param str hostname:</span>
+<span class="sd">        :param str report_directory:</span>
+<span class="sd">        :param bool write_text_specs:</span>
 <span class="sd">        :param graph_mapper:\</span>
 <span class="sd">            the mapping between application and machine graph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -166,6 +176,11 @@
     <span class="k">def</span> <span class="nf">_regenerate_data_spec_for_vertices</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">report_dir</span><span class="p">,</span> <span class="n">write_text</span><span class="p">,</span>
             <span class="n">app_data_dir</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Placement placement:</span>
+<span class="sd">        :param ~.AbstractVertex vertex:</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If the vertex doesn&#39;t regenerate, skip</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>

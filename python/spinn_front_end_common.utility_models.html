@@ -92,7 +92,7 @@
 <dt id="spinn_front_end_common.utility_models.CommandSender">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">CommandSender</code><span class="sig-paren">(</span><em>label</em>, <em>constraints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender.html#CommandSender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSender" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code></p>
-<p>A utility for sending commands to a vertex (possibly an external        device) at fixed times in the simulation</p>
+<p>A utility for sending commands to a vertex (possibly an external        device) at fixed times in the simulation or in response to         simulation events (e.g., starting and stopping).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -114,10 +114,12 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start_resume_commands</strong> (iterable(<code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand</span></code>)) &#8211; The commands to send when the simulation            starts or resumes from pause</li>
-<li><strong>pause_stop_commands</strong> (iterable(<code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand</span></code>)) &#8211; the commands to send when the simulation            stops or pauses after running</li>
-<li><strong>timed_commands</strong> (iterable(<code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand</span></code>)) &#8211; The commands to send at specific times</li>
-<li><strong>vertex_to_send_to</strong> (<em>AbstractVertex</em>) &#8211; The vertex these commands are to be sent to</li>
+<li><strong>start_resume_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; The commands to send when the simulation starts or resumes from
+pause</li>
+<li><strong>pause_stop_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; The commands to send when the simulation stops or pauses after
+running</li>
+<li><strong>timed_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; The commands to send at specific times</li>
+<li><strong>vertex_to_send_to</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v)"><em>AbstractVertex</em></a>) &#8211; The vertex these commands are to be sent to</li>
 </ul>
 </td>
 </tr>
@@ -148,7 +150,19 @@
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.CommandSender.edges_and_partitions">
 <code class="descname">edges_and_partitions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender.html#CommandSender.edges_and_partitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSender.edges_and_partitions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Construct application edges from this vertex to the app vertices            that this vertex knows how to target (and has keys allocated for).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">edges, partition IDs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN v)">ApplicationEdge</a>),
+<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.CommandSender.generate_data_specification">
@@ -256,6 +270,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">CommandSenderMachineVertex</code><span class="sig-paren">(</span><em>label</em>, <em>constraints</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl.ProvidesProvenanceDataFromMachineImpl</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code></p>
+<p>Machine vertex for injecting packets at particular times or in         response to particular events into a SpiNNaker application.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -314,10 +329,12 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>start_resume_commands</strong> (iterable(<code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand</span></code>)) &#8211; The commands to send when the simulation            starts or resumes from pause</li>
-<li><strong>pause_stop_commands</strong> (iterable(<code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand</span></code>)) &#8211; the commands to send when the simulation            stops or pauses after running</li>
-<li><strong>timed_commands</strong> (iterable(<code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand</span></code>)) &#8211; The commands to send at specific times</li>
-<li><strong>vertex_to_send_to</strong> (<em>AbstractVertex</em>) &#8211; The vertex these commands are to be sent to</li>
+<li><strong>start_resume_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; The commands to send when the simulation starts or resumes from
+pause</li>
+<li><strong>pause_stop_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; the commands to send when the simulation stops or pauses after
+running</li>
+<li><strong>timed_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; The commands to send at specific times</li>
+<li><strong>vertex_to_send_to</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v)"><em>AbstractVertex</em></a>) &#8211; The vertex these commands are to be sent to</li>
 </ul>
 </td>
 </tr>
@@ -328,7 +345,18 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.edges_and_partitions">
 <code class="descclassname">CommandSenderMachineVertex.</code><code class="descname">edges_and_partitions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.edges_and_partitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.edges_and_partitions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Construct machine edges from this vertex to the machine vertices            that this vertex knows how to target (and has keys allocated for).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">edges, partition IDs</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineEdge" title="(in PACMAN v)">MachineEdge</a>), <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.generate_data_specification">
@@ -341,6 +369,8 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v)"><em>DataSpecificationGenerator</em></a>) &#8211; The data specification to write to</li>
 <li><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; The placement the vertex is located at</li>
+<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -379,15 +409,20 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions">
-<code class="descclassname">CommandSenderMachineVertex.</code><code class="descname">get_edges_and_partitions</code><span class="sig-paren">(</span><em>pre_vertex</em>, <em>edge_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_edges_and_partitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes">
-<em class="property">static </em><code class="descclassname">CommandSenderMachineVertex.</code><code class="descname">get_n_command_bytes</code><span class="sig-paren">(</span><em>commands</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_n_command_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">classmethod </em><code class="descclassname">CommandSenderMachineVertex.</code><code class="descname">get_n_command_bytes</code><span class="sig-paren">(</span><em>commands</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_n_command_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>commands</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em><em></em>) &#8211; </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_outgoing_partition_constraints">
@@ -410,7 +445,15 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_timed_commands_bytes">
 <code class="descclassname">CommandSenderMachineVertex.</code><code class="descname">get_timed_commands_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_timed_commands_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_timed_commands_bytes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.resources_required">
@@ -556,20 +599,6 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">ChipPowerMonitorMachineVertex</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor_machine_vertex.html#ChipPowerMonitorMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.abstract_receive_buffers_to_host.AbstractReceiveBuffersToHost</span></code></p>
 <p>Machine vertex for C code representing functionality to record        idle times in a machine graph.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; vertex label</li>
-<li><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v)"><em>AbstractConstraint</em></a><em>)</em><em></em>) &#8211; constraints on this vertex</li>
-<li><strong>n_samples_per_recording</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; how may samples between recording entry</li>
-<li><strong>sampling_frequency</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; how often to sample, in microseconds</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 <dl class="staticmethod">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_file_name">
 <em class="property">static </em><code class="descname">binary_file_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor_machine_vertex.html#ChipPowerMonitorMachineVertex.binary_file_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_file_name" title="Permalink to this definition">¶</a></dt>
@@ -611,6 +640,9 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v)"><em>DataSpecificationGenerator</em></a>) &#8211; The data specification to write to</li>
 <li><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; The placement the vertex is located at</li>
+<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; machine time step</li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; time scale factor</li>
+<li><strong>data_n_time_steps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; timesteps to reserve data for</li>
 </ul>
 </td>
 </tr>
@@ -666,7 +698,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">results, an array with 1 dimension of uint32 values</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a></p>
 </td>
 </tr>
 </tbody>
@@ -721,7 +753,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v)">ResourceContainer</a></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>n_samples_per_recording</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>sampling_frequency</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v)">ResourceContainer</a></p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -730,7 +771,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.n_samples_per_recording">
 <code class="descname">n_samples_per_recording</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.n_samples_per_recording" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>how may samples between recording entries</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.resources_required">
@@ -749,7 +799,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.sampling_frequency">
 <code class="descname">sampling_frequency</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.sampling_frequency" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>how often to sample, in microseconds</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -888,6 +947,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">DataSpeedUpPacketGatherMachineVertex</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>extra_monitors_by_chip</em>, <em>ip_address</em>, <em>report_default_directory</em>, <em>write_data_speed_up_reports</em>, <em>constraints=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.provenance.abstract_provides_local_provenance_data.AbstractProvidesLocalProvenanceData</span></code></p>
+<p>Machine vertex for handling fast data transfer between host and         SpiNNaker. This machine vertex is only ever placed on chips with a         working Ethernet connection; it collaborates with the         <a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><code class="xref py py-class docutils literal"><span class="pre">ExtraMonitorSupportMachineVertex</span></code></a> to write data on other         chips..</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -994,7 +1054,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue">
 <code class="descname">clear_reinjection_queue</code><span class="sig-paren">(</span><em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the queues for reinjection</p>
+<dd><p>Clears the queues for reinjection.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1023,12 +1083,10 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; (injected)</li>
 <li><strong>routing_info</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v)"><em>RoutingInfo</em></a>) &#8211; (injected)</li>
 <li><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v)"><em>Tags</em></a>) &#8211; (injected)</li>
-<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; (injected)</li>
-<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; (injected)</li>
-<li><strong>mc_data_chips_to_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; (injected)</li>
+<li><strong>mc_data_chips_to_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; (injected)</li>
 <li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; (injected)</li>
 <li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; (injected)</li>
-<li><strong>router_timeout_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; (injected)</li>
+<li><strong>router_timeout_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; (injected)</li>
 </ul>
 </td>
 </tr>
@@ -1076,8 +1134,8 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>extra_monitor</strong> (<a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a>) &#8211; the extra monitor used for this data</li>
 <li><strong>extra_monitor_placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; placement object for where to get data from</li>
-<li><strong>extra_monitor</strong> (<em>ExtraMonitor</em>) &#8211; the extra monitor used for this data</li>
 <li><strong>memory_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the address in SDRAM to start reading from</li>
 <li><strong>length_in_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the length of data to read in bytes</li>
 <li><strong>fixed_routes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v)"><em>FixedRouteEntry</em></a><em>)</em><em></em>) &#8211; the fixed routes, used in the report of which            chips were used by the speed up process</li>
@@ -1097,7 +1155,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data">
 <code class="descname">get_local_provenance_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_local_provenance_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterable of provenance data items</p>
+<dd><p>Get an iterable of provenance data items.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1113,19 +1171,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="staticmethod">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables">
 <em class="property">static </em><code class="descname">load_application_routing_tables</code><span class="sig-paren">(</span><em>transceiver</em>, <em>extra_monitor_cores</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set all chips to have application table loaded in the router</p>
+<dd><p>Set all chips to have application table loaded in the router.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpiNNMan instance</li>
 <li><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to set</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1140,14 +1195,11 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpiNNMan instance</li>
 <li><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to set</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1157,7 +1209,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="staticmethod">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location">
 <em class="property">static </em><code class="descname">locate_correct_write_data_function_for_chip_location</code><span class="sig-paren">(</span><em>uses_advanced_monitors</em>, <em>machine</em>, <em>x</em>, <em>y</em>, <em>transceiver</em>, <em>extra_monitor_cores_to_ethernet_connection_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location" title="Permalink to this definition">¶</a></dt>
-<dd><p>supports other components figuring out which gather and function             to call for writing data onto spinnaker</p>
+<dd><p>Supports other components figuring out which gatherer and function            to call for writing data onto SpiNNaker.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1199,23 +1251,21 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.send_data_into_spinnaker">
 <code class="descname">send_data_into_spinnaker</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>base_address</em>, <em>data</em>, <em>n_bytes=None</em>, <em>offset=0</em>, <em>cpu=0</em>, <em>is_filename=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.send_data_into_spinnaker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.send_data_into_spinnaker" title="Permalink to this definition">¶</a></dt>
-<dd><p>sends a block of data into SpiNNaker to a given chip</p>
+<dd><p>Sends a block of data into SpiNNaker to a given chip.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; chip x for data</li>
 <li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; chip y for data</li>
 <li><strong>base_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the address in SDRAM to start writing memory</li>
 <li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytes" title="(in Python v3.6)"><em>bytes</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#bytearray" title="(in Python v3.6)"><em>bytearray</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#memoryview" title="(in Python v3.6)"><em>memoryview</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the data to write (or filename to load data from,             if <cite>is_filename</cite> is True; that&#8217;s the only time this is a str)</li>
 <li><strong>n_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; how many bytes to read, or None if not set</li>
 <li><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; where in the data to start from</li>
+<li><strong>cpu</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 <li><strong>is_filename</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether data is actually a file.</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1225,19 +1275,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming">
 <code class="descname">set_cores_for_data_streaming</code><span class="sig-paren">(</span><em>transceiver</em>, <em>extra_monitor_cores</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper method for setting the router timeouts to a state usable            for data streaming</p>
+<dd><p>Helper method for setting the router timeouts to a state usable            for data streaming.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpiNNMan instance</li>
 <li><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to set</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1247,22 +1294,58 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout">
 <code class="descname">set_router_emergency_timeout</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_emergency_timeout" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the wait2 field for a set of routers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; </li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_time_outs">
 <code class="descname">set_router_time_outs</code><span class="sig-paren">(</span><em>timeout</em>, <em>transceiver</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.set_router_time_outs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_time_outs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the wait1 field for a set of routers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; </li>
+<li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required">
-<em class="property">static </em><code class="descname">static_resources_required</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.static_resources_required"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property">classmethod </em><code class="descname">static_resources_required</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.static_resources_required"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v)">ResourceContainer</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="staticmethod">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.streaming">
 <em class="property">static </em><code class="descname">streaming</code><span class="sig-paren">(</span><em>gatherers</em>, <em>transceiver</em>, <em>extra_monitor_cores</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.streaming"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.streaming" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper method for setting the router timeouts to a state usable            for data streaming via a Python context manager (i.e., using            the &#8216;with&#8217; statement).</p>
+<dd><p>Helper method for setting the router timeouts to a state usable            for data streaming via a Python context manager (i.e., using            the <cite>with</cite> statement).</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1275,7 +1358,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">a context manager</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a context manager</p>
 </td>
 </tr>
 </tbody>
@@ -1285,19 +1368,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming">
 <code class="descname">unset_cores_for_data_streaming</code><span class="sig-paren">(</span><em>transceiver</em>, <em>extra_monitor_cores</em>, <em>placements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper method for setting the router timeouts to a state usable            for data streaming</p>
+<dd><p>Helper method for restoring the router timeouts to normal after            being in a state usable for data streaming.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the SpiNNMan instance</li>
 <li><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to set</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements object</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1307,15 +1387,12 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine">
 <code class="descname">update_transaction_id_from_machine</code><span class="sig-paren">(</span><em>txrx</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine" title="Permalink to this definition">¶</a></dt>
-<dd><p>looks up from the machine what the current transaction id is
-and updates the data speed up lpg.</p>
+<dd><p>Looks up from the machine what the current transaction ID is            and updates the data speed up gatherer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>txrx</strong> &#8211; SpiNNMan instance</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; SpiNNMan instance</td>
 </tr>
 </tbody>
 </table>
@@ -1445,13 +1522,15 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">ExtraMonitorSupportMachineVertex</code><span class="sig-paren">(</span><em>constraints</em>, <em>reinject_multicast=None</em>, <em>reinject_point_to_point=False</em>, <em>reinject_nearest_neighbour=False</em>, <em>reinject_fixed_route=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code></p>
 <p>Machine vertex for talking to extra monitor cores.         Supports reinjection control and the faster data transfer protocols.</p>
+<p>Usually deployed once per chip.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v)"><em>AbstractConstraint</em></a><em>)</em><em></em>) &#8211; constraints on this vertex</li>
-<li><strong>reinject_multicast</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; if we reinject multicast packets; defaults to value of             <cite>enable_reinjection</cite> setting in configuration file</li>
+<li><strong>reinject_multicast</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; if we reinject multicast packets; defaults to value of
+<cite>enable_reinjection</cite> setting in configuration file</li>
 <li><strong>reinject_point_to_point</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; if we reinject point-to-point packets</li>
 <li><strong>reinject_nearest_neighbour</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; if we reinject nearest-neighbour packets</li>
 <li><strong>reinject_fixed_route</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; if we reinject fixed route packets</li>
@@ -1544,7 +1623,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnMan interface</li>
-<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements object</li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the vertex placements</li>
 </ul>
 </td>
 </tr>
@@ -1573,7 +1652,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),             <a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus" title="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus">ReInjectionStatus</a>)</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>), <a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus" title="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus">ReInjectionStatus</a>)</p>
 </td>
 </tr>
 </tbody>
@@ -1588,14 +1667,11 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements object</li>
 <li><strong>extra_monitor_cores_for_data</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to get status from</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnMan interface</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1610,14 +1686,11 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements object</li>
 <li><strong>extra_monitor_cores_for_data</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to get status from</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnMan interface</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1729,7 +1802,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements object</li>
 <li><strong>extra_monitor_cores_for_data</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the extra monitor cores to set the packets of</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; spinnman instance</li>
@@ -1738,9 +1811,6 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <li><strong>nearest_neighbour</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; If nearest neighbour should be set, or None if left as before</li>
 <li><strong>fixed_route</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; If fixed route should be set, or None if left as before.</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1756,9 +1826,10 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; The mantissa and exponent of the timeout value,             each between 0 and 15</li>
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; The mantissa and exponent of the timeout value, each between
+0 and 15</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnMan instance</li>
-<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements object</li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; vertex placements</li>
 <li><strong>extra_monitor_cores_to_set</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; which monitors control the routers to set the timeout of</li>
 </ul>
 </td>
@@ -1775,15 +1846,13 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; The mantissa and exponent of the timeout value,             each between 0 and 15</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; The mantissa and exponent of the timeout value, each between
+0 and 15</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the spinnman interface</li>
-<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements object</li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; vertex placements</li>
 <li><strong>extra_monitor_cores_to_set</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; which monitors control the routers to set the timeout of</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -1986,6 +2055,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dt id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">LivePacketGatherMachineVertex</code><span class="sig-paren">(</span><em>lpg_params</em>, <em>label=None</em>, <em>constraints=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl.ProvidesProvenanceDataFromMachineImpl</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_supports_database_injection.AbstractSupportsDatabaseInjection</span></code></p>
+<p>Used to gather multicast packets coming from cores and stream them         out to a receiving application on host. Only ever deployed on chips         with a working Ethernet connection.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2015,6 +2085,9 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v)"><em>DataSpecificationGenerator</em></a>) &#8211; The data specification to write to</li>
 <li><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; The placement the vertex is located at</li>
+<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v)"><em>Tags</em></a>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2069,16 +2142,16 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 </table>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage">
-<em class="property">static </em><code class="descname">get_dtcm_usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_dtcm_usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">get_dtcm_usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_dtcm_usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the DTCM used by this vertex</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_provenance_data_from_machine">
 <code class="descname">get_provenance_data_from_machine</code><span class="sig-paren">(</span><em>transceiver</em>, <em>placement</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_provenance_data_from_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterable of provenance data items</p>
+<dd><p>Get an iterable of provenance data items.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2099,9 +2172,9 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 </table>
 </dd></dl>
 
-<dl class="staticmethod">
+<dl class="classmethod">
 <dt id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage">
-<em class="property">static </em><code class="descname">get_sdram_usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_sdram_usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">get_sdram_usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_sdram_usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the SDRAM used by this vertex</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2281,16 +2354,28 @@ repeat is 0</li>
 <li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The label of this vertex</li>
 <li><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v)"><em>AbstractConstraint</em></a><em>)</em><em></em>) &#8211; Any initial constraints to this vertex</li>
 <li><strong>max_atoms_per_core</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
-<li><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The IP address of the board on which to place            this vertex if receiving data, either buffered or live (by            default, any board is chosen)</li>
-<li><strong>receive_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The port on the board that will listen for            incoming event packets (default is to disable this feature; set a            value to enable it)</li>
-<li><strong>receive_sdp_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The SDP port to listen on for incoming event            packets (defaults to 1)</li>
-<li><strong>receive_tag</strong> (<em>IPTag</em>) &#8211; The IP tag to use for receiving live events            (uses any by default)</li>
-<li><strong>receive_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; The estimated rate of packets that will be sent            by this source</li>
-<li><strong>virtual_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The base multicast key to send received events            with (assigned automatically by default)</li>
-<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The prefix to &#8220;or&#8221; with generated multicast keys            (default is no prefix)</li>
-<li><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v)"><em>EIEIOPrefix</em></a>) &#8211; Whether the prefix should apply to the upper or            lower half of the multicast keys (default is upper half)</li>
-<li><strong>check_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; True if the keys of received events should be            verified before sending (default False)</li>
-<li><strong>send_buffer_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or             </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; An array of arrays of times at which keys            should be sent (one array for each key, default disabled)</li>
+<li><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The IP address of the board on which to place
+this vertex if receiving data, either buffered or live (by
+default, any board is chosen)</li>
+<li><strong>receive_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The port on the board that will listen for
+incoming event packets (default is to disable this feature; set a
+value to enable it)</li>
+<li><strong>receive_sdp_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The SDP port to listen on for incoming event packets
+(defaults to 1)</li>
+<li><strong>receive_tag</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v)"><em>IPTag</em></a>) &#8211; The IP tag to use for receiving live events
+(uses any by default)</li>
+<li><strong>receive_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; The estimated rate of packets that will be sent by this source</li>
+<li><strong>virtual_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The base multicast key to send received events with
+(assigned automatically by default)</li>
+<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The prefix to &#8220;or&#8221; with generated multicast keys
+(default is no prefix)</li>
+<li><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v)"><em>EIEIOPrefix</em></a>) &#8211; Whether the prefix should apply to the upper or lower half of the
+multicast keys (default is upper half)</li>
+<li><strong>check_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; True if the keys of received events should be verified before
+sending (default False)</li>
+<li><strong>send_buffer_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or
+</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a><em>(</em><em>int32</em><em>)</em><em></em><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; An array of arrays of times at which keys
+should be sent (one array for each key, default disabled)</li>
 <li><strong>send_buffer_partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The ID of the partition containing            the edges down which the events are to be sent</li>
 <li><strong>reserve_reverse_ip_tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Extra flag for input without a reserved port</li>
 <li><strong>enable_injection</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Flag to indicate that data will be received to inject</li>
@@ -2428,6 +2513,15 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dt id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.send_buffer_times">
 <code class="descname">send_buffer_times</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.send_buffer_times" title="Permalink to this definition">¶</a></dt>
 <dd><p>When messages will be sent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a>(<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a>(numpy.int32)) or
+<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a>(int32)) or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -2436,7 +2530,7 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">ReverseIPTagMulticastSourceMachineVertex</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.machine.machine_vertex.MachineVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_supports_database_injection.AbstractSupportsDatabaseInjection</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.provenance.provides_provenance_data_from_machine_impl.ProvidesProvenanceDataFromMachineImpl</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.sends_buffers_from_host_pre_buffered_impl.SendsBuffersFromHostPreBufferedImpl</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.buffer_management.buffer_models.abstract_receive_buffers_to_host.AbstractReceiveBuffersToHost</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_recordable.AbstractRecordable</span></code></p>
-<p>A model which allows events to be injected into SpiNNaker and        converted in to multicast packets</p>
+<p>A model which allows events to be injected into SpiNNaker and        converted in to multicast packets.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -2445,18 +2539,30 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <li><strong>n_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The number of keys to be sent via this multicast source</li>
 <li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The label of this vertex</li>
 <li><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v)"><em>AbstractConstraint</em></a><em>)</em><em></em>) &#8211; Any initial constraints to this vertex</li>
-<li><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The IP address of the board on which to place        this vertex if receiving data, either buffered or live (by        default, any board is chosen)</li>
-<li><strong>receive_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The port on the board that will listen for        incoming event packets (default is to disable this feature; set a        value to enable it)</li>
-<li><strong>receive_sdp_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The SDP port to listen on for incoming event        packets (defaults to 1)</li>
-<li><strong>receive_tag</strong> (<em>IPTag</em>) &#8211; The IP tag to use for receiving live events        (uses any by default)</li>
-<li><strong>receive_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; The estimated rate of packets that will be sent        by this source</li>
-<li><strong>virtual_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The base multicast key to send received events        with (assigned automatically by default)</li>
-<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The prefix to &#8220;or&#8221; with generated multicast keys        (default is no prefix)</li>
-<li><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v)"><em>EIEIOPrefix</em></a>) &#8211; Whether the prefix should apply to the upper or        lower half of the multicast keys (default is upper half)</li>
-<li><strong>check_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; True if the keys of received events should be        verified before sending (default False)</li>
-<li><strong>send_buffer_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or         </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; An array of arrays of times at which keys        should be sent (one array for each key, default disabled)</li>
-<li><strong>send_buffer_partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; The ID of the partition containing        the edges down which the events are to be sent</li>
-<li><strong>reserve_reverse_ip_tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Extra flag for input without a reserved port</li>
+<li><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The IP address of the board on which to place this vertex if receiving
+data, either buffered or live (by default, any board is chosen)</li>
+<li><strong>receive_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The port on the board that will listen for incoming event packets
+(default is to disable this feature; set a value to enable it, or set
+the <cite>reserve_reverse_ip_tag parameter</cite> to True if a random port is to
+be used)</li>
+<li><strong>receive_sdp_port</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The SDP port to listen on for incoming event packets (defaults to 1)</li>
+<li><strong>receive_tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The IP tag to use for receiving live events (uses any by default)</li>
+<li><strong>receive_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; </li>
+<li><strong>virtual_key</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The base multicast key to send received events with (assigned
+automatically by default)</li>
+<li><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The prefix to &#8220;or&#8221; with generated multicast keys (default is no prefix)</li>
+<li><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v)"><em>EIEIOPrefix</em></a>) &#8211; Whether the prefix should apply to the upper or lower half of the
+multicast keys (default is upper half)</li>
+<li><strong>check_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; True if the keys of received events should be verified before sending
+(default False)</li>
+<li><strong>send_buffer_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a>) &#8211; An array of arrays of time steps at which keys should be sent (one
+array for each key, default disabled)</li>
+<li><strong>send_buffer_partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The ID of the partition containing the edges down which the events are
+to be sent</li>
+<li><strong>reserve_reverse_ip_tag</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; True if the source should set up a tag through which it can receive
+packets; if port is set to None this can be used to enable the
+reception of packets on a randomly assigned port, which can be read
+from the database</li>
 <li><strong>enable_injection</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Flag to indicate that data will be received to inject</li>
 </ul>
 </td>
@@ -2466,7 +2572,15 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.enable_recording">
 <code class="descname">enable_recording</code><span class="sig-paren">(</span><em>new_state=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.enable_recording"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.enable_recording" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enable recording of the keys sent</p>
+<dd><p>Enable recording of the keys sent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_state</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; </td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -2480,6 +2594,13 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v)"><em>DataSpecificationGenerator</em></a>) &#8211; The data specification to write to</li>
 <li><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v)"><em>Placement</em></a>) &#8211; The placement the vertex is located at</li>
+<li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; </li>
+<li><strong>routing_info</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v)"><em>RoutingInfo</em></a>) &#8211; </li>
+<li><strong>first_machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>data_n_time_steps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>run_until_timesteps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -2610,22 +2731,38 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_region_buffer_size">
 <code class="descname">get_region_buffer_size</code><span class="sig-paren">(</span><em>region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.get_region_buffer_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_region_buffer_size" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage">
-<em class="property">static </em><code class="descname">get_sdram_usage</code><span class="sig-paren">(</span><em>send_buffer_times</em>, <em>recording_enabled</em>, <em>machine_time_step</em>, <em>receive_rate</em>, <em>n_keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>send_buffer_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or             </em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; When events will be sent</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Region ID</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Size of buffer, in bytes.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage">
+<em class="property">classmethod </em><code class="descname">get_sdram_usage</code><span class="sig-paren">(</span><em>send_buffer_times</em>, <em>recording_enabled</em>, <em>machine_time_step</em>, <em>receive_rate</em>, <em>n_keys</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>send_buffer_times</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or
+</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>ndarray</em></a><em>(</em><em>numpy.int32</em><em>)</em><em></em><em>) or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; When events will be sent</li>
 <li><strong>recording_enabled</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; Whether recording is done</li>
 <li><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; What the machine timestep is</li>
 <li><strong>receive_rate</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; What the expected message receive rate is</li>
 <li><strong>n_keys</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; How many keys are being sent</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.VariableSDRAM" title="(in PACMAN v)">VariableSDRAM</a></p>
 </td>
 </tr>
 </tbody>
@@ -2663,7 +2800,15 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.mask">
 <code class="descname">mask</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.mask" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.resources_required">
@@ -2682,12 +2827,30 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.send_buffer_times">
 <code class="descname">send_buffer_times</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.send_buffer_times" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>When events will be sent.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a>(<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a>(numpy.int32)) or
+<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">ndarray</a>(numpy.int32)) or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.send_buffers">
 <code class="descname">send_buffers</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.send_buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion" title="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion">BufferedSendingRegion</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.update_buffer">
@@ -2713,7 +2876,15 @@ CPUCyclesPerTickResource, DTCMResource and SDRAMResource</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.virtual_key">
 <code class="descname">virtual_key</code><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.virtual_key" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 

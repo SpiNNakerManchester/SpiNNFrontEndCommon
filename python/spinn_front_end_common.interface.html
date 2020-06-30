@@ -151,7 +151,7 @@
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.abstract_spinnaker_base.</code><code class="descname">AbstractSpinnakerBase</code><span class="sig-paren">(</span><em>configfile</em>, <em>executable_finder</em>, <em>graph_label=None</em>, <em>database_socket_addresses=None</em>, <em>extra_algorithm_xml_paths=None</em>, <em>n_chips_required=None</em>, <em>n_boards_required=None</em>, <em>default_config_paths=None</em>, <em>validation_cfg=None</em>, <em>front_end_versions=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler"><code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.interface.config_handler.ConfigHandler</span></code></a>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.utilities.simulator_interface.SimulatorInterface</span></code></p>
-<p>Main interface into the tools logic flow</p>
+<p>Main interface into the tools logic flow.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -166,7 +166,7 @@
 <li><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Overrides the number of boards to allocate from spalloc</li>
 <li><strong>default_config_paths</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; Directories to load configurations from</li>
 <li><strong>validation_cfg</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; How to validate configuration files</li>
-<li><strong>front_end_versions</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em><em>)</em><em></em>) &#8211; information about what software is in use</li>
+<li><strong>front_end_versions</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em><em>)</em><em></em>) &#8211; Information about what software is in use</li>
 </ul>
 </td>
 </tr>
@@ -179,16 +179,10 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>edge_to_add</strong> &#8211; </li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>edge_to_add</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN v)"><em>ApplicationEdge</em></a>) &#8211; the edge to add to the graph</li>
 <li><strong>partition_identifier</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the partition identifier for the outgoing edge partition</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body"><p class="first">ApplicationEdge</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -202,13 +196,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vertex</strong> &#8211; the vertex to add to the graph</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body"><p class="first">ApplicationVertex</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v)"><em>ApplicationVertex</em></a>) &#8211; the vertex to add to the graph</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
@@ -225,24 +213,29 @@
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing">
 <code class="descname">add_extraction_timing</code><span class="sig-paren">(</span><em>timing</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_extraction_timing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Record the time taken for doing data extraction.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timing</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/datetime.html#datetime.timedelta" title="(in Python v3.6)"><em>timedelta</em></a>) &#8211; </td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters">
 <code class="descname">add_live_packet_gatherer_parameters</code><span class="sig-paren">(</span><em>live_packet_gatherer_params</em>, <em>vertex_to_record_from</em>, <em>partition_ids</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_live_packet_gatherer_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds params for a new LPG if needed, or adds to the tracker for            same params.</p>
+<dd><p>Adds parameters for a new LPG if needed, or adds to the tracker             for parameters. Note that LPGs can be inserted to track behaviour             either at the application graph level or at the machine graph             level, but not both at the same time.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>live_packet_gatherer_params</strong> &#8211; params to look for a LPG</li>
-<li><strong>vertex_to_record_from</strong> &#8211; the vertex that needs to send to a given LPG</li>
-<li><strong>partition_ids</strong> &#8211; the IDs of the partitions to connect from the vertex</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>live_packet_gatherer_params</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a>) &#8211; params to look for a LPG</li>
+<li><strong>vertex_to_record_from</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v)"><em>AbstractVertex</em></a>) &#8211; the vertex that needs to send to a given LPG</li>
+<li><strong>partition_ids</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; the IDs of the partitions to connect from the vertex</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -256,16 +249,10 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>edge</strong> &#8211; the edge to add to the graph</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>edge</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineEdge" title="(in PACMAN v)"><em>MachineEdge</em></a>) &#8211; the edge to add to the graph</li>
 <li><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the partition identifier for the outgoing edge partition</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body"><p class="first">MachineEdge</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -279,13 +266,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vertex</strong> &#8211; the vertex to add to the graph</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body"><p class="first">MachineVertex</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v)"><em>MachineVertex</em></a>) &#8211; the vertex to add to the graph</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
@@ -312,10 +293,7 @@
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -326,6 +304,14 @@
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph">
 <code class="descname">application_graph</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>The application graph used to derive the runtime machine             configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)">ApplicationGraph</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -360,6 +346,14 @@
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.dsg_algorithm">
 <code class="descname">dsg_algorithm</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.dsg_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>The DSG algorithm used by the tools</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -371,9 +365,9 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>exctype</strong> &#8211; the type of execution received</li>
-<li><strong>value</strong> &#8211; the value of the exception</li>
-<li><strong>traceback_obj</strong> &#8211; the trace back stuff</li>
+<li><strong>exctype</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#type" title="(in Python v3.6)"><em>type</em></a>) &#8211; the type of exception received</li>
+<li><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/exceptions.html#Exception" title="(in Python v3.6)"><em>Exception</em></a>) &#8211; the value of the exception</li>
+<li><strong>traceback_obj</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/traceback.html#module-traceback" title="(in Python v3.6)"><em>traceback</em></a>) &#8211; the trace back stuff</li>
 </ul>
 </td>
 </tr>
@@ -389,7 +383,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_load_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) &#8211; Algorithms to add</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_load_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; Algorithms to add</td>
 </tr>
 </tbody>
 </table>
@@ -403,7 +397,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_mapping_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) &#8211; Algorithms to add</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_mapping_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; Algorithms to add</td>
 </tr>
 </tbody>
 </table>
@@ -417,7 +411,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_post_run_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) &#8211; Algorithms to add</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_post_run_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; Algorithms to add</td>
 </tr>
 </tbody>
 </table>
@@ -426,7 +420,15 @@
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes">
 <code class="descname">fixed_routes</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v)">FixedRouteEntry</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_current_time">
@@ -521,7 +523,15 @@
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine_graph">
 <code class="descname">machine_graph</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine_graph" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)">MachineGraph</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.no_machine_time_steps">
@@ -541,22 +551,55 @@
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count">
 <code class="descname">none_labelled_edge_count</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of times edges have not been labelled.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph">
 <code class="descname">original_application_graph</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v)">ApplicationGraph</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph">
 <code class="descname">original_machine_graph</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)">MachineGraph</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements">
 <code class="descname">placements</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Where machine vertices are placed on the machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)">Placements</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.prepend_extra_pre_run_algorithms">
@@ -566,7 +609,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_pre_run_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a>) &#8211; Algorithms to add</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extra_pre_run_algorithms</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; Algorithms to add</td>
 </tr>
 </tbody>
 </table>
@@ -581,7 +624,15 @@
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos">
 <code class="descname">routing_infos</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v)">RoutingInfo</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">
@@ -591,12 +642,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the run duration in milliseconds.
-Run a simulation for a fixed amount of time</li>
-<li><strong>run_time</strong> &#8211; the run duration in milliseconds.</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the run duration in milliseconds.</td>
 </tr>
 </tbody>
 </table>
@@ -610,7 +656,9 @@ Run a simulation for a fixed amount of time</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_steps</strong> &#8211; If not None, this specifies that the simulation should            be requested to run for the given number of steps.  The host will            still wait until the simulation itself says it has completed</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_steps</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; If not None, this specifies that the simulation should be
+requested to run for the given number of steps.  The host will
+still wait until the simulation itself says it has completed</td>
 </tr>
 </tbody>
 </table>
@@ -620,13 +668,16 @@ Run a simulation for a fixed amount of time</li>
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required">
 <code class="descname">set_n_boards_required</code><span class="sig-paren">(</span><em>n_boards_required</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_n_boards_required"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the machine requirements.</p>
-<p>Warning: This method should not be called after the machine
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This method should not be called after the machine
 requirements have be computed based on the graph.</p>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_boards_required</strong> &#8211; The number of boards required</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; The number of boards required</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">ConfigurationException
 If any machine requirements have already been set</td>
@@ -638,14 +689,12 @@ If any machine requirements have already been set</td>
 <dl class="method">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics">
 <code class="descname">set_up_machine_specifics</code><span class="sig-paren">(</span><em>hostname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_up_machine_specifics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds machine specifics for the different modes of execution</p>
+<dd><p>Adds machine specifics for the different modes of execution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hostname</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; machine name</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -659,14 +708,15 @@ If any machine requirements have already been set</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>turn_off_machine</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; decides if the machine should be powered down            after running the execution. Note that this powers down all boards            connected to the BMP connections given to the transceiver</li>
-<li><strong>clear_routing_tables</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; informs the tool chain if it            should turn off the clearing of the routing tables</li>
-<li><strong>clear_tags</strong> (<em>boolean</em>) &#8211; informs the tool chain if it should clear the tags            off the machine at stop</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>turn_off_machine</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; decides if the machine should be powered down after running the
+execution. Note that this powers down all boards connected to the
+BMP connections given to the transceiver</li>
+<li><strong>clear_routing_tables</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; informs the tool chain if it
+should turn off the clearing of the routing tables</li>
+<li><strong>clear_tags</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; informs the tool chain if it should clear the
+tags off the machine at stop</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
 </tr>
 </tbody>
@@ -686,7 +736,15 @@ If any machine requirements have already been set</td>
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags">
 <code class="descname">tags</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v)">Tags</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.transceiver">
@@ -734,6 +792,14 @@ If any machine requirements have already been set</td>
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board">
 <code class="descname">use_virtual_board</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if this run is using a virtual machine</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

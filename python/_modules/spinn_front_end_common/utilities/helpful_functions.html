@@ -100,16 +100,16 @@
 <div class="viewcode-block" id="locate_extra_monitor_mc_receiver"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">[docs]</a><span class="k">def</span> <span class="nf">locate_extra_monitor_mc_receiver</span><span class="p">(</span>
         <span class="n">machine</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span>
         <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param machine: The machine descriptor</span>
-<span class="sd">    :type machine: ~spinn_machine.Machine</span>
-<span class="sd">    :param placement_x: The X coordinate of the reference chip</span>
-<span class="sd">    :type placement_x: int</span>
-<span class="sd">    :param placement_y: The Y coordinate of the reference chip</span>
-<span class="sd">    :type placement_y: int</span>
+    <span class="sd">&quot;&quot;&quot; Get the data speed up gatherer that can be used to talk to a\</span>
+<span class="sd">        particular chip. This will be on the same board.</span>
+
+<span class="sd">    :param ~spinn_machine.Machine machine: The machine descriptor</span>
+<span class="sd">    :param int placement_x: The X coordinate of the reference chip</span>
+<span class="sd">    :param int placement_y: The Y coordinate of the reference chip</span>
 <span class="sd">    :param packet_gather_cores_to_ethernet_connection_map:</span>
-<span class="sd">    :type: dict(tuple(int,int),?)</span>
-<span class="sd">    :rtype: ?</span>
+<span class="sd">    :type packet_gather_cores_to_ethernet_connection_map:</span>
+<span class="sd">        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
+<span class="sd">    :rtype: DataSpeedUpPacketGatherMachineVertex</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">[</span>
@@ -117,20 +117,16 @@
 
 
 <div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">data_format</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Reads and converts a single data item from memory</span>
+    <span class="sd">&quot;&quot;&quot; Reads and converts a single data item from memory.</span>
 
-<span class="sd">    :param x: chip x</span>
-<span class="sd">    :type x: int</span>
-<span class="sd">    :param y: chip y</span>
-<span class="sd">    :type y: int</span>
-<span class="sd">    :param address: base address of the SDRAM chip to read</span>
-<span class="sd">    :type address: int</span>
-<span class="sd">    :param length: length to read</span>
-<span class="sd">    :type length: int</span>
-<span class="sd">    :param data_format: the format to read memory (see `struct.pack`)</span>
-<span class="sd">    :type data_format: str</span>
-<span class="sd">    :param transceiver: the SpinnMan interface</span>
-<span class="sd">    :type transceiver: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    :param int x: chip x</span>
+<span class="sd">    :param int y: chip y</span>
+<span class="sd">    :param int address: base address of the SDRAM chip to read</span>
+<span class="sd">    :param int length: length to read</span>
+<span class="sd">    :param str data_format:</span>
+<span class="sd">        the format to read memory (see :py:func:`struct.pack`)</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        the SpinnMan interface</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=too-many-arguments</span>
 
@@ -141,30 +137,26 @@
 <div class="viewcode-block" id="write_address_to_user0"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user0">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user0</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Writes the given address into the user_0 register of the given core.</span>
 
-<span class="sd">    :param txrx: The transceiver.</span>
-<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
-<span class="sd">    :param x: Chip coordinate.</span>
-<span class="sd">    :type x: int</span>
-<span class="sd">    :param y: Chip coordinate.</span>
-<span class="sd">    :type y: int</span>
-<span class="sd">    :param p: Core ID on chip.</span>
-<span class="sd">    :type p: int</span>
-<span class="sd">    :param address: Value to write (32-bit integer)</span>
-<span class="sd">    :type address: int</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
+<span class="sd">    :param int x: Chip coordinate.</span>
+<span class="sd">    :param int y: Chip coordinate.</span>
+<span class="sd">    :param int p: Core ID on chip.</span>
+<span class="sd">    :param int address: Value to write (32-bit integer)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">user_0_address</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_user_0_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_0_address</span><span class="p">,</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">address</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get the address of a region for a placement</span>
+    <span class="sd">&quot;&quot;&quot; Get the address of a region for a placement.</span>
 
-<span class="sd">    :param region: the region to locate the base address of</span>
-<span class="sd">    :type region: int</span>
-<span class="sd">    :param placement: the placement object to get the region address of</span>
-<span class="sd">    :type placement: ~pacman.model.placements.Placement</span>
-<span class="sd">    :param transceiver: the python interface to the SpiNNaker machine</span>
-<span class="sd">    :type transceiver: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">    :param int region: the region to locate the base address of</span>
+<span class="sd">    :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        the placement object to get the region address of</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        the python interface to the SpiNNaker machine</span>
+<span class="sd">    :return: the address</span>
+<span class="sd">    :rtype: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">regions_base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
         <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -182,7 +174,7 @@
 <div class="viewcode-block" id="convert_string_into_chip_and_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_string_into_chip_and_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_string_into_chip_and_core_subset</span><span class="p">(</span><span class="n">cores</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Translate a string list of cores into a core subset</span>
 
-<span class="sd">    :param cores:\</span>
+<span class="sd">    :param cores:</span>
 <span class="sd">        string representing down cores formatted as x,y,p[:x,y,p]*</span>
 <span class="sd">    :type cores: str or None</span>
 <span class="sd">    :rtype: ~spinn_machine.CoreSubsets</span>
@@ -196,17 +188,13 @@
 
 
 <div class="viewcode-block" id="flood_fill_binary_to_spinnaker"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker">[docs]</a><span class="k">def</span> <span class="nf">flood_fill_binary_to_spinnaker</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; flood fills a binary to spinnaker on a given app_id \</span>
-<span class="sd">    given the executable targets and binary.</span>
+    <span class="sd">&quot;&quot;&quot; Flood fills a binary to spinnaker on a given `app_id` \</span>
+<span class="sd">        given the executable targets and binary.</span>
 
-<span class="sd">    :param executable_targets: the executable targets object</span>
-<span class="sd">    :type executable_targets: ExecutableTargets</span>
-<span class="sd">    :param binary: the (name of the) binary to flood fill</span>
-<span class="sd">    :type binary: str</span>
-<span class="sd">    :param txrx: spinnman instance</span>
-<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
-<span class="sd">    :param app_id: the app id to load it on</span>
-<span class="sd">    :type app_id: int</span>
+<span class="sd">    :param ExecutableTargets executable_targets: the executable targets object</span>
+<span class="sd">    :param str binary: the (name of the) binary to flood fill</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: spinnman instance</span>
+<span class="sd">    :param int app_id: the application ID to load it as</span>
 <span class="sd">    :return: the number of cores it was loaded onto</span>
 <span class="sd">    :rtype: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -220,11 +208,10 @@
     <span class="sd">&quot;&quot;&quot; Get the string value of a config item, returning None if the value\</span>
 <span class="sd">        is &quot;None&quot;</span>
 
-<span class="sd">    :param config: The configuration to look things up in.</span>
-<span class="sd">    :param section: The section name</span>
-<span class="sd">    :type section: str</span>
-<span class="sd">    :param item: The item name.</span>
-<span class="sd">    :type item: str</span>
+<span class="sd">    :param ~configparser.ConfigParser config:</span>
+<span class="sd">        The configuration to look things up in.</span>
+<span class="sd">    :param str section: The section name</span>
+<span class="sd">    :param str item: The item name.</span>
 <span class="sd">    :rtype: str or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">value</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
@@ -237,11 +224,10 @@
     <span class="sd">&quot;&quot;&quot; Get the integer value of a config item, returning None if the value\</span>
 <span class="sd">        is &quot;None&quot;</span>
 
-<span class="sd">    :param config: The configuration to look things up in.</span>
-<span class="sd">    :param section: The section name</span>
-<span class="sd">    :type section: str</span>
-<span class="sd">    :param item: The item name.</span>
-<span class="sd">    :type item: str</span>
+<span class="sd">    :param ~configparser.ConfigParser config:</span>
+<span class="sd">        The configuration to look things up in.</span>
+<span class="sd">    :param str section: The section name</span>
+<span class="sd">    :param str item: The item name.</span>
 <span class="sd">    :rtype: int or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">value</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
@@ -259,11 +245,10 @@
     <span class="sd">&quot;&quot;&quot; Get the boolean value of a config item, returning None if the value\</span>
 <span class="sd">        is &quot;None&quot;</span>
 
-<span class="sd">    :param config: The configuration to look things up in.</span>
-<span class="sd">    :param section: The section name</span>
-<span class="sd">    :type section: str</span>
-<span class="sd">    :param item: The item name.</span>
-<span class="sd">    :type item: str</span>
+<span class="sd">    :param ~configparser.ConfigParser config:</span>
+<span class="sd">        The configuration to look things up in.</span>
+<span class="sd">    :param str section: The section name</span>
+<span class="sd">    :param str item: The item name.</span>
 <span class="sd">    :rtype: bool or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">value</span> <span class="o">=</span> <span class="n">read_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
@@ -278,12 +263,10 @@
 <div class="viewcode-block" id="generate_unique_folder_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.generate_unique_folder_name">[docs]</a><span class="k">def</span> <span class="nf">generate_unique_folder_name</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">extension</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Generate a unique file name with a given extension in a given folder</span>
 
-<span class="sd">    :param folder: where to put this unique file</span>
-<span class="sd">    :type folder: str</span>
-<span class="sd">    :param filename: the name of the first part of the file without extension</span>
-<span class="sd">    :type filename: str</span>
-<span class="sd">    :param extension: extension of the file</span>
-<span class="sd">    :type extension: str</span>
+<span class="sd">    :param str folder: where to put this unique file</span>
+<span class="sd">    :param str filename:</span>
+<span class="sd">        the name of the first part of the file without extension</span>
+<span class="sd">    :param str extension: extension of the file</span>
 <span class="sd">    :return: file path with a unique addition</span>
 <span class="sd">    :rtype: str</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -299,13 +282,11 @@
 <div class="viewcode-block" id="get_ethernet_chip"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.get_ethernet_chip">[docs]</a><span class="k">def</span> <span class="nf">get_ethernet_chip</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">board_address</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Locate the chip with the given board IP address</span>
 
-<span class="sd">    :param machine: the SpiNNaker machine</span>
-<span class="sd">    :type machine: ~spinn_machine.Machine</span>
-<span class="sd">    :param board_address: the board address to locate the chip of.</span>
-<span class="sd">    :type board_address: str</span>
+<span class="sd">    :param ~spinn_machine.Machine machine: the SpiNNaker machine</span>
+<span class="sd">    :param str board_address: the board address to locate the chip of.</span>
 <span class="sd">    :return: The chip that supports that board address</span>
 <span class="sd">    :rtype: ~spinn_machine.Chip</span>
-<span class="sd">    :raises ConfigurationException:\</span>
+<span class="sd">    :raises ConfigurationException:</span>
 <span class="sd">        when that board address has no chip associated with it</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">:</span>
@@ -319,6 +300,7 @@
 <div class="viewcode-block" id="convert_time_diff_to_total_milliseconds"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_time_diff_to_total_milliseconds">[docs]</a><span class="k">def</span> <span class="nf">convert_time_diff_to_total_milliseconds</span><span class="p">(</span><span class="n">sample</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Convert between a time diff and total milliseconds.</span>
 
+<span class="sd">    :param ~datetime.timedelta sample:</span>
 <span class="sd">    :return: total milliseconds</span>
 <span class="sd">    :rtype: float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -328,11 +310,9 @@
 <div class="viewcode-block" id="determine_flow_states"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.determine_flow_states">[docs]</a><span class="k">def</span> <span class="nf">determine_flow_states</span><span class="p">(</span><span class="n">executable_types</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get the start and end states for these executable types.</span>
 
-<span class="sd">    :param executable_types: \</span>
+<span class="sd">    :param dict(ExecutableType,any) executable_types:</span>
 <span class="sd">        the execute types to locate start and end states from</span>
-<span class="sd">    :type executable_types: dict(ExecutableType,any)</span>
-<span class="sd">    :param no_sync_changes: the number of times sync signals been sent</span>
-<span class="sd">    :type no_sync_changes: int</span>
+<span class="sd">    :param int no_sync_changes: the number of times sync signals been sent</span>
 <span class="sd">    :return: dict of executable type to states.</span>
 <span class="sd">    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),\</span>
 <span class="sd">        dict(ExecutableType,~spinnman.model.enums.CPUState))</span>
@@ -371,9 +351,10 @@
 <div class="viewcode-block" id="convert_vertices_to_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_vertices_to_core_subset</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Converts vertices into core subsets.</span>
 
-<span class="sd">    :param vertices: the vertices to convert to core subsets</span>
-<span class="sd">    :param placements: the placements object</span>
-<span class="sd">    :type placements: ~pacman.model.placements.Placements</span>
+<span class="sd">    :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:</span>
+<span class="sd">        the vertices to convert to core subsets</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        the placements object</span>
 <span class="sd">    :return: the CoreSubSets of the vertices</span>
 <span class="sd">    :rtype: ~spinn_machine.CoreSubsets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -385,7 +366,10 @@
 
 
 <div class="viewcode-block" id="find_executable_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.find_executable_start_type">[docs]</a><span class="k">def</span> <span class="nf">find_executable_start_type</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:</span>
+<span class="sd">    :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">elif</span> <span class="n">graph_mapper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -397,6 +381,10 @@
 
 
 <span class="k">def</span> <span class="nf">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param ~.Transceiver txrx:</span>
+<span class="sd">    :param int app_id:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=broad-except</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">rte_count</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_core_state_count</span><span class="p">(</span>
@@ -430,6 +418,10 @@
 
 <span class="c1"># TRICKY POINT: Have to delay the import to here because of import circularity</span>
 <span class="k">def</span> <span class="nf">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param ~.Transceiver txrx:</span>
+<span class="sd">    :param ExecutableTargets executable_targets:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=protected-access</span>
     <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ChipIOBufExtractor</span><span class="p">)</span>
@@ -442,17 +434,15 @@
 
 <div class="viewcode-block" id="emergency_recover_state_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.emergency_recover_state_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_state_from_failure</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
-<span class="sd">    goes badly wrong. Not a replacement for what abstract spinnaker base does.</span>
+<span class="sd">        goes badly wrong. Not a replacement for what abstract spinnaker base\</span>
+<span class="sd">        does.</span>
 
-<span class="sd">    :param txrx: The transceiver.</span>
-<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
-<span class="sd">    :param app_id: The ID of the application.</span>
-<span class="sd">    :type app_id: int</span>
-<span class="sd">    :param vertex: The vertex to retrieve the IOBUF from if it is suspected\</span>
-<span class="sd">        as being dead</span>
-<span class="sd">    :type vertex: \</span>
-<span class="sd">        ~spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary</span>
-<span class="sd">    :param placement: Where the vertex is located.</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
+<span class="sd">    :param int app_id: The ID of the application.</span>
+<span class="sd">    :param AbstractHasAssociatedBinary vertex:</span>
+<span class="sd">        The vertex to retrieve the IOBUF from if it is suspected as being dead</span>
+<span class="sd">    :param ~pacman.model.placements.Placement placement:</span>
+<span class="sd">        Where the vertex is located.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=protected-access</span>
     <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
@@ -467,14 +457,12 @@
 
 <div class="viewcode-block" id="emergency_recover_states_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.emergency_recover_states_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_states_from_failure</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
-<span class="sd">    goes badly wrong. Not a replacement for what abstract spinnaker base does.</span>
+<span class="sd">        goes badly wrong. Not a replacement for what abstract spinnaker base\</span>
+<span class="sd">        does.</span>
 
-<span class="sd">    :param txrx: The transceiver.</span>
-<span class="sd">    :type txrx: ~spinnman.transceiver.Transceiver</span>
-<span class="sd">    :param app_id: The ID of the application.</span>
-<span class="sd">    :type app_id: int</span>
-<span class="sd">    :param executable_targets: The what/where mapping</span>
-<span class="sd">    :type executable_targets: ExecutableTargets</span>
+<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
+<span class="sd">    :param int app_id: The ID of the application.</span>
+<span class="sd">    :param ExecutableTargets executable_targets: The what/where mapping</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
     <span class="n">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">)</span></div>

@@ -84,7 +84,17 @@
 
 <div class="viewcode-block" id="SpallocMaxMachineGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.SpallocMaxMachineGenerator">[docs]</a><span class="k">class</span> <span class="nc">SpallocMaxMachineGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Generates a maximum virtual machine a given allocation server can\</span>
-<span class="sd">        generate</span>
+<span class="sd">        generate.</span>
+
+<span class="sd">    :param str spalloc_server:</span>
+<span class="sd">    :param int spalloc_port:</span>
+<span class="sd">    :param str spalloc_machine:</span>
+<span class="sd">    :param int max_sdram_size:</span>
+<span class="sd">    :param int max_machine_core_reduction: the number of cores less than</span>
+<span class="sd">        :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`</span>
+<span class="sd">        that each chip should have</span>
+<span class="sd">    :return: A virtual machine</span>
+<span class="sd">    :rtype: ~spinn_machine.Machine</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
@@ -93,14 +103,12 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_port</span><span class="o">=</span><span class="mi">22244</span><span class="p">,</span> <span class="n">spalloc_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_machine_core_reduction</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param spalloc_server:</span>
-<span class="sd">        :param spalloc_port:</span>
-<span class="sd">        :param spalloc_machine:</span>
-<span class="sd">        :param max_sdram_size:</span>
-<span class="sd">        :param max_machine_core_reduction: the number of cores less than</span>
-<span class="sd">            Machine.MAX_CORES_PER_CHIP that each chip should have</span>
-<span class="sd">        :return: A virtual machine</span>
+<span class="sd">        :param str spalloc_server:</span>
+<span class="sd">        :param int spalloc_port:</span>
+<span class="sd">        :param str spalloc_machine:</span>
+<span class="sd">        :param int max_sdram_size:</span>
+<span class="sd">        :param int max_machine_core_reduction:</span>
+<span class="sd">        :rtype: ~.Machine</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">ProtocolClient</span><span class="p">(</span><span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_port</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
             <span class="n">machines</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">list_machines</span><span class="p">()</span>
@@ -136,12 +144,22 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_filter</span><span class="p">(</span><span class="n">machines</span><span class="p">,</span> <span class="n">target_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(dict(str,str)) machines:</span>
+<span class="sd">        :param str target_name:</span>
+<span class="sd">        :rtype: iterable(dict(str,str or int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">target_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">machines</span> <span class="k">if</span> <span class="s2">&quot;default&quot;</span> <span class="ow">in</span> <span class="n">m</span><span class="p">[</span><span class="s2">&quot;tags&quot;</span><span class="p">])</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">machines</span> <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">target_name</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_size</span><span class="p">(</span><span class="n">machine</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param dict(str,int) machine:</span>
+<span class="sd">        :return: width, height, area</span>
+<span class="sd">        :rtype: tuple(int,int,int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Get the width and height in chips</span>
         <span class="n">width</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span>
         <span class="n">height</span> <span class="o">=</span> <span class="n">machine</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">12</span>

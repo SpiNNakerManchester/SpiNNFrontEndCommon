@@ -88,18 +88,28 @@
 
 
 <div class="viewcode-block" id="PreAllocateResourcesForExtraMonitorSupport"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.PreAllocateResourcesForExtraMonitorSupport">[docs]</a><span class="k">class</span> <span class="nc">PreAllocateResourcesForExtraMonitorSupport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Allocates resources for the extra monitors.</span>
+
+<span class="sd">    :param ~spinn_machine.Machine machine: SpiNNaker machine object</span>
+<span class="sd">    :param pre_allocated_resources: resources already preallocated</span>
+<span class="sd">    :type pre_allocated_resources:</span>
+<span class="sd">        ~pacman.model.resources.PreAllocatedResourceContainer</span>
+<span class="sd">    :param int n_cores_to_allocate: how many gatherers to use per chip</span>
+<span class="sd">    :rtype: ~pacman.model.resources.PreAllocatedResourceContainer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">n_cores_to_allocate</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param machine: SpiNNaker machine object</span>
-<span class="sd">        :param pre_allocated_resources: resources already preallocated</span>
-<span class="sd">        :param n_cores_to_allocate: how many gatherers to use</span>
+<span class="sd">        :param ~.Machine machine:</span>
+<span class="sd">        :param ~.PreAllocatedResourceContainer pre_allocated_resources:</span>
+<span class="sd">        :param int n_cores_to_allocate:</span>
+<span class="sd">        :rtype: ~.PreAllocatedResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">))</span> <span class="o">+</span> <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span><span class="p">,</span>
-            <span class="s2">&quot;Pre allocating resources for Extra Monitor support vertices&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;Preallocating resources for Extra Monitor support vertices&quot;</span><span class="p">)</span>
 
         <span class="n">sdrams</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">cores</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -131,10 +141,9 @@
         <span class="sd">&quot;&quot;&quot; Adds the second monitor preallocations, which reflect the\</span>
 <span class="sd">            reinjector and data extractor support</span>
 
-<span class="sd">        :param cores: the storage of core requirements</span>
-<span class="sd">        :param machine: the spinnMachine instance</span>
-<span class="sd">        :param progress: the progress bar to operate one</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param list(~.CoreResource) cores: the storage of core requirements</span>
+<span class="sd">        :param ~.Machine machine: the spinnMachine instance</span>
+<span class="sd">        :param ~.ProgressBar progress: the progress bar to operate one</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">extra_usage</span> <span class="o">=</span> \
             <span class="n">ExtraMonitorSupportMachineVertex</span><span class="o">.</span><span class="n">static_resources_required</span><span class="p">()</span>
@@ -149,14 +158,16 @@
         <span class="sd">&quot;&quot;&quot; Adds the packet gathering functionality tied into the data\</span>
 <span class="sd">            extractor within each chip</span>
 
-<span class="sd">        :param sdrams: the preallocated SDRAM requirement for these vertices</span>
-<span class="sd">        :param cores: the preallocated cores requirement for these vertices</span>
-<span class="sd">        :param tags: the preallocated tags requirement for these vertices</span>
-<span class="sd">        :param machine: the spinnMachine instance</span>
-<span class="sd">        :param progress: the progress bar to update as needed</span>
-<span class="sd">        :param n_cores_to_allocate: \</span>
+<span class="sd">        :param list(~.SpecificChipSDRAMResource) sdrams:</span>
+<span class="sd">            the preallocated SDRAM requirement for these vertices</span>
+<span class="sd">        :param list(~.CoreResource) cores:</span>
+<span class="sd">            the preallocated cores requirement for these vertices</span>
+<span class="sd">        :param list(~.SpecificBoardIPtagResource) tags:</span>
+<span class="sd">            the preallocated tags requirement for these vertices</span>
+<span class="sd">        :param ~.Machine machine: the spinnMachine instance</span>
+<span class="sd">        :param ~.ProgressBar progress: the progress bar to update as needed</span>
+<span class="sd">        :param int n_cores_to_allocate:</span>
 <span class="sd">            how many packet gathers to allocate per chip</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 

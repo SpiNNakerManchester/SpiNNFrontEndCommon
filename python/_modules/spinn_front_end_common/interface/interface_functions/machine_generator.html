@@ -85,7 +85,51 @@
 
 
 <div class="viewcode-block" id="MachineGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineGenerator">[docs]</a><span class="k">class</span> <span class="nc">MachineGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Makes a transceiver and a :py:class:`~spinn_machine.Machine` object.</span>
+    <span class="sd">&quot;&quot;&quot; Makes a transceiver and a machine object.</span>
+
+<span class="sd">    :param str hostname:</span>
+<span class="sd">        the hostname or IP address of the SpiNNaker machine</span>
+<span class="sd">    :param str bmp_details: the details of the BMP connections</span>
+<span class="sd">    :param set(tuple(int,int)) downed_chips:</span>
+<span class="sd">        the chips that are down which SARK thinks are alive</span>
+<span class="sd">    :param set(tuple(int,int,int)) downed_cores:</span>
+<span class="sd">        the cores that are down which SARK thinks are alive</span>
+<span class="sd">    :param set(tuple(int,int,int)) downed_links:</span>
+<span class="sd">        the links that are down which SARK thinks are alive</span>
+<span class="sd">    :param int board_version:</span>
+<span class="sd">        the version of the boards being used within the machine</span>
+<span class="sd">        (1, 2, 3, 4 or 5)</span>
+<span class="sd">    :param bool auto_detect_bmp:</span>
+<span class="sd">        Whether the BMP should be automatically determined</span>
+<span class="sd">    :param scamp_connection_data:</span>
+<span class="sd">        the list of SC&amp;MP connection data or None</span>
+<span class="sd">    :type scamp_connection_data:</span>
+<span class="sd">        list(~spinnman.connections.SocketAddressWithChip)</span>
+<span class="sd">    :param int boot_port_num: the port number used for the boot connection</span>
+<span class="sd">    :param bool reset_machine_on_start_up:</span>
+<span class="sd">    :param max_sdram_size: the maximum SDRAM each chip can say it has</span>
+<span class="sd">        (mainly used in debugging purposes)</span>
+<span class="sd">    :type max_sdram_size: int or None</span>
+<span class="sd">    :param bool repair_machine:</span>
+<span class="sd">        Flag to set the behaviour if a repairable error is found on the</span>
+<span class="sd">        machine.</span>
+<span class="sd">        If `True` will create a machine without the problematic bits.</span>
+<span class="sd">        (See machine_factory.machine_repair)</span>
+<span class="sd">        If `False`, get machine will raise an Exception if a problematic</span>
+<span class="sd">        machine is discovered.</span>
+<span class="sd">    :param bool ignore_bad_ethernets:</span>
+<span class="sd">        Flag to say that ip_address information</span>
+<span class="sd">        on non-ethernet chips should be ignored.</span>
+<span class="sd">        Non-ethernet chips are defined here as ones that do not report</span>
+<span class="sd">        themselves their nearest ethernet.</span>
+<span class="sd">        The bad IP address is always logged.</span>
+<span class="sd">        If True, the IP address is ignored.</span>
+<span class="sd">        If False, the chip with the bad IP address is removed.</span>
+<span class="sd">    :param str default_report_directory:</span>
+<span class="sd">        Directory to write any reports too.</span>
+<span class="sd">        If None the current directory will be used.</span>
+<span class="sd">    :return: Transceiver, and description of machine it is connected to</span>
+<span class="sd">    :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
@@ -97,41 +141,21 @@
             <span class="n">max_sdram_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">repair_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">ignore_bad_ethernets</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param hostname: the hostname or IP address of the SpiNNaker machine</span>
-<span class="sd">        :param bmp_details: the details of the BMP connections</span>
-<span class="sd">        :param downed_chips: \</span>
-<span class="sd">            the chips that are down which SARK thinks are alive</span>
-<span class="sd">        :param downed_cores: \</span>
-<span class="sd">            the cores that are down which SARK thinks are alive</span>
-<span class="sd">        :param board_version: the version of the boards being used within the\</span>
-<span class="sd">            machine (1, 2, 3, 4 or 5)</span>
-<span class="sd">        :param auto_detect_bmp: \</span>
-<span class="sd">            Whether the BMP should be automatically determined</span>
-<span class="sd">        :type auto_detect_bmp: bool</span>
-<span class="sd">        :param boot_port_num: the port number used for the boot connection</span>
-<span class="sd">        :type boot_port_num: int</span>
-<span class="sd">        :param scamp_connection_data: \</span>
-<span class="sd">            the list of SC&amp;MP connection data or None</span>
-<span class="sd">        :param max_sdram_size: the maximum SDRAM each chip can say it has\</span>
-<span class="sd">            (mainly used in debugging purposes)</span>
+<span class="sd">        :param str hostname:</span>
+<span class="sd">        :param str bmp_details:</span>
+<span class="sd">        :param set(tuple(int,int)) downed_chips:</span>
+<span class="sd">        :param set(tuple(int,int,int)) downed_cores:</span>
+<span class="sd">        :param set(tuple(int,int,int)) downed_links:</span>
+<span class="sd">        :param int board_version:</span>
+<span class="sd">        :param bool auto_detect_bmp:</span>
+<span class="sd">        :param list(~.SocketAddressWithChip) scamp_connection_data:</span>
+<span class="sd">        :param int boot_port_num:</span>
+<span class="sd">        :param bool reset_machine_on_start_up:</span>
+<span class="sd">        :param max_sdram_size:</span>
 <span class="sd">        :type max_sdram_size: int or None</span>
-<span class="sd">        :type reset_machine_on_start_up: bool</span>
-<span class="sd">        :param repair_machine: Flag to set the behaviour if a repairable error</span>
-<span class="sd">            is found on the machine.</span>
-<span class="sd">            If true will create a machine without the problematic bits.</span>
-<span class="sd">            (See machine_factory.machine_repair)</span>
-<span class="sd">            If False get machine will raise an Exception if a problematic</span>
-<span class="sd">            machine is discovered.</span>
-<span class="sd">        :type repair_machine: bool</span>
-<span class="sd">        :param ignore_bad_ethernets: Flag to say that ip_address information</span>
-<span class="sd">            on non-ethernet chips should be ignored.</span>
-<span class="sd">            None_ethernet chips are defined here as ones that do not report</span>
-<span class="sd">            themselves their nearest ethernet.</span>
-<span class="sd">            The bad IP address is always logged.</span>
-<span class="sd">            If True, the IP address is ignored.</span>
-<span class="sd">            If False, the chip with the bad IP address is removed.</span>
-<span class="sd">        :type ignore_bad_ethernets: bool</span>
-<span class="sd">        :return: Connection details and Transceiver</span>
+<span class="sd">        :param bool repair_machine:</span>
+<span class="sd">        :param bool ignore_bad_ethernets:</span>
+<span class="sd">        :param str default_report_directory:</span>
 <span class="sd">        :rtype: tuple(~spinnman.transceiver.Transceiver, \</span>
 <span class="sd">            ~spinn_machine.Machine)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -169,6 +193,11 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_parse_scamp_connection</span><span class="p">(</span><span class="n">scamp_connection</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str scamp_connection:</span>
+<span class="sd">        :rtype: ~.SocketAddressWithChip</span>
+<span class="sd">        :raises Exception: If the parse fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pieces</span> <span class="o">=</span> <span class="n">scamp_connection</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pieces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
             <span class="n">port_num</span> <span class="o">=</span> <span class="kc">None</span>
@@ -186,6 +215,10 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_parse_bmp_cabinet_and_frame</span><span class="p">(</span><span class="n">bmp_cabinet_and_frame</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str bmp_cabinet_and_frame:</span>
+<span class="sd">        :rtype: tuple(int or str, int or str, str, str or None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">split_string</span> <span class="o">=</span> <span class="n">bmp_cabinet_and_frame</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_string</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">host</span> <span class="o">=</span> <span class="n">split_string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
@@ -204,6 +237,10 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_parse_bmp_boards</span><span class="p">(</span><span class="n">bmp_boards</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str bmp_boards:</span>
+<span class="sd">        :rtype: list(int)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If the string is a range of boards, get the range</span>
         <span class="n">range_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)-(\d+)&quot;</span><span class="p">,</span> <span class="n">bmp_boards</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">range_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -217,7 +254,11 @@
         <span class="sd">&quot;&quot;&quot; Parses one item of BMP connection data. Maximal format:\</span>
 <span class="sd">            `cabinet;frame;host,port/boards`</span>
 <span class="sd">            All parts except host can be omitted. Boards can be a \</span>
-<span class="sd">            hyphen-separated range or a comma-separated list.&quot;&quot;&quot;</span>
+<span class="sd">            hyphen-separated range or a comma-separated list.</span>
+
+<span class="sd">        :param str bmp_detail:</span>
+<span class="sd">        :rtype: ~.BMPConnectionData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pieces</span> <span class="o">=</span> <span class="n">bmp_detail</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="n">cabinet</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">port_num</span><span class="p">)</span> <span class="o">=</span> \
             <span class="bp">self</span><span class="o">.</span><span class="n">_parse_bmp_cabinet_and_frame</span><span class="p">(</span><span class="n">pieces</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -230,8 +271,9 @@
         <span class="sd">&quot;&quot;&quot; Take a BMP line (a colon-separated list) and split it into the\</span>
 <span class="sd">            BMP connection data.</span>
 
-<span class="sd">        :param bmp_string: the BMP string to be converted</span>
+<span class="sd">        :param str bmp_string: the BMP string to be converted</span>
 <span class="sd">        :return: the BMP connection data</span>
+<span class="sd">        :rtype: list(~.BMPConnectionData) or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">bmp_string</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">bmp_string</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>

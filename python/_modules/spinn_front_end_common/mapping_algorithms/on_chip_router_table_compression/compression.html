@@ -100,7 +100,7 @@
         <span class="n">routing_tables</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span>
         <span class="n">system_provenance_folder</span><span class="p">,</span> <span class="n">compress_only_when_needed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Load routing tables and compress then using Mundy&#39;s algorithm</span>
+    <span class="sd">&quot;&quot;&quot; Load routing tables and compress them using Mundy&#39;s algorithm.</span>
 
 <span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
 <span class="sd">        the memory routing tables to be compressed</span>
@@ -132,7 +132,7 @@
         <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
         <span class="n">compress_only_when_needed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Load routing tables and compress then using Pair Algorithm</span>
+    <span class="sd">&quot;&quot;&quot; Load routing tables and compress then using the Pair Algorithm.</span>
 
 <span class="sd">    See pacman/operations/router_compressors/pair_compressor.py which is the</span>
 <span class="sd">    exact same algorithm implemented in Python.</span>
@@ -191,7 +191,7 @@
 <span class="sd">        :param bool compress_only_when_needed:</span>
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param str provenance_file_path:</span>
-<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables</span>
+<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables \</span>
 <span class="sd">                routing_tables:</span>
 <span class="sd">        :param ~spinnman.Transceiver transceiver:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -206,6 +206,7 @@
 
 <div class="viewcode-block" id="Compression.compress"><a class="viewcode-back" href="../../../../spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.html#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.compress">[docs]</a>    <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Apply the on-machine compression algorithm.</span>
+
 <span class="sd">        :param int register: number of user register to check</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
@@ -256,8 +257,7 @@
 
     <span class="k">def</span> <span class="nf">_load_routing_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables</span>
-<span class="sd">                routing_table:</span>
+<span class="sd">        :param ~.MulticastRoutingTables routing_table:</span>
 <span class="sd">            the pacman router table instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_data</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
@@ -318,7 +318,7 @@
     <span class="k">def</span> <span class="nf">_load_executables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Loads the router compressor onto the chips.</span>
 
-<span class="sd">        :return:\</span>
+<span class="sd">        :return:</span>
 <span class="sd">            the executable targets that represent all cores/chips which have\</span>
 <span class="sd">            active routing tables</span>
 <span class="sd">        :rtype: ExecutableTargets</span>
@@ -349,8 +349,7 @@
         <span class="sd">&quot;&quot;&quot; Convert the router table into the data needed by the router\</span>
 <span class="sd">            compressor c code.</span>
 
-<span class="sd">        :param ~pacman.model.routing_tables.MulticastRoutingTables</span>
-<span class="sd">                routing_table:</span>
+<span class="sd">        :param ~.MulticastRoutingTables routing_table:</span>
 <span class="sd">            the pacman router table instance</span>
 <span class="sd">        :return: The byte array of data</span>
 <span class="sd">        :rtype: bytearray</span>

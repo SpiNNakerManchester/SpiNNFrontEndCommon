@@ -87,16 +87,23 @@
 
 
 <div class="viewcode-block" id="FindApplicationChipsUsed"><a class="viewcode-back" href="../../../spinn_front_end_common.mapping_algorithms.html#spinn_front_end_common.mapping_algorithms.find_application_chips_used.FindApplicationChipsUsed">[docs]</a><span class="k">class</span> <span class="nc">FindApplicationChipsUsed</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; builds a set of stats on how many chips were used for application</span>
-<span class="sd">    sided cores.</span>
+    <span class="sd">&quot;&quot;&quot; Builds a set of stats on how many chips were used for application\</span>
+<span class="sd">        cores.</span>
 
+<span class="sd">    :param ~pacman.model.placements.Placements placements: placements</span>
+<span class="sd">    :return: a tuple with 4 elements.</span>
+<span class="sd">    1. how many chips were used</span>
+<span class="sd">    2. the max application cores on any given chip</span>
+<span class="sd">    3. the lowest number of application cores on any given chip</span>
+<span class="sd">    4. the average number of application cores on any given chip</span>
+<span class="sd">    :rtype: tuple(int,int,int,float)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; finds how many application chips there were and the cost on</span>
-<span class="sd">        each chip</span>
+        <span class="sd">&quot;&quot;&quot; Finds how many application chips there were and the cost on \</span>
+<span class="sd">            each chip</span>
 
-<span class="sd">        :param placements: placements</span>
+<span class="sd">        :param ~.Placements placements: placements</span>
 <span class="sd">        :param graph_mapper: the graph mapper.</span>
 <span class="sd">        :return: a tuple with 4 elements.</span>
 <span class="sd">        1. how many chips were used</span>
@@ -115,16 +122,17 @@
 
         <span class="n">low</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">maxsize</span>
         <span class="n">high</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">average</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">n_chips_used</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chips_used</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">chips_used</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">chips_used</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">low</span><span class="p">:</span>
                 <span class="n">low</span> <span class="o">=</span> <span class="n">chips_used</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">chips_used</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">high</span><span class="p">:</span>
                 <span class="n">high</span> <span class="o">=</span> <span class="n">chips_used</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="n">average</span> <span class="o">+=</span> <span class="n">chips_used</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="n">average</span> <span class="o">=</span> <span class="n">average</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">chips_used</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">chips_used</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="n">high</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">average</span></div>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">chips_used</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">average</span> <span class="o">=</span> <span class="n">total</span> <span class="o">/</span> <span class="n">n_chips_used</span>
+        <span class="k">return</span> <span class="n">n_chips_used</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">average</span></div>
 </pre></div>
 
           </div>

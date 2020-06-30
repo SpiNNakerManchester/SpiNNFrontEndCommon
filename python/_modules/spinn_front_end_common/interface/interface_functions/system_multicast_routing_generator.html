@@ -101,16 +101,22 @@
 <span class="sd">    :type extra_monitor_cores:</span>
 <span class="sd">        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)</span>
 <span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">    :return: routing tables, destination-to-key map,</span>
+<span class="sd">        board-locn-to-timeout-key map</span>
+<span class="sd">    :rtype: tuple(MulticastRoutingTables,</span>
+<span class="sd">        dict(tuple(int,int),int), dict(tuple(int,int),int))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_monitors&quot;</span><span class="p">,</span> <span class="s2">&quot;_machine&quot;</span><span class="p">,</span> <span class="s2">&quot;_key_to_destination_map&quot;</span><span class="p">,</span>
                  <span class="s2">&quot;_placements&quot;</span><span class="p">,</span> <span class="s2">&quot;_routing_tables&quot;</span><span class="p">,</span> <span class="s2">&quot;_time_out_keys_by_board&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :type machine: ~spinn_machine.Machine</span>
-<span class="sd">        :type extra_monitor_cores:</span>
-<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)</span>
-<span class="sd">        :type placements: ~pacman.model.placements.Placements</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex) \</span>
+<span class="sd">                extra_monitor_cores:</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        :rtype: tuple(MulticastRoutingTables,</span>
+<span class="sd">            dict(tuple(int,int),int), dict(tuple(int,int),int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=attribute-defined-outside-init</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>

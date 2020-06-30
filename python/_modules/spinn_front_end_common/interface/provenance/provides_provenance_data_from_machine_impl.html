@@ -129,6 +129,7 @@
     <span class="k">def</span> <span class="nf">_provenance_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :return: provenance_region_id</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
     <span class="nd">@abstractproperty</span>
@@ -155,8 +156,8 @@
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">NUM_PROVENANCE_DATA_ENTRIES</span>
-             <span class="o">+</span> <span class="n">n_additional_data_items</span><span class="p">)</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span></div>
+            <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">NUM_PROVENANCE_DATA_ENTRIES</span> <span class="o">+</span> <span class="n">n_additional_data_items</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_get_provenance_region_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -328,7 +329,7 @@
 <span class="sd">            How to talk to the machine</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            Which vertex are we retrieving from, and where was it</span>
-<span class="sd">        :rtype: \</span>
+<span class="sd">        :rtype:</span>
 <span class="sd">            list(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span>

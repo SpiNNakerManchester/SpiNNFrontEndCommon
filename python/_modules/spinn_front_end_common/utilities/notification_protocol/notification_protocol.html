@@ -97,7 +97,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;__database_message_connections&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;_sent_visualisation_confirmation&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__sent_visualisation_confirmation&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__socket_addresses&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_for_read_confirmation&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_futures&quot;</span><span class="p">,</span>
@@ -117,7 +117,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span> <span class="o">=</span> <span class="n">wait_for_read_confirmation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">socket_address</span> <span class="ow">in</span> <span class="n">socket_addresses</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EIEIOConnection</span><span class="p">(</span>
@@ -197,14 +197,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyBroadException</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_do_read_notify</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__do_read_notify</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem when sending DB notification&quot;</span><span class="p">,</span>
                            <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_do_read_notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">True</span>
-
+    <span class="k">def</span> <span class="nf">__do_read_notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
         <span class="c1"># add file path to database into command message.</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">database_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
                 <span class="nb">len</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MAX_DATABASE_PATH_LENGTH</span><span class="p">):</span>
@@ -230,6 +228,8 @@
                     <span class="s2">&quot;about the database ***&quot;</span><span class="p">,</span>
                     <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">True</span>
+
         <span class="c1"># if the system needs to wait, try receiving a packet back</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -243,6 +243,14 @@
                     <span class="s2">&quot;*** Failed to receive notification from external &quot;</span>
                     <span class="s2">&quot;application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> about the database ***&quot;</span><span class="p">,</span>
                     <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sent_visualisation_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Whether the external application has actually been notified yet.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span>
 
 <div class="viewcode-block" id="NotificationProtocol.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Closes the thread pool</span>

@@ -164,7 +164,7 @@
 
 
 <div class="viewcode-block" id="AbstractSpinnakerBase"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">[docs]</a><span class="k">class</span> <span class="nc">AbstractSpinnakerBase</span><span class="p">(</span><span class="n">ConfigHandler</span><span class="p">,</span> <span class="n">SimulatorInterface</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Main interface into the tools logic flow</span>
+    <span class="sd">&quot;&quot;&quot; Main interface into the tools logic flow.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=broad-except</span>
 
@@ -422,31 +422,25 @@
             <span class="n">default_config_paths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">validation_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">front_end_versions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param configfile: What the configuration file is called</span>
-<span class="sd">        :type configfile: str</span>
-<span class="sd">        :param executable_finder: How to find APLX files to deploy to SpiNNaker</span>
-<span class="sd">        :type executable_finder: \</span>
-<span class="sd">            ~spinn_utilities.executable_finder.ExecutableFinder</span>
-<span class="sd">        :param graph_label: A label for the overall application graph</span>
-<span class="sd">        :type graph_label: str</span>
-<span class="sd">        :param database_socket_addresses: How to talk to notification databases</span>
-<span class="sd">        :type database_socket_addresses: \</span>
-<span class="sd">            iterable(~spinn_utilities.socket_address.SocketAddress)</span>
-<span class="sd">        :param extra_algorithm_xml_paths: \</span>
+<span class="sd">        :param str configfile: What the configuration file is called</span>
+<span class="sd">        :param ~spinn_utilities.executable_finder.ExecutableFinder \</span>
+<span class="sd">                executable_finder:</span>
+<span class="sd">            How to find APLX files to deploy to SpiNNaker</span>
+<span class="sd">        :param str graph_label: A label for the overall application graph</span>
+<span class="sd">        :param iterable(~spinn_utilities.socket_address.SocketAddress) \</span>
+<span class="sd">                database_socket_addresses:</span>
+<span class="sd">            How to talk to notification databases</span>
+<span class="sd">        :param iterable(str) extra_algorithm_xml_paths:</span>
 <span class="sd">            Where to load definitions of extra algorithms from</span>
-<span class="sd">        :type extra_algorithm_xml_paths: iterable(str)</span>
-<span class="sd">        :param n_chips_required: \</span>
+<span class="sd">        :param int n_chips_required:</span>
 <span class="sd">            Overrides the number of chips to allocate from spalloc</span>
-<span class="sd">        :type n_chips_required: int</span>
-<span class="sd">        :param n_boards_required: \</span>
+<span class="sd">        :param int n_boards_required:</span>
 <span class="sd">            Overrides the number of boards to allocate from spalloc</span>
-<span class="sd">        :type n_boards_required: int</span>
-<span class="sd">        :param default_config_paths: Directories to load configurations from</span>
-<span class="sd">        :type default_config_paths: list(str)</span>
-<span class="sd">        :param validation_cfg: How to validate configuration files</span>
-<span class="sd">        :type validation_cfg: str</span>
-<span class="sd">        :param front_end_versions: information about what software is in use</span>
-<span class="sd">        :type front_end_versions: list(tuple(str,str))</span>
+<span class="sd">        :param list(str) default_config_paths:</span>
+<span class="sd">            Directories to load configurations from</span>
+<span class="sd">        :param str validation_cfg: How to validate configuration files</span>
+<span class="sd">        :param list(tuple(str,str)) front_end_versions:</span>
+<span class="sd">            Information about what software is in use</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">ConfigHandler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -593,13 +587,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertices_or_edges_added</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.set_n_boards_required"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_n_boards_required">[docs]</a>    <span class="k">def</span> <span class="nf">set_n_boards_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_boards_required</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the machine requirements.</span>
+        <span class="sd">&quot;&quot;&quot; Sets the machine requirements.</span>
 
-<span class="sd">        Warning: This method should not be called after the machine</span>
-<span class="sd">        requirements have be computed based on the graph.</span>
+<span class="sd">        .. warning::</span>
 
-<span class="sd">        :param n_boards_required: The number of boards required</span>
+<span class="sd">            This method should not be called after the machine</span>
+<span class="sd">            requirements have be computed based on the graph.</span>
+
+<span class="sd">        :param int n_boards_required: The number of boards required</span>
 <span class="sd">        :raises: ConfigurationException</span>
 <span class="sd">            If any machine requirements have already been set</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -618,8 +613,7 @@
         <span class="sd">&quot;&quot;&quot; Supply extra inputs to the mapping algorithms. Mappings are from\</span>
 <span class="sd">            known names (the logical type names) to the values to bind to them.</span>
 
-<span class="sd">        :param extra_inputs: The additional inputs to provide</span>
-<span class="sd">        :type extra_inputs: dict(str,any)</span>
+<span class="sd">        :param dict(str,any) extra_inputs: The additional inputs to provide</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -631,8 +625,7 @@
         <span class="sd">&quot;&quot;&quot; Supply extra inputs to the runtime algorithms. Mappings are from\</span>
 <span class="sd">            known names (the logical type names) to the values to bind to them.</span>
 
-<span class="sd">        :param extra_inputs: The additional inputs to provide</span>
-<span class="sd">        :type extra_inputs: dict(str,any)</span>
+<span class="sd">        :param dict(str,any) extra_inputs: The additional inputs to provide</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -644,8 +637,7 @@
         <span class="sd">&quot;&quot;&quot; Add custom mapping algorithms to the end of the sequence of \</span>
 <span class="sd">            mapping algorithms to be run.</span>
 
-<span class="sd">        :param extra_mapping_algorithms: Algorithms to add</span>
-<span class="sd">        :type extra_mapping_algorithms: list</span>
+<span class="sd">        :param list(str) extra_mapping_algorithms: Algorithms to add</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -657,8 +649,7 @@
         <span class="sd">&quot;&quot;&quot; Add custom pre-execution algorithms to the front of the sequence \</span>
 <span class="sd">            of algorithms to be run.</span>
 
-<span class="sd">        :param extra_pre_run_algorithms: Algorithms to add</span>
-<span class="sd">        :type extra_pre_run_algorithms: list</span>
+<span class="sd">        :param list(str) extra_pre_run_algorithms: Algorithms to add</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -670,8 +661,7 @@
         <span class="sd">&quot;&quot;&quot; Add custom post-execution algorithms to the sequence of \</span>
 <span class="sd">            such algorithms to be run.</span>
 
-<span class="sd">        :param extra_post_run_algorithms: Algorithms to add</span>
-<span class="sd">        :type extra_post_run_algorithms: list</span>
+<span class="sd">        :param list(str) extra_post_run_algorithms: Algorithms to add</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -683,8 +673,7 @@
         <span class="sd">&quot;&quot;&quot; Add custom data-loading algorithms to the sequence of \</span>
 <span class="sd">            such algorithms to be run.</span>
 
-<span class="sd">        :param extra_load_algorithms: Algorithms to add</span>
-<span class="sd">        :type extra_load_algorithms: list</span>
+<span class="sd">        :param list(str) extra_load_algorithms: Algorithms to add</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -694,6 +683,8 @@
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_extraction_timing"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_extraction_timing">[docs]</a>    <span class="k">def</span> <span class="nf">add_extraction_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timing</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Record the time taken for doing data extraction.</span>
+
+<span class="sd">        :param ~datetime.timedelta timing:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ms</span> <span class="o">=</span> <span class="n">convert_time_diff_to_total_milliseconds</span><span class="p">(</span><span class="n">timing</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_extraction_time</span> <span class="o">+=</span> <span class="n">ms</span></div>
@@ -701,15 +692,17 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_live_packet_gatherer_parameters"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">add_live_packet_gatherer_parameters</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gatherer_params</span><span class="p">,</span> <span class="n">vertex_to_record_from</span><span class="p">,</span>
             <span class="n">partition_ids</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds params for a new LPG if needed, or adds to the tracker for\</span>
-<span class="sd">            same params.</span>
+        <span class="sd">&quot;&quot;&quot; Adds parameters for a new LPG if needed, or adds to the tracker \</span>
+<span class="sd">            for parameters. Note that LPGs can be inserted to track behaviour \</span>
+<span class="sd">            either at the application graph level or at the machine graph \</span>
+<span class="sd">            level, but not both at the same time.</span>
 
-<span class="sd">        :param live_packet_gatherer_params: params to look for a LPG</span>
-<span class="sd">        :param vertex_to_record_from: \</span>
+<span class="sd">        :param LivePacketGatherParameters live_packet_gatherer_params:</span>
+<span class="sd">            params to look for a LPG</span>
+<span class="sd">        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:</span>
 <span class="sd">            the vertex that needs to send to a given LPG</span>
-<span class="sd">        :param partition_ids: \</span>
+<span class="sd">        :param list(str) partition_ids:</span>
 <span class="sd">            the IDs of the partitions to connect from the vertex</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">[</span><span class="n">live_packet_gatherer_params</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">(</span><span class="n">vertex_to_record_from</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">))</span>
@@ -737,11 +730,9 @@
         <span class="s2">&quot;clear_iobuf_during_run&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf&quot;</span><span class="p">,</span> <span class="s2">&quot;extract_iobuf_during_run&quot;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.set_up_machine_specifics"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics">[docs]</a>    <span class="k">def</span> <span class="nf">set_up_machine_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds machine specifics for the different modes of execution</span>
+        <span class="sd">&quot;&quot;&quot; Adds machine specifics for the different modes of execution.</span>
 
-<span class="sd">        :param hostname: machine name</span>
-<span class="sd">        :type hostname: str</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param str hostname: machine name</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">hostname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span> <span class="o">=</span> <span class="n">hostname</span>
@@ -796,9 +787,9 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.exception_handler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">[docs]</a>    <span class="k">def</span> <span class="nf">exception_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Handler of exceptions</span>
 
-<span class="sd">        :param exctype:  the type of execution received</span>
-<span class="sd">        :param value: the value of the exception</span>
-<span class="sd">        :param traceback_obj: the trace back stuff</span>
+<span class="sd">        :param type exctype: the type of exception received</span>
+<span class="sd">        :param Exception value: the value of the exception</span>
+<span class="sd">        :param traceback traceback_obj: the trace back stuff</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Shutdown on exception&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
@@ -817,8 +808,9 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.run_until_complete"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete">[docs]</a>    <span class="k">def</span> <span class="nf">run_until_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Run a simulation until it completes</span>
 
-<span class="sd">        :param n_steps: If not None, this specifies that the simulation should\</span>
-<span class="sd">            be requested to run for the given number of steps.  The host will\</span>
+<span class="sd">        :param int n_steps:</span>
+<span class="sd">            If not None, this specifies that the simulation should be</span>
+<span class="sd">            requested to run for the given number of steps.  The host will</span>
 <span class="sd">            still wait until the simulation itself says it has completed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">True</span>
@@ -826,10 +818,6 @@
 
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">run</span><span class="p">)</span>
 <div class="viewcode-block" id="AbstractSpinnakerBase.run"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Run a simulation for a fixed amount of time</span>
-
-<span class="sd">        :param run_time: the run duration in milliseconds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_build_graphs_for_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -868,9 +856,9 @@
 
 <span class="sd">        :param run_time: time user requested to run for in milliseconds</span>
 <span class="sd">        :type run_time: float or None</span>
-<span class="sd">        :return: n_machine_time_steps as a whole int and\</span>
+<span class="sd">        :return: n_machine_time_steps as a whole int and</span>
 <span class="sd">            total_run_time in milliseconds</span>
-<span class="sd">        :rtype: (int,float) or (None, None)</span>
+<span class="sd">        :rtype: tuple(int,float) or tuple(None,None)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
@@ -906,9 +894,9 @@
         <span class="k">return</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span>
 
     <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The main internal run function</span>
+        <span class="sd">&quot;&quot;&quot; The main internal run function.</span>
 
-<span class="sd">        :param run_time: the run duration in milliseconds.</span>
+<span class="sd">        :param int run_time: the run duration in milliseconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verify_not_running</span><span class="p">()</span>
 
@@ -1164,11 +1152,10 @@
         <span class="sd">&quot;&quot;&quot; Generates the list of &quot;timer&quot; runs. These are usually in terms of\</span>
 <span class="sd">            time steps, but need not be.</span>
 
-<span class="sd">        :param n_steps: the total runtime in machine time steps</span>
-<span class="sd">        :type n_steps: int</span>
-<span class="sd">        :param n_steps_per_segment: the minimum allowed per chunk</span>
-<span class="sd">        :type n_steps_per_segment: int</span>
-<span class="sd">        :return: list of time steps</span>
+<span class="sd">        :param int n_steps: the total runtime in machine time steps</span>
+<span class="sd">        :param int n_steps_per_segment: the minimum allowed per chunk</span>
+<span class="sd">        :return: list of time step lengths</span>
+<span class="sd">        :rtype: list(int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">n_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1193,14 +1180,15 @@
             <span class="n">provenance_name</span><span class="p">,</span> <span class="n">optional_algorithms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Runs getting a SpiNNaker machine logic</span>
 
-<span class="sd">        :param inputs: the inputs</span>
-<span class="sd">        :param algorithms: algorithms to call</span>
-<span class="sd">        :param outputs: outputs to get</span>
-<span class="sd">        :param tokens: The tokens to start with</span>
-<span class="sd">        :param required_tokens: The tokens that must be generated</span>
-<span class="sd">        :param optional_algorithms: optional algorithms to use</span>
-<span class="sd">        :param provenance_name: the name for provenance</span>
-<span class="sd">        :return: None</span>
+<span class="sd">        :param dict(str,any) inputs: the inputs</span>
+<span class="sd">        :param list(str) algorithms: algorithms to call</span>
+<span class="sd">        :param list(str) outputs: outputs to get</span>
+<span class="sd">        :param list(str) tokens: The tokens to start with</span>
+<span class="sd">        :param list(str) required_tokens: The tokens that must be generated</span>
+<span class="sd">        :param str provenance_name: the name for provenance</span>
+<span class="sd">        :param list(str) optional_algorithms: optional algorithms to use</span>
+<span class="sd">        :return: the executor that did the running of the algorithms</span>
+<span class="sd">        :rtype: ~.PACMANAlgorithmExecutor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">optional</span> <span class="o">=</span> <span class="n">optional_algorithms</span>
@@ -1233,6 +1221,13 @@
             <span class="n">reraise</span><span class="p">(</span><span class="o">*</span><span class="n">exc_info</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param float total_run_time:</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :rtype: ~spinn_machine.Machine</span>
+<span class="sd">        :raises ConfigurationException:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span>
 
@@ -1272,6 +1267,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_hostname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param float total_run_time:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine_common</span><span class="p">(</span>
             <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1295,6 +1295,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_tokens</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_completed_tokens</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_virtual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param float total_run_time:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine_common</span><span class="p">(</span>
             <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1325,9 +1330,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachine&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Gets a machine when we know one of self._spalloc_server or\</span>
-<span class="sd">            self._remote_spinnaker_url is defined</span>
+        <span class="sd">&quot;&quot;&quot; Gets a machine when we know one of `self._spalloc_server` or</span>
+<span class="sd">            `self._remote_spinnaker_url` is defined</span>
+
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param float total_run_time:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_machine_common</span><span class="p">(</span>
             <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
@@ -1379,16 +1387,16 @@
                 <span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Checks if we can get a remote machine by size of if we have to use a\</span>
-<span class="sd">        virtual machine to get the size</span>
+        <span class="sd">&quot;&quot;&quot; Checks if we can get a remote machine by size of if we have to \</span>
+<span class="sd">            use a virtual machine to get the size</span>
 
-<span class="sd">        Adds the requires info to inputs, algorithms, outputs</span>
+<span class="sd">        Adds the required info to inputs, algorithms, outputs</span>
 
-<span class="sd">        :param inputs: Data to go into executor</span>
-<span class="sd">        :param algorithms: Algorithms to execute</span>
-<span class="sd">        :param outputs: Data needed after execution</span>
-<span class="sd">        :return: True if and only if the required steps included partitioning</span>
+<span class="sd">        :param dict(str,any) inputs: Data to go into executor; will be updated</span>
+<span class="sd">        :param list(str) algorithms: Algorithms to execute; will be updated</span>
+<span class="sd">        :param list(str) outputs: Data needed after execution; will be updated</span>
+<span class="sd">        :return: True if and only if the required steps include partitioning</span>
+<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If we are using an allocation server but have been told how</span>
         <span class="c1"># many chips to use, just use that as an input</span>
@@ -1435,6 +1443,13 @@
         <span class="k">return</span> <span class="n">do_partitioning</span>
 
     <span class="k">def</span> <span class="nf">_get_machine_common</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param float total_run_time:</span>
+<span class="sd">        :return: inputs, algorithms</span>
+<span class="sd">        :rtype: tuple(dict(str,any), list(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_inputs</span><span class="p">)</span>
         <span class="n">algorithms</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -1509,7 +1524,8 @@
         <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span>
 
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Add the version information to the provenance data at the start</span>
+        <span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">version_provenance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">version_provenance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
             <span class="p">[</span><span class="s2">&quot;version_data&quot;</span><span class="p">,</span> <span class="s2">&quot;spinn_utilities_version&quot;</span><span class="p">],</span> <span class="n">spinn_utils_version</span><span class="p">))</span>
@@ -1539,7 +1555,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_version_provenance</span> <span class="o">=</span> <span class="n">version_provenance</span>
 
     <span class="k">def</span> <span class="nf">_do_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
-
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param float run_time:</span>
+<span class="sd">        :param float total_run_time:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># time the time it takes to do all pacman stuff</span>
         <span class="n">mapping_total_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
         <span class="n">mapping_total_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
@@ -1788,7 +1807,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_outputs</span><span class="p">[</span><span class="s2">&quot;MappingTimeMs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_time</span>
 
     <span class="k">def</span> <span class="nf">_do_data_generation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">):</span>
-
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int n_machine_time_steps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># set up timing</span>
         <span class="n">data_gen_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
         <span class="n">data_gen_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
@@ -1823,6 +1844,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_outputs</span><span class="p">[</span><span class="s2">&quot;DSGTimeMs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_time</span>
 
     <span class="k">def</span> <span class="nf">_do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">data_changed</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bool graph_changed:</span>
+<span class="sd">        :param bool data_changed:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># set up timing</span>
         <span class="n">load_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
         <span class="n">load_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
@@ -1946,9 +1971,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extraction_time</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_gather_provenance_for_writing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executor</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; handled the gathering of prov items for writer.</span>
+        <span class="sd">&quot;&quot;&quot; Handles the gathering of provenance items for writer.</span>
 
-<span class="sd">        :param executor: the pacman executor.</span>
+<span class="sd">        :param ~pacman.executor.PACMANAlgorithmExecutor executor:</span>
+<span class="sd">            the pacman executor.</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">prov_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -1973,6 +1999,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prov_items</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param bool graph_changed:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># start timer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
@@ -2035,6 +2066,11 @@
             <span class="n">reraise</span><span class="p">(</span><span class="o">*</span><span class="n">e_inf</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_execute_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param n_machine_time_steps:</span>
+<span class="sd">        :type n_machine_time_steps: int or None</span>
+<span class="sd">        :param bool graph_changed:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># calculate number of machine time steps</span>
         <span class="n">run_until_timesteps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_number_of_machine_time_steps</span><span class="p">(</span>
             <span class="n">n_machine_time_steps</span><span class="p">)</span>
@@ -2170,7 +2206,9 @@
             <span class="n">provenance_name</span><span class="o">=</span><span class="s2">&quot;Execution&quot;</span><span class="p">),</span> <span class="n">run_until_timesteps</span>
 
     <span class="k">def</span> <span class="nf">_write_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provenance_data_items</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Write provenance to disk</span>
+        <span class="sd">&quot;&quot;&quot; Write provenance to disk.</span>
+
+<span class="sd">        :param list(ProvenanceDataItem) provenance_data_items:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">writer</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2187,6 +2225,11 @@
         <span class="n">writer</span><span class="p">(</span><span class="n">provenance_data_items</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_recover_from_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">,</span> <span class="n">exc_info</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param Exception exception:</span>
+<span class="sd">        :param tuple(type,Exception,traceback) exc_info:</span>
+<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if exception has an exception, print to system</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;An error has occurred during simulation&quot;</span><span class="p">)</span>
         <span class="c1"># Print the detail including the traceback</span>
@@ -2318,6 +2361,10 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_print_iobuf</span><span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="n">warnings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(str) errors:</span>
+<span class="sd">        :param list(str) warnings:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">warning</span> <span class="ow">in</span> <span class="n">warnings</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">warning</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">:</span>
@@ -2346,6 +2393,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__reset_graph_elements</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_create_xml_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_algorithm_xml_paths</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param list(str) extra_algorithm_xml_paths:</span>
+<span class="sd">        :rtype: list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># add the extra xml files from the config file</span>
         <span class="n">xml_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;extra_xmls_paths&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">xml_paths</span> <span class="o">==</span> <span class="s2">&quot;None&quot;</span><span class="p">:</span>
@@ -2361,7 +2412,11 @@
         <span class="k">return</span> <span class="n">xml_paths</span>
 
     <span class="k">def</span> <span class="nf">_detect_if_graph_has_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Iterates though the original graphs and look for changes</span>
+        <span class="sd">&quot;&quot;&quot; goes though the original graphs looking for changes.</span>
+
+<span class="sd">        :param bool reset_flags:</span>
+<span class="sd">        :return: mapping_changed, data_changed</span>
+<span class="sd">        :rtype: tuple(bool, bool)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">data_changed</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2432,32 +2487,50 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">machine_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~pacman.model.graphs.machine.MachineGraph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">original_machine_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~pacman.model.graphs.machine.MachineGraph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">original_application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~pacman.model.graphs.application.ApplicationGraph</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The application graph used to derive the runtime machine \</span>
 <span class="sd">            configuration.</span>
+
+<span class="sd">        :rtype: ~pacman.model.graphs.application.ApplicationGraph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">routing_infos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~pacman.model.routing_info.RoutingInfo</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span>
 
     <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">placements</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span>
 
@@ -2471,6 +2544,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span>
 
     <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span>
 
@@ -2482,6 +2556,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dsg_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The DSG algorithm used by the tools</span>
+
+<span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_algorithm</span>
 
@@ -2489,14 +2565,15 @@
     <span class="k">def</span> <span class="nf">dsg_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_dsg_algorithm</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the DSG algorithm to be used by the tools</span>
 
-<span class="sd">        :param new_dsg_algorithm: the new DSG algorithm name</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param str new_dsg_algorithm: the new DSG algorithm name</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_algorithm</span> <span class="o">=</span> <span class="n">new_dsg_algorithm</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">none_labelled_edge_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The number of times edges have not been labelled.</span>
+
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_none_labelled_edge_count</span>
 
@@ -2508,6 +2585,8 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">use_virtual_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; True if this run is using a virtual machine</span>
+
+<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span>
 
@@ -2525,8 +2604,7 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.get_generated_output"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_generated_output">[docs]</a>    <span class="k">def</span> <span class="nf">get_generated_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_of_variable</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the value of an inter-algorithm variable.</span>
 
-<span class="sd">        :param name_of_variable: The variable to retrieve</span>
-<span class="sd">        :type name_of_variable: str</span>
+<span class="sd">        :param str name_of_variable: The variable to retrieve</span>
 <span class="sd">        :return: The value (of arbitrary type), or None if the variable is \</span>
 <span class="sd">            not found.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2543,9 +2621,8 @@
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_application_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param vertex: the vertex to add to the graph</span>
-<span class="sd">        :type: ApplicationVertex</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationVertex vertex:</span>
+<span class="sd">            the vertex to add to the graph</span>
 <span class="sd">        :raises ConfigurationException: when both graphs contain vertices</span>
 <span class="sd">        :raises PacmanConfigurationException:</span>
 <span class="sd">            If there is an attempt to add the same vertex more than once</span>
@@ -2560,9 +2637,8 @@
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_machine_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex">[docs]</a>    <span class="k">def</span> <span class="nf">add_machine_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param vertex: the vertex to add to the graph</span>
-<span class="sd">        :type: MachineVertex</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineVertex vertex:</span>
+<span class="sd">            the vertex to add to the graph</span>
 <span class="sd">        :raises ConfigurationException: when both graphs contain vertices</span>
 <span class="sd">        :raises PacmanConfigurationException:</span>
 <span class="sd">            If there is an attempt to add the same vertex more than once</span>
@@ -2577,12 +2653,10 @@
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_application_edge"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge_to_add</span><span class="p">,</span> <span class="n">partition_identifier</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param edge_to_add:</span>
-<span class="sd">        :type: ApplicationEdge</span>
-<span class="sd">        :param partition_identifier: \</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationEdge edge_to_add:</span>
+<span class="sd">            the edge to add to the graph</span>
+<span class="sd">        :param str partition_identifier:</span>
 <span class="sd">            the partition identifier for the outgoing edge partition</span>
-<span class="sd">        :type partition_identifier: str</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
             <span class="n">edge_to_add</span><span class="p">,</span> <span class="n">partition_identifier</span><span class="p">)</span>
@@ -2590,12 +2664,10 @@
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_machine_edge"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_machine_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param edge: the edge to add to the graph</span>
-<span class="sd">        :type: MachineEdge</span>
-<span class="sd">        :param partition_id: \</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineEdge edge:</span>
+<span class="sd">            the edge to add to the graph</span>
+<span class="sd">        :param str partition_id:</span>
 <span class="sd">            the partition identifier for the outgoing edge partition</span>
-<span class="sd">        :type partition_id: str</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertices_or_edges_added</span> <span class="o">=</span> <span class="kc">True</span></div>
@@ -2603,6 +2675,11 @@
     <span class="k">def</span> <span class="nf">_shutdown</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">clear_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bool turn_off_machine:</span>
+<span class="sd">        :param bool clear_routing_tables:</span>
+<span class="sd">        :param bool clear_tags:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span>
 
         <span class="c1"># if on a virtual machine then shut down not needed</span>
@@ -2645,6 +2722,10 @@
                 <span class="s2">&quot;Error when closing Notifications&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear_tags</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bool clear_tags:</span>
+<span class="sd">        :param bool clear_routing_tables:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># if stopping on machine, clear IP tags and</span>
         <span class="k">if</span> <span class="n">clear_tags</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">ip_tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">ip_tags</span><span class="p">:</span>
@@ -2671,6 +2752,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__close_transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bool turn_off_machine:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">turn_off_machine</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Turning off machine&quot;</span><span class="p">)</span>
@@ -2689,17 +2773,14 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=arguments-differ</span>
              <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param turn_off_machine: decides if the machine should be powered down\</span>
-<span class="sd">            after running the execution. Note that this powers down all boards\</span>
-<span class="sd">            connected to the BMP connections given to the transceiver</span>
-<span class="sd">        :type turn_off_machine: bool</span>
-<span class="sd">        :param clear_routing_tables: informs the tool chain if it\</span>
+<span class="sd">        :param bool turn_off_machine:</span>
+<span class="sd">            decides if the machine should be powered down after running the</span>
+<span class="sd">            execution. Note that this powers down all boards connected to the</span>
+<span class="sd">            BMP connections given to the transceiver</span>
+<span class="sd">        :param bool clear_routing_tables: informs the tool chain if it</span>
 <span class="sd">            should turn off the clearing of the routing tables</span>
-<span class="sd">        :type clear_routing_tables: bool</span>
-<span class="sd">        :param clear_tags: informs the tool chain if it should clear the tags\</span>
-<span class="sd">            off the machine at stop</span>
-<span class="sd">        :type clear_tags: boolean</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param bool clear_tags: informs the tool chain if it should clear the</span>
+<span class="sd">            tags off the machine at stop</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="s2">&quot;Simulator has already been shutdown&quot;</span><span class="p">)</span>
@@ -2762,6 +2843,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">write_finished_file</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_create_stop_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :rtype: ~.PACMANAlgorithmExecutor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span>
         <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_tokens</span>
         <span class="n">algorithms</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2840,15 +2924,16 @@
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">add_socket_address</span><span class="p">)</span>
 <div class="viewcode-block" id="AbstractSpinnakerBase.add_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address">[docs]</a>    <span class="k">def</span> <span class="nf">add_socket_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_address</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param socket_address: The address of the database socket</span>
-<span class="sd">        :type socket_address: ~spinn_utilities.socket_address.SocketAddress</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~spinn_utilities.socket_address.SocketAddress socket_address:</span>
+<span class="sd">            The address of the database socket</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_database_socket_addresses</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">socket_address</span><span class="p">)</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_check_provenance</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">initial_message</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Display any errors from provenance data.</span>
+
+<span class="sd">        :param str initial_message:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">initial_message_printed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
@@ -2862,9 +2947,7 @@
         <span class="sd">&quot;&quot;&quot; Executes the power saving mode of either on or off of the\</span>
 <span class="sd">            SpiNNaker machine.</span>
 
-<span class="sd">        :param config_flag: Flag read from the configuration file</span>
-<span class="sd">        :type config_flag: str</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param str config_flag: Flag read from the configuration file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check if machine should be turned off</span>
         <span class="n">turn_off</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_boolean</span><span class="p">(</span><span class="s2">&quot;EnergySavings&quot;</span><span class="p">,</span> <span class="n">config_flag</span><span class="p">)</span>

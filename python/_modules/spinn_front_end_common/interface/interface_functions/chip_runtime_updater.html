@@ -84,6 +84,13 @@
 
 <div class="viewcode-block" id="ChipRuntimeUpdater"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ChipRuntimeUpdater">[docs]</a><span class="k">class</span> <span class="nc">ChipRuntimeUpdater</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Updates the runtime of an application running on a SpiNNaker machine.</span>
+
+<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">    :param int app_id:</span>
+<span class="sd">    :param dict(ExecutableType,~spinn_machine.CoreSubsets) executable_types:</span>
+<span class="sd">    :param run_until_timesteps:</span>
+<span class="sd">    :type run_until_timesteps: int or None</span>
+<span class="sd">    :param int current_timesteps:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
@@ -91,7 +98,14 @@
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span> <span class="n">run_until_timesteps</span><span class="p">,</span>
             <span class="n">current_timesteps</span><span class="p">):</span>
-
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Transceiver transceiver:</span>
+<span class="sd">        :param int app_id:</span>
+<span class="sd">        :param dict(ExecutableType,~.CoreSubsets) executable_types:</span>
+<span class="sd">        :param run_until_timesteps:</span>
+<span class="sd">        :type run_until_timesteps: int or None</span>
+<span class="sd">        :param int current_timesteps:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">core_subsets</span> <span class="o">=</span> \
             <span class="n">executable_types</span><span class="p">[</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span><span class="p">]</span>
 
