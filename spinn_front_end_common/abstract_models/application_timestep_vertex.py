@@ -40,7 +40,7 @@ class ApplicationTimestepVertex(ApplicationVertex):
         :type max_atoms_per_core: int
         :param timestep_in_us: The timestep in us for ALL macnine vertexes\
             mapped to this vertex
-        :type timestep_in_us: int
+        :type timestep_in_us: int or None
         :raise PacmanInvalidParameterException:\
             * If one of the constraints is not valid
 

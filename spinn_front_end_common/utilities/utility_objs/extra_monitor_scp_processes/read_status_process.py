@@ -71,7 +71,7 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
                     callback=self.__handle_reinjection_status_response)
         self._finish()
         if self.is_error():
-            logger.warn("Error(s) reading reinjection status:")
+            logger.warning("Error(s) reading reinjection status:")
             for (e, tb) in zip(self._exceptions, self._tracebacks):
                 traceback.print_exception(type(e), e, tb)
         return self._reinjection_status

@@ -37,6 +37,10 @@ from .abstract_vertex_with_dependent_vertices import (
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
 from .abstract_uses_memory_io import AbstractUsesMemoryIO
+from .abstract_supports_bit_field_generation import (
+    AbstractSupportsBitFieldGeneration)
+from .abstract_supports_bit_field_routing_compression import (
+    AbstractSupportsBitFieldRoutingCompression)
 from .abstract_can_reset import AbstractCanReset
 from .application_fpga_vertex import ApplicationFPGAVertex
 from .application_spinnaker_link_vertex import ApplicationSpiNNakerLinkVertex
@@ -55,5 +59,7 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractVertexWithEdgeToDependentVertices",
            "AbstractUsesMemoryIO", "AbstractCanReset",
            "ApplicationFPGAVertex", "ApplicationSpiNNakerLinkVertex",
-           "ApplicationTimestepVertex"
-           ]
+           "ApplicationTimestepVertex",
+           "AbstractUsesMemoryIO", "AbstractCanReset",
+           "AbstractSupportsBitFieldGeneration",
+           "AbstractSupportsBitFieldRoutingCompression"]

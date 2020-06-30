@@ -20,12 +20,12 @@ import struct
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinnman.model.cpu_infos import CPUInfos
 from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .globals_variables import get_simulator
 from .constants import BYTES_PER_WORD
 
@@ -321,13 +321,15 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 
 def find_executable_start_type(machine_vertex, graph_mapper=None):
-    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
-        return machine_vertex.get_binary_start_type()
-    if graph_mapper is not None:
+
+    if not isinstance(machine_vertex, AbstractHasAssociatedBinary):
+        return None
+    elif graph_mapper is not None:
         app_vertex = graph_mapper.get_application_vertex(machine_vertex)
         if isinstance(app_vertex, AbstractHasAssociatedBinary):
             return app_vertex.get_binary_start_type()
-    return None
+    else:
+        return machine_vertex.get_binary_start_type()
 
 
 def _emergency_state_check(txrx, app_id):
@@ -371,8 +373,7 @@ def _emergency_iobuf_extract(txrx, executable_targets):
     extractor = ChipIOBufExtractor(
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor(txrx, executable_targets, sim._executable_finder,
-              sim._app_provenance_file_path, sim._system_provenance_file_path,
-              sim._mapping_outputs["BinaryToExecutableType"])
+              sim._app_provenance_file_path, sim._system_provenance_file_path)
 
 
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
@@ -394,7 +395,9 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     target = ExecutableTargets()
     path = get_simulator()._executable_finder.get_executable_path(
         vertex.get_binary_file_name())
-    target.place_binary(path, placement, vertex.get_binary_start_type())
+    target.add_processor(
+        path, placement.x, placement.y, placement.p,
+        vertex.get_binary_start_type())
     _emergency_iobuf_extract(txrx, target)
 
 

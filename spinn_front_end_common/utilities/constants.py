@@ -25,9 +25,16 @@ LIVE_GATHERER_CORE_APPLICATION_ID = 0xAC0
 COMMAND_SENDER_CORE_APPLICATION_ID = 0xAC6
 SPIKE_INJECTOR_CORE_APPLICATION_ID = 0xAC9
 
+# how many bits there are in a word
 BITS_PER_WORD = 32.0
+
+# start of where SDRAM starts (either unbuffered or buffered)
 SDRAM_BASE_ADDR = 0x70000000
+
+# the ITCM max safe limit for a binary
 MAX_SAFE_BINARY_SIZE = 32 * BYTES_PER_KB
+
+# the ITCM max limit for a bianry
 MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
 # converts between micro and milli seconds
