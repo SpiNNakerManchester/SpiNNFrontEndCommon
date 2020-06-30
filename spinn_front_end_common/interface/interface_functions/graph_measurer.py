@@ -24,22 +24,26 @@ logger = logging.getLogger(__name__)
 
 class GraphMeasurer(object):
     """ Works out how many chips a machine graph needs.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        The machine_graph to measure.
+    :param ~spinn_machine.Machine machine:
+        The machine with respect to which to partition the application graph.
+    :param int plan_n_timesteps: Number of timesteps to plan for.
+    :return: The size of the graph in number of chips.
+    :rtype: int
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph, machine, minimum_simtime_in_us):
         """
-        :param machine_graph: The machine_graph to measure
-        :type machine_graph:\
-            :py:class:`pacman.model.graph.machine.MachineGraph`
-                    :py:class:`pacman.model.graph.machine.MachineGraph`
-        :param machine:\
+<<<<<<< HEAD
+        :param ~.MachineGraph  machine_graph: The machine_graph to measure
+         :param ~.Machine machine:\
             The machine with respect to which to partition the application\
             graph
-        :type machine: :py:class:`spinn_machine.Machine`
-        :param minimum_simtime_in_us: simtime in us to plan for
-        :type minimum_simtime_in_us: int
+        :param int minimum_simtime_in_us: simtime in us to plan for
         :return: The size of the graph in number of chips
         :rtype: int
         """

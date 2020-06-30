@@ -20,6 +20,13 @@ from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 class ChipRuntimeUpdater(object):
     """ Updates the runtime of an application running on a SpiNNaker machine.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+    :param int app_id:
+    :param dict(ExecutableType,~spinn_machine.CoreSubsets) executable_types:
+    :param run_until_timesteps:
+    :type run_until_timesteps: int or None
+    :param int current_timesteps:
     """
 
     __slots__ = []
@@ -27,7 +34,13 @@ class ChipRuntimeUpdater(object):
     def __call__(
             self, txrx, app_id, executable_types, placements,
             run_until_time_in_us, run_from_time_in_us):
-
+        """
+        :param ~.Transceiver transceiver:
+        :param int app_id:
+        :param dict(ExecutableType,~.CoreSubsets) executable_types:
+        :param run_until_time_in_us:
+        :type run_until_time_in_us: int or None
+        """
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 

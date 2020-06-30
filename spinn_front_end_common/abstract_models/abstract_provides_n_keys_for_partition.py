@@ -29,8 +29,8 @@ class AbstractProvidesNKeysForPartition(object):
     def get_n_keys_for_partition(self, partition, graph_mapper):
         """ Get the number of keys required by the given partition of edges.
 
-        :param partition: An partition that comes out of this vertex
-        :type partition: ~pacman.model.graphs.AbstractOutgoingEdgePartition
+        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:
+            An partition that comes out of this vertex
         :param graph_mapper: A mapper between the graphs
         :type graph_mapper: :py:class:`~pacman.model.graph.GraphMapper`
         :return: The number of keys required

@@ -101,7 +101,7 @@ PROVENANCE_TYPE_CUTOFF = 20000
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
-    """ Main interface into the tools logic flow
+    """ Main interface into the tools logic flow.
     """
     # pylint: disable=broad-except
 
@@ -355,31 +355,25 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         """
-        :param configfile: What the configuration file is called
-        :type configfile: str
-        :param executable_finder: How to find APLX files to deploy to SpiNNaker
-        :type executable_finder: \
-            ~spinn_utilities.executable_finder.ExecutableFinder
-        :param graph_label: A label for the overall application graph
-        :type graph_label: str
-        :param database_socket_addresses: How to talk to notification databases
-        :type database_socket_addresses: \
-            iterable(~spinn_utilities.socket_address.SocketAddress)
-        :param extra_algorithm_xml_paths: \
+        :param str configfile: What the configuration file is called
+        :param ~spinn_utilities.executable_finder.ExecutableFinder \
+                executable_finder:
+            How to find APLX files to deploy to SpiNNaker
+        :param str graph_label: A label for the overall application graph
+        :param iterable(~spinn_utilities.socket_address.SocketAddress) \
+                database_socket_addresses:
+            How to talk to notification databases
+        :param iterable(str) extra_algorithm_xml_paths:
             Where to load definitions of extra algorithms from
-        :type extra_algorithm_xml_paths: iterable(str)
-        :param n_chips_required: \
+        :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
-        :type n_chips_required: int
-        :param n_boards_required: \
+        :param int n_boards_required:
             Overrides the number of boards to allocate from spalloc
-        :type n_boards_required: int
-        :param default_config_paths: Directories to load configurations from
-        :type default_config_paths: list(str)
-        :param validation_cfg: How to validate configuration files
-        :type validation_cfg: str
-        :param front_end_versions: information about what software is in use
-        :type front_end_versions: list(tuple(str,str))
+        :param list(str) default_config_paths:
+            Directories to load configurations from
+        :param str validation_cfg: How to validate configuration files
+        :param list(tuple(str,str)) front_end_versions:
+            Information about what software is in use
         """
         # pylint: disable=too-many-arguments
         ConfigHandler.__init__(
@@ -524,13 +518,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._vertices_or_edges_added = False
 
     def set_n_boards_required(self, n_boards_required):
-        """
-        Sets the machine requirements.
+        """ Sets the machine requirements.
 
-        Warning: This method should not be called after the machine
-        requirements have be computed based on the graph.
+        .. warning::
 
-        :param n_boards_required: The number of boards required
+            This method should not be called after the machine
+            requirements have be computed based on the graph.
+
+        :param int n_boards_required: The number of boards required
         :raises: ConfigurationException
             If any machine requirements have already been set
         """
@@ -549,8 +544,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Supply extra inputs to the mapping algorithms. Mappings are from\
             known names (the logical type names) to the values to bind to them.
 
-        :param extra_inputs: The additional inputs to provide
-        :type extra_inputs: dict(str,any)
+        :param dict(str,any) extra_inputs: The additional inputs to provide
         """
         if self.has_ran:
             raise ConfigurationException(
@@ -562,8 +556,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Supply extra inputs to the runtime algorithms. Mappings are from\
             known names (the logical type names) to the values to bind to them.
 
-        :param extra_inputs: The additional inputs to provide
-        :type extra_inputs: dict(str,any)
+        :param dict(str,any) extra_inputs: The additional inputs to provide
         """
         if self.has_ran:
             raise ConfigurationException(
@@ -575,8 +568,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Add custom mapping algorithms to the end of the sequence of \
             mapping algorithms to be run.
 
-        :param extra_mapping_algorithms: Algorithms to add
-        :type extra_mapping_algorithms: list
+        :param list(str) extra_mapping_algorithms: Algorithms to add
         """
         if self.has_ran:
             raise ConfigurationException(
@@ -588,8 +580,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Add custom pre-execution algorithms to the front of the sequence \
             of algorithms to be run.
 
-        :param extra_pre_run_algorithms: Algorithms to add
-        :type extra_pre_run_algorithms: list
+        :param list(str) extra_pre_run_algorithms: Algorithms to add
         """
         if self.has_ran:
             raise ConfigurationException(
@@ -601,8 +592,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Add custom post-execution algorithms to the sequence of \
             such algorithms to be run.
 
-        :param extra_post_run_algorithms: Algorithms to add
-        :type extra_post_run_algorithms: list
+        :param list(str) extra_post_run_algorithms: Algorithms to add
         """
         if self.has_ran:
             raise ConfigurationException(
@@ -614,8 +604,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Add custom data-loading algorithms to the sequence of \
             such algorithms to be run.
 
-        :param extra_load_algorithms: Algorithms to add
-        :type extra_load_algorithms: list
+        :param list(str) extra_load_algorithms: Algorithms to add
         """
         if self.has_ran:
             raise ConfigurationException(
@@ -625,6 +614,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def add_extraction_timing(self, timing):
         """ Record the time taken for doing data extraction.
+
+        :param ~datetime.timedelta timing:
         """
         ms = convert_time_diff_to_total_milliseconds(timing)
         self._extraction_time += ms
@@ -632,15 +623,17 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def add_live_packet_gatherer_parameters(
             self, live_packet_gatherer_params, vertex_to_record_from,
             partition_ids):
-        """ Adds params for a new LPG if needed, or adds to the tracker for\
-            same params.
+        """ Adds parameters for a new LPG if needed, or adds to the tracker \
+            for parameters. Note that LPGs can be inserted to track behaviour \
+            either at the application graph level or at the machine graph \
+            level, but not both at the same time.
 
-        :param live_packet_gatherer_params: params to look for a LPG
-        :param vertex_to_record_from: \
+        :param LivePacketGatherParameters live_packet_gatherer_params:
+            params to look for a LPG
+        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
             the vertex that needs to send to a given LPG
-        :param partition_ids: \
+        :param list(str) partition_ids:
             the IDs of the partitions to connect from the vertex
-        :rtype: None
         """
         self._live_packet_recorder_params[live_packet_gatherer_params].append(
             (vertex_to_record_from, partition_ids))
@@ -668,11 +661,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
     def set_up_machine_specifics(self, hostname):
-        """ Adds machine specifics for the different modes of execution
+        """ Adds machine specifics for the different modes of execution.
 
-        :param hostname: machine name
-        :type hostname: str
-        :rtype: None
+        :param str hostname: machine name
         """
         if hostname is not None:
             self._hostname = hostname
@@ -727,9 +718,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def exception_handler(self, exctype, value, traceback_obj):
         """ Handler of exceptions
 
-        :param exctype:  the type of execution received
-        :param value: the value of the exception
-        :param traceback_obj: the trace back stuff
+        :param type exctype: the type of exception received
+        :param Exception value: the value of the exception
+        :param traceback traceback_obj: the trace back stuff
         """
         logger.error("Shutdown on exception")
         self._shutdown()
@@ -748,8 +739,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def run_until_complete(self, n_steps=None):
         """ Run a simulation until it completes
 
-        :param n_steps: If not None, this specifies that the simulation should\
-            be requested to run for the given number of steps.  The host will\
+        :param int n_steps:
+            If not None, this specifies that the simulation should be
+            requested to run for the given number of steps.  The host will
             still wait until the simulation itself says it has completed
         """
         self._run_until_complete = True
@@ -757,10 +749,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @overrides(SimulatorInterface.run)
     def run(self, run_time):
-        """ Run a simulation for a fixed amount of time
-
-        :param run_time: the run duration in milliseconds.
-        """
         self._run(run_time)
 
     def _build_graphs_for_usage(self):
@@ -799,7 +787,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :param run_time: time user requested to run for in milliseconds
         :type run_time: float or None
         :return: run_time in us
-        :rtype: (int, float) or (None, None)
+        :rtype: int or None
         """
         lcm_timestep = self.lcm_timestep
         if run_time is None:
@@ -843,10 +831,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                     self.__lcm_timestep,  timesteps)
         return self.__lcm_timestep
 
+
     def _run(self, run_time_in_ms):
         """ The main internal run function
 
-        :param run_time_in_us: the run duration in milliseconds.
+        :param int run_time_in_us: the run duration in milliseconds.
         """
         self.verify_not_running()
 
@@ -1149,14 +1138,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_name, optional_algorithms=None):
         """ Runs getting a SpiNNaker machine logic
 
-        :param inputs: the inputs
-        :param algorithms: algorithms to call
-        :param outputs: outputs to get
-        :param tokens: The tokens to start with
-        :param required_tokens: The tokens that must be generated
-        :param optional_algorithms: optional algorithms to use
-        :param provenance_name: the name for provenance
-        :return: None
+        :param dict(str,any) inputs: the inputs
+        :param list(str) algorithms: algorithms to call
+        :param list(str) outputs: outputs to get
+        :param list(str) tokens: The tokens to start with
+        :param list(str) required_tokens: The tokens that must be generated
+        :param str provenance_name: the name for provenance
+        :param list(str) optional_algorithms: optional algorithms to use
+        :return: the executor that did the running of the algorithms
+        :rtype: ~.PACMANAlgorithmExecutor
         """
         # pylint: disable=too-many-arguments
         optional = optional_algorithms
@@ -1189,6 +1179,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*exc_info)
 
     def _get_machine(self, run_time=None):
+        """
+        :param float total_run_time:
+        :rtype: ~spinn_machine.Machine
+        :raises ConfigurationException:
+        """
         if self._machine is not None:
             return self._machine
 
@@ -1331,16 +1326,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "MemoryGraphMapper")
 
     def _machine_by_size(self, inputs, algorithms, outputs):
-        """
-        Checks if we can get a remote machine by size of if we have to use a\
-        virtual machine to get the size
+        """ Checks if we can get a remote machine by size of if we have to \
+            use a virtual machine to get the size
 
-        Adds the requires info to inputs, algorithms, outputs
+        Adds the required info to inputs, algorithms, outputs
 
-        :param inputs: Data to go into executor
-        :param algorithms: Algorithms to execute
-        :param outputs: Data needed after execution
-        :return: True if and only if the required steps included partitioning
+        :param dict(str,any) inputs: Data to go into executor; will be updated
+        :param list(str) algorithms: Algorithms to execute; will be updated
+        :param list(str) outputs: Data needed after execution; will be updated
+        :return: True if and only if the required steps include partitioning
+        :rtype: bool
         """
         # If we are using an allocation server but have been told how
         # many chips to use, just use that as an input
@@ -1476,7 +1471,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return inputs, algorithms
 
     def _create_version_provenance(self):
-        # Add the version information to the provenance data at the start
+        """ Add the version information to the provenance data at the start.
+        """
         version_provenance = list()
         version_provenance.append(ProvenanceDataItem(
             ["version_data", "spinn_utilities_version"], spinn_utils_version))
@@ -1523,6 +1519,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         executor.execute_mapping()
 
     def _do_mapping(self, run_time):
+        """
+        :param float run_time:
+        """
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
         mapping_total_timer.start_timing()
@@ -1771,7 +1770,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_outputs["MappingTimeMs"] = self._mapping_time
 
     def _do_data_generation(self):
-
         # set up timing
         data_gen_timer = Timer()
         data_gen_timer.start_timing()
@@ -1798,6 +1796,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_outputs["DSGTimeMs"] = self._dsg_time
 
     def _do_load(self, graph_changed, data_changed):
+        """
+        :param bool graph_changed:
+        :param bool data_changed:
+        """
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1921,9 +1923,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._execute_time, self._extraction_time)
 
     def _gather_provenance_for_writing(self, executor):
-        """ handled the gathering of prov items for writer.
+        """ Handles the gathering of provenance items for writer.
 
-        :param executor: the pacman executor.
+        :param ~pacman.executor.PACMANAlgorithmExecutor executor:
+            the pacman executor.
         :return:
         """
         prov_items = list()
@@ -1948,6 +1951,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
     def _do_run(self, runtime_in_us, graph_changed):
+        """
+        :param bool graph_changed:
+        """
         # start timer
         self._run_timer = Timer()
         self._run_timer.start_timing()
@@ -2013,6 +2019,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             reraise(*e_inf)
 
     def _create_execute_workflow(self, runtime_in_us, graph_changed):
+        """
+        :param bool graph_changed:
+        """
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -2143,7 +2152,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             provenance_name="Execution")
 
     def _write_provenance(self, provenance_data_items):
-        """ Write provenance to disk
+        """ Write provenance to disk.
+
+        :param list(ProvenanceDataItem) provenance_data_items:
         """
 
         writer = None
@@ -2160,6 +2171,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         writer(provenance_data_items, self._provenance_file_path)
 
     def _recover_from_error(self, exception, exc_info, executable_targets):
+        """
+        :param Exception exception:
+        :param tuple(type,Exception,traceback) exc_info:
+        :param ExecutableTargets executable_targets:
+        """
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
         # Print the detail including the traceback
@@ -2291,6 +2307,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @staticmethod
     def _print_iobuf(errors, warnings):
+        """
+        :param list(str) errors:
+        :param list(str) warnings:
+        """
         for warning in warnings:
             logger.warning(warning)
         for error in errors:
@@ -2319,6 +2339,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self.__reset_graph_elements()
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
+        """
+        :param list(str) extra_algorithm_xml_paths:
+        :rtype: list(str)
+        """
         # add the extra xml files from the config file
         xml_paths = self._config.get("Mapping", "extra_xmls_paths")
         if xml_paths == "None":
@@ -2334,7 +2358,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
-        """ Iterates though the original graphs and look for changes
+        """ goes though the original graphs looking for changes.
+
+        :param bool reset_flags:
+        :return: mapping_changed, data_changed
+        :rtype: tuple(bool, bool)
         """
         changed = False
         data_changed = False
@@ -2400,32 +2428,50 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def machine_graph(self):
+        """
+        :rtype: ~pacman.model.graphs.machine.MachineGraph
+        """
         return self._machine_graph
 
     @property
     def original_machine_graph(self):
+        """
+        :rtype: ~pacman.model.graphs.machine.MachineGraph
+        """
         return self._original_machine_graph
 
     @property
     def original_application_graph(self):
+        """
+        :rtype: ~pacman.model.graphs.application.ApplicationGraph
+        """
         return self._original_application_graph
 
     @property
     def application_graph(self):
         """ The application graph used to derive the runtime machine \
             configuration.
+
+        :rtype: ~pacman.model.graphs.application.ApplicationGraph
         """
         return self._application_graph
 
     @property
     def routing_infos(self):
+        """
+        :rtype: ~pacman.model.routing_info.RoutingInfo
+        """
         return self._routing_infos
 
     @property
     def fixed_routes(self):
+        """
+        :rtype: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
+        """
         return self._fixed_routes
 
     @property
+    @overrides(SimulatorInterface.placements)
     def placements(self):
         return self._placements
 
@@ -2439,6 +2485,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return self._graph_mapper
 
     @property
+    @overrides(SimulatorInterface.tags)
     def tags(self):
         return self._tags
 
@@ -2450,6 +2497,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def dsg_algorithm(self):
         """ The DSG algorithm used by the tools
+
+        :rtype: str
         """
         return self._dsg_algorithm
 
@@ -2457,14 +2506,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def dsg_algorithm(self, new_dsg_algorithm):
         """ Set the DSG algorithm to be used by the tools
 
-        :param new_dsg_algorithm: the new DSG algorithm name
-        :rtype: None
+        :param str new_dsg_algorithm: the new DSG algorithm name
         """
         self._dsg_algorithm = new_dsg_algorithm
 
     @property
     def none_labelled_edge_count(self):
         """ The number of times edges have not been labelled.
+
+        :rtype: int
         """
         return self._none_labelled_edge_count
 
@@ -2476,6 +2526,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @property
     def use_virtual_board(self):
         """ True if this run is using a virtual machine
+
+        :rtype: bool
         """
         return self._use_virtual_board
 
@@ -2492,8 +2544,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def get_generated_output(self, name_of_variable):
         """ Get the value of an inter-algorithm variable.
 
-        :param name_of_variable: The variable to retrieve
-        :type name_of_variable: str
+        :param str name_of_variable: The variable to retrieve
         :return: The value (of arbitrary type), or None if the variable is \
             not found.
         """
@@ -2510,9 +2561,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def add_application_vertex(self, vertex):
         """
-        :param vertex: the vertex to add to the graph
-        :type: ApplicationVertex
-        :rtype: None
+        :param ~pacman.model.graphs.application.ApplicationVertex vertex:
+            the vertex to add to the graph
         :raises ConfigurationException: when both graphs contain vertices
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
@@ -2527,9 +2577,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def add_machine_vertex(self, vertex):
         """
-        :param vertex: the vertex to add to the graph
-        :type: MachineVertex
-        :rtype: None
+        :param ~pacman.model.graphs.machine.MachineVertex vertex:
+            the vertex to add to the graph
         :raises ConfigurationException: when both graphs contain vertices
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
@@ -2544,12 +2593,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
-        :param edge_to_add:
-        :type: ApplicationEdge
-        :param partition_identifier: \
+        :param ~pacman.model.graphs.application.ApplicationEdge edge_to_add:
+            the edge to add to the graph
+        :param str partition_identifier:
             the partition identifier for the outgoing edge partition
-        :type partition_identifier: str
-        :rtype: None
         """
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
@@ -2557,12 +2604,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     def add_machine_edge(self, edge, partition_id):
         """
-        :param edge: the edge to add to the graph
-        :type: MachineEdge
-        :param partition_id: \
+        :param ~pacman.model.graphs.machine.MachineEdge edge:
+            the edge to add to the graph
+        :param str partition_id:
             the partition identifier for the outgoing edge partition
-        :type partition_id: str
-        :rtype: None
         """
         self._original_machine_graph.add_edge(edge, partition_id)
         self._vertices_or_edges_added = True
@@ -2570,6 +2615,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
+        """
+        :param bool turn_off_machine:
+        :param bool clear_routing_tables:
+        :param bool clear_tags:
+        """
         self._state = Simulator_State.SHUTDOWN
 
         # if on a virtual machine then shut down not needed
@@ -2612,6 +2662,10 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Error when closing Notifications")
 
     def __clear(self, clear_tags, clear_routing_tables):
+        """
+        :param bool clear_tags:
+        :param bool clear_routing_tables:
+        """
         # if stopping on machine, clear IP tags and
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
@@ -2638,6 +2692,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._txrx.stop_application(self._app_id)
 
     def __close_transceiver(self, turn_off_machine):
+        """
+        :param bool turn_off_machine:
+        """
         if self._txrx is not None:
             if turn_off_machine:
                 logger.info("Turning off machine")
@@ -2656,17 +2713,14 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
              clear_routing_tables=None, clear_tags=None):
         """
-        :param turn_off_machine: decides if the machine should be powered down\
-            after running the execution. Note that this powers down all boards\
-            connected to the BMP connections given to the transceiver
-        :type turn_off_machine: bool
-        :param clear_routing_tables: informs the tool chain if it\
+        :param bool turn_off_machine:
+            decides if the machine should be powered down after running the
+            execution. Note that this powers down all boards connected to the
+            BMP connections given to the transceiver
+        :param bool clear_routing_tables: informs the tool chain if it
             should turn off the clearing of the routing tables
-        :type clear_routing_tables: bool
-        :param clear_tags: informs the tool chain if it should clear the tags\
-            off the machine at stop
-        :type clear_tags: boolean
-        :rtype: None
+        :param bool clear_tags: informs the tool chain if it should clear the
+            tags off the machine at stop
         """
         if self._state in [Simulator_State.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
@@ -2730,6 +2784,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self.write_finished_file()
 
     def _create_stop_workflow(self):
+        """
+        :rtype: ~.PACMANAlgorithmExecutor
+        """
         inputs = self._last_run_outputs
         tokens = self._last_run_tokens
         algorithms = []
@@ -2808,15 +2865,16 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.add_socket_address)
     def add_socket_address(self, socket_address):
         """
-        :param socket_address: The address of the database socket
-        :type socket_address: ~spinn_utilities.socket_address.SocketAddress
-        :rtype: None
+        :param ~spinn_utilities.socket_address.SocketAddress socket_address:
+            The address of the database socket
         """
         self._database_socket_addresses.add(socket_address)
 
     @staticmethod
     def _check_provenance(items, initial_message=None):
         """ Display any errors from provenance data.
+
+        :param str initial_message:
         """
         initial_message_printed = False
         for item in items:
@@ -2830,9 +2888,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Executes the power saving mode of either on or off of the\
             SpiNNaker machine.
 
-        :param config_flag: Flag read from the configuration file
-        :type config_flag: str
-        :rtype: None
+        :param str config_flag: Flag read from the configuration file
         """
         # check if machine should be turned off
         turn_off = self._read_config_boolean("EnergySavings", config_flag)
