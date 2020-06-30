@@ -113,9 +113,9 @@
             <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">fixed_routes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.placements.Placements placements:</span>
-<span class="sd">        :param ~pacman.model.tags.Tags tags:</span>
-<span class="sd">        :param ~spinnman.transceiever.Transceiver txrx:</span>
+<span class="sd">        :param ~.Placements placements:</span>
+<span class="sd">        :param ~.Tags tags:</span>
+<span class="sd">        :param ~.Transceiver txrx:</span>
 <span class="sd">        :param bool uses_advanced_monitors:</span>
 <span class="sd">        :param str report_folder:</span>
 <span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
@@ -126,7 +126,7 @@
 <span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param dict(tuple(int,int),~.FixedRouteEntry) fixed_routes:</span>
 <span class="sd">        :param JavaCaller java_caller:</span>
-<span class="sd">        :return:</span>
+<span class="sd">        :rtype: BufferManager</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">placements</span><span class="o">.</span><span class="n">n_placements</span><span class="p">,</span> <span class="s2">&quot;Initialising buffers&quot;</span><span class="p">)</span>

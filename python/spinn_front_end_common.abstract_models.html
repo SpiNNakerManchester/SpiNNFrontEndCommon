@@ -325,23 +325,17 @@ machine was first allocated</td>
 <p>Allows a vertex to provide the number of keys for a partition of edges,        rather than relying on the number of atoms in the pre-vertex.</p>
 <dl class="method">
 <dt id="spinn_front_end_common.abstract_models.AbstractProvidesNKeysForPartition.get_n_keys_for_partition">
-<code class="descname">get_n_keys_for_partition</code><span class="sig-paren">(</span><em>partition</em>, <em>graph_mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_n_keys_for_partition.html#AbstractProvidesNKeysForPartition.get_n_keys_for_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesNKeysForPartition.get_n_keys_for_partition" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_n_keys_for_partition</code><span class="sig-paren">(</span><em>partition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_provides_n_keys_for_partition.html#AbstractProvidesNKeysForPartition.get_n_keys_for_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesNKeysForPartition.get_n_keys_for_partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of keys required by the given partition of edges.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>partition</strong> (<em>AbstractOutgoingEdgePartition</em>) &#8211; An partition that comes out of this vertex</li>
-<li><strong>graph_mapper</strong> (<code class="xref py py-class docutils literal"><span class="pre">GraphMapper</span></code>) &#8211; A mapper between the graphs</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>partition</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.OutgoingEdgePartition" title="(in PACMAN v)"><em>OutgoingEdgePartition</em></a>) &#8211; An partition that comes out of this vertex</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The number of keys required</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The number of keys required</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
 </tr>
 </tbody>
 </table>

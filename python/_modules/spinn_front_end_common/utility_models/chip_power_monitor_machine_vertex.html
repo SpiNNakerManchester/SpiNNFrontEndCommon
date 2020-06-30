@@ -132,7 +132,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">,</span>
-            <span class="n">sampling_frequency</span><span class="p">):</span>
+            <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str label: vertex label</span>
 <span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
@@ -141,9 +141,12 @@
 <span class="sd">        :param int n_samples_per_recording:</span>
 <span class="sd">            how may samples between recording entry</span>
 <span class="sd">        :param int sampling_frequency: how often to sample, in microseconds</span>
+<span class="sd">        :param ChipPowerMonitor app_vertex: associated application vertex</span>
+<span class="sd">        :param ~pacman.model.graphs.common.Slice vertex_slice:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ChipPowerMonitorMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">,</span>
+            <span class="n">vertex_slice</span><span class="o">=</span><span class="n">vertex_slice</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples_per_recording</span> <span class="o">=</span> <span class="n">n_samples_per_recording</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span> <span class="o">=</span> <span class="n">sampling_frequency</span>
 
@@ -157,7 +160,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_samples_per_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; how may samples between recording entries</span>
+        <span class="sd">&quot;&quot;&quot; how may samples to take between making recording entries</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -341,12 +344,13 @@
 <span class="sd">        :param int machine_time_step: the machine time step</span>
 <span class="sd">        :param float time_scale_factor: the time scale factor</span>
 <span class="sd">        :return: the SDRAM usage</span>
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">timer_tick_in_micro_seconds</span> <span class="o">=</span> <span class="n">machine_time_step</span> <span class="o">*</span> <span class="n">time_scale_factor</span>
         <span class="n">recording_time</span> <span class="o">=</span> \
             <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples_per_recording</span>
         <span class="n">n_entries</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">timer_tick_in_micro_seconds</span> <span class="o">/</span> <span class="n">recording_time</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_entries</span> <span class="o">*</span> <span class="n">RECORDING_SIZE_PER_ENTRY</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_entries</span> <span class="o">*</span> <span class="n">RECORDING_SIZE_PER_ENTRY</span><span class="p">))</span>
 
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_recorded_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_recorded_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_recorded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get data from SDRAM given placement and buffer manager</span>

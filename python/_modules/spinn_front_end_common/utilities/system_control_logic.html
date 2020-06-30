@@ -161,10 +161,11 @@
 
     <span class="c1"># if doing iobuf, read iobuf</span>
     <span class="k">if</span> <span class="n">read_algorithm_iobuf</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">succeeded</span><span class="p">:</span>
-        <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span><span class="n">filename_template</span><span class="o">=</span><span class="n">filename_template</span><span class="p">)</span>
+        <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">ChipIOBufExtractor</span><span class="p">(</span>
+            <span class="n">filename_template</span><span class="o">=</span><span class="n">filename_template</span><span class="p">,</span>
+            <span class="n">suppress_progress</span><span class="o">=</span><span class="n">succeeded</span><span class="p">)</span>
         <span class="n">iobuf_reader</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_cores</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span>
-            <span class="n">app_provenance_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">system_provenance_file_path</span><span class="o">=</span><span class="n">provenance_file_path</span><span class="p">)</span>
 
     <span class="c1"># stop anything that&#39;s associated with the compressor binary</span>

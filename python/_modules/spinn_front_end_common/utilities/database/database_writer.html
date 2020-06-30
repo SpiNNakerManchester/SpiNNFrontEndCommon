@@ -292,10 +292,8 @@
                     <span class="p">(</span><span class="s2">&quot;infinite_run&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
                     <span class="p">(</span><span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runtime</span><span class="p">)])</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.add_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
-                     <span class="n">application_graph</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Add the machine graph, graph mapper and application graph \</span>
-<span class="sd">            into the database.</span>
+<div class="viewcode-block" id="DatabaseWriter.add_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add the machine graph and application graph into the database.</span>
 
 <span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
 <span class="sd">            The machine graph object</span>
@@ -351,11 +349,10 @@
 <span class="sd">                        hi_atom)</span>
 <span class="sd">                    VALUES(?, ?, ?, ?)</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
-                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span>
-                             <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)],</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span><span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">],</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span><span class="n">vertex</span><span class="p">],</span>
-                         <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">,</span>
-                         <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span><span class="o">.</span><span class="n">hi_atom</span><span class="p">)</span>
+                         <span class="n">vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">,</span>
+                         <span class="n">vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">hi_atom</span><span class="p">)</span>
                         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">))</span>
 
                 <span class="c1"># add graph_mapper edges</span>
@@ -365,8 +362,7 @@
 <span class="sd">                        application_edge_id, machine_edge_id)</span>
 <span class="sd">                    VALUES(?, ?)</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
-                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__edge_to_id</span><span class="p">[</span>
-                             <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">)],</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__edge_to_id</span><span class="p">[</span><span class="n">edge</span><span class="o">.</span><span class="n">app_edge</span><span class="p">],</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">__edge_to_id</span><span class="p">[</span><span class="n">edge</span><span class="p">])</span>
                         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">))</span></div>
 
@@ -466,8 +462,7 @@
                             <span class="n">vertex</span><span class="p">)</span> <span class="ow">or</span> <span class="p">()))</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.create_atom_to_event_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">create_atom_to_event_id_mapping</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span>
-            <span class="n">graph_mapper</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph \</span>
 <span class="sd">                application_graph:</span>
@@ -477,7 +472,7 @@
         <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="c1"># We will be asking application vertices for key/atom mappings</span>
             <span class="n">vertices_and_partitions</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">(</span><span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">),</span> <span class="n">partition</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">partition</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span>
                 <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span>
                 <span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">))</span>

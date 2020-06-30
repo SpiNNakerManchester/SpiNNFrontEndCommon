@@ -79,7 +79,6 @@
 
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">Slice</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.placer_constraints</span> <span class="kn">import</span> <span class="n">ChipAndCoreConstraint</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">LivePacketGather</span><span class="p">,</span> <span class="n">LivePacketGatherMachineVertex</span><span class="p">)</span>
@@ -101,12 +100,15 @@
 <span class="sd">    :return: mapping between LPG parameters and LPG vertex</span>
 <span class="sd">    :rtype: dict(LivePacketGatherParameters,</span>
 <span class="sd">        dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;_machine_graph&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_application_graph&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add LPG vertices on Ethernet connected chips as required.</span>
 
 <span class="sd">        :param live_packet_gatherer_parameters:</span>
@@ -119,7 +121,9 @@
 <span class="sd">        :rtype: dict(LivePacketGatherParameters,</span>
 <span class="sd">            dict(tuple(int,int),LivePacketGatherMachineVertex))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">machine_graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="o">=</span> <span class="n">application_graph</span>
 
         <span class="c1"># create progress bar</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
@@ -131,32 +135,53 @@
         <span class="n">lpg_params_to_vertices</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
 
         <span class="c1"># for every Ethernet connected chip, add the gatherers required</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">:</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
-                        <span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="o">==</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">):</span>
-                    <span class="n">lpg_params_to_vertices</span><span class="p">[</span><span class="n">params</span><span class="p">][</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> \
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_add_lpg_vertex</span><span class="p">(</span><span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
-                                             <span class="n">machine_graph</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                            <span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="o">==</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">):</span>
+                        <span class="n">lpg_params_to_vertices</span><span class="p">[</span><span class="n">params</span><span class="p">][</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_add_app_lpg_vertex</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">live_packet_gatherer_parameters</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span>
+                            <span class="n">params</span><span class="o">.</span><span class="n">board_address</span> <span class="o">==</span> <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">):</span>
+                        <span class="n">lpg_params_to_vertices</span><span class="p">[</span><span class="n">params</span><span class="p">][</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> \
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_add_mach_lpg_vertex</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">lpg_params_to_vertices</span>
 
-    <span class="k">def</span> <span class="nf">_add_lpg_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_graph</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">m_graph</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="k">if</span> <span class="n">app_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">_slice</span> <span class="o">=</span> <span class="n">Slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">app_vtx</span> <span class="o">=</span> <span class="n">LivePacketGather</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-            <span class="n">app_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vtx</span><span class="p">)</span>
-            <span class="n">resources</span> <span class="o">=</span> <span class="n">app_vtx</span><span class="o">.</span><span class="n">get_resources_used_by_atoms</span><span class="p">(</span><span class="n">_slice</span><span class="p">)</span>
-            <span class="n">m_vtx</span> <span class="o">=</span> <span class="n">app_vtx</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">(</span>
-                <span class="n">_slice</span><span class="p">,</span> <span class="n">resources</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">params</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
-            <span class="n">mapper</span><span class="o">.</span><span class="n">add_vertex_mapping</span><span class="p">(</span><span class="n">m_vtx</span><span class="p">,</span> <span class="n">_slice</span><span class="p">,</span> <span class="n">app_vtx</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">m_vtx</span> <span class="o">=</span> <span class="n">LivePacketGatherMachineVertex</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_add_app_lpg_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds a LPG vertex to a machine graph that has an associated\</span>
+<span class="sd">            application graph.</span>
 
-        <span class="n">m_vtx</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
-        <span class="n">m_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">m_vtx</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">m_vtx</span></div>
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :param LivePacketGatherParameters params:</span>
+<span class="sd">        :rtype: LivePacketGatherMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">app_vtx</span> <span class="o">=</span> <span class="n">LivePacketGather</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vtx</span><span class="p">)</span>
+        <span class="c1"># No need to handle resources when allocating; LPG has core to itself</span>
+        <span class="n">vtx</span> <span class="o">=</span> <span class="n">app_vtx</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">(</span>
+            <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resources_required</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;LivePacketGatherer&quot;</span><span class="p">,</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vtx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vtx</span>
+
+    <span class="k">def</span> <span class="nf">_add_mach_lpg_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Adds a LPG vertex to a machine graph without an associated\</span>
+<span class="sd">            application graph.</span>
+
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :param LivePacketGatherParameters params:</span>
+<span class="sd">        :rtype: LivePacketGatherMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">vtx</span> <span class="o">=</span> <span class="n">LivePacketGatherMachineVertex</span><span class="p">(</span>
+            <span class="n">params</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vtx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vtx</span></div>
 </pre></div>
 
           </div>

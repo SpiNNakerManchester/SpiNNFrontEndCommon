@@ -77,11 +77,11 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ExecutableNotFoundException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="n">AbstractHasAssociatedBinary</span>
-<span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 
 
 <div class="viewcode-block" id="GraphBinaryGatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.GraphBinaryGatherer">[docs]</a><span class="k">class</span> <span class="nc">GraphBinaryGatherer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -100,8 +100,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_exe_finder</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_exe_targets</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.Placements placements:</span>
 <span class="sd">        :param ~.MachineGraph graph:</span>
@@ -114,9 +113,7 @@
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
             <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">graph_mapper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span>
-                                  <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exe_targets</span>
 
@@ -125,10 +122,7 @@
 <span class="sd">        :param ~.Placement placement:</span>
 <span class="sd">        :param ~.AbstractVertex vertex:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># If we&#39;ve got junk input (shouldn&#39;t happen), ignore it</span>
-        <span class="k">if</span> <span class="n">vertex</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="c1"># if the vertex cannot generate a DSG, ignore it</span>
+        <span class="c1"># if the vertex cannot be executed, ignore it</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
             <span class="k">return</span>
 

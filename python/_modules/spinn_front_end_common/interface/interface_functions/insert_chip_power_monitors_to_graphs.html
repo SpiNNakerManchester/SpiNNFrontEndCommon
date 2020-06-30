@@ -78,7 +78,6 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">Slice</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.placer_constraints</span> <span class="kn">import</span> <span class="n">ChipAndCoreConstraint</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ChipPowerMonitor</span><span class="p">,</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">)</span>
@@ -101,7 +100,7 @@
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">,</span>
-            <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds chip power monitor vertices on Ethernet connected chips as\</span>
 <span class="sd">            required.</span>
 
@@ -117,52 +116,28 @@
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span><span class="p">,</span> <span class="s2">&quot;Adding Chip power monitors to Graph&quot;</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_power_monitor_for_chip</span><span class="p">(</span>
-                <span class="n">chip</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
-                <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_add_power_monitor_for_chip</span><span class="p">(</span>
-            <span class="n">chip</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
-            <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">n_samples_per_recording</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~.Chip chip:</span>
-<span class="sd">        :param ~.MachineGraph machine_graph:</span>
-<span class="sd">        :param ~.ApplicationGraph application_graph:</span>
-<span class="sd">        :param int sampling_frequency:</span>
-<span class="sd">        :param int n_samples_per_recording:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># build constraint</span>
-        <span class="n">constraint</span> <span class="o">=</span> <span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-
-        <span class="c1"># build machine vert</span>
-        <span class="n">machine_vertex</span> <span class="o">=</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="n">_LABEL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;machine&quot;</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
-            <span class="n">sampling_frequency</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span>
-            <span class="n">n_samples_per_recording</span><span class="o">=</span><span class="n">n_samples_per_recording</span><span class="p">,</span>
-            <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">constraint</span><span class="p">])</span>
-
-        <span class="c1"># add vert to graph</span>
-        <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
-
-        <span class="c1"># deal with app graphs if needed</span>
+        <span class="n">app_vertex</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-
-            <span class="c1"># build app vertex</span>
-            <span class="n">vertex_slice</span> <span class="o">=</span> <span class="n">Slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">application_vertex</span> <span class="o">=</span> <span class="n">ChipPowerMonitor</span><span class="p">(</span>
-                <span class="n">label</span><span class="o">=</span><span class="n">_LABEL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;application&quot;</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
-                <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">constraint</span><span class="p">],</span>
+            <span class="n">app_vertex</span> <span class="o">=</span> <span class="n">ChipPowerMonitor</span><span class="p">(</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;ChipPowerMonitor&quot;</span><span class="p">,</span>
                 <span class="n">sampling_frequency</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span>
                 <span class="n">n_samples_per_recording</span><span class="o">=</span><span class="n">n_samples_per_recording</span><span class="p">)</span>
-
-            <span class="c1"># add to graph</span>
-            <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">application_vertex</span><span class="p">)</span>
-
-            <span class="c1"># update graph mapper</span>
-            <span class="n">graph_mapper</span><span class="o">.</span><span class="n">add_vertex_mapping</span><span class="p">(</span>
-                <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">,</span> <span class="n">application_vertex</span><span class="p">)</span></div>
+            <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
+                <span class="n">machine_vertex</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">(</span>
+                    <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resources_required</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">_LABEL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;machine&quot;</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
+                    <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
+                <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
+                <span class="n">machine_vertex</span> <span class="o">=</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">(</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">_LABEL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;machine&quot;</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">),</span>
+                    <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)],</span>
+                    <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">,</span>
+                    <span class="n">sampling_frequency</span><span class="o">=</span><span class="n">sampling_frequency</span><span class="p">,</span>
+                    <span class="n">n_samples_per_recording</span><span class="o">=</span><span class="n">n_samples_per_recording</span><span class="p">)</span>
+                <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

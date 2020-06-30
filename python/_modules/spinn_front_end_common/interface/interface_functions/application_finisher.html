@@ -160,6 +160,11 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_update_provenance_and_exit</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">processor</span><span class="p">,</span> <span class="n">core_subset</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver txrx:</span>
+<span class="sd">        :param int processor:</span>
+<span class="sd">        :param ~.CoreSubset core_subset:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">byte_data</span> <span class="o">=</span> <span class="n">_ONE_WORD</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
             <span class="n">SDP_RUNNING_MESSAGE_CODES</span>
             <span class="o">.</span><span class="n">SDP_UPDATE_PROVENCE_REGION_AND_EXIT</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>

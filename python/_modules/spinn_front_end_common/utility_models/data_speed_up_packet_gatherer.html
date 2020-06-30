@@ -77,21 +77,16 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationVertex</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.abstract_one_app_one_machine_vertex</span> <span class="kn">import</span> <span class="n">AbstractOneAppOneMachineVertex</span>
 <span class="kn">from</span> <span class="nn">.data_speed_up_packet_gatherer_machine_vertex</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="DataSpeedUpPacketGather"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather">[docs]</a><span class="k">class</span> <span class="nc">DataSpeedUpPacketGather</span><span class="p">(</span>
-        <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
-        <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGather"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather">[docs]</a><span class="k">class</span> <span class="nc">DataSpeedUpPacketGather</span><span class="p">(</span><span class="n">AbstractOneAppOneMachineVertex</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The gatherer for the data speed up protocols. Gatherers are only ever\</span>
 <span class="sd">        deployed on chips with an ethernet connection.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_machine_vertex&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">extra_monitors_by_chip</span><span class="p">,</span>
@@ -114,42 +109,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DataSpeedUpPacketGather</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="s2">&quot;multicast speed up application vertex for </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">constraints</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">constraints</span><span class="p">)</span>
+        <span class="c1"># Create the machine vertex at the same time</span>
+        <span class="c1"># As with any MachineVertex this also triggers remember_...</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span> <span class="o">=</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">(</span>
+            <span class="n">app_vertex</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="o">=</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
             <span class="n">extra_monitors_by_chip</span><span class="o">=</span><span class="n">extra_monitors_by_chip</span><span class="p">,</span>
             <span class="n">report_default_directory</span><span class="o">=</span><span class="n">report_default_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="n">write_data_speed_up_reports</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">machine_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span>
-
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">)</span>
-<div class="viewcode-block" id="DataSpeedUpPacketGather.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather.get_binary_file_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">()</span></div>
-
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">get_resources_used_by_atoms</span><span class="p">)</span>
-<div class="viewcode-block" id="DataSpeedUpPacketGather.get_resources_used_by_atoms"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather.get_resources_used_by_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_resources_used_by_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">resources_required</span></div>
-
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">create_machine_vertex</span><span class="p">)</span>
-<div class="viewcode-block" id="DataSpeedUpPacketGather.create_machine_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather.create_machine_vertex">[docs]</a>    <span class="k">def</span> <span class="nf">create_machine_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">,</span> <span class="n">resources_required</span><span class="p">,</span>
-                              <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span></div>
-
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
-<div class="viewcode-block" id="DataSpeedUpPacketGather.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather.generate_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span></div>
-
-    <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">1</span>
-
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">)</span>
-<div class="viewcode-block" id="DataSpeedUpPacketGather.get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGather.get_binary_start_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span></div></div>
+            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="n">write_data_speed_up_reports</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

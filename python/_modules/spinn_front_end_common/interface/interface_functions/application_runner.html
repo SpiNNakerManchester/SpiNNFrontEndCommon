@@ -83,6 +83,10 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
+
+<span class="n">SAFETY_FINISH_TIME</span> <span class="o">=</span> <span class="mf">0.1</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -107,30 +111,23 @@
 <span class="sd">    :raises ConfigurationException:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__txrx&quot;</span><span class="p">,</span> <span class="s2">&quot;__app_id&quot;</span><span class="p">,</span> <span class="s2">&quot;__executable_types&quot;</span><span class="p">,</span> <span class="s2">&quot;__syncs&quot;</span><span class="p">]</span>
 
     <span class="c1"># Wraps up as a PACMAN algorithm</span>
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">notification_interface</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span>
             <span class="n">app_id</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
             <span class="n">time_threshold</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;*** Running simulation... *** &quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_application</span><span class="p">(</span>
-            <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">notification_interface</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span>
-            <span class="n">app_id</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
-            <span class="n">time_threshold</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">)</span>
-
-    <span class="c1"># The actual runner</span>
-<div class="viewcode-block" id="ApplicationRunner.run_application"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.ApplicationRunner.run_application">[docs]</a>    <span class="k">def</span> <span class="nf">run_application</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">notification_interface</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span>
-            <span class="n">app_id</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
-            <span class="n">time_threshold</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__txrx</span> <span class="o">=</span> <span class="n">txrx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__app_id</span> <span class="o">=</span> <span class="n">app_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span> <span class="o">=</span> <span class="n">executable_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__syncs</span> <span class="o">=</span> <span class="n">no_sync_changes</span>
 
         <span class="c1"># wait for all cores to be ready</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_start</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_start</span><span class="p">()</span>
 
         <span class="c1"># set the buffer manager into a resume state, so that if it had ran</span>
         <span class="c1"># before it&#39;ll work again</span>
@@ -144,90 +141,105 @@
 
         <span class="c1"># set off the executables that are in sync state</span>
         <span class="c1"># (sending to all is just as safe)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span> <span class="ow">in</span> <span class="n">executable_types</span>
-                <span class="ow">or</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span> <span class="ow">in</span> <span class="n">executable_types</span><span class="p">):</span>
-            <span class="c1"># locate all signals needed to set off executables</span>
-            <span class="n">sync_signal</span><span class="p">,</span> <span class="n">no_sync_changes</span> <span class="o">=</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_determine_simulation_sync_signals</span><span class="p">(</span>
-                    <span class="n">executable_types</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">)</span>
-
-            <span class="c1"># fire all signals as required</span>
-            <span class="n">txrx</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">sync_signal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_sync_signal</span><span class="p">()</span>
 
         <span class="c1"># Send start notification to external applications</span>
         <span class="n">notification_interface</span><span class="o">.</span><span class="n">send_start_resume_notification</span><span class="p">()</span>
 
-        <span class="c1"># Wait for the application to finish</span>
         <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">run_until_complete</span><span class="p">:</span>
+            <span class="c1"># Do NOT stop the buffer manager at end; app is using it still</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Application is set to run forever; exiting&quot;</span><span class="p">)</span>
-            <span class="c1"># Do NOT stop the buffer manager; app is using it still</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Wait for the application to finish</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_run_wait</span><span class="p">(</span>
-                    <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">,</span>
-                    <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">time_threshold</span><span class="p">)</span>
+                    <span class="n">run_until_complete</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
+                    <span class="n">time_threshold</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="c1"># Stop the buffer manager after run</span>
                 <span class="n">buffer_manager</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
-        <span class="c1"># Send stop notification</span>
-        <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Send stop notification to external applications</span>
             <span class="n">notification_interface</span><span class="o">.</span><span class="n">send_stop_pause_notification</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">no_sync_changes</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__syncs</span>
 
-    <span class="k">def</span> <span class="nf">_run_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">,</span>
-                  <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">time_threshold</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+    <span class="k">def</span> <span class="nf">_run_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_until_complete</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
+                  <span class="n">time_threshold</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param bool run_until_complete:</span>
+<span class="sd">        :param int runtime:</span>
+<span class="sd">        :param int time_scale_factor:</span>
+<span class="sd">        :param float time_threshold:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">run_until_complete</span><span class="p">:</span>
-            <span class="n">time_to_wait</span> <span class="o">=</span> <span class="n">runtime</span> <span class="o">*</span> <span class="n">time_scale_factor</span> <span class="o">/</span> <span class="mf">1000.0</span> <span class="o">+</span> <span class="mf">0.1</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
+            <span class="n">scaled_runtime</span> <span class="o">=</span> <span class="n">runtime</span> <span class="o">*</span> <span class="n">factor</span>
+            <span class="n">time_to_wait</span> <span class="o">=</span> <span class="n">scaled_runtime</span> <span class="o">+</span> <span class="n">SAFETY_FINISH_TIME</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Application started; waiting </span><span class="si">{}</span><span class="s2">s for it to stop&quot;</span><span class="p">,</span>
                 <span class="n">time_to_wait</span><span class="p">)</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time_to_wait</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_end</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span>
-                               <span class="n">timeout</span><span class="o">=</span><span class="n">time_threshold</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_end</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">time_threshold</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Application started; waiting until finished&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_end</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_end</span><span class="p">()</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_wait_for_start</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">executable_type</span> <span class="ow">in</span> <span class="n">executable_types</span><span class="p">:</span>
-            <span class="n">txrx</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
-                <span class="n">executable_types</span><span class="p">[</span><span class="n">executable_type</span><span class="p">],</span> <span class="n">app_id</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">_wait_for_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param timeout:</span>
+<span class="sd">        :type timeout: float or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">executable_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__txrx</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">[</span><span class="n">executable_type</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_id</span><span class="p">,</span>
                 <span class="n">executable_type</span><span class="o">.</span><span class="n">start_state</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_wait_for_end</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">executable_type</span> <span class="ow">in</span> <span class="n">executable_types</span><span class="p">:</span>
-            <span class="n">txrx</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
-                <span class="n">executable_types</span><span class="p">[</span><span class="n">executable_type</span><span class="p">],</span> <span class="n">app_id</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">_send_sync_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Let apps that use the simulation interface or sync signals \</span>
+<span class="sd">            commence running their main processing loops. This is done with \</span>
+<span class="sd">            a very fast synchronisation barrier and a signal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span>
+                <span class="ow">or</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">):</span>
+            <span class="c1"># locate all signals needed to set off executables</span>
+            <span class="n">sync_signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_simulation_sync_signals</span><span class="p">()</span>
+
+            <span class="c1"># fire all signals as required</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__txrx</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__app_id</span><span class="p">,</span> <span class="n">sync_signal</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_wait_for_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param timeout:</span>
+<span class="sd">        :type timeout: float or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">executable_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__txrx</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">[</span><span class="n">executable_type</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__app_id</span><span class="p">,</span>
                 <span class="n">executable_type</span><span class="o">.</span><span class="n">end_state</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_determine_simulation_sync_signals</span><span class="p">(</span><span class="n">executable_types</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_determine_simulation_sync_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Determines the start states, and creates core subsets of the\</span>
 <span class="sd">            states for further checks.</span>
 
-<span class="sd">        :param no_sync_changes: sync counter</span>
-<span class="sd">        :param executable_types: the types of executables</span>
-<span class="sd">        :return: the sync signal and updated no_sync_changes</span>
+<span class="sd">        :return: the sync signal</span>
+<span class="sd">        :rtype: ~.Signal</span>
+<span class="sd">        :raises ConfigurationException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sync_signal</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span> <span class="ow">in</span> <span class="n">executable_types</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">no_sync_changes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__syncs</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC1</span>
-            <span class="c1"># when it falls out of the running, it&#39;ll be in a next sync \</span>
+            <span class="c1"># when it falls out of the running, it&#39;ll be in a next sync</span>
             <span class="c1"># state, thus update needed</span>
-            <span class="n">no_sync_changes</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__syncs</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="c1"># handle the sync states, but only send once if they work with \</span>
+        <span class="c1"># handle the sync states, but only send once if they work with</span>
         <span class="c1"># the simulation interface requirement</span>
-        <span class="k">if</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span> <span class="ow">in</span> <span class="n">executable_types</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYNC</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__executable_types</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">sync_signal</span> <span class="o">==</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC1</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="s2">&quot;There can only be one SYNC signal per run. This is &quot;</span>
@@ -235,9 +247,8 @@
                     <span class="s2">&quot;next SYNC state before we send the next SYNC. Resulting &quot;</span>
                     <span class="s2">&quot;in uncontrolled behaviour&quot;</span><span class="p">)</span>
             <span class="n">sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span>
-            <span class="n">no_sync_changes</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">sync_signal</span><span class="p">,</span> <span class="n">no_sync_changes</span></div>
+        <span class="k">return</span> <span class="n">sync_signal</span></div>
 </pre></div>
 
           </div>

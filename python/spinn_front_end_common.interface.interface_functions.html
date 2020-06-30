@@ -153,11 +153,6 @@
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="spinn_front_end_common.interface.interface_functions.ApplicationRunner.run_application">
-<code class="descname">run_application</code><span class="sig-paren">(</span><em>buffer_manager</em>, <em>notification_interface</em>, <em>executable_types</em>, <em>app_id</em>, <em>txrx</em>, <em>runtime</em>, <em>time_scale_factor</em>, <em>no_sync_changes</em>, <em>time_threshold</em>, <em>run_until_complete</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/application_runner.html#ApplicationRunner.run_application"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ApplicationRunner.run_application" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="class">
@@ -233,7 +228,7 @@ and where any java provenance can be written.</li>
 
 <dl class="class">
 <dt id="spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">ChipIOBufExtractor</code><span class="sig-paren">(</span><em>recovery_mode=False</em>, <em>filename_template='iobuf_for_chip_{}_{}_processor_id_{}.txt'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/chip_iobuf_extractor.html#ChipIOBufExtractor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">ChipIOBufExtractor</code><span class="sig-paren">(</span><em>recovery_mode=False</em>, <em>filename_template='iobuf_for_chip_{}_{}_processor_id_{}.txt'</em>, <em>suppress_progress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/chip_iobuf_extractor.html#ChipIOBufExtractor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ChipIOBufExtractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -244,8 +239,8 @@ and where any java provenance can be written.</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; </li>
 <li><strong>executable_targets</strong> (<em>ExecutableTargets</em>) &#8211; </li>
 <li><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) &#8211; </li>
-<li><strong>app_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
-<li><strong>system_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
+<li><strong>app_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; </li>
+<li><strong>system_provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)"><em>None</em></a>) &#8211; </li>
 <li><strong>binary_executable_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>,</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType"><em>ExecutableType</em></a><em>)</em><em></em>) &#8211; </li>
 <li><strong>from_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
 <li><strong>binary_types</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
@@ -268,7 +263,7 @@ and where any java provenance can be written.</li>
 <dt id="spinn_front_end_common.interface.interface_functions.ChipProvenanceUpdater">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.interface_functions.</code><code class="descname">ChipProvenanceUpdater</code><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/chip_provenance_updater.html#ChipProvenanceUpdater"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.ChipProvenanceUpdater" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
-<p>Forces all cores to generate provenance data, and then exit</p>
+<p>Forces all cores to generate provenance data, and then exit.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -317,7 +312,7 @@ and where any java provenance can be written.</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>wait_for_read_confirmation</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; </li>
-<li><strong>socket_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><em>SocketAddress</em><em>)</em><em></em>) &#8211; Where to notify.</li>
+<li><strong>socket_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v)"><em>SocketAddress</em></a><em>)</em><em></em>) &#8211; Where to notify.</li>
 <li><strong>database_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
 </ul>
 </td>
@@ -537,14 +532,21 @@ board-locn-to-timeout-key map</p>
 </tbody>
 </table>
 <dl class="staticmethod">
-<dt id="spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_application_partition">
-<em class="property">static </em><code class="descname">process_application_partition</code><span class="sig-paren">(</span><em>partition</em>, <em>n_keys_map</em>, <em>graph_mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/edge_to_n_keys_mapper.html#EdgeToNKeysMapper.process_application_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_application_partition" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_machine_partition">
-<em class="property">static </em><code class="descname">process_machine_partition</code><span class="sig-paren">(</span><em>partition</em>, <em>n_keys_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/edge_to_n_keys_mapper.html#EdgeToNKeysMapper.process_machine_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_machine_partition" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_partition">
+<em class="property">static </em><code class="descname">process_partition</code><span class="sig-paren">(</span><em>partition</em>, <em>n_keys_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/edge_to_n_keys_mapper.html#EdgeToNKeysMapper.process_partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_partition" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>partition</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.OutgoingEdgePartition" title="(in PACMAN v)"><em>OutgoingEdgePartition</em></a>) &#8211; </li>
+<li><strong>n_keys_map</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.DictBasedMachinePartitionNKeysMap" title="(in PACMAN v)"><em>DictBasedMachinePartitionNKeysMap</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
@@ -599,7 +601,7 @@ board-locn-to-timeout-key map</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; </li>
 <li><strong>graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; </li>
-<li><strong>executable_finder</strong> (<em>ExecutableFinder</em>) &#8211; </li>
+<li><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v)"><em>ExecutableFinder</em></a>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -781,7 +783,7 @@ boot port, allocation controller</p>
 
 <dl class="method">
 <dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses">
-<code class="descname">collect_bit_field_sdram_base_addresses</code><span class="sig-paren">(</span><em>chip_x</em>, <em>chip_y</em>, <em>machine</em>, <em>placements</em>, <em>transceiver</em>, <em>graph_mapper</em>, <em>bit_field_sdram_base_addresses</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses" title="Permalink to this definition">¶</a></dt>
+<code class="descname">collect_bit_field_sdram_base_addresses</code><span class="sig-paren">(</span><em>chip_x</em>, <em>chip_y</em>, <em>machine</em>, <em>placements</em>, <em>transceiver</em>, <em>bit_field_sdram_base_addresses</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.collect_bit_field_sdram_base_addresses" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -802,7 +804,7 @@ boot port, allocation controller</p>
 
 <dl class="staticmethod">
 <dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.generate_key_to_atom_map">
-<em class="property">static </em><code class="descname">generate_key_to_atom_map</code><span class="sig-paren">(</span><em>machine_graph</em>, <em>routing_infos</em>, <em>graph_mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.generate_key_to_atom_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.generate_key_to_atom_map" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">generate_key_to_atom_map</code><span class="sig-paren">(</span><em>machine_graph</em>, <em>routing_infos</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.generate_key_to_atom_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.generate_key_to_atom_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>THIS IS NEEDED due to the link from key to edge being lost.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -811,7 +813,6 @@ boot port, allocation controller</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; machine graph</li>
 <li><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v)"><em>RoutingInfo</em></a>) &#8211; routing infos</li>
-<li><strong>graph_mapper</strong> &#8211; graph mapper</li>
 </ul>
 </td>
 </tr>
@@ -842,14 +843,17 @@ boot port, allocation controller</p>
 
 <dl class="staticmethod">
 <dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api">
-<em class="property">static </em><code class="descname">locate_vertex_with_the_api</code><span class="sig-paren">(</span><em>machine_vertex</em>, <em>graph_mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">locate_vertex_with_the_api</code><span class="sig-paren">(</span><em>machine_vertex</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>machine_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v)"><em>MachineVertex</em></a>) &#8211; </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression" title="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">AbstractSupportsBitFieldRoutingCompression</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The vertex associated with the machine vertex that supports
+compression, or <cite>None</cite> if nothing can be found.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression" title="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">AbstractSupportsBitFieldRoutingCompression</a> or <a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -857,13 +861,13 @@ boot port, allocation controller</p>
 
 <dl class="method">
 <dt id="spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process">
-<code class="descname">start_compression_selection_process</code><span class="sig-paren">(</span><em>router_table</em>, <em>produce_report</em>, <em>report_folder_path</em>, <em>bit_field_sdram_base_addresses</em>, <em>transceiver</em>, <em>machine_graph</em>, <em>placements</em>, <em>machine</em>, <em>graph_mapper</em>, <em>target_length</em>, <em>time_to_try_for_each_iteration</em>, <em>use_timer_cut_off</em>, <em>compressed_pacman_router_tables</em>, <em>key_atom_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.start_compression_selection_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process" title="Permalink to this definition">¶</a></dt>
-<dd><p>entrance method for doing on host compression. Can be used as a             public method for other compressors.</p>
+<code class="descname">start_compression_selection_process</code><span class="sig-paren">(</span><em>router_table</em>, <em>produce_report</em>, <em>report_folder_path</em>, <em>bit_field_sdram_base_addresses</em>, <em>transceiver</em>, <em>machine_graph</em>, <em>placements</em>, <em>machine</em>, <em>target_length</em>, <em>time_to_try_for_each_iteration</em>, <em>use_timer_cut_off</em>, <em>compressed_pacman_router_tables</em>, <em>key_atom_map</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_bit_field_router_compressor.html#HostBasedBitFieldRouterCompressor.start_compression_selection_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.HostBasedBitFieldRouterCompressor.start_compression_selection_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entrance method for doing on host compression. Can be used as a             public method for other compressors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>router_table</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.UnCompressedMulticastRoutingTable" title="(in PACMAN v)"><em>UnCompressedMulticastRoutingTable</em></a>) &#8211; the routing table in question to compress</li>
 <li><strong>produce_report</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether the report should be generated</li>
 <li><strong>report_folder_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the report folder base address</li>
@@ -872,17 +876,13 @@ boot port, allocation controller</p>
 <li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; machine graph</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; placements</li>
 <li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; SpiNNMan instance</li>
-<li><strong>graph_mapper</strong> &#8211; mapping between 2 graphs</li>
 <li><strong>target_length</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; length of router compressor to get to</li>
 <li><strong>time_to_try_for_each_iteration</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; time in seconds to run each compression attempt for</li>
 <li><strong>use_timer_cut_off</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether the timer cut off is to be used</li>
+<li><strong>compressed_pacman_router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; a data holder for compressed tables</li>
 <li><strong>key_atom_map</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; key to atoms map
 should be allowed to handle per time step</li>
-<li><strong>compressed_pacman_router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; a data holder for compressed tables</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
 </td>
 </tr>
 </tbody>
@@ -940,7 +940,7 @@ that each chip should have</li>
 <li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; where vertices are located</li>
 <li><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em><em></em>) &#8211; the deployed extra monitors, if any</li>
 <li><strong>extra_monitor_cores_to_ethernet_connection_map</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>, </em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex"><em>DataSpeedUpPacketGatherMachineVertex</em></a><em>)</em><em></em>) &#8211; how to talk to extra monitor cores</li>
-<li><strong>processor_to_app_data_base_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>, </em><em>DsWriteInfo</em><em>)</em><em></em>) &#8211; map of placement and DSG data</li>
+<li><strong>processor_to_app_data_base_address</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em><em>, </em><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsWriteInfo" title="spinn_front_end_common.interface.ds.DsWriteInfo"><em>DsWriteInfo</em></a><em>)</em><em></em>) &#8211; map of placement and DSG data</li>
 <li><strong>disable_advanced_monitor_usage</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; whether to avoid using advanced monitors even if they&#8217;re available</li>
 </ul>
 </td>
@@ -948,7 +948,7 @@ that each chip should have</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">map of placement and DSG data</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten" title="spinn_front_end_common.utilities.utility_objs.DataWritten">DataWritten</a>) or DsWriteInfo</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten" title="spinn_front_end_common.utilities.utility_objs.DataWritten">DataWritten</a>) or <a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsWriteInfo" title="spinn_front_end_common.interface.ds.DsWriteInfo">DsWriteInfo</a></p>
 </td>
 </tr>
 </tbody>
@@ -979,7 +979,7 @@ that each chip should have</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">map of placement and DSG data, and loaded data flag.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten" title="spinn_front_end_common.utilities.utility_objs.DataWritten">DataWritten</a>) or DsWriteInfo</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>),<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.DataWritten" title="spinn_front_end_common.utilities.utility_objs.DataWritten">DataWritten</a>) or <a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsWriteInfo" title="spinn_front_end_common.interface.ds.DsWriteInfo">DsWriteInfo</a></p>
 </td>
 </tr>
 </tbody>
@@ -1035,6 +1035,11 @@ that each chip should have</li>
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.InsertEdgesToExtraMonitorFunctionality.EDGE_LABEL">
+<code class="descname">EDGE_LABEL</code><em class="property"> = 'edge between {} and {}'</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.InsertEdgesToExtraMonitorFunctionality.EDGE_LABEL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -1205,7 +1210,8 @@ vertex_to_chip_map</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)">CoreSubsets</a>)</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v)">CoreSubsets</a>)
+or <a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>)</p>
 </td>
 </tr>
 </tbody>
@@ -1736,7 +1742,7 @@ could be <cite>None</cite> if these are being given in separate lists</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>iptags</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v)"><em>IPTag</em></a><em>)</em><em></em>) &#8211; the IP tags to be loaded.</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the transceiver object</li>
-<li><strong>progress_bar</strong> (<em>ProgressBar</em>) &#8211; </li>
+<li><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v)"><em>ProgressBar</em></a>) &#8211; </li>
 </ul>
 </td>
 </tr>
@@ -1755,7 +1761,7 @@ could be <cite>None</cite> if these are being given in separate lists</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>reverse_ip_tags</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v)"><em>ReverseIPTag</em></a><em>)</em><em></em>) &#8211; the reverse IP tags to be loaded</li>
 <li><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v)"><em>Transceiver</em></a>) &#8211; the transceiver object</li>
-<li><strong>progress_bar</strong> (<em>ProgressBar</em>) &#8211; </li>
+<li><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v)"><em>ProgressBar</em></a>) &#8211; </li>
 </ul>
 </td>
 </tr>

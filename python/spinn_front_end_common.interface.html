@@ -158,9 +158,9 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>configfile</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; What the configuration file is called</li>
-<li><strong>executable_finder</strong> (<em>ExecutableFinder</em>) &#8211; How to find APLX files to deploy to SpiNNaker</li>
+<li><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v)"><em>ExecutableFinder</em></a>) &#8211; How to find APLX files to deploy to SpiNNaker</li>
 <li><strong>graph_label</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; A label for the overall application graph</li>
-<li><strong>database_socket_addresses</strong> (<em>iterable</em><em>(</em><em>SocketAddress</em><em>)</em><em></em>) &#8211; How to talk to notification databases</li>
+<li><strong>database_socket_addresses</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v)"><em>SocketAddress</em></a><em>)</em><em></em>) &#8211; How to talk to notification databases</li>
 <li><strong>extra_algorithm_xml_paths</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em></em>) &#8211; Where to load definitions of extra algorithms from</li>
 <li><strong>n_chips_required</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Overrides the number of chips to allocate from spalloc</li>
 <li><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; Overrides the number of boards to allocate from spalloc</li>
@@ -288,7 +288,7 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>socket_address</strong> (<em>SocketAddress</em>) &#8211; The address of the socket</li>
+<li><strong>socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v)"><em>SocketAddress</em></a>) &#8211; The address of the socket</li>
 <li><strong>socket_address</strong> &#8211; The address of the database socket</li>
 </ul>
 </td>
@@ -303,7 +303,10 @@
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph">
 <code class="descname">application_graph</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.application_graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>The application graph used to derive the runtime machine             configuration.</p>
+<dd><dl class="docutils">
+<dt>The application graph used to derive the runtime machine</dt>
+<dd>configuration.</dd>
+</dl>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -454,7 +457,10 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name_of_variable</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; The variable to retrieve</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value (of arbitrary type), or None if the variable is             not found.</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value (of arbitrary type), or <cite>None</cite> if the variable is
+not found.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> &#8211; If the simulation hasn&#8217;t yet run</td>
 </tr>
 </tbody>
 </table>
@@ -475,11 +481,6 @@
 </tbody>
 </table>
 </dd></dl>
-
-<dl class="attribute">
-<dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.graph_mapper">
-<code class="descname">graph_mapper</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.graph_mapper" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_ran">
@@ -791,12 +792,14 @@ tags off the machine at stop</li>
 <dl class="attribute">
 <dt id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board">
 <code class="descname">use_virtual_board</code><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if this run is using a virtual machine</p>
-<table class="docutils field-list" frame="void" rules="none">
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool
+True if this run is using a virtual machine</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
 </tr>
 </tbody>
 </table>

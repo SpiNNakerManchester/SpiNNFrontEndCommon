@@ -222,8 +222,7 @@
             <span class="n">target_length</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
             <span class="n">use_timer_cut_off</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
             <span class="n">no_sync_changes</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">,</span>
-            <span class="n">executable_targets</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">compress_only_when_needed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">executable_targets</span><span class="p">,</span> <span class="n">compress_only_when_needed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">provenance_data_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; entrance for routing table compression with bit field</span>
 
@@ -244,7 +243,6 @@
 <span class="sd">        :param int no_sync_changes:</span>
 <span class="sd">        :param int threshold_percentage:</span>
 <span class="sd">        :param ExecutableTargets executable_targets:</span>
-<span class="sd">        :param graph_mapper: mapping between graphs (could be none)</span>
 <span class="sd">        :param bool compress_only_when_needed:</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
 <span class="sd">        :param list(ProvenanceDataItem) provenance_data_objects:</span>
@@ -273,7 +271,7 @@
 
         <span class="c1"># locate data and on_chip_cores to load binary on</span>
         <span class="p">(</span><span class="n">addresses</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_addresses</span><span class="p">(</span>
-            <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">)</span>
+            <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">)</span>
 
         <span class="c1"># create executable targets</span>
         <span class="p">(</span><span class="n">compressor_executable_targets</span><span class="p">,</span> <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span>
@@ -320,13 +318,13 @@
             <span class="n">compressed_pacman_router_tables</span> <span class="o">=</span> <span class="n">MulticastRoutingTables</span><span class="p">()</span>
 
             <span class="n">key_atom_map</span> <span class="o">=</span> <span class="n">host_compressor</span><span class="o">.</span><span class="n">generate_key_to_atom_map</span><span class="p">(</span>
-                <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">)</span>
+                <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">on_host_chips</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
                 <span class="n">bit_field_sdram_base_addresses</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
                 <span class="n">host_compressor</span><span class="o">.</span><span class="n">collect_bit_field_sdram_base_addresses</span><span class="p">(</span>
                     <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-                    <span class="n">graph_mapper</span><span class="p">,</span> <span class="n">bit_field_sdram_base_addresses</span><span class="p">)</span>
+                    <span class="n">bit_field_sdram_base_addresses</span><span class="p">)</span>
 
                 <span class="n">host_compressor</span><span class="o">.</span><span class="n">start_compression_selection_process</span><span class="p">(</span>
                     <span class="n">router_table</span><span class="o">=</span><span class="n">routing_tables</span><span class="o">.</span><span class="n">get_routing_table_for_chip</span><span class="p">(</span>
@@ -338,7 +336,6 @@
                         <span class="n">bit_field_sdram_base_addresses</span><span class="p">),</span>
                     <span class="n">transceiver</span><span class="o">=</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">machine_graph</span><span class="o">=</span><span class="n">machine_graph</span><span class="p">,</span>
                     <span class="n">placements</span><span class="o">=</span><span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="n">machine</span><span class="p">,</span>
-                    <span class="n">graph_mapper</span><span class="o">=</span><span class="n">graph_mapper</span><span class="p">,</span>
                     <span class="n">target_length</span><span class="o">=</span><span class="n">target_length</span><span class="p">,</span>
                     <span class="n">time_to_try_for_each_iteration</span><span class="o">=</span><span class="p">(</span>
                         <span class="n">time_to_try_for_each_iteration</span><span class="p">),</span>
@@ -857,22 +854,19 @@
             <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">_generate_addresses</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span>
-            <span class="n">graph_mapper</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; generates the bitfield sdram addresses</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; generates the bitfield SDRAM addresses</span>
 
 <span class="sd">        :param ~.MachineGraph machine_graph: machine graph</span>
 <span class="sd">        :param ~.Placements placements: placements</span>
 <span class="sd">        :param ~.Transceiver transceiver: spinnman instance</span>
 <span class="sd">        :param ~.ProgressBar progress_bar: the progress bar</span>
-<span class="sd">        :param: graph_mapper: mapping between graphs</span>
 <span class="sd">        :return: region_addresses and the executable targets to load the</span>
 <span class="sd">            router table compressor with bitfield. and the SDRAM blocks</span>
 <span class="sd">            available for use on each core that we plan to use</span>
 <span class="sd">        :rtype: tuple(dict(tuple(int,int),tuple(int,int,int)),</span>
 <span class="sd">            dict(tuple(int,int),list(tuple(int,int))))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># data holders</span>
         <span class="n">region_addresses</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
         <span class="n">sdram_block_addresses_and_sizes</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
@@ -884,7 +878,7 @@
             <span class="c1"># locate the interface vertex (maybe app or machine)</span>
             <span class="n">vertex</span> <span class="o">=</span> \
                 <span class="n">HostBasedBitFieldRouterCompressor</span><span class="o">.</span><span class="n">locate_vertex_with_the_api</span><span class="p">(</span>
-                    <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">)</span>
+                    <span class="n">machine_vertex</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">vertex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_add_to_addresses</span><span class="p">(</span>
                     <span class="n">vertex</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">region_addresses</span><span class="p">,</span>
@@ -894,11 +888,11 @@
 
     <span class="k">def</span> <span class="nf">_generate_chip_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">address_list</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Generate byte array data for a list of sdram addresses and \</span>
+        <span class="sd">&quot;&quot;&quot; Generate byte array data for a list of SDRAM addresses and \</span>
 <span class="sd">            finally the time to run per compression iteration.</span>
 
 <span class="sd">        :param list(tuple(int,int,int)) address_list:</span>
-<span class="sd">            the list of sdram addresses</span>
+<span class="sd">            the list of SDRAM addresses</span>
 <span class="sd">        :param ~.CoreSubset cores: compressor cores on this chip.</span>
 <span class="sd">        :param int comms_sdram: Address for comms block</span>
 <span class="sd">        :param int threshold_percentage:</span>
@@ -907,7 +901,6 @@
 <span class="sd">        :return: the byte array</span>
 <span class="sd">        :rtype: bytes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">data</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
         <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">threshold_percentage</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ONE_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">comms_sdram</span><span class="p">)</span>

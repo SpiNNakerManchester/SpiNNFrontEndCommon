@@ -105,7 +105,6 @@
 <span class="kn">from</span> <span class="nn">spinn_storage_handlers</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spinn_storage_version</span>
 <span class="kn">from</span> <span class="nn">data_specification</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">data_spec_version</span>
 <span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spalloc_version</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">GraphMapper</span>
 <span class="kn">from</span> <span class="nn">pacman.model.placements</span> <span class="kn">import</span> <span class="n">Placements</span>
 <span class="kn">from</span> <span class="nn">pacman.executor</span> <span class="kn">import</span> <span class="n">PACMANAlgorithmExecutor</span>
 <span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="n">PacmanAlgorithmFailedToCompleteException</span>
@@ -214,9 +213,6 @@
 
         <span class="c1"># boolean for empty graphs</span>
         <span class="s2">&quot;_empty_graphs&quot;</span><span class="p">,</span>
-
-        <span class="c1"># the mapping interface between application and machine graphs.</span>
-        <span class="s2">&quot;_graph_mapper&quot;</span><span class="p">,</span>
 
         <span class="c1"># The holder for where machine graph vertices are placed.</span>
         <span class="s2">&quot;_placements&quot;</span><span class="p">,</span>
@@ -486,12 +482,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_graph_label</span> <span class="o">=</span> <span class="n">graph_label</span>
 
         <span class="c1"># pacman objects</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span> <span class="o">=</span> \
-            <span class="n">ApplicationGraph</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph_label</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span> <span class="o">=</span> <span class="n">MachineGraph</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph_label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span> <span class="o">=</span> <span class="n">ApplicationGraph</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph_label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span> <span class="o">=</span> <span class="n">MachineGraph</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph_label</span><span class="p">,</span>
+            <span class="n">application_graph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_empty_graphs</span> <span class="o">=</span> <span class="kc">False</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="kc">None</span>
@@ -513,8 +510,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_mapping_tokens</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_outputs</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_load_tokens</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_tokens</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pacman_provenance</span> <span class="o">=</span> <span class="n">PacmanProvenanceExtractor</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_all_provenance_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_version_provenance</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -752,11 +749,11 @@
                 <span class="s2">&quot;A SpiNNaker machine must be specified your configuration&quot;</span>
                 <span class="s2">&quot; file&quot;</span><span class="p">)</span>
 
-        <span class="n">n_items_specified</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span>
-            <span class="mi">1</span> <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">n_items_specified</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">[</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spalloc_server</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">]])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_remote_spinnaker_url</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">n_items_specified</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span>
                 <span class="p">(</span><span class="n">n_items_specified</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">)):</span>
@@ -795,13 +792,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span><span class="p">(</span><span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">)</span></div>
 
+    <span class="n">_RUNNING_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">,</span> <span class="n">Simulator_State</span><span class="o">.</span><span class="n">RUN_FOREVER</span><span class="p">)</span>
+    <span class="n">_SHUTDOWN_STATES</span> <span class="o">=</span> <span class="p">(</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">,</span> <span class="p">)</span>
+
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">verify_not_running</span><span class="p">)</span>
 <div class="viewcode-block" id="AbstractSpinnakerBase.verify_not_running"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.verify_not_running">[docs]</a>    <span class="k">def</span> <span class="nf">verify_not_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">IN_RUN</span><span class="p">,</span>
-                           <span class="n">Simulator_State</span><span class="o">.</span><span class="n">RUN_FOREVER</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_RUNNING_STATES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Illegal call while a simulation is already running&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Simulator_State</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SHUTDOWN_STATES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Illegal call after simulation is shutdown&quot;</span><span class="p">)</span></div>
 
@@ -834,7 +833,8 @@
 
         <span class="c1"># sort out machine graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">MachineGraph</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+            <span class="n">application_graph</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">outgoing_partition</span> <span class="ow">in</span> \
@@ -955,11 +955,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_graphs_for_usage</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_dependent_verts_and_edges_for_application_graph</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_commands_to_command_sender</span><span class="p">()</span>
-
-            <span class="c1"># Reset the machine graph if there is an application graph</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">MachineGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_graph_label</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="o">=</span> <span class="kc">None</span>
 
             <span class="c1"># Reset the machine if the graph has changed</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_calls_to_run</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -1113,8 +1108,7 @@
                             <span class="n">dependant_vertex</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">edge_identifier</span> <span class="ow">in</span> <span class="n">edge_partition_ids</span><span class="p">:</span>
                         <span class="n">dependant_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span>
-                            <span class="n">pre_vertex</span><span class="o">=</span><span class="n">vertex</span><span class="p">,</span>
-                            <span class="n">post_vertex</span><span class="o">=</span><span class="n">dependant_vertex</span><span class="p">)</span>
+                            <span class="n">pre_vertex</span><span class="o">=</span><span class="n">vertex</span><span class="p">,</span> <span class="n">post_vertex</span><span class="o">=</span><span class="n">dependant_vertex</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
                             <span class="n">dependant_edge</span><span class="p">,</span> <span class="n">edge_identifier</span><span class="p">)</span>
 
@@ -1381,10 +1375,7 @@
             <span class="s2">&quot;MachineAllocationController&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">do_partitioning</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span>
-                <span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span>
-                <span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_machine_by_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">algorithms</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Checks if we can get a remote machine by size of if we have to \</span>
@@ -1424,7 +1415,6 @@
                 <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;application_to_machine_graph_algorithms&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
             <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
-            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">)</span>
             <span class="n">do_partitioning</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># No way to decided size so default to one board</span>
@@ -1577,19 +1567,15 @@
             <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;post_simulation_overrun_before_error&quot;</span><span class="p">)</span>
 
         <span class="c1"># handle graph additions</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryMachineGraph&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_empty_graphs</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Your graph has no vertices in it.&quot;</span><span class="p">)</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryApplicationGraph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
-            <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">GraphMapper</span><span class="p">()</span>
             <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;MemoryMachineGraph&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
 
         <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;ReportFolder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span>
@@ -1756,9 +1742,6 @@
         <span class="k">if</span> <span class="n">add_data_speed_up</span><span class="p">:</span>
             <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryFixedRoutes&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">)</span>
-
         <span class="c1"># Create a buffer manager if there isn&#39;t one already</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1792,7 +1775,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryRoutingTables&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryTags&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_routing_infos</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryRoutingInfos&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryGraphMapper&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;MemoryMachineGraph&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">get_item</span><span class="p">(</span><span class="s2">&quot;ExecutableTypes&quot;</span><span class="p">)</span>
 
@@ -2412,7 +2394,7 @@
         <span class="k">return</span> <span class="n">xml_paths</span>
 
     <span class="k">def</span> <span class="nf">_detect_if_graph_has_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_flags</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; goes though the original graphs looking for changes.</span>
+        <span class="sd">&quot;&quot;&quot; Iterates though the original graphs looking for changes.</span>
 
 <span class="sd">        :param bool reset_flags:</span>
 <span class="sd">        :return: mapping_changed, data_changed</span>
@@ -2508,7 +2490,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The application graph used to derive the runtime machine \</span>
+        <span class="sd">&quot;&quot;&quot; The application graph used to derive the runtime machine</span>
 <span class="sd">            configuration.</span>
 
 <span class="sd">        :rtype: ~pacman.model.graphs.application.ApplicationGraph</span>
@@ -2538,10 +2520,6 @@
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">transceiver</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">graph_mapper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
@@ -2583,6 +2561,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_none_labelled_edge_count</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
     <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">SimulatorInterface</span><span class="o">.</span><span class="n">use_virtual_board</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">use_virtual_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; True if this run is using a virtual machine</span>
 
@@ -2605,8 +2584,9 @@
         <span class="sd">&quot;&quot;&quot; Get the value of an inter-algorithm variable.</span>
 
 <span class="sd">        :param str name_of_variable: The variable to retrieve</span>
-<span class="sd">        :return: The value (of arbitrary type), or None if the variable is \</span>
+<span class="sd">        :return: The value (of arbitrary type), or `None` if the variable is</span>
 <span class="sd">            not found.</span>
+<span class="sd">        :raises ConfigurationException: If the simulation hasn&#39;t yet run</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">name_of_variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_run_outputs</span><span class="p">:</span>
@@ -2627,8 +2607,7 @@
 <span class="sd">        :raises PacmanConfigurationException:</span>
 <span class="sd">            If there is an attempt to add the same vertex more than once</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_graph_mapper</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Cannot add vertices to both the machine and application&quot;</span>
                 <span class="s2">&quot; graphs&quot;</span><span class="p">)</span>
@@ -2644,7 +2623,7 @@
 <span class="sd">            If there is an attempt to add the same vertex more than once</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># check that there&#39;s no application vertices added so far</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Cannot add vertices to both the machine and application&quot;</span>
                 <span class="s2">&quot; graphs&quot;</span><span class="p">)</span>

@@ -143,8 +143,11 @@
     <span class="sd">&quot;&quot;&quot; A model which allows events to be injected into SpiNNaker and\</span>
 <span class="sd">        converted in to multicast packets.</span>
 
-<span class="sd">    :param int n_keys: The number of keys to be sent via this multicast source</span>
+<span class="sd">    :param ~pacman.model.graphs.common.Slice vertex_slice:</span>
+<span class="sd">        The slice served via this multicast source</span>
 <span class="sd">    :param str label: The label of this vertex</span>
+<span class="sd">    :param ReverseIpTagMultiCastSource app_vertex:</span>
+<span class="sd">        The associated application vertex</span>
 <span class="sd">    :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:</span>
 <span class="sd">        Any initial constraints to this vertex</span>
 <span class="sd">    :param str board_address:</span>
@@ -212,7 +215,7 @@
     <span class="n">_n_data_specs</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 
             <span class="c1"># General input and output parameters</span>
             <span class="n">board_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -236,60 +239,12 @@
 
             <span class="c1"># Flag to indicate that data will be received to inject</span>
             <span class="n">enable_injection</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int n_keys:</span>
-<span class="sd">            The number of keys to be sent via this multicast source</span>
-<span class="sd">        :param str label: The label of this vertex</span>
-<span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
-<span class="sd">                constraints:</span>
-<span class="sd">            Any initial constraints to this vertex</span>
-<span class="sd">        :param str board_address:</span>
-<span class="sd">            The IP address of the board on which to place this vertex if</span>
-<span class="sd">            receiving data, either buffered or live (by default, any board is</span>
-<span class="sd">            chosen)</span>
-<span class="sd">        :param int receive_port:</span>
-<span class="sd">            The port on the board that will listen for incoming event packets</span>
-<span class="sd">            (default is to disable this feature; set a value to enable it, or</span>
-<span class="sd">            set the `reserve_reverse_ip_tag parameter` to True if a random port</span>
-<span class="sd">            is to be used)</span>
-<span class="sd">        :param int receive_sdp_port:</span>
-<span class="sd">            The SDP port to listen on for incoming event packets</span>
-<span class="sd">            (defaults to 1)</span>
-<span class="sd">        :param int receive_tag:</span>
-<span class="sd">            The IP tag to use for receiving live events (uses any by default)</span>
-<span class="sd">        :param int receive_rate:</span>
-<span class="sd">        :param int virtual_key:</span>
-<span class="sd">            The base multicast key to send received events with (assigned</span>
-<span class="sd">            automatically by default)</span>
-<span class="sd">        :param int prefix:</span>
-<span class="sd">            The prefix to &quot;or&quot; with generated multicast keys (default is no</span>
-<span class="sd">            prefix)</span>
-<span class="sd">        :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:</span>
-<span class="sd">            Whether the prefix should apply to the upper or lower half of the</span>
-<span class="sd">            multicast keys (default is upper half)</span>
-<span class="sd">        :param bool check_keys:</span>
-<span class="sd">            True if the keys of received events should be verified before</span>
-<span class="sd">            sending (default False)</span>
-<span class="sd">        :param ~numpy.ndarray send_buffer_times:</span>
-<span class="sd">            An array of arrays of time steps at which keys should be sent (one</span>
-<span class="sd">            array for each key, default disabled)</span>
-<span class="sd">        :param str send_buffer_partition_id:</span>
-<span class="sd">            The ID of the partition containing the edges down which the events</span>
-<span class="sd">            are to be sent</span>
-<span class="sd">        :param bool reserve_reverse_ip_tag:</span>
-<span class="sd">            True if the source should set up a tag through which it can receive</span>
-<span class="sd">            packets; if port is set to None this can be used to enable the</span>
-<span class="sd">            reception of packets on a randomly assigned port, which can be read</span>
-<span class="sd">            from the database</span>
-<span class="sd">        :param bool enable_injection:</span>
-<span class="sd">            Flag to indicate that data will be received to inject</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+            <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span> <span class="o">=</span> <span class="n">n_keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span> <span class="o">=</span> <span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span>
 
         <span class="c1"># Set up for receiving live packets</span>
         <span class="k">if</span> <span class="n">receive_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">reserve_reverse_ip_tag</span><span class="p">:</span>
@@ -343,7 +298,7 @@
 
         <span class="c1"># If the user has specified a virtual key</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_install_virtual_key</span><span class="p">(</span><span class="n">n_keys</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_install_virtual_key</span><span class="p">(</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_vertices</span> <span class="o">+=</span> <span class="mi">1</span>
 

@@ -103,9 +103,20 @@
 <span class="sd">        the application graph</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># Map of Chip(x,y) to the (Gather) vertex</span>
+        <span class="s2">&quot;_chip_to_gatherer_map&quot;</span><span class="p">,</span>
+        <span class="c1"># Description of the machine on which job is being run</span>
+        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
+        <span class="c1"># Map of Core(x,y,p) to the Placement on that core</span>
+        <span class="s2">&quot;_placements&quot;</span>
+    <span class="p">]</span>
+
+    <span class="n">EDGE_LABEL</span> <span class="o">=</span> <span class="s2">&quot;edge between </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span>
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span>
                  <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                 <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.MachineGraph machine_graph:</span>
 <span class="sd">        :param ~.Placements placements:</span>
@@ -114,91 +125,108 @@
 <span class="sd">        :type vertex_to_ethernet_connected_chip_mapping:</span>
 <span class="sd">            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
 <span class="sd">        :param ~.ApplicationGraph application_graph:</span>
-<span class="sd">        :param graph_mapper: the graph mapper</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="c1"># pylint: disable=too-many-arguments, attribute-defined-outside-init</span>
         <span class="n">n_app_vertices</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">n_app_vertices</span> <span class="o">=</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">n_vertices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chip_to_gatherer_map</span> <span class="o">=</span> <span class="n">vertex_to_ethernet_connected_chip_mapping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">+</span> <span class="n">n_app_vertices</span><span class="p">,</span>
             <span class="s2">&quot;Inserting edges between vertices which require FR speed up &quot;</span>
             <span class="s2">&quot;functionality.&quot;</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_process_vertex</span><span class="p">(</span>
-                    <span class="n">vertex</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-                    <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                    <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_process_mach_graph_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_process_app_graph_vertex</span><span class="p">(</span>
+                        <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">app_vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupport</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_process_app_graph_vertex</span><span class="p">(</span>
+                        <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupport</span><span class="p">):</span>
-                    <span class="n">machine_verts</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_machine_vertices</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">machine_vertex</span> <span class="ow">in</span> <span class="n">machine_verts</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_process_vertex</span><span class="p">(</span>
-                            <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-                            <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                            <span class="n">application_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">)</span>
-        <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">_process_vertex</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span>
-            <span class="n">graph_mapper</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_process_app_graph_vertex</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Inserts edges as required for a given vertex</span>
 
-<span class="sd">        :param vertex: the extra monitor core</span>
-<span class="sd">        :param machine: the spinnMachine instance</span>
-<span class="sd">        :param placements: the placements object</span>
-<span class="sd">        :param machine_graph: machine graph object</span>
-<span class="sd">        :param vertex_to_ethernet_connected_chip_mapping: \</span>
-<span class="sd">            the ethernet to multicast gatherer map</span>
-<span class="sd">        :param application_graph: app graph object</span>
-<span class="sd">        :param graph_mapper: the mapping between app and machine graph</span>
+<span class="sd">        :param ExtraMonitorSupportMachineVertex vertex: the extra monitor core</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: machine graph object</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph: app graph object; not None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="n">data_gatherer_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_gatherer_vertex</span><span class="p">(</span>
-            <span class="n">machine</span><span class="p">,</span> <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span>
-            <span class="n">vertex</span><span class="p">)</span>
+        <span class="n">gatherer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_gatherer_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
 
         <span class="c1"># locate if edge is already built; if not, build it and do mapping</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_edge_already</span><span class="p">(</span>
-                <span class="n">vertex</span><span class="p">,</span> <span class="n">data_gatherer_vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
-            <span class="n">machine_edge</span> <span class="o">=</span> <span class="n">MachineEdge</span><span class="p">(</span>
-                <span class="n">vertex</span><span class="p">,</span> <span class="n">data_gatherer_vertex</span><span class="p">,</span>
-                <span class="n">traffic_type</span><span class="o">=</span><span class="n">DataSpeedUp</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__has_edge_already</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
+            <span class="c1"># See if there&#39;s an application edge already</span>
+            <span class="n">app_edge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_app_edge</span><span class="p">(</span>
+                <span class="n">application_graph</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">app_edge</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">app_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span>
+                    <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span>
+                    <span class="n">traffic_type</span><span class="o">=</span><span class="n">DataSpeedUp</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span><span class="p">)</span>
+                <span class="n">application_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                    <span class="n">app_edge</span><span class="p">,</span> <span class="n">PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP</span><span class="p">)</span>
+            <span class="c1"># Use the application edge to build the machine edge</span>
+            <span class="n">edge</span> <span class="o">=</span> <span class="n">app_edge</span><span class="o">.</span><span class="n">create_machine_edge</span><span class="p">(</span>
+                <span class="n">vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">EDGE_LABEL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="p">))</span>
             <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
-                <span class="n">machine_edge</span><span class="p">,</span> <span class="n">PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP</span><span class="p">)</span>
+                <span class="n">edge</span><span class="p">,</span> <span class="n">PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">app_source</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
-                <span class="n">app_dest</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span>
-                    <span class="n">data_gatherer_vertex</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_process_mach_graph_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Inserts edges as required for a given vertex</span>
 
-                <span class="c1"># locate if edge is already built; if not, build it and map it</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_edge_already</span><span class="p">(</span>
-                        <span class="n">app_source</span><span class="p">,</span> <span class="n">app_dest</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">):</span>
-                    <span class="n">app_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span>
-                        <span class="n">app_source</span><span class="p">,</span> <span class="n">app_dest</span><span class="p">,</span>
-                        <span class="n">traffic_type</span><span class="o">=</span><span class="n">DataSpeedUp</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span><span class="p">)</span>
-                    <span class="n">application_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
-                        <span class="n">app_edge</span><span class="p">,</span> <span class="n">PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP</span><span class="p">)</span>
-                    <span class="n">graph_mapper</span><span class="o">.</span><span class="n">add_edge_mapping</span><span class="p">(</span><span class="n">machine_edge</span><span class="p">,</span> <span class="n">app_edge</span><span class="p">)</span>
+<span class="sd">        :param ExtraMonitorSupportMachineVertex vertex: the extra monitor core</span>
+<span class="sd">        :param ~.MachineGraph machine_graph:</span>
+<span class="sd">            machine graph object, which is not associated with any application</span>
+<span class="sd">            graph</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gatherer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_gatherer_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_gatherer_vertex</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">v_to_2_chip_map</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
-        <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
-        <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
-        <span class="n">ethernet_chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
+        <span class="c1"># locate if edge is already built; if not, build it and do mapping</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__has_edge_already</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
+            <span class="n">edge</span> <span class="o">=</span> <span class="n">MachineEdge</span><span class="p">(</span>
+                <span class="n">vertex</span><span class="p">,</span> <span class="n">gatherer</span><span class="p">,</span> <span class="n">traffic_type</span><span class="o">=</span><span class="n">DataSpeedUp</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span><span class="p">)</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                <span class="n">edge</span><span class="p">,</span> <span class="n">PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_gatherer_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ExtraMonitorSupportMachineVertex vertex:</span>
+<span class="sd">        :rtype: DataSpeedUpPacketGatherMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">ethernet_chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
             <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">v_to_2_chip_map</span><span class="p">[</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chip_to_gatherer_map</span><span class="p">[</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_has_edge_already</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__get_app_edge</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.ApplicationGraph graph:</span>
+<span class="sd">        :param ~.ApplicationVertex source:</span>
+<span class="sd">        :param ~.ApplicationVertex destination:</span>
+<span class="sd">        :rtype: ~.ApplicationEdge</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">get_edges_ending_at_vertex</span><span class="p">(</span><span class="n">destination</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span> <span class="o">==</span> <span class="n">source</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">edge</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__has_edge_already</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Checks if a edge already exists</span>
 
 <span class="sd">        :param ~.AbstractVertex source: the source of the edge</span>

@@ -122,9 +122,11 @@
     <span class="n">_CONFIG_SIZE</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
     <span class="n">_PROVENANCE_REGION_SIZE</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param LivePacketGatherParams lpg_params:</span>
+<span class="sd">        :param LivePacketGather app_vertex:</span>
 <span class="sd">        :param str label:</span>
 <span class="sd">        :param constraints:</span>
 <span class="sd">        :type constraints:</span>
@@ -132,7 +134,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># inheritance</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LivePacketGatherMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span> <span class="ow">or</span> <span class="n">lpg_params</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="n">label</span> <span class="ow">or</span> <span class="n">lpg_params</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
+            <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_resources_required</span> <span class="o">=</span> <span class="n">ResourceContainer</span><span class="p">(</span>
             <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
@@ -238,7 +241,7 @@
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Reserve SDRAM space for memory areas.</span>
 
-<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reserving memory space for data regions:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -257,8 +260,7 @@
 <span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        :param iterable(~.IPTag) iptags:</span>
 <span class="sd">            The set of IP tags assigned to the object</span>
-<span class="sd">        :raise ConfigurationException:</span>
-<span class="sd">            if `iptags` is empty</span>
+<span class="sd">        :raise ConfigurationException: if `iptags` is empty</span>
 <span class="sd">        :raise DataSpecificationException:</span>
 <span class="sd">            when something goes wrong with the DSG generation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -291,7 +293,7 @@
     <span class="k">def</span> <span class="nf">_write_setup_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write basic info to the system region</span>
 
-<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
+<span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        :param int machine_time_step:</span>
 <span class="sd">        :param int time_scale_factor:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -322,6 +324,8 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.get_dtcm_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage">[docs]</a>    <span class="k">def</span> <span class="nf">get_dtcm_usage</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the DTCM used by this vertex</span>
+
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_CONFIG_SIZE</span></div></div>
 </pre></div>

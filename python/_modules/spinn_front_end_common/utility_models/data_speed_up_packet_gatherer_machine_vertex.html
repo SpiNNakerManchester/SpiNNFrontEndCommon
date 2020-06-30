@@ -353,7 +353,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">extra_monitors_by_chip</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span>
             <span class="n">report_default_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">write_data_speed_up_reports</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int x: Where this gatherer is.</span>
 <span class="sd">        :param int y: Where this gatherer is.</span>
@@ -367,10 +367,14 @@
 <span class="sd">            Whether to write low-level reports on data transfer speeds.</span>
 <span class="sd">        :param iterable(~pacman.model.constraints.AbstractConstraint) \</span>
 <span class="sd">                constraints:</span>
+<span class="sd">        :param app_vertex:</span>
+<span class="sd">            The application vertex that caused this machine vertex to be</span>
+<span class="sd">            created. If None, there is no such application vertex.</span>
+<span class="sd">        :type app_vertex: ApplicationVertex or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SYSTEM:PacketGatherer(</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
-            <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">)</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="c1"># data holders for the output, and sequence numbers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
@@ -452,9 +456,9 @@
         <span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;MemoryRoutingInfos&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;MemoryTags&quot;</span><span class="p">,</span>
         <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastKeyToChipMap&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;router_timeout_key&quot;</span><span class="p">:</span> <span class="s2">&quot;SystemMulticastRouterTimeoutKeys&quot;</span><span class="p">,</span>
         <span class="s2">&quot;machine&quot;</span><span class="p">:</span> <span class="s2">&quot;MemoryExtendedMachine&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;app_id&quot;</span><span class="p">:</span> <span class="s2">&quot;APPID&quot;</span>
+        <span class="s2">&quot;app_id&quot;</span><span class="p">:</span> <span class="s2">&quot;APPID&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;router_timeout_key&quot;</span><span class="p">:</span> <span class="s2">&quot;SystemMulticastRouterTimeoutKeys&quot;</span>
     <span class="p">})</span>
     <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
@@ -585,7 +589,7 @@
                 <span class="n">prov_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProvenanceDataItem</span><span class="p">(</span>
                     <span class="p">[</span><span class="n">top_level_name</span><span class="p">,</span> <span class="s2">&quot;extraction_time&quot;</span><span class="p">,</span> <span class="n">chip_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span>
                      <span class="n">iteration_name</span><span class="p">],</span>
-                    <span class="n">time_taken</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+                    <span class="n">time_taken</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
                 <span class="n">times_extracted_the_same_thing</span> <span class="o">+=</span> <span class="mi">1</span>
 
                 <span class="c1"># handle lost sequence numbers</span>
@@ -894,7 +898,8 @@
     <span class="k">def</span> <span class="nf">_read_in_missing_seq_nums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; handles a missing seq num packet from spinnaker</span>
 
-<span class="sd">        :param bytearray data: the data to translate into missing seq nums</span>
+<span class="sd">        :param data: the data to translate into missing seq nums</span>
+<span class="sd">        :type data: bytearray or bytes</span>
 <span class="sd">        :param int position: the position in the data to write.</span>
 <span class="sd">        :param set(int) seq_nums: a set of sequence numbers to add to</span>
 <span class="sd">        :return: seen_last flag and seen_all flag</span>
@@ -911,7 +916,7 @@
         <span class="n">seen_last</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">seen_all</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">new_seq_nums</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_MISSING_SEQ_NUMS_END_FLAG</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">new_seq_nums</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">new_seq_nums</span> <span class="o">=</span> <span class="n">new_seq_nums</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">seen_last</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">new_seq_nums</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">FLAG_FOR_MISSING_ALL_SEQUENCES</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">missing_seq</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span><span class="p">):</span>
@@ -1394,15 +1399,14 @@
 <span class="sd">            destination. Used for determining which routers were used.</span>
 
 <span class="sd">        :param ~.Placement placement: the source to start from</span>
-<span class="sd">        :param dict(tuple(int,int),?) fixed_routes:</span>
+<span class="sd">        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:</span>
 <span class="sd">            the fixed routes for each router</span>
 <span class="sd">        :param ~.Machine machine: the spinnMachine instance</span>
 <span class="sd">        :return: list of chip locations</span>
 <span class="sd">        :rtype: list(tuple(int,int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">routers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="n">routers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
-        <span class="n">entry</span> <span class="o">=</span> <span class="n">fixed_routes</span><span class="p">[(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
+        <span class="n">routers</span> <span class="o">=</span> <span class="p">[(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">fixed_routes</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
         <span class="n">chip_x</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span>
         <span class="n">chip_y</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span>
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1413,7 +1417,7 @@
             <span class="n">chip_x</span> <span class="o">=</span> <span class="n">machine_link</span><span class="o">.</span><span class="n">destination_x</span>
             <span class="n">chip_y</span> <span class="o">=</span> <span class="n">machine_link</span><span class="o">.</span><span class="n">destination_y</span>
             <span class="n">routers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">))</span>
-            <span class="n">entry</span> <span class="o">=</span> <span class="n">fixed_routes</span><span class="p">[(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)]</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="n">fixed_routes</span><span class="p">[</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">routers</span>
 
     <span class="nd">@staticmethod</span>
@@ -1471,10 +1475,8 @@
 
         <span class="c1"># figure n packets given the 2 formats</span>
         <span class="n">n_packets</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">length_via_format2</span> <span class="o">=</span> \
-            <span class="nb">len</span><span class="p">(</span><span class="n">missing_seq_nums</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
-                <span class="n">WORDS_PER_FULL_PACKET</span> <span class="o">-</span>
-                <span class="n">WORDS_FOR_COMMAND_N_MISSING_TRANSACTION</span><span class="p">)</span>
+        <span class="n">length_via_format2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing_seq_nums</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
+            <span class="n">WORDS_PER_FULL_PACKET</span> <span class="o">-</span> <span class="n">WORDS_FOR_COMMAND_N_MISSING_TRANSACTION</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">length_via_format2</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">n_packets</span> <span class="o">+=</span> <span class="n">ceildiv</span><span class="p">(</span>
                 <span class="n">length_via_format2</span><span class="p">,</span>
@@ -1561,7 +1563,7 @@
 <span class="sd">        :param ~.Placement placement:</span>
 <span class="sd">            placement object for location on machine</span>
 <span class="sd">        :param ~.Transceiver transceiver: spinnman instance</span>
-<span class="sd">        :param int transaction_id: the transaction id for this stream</span>
+<span class="sd">        :param int transaction_id: the transaction ID for this stream</span>
 <span class="sd">        :param list(int) lost_seq_nums:</span>
 <span class="sd">            the list of n sequence numbers lost per iteration</span>
 <span class="sd">        :return: set of data items, if its the first packet, the list of</span>
@@ -1713,7 +1715,7 @@
     <span class="k">def</span> <span class="nf">_print_length_of_received_seq_nums</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">,</span> <span class="n">max_needed</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Debug helper method for figuring out if everything been received.</span>
 
-<span class="sd">        :param int seq_nums: sequence numbers received</span>
+<span class="sd">        :param list(int) seq_nums: sequence numbers received</span>
 <span class="sd">        :param int max_needed: biggest expected to have</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span> <span class="o">!=</span> <span class="n">max_needed</span><span class="p">:</span>
@@ -1739,6 +1741,12 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_gatherers&quot;</span><span class="p">,</span> <span class="s2">&quot;_monitors&quot;</span><span class="p">,</span> <span class="s2">&quot;_placements&quot;</span><span class="p">,</span> <span class="s2">&quot;_txrx&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gatherers</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">monitors</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver txrx:</span>
+<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) monitors:</span>
+<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gatherers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gatherers</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">txrx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="n">monitors</span>

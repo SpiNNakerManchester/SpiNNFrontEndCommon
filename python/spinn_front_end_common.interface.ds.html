@@ -360,6 +360,120 @@ spec for them</td>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.interface.ds.</code><code class="descname">DsWriteInfo</code><span class="sig-paren">(</span><em>database</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>database</strong> (<em>DsAbstractDatabase</em>) &#8211; Database to map</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.clear_write_info">
+<code class="descname">clear_write_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo.clear_write_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.clear_write_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the info for all cores,</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.get_info">
+<code class="descname">get_info</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo.get_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.get_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the info for the core x, y, p</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core x</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core y</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core p</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">dict with the keys
+<code class="docutils literal"><span class="pre">start_address</span></code>, <code class="docutils literal"><span class="pre">memory_used</span></code> and <code class="docutils literal"><span class="pre">memory_written</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.items">
+<code class="descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.items" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.iteritems">
+<code class="descname">iteritems</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.iteritems" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.keys">
+<code class="descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields the keys.</p>
+<p>As the more typical call is iteritems this makes use of that</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.set_info">
+<code class="descname">set_info</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo.set_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.set_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the info for the core x, y, p</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core x</li>
+<li><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core y</li>
+<li><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; core p</li>
+<li><strong>info</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em></em>) &#8211; dict with the keys
+<code class="docutils literal"><span class="pre">start_address</span></code>, <code class="docutils literal"><span class="pre">memory_used</span></code> and <code class="docutils literal"><span class="pre">memory_written</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinn_front_end_common.interface.ds.DsWriteInfo.set_size_info">
+<code class="descname">set_size_info</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>p</em>, <em>memory_used</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_write_info.html#DsWriteInfo.set_size_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsWriteInfo.set_size_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the size info for the core x, y p.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; core x</li>
+<li><strong>y</strong> &#8211; core y</li>
+<li><strong>p</strong> &#8211; core p</li>
+<li><strong>memory_used</strong> &#8211; memory allocated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtype None:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 

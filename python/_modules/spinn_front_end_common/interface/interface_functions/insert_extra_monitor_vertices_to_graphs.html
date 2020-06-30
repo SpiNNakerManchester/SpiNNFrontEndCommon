@@ -79,7 +79,6 @@
 
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.placer_constraints</span> <span class="kn">import</span> <span class="n">ChipAndCoreConstraint</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">Slice</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DataSpeedUpPacketGather</span><span class="p">,</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">,</span>
     <span class="n">ExtraMonitorSupport</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">)</span>
@@ -107,161 +106,209 @@
 <span class="sd">        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1"># the directory where reports go</span>
+        <span class="s2">&quot;_report_dir&quot;</span><span class="p">,</span>
+        <span class="c1">#  flag indicating whether to write the reports for data speed up</span>
+        <span class="s2">&quot;_write_reports&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="p">,</span> <span class="n">n_cores_to_allocate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">write_data_speed_up_reports</span><span class="p">,</span> <span class="n">application_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.Machine machine:</span>
 <span class="sd">        :param ~.MachineGraph machine_graph:</span>
-<span class="sd">        :param int n_cores_to_allocate:</span>
 <span class="sd">        :param str default_report_directory:</span>
 <span class="sd">        :param bool write_data_speed_up_reports:</span>
-<span class="sd">        :param graph_mapper: graph mapper</span>
 <span class="sd">        :param ~.ApplicationGraph application_graph:</span>
 <span class="sd">        :rtype: tuple(</span>
 <span class="sd">            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),</span>
 <span class="sd">            list(ExtraMonitorSupportMachineVertex),</span>
 <span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="c1"># pylint: disable=too-many-arguments, attribute-defined-outside-init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_dir</span> <span class="o">=</span> <span class="n">default_report_directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_reports</span> <span class="o">=</span> <span class="n">write_data_speed_up_reports</span>
 
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">machine</span><span class="o">.</span><span class="n">n_chips</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">)),</span>
             <span class="s2">&quot;Inserting extra monitors into graphs&quot;</span><span class="p">)</span>
 
-        <span class="n">vertex_to_ethernet_connected_chip_mapping</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">chip_to_gatherer_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">vertex_to_chip_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c1"># handle re injector and chip based data extractor functionality.</span>
-        <span class="n">extra_monitor_vertices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_second_monitor_functionality</span><span class="p">(</span>
-            <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
-            <span class="n">vertex_to_chip_map</span><span class="p">)</span>
+        <span class="c1"># handle reinjector and chip based data extractor functionality.</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">extra_monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_second_monitors_application_graph</span><span class="p">(</span>
+                <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+                <span class="n">vertex_to_chip_map</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extra_monitors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_second_monitors_machine_graph</span><span class="p">(</span>
+                <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
 
         <span class="c1"># progress data receiver for data extraction functionality</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_data_extraction_vertices</span><span class="p">(</span>
-            <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">,</span>
-            <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">,</span>
-            <span class="n">default_report_directory</span><span class="p">,</span> <span class="n">write_data_speed_up_reports</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_data_extraction_vertices_app_graph</span><span class="p">(</span>
+                <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+                <span class="n">chip_to_gatherer_map</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_data_extraction_vertices_mach_graph</span><span class="p">(</span>
+                <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">chip_to_gatherer_map</span><span class="p">,</span>
+                <span class="n">vertex_to_chip_map</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                <span class="n">extra_monitor_vertices</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chip_to_gatherer_map</span><span class="p">,</span> <span class="n">extra_monitors</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span>
 
-    <span class="k">def</span> <span class="nf">_handle_second_monitor_functionality</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">_add_second_monitors_application_graph</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">graph_mapper</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">):</span>
+            <span class="n">vertex_to_chip_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Handles placing the second monitor vertex with extra functionality\</span>
 <span class="sd">            into the graph</span>
 
-<span class="sd">        :param progress: progress bar</span>
-<span class="sd">        :param machine: spinnMachine instance</span>
-<span class="sd">        :param application_graph: app graph</span>
-<span class="sd">        :param machine_graph: machine graph</span>
-<span class="sd">        :param graph_mapper: graph mapper</span>
-<span class="sd">        :param vertex_to_chip_map: map between vertex and chip</span>
+<span class="sd">        :param ~.ProgressBar progress: progress bar</span>
+<span class="sd">        :param ~.Machine machine: spinnMachine instance</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph: app graph</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: machine graph</span>
+<span class="sd">        :param dict vertex_to_chip_map: map between vertex and chip</span>
 <span class="sd">        :return: list of extra monitor vertices</span>
-<span class="sd">        :rtype: list(MachineVertex)</span>
+<span class="sd">        :rtype: list(~.MachineVertex)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
         <span class="n">extra_monitor_vertices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">,</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
-                <span class="c1"># add to machine graph</span>
-                <span class="n">machine_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_mach_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
-                <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># add to both application graph and machine graph</span>
+            <span class="n">app_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_app_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
+            <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">))</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
+            <span class="n">vertex_to_chip_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
+            <span class="n">extra_monitor_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
 
-                <span class="n">vertex_to_chip_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
-                <span class="n">extra_monitor_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
-
-                <span class="c1"># add application graph as needed</span>
-                <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">app_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_app_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
-                    <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
-                    <span class="n">graph_mapper</span><span class="o">.</span><span class="n">add_vertex_mapping</span><span class="p">(</span>
-                        <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">Slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">app_vertex</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">extra_monitor_vertices</span>
 
-    <span class="k">def</span> <span class="nf">_handle_data_extraction_vertices</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">_add_second_monitors_machine_graph</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Handles placing the second monitor vertex with extra functionality\</span>
+<span class="sd">            into the graph</span>
+
+<span class="sd">        :param ~.ProgressBar progress: progress bar</span>
+<span class="sd">        :param ~.Machine machine: spinnMachine instance</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: machine graph</span>
+<span class="sd">        :param dict vertex_to_chip_map: map between vertex and chip</span>
+<span class="sd">        :return: list of extra monitor vertices</span>
+<span class="sd">        :rtype: list(~.MachineVertex)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="n">extra_monitor_vertices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">,</span> <span class="n">finish_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="c1"># add to machine graph</span>
+            <span class="n">vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_mach_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+            <span class="n">vertex_to_chip_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertex</span>
+            <span class="n">extra_monitor_vertices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">extra_monitor_vertices</span>
+
+    <span class="k">def</span> <span class="nf">_add_data_extraction_vertices_app_graph</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">graph_mapper</span><span class="p">,</span> <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-            <span class="n">vertex_to_chip_map</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="p">):</span>
+            <span class="n">chip_to_gatherer_map</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Places vertices for receiving data extraction packets.</span>
 
-<span class="sd">        :param progress: progress bar</span>
-<span class="sd">        :param machine: machine instance</span>
-<span class="sd">        :param application_graph: application graph</span>
-<span class="sd">        :param machine_graph: machine graph</span>
-<span class="sd">        :param default_report_directory: \</span>
-<span class="sd">            the default directory for where reports are to be written</span>
-<span class="sd">        :param write_data_speed_up_reports: \</span>
-<span class="sd">            determine whether to write the reports for data speed up</span>
-<span class="sd">        :param graph_mapper: graph mapper</span>
-<span class="sd">        :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map</span>
-<span class="sd">        :param vertex_to_chip_map: map between chip and extra monitor</span>
-<span class="sd">        :rtype: None</span>
+<span class="sd">        :param ~.ProgressBar progress: progress bar</span>
+<span class="sd">        :param ~.Machine machine: machine instance</span>
+<span class="sd">        :param ~.ApplicationGraph application_graph: application graph</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: machine graph</span>
+<span class="sd">        :param dict chip_to_gatherer_map: vertex to chip map</span>
+<span class="sd">        :param dict vertex_to_chip_map: map between chip and extra monitor</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
 
         <span class="c1"># insert machine vertices</span>
-        <span class="k">for</span> <span class="n">ethernet_chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
-            <span class="c1"># add to application graph if possible</span>
-            <span class="k">if</span> <span class="n">application_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">app_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_app_gatherer</span><span class="p">(</span>
-                    <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">,</span>
-                    <span class="n">default_report_directory</span><span class="p">,</span> <span class="n">write_data_speed_up_reports</span><span class="p">)</span>
-                <span class="n">machine_vertex</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertex</span>
-                <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
-                <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
-                <span class="n">graph_mapper</span><span class="o">.</span><span class="n">add_vertex_mapping</span><span class="p">(</span>
-                    <span class="n">machine_vertex</span><span class="p">,</span> <span class="n">Slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">app_vertex</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">machine_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_mach_gatherer</span><span class="p">(</span>
-                    <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">,</span>
-                    <span class="n">default_report_directory</span><span class="p">,</span> <span class="n">write_data_speed_up_reports</span><span class="p">)</span>
-                <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
-
+        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+            <span class="c1"># add to application graph</span>
+            <span class="n">app_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_app_gatherer</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
+            <span class="n">application_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">app_vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">))</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
             <span class="c1"># update mapping for edge builder</span>
-            <span class="n">vertex_to_ethernet_connected_chip_mapping</span><span class="p">[</span>
-                <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
+            <span class="n">chip_to_gatherer_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
+
+    <span class="k">def</span> <span class="nf">_add_data_extraction_vertices_mach_graph</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">progress</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
+            <span class="n">chip_to_gatherer_map</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Places vertices for receiving data extraction packets.</span>
+
+<span class="sd">        :param ~.ProgressBar progress: progress bar</span>
+<span class="sd">        :param ~.Machine machine: machine instance</span>
+<span class="sd">        :param ~.MachineGraph machine_graph: machine graph</span>
+<span class="sd">        :param dict chip_to_gatherer_map: vertex to chip map</span>
+<span class="sd">        :param dict vertex_to_chip_map: map between chip and extra monitor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
+
+        <span class="c1"># insert machine vertices</span>
+        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">):</span>
+            <span class="n">machine_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_mach_gatherer</span><span class="p">(</span><span class="n">chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">)</span>
+            <span class="n">machine_graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">)</span>
+            <span class="c1"># update mapping for edge builder</span>
+            <span class="n">chip_to_gatherer_map</span><span class="p">[</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">machine_vertex</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__new_app_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :rtype: ExtraMonitorSupport</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ExtraMonitorSupport</span><span class="p">(</span><span class="n">constraints</span><span class="o">=</span><span class="p">[</span>
             <span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__new_mach_monitor</span><span class="p">(</span><span class="n">chip</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">(</span><span class="n">constraints</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)])</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Chip chip:</span>
+<span class="sd">        :rtype: ExtraMonitorSupportMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">(</span>
+            <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)],</span>
+            <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__new_app_gatherer</span><span class="p">(</span>
-            <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new_app_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Chip ethernet_chip:</span>
+<span class="sd">        :param dict vertex_to_chip_map:</span>
+<span class="sd">        :rtype: DataSpeedUpPacketGather</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">DataSpeedUpPacketGather</span><span class="p">(</span>
             <span class="n">x</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
             <span class="n">ip_address</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
             <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span>
                 <span class="n">x</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">)],</span>
             <span class="n">extra_monitors_by_chip</span><span class="o">=</span><span class="n">vertex_to_chip_map</span><span class="p">,</span>
-            <span class="n">report_default_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="n">write_data_speed_up_reports</span><span class="p">)</span>
+            <span class="n">report_default_directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_dir</span><span class="p">,</span>
+            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_reports</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__new_mach_gatherer</span><span class="p">(</span>
-            <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">,</span> <span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new_mach_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ethernet_chip</span><span class="p">,</span> <span class="n">vertex_to_chip_map</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~.Chip ethernet_chip:</span>
+<span class="sd">        :param dict vertex_to_chip_map:</span>
+<span class="sd">        :rtype: DataSpeedUpPacketGatherMachineVertex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">(</span>
             <span class="n">x</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
             <span class="n">ip_address</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
             <span class="n">constraints</span><span class="o">=</span><span class="p">[</span><span class="n">ChipAndCoreConstraint</span><span class="p">(</span>
                 <span class="n">x</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">ethernet_chip</span><span class="o">.</span><span class="n">y</span><span class="p">)],</span>
             <span class="n">extra_monitors_by_chip</span><span class="o">=</span><span class="n">vertex_to_chip_map</span><span class="p">,</span>
-            <span class="n">report_default_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">,</span>
-            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="n">write_data_speed_up_reports</span><span class="p">)</span></div>
+            <span class="n">report_default_directory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_dir</span><span class="p">,</span>
+            <span class="n">write_data_speed_up_reports</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_reports</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

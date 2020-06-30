@@ -99,14 +99,14 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">ReadStatusProcess</code><span class="sig-paren">(</span><em>connection_selector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/read_status_process.html#ReadStatusProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.</code><code class="descname">ReadStatusProcess</code><span class="sig-paren">(</span><em>next_connection_selector</em>, <em>n_retries=10</em>, <em>timeout=1.0</em>, <em>n_channels=8</em>, <em>intermediate_channel_waits=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_processes/read_status_process.html#ReadStatusProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
 <p>How to send messages to read the status of extra monitors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connection_selector</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.processes/#spinnman.processes.AbstractMultiConnectionProcessConnectionSelector" title="(in SpiNNMan v)"><em>AbstractMultiConnectionProcessConnectionSelector</em></a>) &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) &#8211; </td>
 </tr>
 </tbody>
 </table>

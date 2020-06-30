@@ -90,13 +90,11 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="AbstractProvidesNKeysForPartition.get_n_keys_for_partition"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractProvidesNKeysForPartition.get_n_keys_for_partition">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_keys_for_partition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractProvidesNKeysForPartition.get_n_keys_for_partition"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractProvidesNKeysForPartition.get_n_keys_for_partition">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_keys_for_partition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the number of keys required by the given partition of edges.</span>
 
-<span class="sd">        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:</span>
+<span class="sd">        :param ~pacman.model.graphs.OutgoingEdgePartition partition:</span>
 <span class="sd">            An partition that comes out of this vertex</span>
-<span class="sd">        :param graph_mapper: A mapper between the graphs</span>
-<span class="sd">        :type graph_mapper: :py:class:`~pacman.model.graph.GraphMapper`</span>
 <span class="sd">        :return: The number of keys required</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span></div></div>

@@ -136,8 +136,7 @@
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span>
             <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">write_text_specs</span><span class="p">,</span>
-            <span class="n">machine</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span> <span class="n">graph_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">placement_order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">machine</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">,</span> <span class="n">placement_order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.Placements placements:</span>
 <span class="sd">        :param str hostname:</span>
@@ -145,8 +144,6 @@
 <span class="sd">        :param bool write_text_specs:</span>
 <span class="sd">        :param ~.Machine machine:</span>
 <span class="sd">        :param int data_n_timesteps:</span>
-<span class="sd">        :param graph_mapper:\</span>
-<span class="sd">            the mapping between application and machine graph</span>
 <span class="sd">        :param list(~.Placement) placement_order:</span>
 <span class="sd">        :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))</span>
 <span class="sd">        :raises ConfigurationException:</span>
@@ -170,23 +167,22 @@
         <span class="n">vertices_to_reset</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">placement_order</span><span class="p">):</span>
             <span class="c1"># Try to generate the data spec for the placement</span>
+            <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
             <span class="n">generated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_spec_for_vertices</span><span class="p">(</span>
-                <span class="n">placement</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
+                <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">generated</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
-                <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
+                    <span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
+                <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
 
             <span class="c1"># If the spec wasn&#39;t generated directly, and there is an</span>
             <span class="c1"># application vertex, try with that</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">graph_mapper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">associated_vertex</span> <span class="o">=</span> <span class="n">graph_mapper</span><span class="o">.</span><span class="n">get_application_vertex</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">generated</span> <span class="ow">and</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">generated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_spec_for_vertices</span><span class="p">(</span>
-                    <span class="n">placement</span><span class="p">,</span> <span class="n">associated_vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
+                    <span class="n">placement</span><span class="p">,</span> <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">data_n_timesteps</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">generated</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
-                        <span class="n">associated_vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
-                    <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">associated_vertex</span><span class="p">)</span>
+                        <span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">AbstractRewritesDataSpecification</span><span class="p">):</span>
+                    <span class="n">vertices_to_reset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="c1"># Ensure that the vertices know their regions have been reloaded</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices_to_reset</span><span class="p">:</span>
