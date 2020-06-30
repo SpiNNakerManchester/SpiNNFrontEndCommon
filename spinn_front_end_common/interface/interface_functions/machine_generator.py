@@ -92,7 +92,7 @@ class MachineGenerator(object):
         :param bool repair_machine:
         :param bool ignore_bad_ethernets:
         :param str default_report_directory:
-        :rtype: tuple(~spinnman.transceiver.Transceiver, \
+        :rtype: tuple(~spinnman.transceiver.Transceiver,
             ~spinn_machine.Machine)
         """
         # pylint: disable=too-many-arguments
@@ -159,17 +159,17 @@ class MachineGenerator(object):
         if len(split_string) == 1:
             host = split_string[0].split(",")
             if len(host) == 1:
-                return [0, 0, split_string[0], None]
-            return [0, 0, host[0], host[1]]
+                return 0, 0, split_string[0], None
+            return 0, 0, host[0], host[1]
         if len(split_string) == 2:
             host = split_string[1].split(",")
             if len(host) == 1:
-                return [0, split_string[0], host[0], None]
-            return [0, split_string[0], host[0], host[1]]
+                return 0, split_string[0], host[0], None
+            return 0, split_string[0], host[0], host[1]
         host = split_string[2].split(",")
         if len(host) == 1:
-            return [split_string[0], split_string[1], host[0], None]
-        return [split_string[0], split_string[1], host[0], host[1]]
+            return split_string[0], split_string[1], host[0], None
+        return split_string[0], split_string[1], host[0], host[1]
 
     @staticmethod
     def _parse_bmp_boards(bmp_boards):

@@ -130,7 +130,7 @@ class HBPAllocator(object):
     def __call__(
             self, hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         """
-        :param hbp_server_url:
+        :param str hbp_server_url:
         :param int total_run_time:
         :param int n_chips:
         :param int n_boards:

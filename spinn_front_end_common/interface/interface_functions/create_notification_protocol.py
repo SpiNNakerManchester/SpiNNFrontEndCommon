@@ -41,9 +41,7 @@ class CreateNotificationProtocol(object):
         :param list(~.SocketAddress) socket_addresses:
         :param str database_file_path:
         """
-        # notification protocol
         notification_protocol = NotificationProtocol(
             socket_addresses, wait_for_read_confirmation)
         notification_protocol.send_read_notification(database_file_path)
-
         return notification_protocol

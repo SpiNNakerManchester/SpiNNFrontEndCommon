@@ -29,8 +29,8 @@ class ChipPowerMonitor(
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     def __init__(
-            self, label, constraints, n_samples_per_recording,
-            sampling_frequency):
+            self, label, n_samples_per_recording, sampling_frequency,
+            constraints=None):
         """
         :param str label: vertex label
         :param constraints: constraints for the vertex
@@ -54,10 +54,16 @@ class ChipPowerMonitor(
             self,
             vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
-        return ChipPowerMonitorMachineVertex(
+        machine_vertex = ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label,
             n_samples_per_recording=self._n_samples_per_recording,
-            sampling_frequency=self._sampling_frequency)
+            sampling_frequency=self._sampling_frequency,  app_vertex=self)
+        if vertex_slice:
+            assert (vertex_slice == machine_vertex.vertex_slice)
+        if resources_required:
+            assert (resources_required ==
+                    machine_vertex.resources_required)
+        return machine_vertex
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -73,12 +79,18 @@ class ChipPowerMonitor(
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param int n_machine_time_steps:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         # pylint: disable=protected-access
 
         # generate spec for the machine vertex
-        placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
+        placement.vertex.generate_data_specification(
+            spec, placement, machine_time_step, time_scale_factor,
+            n_machine_time_steps)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -92,6 +104,10 @@ class ChipPowerMonitor(
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
             machine_time_step, time_scale_factor):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        """
         # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
             machine_time_step, time_scale_factor,

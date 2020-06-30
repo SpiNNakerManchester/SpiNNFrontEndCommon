@@ -228,10 +228,8 @@ class DatabaseWriter(object):
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime)])
 
-    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper,
-                     application_graph):
-        """ Add the machine graph, graph mapper and application graph \
-            into the database.
+    def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
+        """ Add the machine graph and application graph into the database.
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             The machine graph object
@@ -287,11 +285,10 @@ class DatabaseWriter(object):
                         hi_atom)
                     VALUES(?, ?, ?, ?)
                     """, (
-                        (self.__vertex_to_id[
-                             graph_mapper.get_application_vertex(vertex)],
+                        (self.__vertex_to_id[vertex.app_vertex],
                          self.__vertex_to_id[vertex],
-                         graph_mapper.get_slice(vertex).lo_atom,
-                         graph_mapper.get_slice(vertex).hi_atom)
+                         vertex.vertex_slice.lo_atom,
+                         vertex.vertex_slice.hi_atom)
                         for vertex in machine_graph.vertices))
 
                 # add graph_mapper edges
@@ -301,8 +298,7 @@ class DatabaseWriter(object):
                         application_edge_id, machine_edge_id)
                     VALUES(?, ?)
                     """, (
-                        (self.__edge_to_id[
-                             graph_mapper.get_application_edge(edge)],
+                        (self.__edge_to_id[edge.app_edge],
                          self.__edge_to_id[edge])
                         for edge in machine_graph.edges))
 
@@ -402,8 +398,7 @@ class DatabaseWriter(object):
                             vertex) or ()))
 
     def create_atom_to_event_id_mapping(
-            self, application_graph, machine_graph, routing_infos,
-            graph_mapper):
+            self, application_graph, machine_graph, routing_infos):
         """
         :param ~pacman.model.graphs.application.ApplicationGraph \
                 application_graph:
@@ -413,7 +408,7 @@ class DatabaseWriter(object):
         if application_graph is not None and application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings
             vertices_and_partitions = (
-                (graph_mapper.get_application_vertex(vertex), partition)
+                (vertex.app_vertex, partition)
                 for vertex in machine_graph.vertices
                 for partition in machine_graph.
                 get_outgoing_edge_partitions_starting_at_vertex(vertex))

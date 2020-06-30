@@ -255,7 +255,7 @@ class Compression(object):
         """ Loads the router compressor onto the chips.
 
         :return:
-            the executable targets that represent all cores/chips which have\
+            the executable targets that represent all cores/chips which have
             active routing tables
         :rtype: ExecutableTargets
         """

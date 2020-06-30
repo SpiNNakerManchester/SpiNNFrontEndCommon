@@ -41,7 +41,6 @@ from spinnman.model.cpu_infos import CPUInfos
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
-from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
@@ -150,9 +149,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # boolean for empty graphs
         "_empty_graphs",
-
-        # the mapping interface between application and machine graphs.
-        "_graph_mapper",
 
         # The holder for where machine graph vertices are placed.
         "_placements",
@@ -422,12 +418,13 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._graph_label = graph_label
 
         # pacman objects
-        self._original_application_graph = \
-            ApplicationGraph(label=self._graph_label)
-        self._original_machine_graph = MachineGraph(label=self._graph_label)
+        self._original_application_graph = ApplicationGraph(
+            label=self._graph_label)
+        self._original_machine_graph = MachineGraph(
+            label=self._graph_label,
+            application_graph=self._original_application_graph)
         self._empty_graphs = False
 
-        self._graph_mapper = None
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
@@ -449,8 +446,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._mapping_tokens = None
         self._load_outputs = None
         self._load_tokens = None
-        self._last_run_outputs = list()
-        self._last_run_tokens = list()
+        self._last_run_outputs = dict()
+        self._last_run_tokens = dict()
         self._pacman_provenance = PacmanProvenanceExtractor()
         self._all_provenance_items = list()
         self._version_provenance = list()
@@ -688,11 +685,11 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "A SpiNNaker machine must be specified your configuration"
                 " file")
 
-        n_items_specified = sum([
-            1 if item is not None else 0
+        n_items_specified = sum(
+            item is not None
             for item in [
                 self._hostname, self._spalloc_server,
-                self._remote_spinnaker_url]])
+                self._remote_spinnaker_url])
 
         if (n_items_specified > 1 or
                 (n_items_specified == 1 and self._use_virtual_board)):
@@ -731,13 +728,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
+    _RUNNING_STATES = (Simulator_State.IN_RUN, Simulator_State.RUN_FOREVER)
+    _SHUTDOWN_STATES = (Simulator_State.SHUTDOWN, )
+
     @overrides(SimulatorInterface.verify_not_running)
     def verify_not_running(self):
-        if self._state in [Simulator_State.IN_RUN,
-                           Simulator_State.RUN_FOREVER]:
+        if self._state in self._RUNNING_STATES:
             raise ConfigurationException(
                 "Illegal call while a simulation is already running")
-        if self._state in [Simulator_State.SHUTDOWN]:
+        if self._state in self._SHUTDOWN_STATES:
             raise ConfigurationException(
                 "Illegal call after simulation is shutdown")
 
@@ -770,7 +769,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         # sort out machine graph
         self._machine_graph = MachineGraph(
-            label=self._original_machine_graph.label)
+            label=self._original_machine_graph.label,
+            application_graph=self._application_graph)
         for vertex in self._original_machine_graph.vertices:
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
@@ -891,11 +891,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._build_graphs_for_usage()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
-
-            # Reset the machine graph if there is an application graph
-            if self._application_graph.n_vertices:
-                self._machine_graph = MachineGraph(self._graph_label)
-                self._graph_mapper = None
 
             # Reset the machine if the graph has changed
             if not self._use_virtual_board and self._n_calls_to_run > 1:
@@ -1049,8 +1044,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                             dependant_vertex)
                     for edge_identifier in edge_partition_ids:
                         dependant_edge = ApplicationEdge(
-                            pre_vertex=vertex,
-                            post_vertex=dependant_vertex)
+                            pre_vertex=vertex, post_vertex=dependant_vertex)
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
@@ -1317,10 +1311,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "MachineAllocationController")
 
         if do_partitioning:
-            self._machine_graph = executor.get_item(
-                "MemoryMachineGraph")
-            self._graph_mapper = executor.get_item(
-                "MemoryGraphMapper")
+            self._machine_graph = executor.get_item("MemoryMachineGraph")
 
     def _machine_by_size(self, inputs, algorithms, outputs):
         """ Checks if we can get a remote machine by size of if we have to \
@@ -1360,7 +1351,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
             outputs.append("MemoryMachineGraph")
-            outputs.append("MemoryGraphMapper")
             do_partitioning = True
         else:
             # No way to decided size so default to one board
@@ -1513,19 +1503,15 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if (self._application_graph.n_vertices > 0 and
-                self._graph_mapper is None):
+        if self._application_graph.n_vertices:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif self._machine_graph.n_vertices > 0:
+        elif self._machine_graph.n_vertices:
             inputs['MemoryMachineGraph'] = self._machine_graph
-            if self._graph_mapper is not None:
-                inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
             self._empty_graphs = True
             logger.warning(
                 "Your graph has no vertices in it.")
             inputs["MemoryApplicationGraph"] = self._application_graph
-            inputs["MemoryGraphMapper"] = GraphMapper()
             inputs['MemoryMachineGraph'] = self._machine_graph
 
         inputs['ReportFolder'] = self._report_default_directory
@@ -1693,9 +1679,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if add_data_speed_up:
             outputs.append("MemoryFixedRoutes")
 
-        if self._application_graph.n_vertices > 0:
-            outputs.append("MemoryGraphMapper")
-
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
@@ -1729,7 +1712,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
-        self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")
 
@@ -2349,7 +2331,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
-        """ goes though the original graphs looking for changes.
+        """ Iterates though the original graphs looking for changes.
 
         :param bool reset_flags:
         :return: mapping_changed, data_changed
@@ -2445,7 +2427,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
     @property
     def application_graph(self):
-        """ The application graph used to derive the runtime machine \
+        """ The application graph used to derive the runtime machine
             configuration.
 
         :rtype: ~pacman.model.graphs.application.ApplicationGraph
@@ -2475,10 +2457,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     @overrides(SimulatorInterface.transceiver)
     def transceiver(self):
         return self._txrx
-
-    @property
-    def graph_mapper(self):
-        return self._graph_mapper
 
     @property
     @overrides(SimulatorInterface.tags)
@@ -2520,6 +2498,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._none_labelled_edge_count += 1
 
     @property
+    @overrides(SimulatorInterface.use_virtual_board)
     def use_virtual_board(self):
         """ True if this run is using a virtual machine
 
@@ -2542,8 +2521,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         """ Get the value of an inter-algorithm variable.
 
         :param str name_of_variable: The variable to retrieve
-        :return: The value (of arbitrary type), or None if the variable is \
+        :return: The value (of arbitrary type), or `None` if the variable is
             not found.
+        :raises ConfigurationException: If the simulation hasn't yet run
         """
         if self._has_ran:
             if name_of_variable in self._last_run_outputs:
@@ -2564,8 +2544,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
         """
-        if (self._original_machine_graph.n_vertices > 0 and
-                self._graph_mapper is None):
+        if self._original_machine_graph.n_vertices:
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
@@ -2581,7 +2560,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
-        if self._original_application_graph.n_vertices > 0:
+        if self._original_application_graph.n_vertices:
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")

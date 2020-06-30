@@ -63,7 +63,7 @@ class DatabaseInterface(object):
             runtime, machine, data_n_timesteps, time_scale_factor,
             machine_time_step, placements, routing_infos, router_tables,
             report_folder, create_atom_to_event_id_mapping=False,
-            application_graph=None, graph_mapper=None):
+            application_graph=None):
         """
         :param ~.MachineGraph machine_graph:
         :param str user_create_database:
@@ -93,7 +93,7 @@ class DatabaseInterface(object):
                         self._writer.database_path)
             self._write_to_db(machine, time_scale_factor, machine_time_step,
                               runtime, application_graph, machine_graph,
-                              data_n_timesteps, graph_mapper, placements,
+                              data_n_timesteps, placements,
                               routing_infos, router_tables, tags,
                               create_atom_to_event_id_mapping)
 
@@ -119,25 +119,22 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, machine_time_step,
-            runtime, application_graph, machine_graph, data_n_timesteps,
-            graph_mapper, placements, routing_infos, router_tables, tags,
-            create_atom_to_event_id_mapping):
+            runtime, app_graph, machine_graph, data_n_timesteps,
+            placements, routing_infos, router_tables, tags, create_mapping):
         """
         :param ~.Machine machine:
         :param int time_scale_factor:
         :param int machine_time_step:
         :param int runtime:
-        :param ~.ApplicationGraph application_graph:
+        :param ~.ApplicationGraph app_graph:
         :param ~.MachineGraph machine_graph:
         :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
-        :param graph_mapper:
         :param ~.Placements placements:
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
-        :param bool create_atom_to_event_id_mapping:
-        :return:
+        :param bool create_mapping:
         """
         # pylint: disable=too-many-arguments
 
@@ -147,11 +144,10 @@ class DatabaseInterface(object):
             p.update()
             w.add_machine_objects(machine)
             p.update()
-            if application_graph is not None and application_graph.n_vertices:
-                w.add_application_vertices(application_graph)
+            if app_graph is not None and app_graph.n_vertices:
+                w.add_application_vertices(app_graph)
             p.update()
-            w.add_vertices(machine_graph, data_n_timesteps, graph_mapper,
-                           application_graph)
+            w.add_vertices(machine_graph, data_n_timesteps, app_graph)
             p.update()
             w.add_placements(placements)
             p.update()
@@ -161,10 +157,8 @@ class DatabaseInterface(object):
             p.update()
             w.add_tags(machine_graph, tags)
             p.update()
-            if (graph_mapper is not None and application_graph is not None
-                    and create_atom_to_event_id_mapping):
+            if app_graph is not None and create_mapping:
                 w.create_atom_to_event_id_mapping(
-                    graph_mapper=graph_mapper,
-                    application_graph=application_graph,
-                    machine_graph=machine_graph, routing_infos=routing_infos)
+                    application_graph=app_graph, machine_graph=machine_graph,
+                    routing_infos=routing_infos)
             p.update()
