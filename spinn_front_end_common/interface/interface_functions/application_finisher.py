@@ -96,6 +96,11 @@ class ApplicationFinisher(object):
 
     @staticmethod
     def _update_provenance_and_exit(txrx, processor, core_subset):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param int processor:
+        :param ~.CoreSubset core_subset:
+        """
         byte_data = _ONE_WORD.pack(
             SDP_RUNNING_MESSAGE_CODES
             .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)

@@ -70,6 +70,11 @@ class _SpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
+        """
+        :param int chip_x:
+        :param int chip_y:
+        :rtype: tuple(int,int,int)
+        """
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
     @overrides(MachineAllocationController._wait)

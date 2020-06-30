@@ -49,9 +49,9 @@ class BufferManagerCreator(object):
             packet_gather_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None, java_caller=None):
         """
-        :param ~pacman.placements.Placements placements:
-        :param ~pacman.model.tags.Tags tags:
-        :param ~spinnman.transceiever.Transceiver txrx:
+        :param ~.Placements placements:
+        :param ~.Tags tags:
+        :param ~.Transceiver txrx:
         :param bool uses_advanced_monitors:
         :param str report_folder:
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
@@ -62,7 +62,7 @@ class BufferManagerCreator(object):
         :param ~spinn_machine.Machine machine:
         :param dict(tuple(int,int),~.FixedRouteEntry) fixed_routes:
         :param JavaCaller java_caller:
-        :return:
+        :rtype: BufferManager
         """
         # pylint: disable=too-many-arguments
         progress = ProgressBar(placements.n_placements, "Initialising buffers")

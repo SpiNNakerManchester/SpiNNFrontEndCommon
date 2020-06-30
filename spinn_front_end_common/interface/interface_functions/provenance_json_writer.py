@@ -61,7 +61,7 @@ class ProvenanceJSONWriter(object):
         """
         :param dict(str,object) root:
         :param ProvenanceDataItem item:
-        :rtype: dict(str,str)
+        :rtype: dict(str,object)
         """
         parent = root
         for name in item.names[1:-1]:

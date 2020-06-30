@@ -36,7 +36,7 @@ SDRAM_BASE_ADDR = 0x70000000
 #: the ITCM max safe limit for a binary
 MAX_SAFE_BINARY_SIZE = 32 * BYTES_PER_KB
 
-#: the ITCM max limit for a bianry
+#: the ITCM max limit for a binary
 MAX_POSSIBLE_BINARY_SIZE = 33 * BYTES_PER_KB
 
 # converts between micro and milli seconds

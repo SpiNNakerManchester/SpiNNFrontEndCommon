@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitor, ChipPowerMonitorMachineVertex)
@@ -37,7 +36,7 @@ class InsertChipPowerMonitorsToGraphs(object):
 
     def __call__(
             self, machine, machine_graph, n_samples_per_recording,
-            sampling_frequency, application_graph=None, graph_mapper=None):
+            sampling_frequency, application_graph=None):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
 
@@ -53,49 +52,25 @@ class InsertChipPowerMonitorsToGraphs(object):
         progress = ProgressBar(
             machine.n_chips, "Adding Chip power monitors to Graph")
 
-        for chip in progress.over(machine.chips):
-            self._add_power_monitor_for_chip(
-                chip, machine_graph, application_graph, graph_mapper,
-                sampling_frequency, n_samples_per_recording)
-
-    @staticmethod
-    def _add_power_monitor_for_chip(
-            chip, machine_graph, application_graph, graph_mapper,
-            sampling_frequency, n_samples_per_recording):
-        """
-        :param ~.Chip chip:
-        :param ~.MachineGraph machine_graph:
-        :param ~.ApplicationGraph application_graph:
-        :param int sampling_frequency:
-        :param int n_samples_per_recording:
-        """
-        # build constraint
-        constraint = ChipAndCoreConstraint(chip.x, chip.y)
-
-        # build machine vert
-        machine_vertex = ChipPowerMonitorMachineVertex(
-            label=_LABEL.format("machine", chip.x, chip.y),
-            sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording,
-            constraints=[constraint])
-
-        # add vert to graph
-        machine_graph.add_vertex(machine_vertex)
-
-        # deal with app graphs if needed
+        app_vertex = None
         if application_graph is not None:
-
-            # build app vertex
-            vertex_slice = Slice(0, 0)
-            application_vertex = ChipPowerMonitor(
-                label=_LABEL.format("application", chip.x, chip.y),
-                constraints=[constraint],
+            app_vertex = ChipPowerMonitor(
+                label="ChipPowerMonitor",
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording)
-
-            # add to graph
-            application_graph.add_vertex(application_vertex)
-
-            # update graph mapper
-            graph_mapper.add_vertex_mapping(
-                machine_vertex, vertex_slice, application_vertex)
+            application_graph.add_vertex(app_vertex)
+            for chip in progress.over(machine.chips):
+                machine_vertex = app_vertex.create_machine_vertex(
+                    vertex_slice=None, resources_required=None,
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
+                machine_graph.add_vertex(machine_vertex)
+        else:
+            for chip in progress.over(machine.chips):
+                machine_vertex = ChipPowerMonitorMachineVertex(
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
+                    app_vertex=app_vertex,
+                    sampling_frequency=sampling_frequency,
+                    n_samples_per_recording=n_samples_per_recording)
+                machine_graph.add_vertex(machine_vertex)
