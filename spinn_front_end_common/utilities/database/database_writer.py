@@ -88,7 +88,7 @@ class DatabaseWriter(object):
 
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph of the application problem space.
-        :return: whether the database is needed
+        :return: whether the database is needed for the application
         :rtype: bool
         """
         return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
@@ -97,9 +97,16 @@ class DatabaseWriter(object):
 
     @property
     def database_path(self):
+        """
+        :rtype: str
+        """
         return self._database_path
 
     def __insert(self, sql, *args):
+        """
+        :param str sql:
+        :rtype: int
+        """
         c = self._connection.cursor()
         try:
             c.execute(sql, args)
@@ -119,7 +126,6 @@ class DatabaseWriter(object):
         """ Store the machine object into the database
 
         :param ~spinn_machine.Machine machine: the machine object.
-        :rtype: None
         """
         with self._connection:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
@@ -163,7 +169,6 @@ class DatabaseWriter(object):
         """
         :param ~pacman.model.graphs.application.ApplicationGraph \
                 application_graph:
-        :rtype: None
         """
         with self._connection:
             # add vertices
@@ -233,7 +238,6 @@ class DatabaseWriter(object):
         :param ~pacman.model.graphs.application.ApplicationGraph \
                 application_graph:
             The application graph object
-        :rtype: None
         """
         with self._connection:
             for vertex in machine_graph.vertices:
@@ -303,9 +307,6 @@ class DatabaseWriter(object):
 
         :param ~pacman.model.placements.Placements placements:
             the placements object
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph object
-        :rtype: None
         """
         with self._connection:
             # add records
@@ -326,7 +327,6 @@ class DatabaseWriter(object):
             the routing information object
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph object
-        :rtype: None:
         """
         # Filter just the MULTICAST partitions first
         partitions_and_routing_info = (
@@ -352,7 +352,6 @@ class DatabaseWriter(object):
         :param ~pacman.model.routing_tables.MulticastRoutingTables \
                 routing_tables:
             the routing tables object
-        :rtype: None
         """
         with self._connection:
             self._connection.executemany(
@@ -374,7 +373,6 @@ class DatabaseWriter(object):
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph object
         :param ~pacman.model.tags.Tags tags: the tags object
-        :rtype: None
         """
         with self._connection:
             for vertex in machine_graph.vertices:
@@ -406,7 +404,6 @@ class DatabaseWriter(object):
                 application_graph:
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :rtype: None
         """
         if application_graph is not None and application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings

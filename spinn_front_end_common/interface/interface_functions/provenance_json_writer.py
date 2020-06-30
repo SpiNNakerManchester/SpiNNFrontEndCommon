@@ -59,10 +59,9 @@ class ProvenanceJSONWriter(object):
     @staticmethod
     def _build_path(root, item):
         """
-        :param root:
-        :type root: dict(str, object)
+        :param dict(str,object) root:
         :param ProvenanceDataItem item:
-        :rtype: dict(str, str)
+        :rtype: dict(str,object)
         """
         parent = root
         for name in item.names[1:-1]:

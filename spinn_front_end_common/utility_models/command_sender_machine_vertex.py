@@ -37,6 +37,9 @@ class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
         AbstractProvidesOutgoingPartitionConstraints):
+    """ Machine vertex for injecting packets at particular times or in \
+        response to particular events into a SpiNNaker application.
+    """
     # Regions for populations
     class DATA_REGIONS(Enum):
         SYSTEM_REGION = 0
@@ -248,7 +251,8 @@ class CommandSenderMachineVertex(
             vertex):
         """ Reserve SDRAM space for memory areas:
 
-        1. Area for information on what data to record
+        1. Area for general system information
+        2. Area for timed commands
         2. Area for start commands
         3. Area for end commands
 
@@ -286,8 +290,7 @@ class CommandSenderMachineVertex(
         n_bytes = self._N_COMMANDS_SIZE
         n_bytes += (
             (self._COMMAND_TIMESTAMP_SIZE + self._COMMAND_WITH_PAYLOAD_SIZE) *
-            len(self._timed_commands)
-        )
+            len(self._timed_commands))
         return n_bytes
 
     @classmethod
@@ -314,26 +317,43 @@ class CommandSenderMachineVertex(
         return [FixedKeyAndMaskConstraint([
             BaseKeyAndMask(
                 self._partition_id_to_keys[partition.identifier],
-                self._DEFAULT_COMMAND_MASK)
-        ])]
+                self._DEFAULT_COMMAND_MASK)])]
 
-    def get_edges_and_partitions(self, pre_vertex, edge_type):
-        """
-        :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:
-        :param callable edge_type:
-        :rtype: tuple(list, list(str))
+    def _get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
+        """ Construct edges from this vertex to the vertices that this vertex\
+            knows how to target (and has keys allocated for).
+
+        .. note::
+            Do not call this directly from outside either a
+            :py:class:`CommandSender` or a
+            :py:class:`CommandSenderMachineVertex`.
+
+        :param pre_vertex:
+        :type pre_vertex: CommandSender or CommandSenderMachineVertex
+        :param type vertex_type: subclass of :py:class:`~.AbstractVertex`
+        :param callable edge_type: subclass of :py:class:`~.AbstractEdge`
+        :return: edges, partition IDs
+        :rtype: tuple(list(~.AbstractEdge), list(str))
         """
         edges = list()
         partition_ids = list()
         keys_added = set()
         for vertex in self._vertex_to_key_map:
+            if not isinstance(vertex, vertex_type):
+                continue
             for key in self._vertex_to_key_map[vertex]:
                 if key not in keys_added:
                     keys_added.add(key)
-                    app_edge = edge_type(pre_vertex, vertex)
-                    edges.append(app_edge)
+                    edges.append(edge_type(pre_vertex, vertex))
                     partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
     def edges_and_partitions(self):
-        return self.get_edges_and_partitions(self, MachineEdge)
+        """ Construct machine edges from this vertex to the machine vertices\
+            that this vertex knows how to target (and has keys allocated for).
+
+        :return: edges, partition IDs
+        :rtype:
+            tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
+        """
+        return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)

@@ -77,12 +77,12 @@ class ReverseIpTagMultiCastSource(
         :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         :param int max_atoms_per_core:
-        :param board_address: The IP address of the board on which to place\
-            this vertex if receiving data, either buffered or live (by\
+        :param board_address: The IP address of the board on which to place
+            this vertex if receiving data, either buffered or live (by
             default, any board is chosen)
         :type board_address: str or None
-        :param receive_port: The port on the board that will listen for\
-            incoming event packets (default is to disable this feature; set a\
+        :param receive_port: The port on the board that will listen for
+            incoming event packets (default is to disable this feature; set a
             value to enable it)
         :type receive_port: int or None
         :param int receive_sdp_port:
@@ -105,10 +105,10 @@ class ReverseIpTagMultiCastSource(
         :param bool check_keys:
             True if the keys of received events should be verified before
             sending (default False)
-        :param send_buffer_times: An array of arrays of times at which keys\
+        :param send_buffer_times: An array of arrays of times at which keys
             should be sent (one array for each key, default disabled)
         :type send_buffer_times:
-            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None
         :param send_buffer_partition_id: The ID of the partition containing\
             the edges down which the events are to be sent
@@ -195,7 +195,7 @@ class ReverseIpTagMultiCastSource(
     def send_buffer_times(self):
         """ When messages will be sent.
 
-        :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+        :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None
         """
         return self._send_buffer_times

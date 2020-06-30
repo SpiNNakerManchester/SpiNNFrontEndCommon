@@ -56,15 +56,11 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         """
         :param ~.MachineGraph machine_graph:
         :param ~.Placements placements:
-            Map of Core(x,y,p) to the Placement on that core
         :param ~.Machine machine:
-            Description of the machine on which job is being run
         :param vertex_to_ethernet_connected_chip_mapping:
-            Map of Chip(x,y) to the (Gather) vertex
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :param ~.ApplicationGraph application_graph:
-        :rtype: None
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         n_app_vertices = 0

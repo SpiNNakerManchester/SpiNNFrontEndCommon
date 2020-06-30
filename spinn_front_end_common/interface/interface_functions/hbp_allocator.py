@@ -38,6 +38,10 @@ class _HBPJobController(MachineAllocationController):
     _WAIT_TIME_MS = 10000
 
     def __init__(self, url, machine_name):
+        """
+        :param str url:
+        :param str machine_name:
+        """
         self._extend_lease_url = "{}/extendLease".format(url)
         self._check_lease_url = "{}/checkLease".format(url)
         self._release_machine_url = url
@@ -114,6 +118,9 @@ class HBPAllocator(object):
     :param int n_chips: The number of chips required.
         Only used if n_boards is None
     :param int n_boards: The number of boards required
+    :return: machine name, machine version, BMP details (if any),
+        reset on startup flag, auto-detect BMP, SCAMP connection details,
+        boot port, allocation controller
     :rtype: tuple(str, int, object, bool, bool, object, object,
         MachineAllocationController)
     :raises PacmanConfigurationException:
@@ -149,6 +156,13 @@ class HBPAllocator(object):
             hbp_job_controller)
 
     def _get_machine(self, url, n_chips, n_boards, total_run_time):
+        """
+        :param str url:
+        :param int n_chips:
+        :param int n_boards:
+        :param int total_run_time:
+        :rtype: dict
+        """
         if n_boards:
             get_machine_request = requests.get(
                 url, params={"nBoards": n_boards, "runTime": total_run_time})

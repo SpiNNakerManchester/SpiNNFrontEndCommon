@@ -126,7 +126,7 @@ class TDMAAgendaBuilder(object):
         :param int max_in_edges: the number of colours to colour the graph
         :param ~.MachineGraph machine_graph:
             the machine graph representation of the application
-        :return: the dict holding vertex to time offset mapping
+        :return: vertex to time offset mapping
         :rtype: dict(~.MachineVertex, int)
         """
         time_offset = dict()
@@ -145,8 +145,8 @@ class TDMAAgendaBuilder(object):
             the machine graph representation of the application
         :param list(int) colours:
             the available colours for the graph colouring
-        :param colour_mapping: the mapping between vertex and colour
-        :type colour_mapping: dict(~.MachineVertex, int)
+        :param dict(~.MachineVertex,int) colour_mapping:
+            the mapping between vertex and colour
         :raises ConfigurationException: If no colouring can be found
         """
         for colour in colours:

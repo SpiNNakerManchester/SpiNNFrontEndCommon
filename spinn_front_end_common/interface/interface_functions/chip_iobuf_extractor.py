@@ -16,15 +16,14 @@
 import logging
 import os
 import re
-
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_string_into_chip_and_core_subset)
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.io_buffer import IOBuffer
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_string_into_chip_and_core_subset)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -79,8 +78,10 @@ class ChipIOBufExtractor(object):
         :param ~.Transceiver transceiver:
         :param ExecutableTargets executable_targets:
         :param ExecutableFinder executable_finder:
-        :param str or None app_provenance_file_path:
-        :param str or None system_provenance_file_path:
+        :param app_provenance_file_path:
+        :type app_provenance_file_path: str or None
+        :param system_provenance_file_path:
+        :type system_provenance_file_path: str or None
         :param str from_cores:
         :param str binary_types:
         :return: error_entries, warn_entries

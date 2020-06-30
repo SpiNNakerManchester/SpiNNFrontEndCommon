@@ -139,8 +139,6 @@ class NotificationProtocol(object):
                            exc_info=True)
 
     def __do_read_notify(self, database_path):
-        self.__sent_visualisation_confirmation = True
-
         # add file path to database into command message.
         if (database_path is not None and
                 len(database_path) > MAX_DATABASE_PATH_LENGTH):
@@ -166,6 +164,8 @@ class NotificationProtocol(object):
                     "about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
+        self.__sent_visualisation_confirmation = True
+
         # if the system needs to wait, try receiving a packet back
         for c in self.__database_message_connections:
             try:
@@ -182,6 +182,10 @@ class NotificationProtocol(object):
 
     @property
     def sent_visualisation_confirmation(self):
+        """ Whether the external application has actually been notified yet.
+
+        :rtype: bool
+        """
         return self.__sent_visualisation_confirmation
 
     def close(self):

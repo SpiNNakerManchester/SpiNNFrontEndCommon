@@ -18,35 +18,34 @@ import logging
 import struct
 from collections import defaultdict
 
-from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.operations.router_compressors.mundys_router_compressor.\
-    ordered_covering import get_generality as ordered_covering_generality
-from spinn_front_end_common.interface.interface_functions import \
-    LoadExecutableImages
-from spinn_front_end_common.interface.interface_functions.\
-    host_bit_field_router_compressor import \
-    HostBasedBitFieldRouterCompressor
-from spinn_front_end_common.mapping_algorithms. \
-    on_chip_router_table_compression.compression import Compression
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem, \
-    ExecutableType
-from spinn_machine import CoreSubsets, Router
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.exceptions import SpinnmanInvalidParameterException, \
-    SpinnmanUnexpectedResponseCodeException, SpinnmanException
+from spinn_machine import CoreSubsets, Router
+from spinnman.exceptions import (
+    SpinnmanInvalidParameterException,
+    SpinnmanUnexpectedResponseCodeException, SpinnmanException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
-
-
-from spinn_front_end_common.utilities.exceptions import \
-    CantFindSDRAMToUseException
+from pacman.model.routing_tables import MulticastRoutingTables
+from pacman.operations.router_compressors.mundys_router_compressor.\
+    ordered_covering import (
+        get_generality as
+        ordered_covering_generality)
+from spinn_front_end_common.mapping_algorithms. \
+    on_chip_router_table_compression.compression import (
+        Compression)
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.utility_objs import (
+    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.exceptions import (
+    CantFindSDRAMToUseException)
 from spinn_front_end_common.utilities import system_control_logic
+from .load_executable_images import LoadExecutableImages
+from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-# sdram allocation for addresses
+#: sdram allocation for addresses
 SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
 
 # 7 pointers or int for each core. 4 Bytes for each  18 cores max
@@ -61,31 +60,70 @@ MERGED_NAME = "bit_fields_merged"
 
 
 class MachineBitFieldRouterCompressor(object):
+    """ On-machine bitfield-aware routing table compression.
+
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+        routing tables
+    :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
+    :param ~spinn_machine.Machine machine: spinnMachine instance
+    :param int app_id: app id of the application
+    :param str provenance_file_path: file path for prov data
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param ~pacman.model.placements.Placements placements:
+        placements on machine
+    :param ExecutableFinder executable_finder: where are binaries are located
+    :param bool read_algorithm_iobuf: flag saying if read iobuf
+    :param bool produce_report:
+    :param str default_report_folder:
+    :param bool use_timer_cut_off:
+    :param int machine_time_step:
+    :param int time_scale_factor:
+    :param int no_sync_changes:
+    :param int threshold_percentage: the percentage of bitfields to do on chip\
+        before its considered a success
+    :param ExecutableTargets executable_targets:
+        the set of targets and executables
+    :param graph_mapper: mapping between graphs (could be none)
+    :param bool compress_only_when_needed:
+        whether to compress only when needed
+    :param bool compress_as_much_as_possible:
+        whether to compress as much as possible
+    :param list(ProvenanceDataItem) provenance_data_objects:
+    :return: where the compressors ran, and the provenance they generated
+    :rtype: tuple(ExecutableTargets, list(ProvenanceDataItem))
+    """
 
     __slots__ = []
 
-    # sdram tag the router compressor expects to find there routing tables in
+    #: sdram tag the router compressor expects to find there routing tables in
     ROUTING_TABLE_SDRAM_TAG = 1
 
-    # sdram tag for the addresses the router compressor expects to find the /
-    # bitfield addresses for the chip.
+    #: sdram tag for the addresses the router compressor expects to find the
+    #: bitfield addresses for the chip.
     BIT_FIELD_ADDRESSES_SDRAM_TAG = 2
 
     #
     TIMES_CYCLED_ROUTING_TABLES = 3
 
-    # the successful identifier
+    #: the successful identifier
     SUCCESS = 0
 
-    # how many header elements are in the region addresses (1, n addresses)
+    #: how many header elements are in the region addresses (1, n addresses)
     N_REGIONS_ELEMENT = 1
 
     # the number of bytes needed to read the user 2 register
     _USER_BYTES = 4
 
-    # min size a heap object needs in sdram. (limit on the size of useful
-    # sdram regions to steal
+    #: min size a heap object needs in sdram. (limit on the size of useful
+    #: sdram regions to steal)
     _MIN_SIZE_FOR_HEAP = 32
+
+    # bit offset for compress only when needed
+    _ONLY_WHEN_NEEDED_BIT_OFFSET = 1
+
+    # bit offset for compress as much as possible
+    _AS_MUCH_AS_POSS_BIT_OFFSET = 2
 
     # structs for performance requirements.
     _FOUR_WORDS = struct.Struct("<IIII")
@@ -124,23 +162,27 @@ class MachineBitFieldRouterCompressor(object):
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
-        :param routing_tables: routing tables
-        :param transceiver: spinnman instance
-        :param machine: spinnMachine instance
-        :param app_id: app id of the application
-        :param provenance_file_path: file path for prov data
-        :param machine_graph: machine graph
-        :param placements: placements on machine
-        :param threshold_percentage: the percentage of bitfields to do on chip\
-            before its considered a success
-        :param executable_finder: where are binaries are located
-        :param read_algorithm_iobuf: bool flag saying if read iobuf
-        :param compress_only_when_needed: bool flag asking if compress only \
-            when needed
-        :param compress_as_much_as_possible: bool flag asking if should \
-            compress as much as possible
-        :param executable_targets: the set of targets and executables
-        :rtype: executable targets
+        :param ~.MulticastRoutingTables routing_tables:
+        :param ~.Transceiver transceiver:
+        :param ~.Machine machine:
+        :param int app_id:
+        :param str provenance_file_path:
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :param ~.ExecutableFinder executable_finder:
+        :param bool read_algorithm_iobuf:
+        :param bool produce_report:
+        :param str default_report_folder:
+        :param bool use_timer_cut_off:
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param int no_sync_changes:
+        :param int threshold_percentage:
+        :param ExecutableTargets executable_targets:
+        :param bool compress_only_when_needed:
+        :param bool compress_as_much_as_possible:
+        :param list(ProvenanceDataItem) provenance_data_objects:
+        :rtype: tuple(ExecutableTargets,list(ProvenanceDataItem))
         """
 
         # build provenance data objects
@@ -257,12 +299,14 @@ class MachineBitFieldRouterCompressor(object):
             system_executable_targets):
         """ generates the core subsets for the binaries
 
-        :param routing_tables: the routing tables
-        :param executable_finder: the executable path finder
-        :param machine: the spinn machine instance
-        :param progress_bar: progress bar
-        :param system_executable_targets: the executables targets to cores
-        :return: tuple of (targets, sorter path and compressor path)
+        :param ~.MulticastRoutingTables routing_tables: the routing tables
+        :param ~.ExecutableFinder executable_finder: the executable path finder
+        :param ~.Machine machine: the spinn machine instance
+        :param ~.ProgressBar progress_bar: progress bar
+        :param ExecutableTargets system_executable_targets:
+            the executables targets to cores
+        :return: (targets, sorter path, and compressor path)
+        :rtype: tuple(ExecutableTargets, str, str)
         """
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
@@ -319,15 +363,16 @@ class MachineBitFieldRouterCompressor(object):
         """ Goes through the cores checking for cores that have failed to\
             generate the compressed routing tables with bitfield
 
-        :param executable_targets: cores to load router compressor with\
-         bitfield on
-        :param transceiver: SpiNNMan instance
-        :param host_chips: the chips which need to be ran on host.
-        :param sorter_binary_path: the path to the sorter binary
-        :param prov_data_items: the store of data items
-        :rtype: None
+        :param ExecutableTargets executable_targets:
+            cores to load router compressor with bitfield on
+        :param ~.Transceiver transceiver: SpiNNMan instance
+        :param list(tuple(int,int)) host_chips:
+            the chips which need to be ran on host.
+        :param str sorter_binary_path: the path to the sorter binary
+        :param list(ProvenanceDataItem) prov_data_items:
+            the store of data items
+        :rtype: bool
         """
-
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
         for core_subset in sorter_cores:
@@ -358,21 +403,20 @@ class MachineBitFieldRouterCompressor(object):
                     if (x, y) not in host_chips:
                         host_chips.append((x, y))
                     return False
-                else:
-                    prov_data_items.append(ProvenanceDataItem(
-                        names, str(total_bit_fields_merged)))
+                prov_data_items.append(ProvenanceDataItem(
+                    names, str(total_bit_fields_merged)))
         return True
 
     @staticmethod
     def _handle_failure_for_bit_field_router_compressor(
             executable_targets, host_chips, txrx):
-        """handles the state where some cores have failed.
+        """ Handles the state where some cores have failed.
 
-        :param executable_targets: cores which are running the router \
-        compressor with bitfield.
-        :param host_chips: chips which need host based compression
-        :param txrx: spinnman instance
-        :rtype: None
+        :param ExecutableTargets executable_targets:
+            cores which are running the router compressor with bitfield.
+        :param list(tuple(int,int)) host_chips:
+            chips which need host based compression
+        :param ~.Transceiver txrx: spinnman instance
         """
         logger.info(
             "on chip routing table compressor with bit field has failed")
@@ -392,28 +436,31 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage):
         """ load all data onto the chip
 
-        :param addresses: the addresses for bitfields in sdram
-        :param transceiver: the spinnMan instance
+        :param dict(tuple(int,int),tuple(int,int,int)) addresses:
+            the addresses for bitfields in sdram
+        :param ~.Transceiver transceiver: the spinnMan instance
         :param routing_table_compressor_app_id: the app id for the system app
-        :param routing_tables: the routing tables
-        :param app_id: the appid of the application
-        :param compress_only_when_needed: bool flag asking if compress only \
-        when needed
-        :param progress_bar: progress bar
-        :param compress_as_much_as_possible: bool flag asking if should \
-        compress as much as possible
-        :param cores: the cores that compressor will run on
-        :param matrix_addresses_and_size: dict of chips to regeneration \
-        sdram and size for exploitation
-        :param bit_field_compressor_executable_path: the path to the \
-        compressor binary path
-        :param bit_field_sorter_executable_path: the path to the sorter binary
-        :return: the list of tuples saying which chips this will need to use \
-        host compression, as the malloc failed.
-        :rtype: list of tuples saying which chips this will need to use host \
-        compression, as the malloc failed.
+        :param ~.MulticastRoutingTables routing_tables:
+            the routing tables
+        :param int app_id: the appid of the application
+        :param bool compress_only_when_needed:
+            whether to compress only when needed
+        :param ~.ProgressBar progress_bar: progress bar
+        :param bool compress_as_much_as_possible:
+            whether to compress as much as possible
+        :param ExecutableTargets cores:
+            the cores that compressor will run on
+        :param dict matrix_addresses_and_size:
+            maps chips to regeneration sdram and size for exploitation
+        :param str bit_field_compressor_executable_path:
+            the path to the compressor binary path
+        :param str bit_field_sorter_executable_path:
+            the path to the sorter binary
+        :return:
+            the list of tuples saying which chips this will need to use
+            host compression, as the malloc failed.
+        :rtype: list(tuple(int,int))
         """
-
         run_by_host = list()
         for table in routing_tables.routing_tables:
             if not machine.get_chip_at(table.x, table.y).virtual:
@@ -455,68 +502,66 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_compressor_executable_path, cores,
             compress_only_when_needed, compress_as_much_as_possible,
             comms_sdram):
-        """ updates the user1 address for the compressor cores so they can \
-        set the time per attempt
+        """ Updates the user1 address for the compressor cores so they can \
+            set the time per attempt.
 
-        :param chip_x: chip x coord
-        :param chip_y: chip y coord
-        :param time_per_iteration: time per attempt of compression
-        :param transceiver: SpiNNMan instance
-        :param bit_field_compressor_executable_path: path for the compressor \
-        binary
-        :param compress_only_when_needed: bool flag asking if compress only \
-        when needed
-        :param compress_as_much_as_possible: bool flag asking if should \
-        compress as much as possible
-        :param cores: the executable targets
-        :param comms_sdram (int) : Address for comms block
-        :rtype: None
+        :param int chip_x: chip x coord
+        :param int chip_y: chip y coord
+        :param int time_per_iteration: time per attempt of compression
+        :param ~.Transceiver transceiver: SpiNNMan instance
+        :param str bit_field_compressor_executable_path:
+            path for the compressor binary
+        :param bool compress_only_when_needed:
+            whether to compress only when needed
+        :param bool compress_as_much_as_possible:
+            whether to compress as much as possible
+        :param ExecutableTargets cores: the executable targets
+        :param int comms_sdram: Address for comms block
         """
         compressor_cores = cores.get_cores_for_binary(
             bit_field_compressor_executable_path)
         for processor_id in compressor_cores.get_core_subset_for_chip(
                 chip_x, chip_y).processor_ids:
-            user1_base_address = \
+            user1_address = \
                 transceiver.get_user_1_register_address_from_core(processor_id)
-            user2_base_address = \
+            user2_address = \
                 transceiver.get_user_2_register_address_from_core(processor_id)
-            user3_base_address = \
+            user3_address = \
                 transceiver.get_user_3_register_address_from_core(processor_id)
             transceiver.write_memory(
-                chip_x, chip_y, user1_base_address,
+                chip_x, chip_y, user1_address,
                 self._ONE_WORDS.pack(
                     time_per_iteration * SECOND_TO_MICRO_SECOND),
                 self._USER_BYTES)
+            compressor_setting = 0
             # bit 0 = compress_only_when_needed
+            if compress_only_when_needed:
+                compressor_setting |= 1 << self._ONLY_WHEN_NEEDED_BIT_OFFSET
             # bit 1 = compress_as_much_as_possible
             if compress_as_much_as_possible:
-                value = 2
-            else:
-                value = 1
+                compressor_setting |= 1 << self._AS_MUCH_AS_POSS_BIT_OFFSET
             transceiver.write_memory(
-                chip_x, chip_y, user2_base_address,
-                self._ONE_WORDS.pack(value),
-                self._USER_BYTES)
+                chip_x, chip_y, user2_address,
+                self._ONE_WORDS.pack(compressor_setting), self._USER_BYTES)
             transceiver.write_memory(
-                chip_x, chip_y, user3_base_address,
-                self._ONE_WORDS.pack(comms_sdram),
-                self._USER_BYTES)
+                chip_x, chip_y, user3_address,
+                self._ONE_WORDS.pack(comms_sdram), self._USER_BYTES)
 
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores):
         """ loads the addresses of stealable sdram
 
-        :param matrix_addresses_and_size: sdram usable and sizes
-        :param chip_x: the chip x to consider here
-        :param chip_y: the chip y to consider here
-        :param transceiver: the spinnman instance
-        :param routing_table_compressor_app_id: system app id.
-        :param cores: the cores that compressor will run on
-        :rtype: None
+        :param list(tuple(int,int)) matrix_addresses_and_size:
+            SDRAM usable and sizes
+        :param int chip_x: the chip x to consider here
+        :param int chip_y: the chip y to consider here
+        :param ~.Transceiver transceiver: the spinnman instance
+        :param int routing_table_compressor_app_id: system app id.
+        :param ExecutableTargets cores: the cores that compressor will run on
         """
-        address_data = \
-            self._generate_chip_matrix_data(matrix_addresses_and_size)
+        address_data = self._generate_chip_matrix_data(
+            matrix_addresses_and_size)
 
         # get sdram address on chip
         try:
@@ -527,8 +572,8 @@ class MachineBitFieldRouterCompressor(object):
                 SpinnmanUnexpectedResponseCodeException):
             sdram_address = self._steal_from_matrix_addresses(
                 matrix_addresses_and_size, len(address_data))
-            address_data = \
-                self._generate_chip_matrix_data(matrix_addresses_and_size)
+            address_data = self._generate_chip_matrix_data(
+                matrix_addresses_and_size)
 
         # write sdram
         transceiver.write_memory(
@@ -539,16 +584,17 @@ class MachineBitFieldRouterCompressor(object):
             chip_x, chip_y).processor_ids)[0]
 
         # update user 2 with location
-        user_3_base_address = \
-            transceiver.get_user_3_register_address_from_core(processor_id)
+        user3_address = transceiver.get_user_3_register_address_from_core(
+            processor_id)
         transceiver.write_memory(
-            chip_x, chip_y, user_3_base_address,
+            chip_x, chip_y, user3_address,
             self._ONE_WORDS.pack(sdram_address), self._USER_BYTES)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """ generate the data for the chip matrix data
 
-        :param list_of_sizes_and_address: list of sdram addresses and sizes
+        :param list(tuple(int,int)) list_of_sizes_and_address:
+            SDRAM addresses and sizes
         :return: byte array of data
         """
         data = b""
@@ -565,18 +611,21 @@ class MachineBitFieldRouterCompressor(object):
             threshold_percentage):
         """ loads the bitfield addresses space
 
-        :param addresses: the addresses to load
-        :param chip_x: the chip x to consider here
-        :param chip_y: the chip y to consider here
-        :param transceiver: the spinnman instance
-        :param routing_table_compressor_app_id: system app id.
-        :param cores: the cores that compressor will run on
-        :param bit_field_compressor_executable_path: the path to the \
-        compressor binary path
-        :param bit_field_sorter_executable_path: the path to the sorter binary
-        :param comms_sdram (int) : Address for comms block
-        :param threshold_percentage: the percentage of bitfields the user has \
-        defined as a minimum needed to pass to be successful.
+        :param dict(tuple(int,int),tuple(int,int,int)) addresses:
+            the addresses to load
+        :param int chip_x: the chip x to consider here
+        :param int chip_y: the chip y to consider here
+        :param ~.Transceiver transceiver: the spinnman instance
+        :param int routing_table_compressor_app_id: system app id.
+        :param ExecutableTargets cores: the cores that compressor will run on
+        :param str bit_field_compressor_executable_path:
+            the path to the compressor binary path
+        :param str bit_field_sorter_executable_path:
+            the path to the sorter binary
+        :param int comms_sdram: Address for comms block
+        :param int threshold_percentage:
+            the percentage of bitfields the user has defined as a minimum
+            needed to pass to be successful.
         :rtype: None
         """
         # generate address_data
@@ -608,10 +657,10 @@ class MachineBitFieldRouterCompressor(object):
             chip_x, chip_y).processor_ids)[0]
 
         # update user 2 with location
-        user_2_base_address = \
-            transceiver.get_user_2_register_address_from_core(processor_id)
+        user2_address = transceiver.get_user_2_register_address_from_core(
+            processor_id)
         transceiver.write_memory(
-            chip_x, chip_y, user_2_base_address,
+            chip_x, chip_y, user2_address,
             self._ONE_WORDS.pack(sdram_address), self._USER_BYTES)
 
     def _load_routing_table_data(
@@ -620,14 +669,14 @@ class MachineBitFieldRouterCompressor(object):
             matrix_addresses_and_size):
         """ loads the routing table data
 
-        :param table: the routing table to load
-        :param app_id: application app id
-        :param transceiver: spinnman instance
-        :param progress_bar: progress bar
-        :param routing_table_compressor_app_id: system app id
-        :param cores: the cores that the compressor going to run on
-        :rtype: None
-        :raises CantFindSDRAMToUse when sdram is not malloc-ed or stolen
+        :param AbsractMulticastRoutingTable table: the routing table to load
+        :param int app_id: application app id
+        :param ~.Transceiver transceiver: spinnman instance
+        :param ~.ProgressBar progress_bar: progress bar
+        :param int routing_table_compressor_app_id: system app id
+        :param ExecutableTargets cores:
+            the cores that the compressor going to run on
+        :raises CantFindSDRAMToUse: when sdram is not malloc-ed or stolen
         """
 
         routing_table_data = self._build_routing_table_data(app_id, table)
@@ -651,10 +700,10 @@ class MachineBitFieldRouterCompressor(object):
             table.x, table.y).processor_ids)[0]
 
         # update user 1 with location
-        user_1_base_address = \
-            transceiver.get_user_1_register_address_from_core(processor_id)
+        user1_address = transceiver.get_user_1_register_address_from_core(
+            processor_id)
         transceiver.write_memory(
-            table.x, table.y, user_1_base_address,
+            table.x, table.y, user1_address,
             self._ONE_WORDS.pack(base_address), self._USER_BYTES)
 
         # update progress bar
@@ -663,9 +712,11 @@ class MachineBitFieldRouterCompressor(object):
     def _build_routing_table_data(self, app_id, routing_table):
         """ builds routing data as needed for the compressor cores
 
-        :param app_id: appid of the application to load entries with
-        :param routing_table: the uncompressed routing table
+        :param int app_id: appid of the application to load entries with
+        :param ~.AbsractMulticastRoutingTable routing_table:
+            the uncompressed routing table
         :return: data array
+        :rtype: bytearray
         """
         data = b''
         data += self._TWO_WORDS.pack(app_id, routing_table.number_of_entries)
@@ -688,11 +739,13 @@ class MachineBitFieldRouterCompressor(object):
     def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
         """ steals memory from synaptic matrix as needed
 
-        :param matrix_addresses_and_size: matrix addresses and sizes
-        :param size_to_steal: size needed to steal from matrix's.
+        :param list(tuple(int,int)) matrix_addresses_and_size:
+            matrix addresses and sizes
+        :param int size_to_steal: size needed to steal from matrix's.
         :return: address to start steal from
-        :raises CantFindSDRAMToUseException: when no space is big enough to /
-        steal from.
+        :rtype: int
+        :raises CantFindSDRAMToUseException:
+            when no space is big enough to steal from.
         """
         for pos, (base_address, size) in enumerate(matrix_addresses_and_size):
             if size >= size_to_steal:
@@ -704,16 +757,18 @@ class MachineBitFieldRouterCompressor(object):
     def _add_to_addresses(
             self, vertex, placement, transceiver, region_addresses,
             sdram_block_addresses_and_sizes):
-        """ adds data about the api based vertex.
+        """ adds data about the API-based vertex.
 
-        :param vertex: vertex which utilises the api
-        :param placement: placement of vertex
-        :param transceiver:  spinnman instance
-        :param region_addresses: store for data regions
-        :param sdram_block_addresses_and_sizes: store for surplus sdram.
-        :rtype: None
+        :param AbstractSupportsBitFieldRoutingCompression vertex:
+            vertex which utilises the API
+        :param ~.Placement placement: placement of vertex
+        :param ~.Transceiver transceiver:  spinnman instance
+        :param dict(tuple(int,int),list(tuple(int,int,int))) region_addresses:
+            store for data regions
+        :param dict(tuple(int,int),list(tuple(int,int))) \
+                sdram_block_addresses_and_sizes:
+            store for surplus sdram.
         """
-
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(
             transceiver, placement)
@@ -736,17 +791,18 @@ class MachineBitFieldRouterCompressor(object):
 
     def _generate_addresses(
             self, machine_graph, placements, transceiver, progress_bar):
-        """ generates the bitfield sdram addresses
+        """ generates the bitfield SDRAM addresses
 
-        :param machine_graph: machine graph
-        :param placements: placements
-        :param transceiver: spinnman instance
-        :param progress_bar: the progress bar
-        :return: region_addresses and the executable targets to load the \
-        router table compressor with bitfield. and the executable path and \
-        the synaptic matrix spaces to corrupt
+        :param ~.MachineGraph machine_graph: machine graph
+        :param ~.Placements placements: placements
+        :param ~.Transceiver transceiver: spinnman instance
+        :param ~.ProgressBar progress_bar: the progress bar
+        :return: region_addresses and the executable targets to load the
+            router table compressor with bitfield. and the SDRAM blocks
+            available for use on each core that we plan to use
+        :rtype: tuple(dict(tuple(int,int),tuple(int,int,int)),
+            dict(tuple(int,int),list(tuple(int,int))))
         """
-
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
@@ -761,24 +817,26 @@ class MachineBitFieldRouterCompressor(object):
                     machine_vertex)
             if vertex is not None:
                 self._add_to_addresses(
-                        vertex, placement, transceiver, region_addresses,
-                        sdram_block_addresses_and_sizes)
+                    vertex, placement, transceiver, region_addresses,
+                    sdram_block_addresses_and_sizes)
 
         return region_addresses, sdram_block_addresses_and_sizes
 
     def _generate_chip_data(
             self, address_list, cores, comms_sdram, threshold_percentage):
-        """ generate byte array data for a list of sdram addresses and \
-        finally the time to run per compression iteration
+        """ Generate byte array data for a list of SDRAM addresses and \
+            finally the time to run per compression iteration.
 
-        :param address_list: the list of sdram addresses
-        :param cores: compressor cores on this chip.
-        :param comms_sdram (int) : Address for comms block
-        :param threshold_percentage: the percentage of bitfields the user has \
-        defined as a minimum needed to pass to be successful.
+        :param list(tuple(int,int,int)) address_list:
+            the list of SDRAM addresses
+        :param ~.CoreSubset cores: compressor cores on this chip.
+        :param int comms_sdram: Address for comms block
+        :param int threshold_percentage:
+            the percentage of bitfields the user has defined as a minimum
+            needed to pass to be successful.
         :return: the byte array
+        :rtype: bytes
         """
-
         data = b""
         data += self._ONE_WORDS.pack(threshold_percentage)
         data += self._ONE_WORDS.pack(comms_sdram)

@@ -24,6 +24,7 @@ class SetRouterEmergencyTimeoutProcess(AbstractMultiConnectionProcess):
 
     Note that timeouts are specified in a weird fixed point format, and that\
     the emergency message routing system is not normally enabled.
+    See the SpiNNaker datasheet for details.
     """
 
     def set_timeout(self, mantissa, exponent, core_subsets):

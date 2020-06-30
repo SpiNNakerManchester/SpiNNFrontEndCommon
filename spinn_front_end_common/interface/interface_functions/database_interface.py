@@ -35,8 +35,7 @@ class DatabaseInterface(object):
     :param ~pacman.model.placements.Placements placements:
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
-    :param str report_folder:
-        Where the database will be put.
+    :param str report_folder: Where the database will be put.
     :param bool create_atom_to_event_id_mapping:
     :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
     :return: Database interface, where the database is located
@@ -136,7 +135,6 @@ class DatabaseInterface(object):
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
         :param bool create_mapping:
-        :return:
         """
         # pylint: disable=too-many-arguments
 

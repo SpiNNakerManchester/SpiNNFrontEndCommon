@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
@@ -45,6 +46,7 @@ class ResetCountersMessage(AbstractSCPRequest):
                 destination_chip_y=y),
             SCPRequestHeader(command=ReinjectorSCPCommands.RESET_COUNTERS))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
         return CheckOKResponse(
             "Reset dropped packet reinjection counters",

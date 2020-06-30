@@ -80,6 +80,8 @@ class ExtraMonitorSupportMachineVertex(
         AbstractGeneratesDataSpecification):
     """ Machine vertex for talking to extra monitor cores. \
         Supports reinjection control and the faster data transfer protocols.
+
+    Usually deployed once per chip.
     """
 
     __slots__ = (
@@ -285,12 +287,9 @@ class ExtraMonitorSupportMachineVertex(
     def _generate_data_speed_up_out_config(
             self, spec, routing_info, machine_graph):
         """
-        :param ~data_specification.DataSpecificationGenerator spec: spec file
-        :param ~pacman.model.routing_info.RoutingInfo routing_info:
-            the packet routing info
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            The graph containing this vertex
-        :rtype: None
+        :param ~.DataSpecificationGenerator spec: spec file
+        :param ~.RoutingInfo routing_info: the packet routing info
+        :param ~.MachineGraph machine_graph: The graph containing this vertex
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_OUT_CONFIG.value,
@@ -316,7 +315,10 @@ class ExtraMonitorSupportMachineVertex(
     def _generate_reinjection_config(
             self, spec, router_timeout_keys, placement, machine):
         """
-        :param ~data_specification.DataSpecificationGenerator spec: spec file
+        :param ~.DataSpecificationGenerator spec: spec file
+        :param dict(tuple(int,int),int) router_timeout_keys:
+        :param ~.Placement placement:
+        :param ~.Machine machine:
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.REINJECT_CONFIG.value,
@@ -341,14 +343,12 @@ class ExtraMonitorSupportMachineVertex(
     def _generate_data_speed_up_in_config(
             self, spec, data_in_routing_tables, chip, mc_data_chips_to_keys):
         """
-        :param ~data_specification.DataSpecificationGenerator spec: spec file
-        :param ~pacman.model.routing_tables.MulticastRoutingTables \
-                data_in_routing_tables:
+        :param ~.DataSpecificationGenerator spec: spec file
+        :param ~.MulticastRoutingTables data_in_routing_tables:
             routing tables for all chips
-        :param ~spinn_machine.Chip chip: the chip where this monitor will run
+        :param ~.Chip chip: the chip where this monitor will run
         :param dict(tuple(int,int),int) mc_data_chips_to_keys:
             data in keys to chips map.
-        :rtype: None
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_IN_CONFIG.value,
@@ -398,7 +398,6 @@ class ExtraMonitorSupportMachineVertex(
             which monitors control the routers to set the timeout of
         :type extra_monitor_cores_to_set:
             iterable(ExtraMonitorSupportMachineVertex)
-        :rtype: None
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
@@ -554,7 +553,6 @@ class ExtraMonitorSupportMachineVertex(
         :param fixed_route:
             If fixed route should be set, or None if left as before.
         :type fixed_route: bool or None
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
         if multicast is not None:
@@ -593,7 +591,6 @@ class ExtraMonitorSupportMachineVertex(
             iterable(ExtraMonitorSupportMachineVertex)
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
-        :rtype: None
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
@@ -620,7 +617,6 @@ class ExtraMonitorSupportMachineVertex(
             iterable(ExtraMonitorSupportMachineVertex)
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
-        :rtype: None
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
@@ -635,17 +631,15 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     @staticmethod
-    def _convert_vertices_to_core_subset(
-            extra_monitor_cores, placements):
+    def _convert_vertices_to_core_subset(extra_monitor_cores, placements):
         """ Convert vertices into the subset of cores where they've been\
             placed.
 
         :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the vertices to convert to core subsets
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
+        :param ~.Placements placements: the placements object
         :return: where the vertices have been placed
-        :rtype: ~spinn_machine.CoreSubsets
+        :rtype: ~.CoreSubsets
         """
         core_subsets = CoreSubsets()
         for vertex in extra_monitor_cores:

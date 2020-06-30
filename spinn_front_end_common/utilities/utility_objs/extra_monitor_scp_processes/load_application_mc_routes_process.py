@@ -28,7 +28,6 @@ class LoadApplicationMCRoutesProcess(AbstractMultiConnectionProcess):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
             sets of cores to send command to
-        :rtype: None
         """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:

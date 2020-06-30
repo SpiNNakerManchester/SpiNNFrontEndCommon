@@ -19,7 +19,7 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 @add_metaclass(AbstractBase)
 class AbstractProvidesLocalProvenanceData(object):
-    """ Indicates an object that provides locally obtained provenance data
+    """ Indicates an object that provides locally obtained provenance data.
     """
 
     __slots__ = ()

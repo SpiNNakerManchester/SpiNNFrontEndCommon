@@ -31,7 +31,6 @@ class ProvenanceXMLWriter(object):
     :param list(ProvenanceDataItem) provenance_data_items:
         data items for provenance
     :param str provenance_data_path: the file path to store provenance in
-    :return: None
     """
 
     __slots__ = []
@@ -40,7 +39,6 @@ class ProvenanceXMLWriter(object):
         """
         :param list(ProvenanceDataItem) provenance_data_items:
         :param str provenance_data_path:
-        :return: None
         """
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
@@ -80,7 +78,7 @@ class ProvenanceXMLWriter(object):
     def _build_path(root, categories, item):
         """
         :param etree.Element root:
-        :param dict(etree.Element,dict) categories:
+        :param dict(etree.Element,dict(str,etree.Element)) categories:
         :param ProvenanceDataItem item:
         :rtype: etree.Element
         """

@@ -23,6 +23,23 @@ from spinn_front_end_common.utility_models import (
 class InsertExtraMonitorVerticesToGraphs(object):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
+
+    :param ~spinn_machine.Machine machine: spinnMachine instance
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        machine graph
+    :param str default_report_directory: the directory where reports go
+    :param bool write_data_speed_up_reports:
+        determine whether to write the reports for data speed up
+    :param int n_cores_to_allocate: number of cores to allocate for reception
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        app graph
+    :return: vertex to Ethernet connection map,
+        list of extra_monitor_vertices,
+        vertex_to_chip_map
+    :rtype: tuple(
+        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
+        list(ExtraMonitorSupportMachineVertex),
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
 
     __slots__ = [
@@ -36,14 +53,15 @@ class InsertExtraMonitorVerticesToGraphs(object):
             self, machine, machine_graph, default_report_directory,
             write_data_speed_up_reports, application_graph=None):
         """
-        :param machine: spinnMachine instance
-        :param machine_graph: machine graph
-        :param default_report_directory: the directory where reports go
-        :param write_data_speed_up_reports:
-            determine whether to write the reports for data speed up
-        :param application_graph: app graph.
-        :return: Ethernet chip to gatherer vertex map,
-            list of extra_monitor vertices, vertex_to_chip_map
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param str default_report_directory:
+        :param bool write_data_speed_up_reports:
+        :param ~.ApplicationGraph application_graph:
+        :rtype: tuple(
+            dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
+            list(ExtraMonitorSupportMachineVertex),
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._report_dir = default_report_directory
@@ -83,13 +101,13 @@ class InsertExtraMonitorVerticesToGraphs(object):
         """ Handles placing the second monitor vertex with extra functionality\
             into the graph
 
-        :param progress: progress bar
-        :param machine: spinnMachine instance
-        :param application_graph: app graph
-        :param machine_graph: machine graph
-        :param vertex_to_chip_map: map between vertex and chip
+        :param ~.ProgressBar progress: progress bar
+        :param ~.Machine machine: spinnMachine instance
+        :param ~.ApplicationGraph application_graph: app graph
+        :param ~.MachineGraph machine_graph: machine graph
+        :param dict vertex_to_chip_map: map between vertex and chip
         :return: list of extra monitor vertices
-        :rtype: list(MachineVertex)
+        :rtype: list(~.MachineVertex)
         """
         # pylint: disable=too-many-arguments
 
@@ -113,12 +131,12 @@ class InsertExtraMonitorVerticesToGraphs(object):
         """ Handles placing the second monitor vertex with extra functionality\
             into the graph
 
-        :param progress: progress bar
-        :param machine: spinnMachine instance
-        :param machine_graph: machine graph
-        :param vertex_to_chip_map: map between vertex and chip
+        :param ~.ProgressBar progress: progress bar
+        :param ~.Machine machine: spinnMachine instance
+        :param ~.MachineGraph machine_graph: machine graph
+        :param dict vertex_to_chip_map: map between vertex and chip
         :return: list of extra monitor vertices
-        :rtype: list(MachineVertex)
+        :rtype: list(~.MachineVertex)
         """
         # pylint: disable=too-many-arguments
 
@@ -140,13 +158,12 @@ class InsertExtraMonitorVerticesToGraphs(object):
             chip_to_gatherer_map, vertex_to_chip_map):
         """ Places vertices for receiving data extraction packets.
 
-        :param progress: progress bar
-        :param machine: machine instance
-        :param application_graph: application graph
-        :param machine_graph: machine graph
-        :param chip_to_gatherer_map: vertex to chip map
-        :param vertex_to_chip_map: map between chip and extra monitor
-        :rtype: None
+        :param ~.ProgressBar progress: progress bar
+        :param ~.Machine machine: machine instance
+        :param ~.ApplicationGraph application_graph: application graph
+        :param ~.MachineGraph machine_graph: machine graph
+        :param dict chip_to_gatherer_map: vertex to chip map
+        :param dict vertex_to_chip_map: map between chip and extra monitor
         """
         # pylint: disable=too-many-arguments
 
@@ -165,12 +182,11 @@ class InsertExtraMonitorVerticesToGraphs(object):
             chip_to_gatherer_map, vertex_to_chip_map):
         """ Places vertices for receiving data extraction packets.
 
-        :param progress: progress bar
-        :param machine: machine instance
-        :param machine_graph: machine graph
-        :param chip_to_gatherer_map: vertex to chip map
-        :param vertex_to_chip_map: map between chip and extra monitor
-        :rtype: None
+        :param ~.ProgressBar progress: progress bar
+        :param ~.Machine machine: machine instance
+        :param ~.MachineGraph machine_graph: machine graph
+        :param dict chip_to_gatherer_map: vertex to chip map
+        :param dict vertex_to_chip_map: map between chip and extra monitor
         """
         # pylint: disable=too-many-arguments
 
@@ -184,6 +200,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
     @staticmethod
     def __new_app_monitor(chip):
         """
+        :param ~.Chip chip:
         :rtype: ExtraMonitorSupport
         """
         return ExtraMonitorSupport(constraints=[
@@ -192,6 +209,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
     @staticmethod
     def __new_mach_monitor(chip):
         """
+        :param ~.Chip chip:
         :rtype: ExtraMonitorSupportMachineVertex
         """
         return ExtraMonitorSupportMachineVertex(
@@ -200,6 +218,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def __new_app_gatherer(self, ethernet_chip, vertex_to_chip_map):
         """
+        :param ~.Chip ethernet_chip:
+        :param dict vertex_to_chip_map:
         :rtype: DataSpeedUpPacketGather
         """
         return DataSpeedUpPacketGather(
@@ -213,6 +233,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def __new_mach_gatherer(self, ethernet_chip, vertex_to_chip_map):
         """
+        :param ~.Chip ethernet_chip:
+        :param dict vertex_to_chip_map:
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
         return DataSpeedUpPacketGatherMachineVertex(

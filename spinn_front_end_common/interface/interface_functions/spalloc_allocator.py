@@ -61,6 +61,9 @@ class _SpallocJobController(MachineAllocationController):
         return self._job.power
 
     def set_power(self, power):
+        """
+        :param bool power:
+        """
         self._job.set_power(power)
         if power:
             self._job.wait_until_ready()
@@ -161,6 +164,7 @@ class SpallocAllocator(object):
         """
         :param int n_boards:
         :param dict(str, str or int) spalloc_kw_args:
+        :rtype: tuple(~.Job, str)
         """
         job = Job(n_boards, **spalloc_kw_args)
         try:

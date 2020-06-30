@@ -24,7 +24,6 @@ class RoutingTableLoader(object):
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param ~spinn_machine.Machine machine:
     """
-
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):

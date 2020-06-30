@@ -61,7 +61,10 @@ class MachineGenerator(object):
         The bad IP address is always logged.
         If True, the IP address is ignored.
         If False, the chip with the bad IP address is removed.
-    :return: Connection details and Transceiver
+    :param str default_report_directory:
+        Directory to write any reports too.
+        If None the current directory will be used.
+    :return: Transceiver, and description of machine it is connected to
     :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)
     """
 
@@ -88,7 +91,8 @@ class MachineGenerator(object):
         :type max_sdram_size: int or None
         :param bool repair_machine:
         :param bool ignore_bad_ethernets:
-        :rtype: tuple(~spinnman.transceiver.Transceiver, \
+        :param str default_report_directory:
+        :rtype: tuple(~spinnman.transceiver.Transceiver,
             ~spinn_machine.Machine)
         """
         # pylint: disable=too-many-arguments

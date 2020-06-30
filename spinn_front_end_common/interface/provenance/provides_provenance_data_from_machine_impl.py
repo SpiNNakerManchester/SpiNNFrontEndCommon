@@ -92,8 +92,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
         return (
-            (ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES
-             + n_additional_data_items) * BYTES_PER_WORD)
+            (cls.NUM_PROVENANCE_DATA_ENTRIES + n_additional_data_items)
+            * BYTES_PER_WORD)
 
     def _get_provenance_region_address(self, transceiver, placement):
         """

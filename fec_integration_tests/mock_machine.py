@@ -101,7 +101,7 @@ class MockMachine(Thread):
             try:
                 if self._receiver.is_ready_to_receive(10):
                     self._do_receive()
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 if self._running:
                     traceback.print_exc()
                     self._error = e

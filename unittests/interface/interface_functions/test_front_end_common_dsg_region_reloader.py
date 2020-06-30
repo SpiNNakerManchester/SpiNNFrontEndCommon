@@ -109,10 +109,9 @@ class _MockTransceiver(object):
 
     def __init__(self, user_0_addresses, region_addresses):
         """
-
         :param user_0_addresses: dict of (x, y, p) to user_0_address
         :param region_addresses:
-            list of constants.MAX_MEM_REGIONS addresses to which the\
+            list of constants.MAX_MEM_REGIONS addresses to which the
             base address will be added to each
         """
         self._regions_rewritten = list()

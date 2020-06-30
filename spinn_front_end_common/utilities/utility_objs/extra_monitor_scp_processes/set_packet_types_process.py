@@ -33,7 +33,6 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         :param bool multicast: If multicast should be set
         :param bool nearest_neighbour: If nearest neighbour should be set
         :param bool fixed_route: If fixed route should be set
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
         for core_subset in core_subsets.core_subsets:

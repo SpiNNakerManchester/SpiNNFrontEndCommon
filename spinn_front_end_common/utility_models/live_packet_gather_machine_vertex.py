@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
+from enum import IntEnum
 import struct
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
@@ -42,7 +42,11 @@ class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
-    class _REGIONS(Enum):
+    """ Used to gather multicast packets coming from cores and stream them \
+        out to a receiving application on host. Only ever deployed on chips \
+        with a working Ethernet connection.
+    """
+    class _REGIONS(IntEnum):
         SYSTEM = 0
         CONFIG = 1
         PROVENANCE = 2
@@ -81,7 +85,7 @@ class LivePacketGatherMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self._REGIONS.PROVENANCE.value
+        return self._REGIONS.PROVENANCE
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -171,32 +175,32 @@ class LivePacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Reserve SDRAM space for memory areas
+        """ Reserve SDRAM space for memory areas.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param ~.DataSpecificationGenerator spec:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM.value,
-            size=SIMULATION_N_BYTES,
-            label='system')
+            region=self._REGIONS.SYSTEM,
+            size=SIMULATION_N_BYTES, label='system')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIG.value,
+            region=self._REGIONS.CONFIG,
             size=self._CONFIG_SIZE, label='config')
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
         """ Write the configuration region to the spec
 
-        :param ~data_specification.DataSpecificationGenerator spec:
-        :param iptags: The set of IP tags assigned to the object
-        :type iptags: iterable(~spinn_machine.tags.IPTag)
+        :param ~.DataSpecificationGenerator spec:
+        :param iterable(~.IPTag) iptags:
+            The set of IP tags assigned to the object
+        :raise ConfigurationException: if `iptags` is empty
         :raise DataSpecificationException:
             when something goes wrong with the DSG generation
         """
-        spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
+        spec.switch_write_focus(region=self._REGIONS.CONFIG)
 
         spec.write_value(int(self._lpg_params.use_prefix))
         spec.write_value(self._lpg_params.key_prefix or 0)
@@ -225,10 +229,12 @@ class LivePacketGatherMachineVertex(
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
 
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param ~.DataSpecificationGenerator spec:
+        :param int machine_time_step:
+        :param int time_scale_factor:
         """
         # Write this to the system region (to be picked up by the simulation):
-        spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
+        spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 

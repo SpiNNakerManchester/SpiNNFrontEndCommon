@@ -69,7 +69,6 @@ class TagsLoader(object):
         :param ~spinnman.transceiver.Transceiver transceiver:
             the transceiver object
         :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
-        :rtype: None
         """
         for ip_tag in progress_bar.over(iptags, False):
             transceiver.set_ip_tag(ip_tag)
@@ -83,7 +82,6 @@ class TagsLoader(object):
         :param ~spinnman.transceiver.Transceiver transceiver:
             the transceiver object
         :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
-        :rtype: None
         """
         for reverse_ip_tag in progress_bar.over(reverse_ip_tags, False):
             transceiver.set_reverse_ip_tag(reverse_ip_tag)

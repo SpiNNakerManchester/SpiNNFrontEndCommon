@@ -15,7 +15,7 @@
 
 import math
 import logging
-from enum import Enum
+from enum import IntEnum
 import numpy
 from data_specification.enums import DataType
 from pacman.executor.injection_decorator import (
@@ -57,7 +57,7 @@ class ChipPowerMonitorMachineVertex(
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
-    class _REGIONS(Enum):
+    class _REGIONS(IntEnum):
         # data regions
         SYSTEM = 0
         CONFIG = 1
@@ -71,14 +71,14 @@ class ChipPowerMonitorMachineVertex(
             sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
-        :param iterable(~pacman.model.constraints.AbstractConstraint)
+        :param iterable(~pacman.model.constraints.AbstractConstraint) \
                 constraints:
             constraints on this vertex
-        :param ChipPowerMonitor app_vertex: associated application vertex
-        :param ~pacman.model.graphs.common.Slice vertex_slice:
         :param int n_samples_per_recording:
             how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds
+        :param ChipPowerMonitor app_vertex: associated application vertex
+        :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
         super(ChipPowerMonitorMachineVertex, self).__init__(
             label=label, constraints=constraints, app_vertex=app_vertex,
@@ -96,7 +96,7 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     def n_samples_per_recording(self):
-        """ how may samples between recording entry
+        """ how may samples to take between making recording entries
 
         :rtype: int
         """
@@ -139,11 +139,10 @@ class ChipPowerMonitorMachineVertex(
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
         per_timestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
-        container = ResourceContainer(
+        return ResourceContainer(
             sdram=VariableSDRAM(with_overflow, per_timestep),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
-        return container
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -185,7 +184,6 @@ class ChipPowerMonitorMachineVertex(
         :param int machine_time_step: machine time step
         :param int time_scale_factor: time scale factor
         :param int data_n_time_steps: timesteps to reserve data for
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
@@ -204,9 +202,8 @@ class ChipPowerMonitorMachineVertex(
 
         :param ~data_specification.DataSpecificationGenerator spec:
             spec object
-        :rtype: None
         """
-        spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
+        spec.switch_write_focus(region=self._REGIONS.CONFIG)
         spec.write_value(self._n_samples_per_recording,
                          data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
@@ -220,14 +217,13 @@ class ChipPowerMonitorMachineVertex(
             the DSG spec writer
         :param int machine_time_step: the machine time step
         :param int time_scale_factor: the time scale factor
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
-        spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
+        spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
-        spec.switch_write_focus(region=self._REGIONS.RECORDING.value)
+        spec.switch_write_focus(region=self._REGIONS.RECORDING)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor) * n_machine_time_steps]
@@ -239,20 +235,19 @@ class ChipPowerMonitorMachineVertex(
 
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG specification to reserve in
-        :rtype: None
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM.value,
+            region=self._REGIONS.SYSTEM,
             size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIG.value,
+            region=self._REGIONS.CONFIG,
             size=CONFIG_SIZE_IN_BYTES, label='config')
         spec.reserve_memory_region(
-            region=self._REGIONS.RECORDING.value,
+            region=self._REGIONS.RECORDING,
             size=recording_utilities.get_recording_header_size(1),
             label="Recording")
 
@@ -272,7 +267,7 @@ class ChipPowerMonitorMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
         return locate_memory_region_for_placement(
-            placement, self._REGIONS.RECORDING.value, txrx)
+            placement, self._REGIONS.RECORDING, txrx)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
@@ -285,12 +280,13 @@ class ChipPowerMonitorMachineVertex(
         :param int machine_time_step: the machine time step
         :param float time_scale_factor: the time scale factor
         :return: the SDRAM usage
+        :rtype: int
         """
         timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
-        return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)
+        return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):
         """ Get data from SDRAM given placement and buffer manager

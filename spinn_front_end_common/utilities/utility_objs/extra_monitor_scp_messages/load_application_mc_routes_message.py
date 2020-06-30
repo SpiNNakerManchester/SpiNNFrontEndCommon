@@ -13,11 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
+from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
@@ -46,6 +47,7 @@ class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
             SCPRequestHeader(
                 command=SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
         return CheckOKResponse(
             "load application multicast routes",

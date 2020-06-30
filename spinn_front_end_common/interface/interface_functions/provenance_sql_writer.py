@@ -14,8 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from spinn_front_end_common.interface.provenance.sqllite_database import (
-    SqlLiteDatabase)
+from spinn_front_end_common.interface.provenance import SqlLiteDatabase
 
 
 class ProvenanceSQLWriter(object):

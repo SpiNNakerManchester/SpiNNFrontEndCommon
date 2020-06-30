@@ -22,14 +22,14 @@ class HBPMaxMachineGenerator(object):
     """ Generates a virtual machine of the width and height of the maximum\
         machine a given HBP server can generate.
 
-        :param str hbp_server_url:
-            The URL of the HBP server from which to get the machine
-        :param int total_run_time: The total run time to request
-        :param int max_machine_core_reduction:
-            the number of cores less than
-            :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
-            that each chip should have
-        :rtype: ~spinn_machine.Machine
+    :param str hbp_server_url:
+        The URL of the HBP server from which to get the machine
+    :param int total_run_time: The total run time to request
+    :param int max_machine_core_reduction:
+        the number of cores less than
+        :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
+        that each chip should have
+    :rtype: ~spinn_machine.Machine
     """
 
     __slots__ = []

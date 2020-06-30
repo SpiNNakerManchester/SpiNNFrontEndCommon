@@ -130,12 +130,11 @@ class GraphDataSpecificationWriter(object):
             self, pl, vertex, targets, data_n_timesteps):
         """
         :param ~.Placement pl: placement of machine graph to cores
-        :param ~.AbstractVertex vertex:
-            the specific vertex to write DSG for.
+        :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
         :param DataSpecificationTargets targets:
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
-        :raises ConfigurationException:
+        :raises ConfigurationException: if things don't fit
         """
         # if the vertex can generate a DSG, call it
         if not isinstance(vertex, AbstractGeneratesDataSpecification):

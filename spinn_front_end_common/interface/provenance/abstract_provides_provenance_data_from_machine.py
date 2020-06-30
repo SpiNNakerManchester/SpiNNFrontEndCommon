@@ -20,14 +20,14 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 @add_metaclass(AbstractBase)
 class AbstractProvidesProvenanceDataFromMachine(object):
     """ Indicates that an object provides provenance data retrieved from the\
-        machine
+        machine.
     """
 
     __slots__ = ()
 
     @abstractmethod
     def get_provenance_data_from_machine(self, transceiver, placement):
-        """ Get an iterable of provenance data items
+        """ Get an iterable of provenance data items.
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpinnMan interface object

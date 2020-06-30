@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs.application import ApplicationEdge
+from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints)
 from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
@@ -25,7 +25,8 @@ class CommandSender(
         AbstractOneAppOneMachineVertex,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A utility for sending commands to a vertex (possibly an external\
-        device) at fixed times in the simulation
+        device) at fixed times in the simulation or in response to \
+        simulation events (e.g., starting and stopping).
     """
 
     def __init__(self, label, constraints):
@@ -60,8 +61,15 @@ class CommandSender(
             vertex_to_send_to)
 
     def edges_and_partitions(self):
-        return self._machine_vertex.get_edges_and_partitions(
-            self, ApplicationEdge)
+        """ Construct application edges from this vertex to the app vertices\
+            that this vertex knows how to target (and has keys allocated for).
+
+        :return: edges, partition IDs
+        :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),
+            list(str))
+        """
+        return self._machine_vertex._get_edges_and_partitions(
+            self, ApplicationVertex, ApplicationEdge)
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)

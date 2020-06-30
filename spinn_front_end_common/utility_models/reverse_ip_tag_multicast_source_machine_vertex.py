@@ -16,7 +16,7 @@
 import math
 import struct
 import numpy
-from enum import Enum
+from enum import IntEnum
 from six.moves import xrange
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
@@ -36,7 +36,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_sending_region import get_n_bytes
+    .buffered_sending_region import (
+        get_n_bytes)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
@@ -124,14 +125,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         Flag to indicate that data will be received to inject
     """
 
-    class _REGIONS(Enum):
+    class _REGIONS(IntEnum):
         SYSTEM = 0
         CONFIGURATION = 1
         RECORDING = 2
         SEND_BUFFER = 3
         PROVENANCE_REGION = 4
 
-    class _PROVENANCE_ITEMS(Enum):
+    class _PROVENANCE_ITEMS(IntEnum):
         N_RECEIVED_PACKETS = 0
         N_SENT_PACKETS = 1
         INCORRECT_KEYS = 2
@@ -264,14 +265,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """ Determine the amount of SDRAM required per timestep.
 
         :param send_buffer_times:
+        :type send_buffer_times:
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
+            list(~numpy.ndarray(numpy.int32)) or None
         :param int n_keys:
         :rtype: int
         """
         # If there is a send buffer, calculate the keys per timestep
         if send_buffer_times is not None:
-            sdram = get_n_bytes(cls._max_send_buffer_keys_per_timestep(
+            return get_n_bytes(cls._max_send_buffer_keys_per_timestep(
                 send_buffer_times, n_keys))
-            return sdram
         return 0
 
     @classmethod
@@ -282,30 +285,31 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int machine_time_step:
         :param bool is_recording:
         :param float receive_rate:
-        :param ~numpy.ndarray send_buffer_times:
+        :param send_buffer_times:
+        :type send_buffer_times:
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
+            list(~numpy.ndarray(numpy.int32)) or None
         :param int n_keys:
         :rtype: int
         """
-
-        # If recording live data, use the user provided receive rate
-        if is_recording and send_buffer_times is None:
-            keys_per_timestep = math.ceil(
-                (receive_rate / (
-                    machine_time_step * MICRO_TO_MILLISECOND_CONVERSION)) * 1.1
-            )
-            header_size = EIEIODataHeader.get_header_size(
-                EIEIOType.KEY_32_BIT, is_payload_base=True)
-            # Maximum size is one packet per key
-            return ((header_size + EIEIOType.KEY_32_BIT.key_bytes) *
-                    keys_per_timestep)
+        # If not recording, no SDRAM needed per timestep
+        if not is_recording:
+            return 0
 
         # If recording send data, the recorded size is the send size
-        if is_recording and send_buffer_times is not None:
+        if send_buffer_times is not None:
             return cls._send_buffer_sdram_per_timestep(
                 send_buffer_times, n_keys)
 
-        # Not recording no SDRAM needed per timestep
-        return 0
+        # Recording live data, use the user provided receive rate
+        keys_per_timestep = math.ceil(
+            receive_rate / (
+                machine_time_step * MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
+        header_size = EIEIODataHeader.get_header_size(
+            EIEIOType.KEY_32_BIT, is_payload_base=True)
+        # Maximum size is one packet per key
+        return ((header_size + EIEIOType.KEY_32_BIT.key_bytes) *
+                keys_per_timestep)
 
     def _install_send_buffer(self, send_buffer_times):
         """
@@ -322,7 +326,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times
         self._send_buffers = {
-            self._REGIONS.SEND_BUFFER.value: self._send_buffer
+            self._REGIONS.SEND_BUFFER: self._send_buffer
         }
 
     def _install_virtual_key(self, n_keys):
@@ -353,7 +357,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self._REGIONS.PROVENANCE_REGION.value
+        return self._REGIONS.PROVENANCE_REGION
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -431,17 +435,23 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """ When events will be sent.
 
         :rtype:
-            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or \
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(numpy.int32)) or None
         """
         return self._send_buffer_times
 
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
+        """
+        :type send_buffer_times:
+            ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
+            list(~numpy.ndarray(numpy.int32)) or None
+        """
         self._install_send_buffer(send_buffer_times)
 
+    @staticmethod
     def _is_in_range(
-            self, time_stamp_in_ticks,
+            time_stamp_in_ticks,
             first_machine_time_step, n_machine_time_steps):
         """
         :param int time_stamp_in_ticks:
@@ -455,7 +465,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def _fill_send_buffer(
             self, first_machine_time_step, run_until_timesteps):
-        """ Fill the send buffer with keys to send
+        """ Fill the send buffer with keys to send.
 
         :param int first_machine_time_step:
         :param int run_until_timesteps:
@@ -504,7 +514,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
         """
-        :param spinnman.messages.eieio.EIEIOPrefix prefix_type:
+        :param ~.EIEIOPrefix prefix_type:
         :param int virtual_key:
         :rtype: int
         """
@@ -524,7 +534,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return mask
 
     def enable_recording(self, new_state=True):
-        """ Enable recording of the keys sent
+        """ Enable recording of the keys sent.
 
         :param bool new_state:
         """
@@ -532,20 +542,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def _reserve_regions(self, spec, n_machine_time_steps):
         """
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param ~.DataSpecificationGenerator spec:
         :param int n_machine_time_steps:
         """
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM.value,
+            region=self._REGIONS.SYSTEM,
             size=SIMULATION_N_BYTES, label='SYSTEM')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIGURATION.value,
+            region=self._REGIONS.CONFIGURATION,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
 
         # Reserve recording buffer regions if required
         spec.reserve_memory_region(
-            region=self._REGIONS.RECORDING.value,
+            region=self._REGIONS.RECORDING,
             size=get_recording_header_size(1),
             label="RECORDING")
 
@@ -557,7 +567,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 n_machine_time_steps)
             if self._send_buffer_size:
                 spec.reserve_memory_region(
-                    region=self._REGIONS.SEND_BUFFER.value,
+                    region=self._REGIONS.SEND_BUFFER,
                     size=self._send_buffer_size, label="SEND_BUFFER",
                     empty=True)
 
@@ -570,7 +580,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         if self._virtual_key is None:
             if self._send_buffer_partition_id is not None:
-
                 rinfo = routing_info.get_routing_info_from_pre_vertex(
                     self, self._send_buffer_partition_id)
 
@@ -578,7 +587,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 if rinfo is not None:
                     self._virtual_key = rinfo.first_key
                     self._mask = rinfo.first_mask
-
             else:
                 partitions = machine_graph\
                     .get_outgoing_edge_partitions_starting_at_vertex(self)
@@ -597,11 +605,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _write_configuration(
             self, spec, machine_time_step, time_scale_factor):
         """
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param ~.DataSpecificationGenerator spec:
         :param int machine_time_step:
         :param int time_scale_factor:
         """
-        spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
+        spec.switch_write_focus(region=self._REGIONS.CONFIGURATION)
 
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
@@ -691,13 +699,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._reserve_regions(spec, data_n_time_steps)
 
         # Write the system region
-        spec.switch_write_focus(self._REGIONS.SYSTEM.value)
+        spec.switch_write_focus(self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 
         # Write the additional recording information
-        spec.switch_write_focus(self._REGIONS.RECORDING.value)
+        spec.switch_write_focus(self._REGIONS.RECORDING)
         recording_size = 0
         if self._is_recording:
             per_timestep = self._recording_sdram_per_timestep(
@@ -731,10 +739,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @property
     def virtual_key(self):
+        """
+        :rtype: int or None
+        """
         return self._virtual_key
 
     @property
     def mask(self):
+        """
+        :rtype: int or None
+        """
         return self._mask
 
     @property
@@ -773,10 +787,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
         return locate_memory_region_for_placement(
-            placement, self._REGIONS.RECORDING.value, txrx)
+            placement, self._REGIONS.RECORDING, txrx)
 
     @property
     def send_buffers(self):
+        """
+        :rtype: dict(int,BufferedSendingRegion)
+        """
         return self._send_buffers
 
     @send_buffers.setter
@@ -789,7 +806,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :return: Size of buffer, in bytes.
         :rtype: int
         """
-        if region == self._REGIONS.SEND_BUFFER.value:
+        if region == self._REGIONS.SEND_BUFFER:
             return self._send_buffer_size
         return 0
 
@@ -805,10 +822,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "received_sdp_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value],
+            provenance_data[self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS],
             report=(
                 provenance_data[
-                    self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value] == 0 and
+                    self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS] == 0 and
                 self._send_buffer_times is None),
             message=(
                 "No SDP packets were received by {}.  If you expected packets"
@@ -816,35 +833,32 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._label))))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "send_multicast_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS.value],
-            report=provenance_data[
-                self._PROVENANCE_ITEMS.N_SENT_PACKETS.value] == 0,
+            provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS],
+            report=provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS] == 0,
             message=(
                 "No multicast packets were sent by {}.  If you expected"
                 " packets to be sent this could indicate an error".format(
                     self._label))))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "incorrect_keys"),
-            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS.value],
-            report=provenance_data[
-                self._PROVENANCE_ITEMS.INCORRECT_KEYS.value] > 0,
+            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS],
+            report=provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS] > 0,
             message=(
                 "Keys were received by {} that did not match the key {} and"
                 " mask {}".format(
                     self._label, self._virtual_key, self._mask))))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "incorrect_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_PACKETS.value],
+            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_PACKETS],
             report=provenance_data[
-                self._PROVENANCE_ITEMS.INCORRECT_PACKETS.value] > 0,
+                self._PROVENANCE_ITEMS.INCORRECT_PACKETS] > 0,
             message=(
                 "SDP Packets were received by {} that were not correct".format(
                     self._label))))
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "late_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS.value],
-            report=provenance_data[
-                self._PROVENANCE_ITEMS.LATE_PACKETS.value] > 0,
+            provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS],
+            report=provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS] > 0,
             message=(
                 "SDP Packets were received by {} that were too late to be"
                 " transmitted in the simulation".format(self._label))))

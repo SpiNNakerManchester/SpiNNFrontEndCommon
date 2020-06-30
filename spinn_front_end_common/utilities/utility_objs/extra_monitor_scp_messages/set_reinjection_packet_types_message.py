@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import struct
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
@@ -54,6 +55,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
             argument_3=int(bool(fixed_route)),
             data=bytearray(struct.pack("<B", nearest_neighbour)))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
         return CheckOKResponse(
             "Set reinjected packet types",

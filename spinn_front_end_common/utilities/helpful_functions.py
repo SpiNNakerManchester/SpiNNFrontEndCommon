@@ -58,7 +58,8 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param int y: chip y
     :param int address: base address of the SDRAM chip to read
     :param int length: length to read
-    :param str data_format: the format to read memory (see `struct.pack`)
+    :param str data_format:
+        the format to read memory (see :py:func:`struct.pack`)
     :param ~spinnman.transceiver.Transceiver transceiver:
         the SpinnMan interface
     """
@@ -122,13 +123,13 @@ def convert_string_into_chip_and_core_subset(cores):
 
 
 def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
-    """ flood fills a binary to spinnaker on a given `app_id` \
-    given the executable targets and binary.
+    """ Flood fills a binary to spinnaker on a given `app_id` \
+        given the executable targets and binary.
 
     :param ExecutableTargets executable_targets: the executable targets object
     :param str binary: the (name of the) binary to flood fill
     :param ~spinnman.transceiver.Transceiver txrx: spinnman instance
-    :param int app_id: the app id to load it on
+    :param int app_id: the application ID to load it as
     :return: the number of cores it was loaded onto
     :rtype: int
     """
@@ -314,6 +315,10 @@ def find_executable_start_type(machine_vertex):
 
 
 def _emergency_state_check(txrx, app_id):
+    """
+    :param ~.Transceiver txrx:
+    :param int app_id:
+    """
     # pylint: disable=broad-except
     try:
         rte_count = txrx.get_core_state_count(
@@ -347,6 +352,10 @@ def _emergency_state_check(txrx, app_id):
 
 # TRICKY POINT: Have to delay the import to here because of import circularity
 def _emergency_iobuf_extract(txrx, executable_targets):
+    """
+    :param ~.Transceiver txrx:
+    :param ExecutableTargets executable_targets:
+    """
     # pylint: disable=protected-access
     from spinn_front_end_common.interface.interface_functions import (
         ChipIOBufExtractor)
@@ -359,7 +368,8 @@ def _emergency_iobuf_extract(txrx, executable_targets):
 
 def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
     """ Used to get at least *some* information out of a core when something\
-    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+        goes badly wrong. Not a replacement for what abstract spinnaker base\
+        does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int app_id: The ID of the application.
@@ -381,7 +391,8 @@ def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
 
 def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
     """ Used to get at least *some* information out of a core when something\
-    goes badly wrong. Not a replacement for what abstract spinnaker base does.
+        goes badly wrong. Not a replacement for what abstract spinnaker base\
+        does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int app_id: The ID of the application.

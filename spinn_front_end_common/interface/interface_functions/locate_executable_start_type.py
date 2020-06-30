@@ -37,7 +37,7 @@ class LocateExecutableStartType(object):
         :rtype: dict(ExecutableType, ~.CoreSubsets) or list(ExecutableType)
         """
         if not graph.vertices:
-            return [ExecutableType.NO_APPLICATION], {}
+            return {ExecutableType.NO_APPLICATION: None}
 
         binary_start_types = dict()
 
@@ -70,7 +70,7 @@ class LocateExecutableStartType(object):
         # only got apps with no binary, such as external devices.
         # return no app
         if not binary_start_types:
-            return [ExecutableType.NO_APPLICATION], {}
+            return {ExecutableType.NO_APPLICATION: None}
 
         return binary_start_types
 

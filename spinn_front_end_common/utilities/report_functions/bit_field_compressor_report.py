@@ -38,19 +38,22 @@ class BitFieldCompressorReport(object):
         bitfields into the routing table.
 
     :param str report_default_directory: report folder
-    :param list(~.ProvenanceDataItem) provenance_items: prov items
+    :param list(ProvenanceDataItem) provenance_items: prov items
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         the machine graph
     :param ~pacman.model.placements.Placements placements: the placements
+    :return: a summary, or `None` if the report file can't be written
+    :rtype: BitFieldSummary
     """
     def __call__(
             self, report_default_directory, provenance_items, machine_graph,
             placements):
         """
         :param str report_default_directory:
-        :param list(~.ProvenanceDataItem) provenance_items:
+        :param list(ProvenanceDataItem) provenance_items:
         :param ~.MachineGraph machine_graph:
         :param ~.Placements placements:
+        :rtype: BitFieldSummary or None
         """
         file_name = os.path.join(report_default_directory, _FILE_NAME)
         try:
@@ -60,18 +63,20 @@ class BitFieldCompressorReport(object):
         except IOError:
             logger.exception("Generate_placement_reports: Can't open file"
                              " {} for writing.", _FILE_NAME)
+            return None
 
     @staticmethod
     def _merged_component(provenance_items, writer):
-        """ reporting how many bitfields were merged into the router
+        """ Report how many bitfields were merged into the router.
 
-        :param provenance_items: prov items
-        :param writer: file writer.
+        :param list(ProvenanceDataItem) provenance_items: prov items
+        :param ~io.FileIO writer: file writer.
         :return: tuple containing 4 elements.
          1. min_bit_fields merged in a chip,
          2. the max bit_fields merged in a chip,
          3. the total bit_fields_merged into all the routers.
          4. average number of bit-fields merged on the routers.
+        :rtype: tuple(int or str, int or str, int or str, float or str)
         """
         top_bit_field = 0
         min_bit_field = sys.maxsize
@@ -98,17 +103,22 @@ class BitFieldCompressorReport(object):
         if found:
             average_per_chip_merged = \
                 float(average_per_chip_merged) / float(n_chips)
-
-        if not found:
+        else:
             min_bit_field = "N/A"
             top_bit_field = "N/A"
             total_bit_fields_merged = "N/A"
             average_per_chip_merged = "N/A"
+
         return (min_bit_field, top_bit_field, total_bit_fields_merged,
                 average_per_chip_merged)
 
     @staticmethod
     def _before_merge_component(machine_graph, placements):
+        """
+        :param ~.MachineGraph machine_graph:
+        :param ~.Placements placements:
+        :rtype: tuple(int, int, int, float or int)
+        """
         total_to_merge = 0
         to_merge_per_chip = defaultdict(int)
 
@@ -116,7 +126,7 @@ class BitFieldCompressorReport(object):
             binary_start_type = find_executable_start_type(placement.vertex)
 
             if binary_start_type != ExecutableType.SYSTEM:
-                seen_partitions = list()
+                seen_partitions = set()
                 for incoming_edge in machine_graph.get_edges_ending_at_vertex(
                         placement.vertex):
                     if incoming_edge.traffic_type == EdgeTrafficType.MULTICAST:
@@ -125,17 +135,17 @@ class BitFieldCompressorReport(object):
                                 incoming_edge)
                         if incoming_partition not in seen_partitions:
                             total_to_merge += 1
-                            to_merge_per_chip[(placement.x, placement.y)] += 1
-                            seen_partitions.append(incoming_partition)
+                            to_merge_per_chip[placement.x, placement.y] += 1
+                            seen_partitions.add(incoming_partition)
 
         max_bit_fields_on_chip = 0
         min_bit_fields_on_chip = sys.maxsize
 
-        for chip_key in to_merge_per_chip.keys():
-            if to_merge_per_chip[chip_key] > max_bit_fields_on_chip:
-                max_bit_fields_on_chip = to_merge_per_chip[chip_key]
-            if to_merge_per_chip[chip_key] < min_bit_fields_on_chip:
-                min_bit_fields_on_chip = to_merge_per_chip[chip_key]
+        for bitfield_count in to_merge_per_chip.values():
+            if bitfield_count > max_bit_fields_on_chip:
+                max_bit_fields_on_chip = bitfield_count
+            if bitfield_count < min_bit_fields_on_chip:
+                min_bit_fields_on_chip = bitfield_count
 
         if len(to_merge_per_chip) == 0:
             average = 0
@@ -149,11 +159,12 @@ class BitFieldCompressorReport(object):
             self, writer, provenance_items, machine_graph, placements):
         """ writes the report
 
-        :param writer: the file writer
-        :param provenance_items: the prov items
-        :param machine_graph: the machine graph
-        :param placements: the placements
-        :return: a BitFieldSummary.
+        :param ~io.FileIO writer: the file writer
+        :param list(ProvenanceDataItem) provenance_items: the prov items
+        :param ~.MachineGraph machine_graph: the machine graph
+        :param ~.Placements placements: the placements
+        :return: a summary
+        :rtype: BitFieldSummary
         """
 
         (min_bit_field, top_bit_field, total_bit_fields_merged,

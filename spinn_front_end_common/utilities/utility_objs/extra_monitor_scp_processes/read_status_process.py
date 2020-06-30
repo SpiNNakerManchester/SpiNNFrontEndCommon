@@ -18,7 +18,8 @@ import logging
 import traceback
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
-    import GetReinjectionStatusMessage
+    import (
+        GetReinjectionStatusMessage)
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
 class ReadStatusProcess(AbstractMultiConnectionProcess):
     """ How to send messages to read the status of extra monitors.
     """
+    __slots__ = ()
 
     @staticmethod
     def __handle_response(result, response):

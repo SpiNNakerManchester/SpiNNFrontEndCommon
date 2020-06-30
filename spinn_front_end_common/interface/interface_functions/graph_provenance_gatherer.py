@@ -31,12 +31,10 @@ class GraphProvenanceGatherer(object):
 
     def __call__(self, machine_graph, application_graph=None):
         """
-        :param ~.MachineGraph machine_graph: The machine graph to inspect
+        :param ~.MachineGraph machine_graph:
         :param ~.ApplicationGraph application_graph:
-            The optional application graph
         :rtype: list(ProvenanceDataItem)
         """
-
         prov_items = list()
 
         progress = ProgressBar(

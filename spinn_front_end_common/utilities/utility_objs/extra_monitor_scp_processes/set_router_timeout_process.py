@@ -23,6 +23,7 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
     """ How to send messages to set the router timeouts.
 
     Note that timeouts are specified in a weird fixed point format.
+    See the SpiNNaker datasheet for details.
     """
 
     def set_timeout(self, mantissa, exponent, core_subsets):
@@ -33,8 +34,17 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
         """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
-                self._send_request(SetRouterTimeoutMessage(
-                    core_subset.x, core_subset.y, processor_id,
-                    mantissa, exponent))
-                self._finish()
-                self.check_for_error()
+                self._set_timeout(
+                    core_subset, processor_id, mantissa, exponent)
+
+    def _set_timeout(self, core_subset, processor_id, mantissa, exponent):
+        """
+        :param ~spinn_machine.CoreSubset core_subset:
+        :param int processor_id:
+        :param int mantissa:
+        :param int exponent:
+        """
+        self._send_request(SetRouterTimeoutMessage(
+            core_subset.x, core_subset.y, processor_id, mantissa, exponent))
+        self._finish()
+        self.check_for_error()

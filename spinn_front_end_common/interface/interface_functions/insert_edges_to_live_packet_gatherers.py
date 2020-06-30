@@ -73,7 +73,6 @@ class InsertEdgesToLivePacketGatherers(object):
         :param ~.MachineGraph machine_graph:
         :param ~.ApplicationGraph application_graph:
         :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
-        :rtype: None
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 

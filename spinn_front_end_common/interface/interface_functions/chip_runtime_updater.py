@@ -42,7 +42,6 @@ class ChipRuntimeUpdater(object):
         :type run_until_timesteps: int or None
         :param int current_timesteps:
         """
-
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 

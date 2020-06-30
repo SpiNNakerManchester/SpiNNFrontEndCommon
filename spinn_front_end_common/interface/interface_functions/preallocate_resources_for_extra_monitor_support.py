@@ -80,7 +80,6 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param list(~.CoreResource) cores: the storage of core requirements
         :param ~.Machine machine: the spinnMachine instance
         :param ~.ProgressBar progress: the progress bar to operate one
-        :rtype: None
         """
         extra_usage = \
             ExtraMonitorSupportMachineVertex.static_resources_required()
@@ -105,7 +104,6 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param ~.ProgressBar progress: the progress bar to update as needed
         :param int n_cores_to_allocate:
             how many packet gathers to allocate per chip
-        :rtype: None
         """
         # pylint: disable=too-many-arguments
 
