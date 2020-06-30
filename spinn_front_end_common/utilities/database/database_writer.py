@@ -55,6 +55,9 @@ class DatabaseWriter(object):
     ]
 
     def __init__(self, database_directory):
+        """
+        :param str database_directory: Where the database will be written
+        """
         self._done = False
         self._database_path = os.path.join(database_directory, DB_NAME)
         self._connection = None
@@ -83,9 +86,10 @@ class DatabaseWriter(object):
     def auto_detect_database(machine_graph):
         """ Auto detects if there is a need to activate the database system
 
-        :param machine_graph: the machine graph of the application\
-            problem space.
-        :return: a bool which represents if the database is needed
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph of the application problem space.
+        :return: whether the database is needed for the application
+        :rtype: bool
         """
         return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
                    and vertex.is_in_injection_mode
@@ -93,9 +97,16 @@ class DatabaseWriter(object):
 
     @property
     def database_path(self):
+        """
+        :rtype: str
+        """
         return self._database_path
 
     def __insert(self, sql, *args):
+        """
+        :param str sql:
+        :rtype: int
+        """
         c = self._connection.cursor()
         try:
             c.execute(sql, args)
@@ -115,7 +126,6 @@ class DatabaseWriter(object):
         """ Store the machine object into the database
 
         :param ~spinn_machine.Machine machine: the machine object.
-        :rtype: None
         """
         with self._connection:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
@@ -157,11 +167,8 @@ class DatabaseWriter(object):
 
     def add_application_vertices(self, application_graph):
         """
-
-        :param application_graph: not None
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :rtype: None
+        :param ~pacman.model.graphs.application.ApplicationGraph \
+                application_graph:
         """
         with self._connection:
             # add vertices
@@ -205,9 +212,9 @@ class DatabaseWriter(object):
     def add_system_params(self, time_scale_factor, machine_time_step, runtime):
         """ Write system params into the database
 
-        :param time_scale_factor: the time scale factor used in timing
-        :param machine_time_step: the machine time step used in timing
-        :param runtime: the amount of time the application is to run for
+        :param int time_scale_factor: the time scale factor used in timing
+        :param int machine_time_step: the machine time step used in timing
+        :param int runtime: the amount of time the application is to run for
         """
         with self._connection:
             self._connection.executemany(
@@ -226,12 +233,13 @@ class DatabaseWriter(object):
         """ Add the machine graph, graph mapper and application graph \
             into the database.
 
-        :param machine_graph: the machine graph object
-        :param data_n_timesteps: The number of timesteps for which data space\
-            will been reserved
-        :param graph_mapper: the graph mapper object
-        :param application_graph: the application graph object
-        :rtype: None
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            The machine graph object
+        :param int data_n_timesteps:
+            The number of timesteps for which data space will been reserved
+        :param ~pacman.model.graphs.application.ApplicationGraph \
+                application_graph:
+            The application graph object
         """
         with self._connection:
             for vertex in machine_graph.vertices:
@@ -301,9 +309,8 @@ class DatabaseWriter(object):
     def add_placements(self, placements):
         """ Adds the placements objects into the database
 
-        :param placements: the placements object
-        :param machine_graph: the machine graph object
-        :rtype: None
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
         """
         with self._connection:
             # add records
@@ -320,9 +327,10 @@ class DatabaseWriter(object):
     def add_routing_infos(self, routing_infos, machine_graph):
         """ Adds the routing information (key masks etc) into the database
 
-        :param routing_infos: the routing information object
-        :param machine_graph: the machine graph object
-        :rtype: None:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
+            the routing information object
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph object
         """
         # Filter just the MULTICAST partitions first
         partitions_and_routing_info = (
@@ -345,8 +353,9 @@ class DatabaseWriter(object):
     def add_routing_tables(self, routing_tables):
         """ Adds the routing tables into the database
 
-        :param routing_tables: the routing tables object
-        :rtype: None
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
+                routing_tables:
+            the routing tables object
         """
         with self._connection:
             self._connection.executemany(
@@ -365,9 +374,9 @@ class DatabaseWriter(object):
     def add_tags(self, machine_graph, tags):
         """ Adds the tags into the database
 
-        :param machine_graph: the machine graph object
-        :param tags: the tags object
-        :rtype: None
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph object
+        :param ~pacman.model.tags.Tags tags: the tags object
         """
         with self._connection:
             for vertex in machine_graph.vertices:
@@ -396,12 +405,10 @@ class DatabaseWriter(object):
             self, application_graph, machine_graph, routing_infos,
             graph_mapper):
         """
-
-        :param application_graph:
-        :param machine_graph:
-        :param routing_infos:
-        :param graph_mapper:
-        :rtype: None
+        :param ~pacman.model.graphs.application.ApplicationGraph \
+                application_graph:
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
         if application_graph is not None and application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings

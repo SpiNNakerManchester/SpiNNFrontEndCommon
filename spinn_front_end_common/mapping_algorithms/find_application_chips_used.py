@@ -23,16 +23,23 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class FindApplicationChipsUsed(object):
-    """ builds a set of stats on how many chips were used for application
-    sided cores.
+    """ Builds a set of stats on how many chips were used for application\
+        cores.
 
+    :param ~pacman.model.placements.Placements placements: placements
+    :return: a tuple with 4 elements.
+    1. how many chips were used
+    2. the max application cores on any given chip
+    3. the lowest number of application cores on any given chip
+    4. the average number of application cores on any given chip
+    :rtype: tuple(int,int,int,float)
     """
 
     def __call__(self, placements, graph_mapper=None):
-        """ finds how many application chips there were and the cost on
-        each chip
+        """ Finds how many application chips there were and the cost on \
+            each chip
 
-        :param placements: placements
+        :param ~.Placements placements: placements
         :param graph_mapper: the graph mapper.
         :return: a tuple with 4 elements.
         1. how many chips were used
@@ -51,13 +58,14 @@ class FindApplicationChipsUsed(object):
 
         low = sys.maxsize
         high = 0
-        average = 0
+        total = 0
+        n_chips_used = len(chips_used)
 
         for key in chips_used:
             if chips_used[key] < low:
                 low = chips_used[key]
             if chips_used[key] > high:
                 high = chips_used[key]
-            average += chips_used[key]
-        average = average / len(chips_used.keys())
-        return len(chips_used.keys()), high, low, average
+            total += chips_used[key]
+        average = total / n_chips_used
+        return n_chips_used, high, low, average
