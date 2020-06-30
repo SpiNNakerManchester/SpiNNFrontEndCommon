@@ -33,6 +33,6 @@ class AbstractProvidesNKeysForPartition(object):
         :type partition: ~pacman.model.graphs.AbstractOutgoingEdgePartition
         :param graph_mapper: A mapper between the graphs
         :type graph_mapper: :py:class:`~pacman.model.graph.GraphMapper`
-        :return: A list of constraints
-        :rtype: list(~pacman.model.constraints.AbstractConstraint)
+        :return: The number of keys required
+        :rtype: int
         """
