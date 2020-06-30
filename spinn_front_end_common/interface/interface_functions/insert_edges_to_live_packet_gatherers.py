@@ -23,6 +23,27 @@ from spinn_front_end_common.interface.interface_functions import \
 
 class InsertEdgesToLivePacketGatherers(object):
     """ Add edges from the recorded vertices to the local Live PacketGatherers.
+
+    :param live_packet_gatherer_parameters: the set of parameters
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~pacman.model.placements.Placements placements:
+        the placements object
+    :param live_packet_gatherers_to_vertex_mapping:
+        the mapping of LPG parameters and the machine vertices associated
+        with it
+    :type live_packet_gatherers_to_vertex_mapping:
+        dict(LivePacketGatherParameters,
+        dict(tuple(int,int),LivePacketGatherMachineVertex))
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
+    :param n_keys_map: key map
+    :type n_keys_map:
+        ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     """
 
     def __call__(
@@ -31,18 +52,21 @@ class InsertEdgesToLivePacketGatherers(object):
             machine_graph, application_graph=None, graph_mapper=None,
             n_keys_map=None):
         """
-        :param live_packet_gatherer_parameters: the set of parameters
-        :param placements: the placements object
-        :param live_packet_gatherers_to_vertex_mapping:\
-            the mapping of LPG parameters and the machine vertices associated\
-            with it
-        :param machine: the SpiNNaker machine
-        :param machine_graph: the machine graph
-        :param application_graph: the application graph
+        :param live_packet_gatherer_parameters:
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.Placements placements:
+        :param live_packet_gatherers_to_vertex_mapping:
+        :type live_packet_gatherers_to_vertex_mapping:
+            dict(LivePacketGatherParameters,
+            dict(tuple(int,int), LivePacketGatherMachineVertex))
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
         :param graph_mapper: \
             the mapping between application and machine graphs
-        :param n_keys_map: key map
-        :rtype: None
+        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
         """
         # pylint: disable=too-many-arguments
         progress = ProgressBar(
@@ -149,7 +173,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param partition_ids: the partition IDs to put the edge on
         :param n_keys_map: map between partition and n keys
         :return: the application edge for this vertex and LPG
-        :rtype: ~pacman.model.graph.application.ApplicationEdge
+        :rtype: ~pacman.model.graphs.application.ApplicationEdge
         """
         # pylint: disable=too-many-arguments
 
@@ -186,12 +210,14 @@ class InsertEdgesToLivePacketGatherers(object):
             machine vertex in question, or the LPG on 0, 0 if a closer one\
             can't be found.
 
-        :param machine_vertex: the machine vertex to locate the nearest LPG to
-        :param machine_lpgs: dict of gatherers by chip placed on
-        :param machine: the SpiNNaker machine object
-        :type machine: ~spinn_machine.Machine
-        :param placements: the placements object
+        :param ~.MachineVertex machine_vertex:
+            the machine vertex to locate the nearest LPG to
+        :param dict(tuple(int,int),LivePacketGatherMachineVertex) machine_lpgs:
+            gatherers by chip placed on
+        :param ~.Machine machine: the SpiNNaker machine object
+        :param ~.Placements placements: the placements object
         :return: the local LPG
+        :rtype: LivePacketGatherMachineVertex
         :raise ConfigurationException: if a local gatherer cannot be found
         """
 

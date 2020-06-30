@@ -14,13 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary,
     AbstractGeneratesDataSpecification)
-from .command_sender_machine_vertex import CommandSenderMachineVertex
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 
 class CommandSender(
@@ -28,15 +27,15 @@ class CommandSender(
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A utility for sending commands to a vertex (possibly an external\
-        device) at fixed times in the simulation
+        device) at fixed times in the simulation or in response to \
+        simulation events (e.g., starting and stopping).
     """
 
     def __init__(self, label, constraints):
         """
-        :param label: The label of this vertex
-        :type label: str
+        :param str label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
-        :type constraints: \
+        :type constraints:
             iterable(~pacman.model.constraints.AbstractConstraint)
         """
 
@@ -48,19 +47,16 @@ class CommandSender(
             timed_commands, vertex_to_send_to):
         """ Add commands to be sent down a given edge
 
-        :param start_resume_commands: The commands to send when the simulation\
-            starts or resumes from pause
-        :type start_resume_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param pause_stop_commands: the commands to send when the simulation\
-            stops or pauses after running
-        :type pause_stop_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param timed_commands: The commands to send at specific times
-        :type timed_commands: \
-            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
-        :param vertex_to_send_to: The vertex these commands are to be sent to
-        :type vertex_to_send_to: AbstractVertex
+        :param iterable(MultiCastCommand) start_resume_commands:
+            The commands to send when the simulation starts or resumes from
+            pause
+        :param iterable(MultiCastCommand) pause_stop_commands:
+            The commands to send when the simulation stops or pauses after
+            running
+        :param iterable(MultiCastCommand) timed_commands:
+            The commands to send at specific times
+        :param ~pacman.model.graphs.AbstractVertex vertex_to_send_to:
+            The vertex these commands are to be sent to
         """
         self._machine_vertex.add_commands(
             start_resume_commands, pause_stop_commands, timed_commands,
@@ -68,13 +64,14 @@ class CommandSender(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        # pylint: disable=no-value-for-parameter, arguments-differ
+        # pylint: disable=no-value-for-parameter
         self._machine_vertex.generate_data_specification(spec, placement)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
+        # This application vertex only ever has one machine vertex
         return self._machine_vertex
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
@@ -91,8 +88,15 @@ class CommandSender(
         return CommandSenderMachineVertex.BINARY_FILE_NAME
 
     def edges_and_partitions(self):
-        return self._machine_vertex.get_edges_and_partitions(
-            self, ApplicationEdge)
+        """ Construct application edges from this vertex to the app vertices\
+            that this vertex knows how to target (and has keys allocated for).
+
+        :return: edges, partition IDs
+        :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),
+            list(str))
+        """
+        return self._machine_vertex._get_edges_and_partitions(
+            self, ApplicationVertex, ApplicationEdge)
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)

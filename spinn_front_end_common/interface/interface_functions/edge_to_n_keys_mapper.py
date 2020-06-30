@@ -23,12 +23,20 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 class EdgeToNKeysMapper(object):
     """ Works out the number of keys needed for each edge.
+
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+    :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
+    :raises: ConfigurationException
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph=None, graph_mapper=None):
-
+        """
+        :param ~.MachineGraph machine_graph:
+        :rtype: ~.DictBasedMachinePartitionNKeysMap
+        :raises: ConfigurationException
+        """
         if machine_graph is None:
             raise ConfigurationException(
                 "A machine graph is required for this mapper. "
