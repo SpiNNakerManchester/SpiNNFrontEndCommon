@@ -156,9 +156,6 @@ class ReverseIpTagMultiCastSource(
         # Store recording parameters
         self._is_recording = False
 
-        # Keep the vertices for resuming runs
-        self._machine_vertices = list()
-
     def _validate_send_buffer_times(self, send_buffer_times):
         if send_buffer_times is None:
             return None
@@ -206,7 +203,8 @@ class ReverseIpTagMultiCastSource(
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
-        for (vertex_slice, vertex) in self._machine_vertices:
+        for vertex in self.machine_vertices:
+            vertex_slice = vertex.vertex_slice
             send_buffer_times_to_set = self._send_buffer_times
             # pylint: disable=len-as-condition
             if (self._send_buffer_times is not None and
@@ -247,9 +245,9 @@ class ReverseIpTagMultiCastSource(
             if hasattr(send_buffer_times[0], "__len__"):
                 send_buffer_times = send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-        vertex = ReverseIPTagMulticastSourceMachineVertex(
-            n_keys=vertex_slice.n_atoms,
-            label=label, constraints=constraints,
+        machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
+            vertex_slice=vertex_slice,
+            label=label, constraints=constraints, app_vertex=self,
             board_address=self._board_address,
             receive_port=self._receive_port,
             receive_sdp_port=self._receive_sdp_port,
@@ -261,9 +259,11 @@ class ReverseIpTagMultiCastSource(
             send_buffer_partition_id=self._send_buffer_partition_id,
             reserve_reverse_ip_tag=self._reserve_reverse_ip_tag,
             enable_injection=self._enable_injection)
-        vertex.enable_recording(self._is_recording)
-        self._machine_vertices.append((vertex_slice, vertex))
-        return vertex
+        machine_vertex.enable_recording(self._is_recording)
+        # Known issue with ReverseIPTagMulticastSourceMachineVertex
+        # if resources_required:
+        #    assert (resources_required == machine_vertex.resources_required)
+        return machine_vertex
 
     def __repr__(self):
         return self._label

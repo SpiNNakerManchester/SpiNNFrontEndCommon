@@ -16,18 +16,17 @@
 import os
 import logging
 import struct
-
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinnman.model.cpu_infos import CPUInfos
 from data_specification import utility_calls
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .globals_variables import get_simulator
-from .constants import BYTES_PER_WORD
+from .constants import BYTES_PER_WORD, MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -240,7 +239,8 @@ def convert_time_diff_to_total_milliseconds(sample):
     :return: total milliseconds
     :rtype: float
     """
-    return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)
+    return ((sample.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+            (sample.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
 
 def determine_flow_states(executable_types, no_sync_changes):
@@ -301,19 +301,17 @@ def convert_vertices_to_core_subset(vertices, placements):
     return core_subsets
 
 
-def find_executable_start_type(machine_vertex, graph_mapper=None):
+def find_executable_start_type(machine_vertex):
     """
     :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
     :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType
     """
     if not isinstance(machine_vertex, AbstractHasAssociatedBinary):
         return None
-    elif graph_mapper is not None:
-        app_vertex = graph_mapper.get_application_vertex(machine_vertex)
-        if isinstance(app_vertex, AbstractHasAssociatedBinary):
-            return app_vertex.get_binary_start_type()
-    else:
-        return machine_vertex.get_binary_start_type()
+    app_vertex = machine_vertex.app_vertex
+    if isinstance(app_vertex, AbstractHasAssociatedBinary):
+        return app_vertex.get_binary_start_type()
+    return machine_vertex.get_binary_start_type()
 
 
 def _emergency_state_check(txrx, app_id):

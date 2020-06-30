@@ -106,7 +106,6 @@ class SpallocMaxMachineGenerator(object):
         if (machine["width"] == 1 and
                 machine["height"] == 1 and
                 len(machine["dead_boards"]) == 2):
-            width = 8
-            height = 8
+            return 8, 8, 48
 
         return width, height, width * height

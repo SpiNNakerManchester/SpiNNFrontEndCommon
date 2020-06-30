@@ -68,7 +68,7 @@ class ChipPowerMonitorMachineVertex(
 
     def __init__(
             self, label, constraints, n_samples_per_recording,
-            sampling_frequency):
+            sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
         :param iterable(~pacman.model.constraints.AbstractConstraint) \
@@ -77,9 +77,12 @@ class ChipPowerMonitorMachineVertex(
         :param int n_samples_per_recording:
             how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds
+        :param ChipPowerMonitor app_vertex: associated application vertex
+        :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
         super(ChipPowerMonitorMachineVertex, self).__init__(
-            label=label, constraints=constraints)
+            label=label, constraints=constraints, app_vertex=app_vertex,
+            vertex_slice=vertex_slice)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
@@ -93,7 +96,7 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     def n_samples_per_recording(self):
-        """ how may samples between recording entries
+        """ how may samples to take between making recording entries
 
         :rtype: int
         """
@@ -277,12 +280,13 @@ class ChipPowerMonitorMachineVertex(
         :param int machine_time_step: the machine time step
         :param float time_scale_factor: the time scale factor
         :return: the SDRAM usage
+        :rtype: int
         """
         timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
-        return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)
+        return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):
         """ Get data from SDRAM given placement and buffer manager
