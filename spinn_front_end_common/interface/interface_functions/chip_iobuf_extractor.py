@@ -37,6 +37,11 @@ EXTRACTING_LABEL = "Extracting IOBUF from the machine"
 FILE_FORMAT = "iobuf_for_chip_{}_{}_processor_id_{}.txt"
 
 
+class _DummyProgress(object):
+    def over(self, values):
+        return values
+
+
 class ChipIOBufExtractor(object):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
@@ -54,16 +59,18 @@ class ChipIOBufExtractor(object):
     """
 
     __slots__ = [
+        # Possible path to write application vertex output to
+        "__app_path",
         # Template for the file names to be used where writing the results
-        "_filename_template",
+        "__filename_template",
         # Flag to say this is after an an exception so don't throw new ones
-        "_recovery_mode",
-        # List hopefully empty of the error messages found
-        "_error_entries",
-        # List ideally empty of the warning messages found
-        "_warn_entries",
+        "__recovery_mode",
+        # Possible path to write system vertex output to
+        "__sys_path",
         # Binaries of type SYSTEM
-        "_system_binaries",
+        "__system_binaries",
+        # Transceiver object to retreive data
+        "__transceiver",
     ]
 
     def __init__(self, recovery_mode=False, filename_template=FILE_FORMAT):
@@ -71,11 +78,9 @@ class ChipIOBufExtractor(object):
         :param bool recovery_mode:
         :param str filename_template:
         """
-        self._filename_template = filename_template
-        self._recovery_mode = bool(recovery_mode)
-        self._error_entries = list()
-        self._warn_entries = list()
-        self._system_binaries = {}
+        self.__filename_template = filename_template
+        self.__recovery_mode = bool(recovery_mode)
+        self.__system_binaries = {}
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
@@ -95,70 +100,84 @@ class ChipIOBufExtractor(object):
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))
         """
-
-        self._error_entries = list()
-        self._warn_entries = list()
-
-        self._system_binaries = {}
+        self.__app_path = app_provenance_file_path
+        self.__sys_path = system_provenance_file_path
+        self.__transceiver = transceiver
+        self.__system_binaries = {}
         try:
-            self._system_binaries = executable_targets.\
+            self.__system_binaries = executable_targets.\
                 get_binaries_of_executable_type(ExecutableType.SYSTEM)
         except KeyError:
             pass
 
         # all the cores
         if from_cores == "ALL":
-            self._run_all(
-                transceiver, executable_targets,
-                app_provenance_file_path, system_provenance_file_path)
+            return self.__extract_all_cores(executable_targets)
         elif from_cores:
             if binary_types:
-                self._run_mixed(
-                    transceiver, executable_targets, executable_finder,
-                    app_provenance_file_path, system_provenance_file_path,
-                    from_cores, binary_types)
+                return self.__extract_selected_cores_and_types(
+                    executable_targets, executable_finder, binary_types,
+                    from_cores)
             else:
-                self._run_from_cores(
-                    transceiver, executable_targets, app_provenance_file_path,
-                    system_provenance_file_path, from_cores)
+                return self.__extract_selected_cores(
+                    executable_targets, from_cores)
         else:
             if binary_types:
-                self._run_binary_types(
-                    transceiver, executable_targets, executable_finder,
-                    app_provenance_file_path, system_provenance_file_path,
-                    binary_types)
+                return self.__extract_selected_types(
+                    executable_targets, executable_finder, binary_types)
             else:
-                # nothing
-                pass
+            # nothing
+                return [], []
 
-        return self._error_entries, self._warn_entries
+    def __progress(self, bins):
+        """
+        :param list bins:
+        :rtype: ~.ProgressBar
+        """
+        if self.__suppress_progress:
+            return _DummyProgress()
+        if self.__recovery_mode:
+            return ProgressBar(len(bins), RECOVERING_LABEL)
+        return ProgressBar(len(bins), EXTRACTING_LABEL)
 
-    @property
-    def _label(self):
-        if self._recovery_mode:
-            return RECOVERING_LABEL
-        return EXTRACTING_LABEL
+    def __prov_path(self, binary):
+        """
+        :param str binary:
+        :return: provenance directory path
+        :rtype: str
+        """
+        return (self.__sys_path if binary in self.__system_binaries
+                else self.__app_path)
 
-    def _run_all(
-            self, transceiver, executable_targets,
-            app_provenance_file_path, system_provenance_file_path):
-        progress = ProgressBar(len(executable_targets.binaries), self._label)
+    def __extract_all_cores(self, executable_targets):
+        """
+        :param ExecutableTargets executable_targets:
+        :rtype: tuple(list(str), list(str))
+        """
+        error_entries = list()
+        warn_entries = list()
+        progress = self.__progress(executable_targets.binaries)
         with Replacer() as replacer:
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
-                if binary in self._system_binaries:
-                    prov_path = system_provenance_file_path
-                else:
-                    prov_path = app_provenance_file_path
-                self._run_for_core_subsets(
-                    core_subsets, replacer, transceiver, prov_path)
+                self.__extract_iobufs_for_binary(
+                    core_subsets, replacer, binary, error_entries, warn_entries)
+        return error_entries, warn_entries
 
-    def _run_mixed(
-            self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
-            from_cores, binary_types):
+    def __extract_selected_cores_and_types(
+            self, executable_targets, executable_finder, binary_types,
+            from_cores):
+        """
+        :param ExecutableTargets executable_targets:
+        :param ExecutableFinder executable_finder:
+        :param str binary_types:
+        :param str from_cores:
+        :rtype: tuple(list(str), list(str))
+        """
+        error_entries = list()
+        warn_entries = list()
         # bit of both
-        progress = ProgressBar(len(executable_targets.binaries), self._label)
+        progress = self.__progress(executable_targets.binaries)
         binaries = executable_finder.get_executable_paths(binary_types)
         iocores = convert_string_into_chip_and_core_subset(from_cores)
         with Replacer() as replacer:
@@ -170,86 +189,117 @@ class ChipIOBufExtractor(object):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
                 if core_subsets:
-                    if binary in self._system_binaries:
-                        prov_path = system_provenance_file_path
-                    else:
-                        prov_path = app_provenance_file_path
-                    self._run_for_core_subsets(
-                        core_subsets, replacer, transceiver, prov_path)
+                     self.__extract_iobufs_for_binary(
+                        core_subsets, replacer, binary, error_entries,
+                        warn_entries)
+        return error_entries, warn_entries
 
-    def _run_from_cores(
+    def __extract_selected_cores(
             self, transceiver, executable_targets, app_provenance_file_path,
             system_provenance_file_path, from_cores):
+        """
+        :param ExecutableTargets executable_targets:
+        :param str from_cores:
+        :rtype: tuple(list(str), list(str))
+        """
+        error_entries = list()
+        warn_entries = list()
         # some hard coded cores
-        progress = ProgressBar(len(executable_targets.binaries), self._label)
+        progress = self.__progress(executable_targets.binaries)
         iocores = convert_string_into_chip_and_core_subset(from_cores)
         with Replacer() as replacer:
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = iocores.intersect(
                     executable_targets.get_cores_for_binary(binary))
                 if core_subsets:
-                    if binary in self._system_binaries:
-                        prov_path = system_provenance_file_path
-                    else:
-                        prov_path = app_provenance_file_path
-                    self._run_for_core_subsets(
-                        core_subsets, replacer, transceiver, prov_path)
+                    self.__extract_iobufs_for_binary(
+                        core_subsets, replacer, binary, error_entries,
+                        warn_entries)
+        return error_entries, warn_entries
 
-    def _run_binary_types(
-            self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
-            binary_types):
+    def __extract_selected_types(
+            self, executable_targets, executable_finder, binary_types):
+        """
+        :param ExecutableTargets executable_targets:
+        :param ExecutableFinder executable_finder:
+        :param str binary_types:
+        :rtype: tuple(list(str), list(str))
+        """
+        error_entries = list()
+        warn_entries = list()
         # some binaries
         binaries = executable_finder.get_executable_paths(binary_types)
-        progress = ProgressBar(len(binaries), self._label)
+        progress = self.__progress(binaries)
         with Replacer() as replacer:
             for binary in progress.over(binaries):
                 core_subsets = executable_targets.get_cores_for_binary(
                     binary)
-                if binary in self._system_binaries:
-                    prov_path = system_provenance_file_path
-                else:
-                    prov_path = app_provenance_file_path
-                self._run_for_core_subsets(
-                    core_subsets, replacer, transceiver, prov_path)
+                self.__extract_iobufs_for_binary(
+                    core_subsets, replacer, binary, error_entries,
+                    warn_entries)
+        return error_entries, warn_entries
 
-    def _run_for_core_subsets(
-            self, core_subsets, replacer, transceiver, provenance_file_path):
-
+    def __extract_iobufs_for_binary(
+            self, core_subsets, replacer, binary, error_entries, warn_entries):
+        """
+        :param ~.CoreSubsets core_subsets: Where the binary is deployed
+        :param ~.Replacer replacer: Open object to handle log replacing
+        :param str binary: What binary was deployed there.
+            This is used to determine how to decompress the IOBUF output.
+        :param list(str) error_entries:
+        :param list(str) warn_entries:
+        """
+        prov_path = self.__prov_path(binary)
         # extract iobuf
         if self._recovery_mode:
-            io_buffers = self.__recover_iobufs(transceiver, core_subsets)
+            io_buffers = self.__recover_iobufs(core_subsets)
         else:
-            io_buffers = list(transceiver.get_iobuf(core_subsets))
+            io_buffers = list(self.__transceiver.get_iobuf(core_subsets))
 
-        # write iobuf
-        for iobuf in io_buffers:
-            file_name = os.path.join(
-                provenance_file_path,
-                self._filename_template.format(iobuf.x, iobuf.y, iobuf.p))
+            # write iobuf
+            for iobuf in io_buffers:
+                self.__process_one_iobuf(iobuf, prov_path, replacer,
+                                         error_entries, warn_entries)
 
-            # set mode of the file based off if the file already exists
-            mode = "a" if os.path.exists(file_name) else "w"
+    def __process_one_iobuf(
+            self, iobuf, file_path, replacer, error_entries, warn_entries):
+        """
+        :param ~.IOBuffer iobuf:
+        :param str file_path:
+        :param ~.Replacer replacer:
+        :param list(str) error_entries:
+        :param list(str) warn_entries:
+        """
+        file_name = os.path.join(
+            file_path, self._filename_template.format(
+                iobuf.x, iobuf.y, iobuf.p))
 
-            # write iobuf to file and call out errors and warnings.
-            with open(file_name, mode) as f:
-                for line in iobuf.iobuf.split("\n"):
-                    replaced = replacer.replace(line)
-                    f.write(replaced)
-                    f.write("\n")
-                    self.__add_value_if_match(
-                        ERROR_ENTRY, replaced, self._error_entries, iobuf)
-                    self.__add_value_if_match(
-                        WARNING_ENTRY, replaced, self._warn_entries, iobuf)
+        # set mode of the file based off if the file already exists
+        mode = "a" if os.path.exists(file_name) else "w"
 
-    def __recover_iobufs(self, transceiver, core_subsets):
+        # write iobuf to file and call out errors and warnings.
+        with open(file_name, mode) as f:
+            for line in iobuf.iobuf.split("\n"):
+                replaced = replacer.replace(line)
+                f.write(replaced)
+                f.write("\n")
+                self.__add_value_if_match(
+                    ERROR_ENTRY, replaced, error_entries, iobuf)
+                self.__add_value_if_match(
+                    WARNING_ENTRY, replaced, warn_entries, iobuf)
+
+    def __recover_iobufs(self, core_subsets):
+        """
+        :param ~.CoreSubsets core_subsets:
+        :rtype: list(~.IOBuffer)
+        """
         io_buffers = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
                 cs = CoreSubsets()
                 cs.add_processor(core_subset.x, core_subset.y, p)
                 try:
-                    io_buffers.extend(transceiver.get_iobuf(cs))
+                    io_buffers.extend(self.__transceiver.get_iobuf(cs))
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
@@ -258,9 +308,15 @@ class ChipIOBufExtractor(object):
         return io_buffers
 
     @staticmethod
-    def __add_value_if_match(regex, line, entries, place):
+    def __add_value_if_match(regex, line, entries, iobuf):
+        """
+        :param ~typing.Pattern regex:
+        :param str line:
+        :param list(str) entries:
+        :param ~.IOBuffer iobuf:
+        """
         match = regex.match(line)
         if match:
             entries.append("{}, {}, {}: {} ({})".format(
-                place.x, place.y, place.p, match.group(ENTRY_TEXT),
+                iobuf.x, iobuf.y, iobuf.p, match.group(ENTRY_TEXT),
                 match.group(ENTRY_FILE)))
