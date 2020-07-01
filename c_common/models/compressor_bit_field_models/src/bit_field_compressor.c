@@ -137,12 +137,6 @@ void start_compression_process(void) {
 //! \brief Initialise the abstraction layer of many routing tables as single
 //!     big table.
 void setup_routing_tables(void) {
-    log_info("table init for %d entries (should be zero) and %d tables and "
-            "%d mid_point out of %d bitfields",
-            comms_sdram->routing_tables->n_entries,
-            comms_sdram->routing_tables->n_sub_tables,
-            comms_sdram->mid_point,
-            comms_sdram->sorted_bit_fields->n_bit_fields);
     routing_tables_init(comms_sdram->routing_tables);
 
     if (comms_sdram->mid_point == 0) {
@@ -156,6 +150,15 @@ void setup_routing_tables(void) {
 
 //! \brief Run the compressor process as requested
 void run_compression_process(void) {
+    if (comms_sdram->mid_point > 0) {
+        log_info("Run with %d tables and %d mid_point out of %d bitfields",
+            comms_sdram->routing_tables->n_sub_tables,
+            comms_sdram->mid_point,
+            comms_sdram->sorted_bit_fields->n_bit_fields);
+    } else {
+        log_info("Run with %d tables and no bitfields",
+            comms_sdram->routing_tables->n_sub_tables);
+    }
     log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);
     log_debug("set up fake heap for sdram usage");
@@ -181,7 +184,6 @@ void run_compression_process(void) {
 static inline bool process_run(compressor_states compressor_state) {
     switch (compressor_state) {
     case PREPARED:
-        log_info("run detected");
         comms_sdram->compressor_state = COMPRESSING;
         run_compression_process();
         return true;
@@ -340,7 +342,12 @@ static void timer_callback(uint unused0, uint unused1) {
     // check that the sorter has told the compressor to finish for any reason
     if (comms_sdram->sorter_instruction != RUN) {
         stop_compressing = true;
-        log_info("Sorter cancelled run request");
+        if (comms_sdram->compressor_state == COMPRESSING) {
+            log_info("Sorter cancelled run request");
+        } else {
+            log_info("timer weirdness %d %d",
+            comms_sdram->sorter_instruction, comms_sdram->compressor_state);
+        }
         spin1_pause();
     }
 }

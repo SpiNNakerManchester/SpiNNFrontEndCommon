@@ -15,29 +15,51 @@
 
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 
 
 class InsertLivePacketGatherersToGraphs(object):
-    """ Adds LPGs as required into a given graph
+    """ Adds LPGs as required into a given graph.
+
+    :param live_packet_gatherer_parameters:
+        the Live Packet Gatherer parameters requested by the script
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~spinn_machine.Machine machine: the SpiNNaker machine as discovered
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
+        the application graph
+    :return: mapping between LPG parameters and LPG vertex
+    :rtype: dict(LivePacketGatherParameters,
+        dict(tuple(int,int),LivePacketGatherMachineVertex))
     """
+
+    __slots__ = [
+        "_machine_graph",
+        "_application_graph"]
 
     def __call__(
             self, live_packet_gatherer_parameters, machine, machine_graph,
-            application_graph=None, graph_mapper=None):
+            application_graph=None):
         """ Add LPG vertices on Ethernet connected chips as required.
 
-        :param live_packet_gatherer_parameters:\
-            the Live Packet Gatherer parameters requested by the script
-        :param machine: the SpiNNaker machine as discovered
-        :param application_graph: the application graph
-        :param machine_graph: the machine graph
-        :return: mapping between LPG parameters and LPG vertex
+        :param live_packet_gatherer_parameters:
+        :type live_packet_gatherer_parameters:
+            dict(LivePacketGatherParameters,
+            list(tuple(~.AbstractVertex, list(str))))
+        :param ~.Machine machine:
+        :param ~.MachineGraph machine_graph:
+        :param ~.ApplicationGraph application_graph:
+        :rtype: dict(LivePacketGatherParameters,
+            dict(tuple(int,int),LivePacketGatherMachineVertex))
         """
-        # pylint: disable=too-many-arguments
+
+        self._machine_graph = machine_graph
+        self._application_graph = application_graph
 
         # create progress bar
         progress = ProgressBar(
@@ -49,29 +71,50 @@ class InsertLivePacketGatherersToGraphs(object):
         lpg_params_to_vertices = defaultdict(dict)
 
         # for every Ethernet connected chip, add the gatherers required
-        for chip in progress.over(machine.ethernet_connected_chips):
-            for params in live_packet_gatherer_parameters:
-                if (params.board_address is None or
-                        params.board_address == chip.ip_address):
-                    lpg_params_to_vertices[params][chip.x, chip.y] = \
-                        self._add_lpg_vertex(application_graph, graph_mapper,
-                                             machine_graph, chip, params)
+        if application_graph is not None:
+            for chip in progress.over(machine.ethernet_connected_chips):
+                for params in live_packet_gatherer_parameters:
+                    if (params.board_address is None or
+                            params.board_address == chip.ip_address):
+                        lpg_params_to_vertices[params][chip.x, chip.y] = \
+                            self._add_app_lpg_vertex(chip, params)
+        else:
+            for chip in progress.over(machine.ethernet_connected_chips):
+                for params in live_packet_gatherer_parameters:
+                    if (params.board_address is None or
+                            params.board_address == chip.ip_address):
+                        lpg_params_to_vertices[params][chip.x, chip.y] = \
+                            self._add_mach_lpg_vertex(chip, params)
 
         return lpg_params_to_vertices
 
-    def _add_lpg_vertex(self, app_graph, mapper, m_graph, chip, params):
-        # pylint: disable=too-many-arguments
-        if app_graph is not None:
-            _slice = Slice(0, 0)
-            app_vtx = LivePacketGather(params)
-            app_graph.add_vertex(app_vtx)
-            resources = app_vtx.get_resources_used_by_atoms(_slice)
-            m_vtx = app_vtx.create_machine_vertex(
-                _slice, resources, label=params.label)
-            mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
-        else:
-            m_vtx = LivePacketGatherMachineVertex(params)
+    def _add_app_lpg_vertex(self, chip, params):
+        """ Adds a LPG vertex to a machine graph that has an associated\
+            application graph.
 
-        m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
-        m_graph.add_vertex(m_vtx)
-        return m_vtx
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
+        :rtype: LivePacketGatherMachineVertex
+        """
+        app_vtx = LivePacketGather(params)
+        self._application_graph.add_vertex(app_vtx)
+        # No need to handle resources when allocating; LPG has core to itself
+        vtx = app_vtx.create_machine_vertex(
+            vertex_slice=None, resources_required=None,
+            label="LivePacketGatherer",
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        self._machine_graph.add_vertex(vtx)
+        return vtx
+
+    def _add_mach_lpg_vertex(self, chip, params):
+        """ Adds a LPG vertex to a machine graph without an associated\
+            application graph.
+
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
+        :rtype: LivePacketGatherMachineVertex
+        """
+        vtx = LivePacketGatherMachineVertex(
+            params, constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        self._machine_graph.add_vertex(vtx)
+        return vtx

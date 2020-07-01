@@ -215,11 +215,19 @@ static inline bool pass_instructions_to_compressor(
     // set the midpoint for the given compressor processor.
     comms_sdram[processor_id].mid_point = mid_point;
 
-    // Info stuff
-    log_info("using processor %d with %d entries for %d bitfields out of %d",
-            processor_id, table_size,
-            comms_sdram[processor_id].mid_point,
-            comms_sdram[processor_id].sorted_bit_fields->n_bit_fields);
+    if (comms_sdram[processor_id].mid_point == 0){
+        // Info stuff but local sorted_bit_fields as compressor not set yet
+        log_info("using processor %d with %d entries for %d bitfields out of %d",
+                processor_id, table_size,
+                comms_sdram[processor_id].mid_point,
+                sorted_bit_fields->n_bit_fields);
+    } else {
+        // Info stuff using compressor data
+        log_info("using processor %d with %d entries for %d bitfields out of %d",
+                processor_id, table_size,
+                comms_sdram[processor_id].mid_point,
+                comms_sdram[processor_id].sorted_bit_fields->n_bit_fields);
+    }
 
     comms_sdram[processor_id].sorter_instruction = RUN;
     return true;

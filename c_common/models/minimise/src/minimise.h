@@ -18,7 +18,7 @@
 #include <stdbool.h>
 #include <spin1_api.h>
 #include <debug.h>
-#include "platform.h"
+#include <malloc_extras.h>
 
 #ifndef __MINIMISE_H__
 #define __MINIMISE_H__
@@ -188,7 +188,7 @@ void cleanup_and_exit(header_t *header) {
     sark_xfree(sv->sdram_heap, (void *) header, ALLOC_LOCK);
 
     log_info("completed router compressor");
-    app_exit(0);
+    malloc_extras_terminate(EXITED_CLEANLY);
 }
 
 // Forward declaration...
@@ -274,7 +274,7 @@ void compress_start(uint unused0, uint unused1) {
         FREE((void *) header);
 
         // set the failed flag and exit
-        app_exit(1);
+        malloc_extras_terminate(EXIT_FAIL);
     }
 }
 

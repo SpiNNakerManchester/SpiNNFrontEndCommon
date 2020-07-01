@@ -19,21 +19,26 @@ from six import add_metaclass
 
 @add_metaclass(AbstractBase)
 class AbstractSupportsBitFieldGeneration(object):
+    """ Marks a vertex that can provide information about bitfields it wants \
+        generated on-chip.
+    """
 
     @abstractmethod
     def bit_field_base_address(self, transceiver, placement):
-        """ returns the sdram address for the bit field table data
+        """ Returns the SDRAM address for the bit field table data.
 
-        :param transceiver: txrx
-        :param placement: placement
-        :return: the sdram address for the bitfield address
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.models.placements.Placement placement:
+        :return: the SDRAM address for the bitfield address
+        :rtype: int
         """
 
     @abstractmethod
     def bit_field_builder_region(self, transceiver, placement):
-        """ returns the sdram address for the bit field builder data
+        """ returns the SDRAM address for the bit field builder data
 
-        :param transceiver: txrx
-        :param placement: placement
-        :return: the sdram address for the bitfield builder data
+        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.models.placements.Placement placement:
+        :return: the SDRAM address for the bitfield builder data
+        :rtype: int
         """

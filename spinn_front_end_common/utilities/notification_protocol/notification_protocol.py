@@ -33,7 +33,7 @@ class NotificationProtocol(object):
     """
     __slots__ = [
         "__database_message_connections",
-        "_sent_visualisation_confirmation",
+        "__sent_visualisation_confirmation",
         "__socket_addresses",
         "__wait_for_read_confirmation",
         "__wait_futures",
@@ -53,7 +53,7 @@ class NotificationProtocol(object):
         self.__wait_for_read_confirmation = wait_for_read_confirmation
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
-        self._sent_visualisation_confirmation = False
+        self.__sent_visualisation_confirmation = False
         self.__database_message_connections = list()
         for socket_address in socket_addresses:
             self.__database_message_connections.append(EIEIOConnection(
@@ -133,14 +133,12 @@ class NotificationProtocol(object):
         """
         # noinspection PyBroadException
         try:
-            self._do_read_notify(database_path)
+            self.__do_read_notify(database_path)
         except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
-    def _do_read_notify(self, database_path):
-        self._sent_visualisation_confirmation = True
-
+    def __do_read_notify(self, database_path):
         # add file path to database into command message.
         if (database_path is not None and
                 len(database_path) > MAX_DATABASE_PATH_LENGTH):
@@ -166,6 +164,8 @@ class NotificationProtocol(object):
                     "about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
+        self.__sent_visualisation_confirmation = True
+
         # if the system needs to wait, try receiving a packet back
         for c in self.__database_message_connections:
             try:
@@ -179,6 +179,14 @@ class NotificationProtocol(object):
                     "*** Failed to receive notification from external "
                     "application on {}:{} about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
+
+    @property
+    def sent_visualisation_confirmation(self):
+        """ Whether the external application has actually been notified yet.
+
+        :rtype: bool
+        """
+        return self.__sent_visualisation_confirmation
 
     def close(self):
         """ Closes the thread pool

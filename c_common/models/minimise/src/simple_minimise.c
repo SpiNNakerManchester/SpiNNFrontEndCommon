@@ -38,7 +38,6 @@
 #include <spin1_api.h>
 #include <debug.h>
 #include <common-typedefs.h>
-#include "platform.h"
 #include "unordered_remove_default_routes.h"
 #include "minimise.h"
 
@@ -138,7 +137,7 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     }
     log_error("Routes not found %u %u", route_a, route_b);
     // set the failed flag and exit
-    app_exit(1);
+    malloc_extras_terminate(EXIT_FAIL);
 
     return 0;
 }
@@ -269,7 +268,7 @@ static inline void update_frequency(int index) {
         log_error("%d Unigue routes compression IMPOSSIBLE",
                 MAX_NUM_ROUTES + 1);
         // set the failed flag and exit
-        app_exit(0);
+        malloc_extras_terminate(EXITED_CLEANLY);
     }
 }
 

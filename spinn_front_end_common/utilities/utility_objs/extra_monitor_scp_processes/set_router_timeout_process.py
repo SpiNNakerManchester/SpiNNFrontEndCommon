@@ -13,25 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         SetRouterTimeoutMessage)
-from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
     """ How to send messages to set the router timeouts.
 
     Note that timeouts are specified in a weird fixed point format.
+    See the SpiNNaker datasheet for details.
     """
-
-    def __init__(self, connection_selector):
-        """
-        :param \
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector\
-            connection_selector:
-        """
-        super(SetRouterTimeoutProcess, self).__init__(connection_selector)
 
     def set_timeout(self, mantissa, exponent, core_subsets):
         """
@@ -41,8 +34,17 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
         """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
-                self._send_request(SetRouterTimeoutMessage(
-                    core_subset.x, core_subset.y, processor_id,
-                    mantissa, exponent))
-                self._finish()
-                self.check_for_error()
+                self._set_timeout(
+                    core_subset, processor_id, mantissa, exponent)
+
+    def _set_timeout(self, core_subset, processor_id, mantissa, exponent):
+        """
+        :param ~spinn_machine.CoreSubset core_subset:
+        :param int processor_id:
+        :param int mantissa:
+        :param int exponent:
+        """
+        self._send_request(SetRouterTimeoutMessage(
+            core_subset.x, core_subset.y, processor_id, mantissa, exponent))
+        self._finish()
+        self.check_for_error()

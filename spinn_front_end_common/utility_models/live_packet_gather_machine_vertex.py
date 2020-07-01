@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
+from enum import IntEnum
 import struct
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
@@ -42,7 +42,11 @@ class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         AbstractSupportsDatabaseInjection):
-    class _REGIONS(Enum):
+    """ Used to gather multicast packets coming from cores and stream them \
+        out to a receiving application on host. Only ever deployed on chips \
+        with a working Ethernet connection.
+    """
+    class _REGIONS(IntEnum):
         SYSTEM = 0
         CONFIG = 1
         PROVENANCE = 2
@@ -54,9 +58,11 @@ class LivePacketGatherMachineVertex(
     _CONFIG_SIZE = 12 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
-    def __init__(self, lpg_params, label=None, constraints=None):
+    def __init__(
+            self, lpg_params, constraints=None, app_vertex=None, label=None):
         """
         :param LivePacketGatherParams lpg_params:
+        :param LivePacketGather app_vertex:
         :param str label:
         :param constraints:
         :type constraints:
@@ -64,7 +70,8 @@ class LivePacketGatherMachineVertex(
         """
         # inheritance
         super(LivePacketGatherMachineVertex, self).__init__(
-            label or lpg_params.label, constraints=constraints)
+            label or lpg_params.label, constraints=constraints,
+            app_vertex=app_vertex)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
@@ -78,7 +85,7 @@ class LivePacketGatherMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self._REGIONS.PROVENANCE.value
+        return self._REGIONS.PROVENANCE
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
@@ -150,6 +157,11 @@ class LivePacketGatherMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, tags):
+        """
+        :param int machine_time_step:
+        :param int time_scale_factor:
+        :param ~pacman.model.tags.Tags tags:
+        """
         # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
@@ -163,31 +175,32 @@ class LivePacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Reserve SDRAM space for memory areas
+        """ Reserve SDRAM space for memory areas.
+
+        :param ~.DataSpecificationGenerator spec:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM.value,
-            size=SIMULATION_N_BYTES,
-            label='system')
+            region=self._REGIONS.SYSTEM,
+            size=SIMULATION_N_BYTES, label='system')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIG.value,
+            region=self._REGIONS.CONFIG,
             size=self._CONFIG_SIZE, label='config')
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
         """ Write the configuration region to the spec
 
-        :param spec: the spec object for the DSG
-        :type spec: ~data_specification.DataSpecificationGenerator
-        :param iptags: The set of IP tags assigned to the object
-        :type iptags: iterable(~spinn_machine.tags.IPTag)
-        :raise DataSpecificationException: \
+        :param ~.DataSpecificationGenerator spec:
+        :param iterable(~.IPTag) iptags:
+            The set of IP tags assigned to the object
+        :raise ConfigurationException: if `iptags` is empty
+        :raise DataSpecificationException:
             when something goes wrong with the DSG generation
         """
-        spec.switch_write_focus(region=self._REGIONS.CONFIG.value)
+        spec.switch_write_focus(region=self._REGIONS.CONFIG)
 
         spec.write_value(int(self._lpg_params.use_prefix))
         spec.write_value(self._lpg_params.key_prefix or 0)
@@ -215,9 +228,13 @@ class LivePacketGatherMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
+
+        :param ~.DataSpecificationGenerator spec:
+        :param int machine_time_step:
+        :param int time_scale_factor:
         """
         # Write this to the system region (to be picked up by the simulation):
-        spec.switch_write_focus(region=self._REGIONS.SYSTEM.value)
+        spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
@@ -225,25 +242,25 @@ class LivePacketGatherMachineVertex(
     def get_cpu_usage():
         """ Get the CPU used by this vertex
 
-        :return:  0
+        :return: 0
         :rtype: int
         """
         return 0
 
-    @staticmethod
-    def get_sdram_usage():
+    @classmethod
+    def get_sdram_usage(cls):
         """ Get the SDRAM used by this vertex
 
         :rtype: int
         """
         return (
-            SYSTEM_BYTES_REQUIREMENT +
-            LivePacketGatherMachineVertex._CONFIG_SIZE +
-            LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex._N_ADDITIONAL_PROVENANCE_ITEMS))
+            SYSTEM_BYTES_REQUIREMENT + cls._CONFIG_SIZE +
+            cls.get_provenance_data_size(cls._N_ADDITIONAL_PROVENANCE_ITEMS))
 
-    @staticmethod
-    def get_dtcm_usage():
+    @classmethod
+    def get_dtcm_usage(cls):
         """ Get the DTCM used by this vertex
+
+        :rtype: int
         """
-        return LivePacketGatherMachineVertex._CONFIG_SIZE
+        return cls._CONFIG_SIZE

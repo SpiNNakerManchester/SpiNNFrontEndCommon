@@ -19,16 +19,16 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 @add_metaclass(AbstractBase)
 class AbstractProvidesLocalProvenanceData(object):
-    """ Indicates an object that provides locally obtained provenance data
+    """ Indicates an object that provides locally obtained provenance data.
     """
 
     __slots__ = ()
 
     @abstractmethod
     def get_local_provenance_data(self):
-        """ Get an iterable of provenance data items
+        """ Get an iterable of provenance data items.
 
         :return: the provenance items
-        :rtype: \
+        :rtype:
             iterable(~spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem)
         """

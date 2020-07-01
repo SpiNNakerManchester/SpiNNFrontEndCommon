@@ -20,8 +20,10 @@ from .abstract_provides_provenance_data_from_machine import (
 from .pacman_provenance_extractor import PacmanProvenanceExtractor
 from .provides_provenance_data_from_machine_impl import (
     ProvidesProvenanceDataFromMachineImpl)
+from .sqllite_database import SqlLiteDatabase
 
 __all__ = ["AbstractProvidesLocalProvenanceData",
            "AbstractProvidesProvenanceDataFromMachine",
            "PacmanProvenanceExtractor",
-           "ProvidesProvenanceDataFromMachineImpl"]
+           "ProvidesProvenanceDataFromMachineImpl",
+           "SqlLiteDatabase"]

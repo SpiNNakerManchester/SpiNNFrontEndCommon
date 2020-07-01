@@ -66,9 +66,8 @@ def set_simulator(new_simulator):
 def unset_simulator(to_cache_simulator=None):
     """ Destroy the current simulator.
 
-    :param to_cache_simulator: \
+    :param SimulatorInterface to_cache_simulator:
         a cached version for allowing data extraction
-    :type to_cache_simulator: SimulatorInterface
     """
     global _simulator, _cached_simulator
     _simulator = None
@@ -100,6 +99,14 @@ def set_failed_state(new_failed_state):
 
 
 def get_generated_output(output):
+    """ Get one of the simulator outputs by name.
+
+    :param str output: The name of the output to retrieve.
+    :return: The value (of arbitrary type, dependent on which output),
+        or `None` if the variable is not found.
+    :raises ValueError:
+        if the system is in a state where outputs can't be retrieved
+    """
     global _simulator, _failed_state, _cached_simulator
     if _simulator is not None:
         return _simulator.get_generated_output(output)
