@@ -79,8 +79,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
 
-    :param int n_keys: The number of keys to be sent via this multicast source
+    :param ~pacman.model.graphs.common.Slice vertex_slice:
+        The slice served via this multicast source
     :param str label: The label of this vertex
+    :param ReverseIpTagMultiCastSource app_vertex:
+        The associated application vertex
     :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:
         Any initial constraints to this vertex
     :param str board_address:
@@ -148,7 +151,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, n_keys, label, constraints=None,
+            self, vertex_slice, label, app_vertex, constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -172,60 +175,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # Flag to indicate that data will be received to inject
             enable_injection=False):
-        """
-        :param int n_keys:
-            The number of keys to be sent via this multicast source
-        :param str label: The label of this vertex
-        :param iterable(~pacman.model.constraints.AbstractConstraint) \
-                constraints:
-            Any initial constraints to this vertex
-        :param str board_address:
-            The IP address of the board on which to place this vertex if
-            receiving data, either buffered or live (by default, any board is
-            chosen)
-        :param int receive_port:
-            The port on the board that will listen for incoming event packets
-            (default is to disable this feature; set a value to enable it, or
-            set the `reserve_reverse_ip_tag parameter` to True if a random port
-            is to be used)
-        :param int receive_sdp_port:
-            The SDP port to listen on for incoming event packets
-            (defaults to 1)
-        :param int receive_tag:
-            The IP tag to use for receiving live events (uses any by default)
-        :param int receive_rate:
-        :param int virtual_key:
-            The base multicast key to send received events with (assigned
-            automatically by default)
-        :param int prefix:
-            The prefix to "or" with generated multicast keys (default is no
-            prefix)
-        :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:
-            Whether the prefix should apply to the upper or lower half of the
-            multicast keys (default is upper half)
-        :param bool check_keys:
-            True if the keys of received events should be verified before
-            sending (default False)
-        :param ~numpy.ndarray send_buffer_times:
-            An array of arrays of time steps at which keys should be sent (one
-            array for each key, default disabled)
-        :param str send_buffer_partition_id:
-            The ID of the partition containing the edges down which the events
-            are to be sent
-        :param bool reserve_reverse_ip_tag:
-            True if the source should set up a tag through which it can receive
-            packets; if port is set to None this can be used to enable the
-            reception of packets on a randomly assigned port, which can be read
-            from the database
-        :param bool enable_injection:
-            Flag to indicate that data will be received to inject
-        """
         # pylint: disable=too-many-arguments, too-many-locals
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
-            label, constraints)
+            label, constraints, app_vertex, vertex_slice)
 
         self._reverse_iptags = None
-        self._n_keys = n_keys
+        self._n_keys = vertex_slice.n_atoms
 
         # Set up for receiving live packets
         if receive_port is not None or reserve_reverse_ip_tag:
@@ -279,7 +234,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
-            self._install_virtual_key(n_keys)
+            self._install_virtual_key(vertex_slice.n_atoms)
 
         self._n_vertices += 1
 

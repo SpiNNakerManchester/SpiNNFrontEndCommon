@@ -97,10 +97,11 @@ def run_system_application(
 
     # if doing iobuf, read iobuf
     if read_algorithm_iobuf or not succeeded:
-        iobuf_reader = ChipIOBufExtractor(filename_template=filename_template)
+        iobuf_reader = ChipIOBufExtractor(
+            filename_template=filename_template,
+            suppress_progress=succeeded)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
-            app_provenance_file_path=None,
             system_provenance_file_path=provenance_file_path)
 
     # stop anything that's associated with the compressor binary

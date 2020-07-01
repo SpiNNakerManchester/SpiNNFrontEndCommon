@@ -23,7 +23,7 @@ class ProvenanceDataItem(object):
         "_report",
         "_value"]
 
-    def __init__(self, names, value, report=False, message=None):
+    def __init__(self, names, value, report=False, message=""):
         """
         :param list(str) names:
             A list of strings representing the naming hierarchy of this item

@@ -40,7 +40,6 @@ class ProvenanceXMLWriter(object):
         :param list(ProvenanceDataItem) provenance_data_items:
         :param str provenance_data_path:
         """
-
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
         for name, group in itertools.groupby(
