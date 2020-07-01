@@ -197,9 +197,9 @@ enum {
     RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,   //!< if the dumped packet was a processor failure
     RTR_LE_MASK = (1 << RTR_LE_BIT) - 1,     //!< if the dumped packet was a link failure
     //! router control mask to count the error packets
-    RTR_CTL_ERROR_COUNT_MASK = (1 << RTR_PARITY_COUNT_BIT) |
-                               (1 << RTR_FRAME_COUNT_BIT) |
-                               (1 << RTR_TS_COUNT_BIT)
+    RTR_ERRCNT_MASK = (1 << RTR_PARITY_COUNT_BIT) |
+                      (1 << RTR_FRAME_COUNT_BIT) |
+                      (1 << RTR_TS_COUNT_BIT)
 };
 
 //! Positions of fields in communications controller registers
@@ -1146,7 +1146,7 @@ static void reinjection_configure_router(void) {
     (void) rtr[RTR_ESTAT];
 
     // and enable router interrupts when dumping packets, and count errors
-    rtr[RTR_CONTROL] |= RTR_DENABLE_MASK | RTR_CTL_ERROR_COUNT_MASK;
+    rtr[RTR_CONTROL] |= RTR_DENABLE_MASK | RTR_ERRCNT_MASK;
 }
 
 //-----------------------------------------------------------------------------
