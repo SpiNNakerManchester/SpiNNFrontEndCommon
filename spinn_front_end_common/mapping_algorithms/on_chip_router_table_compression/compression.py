@@ -19,10 +19,10 @@ import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableTargets, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.interface_functions import (
     ChipIOBufExtractor)
 
@@ -36,7 +36,7 @@ def mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id,
         system_provenance_folder, compress_only_when_needed=True,
         compress_as_much_as_possible=False):
-    """ Load routing tables and compress then using Mundy's algorithm
+    """ Load routing tables and compress them using Mundy's algorithm.
 
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the memory routing tables to be compressed
@@ -56,11 +56,11 @@ def mundy_on_chip_router_compression(
     """
     # pylint: disable=too-many-arguments
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
-    compression = _Compression(
+    compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, system_provenance_folder,
         routing_tables, transceiver)
-    compression._compress()
+    compression.compress(register=0)
 
 
 def pair_compression(
@@ -68,7 +68,7 @@ def pair_compression(
         machine, app_id, provenance_file_path,
         compress_only_when_needed=False,
         compress_as_much_as_possible=True):
-    """ Load routing tables and compress then using Pair Algorithm
+    """ Load routing tables and compress then using the Pair Algorithm.
 
     See pacman/operations/router_compressors/pair_compressor.py which is the
     exact same algorithm implemented in Python.
@@ -89,18 +89,19 @@ def pair_compression(
     :param bool compress_only_when_needed:
         If True, the compressor will only compress if the table doesn't fit in
         the current router space, otherwise it will just load the table
+    :param executable_finder: tracker of binaries.
      """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_minimise.aplx")
-    compression = _Compression(
+    compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
         routing_tables, transceiver)
-    compression._compress()
+    compression.compress(register=1)
 
 
-class _Compression(object):
+class Compression(object):
     """ Compressor that uses a on chip router compressor
     """
 
@@ -126,7 +127,7 @@ class _Compression(object):
         :param bool compress_only_when_needed:
         :param ~spinn_machine.Machine machine:
         :param str provenance_file_path:
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
                 routing_tables:
         :param ~spinnman.Transceiver transceiver:
         """
@@ -139,8 +140,10 @@ class _Compression(object):
         self._transceiver = transceiver
         self._routing_tables = routing_tables
 
-    def _compress(self):
+    def compress(self, register):
         """ Apply the on-machine compression algorithm.
+
+        :param int register: number of user register to check
         """
         # pylint: disable=too-many-arguments
 
@@ -176,7 +179,7 @@ class _Compression(object):
                     executable_targets)
 
         # Check if any cores have not completed successfully
-        self._check_for_success(executable_targets)
+        self._check_for_success(executable_targets, register)
 
         # update progress bar
         progress.update()
@@ -190,8 +193,7 @@ class _Compression(object):
 
     def _load_routing_table(self, table):
         """
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
-                routing_table:
+        :param ~.MulticastRoutingTables routing_table:
             the pacman router table instance
         """
         data = self._build_data(table)
@@ -203,20 +205,27 @@ class _Compression(object):
         # write SDRAM requirements per chip
         self._transceiver.write_memory(table.x, table.y, base_address, data)
 
-    def _check_for_success(self, executable_targets):
+    def _check_for_success(self, executable_targets, register):
         """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
 
         :param ExecutableTargets executable_targets:
+        :param int register: number of user register to check
         """
         for core_subset in executable_targets.all_core_subsets:
             x = core_subset.x
             y = core_subset.y
             for p in core_subset.processor_ids:
-                # Read the result from USER0 register
-                result = self._transceiver.read_user_0(x, y, p)
-
+                # Read the result from specified register
+                if register == 0:
+                    result = self._transceiver.read_user_0(x, y, p)
+                elif register == 1:
+                    result = self._transceiver.read_user_1(x, y, p)
+                elif register == 2:
+                    result = self._transceiver.read_user_2(x, y, p)
+                else:
+                    raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self._handle_failure(executable_targets)
@@ -234,8 +243,7 @@ class _Compression(object):
         executable_finder = ExecutableFinder(binary_search_paths=[])
         io_errors, io_warnings = iobuf_extractor(
             self._transceiver, executable_targets, executable_finder,
-            self._provenance_file_path, self._provenance_file_path,
-            {self._binary_path: ExecutableType.SYSTEM})
+            self._provenance_file_path, self._provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
         for error in io_errors:
@@ -246,8 +254,8 @@ class _Compression(object):
     def _load_executables(self):
         """ Loads the router compressor onto the chips.
 
-        :return:\
-            the executable targets that represent all cores/chips which have\
+        :return:
+            the executable targets that represent all cores/chips which have
             active routing tables
         :rtype: ExecutableTargets
         """
@@ -277,8 +285,7 @@ class _Compression(object):
         """ Convert the router table into the data needed by the router\
             compressor c code.
 
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
-                routing_table:
+        :param ~.MulticastRoutingTables routing_table:
             the pacman router table instance
         :return: The byte array of data
         :rtype: bytearray
@@ -298,10 +305,11 @@ class _Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                self._make_source_hack(entry))
+                Compression.make_source_hack(entry=entry))
         return bytearray(data)
 
-    def _make_source_hack(self, entry):
+    @staticmethod
+    def make_source_hack(entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
 
