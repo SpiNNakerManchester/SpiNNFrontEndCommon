@@ -23,6 +23,9 @@
 //! as reinjection control) that do not fit in SCAMP, and to provide an
 //! endpoint on each chip for streaming data in and out at high speed (while
 //! the main user application is not running).
+//!
+//! \note This application does not use spin1_api as it needs low-level access
+//! to interrupts.
 
 // SARK-based program
 #include <sark.h>
@@ -156,6 +159,9 @@ typedef enum data_out_sdp_commands {
 //! dumped packet queue length
 #define PKT_QUEUE_SIZE     4096
 
+//! Maximum router timeout value
+#define ROUTER_TIMEOUT_MAX 0xFF
+
 //-----------------------------------------------------------------------------
 // VIC stuff
 //-----------------------------------------------------------------------------
@@ -177,63 +183,6 @@ enum {
     //! Multicast-with-payload message arrived VIC slot
     MC_PAYLOAD_SLOT = SLOT_6
 };
-
-enum {
-    ROUTER_TIMEOUT_MAX = 0xFF
-};
-
-//! Positions of fields in the router status and control registers
-enum {
-    RTR_DOVRFLW_BIT = 30, //!< router dump overflow
-    RTR_BLOCKED_BIT = 25, //!< router blocked
-    RTR_FPE_BIT = 17,     //!< if the dumped packet was a processor failure
-    RTR_LE_BIT = 6,       //!< if the dumped packet was a link failure
-    RTR_DENABLE_BIT = 2   //!< enable dump interrupts
-};
-
-//! Masks for fields in the router status and control registers
-enum {
-    RTR_BLOCKED_MASK = 1 << RTR_BLOCKED_BIT, //!< router blocked
-    RTR_DOVRFLW_MASK = 1 << RTR_DOVRFLW_BIT, //!< router dump overflow
-    RTR_DENABLE_MASK = 1 << RTR_DENABLE_BIT, //!< enable dump interrupts
-    RTR_FPE_MASK = (1 << RTR_FPE_BIT) - 1,   //!< if the dumped packet was a processor failure
-    RTR_LE_MASK = (1 << RTR_LE_BIT) - 1      //!< if the dumped packet was a link failure
-};
-
-//! Positions of fields in communications controller registers
-enum {
-    //! control field of packet control word
-    PKT_CONTROL_SHFT = 16,
-    //! payload flag field of packet control word (part of control field)
-    PKT_PLD_SHFT = 17,
-    //! packet type field of packet control word (part of control field)
-    PKT_TYPE_SHFT = 22,
-    //! packet route field of packet control word
-    PKT_ROUTE_SHFT = 24
-};
-
-//! Masks for fields in communications controller registers
-enum {
-    //! control field of packet control word
-    PKT_CONTROL_MASK = 0xff << PKT_CONTROL_SHFT,
-    //! payload flag field of packet control word (part of control field)
-    PKT_PLD_MASK = 1 << PKT_PLD_SHFT,
-    //! packet type field of packet control word (part of control field)
-    PKT_TYPE_MASK = 3 << PKT_TYPE_SHFT,
-    //! packet route field of packet control word
-    PKT_ROUTE_MASK = 7 << PKT_ROUTE_SHFT
-};
-
-//! Bits representing packet types
-enum packet_types {
-    PKT_TYPE_MC = 0 << PKT_TYPE_SHFT, //!< Multicast packet
-    PKT_TYPE_PP = 1 << PKT_TYPE_SHFT, //!< Point-to-point packet
-    PKT_TYPE_NN = 2 << PKT_TYPE_SHFT, //!< Nearest neighbour packet
-    PKT_TYPE_FR = 3 << PKT_TYPE_SHFT  //!< Fixed route packet
-};
-
-//! Maximum router timeout value
-#define ROUTER_TIMEOUT_MASK 0xFF
 
 // ------------------------------------------------------------------------
 // structs used in system
@@ -588,15 +537,6 @@ extern void spin1_wfi(void);
 //! The standard SARK CPU interrupt handler.
 extern INT_HANDLER sark_int_han(void);
 
-//! Basic type of an interrupt handler.
-typedef void (*isr_t) (void);
-
-//! The table of interrupt handlers in the VIC
-static volatile isr_t* const _vic_vectors = (isr_t *) (VIC_BASE + 0x100);
-
-//! The table mapping priorities to interrupt sources in the VIC
-static volatile uint* const _vic_controls = (uint *) (VIC_BASE + 0x200);
-
 //! \brief Where are we (as a P2P address)?
 //!
 //! Used for error reporting.
@@ -605,14 +545,38 @@ static ushort my_addr;
 //! The SARK virtual processor information table in SRAM.
 static vcpu_t *const _sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
 
-//! \brief DSG metadata
+//! The magic number that marks a valid DSE metadata descriptor
+#define DSE_MAGIC       0xAD130AD6
+
+//! The version of the DSE metadata descriptor
+#define DSE_VERSION     0x00010000
+
+//! \brief DSE metadata
 //!
 //! Must structurally match data_specification_metadata_t
-typedef struct dsg_header_t {
-    uint dse_magic_number;      //!< Magic number (== 0xAD130AD6)
-    uint dse_version;           //!< Version (== 0x00010000)
-    void *regions[];            //!< Pointers to DSG regions
-} dsg_header_t;
+typedef struct dse_header_t {
+    uint magic_number;  //!< Magic number (== #DSE_MAGIC)
+    uint version;       //!< Version (== #DSE_VERSION)
+    void *regions[];    //!< Pointers to DSG regions
+} dse_header_t;
+
+//! Checks that our region data really is region data.
+static void dse_validate(void) {
+    dse_header_t *dse_header = (dse_header_t *)
+            _sark_virtual_processor_info[sark.virt_cpu].user0;
+
+    if (dse_header->magic_number != DSE_MAGIC) {
+        // bad magic
+        io_printf(IO_BUF, "Bad magic number in DSE block: %08x\n",
+                dse_header->magic_number);
+        rt_error(RTE_SWERR);
+    }
+    if (dse_header->version != DSE_VERSION) {
+        io_printf(IO_BUF, "Unsupported DSE version: %08x\n",
+                dse_header->version);
+        rt_error(RTE_SWERR);
+    }
+}
 
 //! \brief Get the DSG region with the given index.
 //!
@@ -620,10 +584,10 @@ typedef struct dsg_header_t {
 //!
 //! \param[in] index: The index into the region table.
 //! \return The address of the region
-static inline void *dsg_block(uint index) {
-    dsg_header_t *dsg_header = (dsg_header_t *)
+static inline void *dse_block(uint index) {
+    dse_header_t *dse_header = (dse_header_t *)
             _sark_virtual_processor_info[sark.virt_cpu].user0;
-    return dsg_header->regions[index];
+    return dse_header->regions[index];
 }
 
 //! \brief publishes the current transaction ID to the user1 register.
@@ -680,15 +644,13 @@ static inline void vic_interrupt_done(void) {
 //! \param[in] slot: Where to install the handler (controls priority).
 //! \param[in] type: What we are handling.
 //! \param[in] callback: The interrupt handler to install.
-static inline void set_vic_callback(uint8_t slot, uint type, isr_t callback) {
-#ifndef VIC_ENABLE_VECTOR
-    enum {
-        VIC_ENABLE_VECTOR = 0x20
+static inline void set_vic_callback(
+        uint8_t slot, uint type, vic_interrupt_handler_t callback) {
+    vic_interrupt_vector[slot] = callback;
+    vic_interrupt_control[slot] = (vic_vector_control_t) {
+        .source = type,
+        .enable = true
     };
-#endif //VIC_ENABLE_VECTOR
-
-    _vic_vectors[slot] = callback;
-    _vic_controls[slot] = VIC_ENABLE_VECTOR | type;
 }
 
 // ------------------------------------------------------------------------
@@ -1399,7 +1361,7 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
             break;
         }
         data_in_speed_up_load_in_system_tables(
-                dsg_block(CONFIG_DATA_SPEED_UP_IN));
+                dse_block(CONFIG_DATA_SPEED_UP_IN));
         msg->cmd_rc = RC_OK;
         data_in_last_table_load_was_system = true;
         break;
@@ -1997,20 +1959,11 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
-static inline void set_vic_callback(
-        uint8_t slot, uint type, vic_interrupt_handler_t callback) {
-    vic_interrupt_vector[slot] = callback;
-    vic_interrupt_control[slot] = (vic_vector_control_t) {
-        .source = type,
-        .enable = true
-    };
-}
-
 //! \brief Sets up data and callbacks required by the reinjection system.
 static void reinjection_initialise(void) {
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
-    reinjection_read_packet_types(dsg_block(CONFIG_REINJECTION));
+    reinjection_read_packet_types(dse_block(CONFIG_REINJECTION));
 
     // Setup the CPU interrupt for WDOG
     vic_interrupt_control[sark_vec->sark_slot] = (vic_vector_control_t) {
@@ -2033,7 +1986,7 @@ static void reinjection_initialise(void) {
 
 //! \brief Sets up data and callbacks required by the data speed up system.
 static void data_out_initialise(void) {
-    data_speed_out_config_t *config = dsg_block(CONFIG_DATA_SPEED_UP_OUT);
+    data_speed_out_config_t *config = dse_block(CONFIG_DATA_SPEED_UP_OUT);
     data_out_basic_data_key = config->my_key;
     data_out_new_sequence_key = config->new_seq_key;
     data_out_first_data_key = config->first_data_key;
@@ -2093,7 +2046,7 @@ static void data_in_initialise(void) {
         rt_error(RTE_SWERR);
     }
 
-    data_in_data_items_t *items = dsg_block(CONFIG_DATA_SPEED_UP_IN);
+    data_in_data_items_t *items = dse_block(CONFIG_DATA_SPEED_UP_IN);
 
     data_in_address_key = items->address_mc_key;
     data_in_data_key = items->data_mc_key;
@@ -2114,6 +2067,8 @@ static void data_in_initialise(void) {
 //-----------------------------------------------------------------------------
 void c_main(void) {
     sark_cpu_state(CPU_STATE_RUN);
+
+    dse_validate();
 
     // Configure
     my_addr = sv->p2p_addr;
