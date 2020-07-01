@@ -16,10 +16,17 @@
  */
 
 // ------------------------------------------------------------------------
-//
-// Extra definitions of things on SpiNNaker chips that aren't already mentioned
-// in spinnaker.h, or where the description is miserable.
-//
+//! \file
+//! \brief Extra definitions of things on SpiNNaker chips that aren't already
+//!     mentioned in spinnaker.h, or where the description is miserable.
+//!
+//! This models data structures described in the [SpiNNaker datasheet][sheet].
+//! Before using anything in this file, you should read the relevant section of
+//! the datasheet so as you can understand the correct usage patterns for the
+//! underlying hardware.
+//!
+//! [sheet]: [https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf]
+//!
 // ------------------------------------------------------------------------
 
 #ifndef __SPINN_EXTRA_H__
@@ -33,9 +40,12 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif // __GNUC__
 
-// Generates valid code if the named type is one word long, and invalid code
-// otherwise. It would be simpler if we used _Static_assert, but Eclipse seems
-// to hate that.
+//! \brief Generates valid code if the named type is one word long, and invalid
+//!     code otherwise.
+//! \details It would be simpler if we used `static_assert`, but Eclipse
+//!     seems to hate that.
+//! \param type_ident: The name of the type that we are asserting is one word
+//!     long.
 #define ASSERT_WORD_SIZED(type_ident) \
     struct __static_word_sized_assert_ ## type_ident { \
         char _dummy[2 * (sizeof(type_ident) == sizeof(uint)) - 1]; \
@@ -62,66 +72,72 @@
 // No special registers here
 
 // ---------------------------------------------------------------------
-// 5. Vectored Interrupt Controller
+//! \name 5. Vectored Interrupt Controller
+//! \{
 
+//! The type of an interrupt handler
 typedef void (*vic_interrupt_handler_t) (void);
 
+//! \brief Mask describing interrupts that can be selected.
 typedef union {
+    //! See datasheet section **5.4 Interrupt sources**
     struct {
-        uint watchdog : 1;
-        uint software : 1;
-        uint comm_rx : 1;
-        uint comm_tx : 1;
-        uint timer1 : 1;
-        uint timer2 : 1;
-        uint cc_rx_ready : 1;
-        uint cc_rx_parity_error : 1;
-        uint cc_rx_framing_error : 1;
-        uint cc_tx_full : 1;
-        uint cc_tx_overflow : 1;
-        uint cc_tx_empty : 1;
-        uint dma_done : 1;
-        uint dma_error : 1;
-        uint dma_timeout : 1;
-        uint router_diagnostic : 1;
-        uint router_dump : 1;
-        uint router_error : 1;
-        uint cpu : 1;
-        uint ethernet_tx : 1;
-        uint ethernet_rx : 1;
-        uint ethernet_phy : 1;
-        uint slow_clock : 1;
-        uint cc_tx_not_full : 1;
-        uint cc_rx_mc : 1;
-        uint cc_rx_p2p : 1;
-        uint cc_rx_nn : 1;
-        uint cc_rx_fr : 1;
-        uint int0 : 1;
-        uint int1 : 1;
-        uint gpio8 : 1;
-        uint gpio9 : 1;
+        uint watchdog : 1;          //!< Watchdog timer interrupt
+        uint software : 1;          //!< Local software interrupt generation
+        uint comm_rx : 1;           //!< Debug communications receiver interrupt
+        uint comm_tx : 1;           //!< Debug communications transmitter interrupt
+        uint timer1 : 1;            //!< Counter/timer interrupt 1
+        uint timer2 : 1;            //!< Counter/timer interrupt 2
+        uint cc_rx_ready : 1;       //!< Comms controller packet received
+        uint cc_rx_parity_error : 1;    //!< Comms controller received packet parity error
+        uint cc_rx_framing_error : 1;   //!< Comms controller received packet framing error
+        uint cc_tx_full : 1;        //!< Comms controller transmit buffer full
+        uint cc_tx_overflow : 1;    //!< Comms controller transmit buffer overflow
+        uint cc_tx_empty : 1;       //!< Comms controller transmit buffer empty
+        uint dma_done : 1;          //!< DMA controller transfer complete
+        uint dma_error : 1;         //!< DMA controller error
+        uint dma_timeout : 1;       //!< DMA controller transfer timed out
+        uint router_diagnostic : 1; //!< Router diagnostic counter event has occurred
+        uint router_dump : 1;       //!< Router packet dumped - indicates failed delivery
+        uint router_error : 1;      //!< Router error - packet parity, framing, or time stamp error
+        uint cpu : 1;               //!< System Controller interrupt bit set for this processor
+        uint ethernet_tx : 1;       //!< Ethernet transmit frame interrupt
+        uint ethernet_rx : 1;       //!< Ethernet receive frame interrupt
+        uint ethernet_phy : 1;      //!< Ethernet PHY/external interrupt
+        uint slow_clock : 1;        //!< System-wide slow (nominally 32 KHz) timer interrupt
+        uint cc_tx_not_full : 1;    //!< Comms controller can accept new Tx packet
+        uint cc_rx_mc : 1;          //!< Comms controller multicast packet received
+        uint cc_rx_p2p : 1;         //!< Comms controller point-to-point packet received
+        uint cc_rx_nn : 1;          //!< Comms controller nearest neighbour packet received
+        uint cc_rx_fr : 1;          //!< Comms controller fixed route packet received
+        uint int0 : 1;              //!< External interrupt request 0
+        uint int1 : 1;              //!< External interrupt request 1
+        uint gpio8 : 1;             //!< Signal on GPIO[8]
+        uint gpio9 : 1;             //!< Signal on GPIO[9]
     };
     uint value;
 } vic_mask_t;
 
+//! VIC registers
 typedef struct {
-    const vic_mask_t irq_status;
-    const vic_mask_t fiq_status;
-    const vic_mask_t raw_status;
-    vic_mask_t int_select;
-    vic_mask_t int_enable;
-    vic_mask_t int_disable;
-    vic_mask_t soft_int_enable;
-    vic_mask_t soft_int_disable;
-    bool protection;
+    const vic_mask_t irq_status;    //!< IRQ status register
+    const vic_mask_t fiq_status;    //!< FIQ status register
+    const vic_mask_t raw_status;    //!< raw interrupt status register
+    vic_mask_t int_select;          //!< interrupt select register
+    vic_mask_t int_enable;          //!< interrupt enable set register
+    vic_mask_t int_disable;         //!< interrupt enable clear register
+    vic_mask_t soft_int_enable;     //!< soft interrupt set register
+    vic_mask_t soft_int_disable;    //!< soft interrupt clear register
+    bool protection;                //!< protection register
     const uint _padding[3];
-    vic_interrupt_handler_t vector_address;
-    vic_interrupt_handler_t default_vector_address;
+    vic_interrupt_handler_t vector_address;         //!< vector address register
+    vic_interrupt_handler_t default_vector_address; //!< default vector address register
 } vic_control_t;
 
+//! VIC individual vector control
 typedef struct {
-    uint source : 5;
-    uint enable : 1;
+    uint source : 5;                //!< interrupt source
+    uint enable : 1;                //!< interrupt enable
     uint : 26;
 } vic_vector_control_t;
 
@@ -129,141 +145,157 @@ ASSERT_WORD_SIZED(vic_mask_t);
 ASSERT_WORD_SIZED(vic_interrupt_handler_t);
 ASSERT_WORD_SIZED(vic_vector_control_t);
 
-// ---------------------------------------------------------------------
-// 6. Counter/Timer
+//! \}
 
+// ---------------------------------------------------------------------
+//! \name 6. Counter/Timer
+//! \{
+
+//! Timer control register
 typedef struct {
-    uint one_shot : 1;
-    uint size : 1;
-    uint pre_divide : 2;
+    uint one_shot : 1;          //!< 0 = wrapping mode, 1 = one shot
+    uint size : 1;              //!< 0 = 16 bit, 1 = 32 bit
+    uint pre_divide : 2;        //!< divide input clock (see ::timer_pre_divide)
     uint : 1;
-    uint interrupt_enable : 1;
-    uint periodic_mode : 1;
-    uint enable : 1;
+    uint interrupt_enable : 1;  //!< enable interrupt (1 = enabled)
+    uint periodic_mode : 1;     //!< 0 = free-running; 1 = periodic
+    uint enable : 1;            //!< enable counter/timer (1 = enabled)
     uint : 24;
 } timer_control_t;
 
+//! Values for ::timer_control_t::pre_divide
 enum timer_pre_divide {
-    TIMER_PRE_DIVIDE_1 = 0,
-    TIMER_PRE_DIVIDE_16 = 1,
-    TIMER_PRE_DIVIDE_256 = 2
+    TIMER_PRE_DIVIDE_1 = 0,     //!< Divide by 1
+    TIMER_PRE_DIVIDE_16 = 1,    //!< Divide by 16
+    TIMER_PRE_DIVIDE_256 = 2    //!< Divide by 256
 };
 
+//! Timer interrupt status flag
 typedef struct {
-    uint status : 1;
+    uint status : 1;            //!< The flag bit
     uint : 31;
 } timer_interrupt_status_t;
 
+//! Timer controller registers
 typedef struct {
-    uint load_value;
-    const uint current_value;
-    timer_control_t control;
-    uint interrupt_clear;
-    const timer_interrupt_status_t raw_interrupt_status;
-    const timer_interrupt_status_t masked_interrupt_status;
-    uint background_load_value;
+    uint load_value;            //!< Load value for Timer
+    const uint current_value;   //!< Current value of Timer
+    timer_control_t control;    //!< Timer control register
+    uint interrupt_clear;       //!< Interrupt clear (any value may be written)
+    const timer_interrupt_status_t raw_interrupt_status; //!< Timer raw interrupt status
+    const timer_interrupt_status_t masked_interrupt_status; //!< Timer masked interrupt status
+    uint background_load_value; //!< Background load value for Timer
     uint _dummy;
 } timer_controller_t;
 
 ASSERT_WORD_SIZED(timer_control_t);
 ASSERT_WORD_SIZED(timer_interrupt_status_t);
 
-// ---------------------------------------------------------------------
-// 7. DMA Controller
+//! \}
 
+// ---------------------------------------------------------------------
+//! \name 7. DMA Controller
+//! \{
+
+//! DMA descriptor
 typedef struct {
-    uint _zeroes : 2;
-    uint length_words : 15;
+    uint _zeroes : 2;       //!< Must be zero
+    uint length_words : 15; //!< length of the DMA transfer, in words
     uint : 2;
-    uint direction : 1; // 0 = write to TCM, 1 = write to SDRAM
-    uint crc : 1;
-    uint burst : 3;
-    uint width : 1; // 0 = word, 1 = double-word
-    uint privilege : 1;
-    uint transfer_id : 6;
+    uint direction : 1;     //!< read from (0) or write to (1) system bus
+    uint crc : 1;           //!< check (read) or generate (write) CRC
+    uint burst : 3;         //!< burst length = 2<sup>B</sup>&times;Width, B = 0..4 (i.e max 16)
+    uint width : 1;         //!< transfer width is word (0) or double-word (1)
+    uint privilege : 1;     //!< DMA transfer mode is user (0) or privileged (1)
+    uint transfer_id : 6;   //!< software defined transfer ID
 } dma_description_t;
 
+//! DMA control register
 typedef struct {
-    uint uncommit : 1;
-    uint abort : 1;
-    uint restart : 1;
-    uint clear_done_int : 1;
-    uint clear_timeout_int : 1;
-    uint clear_write_buffer_int : 1;
+    uint uncommit : 1;      //!< setting this bit uncommits a queued transfer
+    uint abort : 1;         //!< end current transfer and discard data
+    uint restart : 1;       //!< resume transfer (clears DMA errors)
+    uint clear_done_int : 1;            //!< clear Done interrupt request
+    uint clear_timeout_int : 1;         //!< clear Timeout interrupt request
+    uint clear_write_buffer_int : 1;    //!< clear Write Buffer interrupt request
     uint : 26;
 } dma_control_t;
 
+//! DMA status register
 typedef struct {
-    uint transferring : 1;
-    uint paused : 1;
-    uint queued : 1;
-    uint write_buffer_full : 1;
-    uint write_buffer_active : 1;
+    uint transferring : 1;  //!< DMA transfer in progress
+    uint paused : 1;        //!< DMA transfer is PAUSED
+    uint queued : 1;        //!< DMA transfer is queued - registers are full
+    uint write_buffer_full : 1;     //!< write buffer is full
+    uint write_buffer_active : 1;   //!< write buffer is not empty
     uint : 5;
-    uint transfer_done : 1;
-    uint transfer2_done : 1;
-    uint timeout : 1;
-    uint crc_error : 1;
-    uint tcm_error : 1;
-    uint axi_error : 1;
-    uint user_abort : 1;
-    uint soft_reset : 1;
+    uint transfer_done : 1; //!< a DMA transfer has completed without error
+    uint transfer2_done : 1;        //!< 2nd DMA transfer has completed without error
+    uint timeout : 1;       //!< a burst transfer has not completed in time
+    uint crc_error : 1;     //!< the calculated and received CRCs differ
+    uint tcm_error : 1;     //!< the TCM AHB interface has signalled an error
+    uint axi_error : 1;     //!< the AXI interface (SDRAM) has signalled a transfer error
+    uint user_abort : 1;    //!< the user has aborted the transfer (via ::dma_control_t::abort)
+    uint soft_reset : 1;    //!< a soft reset of the DMA controller has happened
     uint : 2;
-    uint write_buffer_error : 1;
+    uint write_buffer_error : 1;    //!< a buffered write transfer has failed
     uint : 3;
-    uint processor_id : 8;
+    uint processor_id : 8;  //!< hardwired processor ID identifies CPU on chip
 } dma_status_t;
 
+//! DMA global control register
 typedef struct {
-    uint bridge_buffer_enable : 1;
+    uint bridge_buffer_enable : 1;  //!< enable Bridge write buffer
     uint : 9;
-    uint transfer_done_interrupt : 1;
-    uint transfer2_done_interrupt : 1;
-    uint timeout_interrupt : 1;
-    uint crc_error_interrupt : 1;
-    uint tcm_error_interrupt : 1;
-    uint axi_error_interrupt : 1;
-    uint user_abort_interrupt : 1;
-    uint soft_reset_interrupt : 1;
-    uint unknown1 : 1;
-    uint unknown2 : 1;
-    uint write_buffer_error_interrupt : 1;
+    uint transfer_done_interrupt : 1;   //!< interrupt if ::dma_status_t::transfer_done set
+    uint transfer2_done_interrupt : 1;  //!< interrupt if ::dma_status_t::transfer2_done set
+    uint timeout_interrupt : 1;         //!< interrupt if ::dma_status_t::timeout set
+    uint crc_error_interrupt : 1;       //!< interrupt if ::dma_status_t::crc_error set
+    uint tcm_error_interrupt : 1;       //!< interrupt if ::dma_status_t::tcm_error set
+    uint axi_error_interrupt : 1;       //!< interrupt if ::dma_status_t::axi_error set
+    uint user_abort_interrupt : 1;      //!< interrupt if ::dma_status_t::user_abort set
+    uint soft_reset_interrupt : 1;      //!< interrupt if ::dma_status_t::soft_reset set
+    uint : 2;
+    uint write_buffer_error_interrupt : 1;  //!< interrupt if ::dma_status_t::write_buffer_error set
     uint : 10;
-    uint timer : 1;
+    uint timer : 1;         //!< system-wide slow timer status and clear
 } dma_global_control_t;
 
+//! DMA timeout register
 typedef struct {
-    uint _zeroes : 5;
-    uint value : 5;
+    uint _zeroes : 5;       //!< Must be zero
+    uint value : 5;         //!< The timeout
     uint : 22;
 } dma_timeout_t;
 
+//! DMA statistics control register
 typedef struct {
-    uint enable : 1;
-    uint clear : 1;
+    uint enable : 1;        //!< Enable collecting DMA statistics
+    uint clear : 1;         //!< Clear the statistics registers (if 1)
     uint : 30;
 } dma_stats_control_t;
 
+//! DMA controller registers
 typedef struct {
     const uint _unused1[1];
-    void *sdram_address; // r1
-    void *tcm_address;
-    volatile dma_description_t description;
-    volatile dma_control_t control;
-    const dma_status_t status;
-    volatile dma_global_control_t global_control;
-    const uint crcc;
-    const uint crcr;
-    dma_timeout_t timeout;
-    dma_stats_control_t statistics_control; // r10
+    void *sdram_address;            //!< DMA address on the system interface
+    void *tcm_address;              //!< DMA address on the TCM interface
+    volatile dma_description_t description; //!< DMA transfer description; note that setting this commits a DMA
+    volatile dma_control_t control; //!< Control DMA transfer
+    const dma_status_t status;      //!< Status of DMA and other transfers
+    volatile dma_global_control_t global_control; //!< Control of the DMA device
+    const uint crcc;                //!< CRC value calculated by CRC block
+    const uint crcr;                //!< CRC value in received block
+    dma_timeout_t timeout;          //!< Timeout value
+    dma_stats_control_t statistics_control; //!< Statistics counters control
     const uint _unused2[5];
-    const uint statistics[8]; // r16-r23
+    const uint statistics[8];       //!< Statistics counters
     const uint _unused3[41];
-    const void *current_sdram_address; // r65
-    const void *current_tcm_address;
-    const dma_description_t current_description; // r67
+    const void *current_sdram_address;      //!< Active system address
+    const void *current_tcm_address;        //!< Active TCM address
+    const dma_description_t current_description; //!< Active transfer description
     const uint _unused4[29];
-    uint crc_polynomial[32];
+    uint crc_polynomial[32];        //!< CRC polynomial matrix
 } dma_t;
 
 ASSERT_WORD_SIZED(dma_description_t);
@@ -273,94 +305,110 @@ ASSERT_WORD_SIZED(dma_global_control_t);
 ASSERT_WORD_SIZED(dma_timeout_t);
 ASSERT_WORD_SIZED(dma_stats_control_t);
 
-// ---------------------------------------------------------------------
-// 8. Communications controller
+//! \}
 
+// ---------------------------------------------------------------------
+//! \name 8. Communications controller
+//! \{
+
+//! The control byte of a SpiNNaker packet
 typedef union {
+    //! Common fields
     struct {
-        uchar parity : 1;
-        uchar payload : 1;
-        uchar timestamp : 2;
+        uchar parity : 1;       //!< Packet parity
+        uchar payload : 1;      //!< Payload-word-present flag
+        uchar timestamp : 2;    //!< Timestamp (not used for NN packets)
         uchar : 2;
-        uchar type : 2;
+        uchar type : 2;         //!< Should be one of ::spinnaker_packet_type_t
     };
+    //! Multicast packet only fields
     struct {
         uchar : 4;
-        uchar emergency_routing : 2;
+        uchar emergency_routing : 2; //!< Emergency routing control
         uchar : 2;
     } mc;
+    //! Peer-to-peer packet only fields
     struct {
         uchar : 4;
-        uchar seq_code : 2;
+        uchar seq_code : 2;     //!< Sequence code
         uchar : 2;
     } p2p;
+    //! Nearest-neighbour packet only fields
     struct {
         uchar : 2;
-        uchar route : 3;
-        uchar mem_or_normal : 1;
+        uchar route : 3;        //!< Routing information
+        uchar mem_or_normal : 1; //!< Type indicator
         uchar : 2;
     } nn;
+    //! Fixed-route packet only fields
     struct {
         uchar : 4;
-        uchar emergency_routing : 2;
+        uchar emergency_routing : 2; //!< Emergency routing control
         uchar : 2;
     } fr;
     uchar value;
 } spinnaker_packet_control_byte_t;
 
-enum {
-    SPINNAKER_PACKET_TYPE_MC = 0,
-    SPINNAKER_PACKET_TYPE_P2P = 1,
-    SPINNAKER_PACKET_TYPE_NN = 2,
-    SPINNAKER_PACKET_TYPE_FR = 3,
+//! SpiNNaker packet type codes
+enum spinnaker_packet_type_t {
+    SPINNAKER_PACKET_TYPE_MC = 0,   //!< Multicast packet
+    SPINNAKER_PACKET_TYPE_P2P = 1,  //!< Peer-to-peer packet
+    SPINNAKER_PACKET_TYPE_NN = 2,   //!< Nearest-neighbour packet
+    SPINNAKER_PACKET_TYPE_FR = 3,   //!< Fixed-route packet
 };
 
+//! Controls packet transmission
 typedef struct {
     uint : 16;
-    uint control_byte : 8;
+    uint control_byte : 8;      //!< control byte of next sent packet
     uint : 4;
-    uint not_full : 1;
-    uint overrun : 1;
-    uint full : 1;
-    uint empty : 1;
+    uint not_full : 1;          //!< Tx buffer not full, so it is safe to send a packet
+    uint overrun : 1;           //!< Tx buffer overrun (sticky)
+    uint full : 1;              //!< Tx buffer full (sticky)
+    uint empty : 1;             //!< Tx buffer empty
 } comms_tx_control_t;
 
+//! Indicates packet reception status
 typedef struct {
-    uint multicast : 1;
-    uint point_to_point : 1;
-    uint nearest_neighbour : 1;
-    uint fixed_route : 1;
+    uint multicast : 1;         //!< error-free multicast packet received
+    uint point_to_point : 1;    //!< error-free point-to-point packet received
+    uint nearest_neighbour : 1; //!< error-free nearest-neighbour packet received
+    uint fixed_route : 1;       //!< error-free fixed-route packet received
     uint : 12;
-    uint control_byte : 8;
-    uint route : 3;
+    uint control_byte : 8;      //!< Control byte of last Rx packet
+    uint route : 3;             //!< Rx route field from packet
     uint : 1;
-    uint error_free : 1;
-    uint framing_error : 1;
-    uint parity_error : 1;
-    uint received : 1;
+    uint error_free : 1;        //!< Rx packet received without error
+    uint framing_error : 1;     //!< Rx packet framing error (sticky)
+    uint parity_error : 1;      //!< Rx packet parity error (sticky)
+    uint received : 1;          //!< Rx packet received
 } comms_rx_status_t;
 
+//! P2P source address
 typedef struct {
-    uint p2p_source_id : 16;
+    uint p2p_source_id : 16;    //!< 16-bit chip source ID for P2P packets
     uint : 8;
-    uint route : 3;
+    uint route : 3;             //!< Set 'fake' route in packet
     uint : 5;
 } comms_source_addr_t;
 
+//! SpiNNaker communications controller registers
 typedef struct {
-    comms_tx_control_t tx_control;
-    uint tx_data;
-    uint tx_key;
-    comms_rx_status_t rx_status;
-    const uint rx_data;
-    const uint rx_key;
-    comms_source_addr_t source_addr;
-    const uint _test;
+    comms_tx_control_t tx_control; //!< Controls packet transmission
+    uint tx_data;               //!< 32-bit data for transmission
+    volatile uint tx_key;       //!< Send MC key/P2P dest ID & seq code; writing this commits a send
+    comms_rx_status_t rx_status; //!< Indicates packet reception status
+    const uint rx_data;         //!< 32-bit received data
+    volatile const uint rx_key; //!< Received MC key/P2P source ID & seq code; reading this clears the received packet
+    comms_source_addr_t source_addr; //!< P2P source address
+    const uint _test;           //!< Used for test purposes
 } comms_ctl_t;
 
 ASSERT_WORD_SIZED(comms_tx_control_t);
 ASSERT_WORD_SIZED(comms_rx_status_t);
 ASSERT_WORD_SIZED(comms_source_addr_t);
+
+//! \}
 
 // ---------------------------------------------------------------------
 // 9. Communications NoC
@@ -368,7 +416,8 @@ ASSERT_WORD_SIZED(comms_source_addr_t);
 // No registers
 
 // ---------------------------------------------------------------------
-// 10. SpiNNaker Router
+//! \name 10. SpiNNaker Router
+//! \{
 
 typedef struct {
     uint route_packets_enable : 1;
@@ -480,51 +529,55 @@ typedef struct {
     uint nearest_neighbour_broadcast : 6;
 } router_fixed_route_routing_t;
 
+//! SpiNNaker router controller registers
 typedef struct {
-    // r0
+    //! Router control register
     router_control_t control;
-    // r1
+    //! Router status
     const router_status_t status;
+    //! Error-related registers
     struct {
-        // r2
-        router_packet_header_t header;
-        // r3
-        uint key;
-        // r4
-        uint payload;
-        // r5
+        //! error packet control byte and flags
+        const router_packet_header_t header;
+        //! error packet routing word
+        const uint key;
+        //! error packet data payload
+        const uint payload;
+        //! error packet status
         const router_error_status_t status;
     } error;
+    //! Packet-dump-related registers
     struct {
-        // r6
-        router_packet_header_t header;
-        // r7
-        uint key;
-        // r8
-        uint payload;
-        // r9
-        router_dump_outputs_t outputs;
-        // r10
+        //! dumped packet control byte and flags
+        const router_packet_header_t header;
+        //! dumped packet routing word
+        const uint key;
+        //! dumped packet data payload
+        const uint payload;
+        //! dumped packet intended destinations
+        const router_dump_outputs_t outputs;
+        //! dumped packet status
         const router_dump_status_t status;
     } dump;
-    // r11
+    //! diagnostic counter enables
     router_diagnostic_counter_ctrl_t diagnostic_counter_control;
-    // r12
+    //! timing counter controls
     router_timing_counter_ctrl_t timing_counter_control;
-    // r13
-    uint cycle_count;
-    // r14
-    uint emergency_active_cycle_count;
-    // r15
-    uint unblocked_count;
-    // r16-31
-    uint delay_histogram[16];
-    // r32
+    //! counts Router clock cycles
+    const uint cycle_count;
+    //! counts emergency router active cycles
+    const uint emergency_active_cycle_count;
+    //! counts packets that do not wait to be issued
+    const uint unblocked_count;
+    //! packet delay histogram counters
+    const uint delay_histogram[16];
+    //! divert default packets
     router_diversion_t diversion;
-    // r33
+    //! fixed-route packet routing vector
     router_fixed_route_routing_t fixed_route;
 } router_t;
 
+//! SpiNNaker router diagnostics
 typedef struct {
     uint type : 4;
     uint emergency_routing : 4;
@@ -551,6 +604,8 @@ ASSERT_WORD_SIZED(router_diversion_t);
 ASSERT_WORD_SIZED(router_fixed_route_routing_t);
 ASSERT_WORD_SIZED(router_diagnostic_filter_t);
 
+//! \}
+
 // ---------------------------------------------------------------------
 // 11. Inter-chip transmit and receive interfaces
 
@@ -562,9 +617,9 @@ ASSERT_WORD_SIZED(router_diagnostic_filter_t);
 // No registers
 
 // ---------------------------------------------------------------------
-// 13. SDRAM interface
-
-// Do not use these structures without talking to Luis!
+//! \name 13. SDRAM interface
+//! \warning Do not use these structures without talking to Luis!
+//! \{
 
 typedef struct {
     uint status : 2;
@@ -642,6 +697,7 @@ typedef struct {
     uint t_esr;
 } sdram_timing_config_t;
 
+//! SDRAM control registers
 typedef struct {
     const sdram_status_t status;
     sdram_command_t command;
@@ -724,6 +780,7 @@ typedef union {
     uint word;
 } sdram_dll_user_config1_t;
 
+//! SDRAM timing control registers
 typedef struct {
     const sdram_dll_status_t status;
     sdram_dll_user_config0_t config0;
@@ -741,8 +798,11 @@ ASSERT_WORD_SIZED(sdram_dll_status_t);
 ASSERT_WORD_SIZED(sdram_dll_user_config0_t);
 ASSERT_WORD_SIZED(sdram_dll_user_config1_t);
 
+//! \}
+
 // ---------------------------------------------------------------------
-// 14. System Controller
+//! \name 14. System Controller
+//! \{
 
 typedef struct {
     uint select : 18;
@@ -854,6 +914,7 @@ typedef struct {
     uint security_code : 12; // NB: see documentation!
 } sc_link_disable_t;
 
+//! System controller registers
 typedef struct {
     const uint chip_id;
     sc_magic_proc_map_t processor_disable;
@@ -905,8 +966,11 @@ ASSERT_WORD_SIZED(sc_temperature_t);
 ASSERT_WORD_SIZED(sc_mutex_bit_t);
 ASSERT_WORD_SIZED(sc_link_disable_t);
 
+//! \}
+
 // ---------------------------------------------------------------------
-// 15. Ethernet MII Interface
+//! \name 15. Ethernet MII Interface
+//! \{
 
 typedef struct {
     uint transmit : 1;
@@ -959,6 +1023,7 @@ typedef struct {
     uint : 25;
 } ethernet_receive_descriptor_pointer_t;
 
+//! Ethernet controller registers
 typedef struct {
     ethernet_general_command_t command;
     const ethernet_general_status_t status;
@@ -974,7 +1039,9 @@ typedef struct {
     const ethernet_receive_descriptor_pointer_t receive_desc_write;
 } ethernet_controller_t;
 
-// Cannot find description of rest of this structure; SCAMP only uses one field
+//! \brief Ethernet received message descriptor.
+//! \warning Cannot find description of rest of this structure; SCAMP only
+//!     uses one field.
 typedef struct {
     uint length : 11;
     uint : 21; // ???
@@ -988,8 +1055,11 @@ ASSERT_WORD_SIZED(ethernet_receive_pointer_t);
 ASSERT_WORD_SIZED(ethernet_receive_descriptor_pointer_t);
 ASSERT_WORD_SIZED(ethernet_receive_descriptor_t);
 
+//! \}
+
 // ---------------------------------------------------------------------
-// 16. Watchdog timer
+//! \name 16. Watchdog timer
+//! \{
 
 typedef struct {
     uint interrupt_enable : 1;
@@ -1014,6 +1084,7 @@ enum {
     WATCHDOG_LOCK_MAGIC = WD_CODE
 };
 
+//! Watchdog timer control registers
 typedef struct {
     uint load;
     const uint value;
@@ -1028,6 +1099,8 @@ typedef struct {
 ASSERT_WORD_SIZED(watchdog_control_t);
 ASSERT_WORD_SIZED(watchdog_status_t);
 ASSERT_WORD_SIZED(watchdog_lock_t);
+
+//! \}
 
 // ---------------------------------------------------------------------
 // 17. System RAM
@@ -1061,46 +1134,70 @@ ASSERT_WORD_SIZED(watchdog_lock_t);
 
 // ---------------------------------------------------------------------
 
+//! \name General layout
+//! \{
+
+//! VIC registers
 static volatile vic_control_t *const vic_control =
         (vic_control_t *) VIC_BASE_UNBUF; // NB unbuffered!
+//! VIC interrupt handlers. Array of 32 elements.
 static volatile vic_interrupt_handler_t *const vic_interrupt_vector =
         (vic_interrupt_handler_t *) (VIC_BASE + 0x100);
+//! VIC individual interrupt control. Array of 32 elements.
 static volatile vic_vector_control_t *const vic_interrupt_control =
         (vic_vector_control_t *) (VIC_BASE + 0x200);
 
+//! Timer 1 control registers
 static volatile timer_controller_t *const timer1_control =
         (timer_controller_t *) TIMER1_BASE;
+//! Timer 2 control registers
 static volatile timer_controller_t *const timer2_control =
         (timer_controller_t *) TIMER2_BASE;
 
+//! DMA control registers
 static volatile dma_t *const dma_control = (dma_t *) DMA_BASE;
 
+//! Communications controller registers
 static volatile comms_ctl_t *const comms_control = (comms_ctl_t *) CC_BASE;
 
+//! Router controller registers
 static volatile router_t *const router_control = (router_t *) RTR_BASE;
+//! Router diagnostic filters
 static volatile router_diagnostic_filter_t *const router_diagnostic_filter =
         (router_diagnostic_filter_t *) (RTR_BASE + 0x200);
+//! Router diagnostic counters
 static volatile uint *const router_diagnostic_counter =
         (uint *) (RTR_BASE + 0x300);
 
+//! \brief SDRAM interface control registers
 static volatile sdram_controller_t *const sdram_control =
         (sdram_controller_t *) PL340_BASE;
+//! \brief SDRAM QoS control registers
 static volatile sdram_qos_t *const sdram_qos_control =
         (sdram_qos_t *) (PL340_BASE + 0x100);
+//! \brief SDRAM chip control registers
 static volatile sdram_chip_t *const sdram_chip_control =
         (sdram_chip_t *) (PL340_BASE + 0x200);
+//! \brief SDRAM delay-locked-loop control registers
 static volatile sdram_dll_t *const sdram_dll_control =
         (sdram_dll_t *) (PL340_BASE + 0x300);
 
+//! System controller registers
 static volatile system_controller_t *const system_control =
         (system_controller_t *) SYSCTL_BASE;
 
+//! Ethernet transmit buffer
 static volatile uchar *const ethernet_tx_buffer = (uchar *) ETH_TX_BASE;
+//! Ethernet receive buffer
 static volatile uchar *const ethernet_rx_buffer = (uchar *) ETH_RX_BASE;
+//! Ethernet receive descriptor buffer
 static volatile ethernet_receive_descriptor_t *const ethernet_desc_buffer =
         (ethernet_receive_descriptor_t *) ETH_RX_DESC_RAM;
+//! Ethernet MII controller registers
 static volatile ethernet_controller_t *const ethernet_control =
         (ethernet_controller_t *) ETH_REGS;
+
+//! \}
 
 // ---------------------------------------------------------------------
 #endif // !__SPINN_EXTRA_H__

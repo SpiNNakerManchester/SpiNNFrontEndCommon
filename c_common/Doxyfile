@@ -166,8 +166,10 @@ FILE_PATTERNS          =
 RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       = */modified_src/* */eieio_interface.c \
-						 */models/*/build/* */front_end_common_lib/build/*
+EXCLUDE_PATTERNS       = */modified_src/* \
+                         */eieio_interface.c \
+                         */models/*/build/* \
+                         */front_end_common_lib/build/*
 EXCLUDE_SYMBOLS        = _*
 
 EXAMPLE_PATH           =
@@ -308,7 +310,7 @@ EXPAND_ONLY_PREDEF     = YES
 SEARCH_INCLUDES        = YES
 INCLUDE_PATH           =
 INCLUDE_FILE_PATTERNS  =
-PREDEFINED             = __attribute__(x)= PROFILER_ENABLED=YES INT_HANDLER=void
+PREDEFINED             = __attribute__(x)= PROFILER_ENABLED=YES INT_HANDLER=void ASSERT_WORD_SIZED(x)= 
 EXPAND_AS_DEFINED      =
 SKIP_FUNCTION_MACROS   = YES
 
