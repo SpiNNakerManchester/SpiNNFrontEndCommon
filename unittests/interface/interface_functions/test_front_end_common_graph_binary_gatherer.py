@@ -74,11 +74,9 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_4, 0, 0, 3)])
 
         gatherer = GraphBinaryGatherer()
-        targets = gatherer.__call__(
-            placements, graph, _TestExecutableFinder())
+        targets = gatherer.__call__(placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
-        start_type, binary_map = gatherer.__call__(
-            graph, placements, _TestExecutableFinder())
+        start_type = gatherer.__call__(graph, placements)
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
@@ -107,9 +105,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph.add_vertices([vertex_1, vertex_2])
 
         gatherer = LocateExecutableStartType()
-        results, binary_map = gatherer.__call__(
-            graph, placements=placements,
-            executable_finder=_TestExecutableFinder())
+        results = gatherer.__call__(graph, placements)
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)
