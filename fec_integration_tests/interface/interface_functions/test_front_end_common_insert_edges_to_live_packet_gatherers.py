@@ -18,7 +18,7 @@ from collections import defaultdict
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.common import GraphMapper, Slice
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
@@ -71,7 +71,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         # add LPG's (1 for each Ethernet connected chip)
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
-            extended.update({'label': 'test'})
+            extended["label"] = "test"
             vertex = LivePacketGatherMachineVertex(
                 LivePacketGatherParameters(**extended))
             graph.add_vertex(vertex)
@@ -115,8 +115,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=None,
-            graph_mapper=None)
+            machine=machine, machine_graph=graph, application_graph=None)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -162,9 +161,8 @@ class TestInsertLPGEdges(unittest.TestCase):
         index = 1
         for chip in machine.ethernet_connected_chips:
             extended = dict(default_params)
-            extended.update({'label': "test"})
             vertex = LivePacketGatherMachineVertex(
-                LivePacketGatherParameters(**extended))
+                LivePacketGatherParameters(**extended), label='test')
             graph.add_vertex(vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=vertex))
@@ -225,8 +223,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=None,
-            graph_mapper=None)
+            machine=machine, machine_graph=graph, application_graph=None)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -243,9 +240,8 @@ class TestInsertLPGEdges(unittest.TestCase):
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
         machine = virtual_machine(width=12, height=12)
-        graph = MachineGraph("Test")
         app_graph = ApplicationGraph("Test")
-        app_graph_mapper = GraphMapper()
+        graph = MachineGraph("Test", app_graph)
 
         default_params = {
             'use_prefix': False,
@@ -279,14 +275,12 @@ class TestInsertLPGEdges(unittest.TestCase):
             vertex = LivePacketGather(
                 LivePacketGatherParameters(**new_params))
             app_graph.add_vertex(vertex)
-            vertex_slice = Slice(0, 0)
+            vertex_slice = None
             resources_required = vertex.get_resources_used_by_atoms(
                 vertex_slice)
             mac_vertex = vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
-            app_graph_mapper.add_vertex_mapping(
-                mac_vertex, Slice(0, 0), vertex)
             placements.add_placement(
                 Placement(x=chip.x, y=chip.y, p=2, vertex=mac_vertex))
             live_packet_gatherers_to_vertex_mapping[
@@ -321,8 +315,6 @@ class TestInsertLPGEdges(unittest.TestCase):
             mac_vertex = vertex.create_machine_vertex(
                 vertex_slice, resources_required)
             graph.add_vertex(mac_vertex)
-            app_graph_mapper.add_vertex_mapping(
-                mac_vertex, vertex_slice, vertex)
             partition_ids = ["EVENTS"]
             live_packet_gatherers[default_params_holder].append(
                 (vertex, partition_ids))
@@ -337,8 +329,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping),
-            machine=machine, machine_graph=graph, application_graph=app_graph,
-            graph_mapper=app_graph_mapper)
+            machine=machine, machine_graph=graph, application_graph=app_graph)
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -351,13 +342,11 @@ class TestInsertLPGEdges(unittest.TestCase):
         # check app graph
         for chip in machine.ethernet_connected_chips:
             app_verts_expected = [
-                app_graph_mapper.get_application_vertex(vert)
-                for vert in verts_expected[chip.x, chip.y]]
+                vert.app_vertex for vert in verts_expected[chip.x, chip.y]]
             lpg_machine = live_packet_gatherers_to_vertex_mapping[
                 default_params_holder][chip.x, chip.y]
-            lpg_app = app_graph_mapper.get_application_vertex(lpg_machine)
-            edges = app_graph.get_edges_ending_at_vertex(lpg_app)
-            for edge in edges:
+            for edge in app_graph.get_edges_ending_at_vertex(
+                    lpg_machine.app_vertex):
                 self.assertIn(edge.pre_vertex, app_verts_expected)
 
 
