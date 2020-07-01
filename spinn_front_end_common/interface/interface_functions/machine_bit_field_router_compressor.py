@@ -158,8 +158,7 @@ class MachineBitFieldRouterCompressor(object):
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             no_sync_changes, threshold_percentage,
-            executable_targets, graph_mapper=None,
-            compress_only_when_needed=True,
+            executable_targets, compress_only_when_needed=True,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
@@ -180,7 +179,6 @@ class MachineBitFieldRouterCompressor(object):
         :param int no_sync_changes:
         :param int threshold_percentage:
         :param ExecutableTargets executable_targets:
-        :param graph_mapper: mapping between graphs (could be none)
         :param bool compress_only_when_needed:
         :param bool compress_as_much_as_possible:
         :param list(ProvenanceDataItem) provenance_data_objects:
@@ -209,7 +207,7 @@ class MachineBitFieldRouterCompressor(object):
 
         # locate data and on_chip_cores to load binary on
         (addresses, matrix_addresses_and_size) = self._generate_addresses(
-            machine_graph, placements, transceiver, progress_bar, graph_mapper)
+            machine_graph, placements, transceiver, progress_bar)
 
         # create executable targets
         (compressor_executable_targets, bit_field_sorter_executable_path,
@@ -256,13 +254,13 @@ class MachineBitFieldRouterCompressor(object):
             compressed_pacman_router_tables = MulticastRoutingTables()
 
             key_atom_map = host_compressor.generate_key_to_atom_map(
-                machine_graph, routing_infos, graph_mapper)
+                machine_graph, routing_infos)
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
                 bit_field_sdram_base_addresses = defaultdict(dict)
                 host_compressor.collect_bit_field_sdram_base_addresses(
                     chip_x, chip_y, machine, placements, transceiver,
-                    graph_mapper, bit_field_sdram_base_addresses)
+                    bit_field_sdram_base_addresses)
 
                 host_compressor.start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
@@ -274,7 +272,6 @@ class MachineBitFieldRouterCompressor(object):
                         bit_field_sdram_base_addresses),
                     transceiver=transceiver, machine_graph=machine_graph,
                     placements=placements, machine=machine,
-                    graph_mapper=graph_mapper,
                     target_length=target_length,
                     time_to_try_for_each_iteration=(
                         time_to_try_for_each_iteration),
@@ -793,22 +790,19 @@ class MachineBitFieldRouterCompressor(object):
             key=lambda data: data[0])
 
     def _generate_addresses(
-            self, machine_graph, placements, transceiver, progress_bar,
-            graph_mapper):
-        """ generates the bitfield sdram addresses
+            self, machine_graph, placements, transceiver, progress_bar):
+        """ generates the bitfield SDRAM addresses
 
         :param ~.MachineGraph machine_graph: machine graph
         :param ~.Placements placements: placements
         :param ~.Transceiver transceiver: spinnman instance
         :param ~.ProgressBar progress_bar: the progress bar
-        :param: graph_mapper: mapping between graphs
         :return: region_addresses and the executable targets to load the
             router table compressor with bitfield. and the SDRAM blocks
             available for use on each core that we plan to use
         :rtype: tuple(dict(tuple(int,int),tuple(int,int,int)),
             dict(tuple(int,int),list(tuple(int,int))))
         """
-
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
@@ -820,7 +814,7 @@ class MachineBitFieldRouterCompressor(object):
             # locate the interface vertex (maybe app or machine)
             vertex = \
                 HostBasedBitFieldRouterCompressor.locate_vertex_with_the_api(
-                    machine_vertex, graph_mapper)
+                    machine_vertex)
             if vertex is not None:
                 self._add_to_addresses(
                     vertex, placement, transceiver, region_addresses,
@@ -830,11 +824,11 @@ class MachineBitFieldRouterCompressor(object):
 
     def _generate_chip_data(
             self, address_list, cores, comms_sdram, threshold_percentage):
-        """ Generate byte array data for a list of sdram addresses and \
+        """ Generate byte array data for a list of SDRAM addresses and \
             finally the time to run per compression iteration.
 
         :param list(tuple(int,int,int)) address_list:
-            the list of sdram addresses
+            the list of SDRAM addresses
         :param ~.CoreSubset cores: compressor cores on this chip.
         :param int comms_sdram: Address for comms block
         :param int threshold_percentage:
@@ -843,7 +837,6 @@ class MachineBitFieldRouterCompressor(object):
         :return: the byte array
         :rtype: bytes
         """
-
         data = b""
         data += self._ONE_WORDS.pack(threshold_percentage)
         data += self._ONE_WORDS.pack(comms_sdram)

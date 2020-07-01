@@ -72,8 +72,7 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            machine, data_simtime_in_us, graph_mapper=None,
-            placement_order=None):
+            machine, data_simtime_in_us, placement_order=None):
         """
         :param ~.Placements placements: placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
@@ -83,10 +82,8 @@ class GraphDataSpecificationWriter(object):
             True if the textual version of the specification is to be written
         :param ~.Machine machine:
             the python representation of the SpiNNaker machine
-        :param data_simtime_in_us: The simtime in us for which data space\
+        :param int data_simtime_in_us: The simtime in us for which data space\
             will been reserved
-        :param graph_mapper:\
-            the mapping between application and machine graph
         :param list(~.Placement) placement_order:
         :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
         :raises ConfigurationException:
@@ -110,23 +107,22 @@ class GraphDataSpecificationWriter(object):
         vertices_to_reset = list()
         for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
+            vertex = placement.vertex
             generated = self.__generate_data_spec_for_vertices(
-                placement, placement.vertex, targets, data_simtime_in_us)
+                placement, vertex, targets, data_simtime_in_us)
 
             if generated and isinstance(
-                    placement.vertex, AbstractRewritesDataSpecification):
-                vertices_to_reset.append(placement.vertex)
+                    vertex, AbstractRewritesDataSpecification):
+                vertices_to_reset.append(vertex)
 
             # If the spec wasn't generated directly, and there is an
             # application vertex, try with that
-            if not generated and graph_mapper is not None:
-                associated_vertex = graph_mapper.get_application_vertex(
-                    placement.vertex)
+            if not generated and vertex.app_vertex is not None:
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, associated_vertex, targets, data_simtime_in_us)
+                    placement, vertex.app_vertex, targets, data_simtime_in_us)
                 if generated and isinstance(
-                        associated_vertex, AbstractRewritesDataSpecification):
-                    vertices_to_reset.append(associated_vertex)
+                        vertex.app_vertex, AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(vertex.app_vertex)
 
         # Ensure that the vertices know their regions have been reloaded
         for vertex in vertices_to_reset:

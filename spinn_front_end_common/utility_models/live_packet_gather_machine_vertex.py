@@ -58,11 +58,12 @@ class LivePacketGatherMachineVertex(
     _CONFIG_SIZE = 12 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
 
-    def __init__(
-            self, timestep_in_us, lpg_params, label=None, constraints=None):
+    def __init__(self, timestep_in_us, lpg_params, label=None, constraints=None,
+                 app_vertex=None):
         """
         :param int timestep_in_us: The timestep of this vertex in us
         :param LivePacketGatherParams lpg_params:
+        :param LivePacketGather app_vertex:
         :param str label:
         :param constraints:
         :type constraints:
@@ -70,7 +71,8 @@ class LivePacketGatherMachineVertex(
         """
         # inheritance
         super(LivePacketGatherMachineVertex, self).__init__(
-            timestep_in_us, label or lpg_params.label, constraints=constraints)
+            timestep_in_us, label=label or lpg_params.label,
+            constraints=constraints, app_vertex=app_vertex)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
@@ -173,7 +175,7 @@ class LivePacketGatherMachineVertex(
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas.
 
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param ~.DataSpecificationGenerator spec:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -192,8 +194,7 @@ class LivePacketGatherMachineVertex(
         :param ~.DataSpecificationGenerator spec:
         :param iterable(~.IPTag) iptags:
             The set of IP tags assigned to the object
-        :raise ConfigurationException:
-            if `iptags` is empty
+        :raise ConfigurationException: if `iptags` is empty
         :raise DataSpecificationException:
             when something goes wrong with the DSG generation
         """
@@ -226,7 +227,7 @@ class LivePacketGatherMachineVertex(
     def _write_setup_info(self, spec, time_scale_factor):
         """ Write basic info to the system region
 
-        :param ~data_specification.DataSpecificationGenerator spec:
+        :param ~.DataSpecificationGenerator spec:
         :param int machine_time_step:
         :param int time_scale_factor:
         """
@@ -257,5 +258,7 @@ class LivePacketGatherMachineVertex(
     @classmethod
     def get_dtcm_usage(cls):
         """ Get the DTCM used by this vertex
+
+        :rtype: int
         """
         return cls._CONFIG_SIZE

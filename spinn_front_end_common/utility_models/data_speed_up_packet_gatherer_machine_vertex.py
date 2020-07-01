@@ -289,8 +289,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def __init__(
             self, x, y, extra_monitors_by_chip, ip_address,
-            report_default_directory,
-            write_data_speed_up_reports, timestep_in_us, constraints=None):
+            report_default_directory, write_data_speed_up_reports,
+            timestep_in_us, constraints=None, app_vertex=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
@@ -307,11 +307,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param constraints:
         :type constraints: \
             iterable(~pacman.model.constraints.AbstractConstraint)
+        :param app_vertex:
+            The application vertex that caused this machine vertex to be
+            created. If None, there is no such application vertex.
+        :type app_vertex: ApplicationVertex or None
         """
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             timestep_in_us=timestep_in_us,
             label="SYSTEM:PacketGatherer({},{})".format(x, y),
-            constraints=constraints)
+            constraints=constraints, app_vertex=app_vertex)
 
         # data holders for the output, and sequence numbers
         self._view = None
@@ -393,9 +397,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-        "router_timeout_key": "SystemMulticastRouterTimeoutKeys",
         "machine": "MemoryExtendedMachine",
-        "app_id": "APPID"
+        "app_id": "APPID",
+        "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
@@ -525,7 +529,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 prov_items.append(ProvenanceDataItem(
                     [top_level_name, "extraction_time", chip_name, last_name,
                      iteration_name],
-                    time_taken, report=False, message=None))
+                    time_taken, report=False))
                 times_extracted_the_same_thing += 1
 
                 # handle lost sequence numbers
@@ -837,7 +841,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _read_in_missing_seq_nums(self, data, position, seq_nums):
         """ handles a missing seq num packet from spinnaker
 
-        :param bytearray data: the data to translate into missing seq nums
+        :param data: the data to translate into missing seq nums
+        :type data: bytearray or bytes
         :param int position: the position in the data to write.
         :param set(int) seq_nums: a set of sequence numbers to add to
         :return: seen_last flag and seen_all flag
@@ -854,7 +859,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         seen_last = False
         seen_all = False
         if new_seq_nums[-1] == self._MISSING_SEQ_NUMS_END_FLAG:
-            del new_seq_nums[-1]
+            new_seq_nums = new_seq_nums[:-1]
             seen_last = True
         if new_seq_nums[-1] == self.FLAG_FOR_MISSING_ALL_SEQUENCES:
             for missing_seq in range(0, self._max_seq_num):
@@ -1337,15 +1342,14 @@ class DataSpeedUpPacketGatherMachineVertex(
             destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
-        :param dict(tuple(int,int),?) fixed_routes:
+        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:
             the fixed routes for each router
         :param ~.Machine machine: the spinnMachine instance
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
-        routers = list()
-        routers.append((placement.x, placement.y))
-        entry = fixed_routes[(placement.x, placement.y)]
+        routers = [(placement.x, placement.y)]
+        entry = fixed_routes[placement.x, placement.y]
         chip_x = placement.x
         chip_y = placement.y
         while len(entry.processor_ids) == 0:
@@ -1356,7 +1360,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             chip_x = machine_link.destination_x
             chip_y = machine_link.destination_y
             routers.append((chip_x, chip_y))
-            entry = fixed_routes[(chip_x, chip_y)]
+            entry = fixed_routes[chip_x, chip_y]
         return routers
 
     @staticmethod
@@ -1414,10 +1418,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # figure n packets given the 2 formats
         n_packets = 1
-        length_via_format2 = \
-            len(missing_seq_nums) - (
-                WORDS_PER_FULL_PACKET -
-                WORDS_FOR_COMMAND_N_MISSING_TRANSACTION)
+        length_via_format2 = len(missing_seq_nums) - (
+            WORDS_PER_FULL_PACKET - WORDS_FOR_COMMAND_N_MISSING_TRANSACTION)
         if length_via_format2 > 0:
             n_packets += ceildiv(
                 length_via_format2,
@@ -1504,7 +1506,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~.Placement placement:
             placement object for location on machine
         :param ~.Transceiver transceiver: spinnman instance
-        :param int transaction_id: the transaction id for this stream
+        :param int transaction_id: the transaction ID for this stream
         :param list(int) lost_seq_nums:
             the list of n sequence numbers lost per iteration
         :return: set of data items, if its the first packet, the list of
@@ -1656,7 +1658,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
         """ Debug helper method for figuring out if everything been received.
 
-        :param int seq_nums: sequence numbers received
+        :param list(int) seq_nums: sequence numbers received
         :param int max_needed: biggest expected to have
         """
         if len(seq_nums) != max_needed:
@@ -1682,6 +1684,12 @@ class _StreamingContextManager(object):
     __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
 
     def __init__(self, gatherers, txrx, monitors, placements):
+        """
+        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
+        :param ~spinnman.transceiver.Transceiver txrx:
+        :param list(ExtraMonitorSupportMachineVertex) monitors:
+        :param ~pacman.model.placements.Placements placements:
+        """
         self._gatherers = list(gatherers)
         self._txrx = txrx
         self._monitors = monitors

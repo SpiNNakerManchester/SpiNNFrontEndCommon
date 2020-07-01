@@ -89,7 +89,7 @@ class SimpleTestVertex(ApplicationVertex):
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return SimpleMachineVertex(
-            resources_required, label, constraints)
+            resources_required, label, constraints, self, vertex_slice)
 
     @property
     @overrides(ApplicationVertex.n_atoms)

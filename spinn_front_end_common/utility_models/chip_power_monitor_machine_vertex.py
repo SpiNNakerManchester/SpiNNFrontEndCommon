@@ -69,7 +69,7 @@ class ChipPowerMonitorMachineVertex(
 
     def __init__(
             self, timestep_in_us, label, constraints, n_samples_per_recording,
-            sampling_frequency):
+            sampling_frequency, app_vertex=None, vertex_slice=None):
         """
         :param str label: vertex label
         :param iterable(~pacman.model.constraints.AbstractConstraint) \
@@ -78,10 +78,13 @@ class ChipPowerMonitorMachineVertex(
         :param int n_samples_per_recording:
             how may samples between recording entry
         :param int sampling_frequency: how often to sample, in microseconds
+        :param ChipPowerMonitor app_vertex: associated application vertex
+        :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
         super(ChipPowerMonitorMachineVertex, self).__init__(
             timestep_in_us=timestep_in_us, label=label,
-            constraints=constraints)
+            constraints=constraints, app_vertex=app_vertex,
+            vertex_slice=vertex_slice)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
@@ -95,7 +98,7 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     def n_samples_per_recording(self):
-        """ how may samples between recording entries
+        """ how may samples to take between making recording entries
 
         :rtype: int
         """
@@ -268,12 +271,15 @@ class ChipPowerMonitorMachineVertex(
         :param intdata_simtime_in_us: simtime in us to reserve data for
         :param float time_scale_factor: the time scale factor
         :return: the SDRAM usage
+        :rtype: int
         """
         actual_runtime = data_simtime_in_us * time_scale_factor
         n_recordings_times = math.floor(
             actual_runtime / self._sampling_frequency)
-        n_entries = n_recordings_times / self._n_samples_per_recording
-        return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)
+        # ceil as you can not predict if the part record happens or not
+        n_entries = math.ceil(
+            n_recordings_times / self._n_samples_per_recording)
+        return n_entries * RECORDING_SIZE_PER_ENTRY
 
     def get_recorded_data(self, placement, buffer_manager):
         """ Get data from SDRAM given placement and buffer manager

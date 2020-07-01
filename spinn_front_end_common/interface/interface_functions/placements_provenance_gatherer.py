@@ -40,7 +40,6 @@ class PlacementsProvenanceGatherer(object):
         :param ~.Placements placements:
         :rtype: list(ProvenanceDataItem)
         """
-
         prov_items = list()
 
         progress = ProgressBar(

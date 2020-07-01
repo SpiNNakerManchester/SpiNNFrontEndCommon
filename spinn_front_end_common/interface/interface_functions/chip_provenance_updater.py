@@ -30,7 +30,7 @@ _LIMIT = 10
 
 
 class ChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then exit
+    """ Forces all cores to generate provenance data, and then exit.
 
     :param ~spinnman.transceiver.Transceiver txrx:
     :param int app_id:

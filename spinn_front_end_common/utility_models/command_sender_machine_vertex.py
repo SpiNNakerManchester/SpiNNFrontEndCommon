@@ -70,7 +70,7 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    def __init__(self, timestep_in_us, label, constraints):
+    def __init__(self, timestep_in_us, label, constraints, app_vertex=None):
         """
         :param int timestep_in_us: The timestep of this vertex in us
         :type timestep_in_us: int
@@ -78,9 +78,10 @@ class CommandSenderMachineVertex(
         :param iterable(~pacman.model.constraints.AbstractConstraint) \
                 constraints:
             Any initial constraints to this vertex
+        :param CommandSender app_vertex:
         """
         super(CommandSenderMachineVertex, self).__init__(
-            timestep_in_us, label, constraints)
+            timestep_in_us, label, constraints, app_vertex)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()
@@ -219,7 +220,7 @@ class CommandSenderMachineVertex(
 
     def _write_timed_commands(self, timed_commands, spec):
         """
-        :param list(MultiCastCommand) commands:
+        :param list(MultiCastCommand) timed_commands:
         :param ~data_specification.DataSpecificationGenerator spec:
         """
         spec.write_value(len(timed_commands))

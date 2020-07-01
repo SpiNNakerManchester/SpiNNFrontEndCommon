@@ -14,18 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitor, ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.utilities import globals_variables
 
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
 class InsertChipPowerMonitorsToGraphs(object):
     """ Adds chip power monitors into a given graph.
-
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
@@ -38,10 +36,9 @@ class InsertChipPowerMonitorsToGraphs(object):
 
     def __call__(
             self, machine, machine_graph, n_samples_per_recording,
-            sampling_frequency, application_graph=None, graph_mapper=None):
+            sampling_frequency, application_graph=None):
         """ Adds chip power monitor vertices on Ethernet connected chips as\
             required.
-
         :param ~.Machine machine:
         :param ~.MachineGraph machine_graph:
         :param int n_samples_per_recording:
@@ -53,52 +50,27 @@ class InsertChipPowerMonitorsToGraphs(object):
         # create progress bar
         progress = ProgressBar(
             machine.n_chips, "Adding Chip power monitors to Graph")
-
-        for chip in progress.over(machine.chips):
-            self._add_power_monitor_for_chip(
-                chip, machine_graph, application_graph, graph_mapper,
-                sampling_frequency, n_samples_per_recording)
-
-    @staticmethod
-    def _add_power_monitor_for_chip(
-            chip, machine_graph, application_graph, graph_mapper,
-            sampling_frequency, n_samples_per_recording):
-        """
-        :param ~.Chip chip:
-        :param ~.MachineGraph machine_graph:
-        :param ~.ApplicationGraph application_graph:
-        :param int sampling_frequency:
-        :param int n_samples_per_recording:
-        """
-        # build constraint
-        constraint = ChipAndCoreConstraint(chip.x, chip.y)
-        timestep_in_us = \
-            globals_variables.get_simulator().user_timestep_in_us
-        # build machine vert
-        machine_vertex = ChipPowerMonitorMachineVertex(
-            timestep_in_us=timestep_in_us,
-            label=_LABEL.format("machine", chip.x, chip.y),
-            sampling_frequency=sampling_frequency,
-            n_samples_per_recording=n_samples_per_recording,
-            constraints=[constraint])
-
-        # add vert to graph
-        machine_graph.add_vertex(machine_vertex)
-
-        # deal with app graphs if needed
         if application_graph is not None:
-
-            # build app vertex
-            vertex_slice = Slice(0, 0)
-            application_vertex = ChipPowerMonitor(
-                label=_LABEL.format("application", chip.x, chip.y),
-                constraints=[constraint],
+            app_vertex = ChipPowerMonitor(
+                label="ChipPowerMonitor",
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording)
-
-            # add to graph
-            application_graph.add_vertex(application_vertex)
-
-            # update graph mapper
-            graph_mapper.add_vertex_mapping(
-                machine_vertex, vertex_slice, application_vertex)
+            application_graph.add_vertex(app_vertex)
+            for chip in progress.over(machine.chips):
+                machine_vertex = app_vertex.create_machine_vertex(
+                    vertex_slice=None, resources_required=None,
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
+                machine_graph.add_vertex(machine_vertex)
+        else:
+            timestep_in_us = \
+                globals_variables.get_simulator().user_timestep_in_us
+            for chip in progress.over(machine.chips):
+                machine_vertex = ChipPowerMonitorMachineVertex(
+                    timestep_in_us=timestep_in_us,
+                    label=_LABEL.format("machine", chip.x, chip.y),
+                    constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
+                    app_vertex=None,
+                    sampling_frequency=sampling_frequency,
+                    n_samples_per_recording=n_samples_per_recording)
+                machine_graph.add_vertex(machine_vertex)

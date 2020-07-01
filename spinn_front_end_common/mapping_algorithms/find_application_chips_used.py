@@ -14,11 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
-
 import sys
-
-from spinn_front_end_common.utilities.helpful_functions import \
-    find_executable_start_type
+from spinn_front_end_common.utilities.helpful_functions import (
+    find_executable_start_type)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -35,12 +33,11 @@ class FindApplicationChipsUsed(object):
     :rtype: tuple(int,int,int,float)
     """
 
-    def __call__(self, placements, graph_mapper=None):
+    def __call__(self, placements):
         """ Finds how many application chips there were and the cost on \
             each chip
 
         :param ~.Placements placements: placements
-        :param graph_mapper: the graph mapper.
         :return: a tuple with 4 elements.
         1. how many chips were used
         2. the max application cores on any given chip
@@ -50,11 +47,9 @@ class FindApplicationChipsUsed(object):
         chips_used = defaultdict(int)
         for placement in placements:
             # find binary type if applicable
-            binary_start_type = find_executable_start_type(
-                placement.vertex, graph_mapper)
-
+            binary_start_type = find_executable_start_type(placement.vertex)
             if binary_start_type != ExecutableType.SYSTEM:
-                chips_used[(placement.x, placement.y)] += 1
+                chips_used[placement.x, placement.y] += 1
 
         low = sys.maxsize
         high = 0

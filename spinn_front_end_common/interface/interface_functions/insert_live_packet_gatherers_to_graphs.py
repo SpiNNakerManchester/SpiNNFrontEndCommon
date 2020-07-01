@@ -15,7 +15,6 @@
 
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
@@ -37,12 +36,15 @@ class InsertLivePacketGatherersToGraphs(object):
     :return: mapping between LPG parameters and LPG vertex
     :rtype: dict(LivePacketGatherParameters,
         dict(tuple(int,int),LivePacketGatherMachineVertex))
-
     """
+
+    __slots__ = [
+        "_machine_graph",
+        "_application_graph"]
 
     def __call__(
             self, live_packet_gatherer_parameters, machine, machine_graph,
-            timestep_in_us, application_graph=None, graph_mapper=None):
+            timestep_in_us, application_graph=None):
         """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:\
@@ -59,7 +61,9 @@ class InsertLivePacketGatherersToGraphs(object):
         :rtype: dict(LivePacketGatherParameters,
             dict(tuple(int,int),LivePacketGatherMachineVertex))
         """
-        # pylint: disable=too-many-arguments
+
+        self._machine_graph = machine_graph
+        self._application_graph = application_graph
 
         # create progress bar
         progress = ProgressBar(
@@ -74,31 +78,53 @@ class InsertLivePacketGatherersToGraphs(object):
             raise NotImplementedError("Unable to run with a None Timestep.")
 
         # for every Ethernet connected chip, add the gatherers required
-        for chip in progress.over(machine.ethernet_connected_chips):
-            for params in live_packet_gatherer_parameters:
-                if (params.board_address is None or
-                        params.board_address == chip.ip_address):
-                    lpg_params_to_vertices[params][chip.x, chip.y] = \
-                        self._add_lpg_vertex(
-                            application_graph, graph_mapper, machine_graph,
-                            chip, params, timestep_in_us)
+        if application_graph is not None:
+            for chip in progress.over(machine.ethernet_connected_chips):
+                for params in live_packet_gatherer_parameters:
+                    if (params.board_address is None or
+                            params.board_address == chip.ip_address):
+                        lpg_params_to_vertices[params][chip.x, chip.y] = \
+                            self._add_app_lpg_vertex(chip, params)
+        else:
+            for chip in progress.over(machine.ethernet_connected_chips):
+                for params in live_packet_gatherer_parameters:
+                    if (params.board_address is None or
+                            params.board_address == chip.ip_address):
+                        lpg_params_to_vertices[params][chip.x, chip.y] = \
+                            self._add_mach_lpg_vertex(chip, params)
 
         return lpg_params_to_vertices
 
-    def _add_lpg_vertex(
-            self, app_graph, mapper, m_graph, chip, params, timestep_in_us):
-        # pylint: disable=too-many-arguments
-        if app_graph is not None:
-            _slice = Slice(0, 0)
-            app_vtx = LivePacketGather(params, timestep_in_us=timestep_in_us)
-            app_graph.add_vertex(app_vtx)
-            resources = app_vtx.get_resources_used_by_atoms(_slice)
-            m_vtx = app_vtx.create_machine_vertex(
-                _slice, resources, label=params.label)
-            mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
-        else:
-            m_vtx = LivePacketGatherMachineVertex(timestep_in_us, params)
+    def _add_app_lpg_vertex(self, chip, params, timestep_in_us):
+        """ Adds a LPG vertex to a machine graph that has an associated\
+            application graph.
 
-        m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
-        m_graph.add_vertex(m_vtx)
-        return m_vtx
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
+        :param int timestep_in_us: the timestep in us to apply to the vertexes
+        :rtype: LivePacketGatherMachineVertex
+        """
+        app_vtx = LivePacketGather(params, timestep_in_us=timestep_in_us)
+        self._application_graph.add_vertex(app_vtx)
+        # No need to handle resources when allocating; LPG has core to itself
+        vtx = app_vtx.create_machine_vertex(
+            vertex_slice=None, resources_required=None,
+            label="LivePacketGatherer",
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        self._machine_graph.add_vertex(vtx)
+        return vtx
+
+    def _add_mach_lpg_vertex(self, chip, params, timestep_in_us):
+        """ Adds a LPG vertex to a machine graph without an associated\
+            application graph.
+
+        :param ~.Chip chip:
+        :param LivePacketGatherParameters params:
+        :param int timestep_in_us: the timestep in us to apply to the vertexes
+        :rtype: LivePacketGatherMachineVertex
+        """
+        vtx = LivePacketGatherMachineVertex(
+            timestep_in_us, params,
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+        self._machine_graph.add_vertex(vtx)
+        return vtx
