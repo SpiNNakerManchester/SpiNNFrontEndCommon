@@ -65,6 +65,8 @@ class ChipIOBufExtractor(object):
         "__filename_template",
         # Flag to say this is after an an exception so don't throw new ones
         "__recovery_mode",
+        # Flag to say no progress bar should be used/shown
+        "__suppress_progress",
         # Possible path to write system vertex output to
         "__sys_path",
         # Binaries of type SYSTEM
@@ -73,7 +75,9 @@ class ChipIOBufExtractor(object):
         "__transceiver",
     ]
 
-    def __init__(self, recovery_mode=False, filename_template=FILE_FORMAT):
+    def __init__(
+            self, recovery_mode=False, filename_template=FILE_FORMAT,
+            suppress_progress=False):
         """
         :param bool recovery_mode:
         :param str filename_template:
@@ -81,10 +85,11 @@ class ChipIOBufExtractor(object):
         self.__filename_template = filename_template
         self.__recovery_mode = bool(recovery_mode)
         self.__system_binaries = {}
+        self.__suppress_progress = bool(suppress_progress)
 
     def __call__(
             self, transceiver, executable_targets, executable_finder,
-            app_provenance_file_path, system_provenance_file_path,
+            app_provenance_file_path=None, system_provenance_file_path=None,
             from_cores="ALL", binary_types=None):
         """
         :param ~.Transceiver transceiver:
@@ -195,8 +200,7 @@ class ChipIOBufExtractor(object):
         return error_entries, warn_entries
 
     def __extract_selected_cores(
-            self, transceiver, executable_targets, app_provenance_file_path,
-            system_provenance_file_path, from_cores):
+            self, executable_targets, from_cores):
         """
         :param ExecutableTargets executable_targets:
         :param str from_cores:
@@ -251,7 +255,7 @@ class ChipIOBufExtractor(object):
         """
         prov_path = self.__prov_path(binary)
         # extract iobuf
-        if self._recovery_mode:
+        if self.__recovery_mode:
             io_buffers = self.__recover_iobufs(core_subsets)
         else:
             io_buffers = list(self.__transceiver.get_iobuf(core_subsets))
@@ -271,7 +275,7 @@ class ChipIOBufExtractor(object):
         :param list(str) warn_entries:
         """
         file_name = os.path.join(
-            file_path, self._filename_template.format(
+            file_path, self.__filename_template.format(
                 iobuf.x, iobuf.y, iobuf.p))
 
         # set mode of the file based off if the file already exists

@@ -2261,7 +2261,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf = ChipIOBufExtractor()
+        iobuf = ChipIOBufExtractor(recovery_mode=True)
         try:
             errors, warnings = iobuf(
                 self._txrx, executable_targets, self._executable_finder,
