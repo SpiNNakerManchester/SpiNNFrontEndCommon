@@ -241,10 +241,13 @@ Enumerations</h2></td></tr>
 <tr class="memitem:af9bdc3014f3d54c426b6d2df10de4960"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
 &#160;&#160;<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a36c43f64108e390c9124240eb5cff260">RTR_DOVRFLW_BIT</a> = 30, 
 <a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960ac2f306f63b63cfb74a316910f852b0a8">RTR_BLOCKED_BIT</a> = 25, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a32dd968c3fb988c2e82fb7a72668f015">RTR_FPE_BIT</a> = 17, 
-<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a3d86c0ce1fd2f8fa37176008865acd79">RTR_LE_BIT</a> = 6, 
+<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960aa4da8b17f315a8d257a097daaf784593">RTR_FPE_BITS</a> = 18, 
+<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a1464a59ce9a9851e39c837c150f1ad4a">RTR_LE_BITS</a> = 6, 
 <br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a9fb9c307bcf90acfdde9b92904e38046">RTR_DENABLE_BIT</a> = 2
+&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a3ca38b6f1004a5faf494e228077db401">RTR_PARITY_COUNT_BIT</a> = 5, 
+<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a23ebfa80f6fc2825379b4b6afe20254f">RTR_FRAME_COUNT_BIT</a> = 4, 
+<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960aeab06c9b2ebd573790e30e6adfa24f39">RTR_TS_COUNT_BIT</a> = 3, 
+<a class="el" href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960a9fb9c307bcf90acfdde9b92904e38046">RTR_DENABLE_BIT</a> = 2
 <br />
  }</td></tr>
 <tr class="memdesc:af9bdc3014f3d54c426b6d2df10de4960"><td class="mdescLeft">&#160;</td><td class="mdescRight">Positions of fields in the router status and control registers.  <a href="extra__monitor__support_8c.html#af9bdc3014f3d54c426b6d2df10de4960">More...</a><br /></td></tr>
@@ -253,9 +256,10 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a5cc2d8b1ae2457286900337f7c234333">RTR_BLOCKED_MASK</a> = 1 &lt;&lt; RTR_BLOCKED_BIT, 
 <a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a5b9a0adfd87cb097d1023ab04365370a">RTR_DOVRFLW_MASK</a> = 1 &lt;&lt; RTR_DOVRFLW_BIT, 
 <a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a6ff98d8455e221703bba43f0fbdbe431">RTR_DENABLE_MASK</a> = 1 &lt;&lt; RTR_DENABLE_BIT, 
-<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a378c1cc91bb3c0dd2b62dc59cf4d2ea4">RTR_FPE_MASK</a> = (1 &lt;&lt; RTR_FPE_BIT) - 1, 
+<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a378c1cc91bb3c0dd2b62dc59cf4d2ea4">RTR_FPE_MASK</a> = (1 &lt;&lt; RTR_FPE_BITS) - 1, 
 <br />
-&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409afe651185ccfa887730b0e8133dbd38f1">RTR_LE_MASK</a> = (1 &lt;&lt; RTR_LE_BIT) - 1
+&#160;&#160;<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409afe651185ccfa887730b0e8133dbd38f1">RTR_LE_MASK</a> = (1 &lt;&lt; RTR_LE_BITS) - 1, 
+<a class="el" href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409a97ef4c8fdd1da41591e9d9e95c8c1fad">RTR_ERRCNT_MASK</a>
 <br />
  }</td></tr>
 <tr class="memdesc:adb49720dc49f7d4e4cf9adbf2948e409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Masks for fields in the router status and control registers.  <a href="extra__monitor__support_8c.html#adb49720dc49f7d4e4cf9adbf2948e409">More...</a><br /></td></tr>
@@ -1312,9 +1316,15 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960ac2f306f63b63cfb74a316910f852b0a8"></a>RTR_BLOCKED_BIT&#160;</td><td class="fielddoc"><p>router blocked </p>
 </td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a32dd968c3fb988c2e82fb7a72668f015"></a>RTR_FPE_BIT&#160;</td><td class="fielddoc"><p>if the dumped packet was a processor failure </p>
+<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960aa4da8b17f315a8d257a097daaf784593"></a>RTR_FPE_BITS&#160;</td><td class="fielddoc"><p>number of bits marking if the dumped packet was due to a processor failure </p>
 </td></tr>
-<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a3d86c0ce1fd2f8fa37176008865acd79"></a>RTR_LE_BIT&#160;</td><td class="fielddoc"><p>if the dumped packet was a link failure </p>
+<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a1464a59ce9a9851e39c837c150f1ad4a"></a>RTR_LE_BITS&#160;</td><td class="fielddoc"><p>number of bits marking if the dumped packet was due to a link failure </p>
+</td></tr>
+<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a3ca38b6f1004a5faf494e228077db401"></a>RTR_PARITY_COUNT_BIT&#160;</td><td class="fielddoc"><p>count if the packet had a parity error </p>
+</td></tr>
+<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a23ebfa80f6fc2825379b4b6afe20254f"></a>RTR_FRAME_COUNT_BIT&#160;</td><td class="fielddoc"><p>count if the packet had a framing error </p>
+</td></tr>
+<tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960aeab06c9b2ebd573790e30e6adfa24f39"></a>RTR_TS_COUNT_BIT&#160;</td><td class="fielddoc"><p>count if the packet had a timestamp error </p>
 </td></tr>
 <tr><td class="fieldname"><a id="af9bdc3014f3d54c426b6d2df10de4960a9fb9c307bcf90acfdde9b92904e38046"></a>RTR_DENABLE_BIT&#160;</td><td class="fielddoc"><p>enable dump interrupts </p>
 </td></tr>
@@ -1345,6 +1355,8 @@ Pointers to DSG regions. </td></tr>
 <tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a378c1cc91bb3c0dd2b62dc59cf4d2ea4"></a>RTR_FPE_MASK&#160;</td><td class="fielddoc"><p>if the dumped packet was a processor failure </p>
 </td></tr>
 <tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409afe651185ccfa887730b0e8133dbd38f1"></a>RTR_LE_MASK&#160;</td><td class="fielddoc"><p>if the dumped packet was a link failure </p>
+</td></tr>
+<tr><td class="fieldname"><a id="adb49720dc49f7d4e4cf9adbf2948e409a97ef4c8fdd1da41591e9d9e95c8c1fad"></a>RTR_ERRCNT_MASK&#160;</td><td class="fielddoc"><p>router control mask to count the error packets </p>
 </td></tr>
 </table>
 
