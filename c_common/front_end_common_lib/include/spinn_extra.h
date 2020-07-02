@@ -419,114 +419,135 @@ ASSERT_WORD_SIZED(comms_source_addr_t);
 //! \name 10. SpiNNaker Router
 //! \{
 
+//! Router control register
 typedef struct {
-    uint route_packets_enable : 1;
-    uint error_interrupt_enable : 1;
-    uint dump_interrupt_enable : 1;
-    uint count_timestamp_errors : 1;
-    uint count_framing_errors : 1;
-    uint count_parity_errors : 1;
-    uint time_phase : 2;
-    uint monitor_processor : 5;
+    uint route_packets_enable : 1;      //!< enable packet routing
+    uint error_interrupt_enable : 1;    //!< enable error packet interrupt
+    uint dump_interrupt_enable : 1;     //!< enable dump packet interrupt
+    uint count_timestamp_errors : 1;    //!< enable count of packet time stamp errors
+    uint count_framing_errors : 1;      //!< enable count of packet framing errors
+    uint count_parity_errors : 1;       //!< enable count of packet parity errors
+    uint time_phase : 2;                //!< time phase (c.f. packet time stamps)
+    uint monitor_processor : 5;         //!< Monitor Processor ID number
     uint : 2;
-    uint reinit_wait_counters : 1;
-    uint begin_emergency_wait_time : 8;
-    uint drop_wait_time : 8;
+    uint reinit_wait_counters : 1;      //!< re-initialise wait counters
+    uint begin_emergency_wait_time : 8; //!< `wait1`; wait time before emergency routing
+    uint drop_wait_time : 8;            //!< `wait2`; wait time before dropping packet
 } router_control_t;
 
+//! Router status
 typedef struct {
+    //! diagnostic counter interrupt active
     uint interrupt_active_for_diagnostic_counter : 16;
-    uint busy : 1;
+    uint busy : 1;                      //!< busy - active packet(s) in Router pipeline
     uint : 7;
+    //! \brief Router output stage status (empty, full but unblocked, blocked
+    //!     in wait1, blocked in wait2).
     uint output_stage : 2;
     uint : 3;
-    uint interrupt_active_dump : 1;
-    uint interrupt_active_error : 1;
-    uint interrupt_active : 1;
+    uint interrupt_active_dump : 1;     //!< dump packet interrupt active
+    uint interrupt_active_error : 1;    //!< error packet interrupt active
+    uint interrupt_active : 1;          //!< combined Router interrupt request
 } router_status_t;
 
+//! Stages in ::router_status_t::output_stage
 enum output_stage {
-    output_stage_empty,
-    output_stage_full,
-    output_stage_wait1,
-    output_stage_wait2
+    output_stage_empty,             //!< output stage is empty
+    output_stage_full,              //!< output stage is full but unblocked
+    output_stage_wait1,             //!< output stage is blocked in wait1
+    output_stage_wait2              //!< output stage is blocked in wait2
 };
 
+//! Router error/dump header
 typedef union {
     struct {
         uint : 6;
-        uint time_phase : 2;
+        uint time_phase : 2;        //!< time phase when packet received/dumped
         uint : 8;
-        uint control : 8;
-        uint route : 3;
-        uint time_phase_error : 1;
-        uint framing_error : 1;
-        uint parity_error : 1;
+        uint control : 8;           //!< control byte
+        uint route : 3;             //!< Rx route field of packet
+        uint time_phase_error : 1;  //!< packet time stamp error (error only)
+        uint framing_error : 1;     //!< packet framing error (error only)
+        uint parity_error : 1;      //!< packet parity error (error only)
         uint : 2;
     };
     struct {
         uint : 17;
-        uint payload : 1;
+        uint payload : 1;           //!< payload-present field from control byte
         uint : 4;
-        uint type : 2;
+        uint type : 2;              //!< packet-type field from control byte
     };
-    uint word;
+    uint word;                      //!< as a whole word
 } router_packet_header_t;
 
+//! Router error status
 typedef struct {
-    uint error_count : 16;
+    uint error_count : 16;          //!< 16-bit saturating error count
     uint : 11;
-    uint time_phase_error : 1;
-    uint framing_error : 1;
-    uint parity_error : 1;
-    uint overflow : 1;
-    uint error : 1;
+    uint time_phase_error : 1;      //!< packet time stamp error (sticky)
+    uint framing_error : 1;         //!< packet framing error (sticky)
+    uint parity_error : 1;          //!< packet parity error (sticky)
+    uint overflow : 1;              //!< more than one error packet detected
+    uint error : 1;                 //!< error packet detected
 } router_error_status_t;
 
+//! Router dump outputs
 typedef struct {
-    uint link : 6;
-    uint processor : 18;
+    uint link : 6;                  //!< Tx link transmit error caused packet dump
+    uint processor : 18;            //!< Fascicle Processor link error caused dump
     uint : 8;
 } router_dump_outputs_t;
 
+//! Router dump status
 typedef struct {
-    uint link : 6;
-    uint processor : 18;
+    uint link : 6;                  //!< Tx link error caused dump (sticky)
+    uint processor : 18;            //!< Fascicle Proc link error caused dump (sticky)
     uint : 6;
-    uint overflow : 1;
-    uint dumped : 1;
+    uint overflow : 1;              //!< more than one packet dumped
+    uint dumped : 1;                //!< packet dumped
 } router_dump_status_t;
 
+//! Router diagnostic counter enable/reset
 typedef struct {
-    ushort enable;
-    ushort reset;
+    ushort enable;                  //!< enable diagnostic counter 15..0
+    ushort reset;                   //!< write a 1 to reset diagnostic counter 15..0
 } router_diagnostic_counter_ctrl_t;
 
+//! Router timing counter controls
 typedef struct {
-    uint enable_cycle_count : 1;
-    uint enable_emergency_active_count : 1;
-    uint enable_histogram : 1;
+    uint enable_cycle_count : 1;    //!< enable cycle counter
+    uint enable_emergency_active_count : 1; //!< enable emergency router active cycle counter
+    uint enable_histogram : 1;      //!< enable histogram
     uint : 13;
-    uint reset_cycle_count : 1;
-    uint reset_emergency_active_count : 1;
-    uint reset_histogram : 1;
+    uint reset_cycle_count : 1;     //!< reset cycle counter
+    uint reset_emergency_active_count : 1; //!< reset emergency router active cycle counter
+    uint reset_histogram : 1;       //!< reset histogram
     uint : 13;
 } router_timing_counter_ctrl_t;
 
+//! Router diversion rules, used to handle default-routed packets
 typedef struct {
-    uint L0 : 2;
-    uint L1 : 2;
-    uint L2 : 2;
-    uint L3 : 2;
-    uint L4 : 2;
-    uint L5 : 2;
+    uint L0 : 2;                //!< Diversion rule for link 0
+    uint L1 : 2;                //!< Diversion rule for link 1
+    uint L2 : 2;                //!< Diversion rule for link 2
+    uint L3 : 2;                //!< Diversion rule for link 3
+    uint L4 : 2;                //!< Diversion rule for link 4
+    uint L5 : 2;                //!< Diversion rule for link 5
     uint : 20;
 } router_diversion_t;
 
+//! Diversion rules for the fields of ::router_diversion_t
+enum router_diversion_rule_t {
+    diversion_normal,           //!< Send on default route
+    diversion_monitor,          //!< Divert to local monitor
+    diversion_destroy           //!< Destroy default-routed packets
+};
+
+//! Fixed route packet routing control
 typedef struct {
-    uint fixed_route_vector : 24;
+    uint fixed_route_vector : 24; //!< Fixed-route routing vector
     uint : 2;
-    uint nearest_neighbour_broadcast : 6;
+    uint nearest_neighbour_broadcast : 6; //!< Nearest-neighbour broadcast link vector
 } router_fixed_route_routing_t;
 
 //! SpiNNaker router controller registers
@@ -577,20 +598,20 @@ typedef struct {
     router_fixed_route_routing_t fixed_route;
 } router_t;
 
-//! SpiNNaker router diagnostics
+//! SpiNNaker router diagnostic filter
 typedef struct {
-    uint type : 4;
-    uint emergency_routing : 4;
-    uint emergency_routing_mode : 1;
+    uint type : 4;                      //!< packet type: fr, nn, p2p, mc
+    uint emergency_routing : 4;         //!< Emergency Routing field = 3, 2, 1 or 0
+    uint emergency_routing_mode : 1;    //!< Emergency Routing mode
     uint : 1;
-    uint pattern_default : 2;
-    uint pattern_payload : 2;
-    uint pattern_local : 2;
-    uint pattern_destination : 9;
+    uint pattern_default : 2;           //!< default [x1]/non-default [1x] routed packets
+    uint pattern_payload : 2;           //!< packets with [x1]/without [1x] payload
+    uint pattern_local : 2;             //!< local [x1]/non-local[1x] packet source
+    uint pattern_destination : 9;       //!< packet dest (Tx link[5:0], MP, local ¬MP, dump)
     uint : 4;
-    uint counter_event_occurred : 1;
-    uint enable_counter_event_interrupt : 1;
-    uint counter_event_interrupt_active : 1;
+    uint counter_event_occurred : 1;    //!< counter event has occurred (sticky)
+    uint enable_counter_event_interrupt : 1; //!< enable interrupt on counter event
+    uint counter_event_interrupt_active : 1; //!< counter interrupt active: I = E AND C
 } router_diagnostic_filter_t;
 
 ASSERT_WORD_SIZED(router_control_t);
@@ -618,173 +639,200 @@ ASSERT_WORD_SIZED(router_diagnostic_filter_t);
 
 // ---------------------------------------------------------------------
 //! \name 13. SDRAM interface
-//! \warning Do not use these structures without talking to Luis!
+//! \details Only meaningfully usable by the monitor core when initialising the
+//!     overall chip. Use at other times is very much not recommended.
+//! \warning Do not use these structures without talking to Luis first!
 //! \{
 
+//! Memory controller status
 typedef struct {
-    uint status : 2;
-    uint width : 2;
-    uint ddr : 3;
-    uint chips : 2;
-    uint banks : 1;
-    uint monitors : 2;
+    uint status : 2;            //!< Config, ready, paused, low-power
+    uint width : 2;             //!< Width of external memory: 2’b01 = 32 bits
+    uint ddr : 3;               //!< DDR type: 3b’011 = Mobile DDR
+    uint chips : 2;             //!< Number of different chip selects (1, 2, 3, 4)
+    uint banks : 1;             //!< Fixed at 1’b01 = 4 banks on a chip
+    uint monitors : 2;          //!< Number of exclusive access monitors (0, 1, 2, 4)
     uint : 20;
 } sdram_status_t;
 
+//! Memory controller command
 typedef struct {
-    uint command : 3;
+    uint command : 3;           //!< one of ::sdram_command
 } sdram_command_t;
 
+//! \brief Memory controller commands, for ::sdram_command_t::command
+//! \todo Verify ::SDRAM_CTL_SLEEP, ::SDRAM_CTL_WAKE, ::SDRAM_CTL_ACTIVE_PAUSE
 enum sdram_command {
-    SDRAM_CTL_GO,
-    SDRAM_CTL_SLEEP,            // TODO: verify this value
-    SDRAM_CTL_WAKE,             // TODO: verify this value
-    SDRAM_CTL_PAUSE,
-    SDRAM_CTL_CONFIG,
-    SDRAM_CTL_ACTIVE_PAUSE      // TODO: verify this value
+    SDRAM_CTL_GO,               //!< Go
+    SDRAM_CTL_SLEEP,            //!< Sleep
+    SDRAM_CTL_WAKE,             //!< Wake
+    SDRAM_CTL_PAUSE,            //!< Pause
+    SDRAM_CTL_CONFIG,           //!< Configure
+    SDRAM_CTL_ACTIVE_PAUSE      //!< Active Pause
 };
 
+//! \brief Memory controller direct command
+//! \details Used to pass a command directly to a memory device attached to the
+//!     PL340.
 typedef struct {
-    uint address : 14;
+    uint address : 14;          //!< address passed to memory device
     uint : 2;
-    uint bank : 2;
-    uint cmd : 2;
-    uint chip : 2;
+    uint bank : 2;              //!< bank passed to memory device
+    uint cmd : 2;               //!< command passed to memory device
+    uint chip : 2;              //!< chip number
     uint : 10;
 } sdram_direct_command_t;
 
+//! \brief Memory direct commands, for ::sdram_direct_command_t::cmd
+//! \details Codes from SARK (sark_hw.c, pl340_init)
 enum sdram_direct_command {
-    // Codes from SARK (sark_hw.c, pl340_init)
-    SDRAM_DIRECT_PRECHARGE = 0,
-    SDRAM_DIRECT_AUTOREFRESH = 1,
-    SDRAM_DIRECT_MODEREG = 2,
-    SDRAM_DIRECT_NOP = 3,
+    SDRAM_DIRECT_PRECHARGE = 0,     //!< Precharge
+    SDRAM_DIRECT_AUTOREFRESH = 1,   //!< Auto-Refresh
+    SDRAM_DIRECT_MODEREG = 2,       //!< Mode Register
+    SDRAM_DIRECT_NOP = 3,           //!< No-op
 };
 
+//! Memory configuration
 typedef struct {
-    uint column : 3;
-    uint row : 3;
-    uint auto_precharge_position : 1;
-    uint power_down_delay : 6;
-    uint auto_power_down : 1;
-    uint stop_clock : 1;
-    uint burst : 3;
-    uint qos : 3;
-    uint active : 2;
+    uint column : 3;            //!< number of column address bits (8-12)
+    uint row : 3;               //!< number of row address bits (11-16)
+    uint auto_precharge_position : 1; //!< position of auto-pre-charge bit (10/8)
+    uint power_down_delay : 6;  //!< number of memory cycles before auto-power-down
+    uint auto_power_down : 1;   //!< auto-power-down memory when inactive
+    uint stop_clock : 1;        //!< stop memory clock when no access
+    uint burst : 3;             //!< burst length (1, 2, 4, 8, 16)
+    uint qos : 3;               //!< selects the 4-bit QoS field from the AXI ARID
+    uint active : 2;            //!< active chips: number for refresh generation
     uint : 9;
 } sdram_ram_config_t;
 
+//! Memory refresh period
 typedef struct {
-    uint period : 15;
+    uint period : 15;           //!< memory refresh period in memory clock cycles
     uint : 17;
 } sdram_refresh_t;
 
+//! Memory CAS latency
 typedef struct {
-    // See datasheet for meanings
-    uint cas_latency;
-    uint t_dqss;
-    uint t_mrd;
-    uint t_ras;
-    uint t_rc;
-    uint t_rcd;
-    uint t_rfc;
-    uint t_rp;
-    uint t_rrd;
-    uint t_wr;
-    uint t_wtr;
-    uint t_xp;
-    uint t_xsr;
-    uint t_esr;
+    uint half_cycle : 1;        //!< CAS half cycle - must be set to 1’b0
+    uint cas_lat : 3;           //!< CAS latency in memory clock cycles
+    uint : 28;
+} sdram_cas_latency_t;
+
+//! \brief Memory timimg configuration
+//! \details See datasheet for meanings
+typedef struct {
+    uint t_dqss;                //!< write to DQS time
+    uint t_mrd;                 //!< mode register command time
+    uint t_ras;                 //!< RAS to precharge delay
+    uint t_rc;                  //!< active bank x to active bank x delay
+    uint t_rcd;                 //!< RAS to CAS minimum delay
+    uint t_rfc;                 //!< auto-refresh command time
+    uint t_rp;                  //!< precharge to RAS delay
+    uint t_rrd;                 //!< active bank x to active bank y delay
+    uint t_wr;                  //!< write to precharge delay
+    uint t_wtr;                 //!< write to read delay
+    uint t_xp;                  //!< exit power-down command time
+    uint t_xsr;                 //!< exit self-refresh command time
+    uint t_esr;                 //!< self-refresh command time
 } sdram_timing_config_t;
 
-//! SDRAM control registers
+//! Memory controller registers
 typedef struct {
-    const sdram_status_t status;
-    sdram_command_t command;
-    sdram_direct_command_t direct;
-    sdram_ram_config_t mem_config;
-    sdram_refresh_t refresh;
-    sdram_timing_config_t timing_config; // 14 words
+    const sdram_status_t status;    //!< memory controller status
+    sdram_command_t command;        //!< PL340 command
+    sdram_direct_command_t direct;  //!< direct command
+    sdram_ram_config_t mem_config;  //!< memory configuration
+    sdram_refresh_t refresh;        //!< refresh period
+    sdram_cas_latency_t cas_latency;        //!< CAS latency
+    sdram_timing_config_t timing_config;    //!< timing configuration
 } sdram_controller_t;
 
+//! Memory QoS settings
 typedef struct {
-    uint enable : 1;
-    uint minimum : 1;
-    uint maximum : 8;
+    uint enable : 1;            //!< QoS enable
+    uint minimum : 1;           //!< minimum QoS
+    uint maximum : 8;           //!< maximum QoS
     uint : 22;
 } sdram_qos_t;
 
+//! Memory chip configuration
 typedef struct {
-    uint mask : 8;
-    uint match : 8;
-    uint orientation : 1;
+    uint mask : 8;              //!< address mask
+    uint match : 8;             //!< address match
+    uint orientation : 1;       //!< bank-rol-column/row-bank-column
     uint : 15;
 } sdram_chip_t;
 
+//! Maximum register IDs
 enum {
-    SDRAM_QOS_MAX = 15,
-    SDRAM_CHIP_MAX = 3
+    SDRAM_QOS_MAX = 15,         //!< Maximum memory QoS register
+    SDRAM_CHIP_MAX = 3          //!< Maximum memory chip configuration register
 };
 
+//! Memory delay-locked-loop (DLL) test and status inputs
 typedef struct {
-    uint meter : 7;
+    uint meter : 7;             //!< Current position of bar-code output
     uint : 1;
-    uint s0 : 1;
-    uint c0 : 1;
-    uint s1 : 1;
-    uint c1 : 1;
-    uint s2 : 1;
-    uint c2 : 1;
-    uint s3 : 1;
-    uint c3 : 1;
-    uint decing : 1;
-    uint incing : 1;
-    uint locked : 1;
+    uint s0 : 1;                //!< Strobe 0 faster than Clock
+    uint c0 : 1;                //!< Clock faster than strobe 0
+    uint s1 : 1;                //!< Strobe 1 faster than Clock
+    uint c1 : 1;                //!< Clock faster than strobe 1
+    uint s2 : 1;                //!< Strobe 2 faster than Clock
+    uint c2 : 1;                //!< Clock faster than strobe 2
+    uint s3 : 1;                //!< Strobe 3 faster than Clock
+    uint c3 : 1;                //!< Clock faster than strobe 3
+    uint decing : 1;            //!< Phase comparator is reducing delay
+    uint incing : 1;            //!< Phase comparator is increasing delay
+    uint locked : 1;            //!< Phase comparator is locked
     uint : 1;
-    uint R : 1;
-    uint M : 1;
-    uint L : 1;
+    uint R : 1;                 //!< 3-phase bar-code control output
+    uint M : 1;                 //!< 3-phase bar-code control output
+    uint L : 1;                 //!< 3-phase bar-code control output
     uint : 9;
 } sdram_dll_status_t;
 
+//! Memory delay-locked-loop (DLL) test and control outputs
 typedef struct {
-    uint s0 : 2;
-    uint s1 : 2;
-    uint s2 : 2;
-    uint s3 : 2;
-    uint s4 : 2;
-    uint s5 : 2;
+    uint s0 : 2;                //!< Input select for delay line 0 {def, alt, 0, 1}
+    uint s1 : 2;                //!< Input select for delay line 1 {def, alt, 0, 1}
+    uint s2 : 2;                //!< Input select for delay line 2 {def, alt, 0, 1}
+    uint s3 : 2;                //!< Input select for delay line 3 {def, alt, 0, 1}
+    uint s4 : 2;                //!< Input select for delay line 4 {def, alt, 0, 1}
+    uint s5 : 2;                //!< Input select for delay line 5 {def, alt, 0, 1}
     uint : 4;
-    uint test_decing : 1;
-    uint test_incing : 1;
-    uint enable_force_inc_dec : 1;
-    uint test_5 : 1;
-    uint R : 1;
-    uint M : 1;
-    uint L : 1;
-    uint enable_force_lmr : 1;
-    uint enable : 1;
+    uint test_decing : 1;       //!< Force Decing (if ID = 1)
+    uint test_incing : 1;       //!< Force Incing (if ID = 1)
+    uint enable_force_inc_dec : 1; //!< Enable forcing of Incing and Decing
+    uint test_5 : 1;            //!< Substitute delay line 5 for 4 for testing
+    uint R : 1;                 //!< Force 3-phase bar-code control inputs
+    uint M : 1;                 //!< Force 3-phase bar-code control inputs
+    uint L : 1;                 //!< Force 3-phase bar-code control inputs
+    uint enable_force_lmr : 1;  //!< Enable forcing of L, M, R
+    uint enable : 1;            //!< Enable DLL (0 = reset DLL)
     uint : 7;
 } sdram_dll_user_config0_t;
 
+//! Memory delay-locked-loop (DLL) fine-tune control
 typedef union {
+    //! Tuning fields
     struct {
-        uint tune_0 : 4;
-        uint tune_1 : 4;
-        uint tune_2 : 4;
-        uint tune_3 : 4;
-        uint tune_4 : 4;
-        uint tune_5 : 4;
+        uint tune_0 : 4;        //!< Fine tuning control on delay line 0
+        uint tune_1 : 4;        //!< Fine tuning control on delay line 1
+        uint tune_2 : 4;        //!< Fine tuning control on delay line 2
+        uint tune_3 : 4;        //!< Fine tuning control on delay line 3
+        uint tune_4 : 4;        //!< Fine tuning control on delay line 4
+        uint tune_5 : 4;        //!< Fine tuning control on delay line 5
         uint : 8;
     };
-    uint word;
+    uint word;                  //!< Tuning control word
 } sdram_dll_user_config1_t;
 
-//! SDRAM timing control registers
+//! SDRAM delay-locked-loop (DLL) control registers
 typedef struct {
-    const sdram_dll_status_t status;
-    sdram_dll_user_config0_t config0;
-    sdram_dll_user_config1_t config1;
+    const sdram_dll_status_t status;    //!< Status
+    sdram_dll_user_config0_t config0;   //!< Test: control
+    sdram_dll_user_config1_t config1;   //!< Test: fine tune
 } sdram_dll_t;
 
 ASSERT_WORD_SIZED(sdram_status_t);
@@ -792,6 +840,7 @@ ASSERT_WORD_SIZED(sdram_command_t);
 ASSERT_WORD_SIZED(sdram_direct_command_t);
 ASSERT_WORD_SIZED(sdram_ram_config_t);
 ASSERT_WORD_SIZED(sdram_refresh_t);
+ASSERT_WORD_SIZED(sdram_cas_latency_t);
 ASSERT_WORD_SIZED(sdram_qos_t);
 ASSERT_WORD_SIZED(sdram_chip_t);
 ASSERT_WORD_SIZED(sdram_dll_status_t);
