@@ -336,13 +336,17 @@ typedef struct reinjector_status_response_packet_t {
 
 //! how the reinjection configuration is laid out in memory.
 typedef struct reinject_config_t {
-    //! Whether we are reinjecting multicast packets
+    //! \brief Whether we are reinjecting multicast packets
+    //! \warning The sense is inverted; 0 means inject, and 1 means don't
     uint multicast_flag;
-    //! Whether we are reinjecting point-to-point packets
+    //! \brief Whether we are reinjecting point-to-point packets
+    //! \warning The sense is inverted; 0 means inject, and 1 means don't
     uint point_to_point_flag;
-    //! Whether we are reinjecting fixed route packets
+    //! \brief Whether we are reinjecting fixed route packets
+    //! \warning The sense is inverted; 0 means inject, and 1 means don't
     uint fixed_route_flag;
-    //! Whether we are reinjecting nearest neighbour packets
+    //! \brief Whether we are reinjecting nearest neighbour packets
+    //! \warning The sense is inverted; 0 means inject, and 1 means don't
     uint nearest_neighbour_flag;
     uint reinjection_base_mc_key;
 } reinject_config_t;
