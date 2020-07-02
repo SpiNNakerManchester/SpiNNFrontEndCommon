@@ -27,6 +27,7 @@
 //!
 //! [sheet]: [https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf]
 //!
+//! \nosubgrouping
 // ------------------------------------------------------------------------
 
 #ifndef __SPINN_EXTRA_H__
@@ -73,6 +74,8 @@
 
 // ---------------------------------------------------------------------
 //! \name 5. Vectored Interrupt Controller
+//! \brief The VIC is used to enable and disable interrupts from various
+//!     sources, and to wake the processor from sleep mode when required.
 //! \{
 
 //! The type of an interrupt handler
@@ -145,10 +148,21 @@ ASSERT_WORD_SIZED(vic_mask_t);
 ASSERT_WORD_SIZED(vic_interrupt_handler_t);
 ASSERT_WORD_SIZED(vic_vector_control_t);
 
+//! VIC registers
+static volatile vic_control_t *const vic_control =
+        (vic_control_t *) VIC_BASE_UNBUF; // NB unbuffered!
+//! VIC interrupt handlers. Array of 32 elements.
+static volatile vic_interrupt_handler_t *const vic_interrupt_vector =
+        (vic_interrupt_handler_t *) (VIC_BASE + 0x100);
+//! VIC individual interrupt control. Array of 32 elements.
+static volatile vic_vector_control_t *const vic_interrupt_control =
+        (vic_vector_control_t *) (VIC_BASE + 0x200);
+
 //! \}
 
 // ---------------------------------------------------------------------
 //! \name 6. Counter/Timer
+//! \brief Every core has a pair of counters/timers.
 //! \{
 
 //! Timer control register
@@ -191,10 +205,29 @@ typedef struct {
 ASSERT_WORD_SIZED(timer_control_t);
 ASSERT_WORD_SIZED(timer_interrupt_status_t);
 
+//! Timer 1 control registers
+static volatile timer_controller_t *const timer1_control =
+        (timer_controller_t *) TIMER1_BASE;
+//! Timer 2 control registers
+static volatile timer_controller_t *const timer2_control =
+        (timer_controller_t *) TIMER2_BASE;
+
 //! \}
 
 // ---------------------------------------------------------------------
 //! \name 7. DMA Controller
+//! \brief Each ARM968 processing subsystem includes a DMA controller.
+//! \details The DMA controller is primarily used for transferring inter-neural
+//!     connection data from the SDRAM in large blocks in response to an input
+//!     event arriving at a fascicle processor, and for returning updated
+//!     connection data during learning. In addition, the DMA controller can
+//!     transfer data to/from other targets on the System NoC such as the
+//!     System RAM and Boot ROM.
+//!
+//!     As a secondary function the DMA controller incorporates a ‘Bridge’
+//!     across which its host ARM968 has direct read and write access to
+//!     System NoC devices, including the SDRAM. The ARM968 can use the
+//!     Bridge whether or not DMA transfers are active.
 //! \{
 
 //! DMA descriptor
@@ -205,10 +238,16 @@ typedef struct {
     uint direction : 1;     //!< read from (0) or write to (1) system bus
     uint crc : 1;           //!< check (read) or generate (write) CRC
     uint burst : 3;         //!< burst length = 2<sup>B</sup>&times;Width, B = 0..4 (i.e max 16)
-    uint width : 1;         //!< transfer width is word (0) or double-word (1)
+    uint width : 1;         //!< transfer width, see ::dma_transfer_unit_t
     uint privilege : 1;     //!< DMA transfer mode is user (0) or privileged (1)
     uint transfer_id : 6;   //!< software defined transfer ID
 } dma_description_t;
+
+//! DMA burst width, see ::dma_description_t::width
+enum dma_transfer_unit_t {
+    DMA_TRANSFER_WORD,          //!< Transfer in words
+    DMA_TRANSFER_DOUBLE_WORD    //!< Transfer in double-words
+};
 
 //! DMA control register
 typedef struct {
@@ -305,10 +344,16 @@ ASSERT_WORD_SIZED(dma_global_control_t);
 ASSERT_WORD_SIZED(dma_timeout_t);
 ASSERT_WORD_SIZED(dma_stats_control_t);
 
+//! DMA control registers
+static volatile dma_t *const dma_control = (dma_t *) DMA_BASE;
+
 //! \}
 
 // ---------------------------------------------------------------------
 //! \name 8. Communications controller
+//! \brief Each processor node on SpiNNaker includes a communications
+//!     controller which is responsible for generating and receiving packets
+//!     to and from the communications network.
 //! \{
 
 //! The control byte of a SpiNNaker packet
@@ -396,10 +441,12 @@ typedef struct {
 typedef struct {
     comms_tx_control_t tx_control; //!< Controls packet transmission
     uint tx_data;               //!< 32-bit data for transmission
-    volatile uint tx_key;       //!< Send MC key/P2P dest ID & seq code; writing this commits a send
+    //! Send MC key/P2P dest ID & seq code; writing this commits a send
+    uint tx_key;
     comms_rx_status_t rx_status; //!< Indicates packet reception status
     const uint rx_data;         //!< 32-bit received data
-    volatile const uint rx_key; //!< Received MC key/P2P source ID & seq code; reading this clears the received packet
+    //! Received MC key/P2P source ID & seq code; reading this clears the received packet
+    const uint rx_key;
     comms_source_addr_t source_addr; //!< P2P source address
     const uint _test;           //!< Used for test purposes
 } comms_ctl_t;
@@ -407,6 +454,9 @@ typedef struct {
 ASSERT_WORD_SIZED(comms_tx_control_t);
 ASSERT_WORD_SIZED(comms_rx_status_t);
 ASSERT_WORD_SIZED(comms_source_addr_t);
+
+//! Communications controller registers
+static volatile comms_ctl_t *const comms_control = (comms_ctl_t *) CC_BASE;
 
 //! \}
 
@@ -417,6 +467,19 @@ ASSERT_WORD_SIZED(comms_source_addr_t);
 
 // ---------------------------------------------------------------------
 //! \name 10. SpiNNaker Router
+//! \brief The Router is responsible for routing all packets that arrive at its
+//!     input to one or more of its outputs.
+//! \details It is responsible for routing multicast neural event packets,
+//!     which it does through an associative multicast router subsystem,
+//!     point-to-point packets (for which it uses a look-up table),
+//!     nearest-neighbour packets (using a simple algorithmic process),
+//!     fixed-route packet routing (defined in a register), default routing
+//!     (when a multicast packet does not match any entry in the multicast
+//!     router) and emergency routing (when an output link is blocked due to
+//!     congestion or hardware failure).
+//!
+//!     Various error conditions are identified and handled by the Router, for
+//!     example packet parity errors, time-out, and output link failure.
 //! \{
 
 //! Router control register
@@ -625,6 +688,15 @@ ASSERT_WORD_SIZED(router_diversion_t);
 ASSERT_WORD_SIZED(router_fixed_route_routing_t);
 ASSERT_WORD_SIZED(router_diagnostic_filter_t);
 
+//! Router controller registers
+static volatile router_t *const router_control = (router_t *) RTR_BASE;
+//! Router diagnostic filters
+static volatile router_diagnostic_filter_t *const router_diagnostic_filter =
+        (router_diagnostic_filter_t *) (RTR_BASE + 0x200);
+//! Router diagnostic counters
+static volatile uint *const router_diagnostic_counter =
+        (uint *) (RTR_BASE + 0x300);
+
 //! \}
 
 // ---------------------------------------------------------------------
@@ -639,9 +711,11 @@ ASSERT_WORD_SIZED(router_diagnostic_filter_t);
 
 // ---------------------------------------------------------------------
 //! \name 13. SDRAM interface
+//! \brief The SDRAM interface connects the System NoC to an off-chip SDRAM
+//!     device. It is the ARM PL340, described in ARM document DDI 0331D.
 //! \details Only meaningfully usable by the monitor core when initialising the
 //!     overall chip. Use at other times is very much not recommended.
-//! \warning Do not use these structures without talking to Luis first!
+//! \warning Do not use these without talking to Luis first!
 //! \{
 
 //! Memory controller status
@@ -847,159 +921,228 @@ ASSERT_WORD_SIZED(sdram_dll_status_t);
 ASSERT_WORD_SIZED(sdram_dll_user_config0_t);
 ASSERT_WORD_SIZED(sdram_dll_user_config1_t);
 
+//! \brief SDRAM interface control registers
+static volatile sdram_controller_t *const sdram_control =
+        (sdram_controller_t *) PL340_BASE;
+//! \brief SDRAM QoS control registers
+static volatile sdram_qos_t *const sdram_qos_control =
+        (sdram_qos_t *) (PL340_BASE + 0x100);
+//! \brief SDRAM chip control registers
+static volatile sdram_chip_t *const sdram_chip_control =
+        (sdram_chip_t *) (PL340_BASE + 0x200);
+//! \brief SDRAM delay-locked-loop control registers
+static volatile sdram_dll_t *const sdram_dll_control =
+        (sdram_dll_t *) (PL340_BASE + 0x300);
+
 //! \}
 
 // ---------------------------------------------------------------------
 //! \name 14. System Controller
+//! \brief The System Controller incorporates a number of functions for system
+//!     start-up, fault-tolerance testing (invoking, detecting and resetting
+//!     faults), general performance monitoring, etc.
+//! \note All processor IDs should be _physical_ processor IDs.
 //! \{
 
+//! \brief System controller processor select
 typedef struct {
-    uint select : 18;
+    uint select : 18;           //!< Bit-map for selecting a processor
     uint : 2;
-    uint security_code : 12; // NB: see documentation!
+    uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_magic_proc_map_t;
 
+//! System controller subsystem reset target select
 typedef struct {
-    uint reset_code : 3;
+    uint router : 1;            //!< Router
+    uint sdram : 1;             //!< PL340 SDRAM controller
+    uint system_noc : 1;        //!< System NoC
+    uint comms_noc : 1;         //!< Communications NoC
+    uint tx_links : 6;          //!< Tx link 0-5
+    uint rx_links : 6;          //!< Rx link 0-5
+    uint clock_gen : 1;         //!< System AHB & Clock Gen (pulse reset only)
+    uint entire_chip : 1;       //!< Entire chip (pulse reset only)
+    uint : 2;
+    uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
+} sc_magic_subsystem_map_t;
+
+//! System controller last reset status
+typedef struct {
+    uint reset_code : 3;        //! One of ::sc_reset_codes
     uint : 29;
 } sc_reset_code_t;
 
+//! System controller chip reset reasons
+enum sc_reset_codes {
+    SC_RESET_CODE_POR,          //!< Power-on reset
+    SC_RESET_CODE_WDR,          //!< Watchdog reset
+    SC_RESET_CODE_UR,           //!< User reset
+    SC_RESET_CODE_REC,          //!< Reset entire chip (::sc_magic_subsystem_map_t::entire_chip)
+    SC_RESET_CODE_WDI           //!< Watchdog interrupt
+};
+
+//! System controller monitor election control
 typedef struct {
-    uint monitor_id : 5;
+    uint monitor_id : 5;        //!< Monitor processor identifier
     uint : 3;
-    uint arbitrate_request : 1;
+    uint arbitrate_request : 1; //!< Write 1 to set MP arbitration bit (see r32-63)
     uint : 7;
-    uint reset_on_watchdog : 1;
+    uint reset_on_watchdog : 1; //!< Reset Monitor Processor on Watchdog interrupt
     uint : 3;
-    uint security_code : 12; // NB: see documentation!
+    uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_monitor_id_t;
 
+//! System controller miscellaneous control
 typedef struct {
-    uint boot_area_map : 1;
+    uint boot_area_map : 1;     //!< map System ROM (0) or RAM (1) to Boot area
     uint : 14;
-    uint jtag_on_chip : 1;
-    uint test : 1;
-    uint ethermux : 1;
-    uint clk32 : 1;
-    uint jtag_tdo : 1;
-    uint jtag_rtck : 1;
+    uint jtag_on_chip : 1;      //!< select on-chip (1) or off-chip (0) control of JTAG pins
+    uint test : 1;              //!< read value on Test pin
+    uint ethermux : 1;          //!< read value on Ethermux pin
+    uint clk32 : 1;             //!< read value on Clk32 pin
+    uint jtag_tdo : 1;          //!< read value on JTAG_TDO pin
+    uint jtag_rtck : 1;         //!< read value on JTAG_RTCK pin
     uint : 11;
 } sc_misc_control_t;
 
+//! System controller general chip I/O pin access
 typedef union {
     struct {
         uint : 16;
-        uint ethernet_receive : 4;
-        uint ethernet_transmit : 4;
-        uint jtag : 4;
+        uint ethernet_receive : 4;  //!< MII RxD port
+        uint ethernet_transmit : 4; //!< MII TxD port
+        uint jtag : 4;          //!< JTAG interface
         uint : 1;
-        uint sdram : 3;
+        uint sdram : 3;         //!< On-package SDRAM control
     };
-    uint gpio;
+    uint gpio;                  //!< GPIO pins
 } sc_io_t;
 
+//! System controller phase-locked-loop control
 typedef struct {
-    uint input_multiplier : 6;
+    uint input_multiplier : 6;  //!< input clock multiplier
     uint : 2;
-    uint output_divider : 6;
+    uint output_divider : 6;    //!< output clock divider
     uint : 2;
-    uint freq_range : 2;
-    uint power_up : 1;
+    uint freq_range : 2;        //!< frequency range (see ::sc_frequency_range)
+    uint power_up : 1;          //!< Power UP
     uint : 5;
-    uint _test : 1;
+    uint _test : 1;             //!< test (=0 for normal operation)
     uint : 7;
 } sc_pll_control_t;
 
-enum frequency_range {
-    FREQ_25_50,
-    FREQ_50_100,
-    FREQ_100_200,
-    FREQ_200_400
+//! Frequency range constants for ::sc_pll_control_t::freq_range
+enum sc_frequency_range {
+    FREQ_25_50,                 //!< 25-50 MHz
+    FREQ_50_100,                //!< 50-100 MHz
+    FREQ_100_200,               //!< 100-200 MHz
+    FREQ_200_400                //!< 200-400 MHz
 };
 
+//! System controller clock multiplexing control
 typedef struct {
-    uint pa : 2;
-    uint adiv : 2;
+    uint pa : 2;                //!< clock selector for A CPUs (1 2 4 7 8 11 13 14 16);
+                                //!< see ::sc_clock_source
+    uint adiv : 2;              //!< divide CPU clock A by Adiv+1 (= 1-4)
     uint : 1;
-    uint pb : 2;
-    uint bdiv : 2;
+    uint pb : 2;                //!< clock selector for B CPUs (0 3 5 6 9 10 12 15 17);
+                                //!< see ::sc_clock_source
+    uint bdiv : 2;              //!< divide CPU clock B by Bdiv+1 (= 1-4)
     uint : 1;
-    uint mem : 2;
-    uint mdiv : 2;
+    uint mem : 2;               //!< clock selector for SDRAM;
+                                //!< see ::sc_clock_source
+    uint mdiv : 2;              //!< divide SDRAM clock by Mdiv+1 (= 1-4)
     uint : 1;
-    uint rtr : 2;
-    uint rdiv : 2;
+    uint rtr : 2;               //!< clock selector for Router;
+                                //!< see ::sc_clock_source
+    uint rdiv : 2;              //!< divide Router clock by Rdiv+1 (= 1-4)
     uint : 1;
-    uint sys : 2;
-    uint sdiv : 2;
+    uint sys : 2;               //!< clock selector for System AHB components;
+                                //!< see ::sc_clock_source
+    uint sdiv : 2;              //!< divide System AHB clock by Sdiv+1 (= 1-4)
     uint : 7;
-    uint invert_b : 1;
+    uint invert_b : 1;          //!< invert CPU clock B
 } sc_clock_mux_t;
 
+//! \brief System controller clock sources
+//! \details Used for ::sc_clock_mux_t::pa, ::sc_clock_mux_t::pb,
+//!     ::sc_clock_mux_t::mem, ::sc_clock_mux_t::rtr, ::sc_clock_mux_t::sys
+enum sc_clock_source {
+    CLOCK_SRC_EXT,              //!< external 10MHz clock input
+    CLOCK_SRC_PLL1,             //!< PLL1
+    CLOCK_SRC_PLL2,             //!< PLL2
+    CLOCK_SRC_EXT4              //!< external 10MHz clock divided by 4
+};
+
+//! System controller sleep status
 typedef struct {
-    uint status : 18;
+    uint status : 18;           //!< ARM968 STANDBYWFI signal for each core
     uint : 14;
 } sc_sleep_status_t;
 
+//! System controller temperature status/control
 typedef struct {
-    uint temperature : 24;
-    uint sample_finished : 1;
+    uint temperature : 24;      //!< temperature sensor reading
+    uint sample_finished : 1;   //!< temperature measurement finished
     uint : 6;
-    uint start : 1;
+    uint start : 1;             //!< start temperature measurement
 } sc_temperature_t;
 
+//! System controller mutex/interlock
 typedef struct {
     uint : 31;
-    uint bit : 1;
+    uint bit : 1;               //!< The only relevant bit in the word
 } sc_mutex_bit_t;
 
+//! System controller router control
 typedef struct {
-    uint rx_disable : 6;
+    uint rx_disable : 6;        //!< disables the corresponding link receiver
     uint : 2;
-    uint tx_disable : 6;
+    uint tx_disable : 6;        //!< disables the corresponding link transmitter
     uint : 2;
-    uint parity_control : 1;
+    uint parity_control : 1;    //!< Router parity control
     uint : 3;
-    uint security_code : 12; // NB: see documentation!
+    uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_link_disable_t;
 
 //! System controller registers
 typedef struct {
-    const uint chip_id;
-    sc_magic_proc_map_t processor_disable;
-    sc_magic_proc_map_t set_cpu_irq;
-    sc_magic_proc_map_t clear_cpu_irq;
-    uint set_cpu_ok;
-    uint clear_cpu_ok;
-    sc_magic_proc_map_t cpu_reset_level;
-    sc_magic_proc_map_t node_reset_level;
-    sc_magic_proc_map_t subsystem_reset_level;
-    sc_magic_proc_map_t cpu_reset_pulse;
-    sc_magic_proc_map_t node_reset_pulse;
-    sc_magic_proc_map_t subsystem_reset_pulse;
-    const sc_reset_code_t reset_code;
-    sc_monitor_id_t monitor_id;
-    sc_misc_control_t misc_control;
-    sc_io_t gpio_pull_up_down_enable; // NB: see documentation!
-    sc_io_t io_port;                  // NB: see documentation!
-    sc_io_t io_direction;
-    sc_io_t io_set;
-    sc_io_t io_clear;
-    sc_pll_control_t pll1_freq_control;
-    sc_pll_control_t pll2_freq_control;
-    uint set_flags;
-    uint reset_flags;
-    sc_clock_mux_t clock_mux_control;
-    const sc_sleep_status_t cpu_sleep;
-    sc_temperature_t temperature[3];
+    const uint chip_id;         //!< Chip ID register (hardwired)
+    sc_magic_proc_map_t processor_disable;  //!< Each bit disables a processor
+    sc_magic_proc_map_t set_cpu_irq;        //!< Writing a 1 sets a processor’s interrupt line
+    sc_magic_proc_map_t clear_cpu_irq;      //!< Writing a 1 clears a processor’s interrupt line
+    uint set_cpu_ok;            //!< Writing a 1 sets a CPU OK bit
+    uint clear_cpu_ok;          //!< Writing a 1 clears a CPU OK bit
+    sc_magic_proc_map_t cpu_soft_reset_level;       //!< Level control of CPU resets
+    sc_magic_proc_map_t cpu_hard_reset_level;       //!< Level control of CPU node resets
+    sc_magic_subsystem_map_t subsystem_reset_level; //!< Level control of subsystem resets
+    sc_magic_proc_map_t cpu_soft_reset_pulse;       //!< Pulse control of CPU resets
+    sc_magic_proc_map_t cpu_hard_reset_pulse;       //!< Pulse control of CPU node resets
+    sc_magic_subsystem_map_t subsystem_reset_pulse; //!< Pulse control of subsystem resets
+    const sc_reset_code_t reset_code;       //!< Indicates cause of last chip reset
+    sc_monitor_id_t monitor_id; //!< ID of Monitor Processor
+    sc_misc_control_t misc_control;         //!< Miscellaneous control bits
+    sc_io_t gpio_pull_up_down_enable;       //!< General-purpose IO pull up/down enable
+    sc_io_t io_port;            //!< I/O pin output register
+    sc_io_t io_direction;       //!< External I/O pin is input (1) or output (0)
+    sc_io_t io_set;             //!< Writing a 1 sets IO register bit
+    sc_io_t io_clear;           //!< Writing a 1 clears IO register bit
+    sc_pll_control_t pll1_freq_control;     //!< PLL1 frequency control
+    sc_pll_control_t pll2_freq_control;     //!< PLL2 frequency control
+    uint set_flags;             //!< Set flags register
+    uint reset_flags;           //!< Reset flags register
+    sc_clock_mux_t clock_mux_control;       //!< Clock multiplexer controls
+    const sc_sleep_status_t cpu_sleep;      //!< CPU sleep (awaiting interrupt) status
+    sc_temperature_t temperature[3];        //!< Temperature sensor registers [2:0]
     const uint _padding[3];
-    const sc_mutex_bit_t monitor_arbiter[32];
-    const sc_mutex_bit_t test_and_set[32];
-    const sc_mutex_bit_t test_and_clear[32];
-    sc_link_disable_t link_disable;
+    const sc_mutex_bit_t monitor_arbiter[32];       //!< Read sensitive semaphores to determine MP
+    const sc_mutex_bit_t test_and_set[32];          //!< Test & Set registers for general software use
+    const sc_mutex_bit_t test_and_clear[32];        //!< Test & Clear registers for general software use
+    sc_link_disable_t link_disable;         //!< Disables for Tx and Rx link interfaces
 } system_controller_t;
 
+//! System controller magic numbers
 enum {
+    //! Magic number for enabling writing to critical fields
     SYSTEM_CONTROLLER_MAGIC_NUMBER = 0x5ec
 };
 
@@ -1015,139 +1158,198 @@ ASSERT_WORD_SIZED(sc_temperature_t);
 ASSERT_WORD_SIZED(sc_mutex_bit_t);
 ASSERT_WORD_SIZED(sc_link_disable_t);
 
+//! System controller registers
+static volatile system_controller_t *const system_control =
+        (system_controller_t *) SYSCTL_BASE;
+
 //! \}
 
 // ---------------------------------------------------------------------
-//! \name 15. Ethernet MII Interface
+//! \name 15. Ethernet Media-independent interface (MII)
+//! \brief The SpiNNaker system connects to a host machine via Ethernet links.
+//! \details Each SpiNNaker chip includes an Ethernet MII interface, although
+//!     only a few of the chips are expected to use this interface. These
+//!     chips will require an external PHY.
 //! \{
 
+//! Ethernet general control
 typedef struct {
-    uint transmit : 1;
-    uint receive : 1;
-    uint loopback : 1;
-    uint receive_error_filter : 1;
-    uint receive_unicast: 1;
-    uint receive_multicast : 1;
-    uint receive_broadcast : 1;
-    uint receive_promiscuous : 1;
-    uint receive_vlan : 1;
-    uint reset_drop_counter : 1;
-    uint hardware_byte_reorder_disable : 1;
+    uint transmit : 1;              //!< Transmit system enable
+    uint receive : 1;               //!< Receive system enable
+    uint loopback : 1;              //!< Loopback enable
+    uint receive_error_filter : 1;  //!< Receive error filter enable
+    uint receive_unicast: 1;        //!< Receive unicast packets enable
+    uint receive_multicast : 1;     //!< Receive multicast packets enable
+    uint receive_broadcast : 1;     //!< Receive broadcast packets enable
+    uint receive_promiscuous : 1;   //!< Receive promiscuous packets enable
+    uint receive_vlan : 1;          //!< Receive VLAN enable
+    uint reset_drop_counter : 1;    //!< Reset receive dropped frame count (in r1)
+    uint hardware_byte_reorder_disable : 1; //!< Disable hardware byte reordering
     uint : 21;
 } ethernet_general_command_t;
 
+//! Ethernet general status
 typedef struct {
-    uint transmit_active : 1;
-    uint unread_counter : 6;
+    uint transmit_active : 1;   //!< Transmit MII interface active
+    uint unread_counter : 6;    //!< Received unread frame count
     uint : 9;
-    uint drop_counter : 16;
+    uint drop_counter : 16;     //!< Receive dropped frame count
 } ethernet_general_status_t;
 
+//! Ethernet frame transmit length
 typedef struct {
-    uint reset : 1; // Active low
-    uint smi_input : 1;
-    uint smi_output : 1;
-    uint smi_out_enable : 1;
-    uint smi_clock : 1; // Active rising
-    uint irq_invert_disable : 1;
+    uint tx_length : 11;        //!< Length of transmit frame (60 - 1514 bytes)
+} ethernet_tx_length_t;
+
+//! Limits of ::ethernet_tx_length_t::tx_length
+enum ethernet_tx_length_limits {
+    ETHERNET_TX_LENGTH_MIN = 60,    //!< Minimum length of an ethernet frame
+    ETHERNET_TX_LENGTH_MAX = 1514   //!< Maximum length of an ethernet frame
+};
+
+//! Ethernet PHY (physical layer) control
+typedef struct {
+    uint reset : 1;             //!< PHY reset (active low)
+    uint smi_input : 1;         //!< SMI data input
+    uint smi_output : 1;        //!< SMI data output
+    uint smi_out_enable : 1;    //!< SMI data output enable
+    uint smi_clock : 1;         //!< SMI clock (active rising)
+    uint irq_invert_disable : 1; //!< PHY IRQn invert disable
     uint : 26;
 } ethernet_phy_control_t;
 
+//! Ethernet interrupt clear register
 typedef struct {
-    uint transmit : 1;
+    uint transmit : 1;          //!< Clear transmit interrupt request
     uint : 3;
-    uint receive : 1;
+    uint receive : 1;           //!< Clear receive interrupt request
     uint : 27;
 } ethernet_interrupt_clear_t;
 
+//! Ethernet receive data pointer
 typedef struct {
-    uint ptr : 12;
-    uint rollover : 1;
+    uint ptr : 12;              //!< Receive frame buffer read pointer
+    uint rollover : 1;          //!< Rollover bit - toggles on address wrap-around
     uint : 19;
 } ethernet_receive_pointer_t;
 
+//! Ethernet receive descriptor pointer
 typedef struct {
-    uint ptr : 6;
-    uint rollover : 1;
+    uint ptr : 6;               //!< Receive descriptor read pointer
+    uint rollover : 1;          //!< Rollover bit - toggles on address wrap-around
     uint : 25;
 } ethernet_receive_descriptor_pointer_t;
 
 //! Ethernet controller registers
 typedef struct {
-    ethernet_general_command_t command;
-    const ethernet_general_status_t status;
-    uint transmit_length;
-    uint transmit_command;
-    uint receive_command;
-    uint64 mac_address; // Low 48 bits only
-    ethernet_phy_control_t phy_control;
-    ethernet_interrupt_clear_t interrupt_clear;
+    ethernet_general_command_t command;         //!< General command
+    const ethernet_general_status_t status;     //!< General status
+    ethernet_tx_length_t transmit_length;       //!< Transmit frame length
+    uint transmit_command;      //!< Transmit command; any value commits transmit
+    uint receive_command;       //!< Recieve command; any value completes receive
+    uint64 mac_address;         //!< MAC address; low 48 bits only
+    ethernet_phy_control_t phy_control;         //!< PHY control
+    ethernet_interrupt_clear_t interrupt_clear; //!< Interrupt clear
+    //! Receive frame buffer read pointer
     const ethernet_receive_pointer_t receive_read;
+    //! Receive frame buffer write pointer
     const ethernet_receive_pointer_t receive_write;
+    //! Receive descriptor read pointer
     const ethernet_receive_descriptor_pointer_t receive_desc_read;
+    //! Receive descriptor write pointer
     const ethernet_receive_descriptor_pointer_t receive_desc_write;
+    uint _test[3];              //!< debug & test use only
 } ethernet_controller_t;
 
 //! \brief Ethernet received message descriptor.
 //! \warning Cannot find description of rest of this structure; SCAMP only
 //!     uses one field.
 typedef struct {
-    uint length : 11;
+    uint length : 11;           //!< Received packet length
     uint : 21; // ???
 } ethernet_receive_descriptor_t;
 
 ASSERT_WORD_SIZED(ethernet_general_command_t);
 ASSERT_WORD_SIZED(ethernet_general_status_t);
+ASSERT_WORD_SIZED(ethernet_tx_length_t);
 ASSERT_WORD_SIZED(ethernet_phy_control_t);
 ASSERT_WORD_SIZED(ethernet_interrupt_clear_t);
 ASSERT_WORD_SIZED(ethernet_receive_pointer_t);
 ASSERT_WORD_SIZED(ethernet_receive_descriptor_pointer_t);
 ASSERT_WORD_SIZED(ethernet_receive_descriptor_t);
 
+//! Ethernet transmit buffer
+static volatile uchar *const ethernet_tx_buffer = (uchar *) ETH_TX_BASE;
+//! Ethernet receive buffer
+static volatile uchar *const ethernet_rx_buffer = (uchar *) ETH_RX_BASE;
+//! Ethernet receive descriptor buffer
+static volatile ethernet_receive_descriptor_t *const ethernet_desc_buffer =
+        (ethernet_receive_descriptor_t *) ETH_RX_DESC_RAM;
+//! Ethernet MII controller registers
+static volatile ethernet_controller_t *const ethernet_control =
+        (ethernet_controller_t *) ETH_REGS;
+
 //! \}
 
 // ---------------------------------------------------------------------
 //! \name 16. Watchdog timer
+//! \brief The watchdog timer is an ARM PrimeCell component (ARM part SP805,
+//!     documented in ARM DDI 0270B) that is responsible for applying a system
+//!     reset when a failure condition is detected.
+//! \details Normally, the Monitor Processor will be responsible for resetting
+//!     the watchdog periodically to indicate that all is well. If the Monitor
+//!     Processor should crash, or fail to reset the watchdog during a
+//!     pre-determined period of time, the watchdog will trigger.
 //! \{
 
+//! Watchdog timer control register
 typedef struct {
-    uint interrupt_enable : 1;
-    uint reset_enable : 1;
+    uint interrupt_enable : 1;  //!< Enable Watchdog counter and interrupt (1)
+    uint reset_enable : 1;      //!< Enable the Watchdog reset output (1)
     uint : 30;
 } watchdog_control_t;
 
+//! Watchdog timer status registers
 typedef struct {
-    uint interrupted : 1;
+    uint interrupted : 1;       //!< True if interrupt asserted
+    uint : 31;
 } watchdog_status_t;
 
+//! Watchdog timer lock register
 typedef union {
+    //! The fields in the lock register
     struct {
-        uint lock : 1;
-        uint magic : 31;
+        uint lock : 1;          //!< Write access enabled (0) or disabled (1)
+        uint magic : 31;        //!< Access control code
     };
-    uint whole_value;
+    uint whole_value;           //!< Whole value of lock; see ::watchdog_lock_codes
 } watchdog_lock_t;
 
-enum {
-    WATCHDOG_LOCK_RESET = 0,
-    WATCHDOG_LOCK_MAGIC = WD_CODE
+//! Watchdog timer lock codes, for ::watchdog_lock_t
+enum watchdog_lock_codes {
+    WATCHDOG_LOCK_RESET = 0,        //!< Put the watchdog timer into normal mode
+    WATCHDOG_LOCK_MAGIC = WD_CODE   //!< Unlock the watchdog timer for configuration
 };
 
 //! Watchdog timer control registers
 typedef struct {
-    uint load;
-    const uint value;
-    watchdog_control_t control;
-    uint interrupt_clear;
-    const watchdog_status_t raw_status;
-    const watchdog_status_t masked_status;
+    uint load;                  //!< Count load register
+    const uint value;           //!< Current count value
+    watchdog_control_t control; //!< Control register
+    uint interrupt_clear;       //!< Interrupt clear register; any written value will do
+    const watchdog_status_t raw_status;     //!< Raw interrupt status register
+    const watchdog_status_t masked_status;  //!< Masked interrupt status register
     const uint _padding[0x2fa]; // Lots of padding!
-    watchdog_lock_t lock;
+    watchdog_lock_t lock;       //!< Lock register
 } watchdog_controller_t;
 
 ASSERT_WORD_SIZED(watchdog_control_t);
 ASSERT_WORD_SIZED(watchdog_status_t);
 ASSERT_WORD_SIZED(watchdog_lock_t);
+
+//! Watchdog timer controller registers
+static volatile watchdog_controller_t *const watchdog_control =
+        (watchdog_controller_t *) WDOG_BASE;
 
 //! \}
 
@@ -1180,73 +1382,6 @@ ASSERT_WORD_SIZED(watchdog_lock_t);
 // 22. Application Notes
 
 // No registers
-
-// ---------------------------------------------------------------------
-
-//! \name General layout
-//! \{
-
-//! VIC registers
-static volatile vic_control_t *const vic_control =
-        (vic_control_t *) VIC_BASE_UNBUF; // NB unbuffered!
-//! VIC interrupt handlers. Array of 32 elements.
-static volatile vic_interrupt_handler_t *const vic_interrupt_vector =
-        (vic_interrupt_handler_t *) (VIC_BASE + 0x100);
-//! VIC individual interrupt control. Array of 32 elements.
-static volatile vic_vector_control_t *const vic_interrupt_control =
-        (vic_vector_control_t *) (VIC_BASE + 0x200);
-
-//! Timer 1 control registers
-static volatile timer_controller_t *const timer1_control =
-        (timer_controller_t *) TIMER1_BASE;
-//! Timer 2 control registers
-static volatile timer_controller_t *const timer2_control =
-        (timer_controller_t *) TIMER2_BASE;
-
-//! DMA control registers
-static volatile dma_t *const dma_control = (dma_t *) DMA_BASE;
-
-//! Communications controller registers
-static volatile comms_ctl_t *const comms_control = (comms_ctl_t *) CC_BASE;
-
-//! Router controller registers
-static volatile router_t *const router_control = (router_t *) RTR_BASE;
-//! Router diagnostic filters
-static volatile router_diagnostic_filter_t *const router_diagnostic_filter =
-        (router_diagnostic_filter_t *) (RTR_BASE + 0x200);
-//! Router diagnostic counters
-static volatile uint *const router_diagnostic_counter =
-        (uint *) (RTR_BASE + 0x300);
-
-//! \brief SDRAM interface control registers
-static volatile sdram_controller_t *const sdram_control =
-        (sdram_controller_t *) PL340_BASE;
-//! \brief SDRAM QoS control registers
-static volatile sdram_qos_t *const sdram_qos_control =
-        (sdram_qos_t *) (PL340_BASE + 0x100);
-//! \brief SDRAM chip control registers
-static volatile sdram_chip_t *const sdram_chip_control =
-        (sdram_chip_t *) (PL340_BASE + 0x200);
-//! \brief SDRAM delay-locked-loop control registers
-static volatile sdram_dll_t *const sdram_dll_control =
-        (sdram_dll_t *) (PL340_BASE + 0x300);
-
-//! System controller registers
-static volatile system_controller_t *const system_control =
-        (system_controller_t *) SYSCTL_BASE;
-
-//! Ethernet transmit buffer
-static volatile uchar *const ethernet_tx_buffer = (uchar *) ETH_TX_BASE;
-//! Ethernet receive buffer
-static volatile uchar *const ethernet_rx_buffer = (uchar *) ETH_RX_BASE;
-//! Ethernet receive descriptor buffer
-static volatile ethernet_receive_descriptor_t *const ethernet_desc_buffer =
-        (ethernet_receive_descriptor_t *) ETH_RX_DESC_RAM;
-//! Ethernet MII controller registers
-static volatile ethernet_controller_t *const ethernet_control =
-        (ethernet_controller_t *) ETH_REGS;
-
-//! \}
 
 // ---------------------------------------------------------------------
 #endif // !__SPINN_EXTRA_H__
