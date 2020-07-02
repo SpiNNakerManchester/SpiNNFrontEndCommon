@@ -34,6 +34,11 @@
 
 #include <spinnaker.h>
 #include <stdbool.h>
+
+#ifndef DOXYGEN
+// Hack for better naming in doxygen while avoiding warnings when building
+#define DOXYNAME(x)     /* nothing */
+#endif
 #if defined(__GNUC__) && __GNUC__ < 6
 // This particular warning (included in -Wextra) is retarded wrong for client
 // code of this file. Only really a problem on Travis.
@@ -83,7 +88,7 @@ typedef void (*vic_interrupt_handler_t) (void);
 //! \brief Mask describing interrupts that can be selected.
 typedef union {
     //! See datasheet section **5.4 Interrupt sources**
-    struct interrupt_bits {
+    struct DOXYNAME(interrupt_bits) {
         uint watchdog : 1;      //!< Watchdog timer interrupt
         uint software : 1;      //!< Local software interrupt generation
         uint comm_rx : 1;       //!< Debug communications receiver interrupt
@@ -382,7 +387,7 @@ static volatile dma_t *const dma_control = (dma_t *) DMA_BASE;
 //! The control byte of a SpiNNaker packet
 typedef union {
     //! Common fields
-    struct common {
+    struct DOXYNAME(common) {
         uchar parity : 1;       //!< Packet parity
         uchar payload : 1;      //!< Payload-word-present flag
         uchar timestamp : 2;    //!< Timestamp (not used for NN packets)
@@ -390,26 +395,26 @@ typedef union {
         uchar type : 2;         //!< Should be one of ::spinnaker_packet_type_t
     };
     //! Multicast packet only fields
-    struct mc {
+    struct DOXYNAME(mc) {
         uchar : 4;
         uchar emergency_routing : 2; //!< Emergency routing control
         uchar : 2;
     } mc;
     //! Peer-to-peer packet only fields
-    struct p2p {
+    struct DOXYNAME(p2p) {
         uchar : 4;
         uchar seq_code : 2;     //!< Sequence code
         uchar : 2;
     } p2p;
     //! Nearest-neighbour packet only fields
-    struct nn {
+    struct DOXYNAME(nn) {
         uchar : 2;
         uchar route : 3;        //!< Routing information
         uchar mem_or_normal : 1; //!< Type indicator
         uchar : 2;
     } nn;
     //! Fixed-route packet only fields
-    struct fr {
+    struct DOXYNAME(fr) {
         uchar : 4;
         uchar emergency_routing : 2; //!< Emergency routing control
         uchar : 2;
@@ -552,7 +557,7 @@ enum output_stage {
 //! Router error/dump header
 typedef union {
     //! Fields in ::router_packet_header_t
-    struct flags {
+    struct DOXYNAME(flags) {
         uint : 6;
         uint time_phase : 2;    //!< time phase when packet received/dumped
         uint : 8;
@@ -565,7 +570,7 @@ typedef union {
         uint : 2;
     };
     //! Critical fields in ::router_packet_header_t::flags::control
-    struct control_field_bits {
+    struct DOXYNAME(control_field_bits) {
         uint : 17;
         uint payload : 1;       //!< payload-present field from control byte
         uint : 4;
@@ -652,7 +657,7 @@ typedef struct {
     router_control_t control;       //!< Router control register
     const router_status_t status;   //!< Router status
     //! Error-related registers
-    struct error {
+    struct DOXYNAME(error) {
         //! error packet control byte and flags
         const router_packet_header_t header;
         const uint key;             //!< error packet routing word
@@ -661,7 +666,7 @@ typedef struct {
         const router_error_status_t status;
     } error;
     //! Packet-dump-related registers
-    struct dump {
+    struct DOXYNAME(dump) {
         //! dumped packet control byte and flags
         const router_packet_header_t header;
         const uint key;             //!< dumped packet routing word
@@ -914,7 +919,7 @@ typedef struct {
 //! Memory delay-locked-loop (DLL) fine-tune control
 typedef union {
     //! Tuning fields
-    struct tuning {
+    struct DOXYNAME(tuning) {
         uint tune_0 : 4;        //!< Fine tuning control on delay line 0
         uint tune_1 : 4;        //!< Fine tuning control on delay line 1
         uint tune_2 : 4;        //!< Fine tuning control on delay line 2
@@ -1032,7 +1037,7 @@ typedef struct {
 
 //! System controller general chip I/O pin access
 typedef union {
-    struct {
+    struct DOXYNAME(io_bits) {
         uint : 16;
         uint ethernet_receive : 4;  //!< MII RxD port
         uint ethernet_transmit : 4; //!< MII TxD port
@@ -1350,14 +1355,14 @@ typedef struct {
 //! Watchdog timer lock register
 typedef union {
     //! The fields in the lock register
-    struct {
+    struct DOXYNAME(fields) {
         uint lock : 1;          //!< Write access enabled (0) or disabled (1)
         uint magic : 31;        //!< Access control code
     };
     uint whole_value;           //!< Whole value of lock; see ::watchdog_lock_codes
 } watchdog_lock_t;
 
-//! Watchdog timer lock codes, for ::watchdog_lock_t
+//! Watchdog timer lock codes, for ::watchdog_lock_t::whole_value
 enum watchdog_lock_codes {
     WATCHDOG_LOCK_RESET = 0,        //!< Put the watchdog timer into normal mode
     WATCHDOG_LOCK_MAGIC = WD_CODE   //!< Unlock the watchdog timer for configuration
