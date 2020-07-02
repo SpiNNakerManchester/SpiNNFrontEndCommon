@@ -276,7 +276,7 @@ typedef struct {
     uint axi_error : 1;     //!< the AXI interface (SDRAM) has signalled a transfer error
     uint user_abort : 1;    //!< the user has aborted the transfer (via ::dma_control_t::abort)
     uint soft_reset : 1;    //!< a soft reset of the DMA controller has happened
-    uint : 2;
+    uint : 2;               // Not allocated
     uint write_buffer_error : 1;    //!< a buffered write transfer has failed
     uint : 3;
     uint processor_id : 8;  //!< hardwired processor ID identifies CPU on chip
@@ -294,7 +294,7 @@ typedef struct {
     uint axi_error_interrupt : 1;       //!< interrupt if ::dma_status_t::axi_error set
     uint user_abort_interrupt : 1;      //!< interrupt if ::dma_status_t::user_abort set
     uint soft_reset_interrupt : 1;      //!< interrupt if ::dma_status_t::soft_reset set
-    uint : 2;
+    uint : 2;                           // Not allocated
     uint write_buffer_error_interrupt : 1;  //!< interrupt if ::dma_status_t::write_buffer_error set
     uint : 10;
     uint timer : 1;         //!< system-wide slow timer status and clear

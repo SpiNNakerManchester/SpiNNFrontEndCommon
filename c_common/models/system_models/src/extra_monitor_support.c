@@ -2030,8 +2030,6 @@ static void data_out_initialise(void) {
         .axi_error_interrupt = true, // SDRAM error
         .user_abort_interrupt = true,
         .soft_reset_interrupt = true,
-        .unknown1 = true, // ???
-        .unknown2 = true, // ???
         .write_buffer_error_interrupt = true
     };
 }
