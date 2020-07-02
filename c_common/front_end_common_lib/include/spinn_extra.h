@@ -27,7 +27,6 @@
 //!
 //! [sheet]: [https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf]
 //!
-//! \nosubgrouping
 // ------------------------------------------------------------------------
 
 #ifndef __SPINN_EXTRA_H__
@@ -84,7 +83,7 @@ typedef void (*vic_interrupt_handler_t) (void);
 //! \brief Mask describing interrupts that can be selected.
 typedef union {
     //! See datasheet section **5.4 Interrupt sources**
-    struct {
+    struct interrupt_bits {
         uint watchdog : 1;      //!< Watchdog timer interrupt
         uint software : 1;      //!< Local software interrupt generation
         uint comm_rx : 1;       //!< Debug communications receiver interrupt
@@ -383,7 +382,7 @@ static volatile dma_t *const dma_control = (dma_t *) DMA_BASE;
 //! The control byte of a SpiNNaker packet
 typedef union {
     //! Common fields
-    struct {
+    struct common {
         uchar parity : 1;       //!< Packet parity
         uchar payload : 1;      //!< Payload-word-present flag
         uchar timestamp : 2;    //!< Timestamp (not used for NN packets)
@@ -391,26 +390,26 @@ typedef union {
         uchar type : 2;         //!< Should be one of ::spinnaker_packet_type_t
     };
     //! Multicast packet only fields
-    struct {
+    struct mc {
         uchar : 4;
         uchar emergency_routing : 2; //!< Emergency routing control
         uchar : 2;
     } mc;
     //! Peer-to-peer packet only fields
-    struct {
+    struct p2p {
         uchar : 4;
         uchar seq_code : 2;     //!< Sequence code
         uchar : 2;
     } p2p;
     //! Nearest-neighbour packet only fields
-    struct {
+    struct nn {
         uchar : 2;
         uchar route : 3;        //!< Routing information
         uchar mem_or_normal : 1; //!< Type indicator
         uchar : 2;
     } nn;
     //! Fixed-route packet only fields
-    struct {
+    struct fr {
         uchar : 4;
         uchar emergency_routing : 2; //!< Emergency routing control
         uchar : 2;
@@ -552,18 +551,21 @@ enum output_stage {
 
 //! Router error/dump header
 typedef union {
-    struct {
+    //! Fields in ::router_packet_header_t
+    struct flags {
         uint : 6;
         uint time_phase : 2;    //!< time phase when packet received/dumped
         uint : 8;
-        uint control : 8;       //!< control byte
+        //! control byte; really a ::spinnaker_packet_control_byte_t
+        uint control : 8;
         uint route : 3;         //!< Rx route field of packet
         uint time_phase_error : 1;  //!< packet time stamp error (error only)
         uint framing_error : 1; //!< packet framing error (error only)
         uint parity_error : 1;  //!< packet parity error (error only)
         uint : 2;
     };
-    struct {
+    //! Critical fields in ::router_packet_header_t::flags::control
+    struct control_field_bits {
         uint : 17;
         uint payload : 1;       //!< payload-present field from control byte
         uint : 4;
@@ -650,7 +652,7 @@ typedef struct {
     router_control_t control;       //!< Router control register
     const router_status_t status;   //!< Router status
     //! Error-related registers
-    struct {
+    struct error {
         //! error packet control byte and flags
         const router_packet_header_t header;
         const uint key;             //!< error packet routing word
@@ -659,7 +661,7 @@ typedef struct {
         const router_error_status_t status;
     } error;
     //! Packet-dump-related registers
-    struct {
+    struct dump {
         //! dumped packet control byte and flags
         const router_packet_header_t header;
         const uint key;             //!< dumped packet routing word
@@ -912,7 +914,7 @@ typedef struct {
 //! Memory delay-locked-loop (DLL) fine-tune control
 typedef union {
     //! Tuning fields
-    struct {
+    struct tuning {
         uint tune_0 : 4;        //!< Fine tuning control on delay line 0
         uint tune_1 : 4;        //!< Fine tuning control on delay line 1
         uint tune_2 : 4;        //!< Fine tuning control on delay line 2
