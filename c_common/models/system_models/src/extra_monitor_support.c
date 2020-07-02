@@ -163,7 +163,7 @@ typedef enum data_out_sdp_commands {
 #define ROUTER_TIMEOUT_MAX 0xFF
 
 //-----------------------------------------------------------------------------
-// VIC stuff
+// VIC slots assigned
 //-----------------------------------------------------------------------------
 
 //! VIC slot definitions
@@ -1123,8 +1123,15 @@ static void reinjection_configure_router(void) {
     // clear router dump status,
     (void) router_control->dump.status;
 
-    // and enable router interrupts when dumping packets
-    router_control->control.dump_interrupt_enable = true;
+    // clear router error status,
+    (void) router_control->error.status;
+
+    // and enable router interrupts when dumping packets, and count errors
+    control.dump_interrupt_enable = true;
+    control.count_framing_errors = true;
+    control.count_parity_errors = true;
+    control.count_timestamp_errors = true;
+    router_control->control = control;
 }
 
 //-----------------------------------------------------------------------------
