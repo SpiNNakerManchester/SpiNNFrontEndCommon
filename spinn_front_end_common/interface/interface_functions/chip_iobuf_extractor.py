@@ -131,7 +131,7 @@ class ChipIOBufExtractor(object):
                 return self.__extract_selected_types(
                     executable_targets, executable_finder, binary_types)
             else:
-            # nothing
+                # nothing
                 return [], []
 
     def __progress(self, bins):
@@ -166,7 +166,8 @@ class ChipIOBufExtractor(object):
             for binary in progress.over(executable_targets.binaries):
                 core_subsets = executable_targets.get_cores_for_binary(binary)
                 self.__extract_iobufs_for_binary(
-                    core_subsets, replacer, binary, error_entries, warn_entries)
+                    core_subsets, replacer, binary, error_entries,
+                    warn_entries)
         return error_entries, warn_entries
 
     def __extract_selected_cores_and_types(
@@ -194,7 +195,7 @@ class ChipIOBufExtractor(object):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
                 if core_subsets:
-                     self.__extract_iobufs_for_binary(
+                    self.__extract_iobufs_for_binary(
                         core_subsets, replacer, binary, error_entries,
                         warn_entries)
         return error_entries, warn_entries
