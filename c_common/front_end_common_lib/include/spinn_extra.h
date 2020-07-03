@@ -39,7 +39,8 @@
 // Hack for better naming in doxygen while avoiding warnings when building
 #define DOXYNAME(x)     /* nothing */
 #endif
-#if defined(__GNUC__) && __GNUC__ < 6
+
+#ifdef defined(__GNUC__) && __GNUC__ < 6
 // This particular warning (included in -Wextra) is retarded wrong for client
 // code of this file. Only really a problem on Travis.
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -47,13 +48,20 @@
 
 //! \brief Generates valid code if the named type is one word long, and invalid
 //!     code otherwise.
-//! \details It would be simpler if we used `static_assert`, but Eclipse
-//!     seems to hate that.
-//! \param type_ident: The name of the type that we are asserting is one word
-//!     long.
+//! \param type_ident: The _name_ of the type that we are asserting is one word
+//!     long. This macro assumes that it's a name, and not just any old type.
+//! \internal
+//!     Wrapped in a function because _Static_assert() is treated as expression
+//!     by Eclipse. This is a known bug in the Eclipse C parser, but it is
+//!     easier to just work around it. The function we use is static inline and
+//!     never used. And does nothing except apply the compile-time assertion.
+//!
+//!     We don't use <assert.h> because spinn_common supplies one of those that
+//!     causes weird incompatibilities. We don't need it.
 #define ASSERT_WORD_SIZED(type_ident) \
-    struct __static_word_sized_assert_ ## type_ident { \
-        char _dummy[2 * (sizeof(type_ident) == sizeof(uint)) - 1]; \
+    static inline void __static_word_sized_assert_ ## type_ident (void) { \
+        _Static_assert(sizeof(type_ident) == sizeof(uint),              \
+                #type_ident " must be the same size as a word");        \
     }
 
 // ---------------------------------------------------------------------
@@ -255,7 +263,8 @@ typedef struct {
     uint _zeroes : 2;       //!< Must be zero
     uint length_words : 15; //!< length of the DMA transfer, in words
     uint : 2;
-    uint direction : 1;     //!< read from (0) or write to (1) system bus
+    //! read from or write to system bus, see ::dma_direction_t
+    uint direction : 1;
     uint crc : 1;           //!< check (read) or generate (write) CRC
     //! burst length = 2<sup>B</sup>&times;Width, B = 0..4 (i.e max 16)
     uint burst : 3;
@@ -263,6 +272,12 @@ typedef struct {
     uint privilege : 1;     //!< DMA transfer mode is user (0) or privileged (1)
     uint transfer_id : 6;   //!< software defined transfer ID
 } dma_description_t;
+
+//! DMA transfer direction, see ::dma_description_t::direction
+enum dma_direction_t {
+    DMA_DIRECTION_READ,     //!< read from system bus (SDRAM)
+    DMA_DIRECTION_WRITE     //!< write to system bus (SDRAM)
+};
 
 //! DMA burst width, see ::dma_description_t::width
 enum dma_transfer_unit_t {
@@ -527,7 +542,7 @@ typedef struct {
     uint reinit_wait_counters : 1;      //!< re-initialise wait counters
     //! `wait1`; wait time before emergency routing
     uint begin_emergency_wait_time : 8;
-    //! `wait2`; wait time before dropping packet
+    //! `wait2`; wait time before dropping packet after entering emergency routing
     uint drop_wait_time : 8;
 } router_control_t;
 
@@ -537,8 +552,7 @@ typedef struct {
     uint interrupt_active_for_diagnostic_counter : 16;
     uint busy : 1;              //!< busy - active packet(s) in Router pipeline
     uint : 7;
-    //! \brief Router output stage status (empty, full but unblocked, blocked
-    //!     in wait1, blocked in wait2).
+    //! \brief Router output stage status (see ::router_output_stage)
     uint output_stage : 2;
     uint : 3;
     uint interrupt_active_dump : 1;     //!< dump packet interrupt active
@@ -547,11 +561,11 @@ typedef struct {
 } router_status_t;
 
 //! Stages in ::router_status_t::output_stage
-enum output_stage {
-    output_stage_empty,         //!< output stage is empty
-    output_stage_full,          //!< output stage is full but unblocked
-    output_stage_wait1,         //!< output stage is blocked in wait1
-    output_stage_wait2          //!< output stage is blocked in wait2
+enum router_output_stage {
+    ROUTER_OUTPUT_STAGE_EMPTY,  //!< output stage is empty
+    ROUTER_OUTPUT_STAGE_FULL,   //!< output stage is full but unblocked
+    ROUTER_OUTPUT_STAGE_WAIT1,  //!< output stage is blocked in `wait1`
+    ROUTER_OUTPUT_STAGE_WAIT2   //!< output stage is blocked in `wait2`
 };
 
 //! Router error/dump header
@@ -639,9 +653,9 @@ typedef struct {
 
 //! Diversion rules for the fields of ::router_diversion_t
 enum router_diversion_rule_t {
-    diversion_normal,           //!< Send on default route
-    diversion_monitor,          //!< Divert to local monitor
-    diversion_destroy           //!< Destroy default-routed packets
+    ROUTER_DIVERSION_NORMAL,    //!< Send on default route
+    ROUTER_DIVERSION_MONITOR,   //!< Divert to local monitor
+    ROUTER_DIVERSION_DESTROY    //!< Destroy default-routed packets
 };
 
 //! Fixed route packet routing control
@@ -868,7 +882,7 @@ typedef struct {
 } sdram_chip_t;
 
 //! Maximum register IDs
-enum {
+enum sdram_register_maxima {
     SDRAM_QOS_MAX = 15,         //!< Maximum memory QoS register
     SDRAM_CHIP_MAX = 3          //!< Maximum memory chip configuration register
 };
@@ -1037,10 +1051,11 @@ typedef struct {
 
 //! System controller general chip I/O pin access
 typedef union {
+    //! Control over I/O pins used for non-GPIO purposes
     struct DOXYNAME(io_bits) {
         uint : 16;
-        uint ethernet_receive : 4;  //!< MII RxD port
-        uint ethernet_transmit : 4; //!< MII TxD port
+        uint ethernet_receive : 4;  //!< Ethernet MII RxD port
+        uint ethernet_transmit : 4; //!< Ethernet MII TxD port
         uint jtag : 4;          //!< JTAG interface
         uint : 1;
         uint sdram : 3;         //!< On-package SDRAM control
@@ -1178,7 +1193,7 @@ typedef struct {
 } system_controller_t;
 
 //! System controller magic numbers
-enum {
+enum sc_magic {
     //! Magic number for enabling writing to critical fields
     SYSTEM_CONTROLLER_MAGIC_NUMBER = 0x5ec
 };

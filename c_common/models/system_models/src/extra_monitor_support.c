@@ -46,30 +46,15 @@
 // stuff to do with SARK DMA
 //-----------------------------------------------------------------------------
 
-//! \brief Use DMA bursts of 16 words (2<sup>16</sup>)
+//! \brief Use DMA bursts of 16 (2<sup>4</sup>) transfer units (double words)
 //!
 //! See [SpiNNaker Data Sheet][datasheet], Section 7.4, register r3
 //!
 //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
 #define DMA_BURST_SIZE 4
 
-//! \brief Use a DMA width of double words
-//!
-//! See [SpiNNaker Data Sheet][datasheet], Section 7.4, register r3
-//!
-//! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
-#define DMA_WIDTH 1
-
 //! the number of DMA buffers to build
 #define N_DMA_BUFFERS 2
-
-//! Flags for the type of DMA to request
-enum {
-    //! marker for doing a DMA read
-    DMA_READ = 0,
-    //! marker for doing DMA write (don't think this is used in here yet)
-    DMA_WRITE = 1
-};
 
 //-----------------------------------------------------------------------------
 // magic numbers for data speed up extractor
@@ -673,13 +658,19 @@ static inline void reinjection_disable_comms_interrupt(void) {
     };
 }
 
+//! \brief Whether the comms hardware can accept packet now.
+//! \return True if the router output stage is empty.
+static inline bool reinjection_can_send_now(void) {
+    return router_control->status.output_stage == ROUTER_OUTPUT_STAGE_EMPTY;
+}
+
 //! \brief the plugin callback for the timer
 static INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
     timer1_control->interrupt_clear = true;
 
     // check if router not blocked
-    if (router_control->status.output_stage == output_stage_empty) {
+    if (reinjection_can_send_now()) {
         // access packet queue with FIQ disabled,
         uint cpsr = cpu_fiq_disable();
 
@@ -732,7 +723,7 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
-    if (router_control->status.output_stage == output_stage_empty) {
+    if (reinjection_can_send_now()) {
         // access packet queue with FIQ disabled,
         uint cpsr = cpu_fiq_disable();
 
@@ -1455,9 +1446,9 @@ static inline void data_out_start_dma_read(
     dma_control->sdram_address = source;
     dma_control->tcm_address = destination;
     dma_control->description = (dma_description_t) {
-        .width = DMA_WIDTH,
+        .width = DMA_TRANSFER_DOUBLE_WORD,
         .burst = DMA_BURST_SIZE,
-        .direction = DMA_READ,
+        .direction = DMA_DIRECTION_READ,
         .length_words = n_words
     };
 }
