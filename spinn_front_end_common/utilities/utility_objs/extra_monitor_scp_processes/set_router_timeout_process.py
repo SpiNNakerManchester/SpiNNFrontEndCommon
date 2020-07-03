@@ -20,34 +20,56 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to set router wait1 timeouts. The wait1 timeout \
-        is the time from when a packet is received to when emergency routing \
-        becomes enabled. Note that SCAMP does _not_ enable emergency routing!
+    """ How to send messages to set router timeouts.
 
-    Note that timeouts are specified in a weird fixed point format.
-    See the SpiNNaker datasheet for details.
+    .. note::
+        SCAMP does _not_ enable emergency routing!
+
+    .. note::
+        Timeouts are specified in a weird floating point format.
+        See the SpiNNaker datasheet for details.
     """
 
-    def set_timeout(self, mantissa, exponent, core_subsets):
-        """
-        :param int mantissa:
-        :param int exponent:
+    def set_wait1_timeout(self, mantissa, exponent, core_subsets):
+        """ The wait1 timeout is the time from when a packet is received to\
+            when emergency routing becomes enabled.
+
+        :param int mantissa: Timeout mantissa
+        :param int exponent: Timeout exponent
         :param ~spinn_machine.CoreSubsets core_subsets:
+            Where the extra monitors that manage the routers are located.
         """
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._set_timeout(
-                    core_subset, processor_id, mantissa, exponent)
+                    core_subset, processor_id, mantissa, exponent, 1)
 
-    def _set_timeout(self, core, processor_id, mantissa, exponent):
+    def set_wait2_timeout(self, mantissa, exponent, core_subsets):
+        """ The wait2 timeout is the time from when a packet has emergency\
+            routing enabled for it to when it is dropped.
+
+        :param int mantissa: Timeout mantissa
+        :param int exponent: Timeout exponent
+        :param ~spinn_machine.CoreSubsets core_subsets:
+            Where the extra monitors that manage the routers are located.
         """
+        for core_subset in core_subsets.core_subsets:
+            for processor_id in core_subset.processor_ids:
+                self._set_timeout(
+                    core_subset, processor_id, mantissa, exponent, 2)
+
+    def _set_timeout(self, core, processor_id, mantissa, exponent, wait):
+        """ Sets a timeout for a router controlled by an extra monitor on a\
+            core.
+
         :param ~spinn_machine.CoreSubset core:
         :param int processor_id:
         :param int mantissa:
         :param int exponent:
+        :param int wait:
         """
         self._send_request(SetRouterTimeoutMessage(
             core.x, core.y, processor_id,
-            timeout_mantissa=mantissa, timeout_exponent=exponent, wait=1))
+            timeout_mantissa=mantissa, timeout_exponent=exponent, wait=wait))
         self._finish()
         self.check_for_error()
