@@ -16,11 +16,14 @@
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
-        SetRouterEmergencyTimeoutMessage)
+        SetRouterTimeoutMessage)
 
 
 class SetRouterEmergencyTimeoutProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to set the router emergency timeouts.
+    """ How to send messages to set router wait2 timeouts. The wait2 timeout \
+        is the time from when a packet has emergency routing enabled for it \
+        to when it is dropped. Note that SCAMP does _not_ enable emergency \
+        routing!
 
     Note that timeouts are specified in a weird fixed point format, and that\
     the emergency message routing system is not normally enabled.
@@ -44,7 +47,8 @@ class SetRouterEmergencyTimeoutProcess(AbstractMultiConnectionProcess):
         :param int mantissa:
         :param int exponent:
         """
-        self._send_request(SetRouterEmergencyTimeoutMessage(
-            core.x, core.y, processor_id, mantissa, exponent))
+        self._send_request(SetRouterTimeoutMessage(
+            core.x, core.y, processor_id,
+            timeout_mantissa=mantissa, timeout_exponent=exponent, wait=2))
         self._finish()
         self.check_for_error()

@@ -20,7 +20,9 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to set the router timeouts.
+    """ How to send messages to set router wait1 timeouts. The wait1 timeout \
+        is the time from when a packet is received to when emergency routing \
+        becomes enabled. Note that SCAMP does _not_ enable emergency routing!
 
     Note that timeouts are specified in a weird fixed point format.
     See the SpiNNaker datasheet for details.
@@ -37,14 +39,15 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
                 self._set_timeout(
                     core_subset, processor_id, mantissa, exponent)
 
-    def _set_timeout(self, core_subset, processor_id, mantissa, exponent):
+    def _set_timeout(self, core, processor_id, mantissa, exponent):
         """
-        :param ~spinn_machine.CoreSubset core_subset:
+        :param ~spinn_machine.CoreSubset core:
         :param int processor_id:
         :param int mantissa:
         :param int exponent:
         """
         self._send_request(SetRouterTimeoutMessage(
-            core_subset.x, core_subset.y, processor_id, mantissa, exponent))
+            core.x, core.y, processor_id,
+            timeout_mantissa=mantissa, timeout_exponent=exponent, wait=1))
         self._finish()
         self.check_for_error()
