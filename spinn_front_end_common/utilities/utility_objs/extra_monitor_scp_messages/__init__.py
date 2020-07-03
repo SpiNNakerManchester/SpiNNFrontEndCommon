@@ -21,9 +21,8 @@ from .load_system_mc_routes_message import LoadSystemMCRoutesMessage
 from .reset_counters_message import ResetCountersMessage
 from .set_reinjection_packet_types_message import (
     SetReinjectionPacketTypesMessage)
-from .set_router_emergency_timeout_message import (
-    SetRouterEmergencyTimeoutMessage)
-from .set_router_timeout_message import SetRouterTimeoutMessage
+from .set_router_wait1_timeout_message import SetRouterTimeoutMessage
+from .set_router_wait2_timeout_message import SetRouterEmergencyTimeoutMessage
 
 __all__ = [
     "GetReinjectionStatusMessage", "GetReinjectionStatusMessageResponse",
