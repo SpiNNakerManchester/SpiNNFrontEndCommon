@@ -36,7 +36,7 @@ class BufferExtractor(object):
             machine_graph, placements)
         if not n_regions_to_read:
             logger.info("No recorded data to extract")
-            return
+            return 0
 
         # Read back the regions
         progress = ProgressBar(
