@@ -88,6 +88,15 @@
 //! \name 5. Vectored Interrupt Controller
 //! \brief The VIC is used to enable and disable interrupts from various
 //!     sources, and to wake the processor from sleep mode when required.
+//! \details
+//!     Each processor node on an SpiNNaker chip has a vectored interrupt
+//!     controller (VIC) that is used to enable and disable interrupts from
+//!     various sources, and to wake the processor from sleep mode when
+//!     required. The interrupt controller provides centralised management of
+//!     IRQ and FIQ sources, and offers an efficient indication of the active
+//!     sources for IRQ vectoring purposes.
+//!
+//!     The VIC is the ARM PL190, described in ARM DDI 0181E.
 //! \{
 
 //! The type of an interrupt handler
@@ -142,21 +151,21 @@ typedef union {
         uint gpio8 : 1;         //!< Signal on GPIO[8]
         uint gpio9 : 1;         //!< Signal on GPIO[9]
     };
-    uint value;
+    uint value;                 //!< Whole mask as integer
 } vic_mask_t;
 
 //! VIC registers
 typedef struct {
-    const vic_mask_t irq_status;    //!< IRQ status register
-    const vic_mask_t fiq_status;    //!< FIQ status register
-    const vic_mask_t raw_status;    //!< raw interrupt status register
-    vic_mask_t int_select;          //!< interrupt select register
-    vic_mask_t int_enable;          //!< interrupt enable set register
-    vic_mask_t int_disable;         //!< interrupt enable clear register
-    vic_mask_t soft_int_enable;     //!< soft interrupt set register
-    vic_mask_t soft_int_disable;    //!< soft interrupt clear register
-    bool protection;                //!< protection register
-    const uint _padding[3];
+    const vic_mask_t irq_status; //!< IRQ status register
+    const vic_mask_t fiq_status; //!< FIQ status register
+    const vic_mask_t raw_status; //!< raw interrupt status register
+    vic_mask_t int_select;      //!< interrupt select register
+    vic_mask_t int_enable;      //!< interrupt enable set register
+    vic_mask_t int_disable;     //!< interrupt enable clear register
+    vic_mask_t soft_int_enable; //!< soft interrupt set register
+    vic_mask_t soft_int_disable; //!< soft interrupt clear register
+    bool protection;            //!< protection register
+    const uint _padding[3];     // padding
     //! current vector address register
     vic_interrupt_handler_t vector_address;
     //! default vector address register
@@ -165,9 +174,9 @@ typedef struct {
 
 //! VIC individual vector control
 typedef struct {
-    uint source : 5;                //!< interrupt source
-    uint enable : 1;                //!< interrupt enable
-    uint : 26;
+    uint source : 5;            //!< interrupt source
+    uint enable : 1;            //!< interrupt enable
+    uint : 26;                  // padding
 } vic_vector_control_t;
 
 ASSERT_WORD_SIZED(vic_mask_t);
@@ -189,6 +198,12 @@ static volatile vic_vector_control_t *const vic_interrupt_control =
 // ---------------------------------------------------------------------
 //! \name 6. Counter/Timer
 //! \brief Every core has a pair of counters/timers.
+//! \details
+//!     The counter/timers use the standard AMBA peripheral device described
+//!     on page 4-24 of the AMBA Design Kit Technical Reference Manual ARM DDI
+//!     0243A, February 2003. The peripheral has been modified only in that
+//!     the APB interface of the original has been replaced by an AHB
+//!     interface for direct connection to the ARM968 AHB bus.
 //! \{
 
 //! Timer control register
@@ -196,11 +211,11 @@ typedef struct {
     uint one_shot : 1;          //!< 0 = wrapping mode, 1 = one shot
     uint size : 1;              //!< 0 = 16 bit, 1 = 32 bit
     uint pre_divide : 2;        //!< divide input clock (see ::timer_pre_divide)
-    uint : 1;
+    uint : 1;                   // padding
     uint interrupt_enable : 1;  //!< enable interrupt (1 = enabled)
     uint periodic_mode : 1;     //!< 0 = free-running; 1 = periodic
     uint enable : 1;            //!< enable counter/timer (1 = enabled)
-    uint : 24;
+    uint : 24;                  // padding
 } timer_control_t;
 
 //! Values for ::timer_control_t::pre_divide
@@ -213,7 +228,7 @@ enum timer_pre_divide {
 //! Timer interrupt status flag
 typedef struct {
     uint status : 1;            //!< The flag bit
-    uint : 31;
+    uint : 31;                  // padding
 } timer_interrupt_status_t;
 
 //! Timer controller registers
@@ -227,7 +242,7 @@ typedef struct {
     //! Timer masked interrupt status
     const timer_interrupt_status_t masked_interrupt_status;
     uint background_load_value; //!< Background load value for Timer
-    uint _dummy;
+    uint _dummy;                // padding
 } timer_controller_t;
 
 ASSERT_WORD_SIZED(timer_control_t);
@@ -260,23 +275,23 @@ static volatile timer_controller_t *const timer2_control =
 
 //! DMA descriptor
 typedef struct {
-    uint _zeroes : 2;       //!< Must be zero
-    uint length_words : 15; //!< length of the DMA transfer, in words
-    uint : 2;
+    uint _zeroes : 2;           //!< Must be zero
+    uint length_words : 15;     //!< length of the DMA transfer, in words
+    uint : 2;                   // padding
     //! read from or write to system bus, see ::dma_direction_t
     uint direction : 1;
-    uint crc : 1;           //!< check (read) or generate (write) CRC
+    uint crc : 1;               //!< check (read) or generate (write) CRC
     //! burst length = 2<sup>B</sup>&times;Width, B = 0..4 (i.e max 16)
     uint burst : 3;
-    uint width : 1;         //!< transfer width, see ::dma_transfer_unit_t
-    uint privilege : 1;     //!< DMA transfer mode is user (0) or privileged (1)
-    uint transfer_id : 6;   //!< software defined transfer ID
+    uint width : 1;             //!< transfer width, see ::dma_transfer_unit_t
+    uint privilege : 1;         //!< DMA transfer mode is user (0) or privileged (1)
+    uint transfer_id : 6;       //!< software defined transfer ID
 } dma_description_t;
 
 //! DMA transfer direction, see ::dma_description_t::direction
 enum dma_direction_t {
-    DMA_DIRECTION_READ,     //!< read from system bus (SDRAM)
-    DMA_DIRECTION_WRITE     //!< write to system bus (SDRAM)
+    DMA_DIRECTION_READ,         //!< read from system bus (SDRAM)
+    DMA_DIRECTION_WRITE         //!< write to system bus (SDRAM)
 };
 
 //! DMA burst width, see ::dma_description_t::width
@@ -287,44 +302,44 @@ enum dma_transfer_unit_t {
 
 //! DMA control register
 typedef struct {
-    uint uncommit : 1;      //!< setting this bit uncommits a queued transfer
-    uint abort : 1;         //!< end current transfer and discard data
-    uint restart : 1;       //!< resume transfer (clears DMA errors)
-    uint clear_done_int : 1;            //!< clear Done interrupt request
-    uint clear_timeout_int : 1;         //!< clear Timeout interrupt request
+    uint uncommit : 1;          //!< setting this bit uncommits a queued transfer
+    uint abort : 1;             //!< end current transfer and discard data
+    uint restart : 1;           //!< resume transfer (clears DMA errors)
+    uint clear_done_int : 1;    //!< clear Done interrupt request
+    uint clear_timeout_int : 1; //!< clear Timeout interrupt request
     uint clear_write_buffer_int : 1;    //!< clear Write Buffer interrupt request
-    uint : 26;
+    uint : 26;                  // padding
 } dma_control_t;
 
 //! DMA status register
 typedef struct {
-    uint transferring : 1;  //!< DMA transfer in progress
-    uint paused : 1;        //!< DMA transfer is PAUSED
-    uint queued : 1;        //!< DMA transfer is queued - registers are full
+    uint transferring : 1;      //!< DMA transfer in progress
+    uint paused : 1;            //!< DMA transfer is PAUSED
+    uint queued : 1;            //!< DMA transfer is queued - registers are full
     uint write_buffer_full : 1;     //!< write buffer is full
     uint write_buffer_active : 1;   //!< write buffer is not empty
-    uint : 5;
-    uint transfer_done : 1; //!< a DMA transfer has completed without error
+    uint : 5;                   // padding
+    uint transfer_done : 1;     //!< a DMA transfer has completed without error
     //! 2nd DMA transfer has completed without error
     uint transfer2_done : 1;
-    uint timeout : 1;       //!< a burst transfer has not completed in time
-    uint crc_error : 1;     //!< the calculated and received CRCs differ
-    uint tcm_error : 1;     //!< the TCM AHB interface has signalled an error
+    uint timeout : 1;           //!< a burst transfer has not completed in time
+    uint crc_error : 1;         //!< the calculated and received CRCs differ
+    uint tcm_error : 1;         //!< the TCM AHB interface has signalled an error
     //! the AXI interface (SDRAM) has signalled a transfer error
     uint axi_error : 1;
     //! the user has aborted the transfer (via ::dma_control_t::abort)
     uint user_abort : 1;
-    uint soft_reset : 1;    //!< a soft reset of the DMA controller has happened
-    uint : 2;               // Not allocated
+    uint soft_reset : 1;        //!< a soft reset of the DMA controller has happened
+    uint : 2;                   // not allocated
     uint write_buffer_error : 1;    //!< a buffered write transfer has failed
-    uint : 3;
-    uint processor_id : 8;  //!< hardwired processor ID identifies CPU on chip
+    uint : 3;                   // padding
+    uint processor_id : 8;      //!< hardwired processor ID identifies CPU on chip
 } dma_status_t;
 
 //! DMA global control register
 typedef struct {
     uint bridge_buffer_enable : 1;  //!< enable Bridge write buffer
-    uint : 9;
+    uint : 9;                       // padding
     //! interrupt if ::dma_status_t::transfer_done set
     uint transfer_done_interrupt : 1;
     //! interrupt if ::dma_status_t::transfer2_done set
@@ -335,49 +350,49 @@ typedef struct {
     uint axi_error_interrupt : 1;   //!< interrupt if ::dma_status_t::axi_error set
     uint user_abort_interrupt : 1;  //!< interrupt if ::dma_status_t::user_abort set
     uint soft_reset_interrupt : 1;  //!< interrupt if ::dma_status_t::soft_reset set
-    uint : 2;                       // Not allocated
+    uint : 2;                       // not allocated
     //! interrupt if ::dma_status_t::write_buffer_error set
     uint write_buffer_error_interrupt : 1;
-    uint : 10;
-    uint timer : 1;         //!< system-wide slow timer status and clear
+    uint : 10;                  // padding
+    uint timer : 1;             //!< system-wide slow timer status and clear
 } dma_global_control_t;
 
 //! DMA timeout register
 typedef struct {
-    uint _zeroes : 5;       //!< Must be zero
-    uint value : 5;         //!< The timeout
-    uint : 22;
+    uint _zeroes : 5;           //!< Must be zero
+    uint value : 5;             //!< The timeout
+    uint : 22;                  // padding
 } dma_timeout_t;
 
 //! DMA statistics control register
 typedef struct {
-    uint enable : 1;        //!< Enable collecting DMA statistics
-    uint clear : 1;         //!< Clear the statistics registers (if 1)
-    uint : 30;
+    uint enable : 1;            //!< Enable collecting DMA statistics
+    uint clear : 1;             //!< Clear the statistics registers (if 1)
+    uint : 30;                  // padding
 } dma_stats_control_t;
 
 //! DMA controller registers
 typedef struct {
-    const uint _unused1[1];
-    void *sdram_address;            //!< DMA address on the system interface
-    void *tcm_address;              //!< DMA address on the TCM interface
+    const uint _unused1[1];     // unused
+    void *sdram_address;        //!< DMA address on the system interface
+    void *tcm_address;          //!< DMA address on the TCM interface
     //! DMA transfer descriptor; note that setting this commits a DMA
     dma_description_t description;
-    dma_control_t control;          //!< Control DMA transfer
-    const dma_status_t status;      //!< Status of DMA and other transfers
+    dma_control_t control;      //!< Control DMA transfer
+    const dma_status_t status;  //!< Status of DMA and other transfers
     dma_global_control_t global_control; //!< Control of the DMA device
-    const uint crcc;                //!< CRC value calculated by CRC block
-    const uint crcr;                //!< CRC value in received block
-    dma_timeout_t timeout;          //!< Timeout value
+    const uint crcc;            //!< CRC value calculated by CRC block
+    const uint crcr;            //!< CRC value in received block
+    dma_timeout_t timeout;      //!< Timeout value
     dma_stats_control_t statistics_control; //!< Statistics counters control
-    const uint _unused2[5];
-    const uint statistics[8];       //!< Statistics counters
-    const uint _unused3[41];
+    const uint _unused2[5];     // unused
+    const uint statistics[8];   //!< Statistics counters
+    const uint _unused3[41];    // unused
     const void *current_sdram_address;      //!< Active system address
     const void *current_tcm_address;        //!< Active TCM address
     const dma_description_t current_description; //!< Active transfer description
-    const uint _unused4[29];
-    uint crc_polynomial[32];        //!< CRC polynomial matrix
+    const uint _unused4[29];    // unused
+    uint crc_polynomial[32];    //!< CRC polynomial matrix
 } dma_t;
 
 ASSERT_WORD_SIZED(dma_description_t);
@@ -406,33 +421,33 @@ typedef union {
         uchar parity : 1;       //!< Packet parity
         uchar payload : 1;      //!< Payload-word-present flag
         uchar timestamp : 2;    //!< Timestamp (not used for NN packets)
-        uchar : 2;
+        uchar : 2;              // padding
         uchar type : 2;         //!< Should be one of ::spinnaker_packet_type_t
     };
     //! Multicast packet only fields
     struct DOXYNAME(mc) {
-        uchar : 4;
+        uchar : 4;              // padding
         uchar emergency_routing : 2; //!< Emergency routing control
-        uchar : 2;
+        uchar : 2;              // padding
     } mc;
     //! Peer-to-peer packet only fields
     struct DOXYNAME(p2p) {
-        uchar : 4;
+        uchar : 4;              // padding
         uchar seq_code : 2;     //!< Sequence code
-        uchar : 2;
+        uchar : 2;              // padding
     } p2p;
     //! Nearest-neighbour packet only fields
     struct DOXYNAME(nn) {
-        uchar : 2;
+        uchar : 2;              // padding
         uchar route : 3;        //!< Routing information
         uchar mem_or_normal : 1; //!< Type indicator
-        uchar : 2;
+        uchar : 2;              // padding
     } nn;
     //! Fixed-route packet only fields
     struct DOXYNAME(fr) {
-        uchar : 4;
+        uchar : 4;              // padding
         uchar emergency_routing : 2; //!< Emergency routing control
-        uchar : 2;
+        uchar : 2;              // padding
     } fr;
     uchar value;
 } spinnaker_packet_control_byte_t;
@@ -447,9 +462,9 @@ enum spinnaker_packet_type_t {
 
 //! Controls packet transmission
 typedef struct {
-    uint : 16;
+    uint : 16;                  // padding
     uint control_byte : 8;      //!< control byte of next sent packet
-    uint : 4;
+    uint : 4;                   // padding
     //! Tx buffer not full, so it is safe to send a packet
     uint not_full : 1;
     uint overrun : 1;           //!< Tx buffer overrun (sticky)
@@ -463,10 +478,10 @@ typedef struct {
     uint point_to_point : 1;    //!< error-free point-to-point packet received
     uint nearest_neighbour : 1; //!< error-free nearest-neighbour packet received
     uint fixed_route : 1;       //!< error-free fixed-route packet received
-    uint : 12;
+    uint : 12;                  // padding
     uint control_byte : 8;      //!< Control byte of last Rx packet
     uint route : 3;             //!< Rx route field from packet
-    uint : 1;
+    uint : 1;                   // padding
     uint error_free : 1;        //!< Rx packet received without error
     uint framing_error : 1;     //!< Rx packet framing error (sticky)
     uint parity_error : 1;      //!< Rx packet parity error (sticky)
@@ -476,9 +491,9 @@ typedef struct {
 //! P2P source address
 typedef struct {
     uint p2p_source_id : 16;    //!< 16-bit chip source ID for P2P packets
-    uint : 8;
+    uint : 8;                   // padding
     uint route : 3;             //!< Set 'fake' route in packet
-    uint : 5;
+    uint : 5;                   // padding
 } comms_source_addr_t;
 
 //! SpiNNaker communications controller registers
@@ -538,7 +553,7 @@ typedef struct {
     uint count_parity_errors : 1;       //!< enable count of packet parity errors
     uint time_phase : 2;                //!< time phase (c.f. packet time stamps)
     uint monitor_processor : 5;         //!< Monitor Processor ID number
-    uint : 2;
+    uint : 2;                           // padding
     uint reinit_wait_counters : 1;      //!< re-initialise wait counters
     //! `wait1`; wait time before emergency routing
     uint begin_emergency_wait_time : 8;
@@ -551,10 +566,10 @@ typedef struct {
     //! diagnostic counter interrupt active
     uint interrupt_active_for_diagnostic_counter : 16;
     uint busy : 1;              //!< busy - active packet(s) in Router pipeline
-    uint : 7;
+    uint : 7;                   // padding
     //! \brief Router output stage status (see ::router_output_stage)
     uint output_stage : 2;
-    uint : 3;
+    uint : 3;                   // padding
     uint interrupt_active_dump : 1;     //!< dump packet interrupt active
     uint interrupt_active_error : 1;    //!< error packet interrupt active
     uint interrupt_active : 1;  //!< combined Router interrupt request
@@ -572,22 +587,22 @@ enum router_output_stage {
 typedef union {
     //! Fields in ::router_packet_header_t
     struct DOXYNAME(flags) {
-        uint : 6;
+        uint : 6;               // padding
         uint time_phase : 2;    //!< time phase when packet received/dumped
-        uint : 8;
+        uint : 8;               // padding
         //! control byte; really a ::spinnaker_packet_control_byte_t
         uint control : 8;
         uint route : 3;         //!< Rx route field of packet
         uint time_phase_error : 1;  //!< packet time stamp error (error only)
         uint framing_error : 1; //!< packet framing error (error only)
         uint parity_error : 1;  //!< packet parity error (error only)
-        uint : 2;
+        uint : 2;               // padding
     };
     //! Critical fields in ::router_packet_header_t::flags::control
     struct DOXYNAME(control_field_bits) {
-        uint : 17;
+        uint : 17;              // padding
         uint payload : 1;       //!< payload-present field from control byte
-        uint : 4;
+        uint : 4;               // padding
         uint type : 2;          //!< packet-type field from control byte
     };
     uint word;                  //!< as a whole word
@@ -596,7 +611,7 @@ typedef union {
 //! Router error status
 typedef struct {
     uint error_count : 16;      //!< 16-bit saturating error count
-    uint : 11;
+    uint : 11;                  // padding
     uint time_phase_error : 1;  //!< packet time stamp error (sticky)
     uint framing_error : 1;     //!< packet framing error (sticky)
     uint parity_error : 1;      //!< packet parity error (sticky)
@@ -608,14 +623,14 @@ typedef struct {
 typedef struct {
     uint link : 6;              //!< Tx link transmit error caused packet dump
     uint processor : 18;        //!< Fascicle Processor link error caused dump
-    uint : 8;
+    uint : 8;                   // padding
 } router_dump_outputs_t;
 
 //! Router dump status
 typedef struct {
     uint link : 6;              //!< Tx link error caused dump (sticky)
     uint processor : 18;        //!< Fascicle Proc link error caused dump (sticky)
-    uint : 6;
+    uint : 6;                   // padding
     uint overflow : 1;          //!< more than one packet dumped
     uint dumped : 1;            //!< packet dumped
 } router_dump_status_t;
@@ -632,12 +647,12 @@ typedef struct {
     //! enable emergency router active cycle counter
     uint enable_emergency_active_count : 1;
     uint enable_histogram : 1;      //!< enable histogram
-    uint : 13;
+    uint : 13;                      // padding
     uint reset_cycle_count : 1;     //!< reset cycle counter
     //! reset emergency router active cycle counter
     uint reset_emergency_active_count : 1;
     uint reset_histogram : 1;       //!< reset histogram
-    uint : 13;
+    uint : 13;                      // padding
 } router_timing_counter_ctrl_t;
 
 //! Router diversion rules, used to handle default-routed packets
@@ -648,7 +663,7 @@ typedef struct {
     uint L3 : 2;                //!< Diversion rule for link 3
     uint L4 : 2;                //!< Diversion rule for link 4
     uint L5 : 2;                //!< Diversion rule for link 5
-    uint : 20;
+    uint : 20;                  // padding
 } router_diversion_t;
 
 //! Diversion rules for the fields of ::router_diversion_t
@@ -660,8 +675,8 @@ enum router_diversion_rule_t {
 
 //! Fixed route packet routing control
 typedef struct {
-    uint fixed_route_vector : 24; //!< Fixed-route routing vector
-    uint : 2;
+    uint fixed_route_vector : 24;   //!< Fixed-route routing vector
+    uint : 2;                       // padding
     //! Nearest-neighbour broadcast link vector
     uint nearest_neighbour_broadcast : 6;
 } router_fixed_route_routing_t;
@@ -709,12 +724,12 @@ typedef struct {
     uint type : 4;                  //!< packet type: fr, nn, p2p, mc
     uint emergency_routing : 4;     //!< Emergency Routing field = 3, 2, 1 or 0
     uint emergency_routing_mode : 1;    //!< Emergency Routing mode
-    uint : 1;
+    uint : 1;                       // padding
     uint pattern_default : 2;       //!< default [x1]/non-default [1x] routed packets
     uint pattern_payload : 2;       //!< packets with [x1]/without [1x] payload
     uint pattern_local : 2;         //!< local [x1]/non-local[1x] packet source
     uint pattern_destination : 9;   //!< packet dest (Tx link[5:0], MP, local ¬MP, dump)
-    uint : 4;
+    uint : 4;                       // padding
     uint counter_event_occurred : 1;    //!< counter event has occurred (sticky)
     uint enable_counter_event_interrupt : 1; //!< enable interrupt on counter event
     uint counter_event_interrupt_active : 1; //!< counter interrupt active: I = E AND C
@@ -769,7 +784,7 @@ typedef struct {
     uint chips : 2;             //!< Number of different chip selects (1, 2, 3, 4)
     uint banks : 1;             //!< Fixed at 1’b01 = 4 banks on a chip
     uint monitors : 2;          //!< Number of exclusive access monitors (0, 1, 2, 4)
-    uint : 20;
+    uint : 20;                  // padding
 } sdram_status_t;
 
 //! Memory controller command
@@ -793,11 +808,11 @@ enum sdram_command {
 //!     PL340.
 typedef struct {
     uint address : 14;          //!< address passed to memory device
-    uint : 2;
+    uint : 2;                   // padding
     uint bank : 2;              //!< bank passed to memory device
     uint cmd : 2;               //!< command passed to memory device
     uint chip : 2;              //!< chip number
-    uint : 10;
+    uint : 10;                  // padding
 } sdram_direct_command_t;
 
 //! \brief Memory direct commands, for ::sdram_direct_command_t::cmd
@@ -820,20 +835,20 @@ typedef struct {
     uint burst : 3;             //!< burst length (1, 2, 4, 8, 16)
     uint qos : 3;               //!< selects the 4-bit QoS field from the AXI ARID
     uint active : 2;            //!< active chips: number for refresh generation
-    uint : 9;
+    uint : 9;                   // padding
 } sdram_ram_config_t;
 
 //! Memory refresh period
 typedef struct {
     uint period : 15;           //!< memory refresh period in memory clock cycles
-    uint : 17;
+    uint : 17;                  // padding
 } sdram_refresh_t;
 
 //! Memory CAS latency
 typedef struct {
     uint half_cycle : 1;        //!< CAS half cycle - must be set to 1’b0
     uint cas_lat : 3;           //!< CAS latency in memory clock cycles
-    uint : 28;
+    uint : 28;                  // padding
 } sdram_cas_latency_t;
 
 //! \brief Memory timimg configuration
@@ -870,7 +885,7 @@ typedef struct {
     uint enable : 1;            //!< QoS enable
     uint minimum : 1;           //!< minimum QoS
     uint maximum : 8;           //!< maximum QoS
-    uint : 22;
+    uint : 22;                  // padding
 } sdram_qos_t;
 
 //! Memory chip configuration
@@ -878,7 +893,7 @@ typedef struct {
     uint mask : 8;              //!< address mask
     uint match : 8;             //!< address match
     uint orientation : 1;       //!< bank-rol-column/row-bank-column
-    uint : 15;
+    uint : 15;                  // padding
 } sdram_chip_t;
 
 //! Maximum register IDs
@@ -890,7 +905,7 @@ enum sdram_register_maxima {
 //! Memory delay-locked-loop (DLL) test and status inputs
 typedef struct {
     uint meter : 7;             //!< Current position of bar-code output
-    uint : 1;
+    uint : 1;                   // padding
     uint s0 : 1;                //!< Strobe 0 faster than Clock
     uint c0 : 1;                //!< Clock faster than strobe 0
     uint s1 : 1;                //!< Strobe 1 faster than Clock
@@ -902,11 +917,11 @@ typedef struct {
     uint decing : 1;            //!< Phase comparator is reducing delay
     uint incing : 1;            //!< Phase comparator is increasing delay
     uint locked : 1;            //!< Phase comparator is locked
-    uint : 1;
+    uint : 1;                   // padding
     uint R : 1;                 //!< 3-phase bar-code control output
     uint M : 1;                 //!< 3-phase bar-code control output
     uint L : 1;                 //!< 3-phase bar-code control output
-    uint : 9;
+    uint : 9;                   // padding
 } sdram_dll_status_t;
 
 //! Memory delay-locked-loop (DLL) test and control outputs
@@ -917,7 +932,7 @@ typedef struct {
     uint s3 : 2;                //!< Input select for delay line 3 {def, alt, 0, 1}
     uint s4 : 2;                //!< Input select for delay line 4 {def, alt, 0, 1}
     uint s5 : 2;                //!< Input select for delay line 5 {def, alt, 0, 1}
-    uint : 4;
+    uint : 4;                   // padding
     uint test_decing : 1;       //!< Force Decing (if ID = 1)
     uint test_incing : 1;       //!< Force Incing (if ID = 1)
     uint enable_force_inc_dec : 1; //!< Enable forcing of Incing and Decing
@@ -927,7 +942,7 @@ typedef struct {
     uint L : 1;                 //!< Force 3-phase bar-code control inputs
     uint enable_force_lmr : 1;  //!< Enable forcing of L, M, R
     uint enable : 1;            //!< Enable DLL (0 = reset DLL)
-    uint : 7;
+    uint : 7;                   // padding
 } sdram_dll_user_config0_t;
 
 //! Memory delay-locked-loop (DLL) fine-tune control
@@ -940,7 +955,7 @@ typedef union {
         uint tune_3 : 4;        //!< Fine tuning control on delay line 3
         uint tune_4 : 4;        //!< Fine tuning control on delay line 4
         uint tune_5 : 4;        //!< Fine tuning control on delay line 5
-        uint : 8;
+        uint : 8;               // padding
     };
     uint word;                  //!< Tuning control word
 } sdram_dll_user_config1_t;
@@ -984,13 +999,23 @@ static volatile sdram_dll_t *const sdram_dll_control =
 //! \brief The System Controller incorporates a number of functions for system
 //!     start-up, fault-tolerance testing (invoking, detecting and resetting
 //!     faults), general performance monitoring, etc.
+//! \details Features:
+//!
+//! * 'Arbiter' read-sensitive register bit to determine Monitor Processor ID
+//!   at start-up.
+//! * 32 test-and-set registers for general software use, e.g. to enforce
+//!   mutually exclusive access to critical data structures.
+//! * individual interrupt, reset and enable controls and 'processor OK'
+//!   status bits for each processor.
+//! * sundry parallel IO and test and control registers.
+//! * PLL and clock management registers.
 //! \note All processor IDs should be _physical_ processor IDs.
 //! \{
 
 //! \brief System controller processor select
 typedef struct {
     uint select : 18;           //!< Bit-map for selecting a processor
-    uint : 2;
+    uint : 2;                   // padding
     uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_magic_proc_map_t;
 
@@ -1004,14 +1029,14 @@ typedef struct {
     uint rx_links : 6;          //!< Rx link 0-5
     uint clock_gen : 1;         //!< System AHB & Clock Gen (pulse reset only)
     uint entire_chip : 1;       //!< Entire chip (pulse reset only)
-    uint : 2;
+    uint : 2;                   // padding
     uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_magic_subsystem_map_t;
 
 //! System controller last reset status
 typedef struct {
     uint reset_code : 3;        //! One of ::sc_reset_codes
-    uint : 29;
+    uint : 29;                  // padding
 } sc_reset_code_t;
 
 //! System controller chip reset reasons
@@ -1027,18 +1052,19 @@ enum sc_reset_codes {
 //! System controller monitor election control
 typedef struct {
     uint monitor_id : 5;        //!< Monitor processor identifier
-    uint : 3;
-    uint arbitrate_request : 1; //!< Write 1 to set MP arbitration bit (see r32-63)
-    uint : 7;
+    uint : 3;                   // padding
+    //! Write 1 to set MP arbitration bit (see ::system_controller_t::monitor_arbiter)
+    uint arbitrate_request : 1;
+    uint : 7;                   // padding
     uint reset_on_watchdog : 1; //!< Reset Monitor Processor on Watchdog interrupt
-    uint : 3;
+    uint : 3;                   // padding
     uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_monitor_id_t;
 
 //! System controller miscellaneous control
 typedef struct {
     uint boot_area_map : 1;     //!< map System ROM (0) or RAM (1) to Boot area
-    uint : 14;
+    uint : 14;                  // padding
     //! select on-chip (1) or off-chip (0) control of JTAG pins
     uint jtag_on_chip : 1;
     uint test : 1;              //!< read value on Test pin
@@ -1046,18 +1072,18 @@ typedef struct {
     uint clk32 : 1;             //!< read value on Clk32 pin
     uint jtag_tdo : 1;          //!< read value on JTAG_TDO pin
     uint jtag_rtck : 1;         //!< read value on JTAG_RTCK pin
-    uint : 11;
+    uint : 11;                  // padding
 } sc_misc_control_t;
 
 //! System controller general chip I/O pin access
 typedef union {
     //! Control over I/O pins used for non-GPIO purposes
     struct DOXYNAME(io_bits) {
-        uint : 16;
+        uint : 16;              // padding
         uint ethernet_receive : 4;  //!< Ethernet MII RxD port
         uint ethernet_transmit : 4; //!< Ethernet MII TxD port
         uint jtag : 4;          //!< JTAG interface
-        uint : 1;
+        uint : 1;               // padding
         uint sdram : 3;         //!< On-package SDRAM control
     };
     uint gpio;                  //!< GPIO pins
@@ -1066,14 +1092,14 @@ typedef union {
 //! System controller phase-locked-loop control
 typedef struct {
     uint input_multiplier : 6;  //!< input clock multiplier
-    uint : 2;
+    uint : 2;                   // padding
     uint output_divider : 6;    //!< output clock divider
-    uint : 2;
+    uint : 2;                   // padding
     uint freq_range : 2;        //!< frequency range (see ::sc_frequency_range)
     uint power_up : 1;          //!< Power UP
-    uint : 5;
+    uint : 5;                   // padding
     uint _test : 1;             //!< test (=0 for normal operation)
-    uint : 7;
+    uint : 7;                   // padding
 } sc_pll_control_t;
 
 //! Frequency range constants for ::sc_pll_control_t::freq_range
@@ -1089,23 +1115,23 @@ typedef struct {
     uint pa : 2;                //!< clock selector for A CPUs (1 2 4 7 8 11 13 14 16);
                                 //!< see ::sc_clock_source
     uint adiv : 2;              //!< divide CPU clock A by Adiv+1 (= 1-4)
-    uint : 1;
+    uint : 1;                   // padding
     uint pb : 2;                //!< clock selector for B CPUs (0 3 5 6 9 10 12 15 17);
                                 //!< see ::sc_clock_source
     uint bdiv : 2;              //!< divide CPU clock B by Bdiv+1 (= 1-4)
-    uint : 1;
+    uint : 1;                   // padding
     uint mem : 2;               //!< clock selector for SDRAM;
                                 //!< see ::sc_clock_source
     uint mdiv : 2;              //!< divide SDRAM clock by Mdiv+1 (= 1-4)
-    uint : 1;
+    uint : 1;                   // padding
     uint rtr : 2;               //!< clock selector for Router;
                                 //!< see ::sc_clock_source
     uint rdiv : 2;              //!< divide Router clock by Rdiv+1 (= 1-4)
-    uint : 1;
+    uint : 1;                   // padding
     uint sys : 2;               //!< clock selector for System AHB components;
                                 //!< see ::sc_clock_source
     uint sdiv : 2;              //!< divide System AHB clock by Sdiv+1 (= 1-4)
-    uint : 7;
+    uint : 7;                   // padding
     uint invert_b : 1;          //!< invert CPU clock B
 } sc_clock_mux_t;
 
@@ -1122,31 +1148,31 @@ enum sc_clock_source {
 //! System controller sleep status
 typedef struct {
     uint status : 18;           //!< ARM968 STANDBYWFI signal for each core
-    uint : 14;
+    uint : 14;                  // padding
 } sc_sleep_status_t;
 
 //! System controller temperature status/control
 typedef struct {
     uint temperature : 24;      //!< temperature sensor reading
     uint sample_finished : 1;   //!< temperature measurement finished
-    uint : 6;
+    uint : 6;                   // padding
     uint start : 1;             //!< start temperature measurement
 } sc_temperature_t;
 
 //! System controller mutex/interlock
 typedef struct {
-    uint : 31;
+    uint : 31;                  // padding
     uint bit : 1;               //!< The only relevant bit in the word
 } sc_mutex_bit_t;
 
 //! System controller router control
 typedef struct {
     uint rx_disable : 6;        //!< disables the corresponding link receiver
-    uint : 2;
+    uint : 2;                   // padding
     uint tx_disable : 6;        //!< disables the corresponding link transmitter
-    uint : 2;
+    uint : 2;                   // padding
     uint parity_control : 1;    //!< Router parity control
-    uint : 3;
+    uint : 3;                   // padding
     uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_link_disable_t;
 
@@ -1182,7 +1208,7 @@ typedef struct {
     sc_clock_mux_t clock_mux_control;   //!< Clock multiplexer controls
     const sc_sleep_status_t cpu_sleep;  //!< CPU sleep (awaiting interrupt) status
     sc_temperature_t temperature[3];    //!< Temperature sensor registers [2:0]
-    const uint _padding[3];
+    const uint _padding[3];     // padding
     //! Read sensitive semaphores to determine MP
     const sc_mutex_bit_t monitor_arbiter[32];
     //! Test & Set registers for general software use
@@ -1222,9 +1248,12 @@ static volatile system_controller_t *const system_control =
 //! \details Each SpiNNaker chip includes an Ethernet MII interface, although
 //!     only a few of the chips are expected to use this interface. These
 //!     chips will require an external PHY.
+//! \note
+//!     The implementation does not provide support for half-duplex operation
+//!     (as required by a CSMA/CD MAC algorithm), jumbo or VLAN frames.
 //! \{
 
-//! Ethernet general control
+//! Ethernet general command
 typedef struct {
     uint transmit : 1;              //!< Transmit system enable
     uint receive : 1;               //!< Receive system enable
@@ -1235,22 +1264,23 @@ typedef struct {
     uint receive_broadcast : 1;     //!< Receive broadcast packets enable
     uint receive_promiscuous : 1;   //!< Receive promiscuous packets enable
     uint receive_vlan : 1;          //!< Receive VLAN enable
-    uint reset_drop_counter : 1;    //!< Reset receive dropped frame count (in r1)
+    //! Reset receive dropped frame count (::ethernet_general_status_t::drop_counter)
+    uint reset_drop_counter : 1;
     uint hardware_byte_reorder_disable : 1; //!< Disable hardware byte reordering
-    uint : 21;
+    uint : 21;                      // padding
 } ethernet_general_command_t;
 
 //! Ethernet general status
 typedef struct {
-    uint transmit_active : 1;       //!< Transmit MII interface active
-    uint unread_counter : 6;        //!< Received unread frame count
-    uint : 9;
-    uint drop_counter : 16;         //!< Receive dropped frame count
+    uint transmit_active : 1;   //!< Transmit MII interface active
+    uint unread_counter : 6;    //!< Received unread frame count
+    uint : 9;                   // padding
+    uint drop_counter : 16;     //!< Receive dropped frame count
 } ethernet_general_status_t;
 
 //! Ethernet frame transmit length
 typedef struct {
-    uint tx_length : 11;            //!< Length of transmit frame (60 - 1514 bytes)
+    uint tx_length : 11;        //!< Length of transmit frame (60 - 1514 bytes)
 } ethernet_tx_length_t;
 
 //! Limits of ::ethernet_tx_length_t::tx_length
@@ -1261,35 +1291,35 @@ enum ethernet_tx_length_limits {
 
 //! Ethernet PHY (physical layer) control
 typedef struct {
-    uint reset : 1;                 //!< PHY reset (active low)
-    uint smi_input : 1;             //!< SMI data input
-    uint smi_output : 1;            //!< SMI data output
-    uint smi_out_enable : 1;        //!< SMI data output enable
-    uint smi_clock : 1;             //!< SMI clock (active rising)
-    uint irq_invert_disable : 1;    //!< PHY IRQn invert disable
-    uint : 26;
+    uint reset : 1;             //!< PHY reset (active low)
+    uint smi_input : 1;         //!< SMI data input
+    uint smi_output : 1;        //!< SMI data output
+    uint smi_out_enable : 1;    //!< SMI data output enable
+    uint smi_clock : 1;         //!< SMI clock (active rising)
+    uint irq_invert_disable : 1; //!< PHY IRQn invert disable
+    uint : 26;                  // padding
 } ethernet_phy_control_t;
 
 //! Ethernet interrupt clear register
 typedef struct {
     uint transmit : 1;          //!< Clear transmit interrupt request
-    uint : 3;
+    uint : 3;                   // padding
     uint receive : 1;           //!< Clear receive interrupt request
-    uint : 27;
+    uint : 27;                  // padding
 } ethernet_interrupt_clear_t;
 
 //! Ethernet receive data pointer
 typedef struct {
     uint ptr : 12;              //!< Receive frame buffer read pointer
     uint rollover : 1;          //!< Rollover bit - toggles on address wrap-around
-    uint : 19;
+    uint : 19;                  // padding
 } ethernet_receive_pointer_t;
 
 //! Ethernet receive descriptor pointer
 typedef struct {
     uint ptr : 6;               //!< Receive descriptor read pointer
     uint rollover : 1;          //!< Rollover bit - toggles on address wrap-around
-    uint : 25;
+    uint : 25;                  // padding
 } ethernet_receive_descriptor_pointer_t;
 
 //! Ethernet controller registers
@@ -1298,7 +1328,7 @@ typedef struct {
     const ethernet_general_status_t status; //!< General status
     ethernet_tx_length_t transmit_length;   //!< Transmit frame length
     uint transmit_command;      //!< Transmit command; any value commits transmit
-    uint receive_command;       //!< Recieve command; any value completes receive
+    uint receive_command;       //!< Receive command; any value completes receive
     uint64 mac_address;         //!< MAC address; low 48 bits only
     ethernet_phy_control_t phy_control;     //!< PHY control
     ethernet_interrupt_clear_t interrupt_clear; //!< Interrupt clear
@@ -1318,7 +1348,7 @@ typedef struct {
 //!     uses one field.
 typedef struct {
     uint length : 11;           //!< Received packet length
-    uint : 21; // ???
+    uint : 21;                  // ???
 } ethernet_receive_descriptor_t;
 
 ASSERT_WORD_SIZED(ethernet_general_command_t);
@@ -1358,13 +1388,13 @@ static volatile ethernet_controller_t *const ethernet_control =
 typedef struct {
     uint interrupt_enable : 1;  //!< Enable Watchdog counter and interrupt (1)
     uint reset_enable : 1;      //!< Enable the Watchdog reset output (1)
-    uint : 30;
+    uint : 30;                  // padding
 } watchdog_control_t;
 
 //! Watchdog timer status registers
 typedef struct {
     uint interrupted : 1;       //!< True if interrupt asserted
-    uint : 31;
+    uint : 31;                  // padding
 } watchdog_status_t;
 
 //! Watchdog timer lock register
