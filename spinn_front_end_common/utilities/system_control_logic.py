@@ -100,7 +100,7 @@ def run_system_application(
     if read_algorithm_iobuf or not succeeded:
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
-            suppress_progress=succeeded)
+            suppress_progress=False)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
             system_provenance_file_path=provenance_file_path)
