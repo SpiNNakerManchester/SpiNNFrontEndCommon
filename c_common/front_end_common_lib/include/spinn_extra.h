@@ -40,7 +40,7 @@
 #define DOXYNAME(x)     /* nothing */
 #endif
 
-#ifdef defined(__GNUC__) && __GNUC__ < 6
+#if defined(__GNUC__) && __GNUC__ < 6
 // This particular warning (included in -Wextra) is retarded wrong for client
 // code of this file. Only really a problem on Travis.
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -760,7 +760,7 @@ typedef enum {
 
 //! A packed word in the P2P routing table
 typedef union {
-    //! The individual routes making up a P2P table entry
+    //! The eight individual routes making up a P2P table entry
     struct DOXYNAME(routes) {
         router_p2p_route route1 : 3;    //!< First packed route
         router_p2p_route route2 : 3;    //!< Second packed route
@@ -770,7 +770,6 @@ typedef union {
         router_p2p_route route6 : 3;    //!< Sixth packed route
         router_p2p_route route7 : 3;    //!< Seventh packed route
         router_p2p_route route8 : 3;    //!< Eighth packed route
-        uint : 8;                       // padding
     };
     uint value;                         //!< Overall entry packed as number
 } router_p2p_table_entry_t;
