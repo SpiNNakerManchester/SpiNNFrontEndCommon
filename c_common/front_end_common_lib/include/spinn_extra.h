@@ -109,8 +109,7 @@ typedef union {
         uint watchdog : 1;      //!< Watchdog timer interrupt
         uint software : 1;      //!< Local software interrupt generation
         uint comm_rx : 1;       //!< Debug communications receiver interrupt
-        //! Debug communications transmitter interrupt
-        uint comm_tx : 1;
+        uint comm_tx : 1;       //!< Debug communications transmitter interrupt
         uint timer1 : 1;        //!< Counter/timer interrupt 1
         uint timer2 : 1;        //!< Counter/timer interrupt 2
         uint cc_rx_ready : 1;   //!< Comms controller packet received
@@ -316,7 +315,7 @@ typedef struct {
     uint transferring : 1;      //!< DMA transfer in progress
     uint paused : 1;            //!< DMA transfer is PAUSED
     uint queued : 1;            //!< DMA transfer is queued - registers are full
-    uint write_buffer_full : 1;     //!< write buffer is full
+    uint write_buffer_full : 1; //!< write buffer is full
     uint write_buffer_active : 1;   //!< write buffer is not empty
     uint : 5;                   // padding
     uint transfer_done : 1;     //!< a DMA transfer has completed without error
@@ -388,8 +387,8 @@ typedef struct {
     const uint _unused2[5];     // unused
     const uint statistics[8];   //!< Statistics counters
     const uint _unused3[41];    // unused
-    const void *current_sdram_address;      //!< Active system address
-    const void *current_tcm_address;        //!< Active TCM address
+    const void *current_sdram_address;  //!< Active system address
+    const void *current_tcm_address;    //!< Active TCM address
     const dma_description_t current_description; //!< Active transfer description
     const uint _unused4[29];    // unused
     uint crc_polynomial[32];    //!< CRC polynomial matrix
@@ -621,15 +620,15 @@ typedef struct {
 
 //! Router dump outputs
 typedef struct {
-    uint link : 6;              //!< Tx link transmit error caused packet dump
-    uint processor : 18;        //!< Fascicle Processor link error caused dump
+    uint link : NUM_LINKS;      //!< Tx link transmit error caused packet dump
+    uint processor : NUM_CPUS;  //!< Fascicle Processor link error caused dump
     uint : 8;                   // padding
 } router_dump_outputs_t;
 
 //! Router dump status
 typedef struct {
-    uint link : 6;              //!< Tx link error caused dump (sticky)
-    uint processor : 18;        //!< Fascicle Proc link error caused dump (sticky)
+    uint link : NUM_LINKS;      //!< Tx link error caused dump (sticky)
+    uint processor : NUM_CPUS;  //!< Fascicle Proc link error caused dump (sticky)
     uint : 6;                   // padding
     uint overflow : 1;          //!< more than one packet dumped
     uint dumped : 1;            //!< packet dumped
@@ -643,16 +642,16 @@ typedef struct {
 
 //! Router timing counter controls
 typedef struct {
-    uint enable_cycle_count : 1;    //!< enable cycle counter
+    uint enable_cycle_count : 1; //!< enable cycle counter
     //! enable emergency router active cycle counter
     uint enable_emergency_active_count : 1;
-    uint enable_histogram : 1;      //!< enable histogram
-    uint : 13;                      // padding
-    uint reset_cycle_count : 1;     //!< reset cycle counter
+    uint enable_histogram : 1;  //!< enable histogram
+    uint : 13;                  // padding
+    uint reset_cycle_count : 1; //!< reset cycle counter
     //! reset emergency router active cycle counter
     uint reset_emergency_active_count : 1;
-    uint reset_histogram : 1;       //!< reset histogram
-    uint : 13;                      // padding
+    uint reset_histogram : 1;   //!< reset histogram
+    uint : 13;                  // padding
 } router_timing_counter_ctrl_t;
 
 //! Router diversion rules, used to handle default-routed packets
@@ -673,12 +672,13 @@ enum router_diversion_rule_t {
     ROUTER_DIVERSION_DESTROY    //!< Destroy default-routed packets
 };
 
-//! Fixed route packet routing control
+//! Fixed route and nearest neighbour packet routing control
 typedef struct {
-    uint fixed_route_vector : 24;   //!< Fixed-route routing vector
+    uint fr_links : NUM_LINKS;      //!< The links to route FR packets along
+    uint fr_processors : NUM_CPUS;  //!< The _physical_ processors to route FR packets to
     uint : 2;                       // padding
     //! Nearest-neighbour broadcast link vector
-    uint nearest_neighbour_broadcast : 6;
+    uint nn_broadcast_links : NUM_LINKS;
 } router_fixed_route_routing_t;
 
 //! SpiNNaker router controller registers
@@ -735,6 +735,46 @@ typedef struct {
     uint counter_event_interrupt_active : 1; //!< counter interrupt active: I = E AND C
 } router_diagnostic_filter_t;
 
+//! SpiNNaker router multicast route
+typedef union {
+    //! Where to route a matching entry to
+    struct DOXYNAME(routes) {
+        uint links : NUM_LINKS;     //!< The links to route along
+        uint processors : NUM_CPUS; //!< The _physical_ processors to route to
+    };
+    uint value;                     //!< Overall entry packed as number
+} router_multicast_route_t;
+
+//! The possible values of a P2P route
+typedef enum {
+    ROUTER_P2P_ROUTE_E,             //!< Route east
+    ROUTER_P2P_ROUTE_NE,            //!< Route north-east
+    ROUTER_P2P_ROUTE_N,             //!< Route north
+    ROUTER_P2P_ROUTE_W,             //!< Route west
+    ROUTER_P2P_ROUTE_SW,            //!< Route south-west
+    ROUTER_P2P_ROUTE_S,             //!< Route south
+    ROUTER_P2P_ROUTE_DROP,          //!< Drop packet
+    ROUTER_P2P_ROUTE_MONITOR        //!< Send to monitor (as determined by
+                                    //!< ::router_control_t::monitor_processor)
+} router_p2p_route;
+
+//! A packed word in the P2P routing table
+typedef union {
+    //! The individual routes making up a P2P table entry
+    struct DOXYNAME(routes) {
+        router_p2p_route route1 : 3;    //!< First packed route
+        router_p2p_route route2 : 3;    //!< Second packed route
+        router_p2p_route route3 : 3;    //!< Third packed route
+        router_p2p_route route4 : 3;    //!< Fourth packed route
+        router_p2p_route route5 : 3;    //!< Fifth packed route
+        router_p2p_route route6 : 3;    //!< Sixth packed route
+        router_p2p_route route7 : 3;    //!< Seventh packed route
+        router_p2p_route route8 : 3;    //!< Eighth packed route
+        uint : 8;                       // padding
+    };
+    uint value;                         //!< Overall entry packed as number
+} router_p2p_table_entry_t;
+
 ASSERT_WORD_SIZED(router_control_t);
 ASSERT_WORD_SIZED(router_packet_header_t);
 ASSERT_WORD_SIZED(router_error_status_t);
@@ -745,6 +785,8 @@ ASSERT_WORD_SIZED(router_timing_counter_ctrl_t);
 ASSERT_WORD_SIZED(router_diversion_t);
 ASSERT_WORD_SIZED(router_fixed_route_routing_t);
 ASSERT_WORD_SIZED(router_diagnostic_filter_t);
+ASSERT_WORD_SIZED(router_multicast_route_t);
+ASSERT_WORD_SIZED(router_p2p_table_entry_t);
 
 //! Router controller registers
 static volatile router_t *const router_control = (router_t *) RTR_BASE;
@@ -754,6 +796,16 @@ static volatile router_diagnostic_filter_t *const router_diagnostic_filter =
 //! Router diagnostic counters
 static volatile uint *const router_diagnostic_counter =
         (uint *) (RTR_BASE + 0x300);
+//! Router multicast route table
+static volatile router_multicast_route_t *const router_multicast_table =
+        (router_multicast_route_t *) RTR_MCRAM_BASE;
+//! Router multicast key table (write only!)
+static volatile uint *const router_key_table = (uint *) RTR_MCKEY_BASE;
+//! Router multicast mask table (write only!)
+static volatile uint *const router_mask_table = (uint *) RTR_MCMASK_BASE;
+//! Router peer-to-peer route table
+static volatile router_p2p_table_entry_t *const router_p2p_route_table =
+        (router_p2p_table_entry_t *) RTR_P2P_BASE;
 
 //! \}
 
@@ -892,7 +944,7 @@ typedef struct {
 typedef struct {
     uint mask : 8;              //!< address mask
     uint match : 8;             //!< address match
-    uint orientation : 1;       //!< bank-rol-column/row-bank-column
+    uint orientation : 1;       //!< bank-row-column/row-bank-column
     uint : 15;                  // padding
 } sdram_chip_t;
 
@@ -1014,7 +1066,7 @@ static volatile sdram_dll_t *const sdram_dll_control =
 
 //! \brief System controller processor select
 typedef struct {
-    uint select : 18;           //!< Bit-map for selecting a processor
+    uint select : NUM_CPUS;     //!< Bit-map for selecting a processor
     uint : 2;                   // padding
     uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_magic_proc_map_t;
@@ -1025,8 +1077,8 @@ typedef struct {
     uint sdram : 1;             //!< PL340 SDRAM controller
     uint system_noc : 1;        //!< System NoC
     uint comms_noc : 1;         //!< Communications NoC
-    uint tx_links : 6;          //!< Tx link 0-5
-    uint rx_links : 6;          //!< Rx link 0-5
+    uint tx_links : NUM_LINKS;  //!< Tx link 0-5
+    uint rx_links : NUM_LINKS;  //!< Rx link 0-5
     uint clock_gen : 1;         //!< System AHB & Clock Gen (pulse reset only)
     uint entire_chip : 1;       //!< Entire chip (pulse reset only)
     uint : 2;                   // padding
@@ -1147,7 +1199,7 @@ enum sc_clock_source {
 
 //! System controller sleep status
 typedef struct {
-    uint status : 18;           //!< ARM968 STANDBYWFI signal for each core
+    uint status : NUM_CPUS;     //!< ARM968 STANDBYWFI signal for each core
     uint : 14;                  // padding
 } sc_sleep_status_t;
 
@@ -1165,16 +1217,20 @@ typedef struct {
     uint bit : 1;               //!< The only relevant bit in the word
 } sc_mutex_bit_t;
 
-//! System controller router control
+//! System controller link and router control
 typedef struct {
-    uint rx_disable : 6;        //!< disables the corresponding link receiver
+    uint rx_disable : NUM_LINKS; //!< disables the corresponding link receiver
     uint : 2;                   // padding
-    uint tx_disable : 6;        //!< disables the corresponding link transmitter
+    uint tx_disable : NUM_LINKS; //!< disables the corresponding link transmitter
     uint : 2;                   // padding
     uint parity_control : 1;    //!< Router parity control
     uint : 3;                   // padding
     uint security_code : 12;    //!< ::SYSTEM_CONTROLLER_MAGIC_NUMBER to enable write
 } sc_link_disable_t;
+
+#define _NUM_TEMPS              3
+#define _NUM_ARBITERS           32
+#define _NUM_LOCK_REGISTERS     32
 
 //! System controller registers
 typedef struct {
@@ -1207,14 +1263,15 @@ typedef struct {
     uint reset_flags;           //!< Reset flags register
     sc_clock_mux_t clock_mux_control;   //!< Clock multiplexer controls
     const sc_sleep_status_t cpu_sleep;  //!< CPU sleep (awaiting interrupt) status
-    sc_temperature_t temperature[3];    //!< Temperature sensor registers [2:0]
+    //! Temperature sensor registers [2:0]
+    sc_temperature_t temperature[_NUM_TEMPS];
     const uint _padding[3];     // padding
     //! Read sensitive semaphores to determine MP
-    const sc_mutex_bit_t monitor_arbiter[32];
+    const sc_mutex_bit_t monitor_arbiter[_NUM_ARBITERS];
     //! Test & Set registers for general software use
-    const sc_mutex_bit_t test_and_set[32];
+    const sc_mutex_bit_t test_and_set[_NUM_LOCK_REGISTERS];
     //! Test & Clear registers for general software use
-    const sc_mutex_bit_t test_and_clear[32];
+    const sc_mutex_bit_t test_and_clear[_NUM_LOCK_REGISTERS];
     sc_link_disable_t link_disable;     //!< Disables for Tx and Rx link interfaces
 } system_controller_t;
 
