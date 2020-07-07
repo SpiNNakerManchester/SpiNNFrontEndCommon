@@ -211,8 +211,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if n_buffer_times == 0:
                 logger.warning(
                     "Combination of send_buffer_times {} and slice {} results "
-                    "in a core with a ReverseIPTagMulticastSourceMachineVertex "
-                    "which does not spike", send_buffer_times, vertex_slice)
+                    "in a core with a ReverseIPTagMulticastSourceMachineVertex"
+                    " which does not spike", send_buffer_times, vertex_slice)
         if n_buffer_times == 0:
             self._send_buffer_times = None
             self._send_buffers = None
