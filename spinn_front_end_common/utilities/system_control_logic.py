@@ -84,7 +84,8 @@ def run_system_application(
     # Wait for the executable to finish
     try:
         transceiver.wait_for_cores_to_be_in_state(
-            check_targets.all_core_subsets, app_id, cpu_end_states)
+            check_targets.all_core_subsets, app_id, cpu_end_states,
+            suppress_progress=False)
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException):
         if handle_failure_function is not None:

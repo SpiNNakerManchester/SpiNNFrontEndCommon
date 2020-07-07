@@ -104,7 +104,7 @@ class MachineBitFieldRouterCompressor(object):
     BIT_FIELD_ADDRESSES_SDRAM_TAG = 2
 
     #
-    TIMES_CYCLED_ROUTING_TABLES = 3
+    TIMES_CYCLED_ROUTING_TABLES = 2
 
     #: the successful identifier
     SUCCESS = 0
@@ -150,6 +150,10 @@ class MachineBitFieldRouterCompressor(object):
     _ON_HOST_WARNING_MESSAGE = \
         "Will be executing compression for {} chips on the host, as they " \
         "failed to complete when running on chip"
+
+    _HOST_PROGRESS_TEXT = \
+        "on host compressing routing tables and merging in bitfields as " \
+        "appropriate"
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
@@ -225,6 +229,9 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, threshold_percentage)
 
+        # complete progress bar
+        progress_bar.end()
+
         # load and run binaries
         try:
             system_control_logic.run_system_application(
@@ -250,6 +257,10 @@ class MachineBitFieldRouterCompressor(object):
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
+            progress_bar = ProgressBar(
+                total_number_of_things_to_do=len(on_host_chips),
+                string_describing_what_being_progressed=
+                self._HOST_PROGRESS_TEXT)
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
@@ -288,9 +299,6 @@ class MachineBitFieldRouterCompressor(object):
                     transceiver.load_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)
-
-        # complete progress bar
-        progress_bar.end()
 
         return compressor_executable_targets, prov_items
 
@@ -462,12 +470,12 @@ class MachineBitFieldRouterCompressor(object):
         :rtype: list(tuple(int,int))
         """
         run_by_host = list()
-        for table in routing_tables.routing_tables:
+        for table in progress_bar.over(routing_tables, False):
             if not machine.get_chip_at(table.x, table.y).virtual:
                 try:
                     self._load_routing_table_data(
                         table, app_id, transceiver,
-                        routing_table_compressor_app_id, progress_bar, cores,
+                        routing_table_compressor_app_id, cores,
                         matrix_addresses_and_size[(table.x, table.y)])
 
                     comms_sdram = transceiver.malloc_sdram(
@@ -665,14 +673,12 @@ class MachineBitFieldRouterCompressor(object):
 
     def _load_routing_table_data(
             self, table, app_id, transceiver,
-            routing_table_compressor_app_id, progress_bar, cores,
-            matrix_addresses_and_size):
+            routing_table_compressor_app_id, cores, matrix_addresses_and_size):
         """ loads the routing table data
 
         :param AbsractMulticastRoutingTable table: the routing table to load
         :param int app_id: application app id
         :param ~.Transceiver transceiver: spinnman instance
-        :param ~.ProgressBar progress_bar: progress bar
         :param int routing_table_compressor_app_id: system app id
         :param ExecutableTargets cores:
             the cores that the compressor going to run on
@@ -705,9 +711,6 @@ class MachineBitFieldRouterCompressor(object):
         transceiver.write_memory(
             table.x, table.y, user1_address,
             self._ONE_WORDS.pack(base_address), self._USER_BYTES)
-
-        # update progress bar
-        progress_bar.update()
 
     def _build_routing_table_data(self, app_id, routing_table):
         """ builds routing data as needed for the compressor cores
