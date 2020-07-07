@@ -369,8 +369,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def resources_required(self):
         sim = globals_variables.get_simulator()
         sdram = self.get_sdram_usage(
-                self._send_buffer_times, self._is_recording,
-                sim.machine_time_step, self._receive_rate, self._n_keys)
+            self._send_buffer_times, self._is_recording,
+            sim.machine_time_step, self._receive_rate, self._n_keys)
 
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
