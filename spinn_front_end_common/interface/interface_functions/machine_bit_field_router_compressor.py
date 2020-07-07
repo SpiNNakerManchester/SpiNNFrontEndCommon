@@ -258,9 +258,7 @@ class MachineBitFieldRouterCompressor(object):
         if len(on_host_chips) != 0:
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
             progress_bar = ProgressBar(
-                total_number_of_things_to_do=len(on_host_chips),
-                string_describing_what_being_progressed=
-                self._HOST_PROGRESS_TEXT)
+                len(on_host_chips), self._HOST_PROGRESS_TEXT)
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
