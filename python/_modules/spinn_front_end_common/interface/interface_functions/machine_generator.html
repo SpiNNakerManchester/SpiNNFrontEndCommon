@@ -78,10 +78,17 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections</span> <span class="kn">import</span> <span class="n">SocketAddressWithChip</span>
+<span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">POWER_CYCLE_WAIT_TIME_IN_SECONDS</span>
 <span class="kn">from</span> <span class="nn">spinnman.transceiver</span> <span class="kn">import</span> <span class="n">create_transceiver_from_hostname</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">BMPConnectionData</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="MachineGenerator"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.MachineGenerator">[docs]</a><span class="k">class</span> <span class="nc">MachineGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -132,6 +139,23 @@
 <span class="sd">    :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">POWER_CYCLE_WARNING</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;When power-cycling a board, it is recommended that you wait for 30 &quot;</span>
+        <span class="s2">&quot;seconds before attempting a reboot. Therefore, the tools will now &quot;</span>
+        <span class="s2">&quot;wait for 30 seconds. If you wish to avoid this wait, please set &quot;</span>
+        <span class="s2">&quot;reset_machine_on_startup = False in the [Machine] section of the &quot;</span>
+        <span class="s2">&quot;relevant configuration (cfg) file.&quot;</span><span class="p">)</span>
+
+    <span class="n">POWER_CYCLE_FAILURE_WARNING</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;The end user requested the power-cycling of the board. But the &quot;</span>
+        <span class="s2">&quot;tools did not have the required BMP connection to facilitate a &quot;</span>
+        <span class="s2">&quot;power-cycling, and therefore will not do so. please set the &quot;</span>
+        <span class="s2">&quot;bmp_names accordingly in the [Machine] section of the relevant &quot;</span>
+        <span class="s2">&quot;configuration (cfg) file. Or use a machine assess process which &quot;</span>
+        <span class="s2">&quot;provides the BMP data (such as a spalloc system) or finally set &quot;</span>
+        <span class="s2">&quot;reset_machine_on_startup = False in the [Machine] section of the &quot;</span>
+        <span class="s2">&quot;relevant configuration (cfg) file to avoid this warning in future.&quot;</span><span class="p">)</span>
+
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
@@ -180,13 +204,19 @@
             <span class="n">default_report_directory</span><span class="o">=</span><span class="n">default_report_directory</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">reset_machine_on_start_up</span><span class="p">:</span>
-            <span class="n">txrx</span><span class="o">.</span><span class="n">power_off_machine</span><span class="p">()</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">power_off_machine</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">POWER_CYCLE_WARNING</span><span class="p">)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">POWER_CYCLE_WAIT_TIME_IN_SECONDS</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Power cycle wait complete&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">POWER_CYCLE_FAILURE_WARNING</span><span class="p">)</span>
 
         <span class="c1"># do auto boot if possible</span>
         <span class="k">if</span> <span class="n">board_version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="s2">&quot;Please set a machine version number in the configuration &quot;</span>
-                <span class="s2">&quot;file (spynnaker.cfg or pacman.cfg)&quot;</span><span class="p">)</span>
+                <span class="s2">&quot;Please set a machine version number in the &quot;</span>
+                <span class="s2">&quot;corresponding configuration (cfg) file&quot;</span><span class="p">)</span>
         <span class="n">txrx</span><span class="o">.</span><span class="n">ensure_board_is_ready</span><span class="p">()</span>
         <span class="n">txrx</span><span class="o">.</span><span class="n">discover_scamp_connections</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">(),</span> <span class="n">txrx</span>

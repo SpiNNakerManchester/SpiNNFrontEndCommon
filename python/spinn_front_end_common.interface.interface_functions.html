@@ -1356,6 +1356,16 @@ If None the current directory will be used.</li>
 </tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.MachineGenerator.POWER_CYCLE_FAILURE_WARNING">
+<code class="descname">POWER_CYCLE_FAILURE_WARNING</code><em class="property"> = 'The end user requested the power-cycling of the board. But the tools did not have the required BMP connection to facilitate a power-cycling, and therefore will not do so. please set the bmp_names accordingly in the [Machine] section of the relevant configuration (cfg) file. Or use a machine assess process which provides the BMP data (such as a spalloc system) or finally set reset_machine_on_startup = False in the [Machine] section of the relevant configuration (cfg) file to avoid this warning in future.'</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.MachineGenerator.POWER_CYCLE_FAILURE_WARNING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.interface.interface_functions.MachineGenerator.POWER_CYCLE_WARNING">
+<code class="descname">POWER_CYCLE_WARNING</code><em class="property"> = 'When power-cycling a board, it is recommended that you wait for 30 seconds before attempting a reboot. Therefore, the tools will now wait for 30 seconds. If you wish to avoid this wait, please set reset_machine_on_startup = False in the [Machine] section of the relevant configuration (cfg) file.'</em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.MachineGenerator.POWER_CYCLE_WARNING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
