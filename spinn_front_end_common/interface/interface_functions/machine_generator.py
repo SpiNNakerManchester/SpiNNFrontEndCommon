@@ -32,11 +32,11 @@ class MachineGenerator(object):
     """
 
     POWER_CYCLE_WARNING = (
-        "When power cycling a board. It is recommended that you wait for 30"
-        " seconds before attempting a reboot. Therefore the tools will now "
-        "wait for 30 seconds. If you wish to avoid this wait. Please set "
-        "in your corresponding cfg file the param [Machine] "
-        "reset_machine_on_startup to False.")
+        "When power-cycling a board, it is recommended that you wait for 30 "
+        "seconds before attempting a reboot. Therefore, the tools will now "
+        "wait for 30 seconds. If you wish to avoid this wait, please set "
+        "reset_machine_on_startup = False in the [Machine] section of the "
+        "relevant configuration (cfg) file.")
 
     __slots__ = []
 
@@ -115,7 +115,7 @@ class MachineGenerator(object):
         if board_version is None:
             raise ConfigurationException(
                 "Please set a machine version number in the "
-                "corresponding configuration file")
+                "corresponding configuration (cfg) file")
         txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         return txrx.get_machine_details(), txrx
