@@ -20,7 +20,17 @@ from spinn_machine.machine import Machine
 
 class SpallocMaxMachineGenerator(object):
     """ Generates a maximum virtual machine a given allocation server can\
-        generate
+        generate.
+
+    :param str spalloc_server:
+    :param int spalloc_port:
+    :param str spalloc_machine:
+    :param int max_sdram_size:
+    :param int max_machine_core_reduction: the number of cores less than
+        :py:const:`~spinn_machine.Machine.DEFAULT_MAX_CORES_PER_CHIP`
+        that each chip should have
+    :return: A virtual machine
+    :rtype: ~spinn_machine.Machine
     """
 
     __slots__ = []
@@ -29,14 +39,12 @@ class SpallocMaxMachineGenerator(object):
             self, spalloc_server, spalloc_port=22244, spalloc_machine=None,
             max_sdram_size=None, max_machine_core_reduction=0):
         """
-
-        :param spalloc_server:
-        :param spalloc_port:
-        :param spalloc_machine:
-        :param max_sdram_size:
-        :param max_machine_core_reduction: the number of cores less than
-            Machine.MAX_CORES_PER_CHIP that each chip should have
-        :return: A virtual machine
+        :param str spalloc_server:
+        :param int spalloc_port:
+        :param str spalloc_machine:
+        :param int max_sdram_size:
+        :param int max_machine_core_reduction:
+        :rtype: ~.Machine
         """
         with ProtocolClient(spalloc_server, spalloc_port) as client:
             machines = client.list_machines()
@@ -72,12 +80,22 @@ class SpallocMaxMachineGenerator(object):
 
     @staticmethod
     def _filter(machines, target_name):
+        """
+        :param list(dict(str,str)) machines:
+        :param str target_name:
+        :rtype: iterable(dict(str,str or int))
+        """
         if target_name is None:
             return (m for m in machines if "default" in m["tags"])
         return (m for m in machines if m["name"] == target_name)
 
     @staticmethod
     def _get_size(machine):
+        """
+        :param dict(str,int) machine:
+        :return: width, height, area
+        :rtype: tuple(int,int,int)
+        """
         # Get the width and height in chips
         width = machine["width"] * 12
         height = machine["height"] * 12
@@ -88,7 +106,6 @@ class SpallocMaxMachineGenerator(object):
         if (machine["width"] == 1 and
                 machine["height"] == 1 and
                 len(machine["dead_boards"]) == 2):
-            width = 8
-            height = 8
+            return 8, 8, 48
 
         return width, height, width * height

@@ -15,34 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PLATFORM_H__
-#define __PLATFORM_H__
-
-static inline void * safe_malloc(uint bytes)
-{
-  void* p = sark_xalloc(sark.heap, bytes, 0, 0);
-  if (p != NULL) {
-      return p;
-  }
-  p = sark_xalloc(sv->sdram_heap, bytes, 0, ALLOC_LOCK);
-  if (p == NULL)
-  {
-    io_printf(IO_BUF, "Failed to malloc %u bytes.\n", bytes);
-    rt_error(RTE_MALLOC);
-  }
-  return p;
+body {
+	font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+	font-size: 14px;
 }
-
-static inline void safe_xfree(void *ptr){
-  uint ptr_int = (uint) ptr;
-  if (ptr_int >= DTCM_BASE && ptr_int <= DTCM_TOP) {
-      sark_xfree(sark.heap, ptr, 0);
-  } else {
-      sark_xfree(sv->sdram_heap, ptr, ALLOC_LOCK);
-  }
+h1 {
+	font-size: 1.5em;
 }
-
-#define MALLOC safe_malloc
-#define FREE   safe_xfree
-
-#endif  // __PLATFORN_H__

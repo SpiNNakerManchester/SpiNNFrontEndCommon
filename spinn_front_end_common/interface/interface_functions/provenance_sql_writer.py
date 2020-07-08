@@ -14,12 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from spinn_front_end_common.interface.provenance.sqllite_database import (
-    SqlLiteDatabase)
+from spinn_front_end_common.interface.provenance import SqlLiteDatabase
 
 
 class ProvenanceSQLWriter(object):
-    """ Write provenance data into XML
+    """ Writes provenance in SQL format.
+
+    :param list(ProvenanceDataItem) provenance_data_items:
+        data items for provenance
+    :param str provenance_data_path: the file path to store provenance in
+    :return: None
     """
 
     __slots__ = []
@@ -27,11 +31,9 @@ class ProvenanceSQLWriter(object):
     def __call__(self, provenance_data_items, provenance_data_path):
         """ Writes provenance in SQL format
 
-        :param provenance_data_items: data items for provenance
-        :param provenance_data_path: the file path to store provenance in
-        :return: None
+        :param list(ProvenanceDataItem) provenance_data_items:
+        :param str provenance_data_path:
         """
-
         database_file = os.path.join(
             provenance_data_path, "provenance.sqlite3")
         with SqlLiteDatabase(database_file) as db:

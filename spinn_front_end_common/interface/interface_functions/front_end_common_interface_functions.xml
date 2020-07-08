@@ -18,6 +18,272 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="ReadRoutingTablesFromMachine">
+        <python_module>spinn_front_end_common.interface.interface_functions.read_routing_tables_from_machine</python_module>
+        <python_class>ReadRoutingTablesFromMachine</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>routing_tables</param_name>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>routing_tables</param_name>
+            <param_name>app_id</param_name>
+            <token>DataLoaded</token>
+        </required_inputs>
+        <outputs>
+            <param_type>MemoryCompressedRoutingTables</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="PreAllocateForBitFieldRouterCompressor">
+        <python_module>spinn_front_end_common.interface.interface_functions.pre_allocate_for_bit_field_router_compressor</python_module>
+        <python_class>PreAllocateForBitFieldRouterCompressor</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>pre_allocated_resources</param_name>
+                <param_type>MemoryPreAllocatedResources</param_type>
+            </parameter>
+            <parameter>
+                <param_name>sdram_to_pre_alloc_for_bit_fields</param_name>
+                <param_type>RouterCompressorBitFieldPreAllocSize</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine</param_name>
+            <param_name>sdram_to_pre_alloc_for_bit_fields</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>pre_allocated_resources</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="BitFieldRouterCompressor">GeneratedPreAllocatedResources</token>
+        </outputs>
+    </algorithm>
+    <algorithm name="HostBasedBitFieldRouterCompressor">
+        <python_module>spinn_front_end_common.interface.interface_functions.host_bit_field_router_compressor</python_module>
+        <python_class>HostBasedBitFieldRouterCompressor</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>router_tables</param_name>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>default_report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>produce_report</param_name>
+                <param_type>RouterBitfieldCompressionReport</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_to_try_for_each_iteration</param_name>
+                <param_type>RouterCompressorBitFieldTimePerAttempt</param_type>
+            </parameter>
+            <parameter>
+                <param_name>target_length</param_name>
+                <param_type>RouterCompressorBitFieldTargetLength</param_type>
+            </parameter>
+            <parameter>
+                <param_name>use_timer_cut_off</param_name>
+                <param_type>RouterCompressorBitFieldUseCutOff</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_scale_factor</param_name>
+                <param_type>TimeScaleFactor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>routing_infos</param_name>
+                <param_type>MemoryRoutingInfos</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>router_tables</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>machine</param_name>
+            <param_name>placements</param_name>
+            <param_name>default_report_folder</param_name>
+            <param_name>produce_report</param_name>
+            <param_name>use_timer_cut_off</param_name>
+            <param_name>machine_graph</param_name>
+            <param_name>machine_time_step</param_name>
+            <param_name>time_scale_factor</param_name>
+            <param_name>routing_infos</param_name>
+            <token part="BitFieldData">DataLoaded</token>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>time_to_try_for_each_iteration</param_name>
+            <param_name>target_length</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>MemoryCompressedRoutingTables</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="MachineBitFieldRouterCompressor">
+        <python_module>spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor</python_module>
+        <python_class>MachineBitFieldRouterCompressor</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>routing_tables</param_name>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+             <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>threshold_percentage</param_name>
+                <param_type>RouterCompressorBitFieldPercentageThreshold</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_file_path</param_name>
+                <param_type>SystemProvenanceFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>no_sync_changes</param_name>
+                <param_type>NoSyncChanges</param_type>
+            </parameter>
+            <parameter>
+                <param_name>compress_only_when_needed</param_name>
+                <param_type>CompressionAsNeeded</param_type>
+            </parameter>
+            <parameter>
+                <param_name>compress_as_much_as_possible</param_name>
+                <param_type>CompressionAsFarAsPos</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>read_algorithm_iobuf</param_name>
+                <param_type>RouterCompressorWithBitFieldReadIOBuf</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>produce_report</param_name>
+                <param_type>RouterBitfieldCompressionReport</param_type>
+            </parameter>
+            <parameter>
+                <param_name>default_report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>target_length</param_name>
+                <param_type>CompressionTargetSize</param_type>
+            </parameter>
+            <parameter>
+                <param_name>routing_infos</param_name>
+                <param_type>MemoryRoutingInfos</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_to_try_for_each_iteration</param_name>
+                <param_type>RouterCompressorBitFieldTimePerAttempt</param_type>
+            </parameter>
+            <parameter>
+                <param_name>use_timer_cut_off</param_name>
+                <param_type>RouterCompressorBitFieldUseCutOff</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_scale_factor</param_name>
+                <param_type>TimeScaleFactor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>RouterCompressorProvenanceItems</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>no_sync_changes</param_name>
+            <param_name>executable_finder</param_name>
+            <param_name>read_algorithm_iobuf</param_name>
+            <param_name>routing_tables</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>machine</param_name>
+            <param_name>app_id</param_name>
+            <param_name>provenance_file_path</param_name>
+            <param_name>machine_graph</param_name>
+            <param_name>placements</param_name>
+            <param_name>produce_report</param_name>
+            <param_name>default_report_folder</param_name>
+            <param_name>target_length</param_name>
+            <param_name>routing_infos</param_name>
+            <param_name>threshold_percentage</param_name>
+            <param_name>time_to_try_for_each_iteration</param_name>
+            <param_name>use_timer_cut_off</param_name>
+            <param_name>machine_time_step</param_name>
+            <param_name>time_scale_factor</param_name>
+            <param_name>executable_targets</param_name>
+            <token part="BitFieldData">DataLoaded</token>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>compress_only_when_needed</param_name>
+            <param_name>compress_as_much_as_possible</param_name>
+            <param_name>provenance_data_objects</param_name>
+        </optional_inputs>
+        <outputs>
+            <token part="MulticastRoutesLoaded">DataLoaded</token>
+            <param_type>CompressorExecutableTargetsUsed</param_type>
+            <param_type>RouterProvenanceItems</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="SystemMulticastRoutingGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>SystemMulticastRoutingGenerator</python_class>
@@ -58,22 +324,12 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
+        <required_inputs>
+            <param_name>machine_graph</param_name>
+        </required_inputs>
         <optional_inputs>
-            <one_of>
-                <all_of>
-                    <param_name>graph_mapper</param_name>
-                    <param_name>application_graph</param_name>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-                <all_of>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-            </one_of>
+            <param_name>application_graph</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="LoadFixedRoutes">
@@ -119,10 +375,6 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -139,7 +391,6 @@
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>graph_mapper</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="InsertExtraMonitorVerticesToGraphs">
@@ -159,20 +410,12 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>default_report_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
                 <param_name>write_data_speed_up_reports</param_name>
                 <param_type>WriteDataSpeedUpReportsFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>n_cores_to_allocate</param_name>
-                <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -182,9 +425,7 @@
             <param_name>write_data_speed_up_reports</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>graph_mapper</param_name>
             <param_name>application_graph</param_name>
-            <param_name>n_cores_to_allocate</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
@@ -295,10 +536,6 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
@@ -308,7 +545,6 @@
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>graph_mapper</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForLivePacketGatherers">
@@ -366,12 +602,12 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>n_keys_map</param_name>
+                <param_type>MemoryMachinePartitionNKeysMap</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -383,7 +619,7 @@
         </required_inputs>
         <optional_inputs>
             <param_name>application_graph</param_name>
-            <param_name>graph_mapper</param_name>
+            <param_name>n_keys_map</param_name>
         </optional_inputs>
     </algorithm>
     <algorithm name="InsertLivePacketGatherersToGraphs">
@@ -406,10 +642,6 @@
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>live_packet_gatherer_parameters</param_name>
@@ -417,7 +649,6 @@
             <param_name>machine</param_name>
         </required_inputs>
         <optional_inputs>
-            <param_name>graph_mapper</param_name>
             <param_name>application_graph</param_name>
         </optional_inputs>
         <outputs>
@@ -497,10 +728,6 @@
                 <param_name>write_text_specs</param_name>
                 <param_type>WriteTextSpecsFlag</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -511,7 +738,6 @@
         </required_inputs>
         <optional_inputs>
             <token part="DSGDataLoaded">DataLoaded</token>
-            <param_name>graph_mapper</param_name>
             <token>ClearedIOBuf</token>
         </optional_inputs>
         <outputs>
@@ -717,7 +943,6 @@
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
-            <token part="MulticastRoutesLoaded">DataLoaded</token>
         </required_inputs>
         <outputs>
             <token part="SystemBinariesLoaded">BinariesLoaded</token>
@@ -812,7 +1037,6 @@
             <parameter>
                 <param_name>router_tables</param_name>
                 <param_type>MemoryCompressedRoutingTables</param_type>
-                <param_type>MemoryRoutingTables</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -1006,10 +1230,6 @@
                 <param_name>data_n_timesteps</param_name>
                 <param_type>DataNTimeSteps</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>placements</param_name>
@@ -1019,9 +1239,6 @@
             <param_name>machine</param_name>
             <param_name>data_n_timesteps</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>DataSpecificationTargets</param_type>
             <param_type>RegionSizes</param_type>
@@ -1036,17 +1253,12 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
-                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1054,9 +1266,6 @@
             <param_name>executable_finder</param_name>
             <param_name>graph</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>ExecutableTargets</param_type>
         </outputs>
@@ -1066,26 +1275,18 @@
         <python_class>LocateExecutableStartType</python_class>
         <input_definitions>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
-                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>graph</param_name>
             <param_name>placements</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>ExecutableTypes</param_type>
         </outputs>
@@ -1295,14 +1496,24 @@
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
+            <parameter>
+                <param_name>using_reinjection</param_name>
+                <param_type>UsingReinjection</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>router_tables</param_name>
+            <param_name>using_reinjection</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
+            <param_name>provenance_data_objects</param_name>
             <param_name>extra_monitor_vertices</param_name>
             <param_name>placements</param_name>
         </optional_inputs>
@@ -1425,10 +1636,6 @@
                 <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
@@ -1448,7 +1655,6 @@
             <all_of>
                 <param_name>create_atom_to_event_id_mapping</param_name>
                 <param_name>application_graph</param_name>
-                <param_name>graph_mapper</param_name>
             </all_of>
         </optional_inputs>
         <outputs>
@@ -1653,22 +1859,10 @@
                 <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
-        <optional_inputs>
-            <one_of>
-                <all_of>
-                    <param_name>graph_mapper</param_name>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-                <all_of>
-                    <param_name>machine_graph</param_name>
-                </all_of>
-            </one_of>
-        </optional_inputs>
+        <required_inputs>
+            <param_name>machine_graph</param_name>
+        </required_inputs>
         <outputs>
             <param_type>MemoryMachinePartitionNKeysMap</param_type>
         </outputs>
@@ -1915,11 +2109,6 @@
         <python_class>WriteMemoryIOData</python_class>
         <input_definitions>
             <parameter>
-                <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -1936,12 +2125,12 @@
                 <param_type>IPAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
+                <param_name>app_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
@@ -1961,15 +2150,14 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>graph</param_name>
             <param_name>placements</param_name>
             <param_name>app_id</param_name>
             <param_name>report_folder</param_name>
             <param_name>hostname</param_name>
         </required_inputs>
         <optional_inputs>
+            <param_name>app_graph</param_name>
             <param_name>transceiver</param_name>
-            <param_name>graph_mapper</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>uses_advanced_monitors</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>

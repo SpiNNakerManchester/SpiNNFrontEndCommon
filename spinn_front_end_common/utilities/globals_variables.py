@@ -18,6 +18,7 @@ from pacman.executor import injection_decorator
 # pylint: disable=global-statement
 _failed_state = None
 _simulator = None
+_cached_simulator = None
 
 
 def get_simulator():
@@ -54,18 +55,24 @@ def set_simulator(new_simulator):
 
     :param SimulatorInterface new_simulator: The simulator to set.
     """
-    global _simulator, _failed_state
+    global _simulator, _failed_state, _cached_simulator
     if _failed_state is None:
         raise ValueError("Unexpected call to set_simulator before "
                          "set_failed_state")
     _simulator = new_simulator
+    _cached_simulator = None
 
 
-def unset_simulator():
+def unset_simulator(to_cache_simulator=None):
     """ Destroy the current simulator.
+
+    :param SimulatorInterface to_cache_simulator:
+        a cached version for allowing data extraction
     """
-    global _simulator
+    global _simulator, _cached_simulator
     _simulator = None
+    _cached_simulator = to_cache_simulator
+
     injection_decorator._instances = list()
 
 
@@ -89,3 +96,28 @@ def set_failed_state(new_failed_state):
         _failed_state = new_failed_state
     elif type(new_failed_state) != type(_failed_state):
         raise ValueError("You may only setup/init one type of simulator")
+
+
+def get_generated_output(output):
+    """ Get one of the simulator outputs by name.
+
+    :param str output: The name of the output to retrieve.
+    :return: The value (of arbitrary type, dependent on which output),
+        or `None` if the variable is not found.
+    :raises ValueError:
+        if the system is in a state where outputs can't be retrieved
+    """
+    global _simulator, _failed_state, _cached_simulator
+    if _simulator is not None:
+        return _simulator.get_generated_output(output)
+    elif _failed_state is not None:
+        if _cached_simulator is not None:
+            return _cached_simulator.get_generated_output(output)
+        else:
+            raise ValueError(
+                "You need to have ran a simulator before asking for its "
+                "generated output, and the simulator needs to be cached "
+                "before you can request outputs.")
+    else:
+        raise ValueError(
+            "There should be some sort of simulator set. Why am i here?!")
