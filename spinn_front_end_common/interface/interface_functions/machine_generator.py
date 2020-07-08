@@ -82,6 +82,16 @@ class MachineGenerator(object):
         "reset_machine_on_startup = False in the [Machine] section of the "
         "relevant configuration (cfg) file.")
 
+    POWER_CYCLE_FAILURE_WARNING = (
+        "The end user requested the power-cycling of the board. But the "
+        "tools did not have the required BMP connection to facilitate a "
+        "power-cycling, and therefore will not do so. please set the "
+        "bmp_names accordingly in the [Machine] section of the relevant "
+        "configuration (cfg) file. Or use a machine assess process which "
+        "provides the BMP data (such as a spalloc system) or finally set "
+        "reset_machine_on_startup = False in the [Machine] section of the "
+        "relevant configuration (cfg) file to avoid this warning in future.")
+
     __slots__ = []
 
     def __call__(
@@ -130,10 +140,13 @@ class MachineGenerator(object):
             default_report_directory=default_report_directory)
 
         if reset_machine_on_start_up:
-            txrx.power_off_machine()
-            logger.warning(self.POWER_CYCLE_WARNING)
-            time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
-            logger.warning("Power cycle wait complete")
+            success = txrx.power_off_machine()
+            if success:
+                logger.warning(self.POWER_CYCLE_WARNING)
+                time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
+                logger.warning("Power cycle wait complete")
+            else:
+                logger.warning(self.POWER_CYCLE_FAILURE_WARNING)
 
         # do auto boot if possible
         if board_version is None:
