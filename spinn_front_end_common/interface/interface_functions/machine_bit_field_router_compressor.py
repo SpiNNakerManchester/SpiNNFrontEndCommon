@@ -23,7 +23,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
-    SpinnmanUnexpectedResponseCodeException, SpinnmanException)
+    SpinnmanUnexpectedResponseCodeException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -142,7 +142,9 @@ class MachineBitFieldRouterCompressor(object):
     _PROGRESS_BAR_TEXT = \
         "on chip compressing routing tables and merging in bitfields as " \
         "appropriate"
-
+    _HOST_BAR_TEXT = \
+        "on host compressing routing tables and merging in bitfields as " \
+        "appropriate"
     _ON_CHIP_ERROR_MESSAGE = \
         "The router compressor with bit field on {}, {} failed to complete. " \
         "Will execute host based routing compression instead"
@@ -226,30 +228,30 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage)
 
         # load and run binaries
-        try:
-            system_control_logic.run_system_application(
-                compressor_executable_targets,
-                routing_table_compressor_app_id, transceiver,
-                provenance_file_path, executable_finder,
-                read_algorithm_iobuf,
-                functools.partial(
-                    self._check_bit_field_router_compressor_for_success,
-                    host_chips=on_host_chips,
-                    sorter_binary_path=bit_field_sorter_executable_path,
-                    prov_data_items=prov_items),
-                functools.partial(
-                    self._handle_failure_for_bit_field_router_compressor,
-                    host_chips=on_host_chips, txrx=transceiver),
-                [CPUState.FINISHED], True, no_sync_changes,
-                "bit_field_compressor_on_{}_{}_{}.txt",
-                [bit_field_sorter_executable_path])
-        except (SpinnmanException, SpinnFrontEndException):
-            self._handle_failure_for_bit_field_router_compressor(
-                compressor_executable_targets, on_host_chips, transceiver)
+        system_control_logic.run_system_application(
+            compressor_executable_targets,
+            routing_table_compressor_app_id, transceiver,
+            provenance_file_path, executable_finder,
+            read_algorithm_iobuf,
+            functools.partial(
+                self._check_bit_field_router_compressor_for_success,
+                host_chips=on_host_chips,
+                sorter_binary_path=bit_field_sorter_executable_path,
+                prov_data_items=prov_items),
+            functools.partial(
+                self._handle_failure_for_bit_field_router_compressor,
+                host_chips=on_host_chips, txrx=transceiver),
+            [CPUState.FINISHED], True, no_sync_changes,
+            "bit_field_compressor_on_{}_{}_{}.txt",
+            [bit_field_sorter_executable_path],
+            progress_bar)
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
+            progress_bar = ProgressBar(
+                total_number_of_things_to_do=len(on_host_chips),
+                string_describing_what_being_progressed=self._HOST_BAR_TEXT)
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
@@ -288,9 +290,6 @@ class MachineBitFieldRouterCompressor(object):
                     transceiver.load_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)
-
-        # complete progress bar
-        progress_bar.end()
 
         return compressor_executable_targets, prov_items
 

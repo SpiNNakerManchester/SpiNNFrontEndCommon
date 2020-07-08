@@ -25,7 +25,8 @@ def run_system_application(
         executable_cores, app_id, transceiver, provenance_file_path,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         handle_failure_function, cpu_end_states, needs_sync_barrier,
-        no_sync_changes, filename_template, binaries_to_track=None):
+        no_sync_changes, filename_template, binaries_to_track=None,
+        progress_bar=None):
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
@@ -51,6 +52,10 @@ def run_system_application(
     :param list(str) binaries_to_track:
         A list of binary names to check for exit state.
         Or `None` for all binaries
+    :param progress_bar: Possible progress bar to update.
+            Will have end called on it only if iobif is read
+    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
+
     """
 
     # load the executable
@@ -69,6 +74,7 @@ def run_system_application(
         transceiver.send_signal(app_id, sync_signal)
 
     succeeded = False
+    error = None
     binary_start_types = dict()
     if binaries_to_track is None:
         check_targets = executable_cores
@@ -84,12 +90,14 @@ def run_system_application(
     # Wait for the executable to finish
     try:
         transceiver.wait_for_cores_to_be_in_state(
-            check_targets.all_core_subsets, app_id, cpu_end_states)
+            check_targets.all_core_subsets, app_id, cpu_end_states,
+            progress_bar=progress_bar)
         succeeded = True
-    except (SpinnmanTimeoutException, SpinnmanException):
+    except (SpinnmanTimeoutException, SpinnmanException) as ex:
         if handle_failure_function is not None:
             handle_failure_function(executable_cores)
         succeeded = False
+        error = ex
 
     # Check if any cores have not completed successfully
     if succeeded and check_for_success_function is not None:
@@ -107,3 +115,6 @@ def run_system_application(
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
     transceiver.app_id_tracker.free_id(app_id)
+
+    if (error is not None) and (handle_failure_function is None):
+        raise error
