@@ -53,7 +53,7 @@ def run_system_application(
         A list of binary names to check for exit state.
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
-            Will have end called on it only if iobif is read
+            Will have end called on it only if iobiuf is extracted
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
 
     """
@@ -105,9 +105,11 @@ def run_system_application(
 
     # if doing iobuf, read iobuf
     if read_algorithm_iobuf or not succeeded:
+        if progress_bar is not None:
+            progress_bar.end()
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
-            suppress_progress=succeeded)
+            suppress_progress=False)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
             system_provenance_file_path=provenance_file_path)
