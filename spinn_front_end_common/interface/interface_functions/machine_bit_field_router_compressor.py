@@ -291,6 +291,8 @@ class MachineBitFieldRouterCompressor(object):
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)
 
+            progress_bar.end()
+
         return compressor_executable_targets, prov_items
 
     def _generate_core_subsets(

@@ -53,7 +53,7 @@ def run_system_application(
         A list of binary names to check for exit state.
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
-            Will have end called on it only if iobiuf is extracted
+           end() will be called after state checked
     :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
 
     """
@@ -92,8 +92,12 @@ def run_system_application(
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states,
             progress_bar=progress_bar)
+        if progress_bar is not None:
+            progress_bar.end()
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException) as ex:
+        if progress_bar is not None:
+            progress_bar.end()
         if handle_failure_function is not None:
             handle_failure_function(executable_cores)
         succeeded = False
@@ -105,8 +109,6 @@ def run_system_application(
 
     # if doing iobuf, read iobuf
     if read_algorithm_iobuf or not succeeded:
-        if progress_bar is not None:
-            progress_bar.end()
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
             suppress_progress=False)
