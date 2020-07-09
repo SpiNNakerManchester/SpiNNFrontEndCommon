@@ -85,10 +85,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         converted in to multicast packets.
 
     :param str label: The label of this vertex
-    :param ~pacman.model.graphs.common.Slice vertex_slice:
+    :param vertex_slice:
         The slice served via this multicast source
-    :param ReverseIpTagMultiCastSource app_vertex:
+    :type vertex_slice: ~pacman.model.graphs.common.Slice or None
+    :param app_vertex:
         The associated application vertex
+    :type app_vertex: ReverseIpTagMultiCastSource or None
     :param int n_keys: The number of keys to be sent via this mulitcast source
         (can't be None if vertex_slice is also None)
     :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:
