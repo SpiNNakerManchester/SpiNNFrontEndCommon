@@ -14,11 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import division
+import logging
 import math
 import struct
 import numpy
 from enum import IntEnum
 from six.moves import xrange
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
@@ -59,6 +61,8 @@ from spinn_front_end_common.interface.buffer_management.recording_utilities \
             get_recording_data_constant_size)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
@@ -206,6 +210,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 else:
                     # assuming this must be a single integer
                     n_buffer_times += 1
+            if n_buffer_times == 0:
+                logger.warning(
+                    "Combination of send_buffer_times {} and slice {} results "
+                    "in a core with a ReverseIPTagMulticastSourceMachineVertex"
+                    " which does not spike", send_buffer_times, vertex_slice)
         if n_buffer_times == 0:
             self._send_buffer_times = None
             self._send_buffers = None
@@ -370,8 +379,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         sdram = self.get_sdram_usage(
-                self._send_buffer_times, self._is_recording,
-                self.timestep_in_us, self._receive_rate, self._n_keys)
+            self._send_buffer_times, self._is_recording,
+            self.timestep_in_us, self._receive_rate, self._n_keys)
 
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
