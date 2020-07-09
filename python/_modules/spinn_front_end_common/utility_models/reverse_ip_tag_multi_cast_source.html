@@ -243,6 +243,17 @@
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
                 <span class="n">send_buffer_times</span> <span class="o">=</span> <span class="n">send_buffer_times</span><span class="p">[</span>
                     <span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">:</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">hi_atom</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># Check the buffer times on the slice are not empty</span>
+                <span class="n">n_buffer_times</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">send_buffer_times</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+                        <span class="n">n_buffer_times</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># assuming this must be a single integer</span>
+                        <span class="n">n_buffer_times</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">n_buffer_times</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">send_buffer_times</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="n">sim</span> <span class="o">=</span> <span class="n">globals_variables</span><span class="o">.</span><span class="n">get_simulator</span><span class="p">()</span>
         <span class="n">container</span> <span class="o">=</span> <span class="n">ResourceContainer</span><span class="p">(</span>
             <span class="n">sdram</span><span class="o">=</span><span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">(</span>
@@ -325,8 +336,8 @@
             <span class="n">enable_injection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_enable_injection</span><span class="p">)</span>
         <span class="n">machine_vertex</span><span class="o">.</span><span class="n">enable_recording</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span><span class="p">)</span>
         <span class="c1"># Known issue with ReverseIPTagMulticastSourceMachineVertex</span>
-        <span class="c1"># if resources_required:</span>
-        <span class="c1">#    assert (resources_required == machine_vertex.resources_required)</span>
+        <span class="k">if</span> <span class="n">resources_required</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">resources_required</span> <span class="o">==</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">machine_vertex</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
