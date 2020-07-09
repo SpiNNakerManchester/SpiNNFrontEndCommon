@@ -179,6 +179,17 @@ class ReverseIpTagMultiCastSource(
             if hasattr(send_buffer_times[0], "__len__"):
                 send_buffer_times = send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+                # Check the buffer times on the slice are not empty
+                n_buffer_times = 0
+                for i in send_buffer_times:
+                    if hasattr(i, "__len__"):
+                        n_buffer_times += len(i)
+                    else:
+                        # assuming this must be a single integer
+                        n_buffer_times += 1
+                if n_buffer_times == 0:
+                    send_buffer_times = None
+
         sim = globals_variables.get_simulator()
         container = ResourceContainer(
             sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
@@ -261,8 +272,8 @@ class ReverseIpTagMultiCastSource(
             enable_injection=self._enable_injection)
         machine_vertex.enable_recording(self._is_recording)
         # Known issue with ReverseIPTagMulticastSourceMachineVertex
-        # if resources_required:
-        #    assert (resources_required == machine_vertex.resources_required)
+        if resources_required:
+            assert (resources_required == machine_vertex.resources_required)
         return machine_vertex
 
     def __repr__(self):
