@@ -237,9 +237,6 @@ class MachineBitFieldRouterCompressor(object):
                 host_chips=on_host_chips,
                 sorter_binary_path=bit_field_sorter_executable_path,
                 prov_data_items=prov_items),
-            functools.partial(
-                self._handle_failure_for_bit_field_router_compressor,
-                host_chips=on_host_chips, txrx=transceiver),
             [CPUState.FINISHED], True, no_sync_changes,
             "bit_field_compressor_on_{}_{}_{}.txt",
             [bit_field_sorter_executable_path],
@@ -406,26 +403,6 @@ class MachineBitFieldRouterCompressor(object):
                 prov_data_items.append(ProvenanceDataItem(
                     names, str(total_bit_fields_merged)))
         return True
-
-    @staticmethod
-    def _handle_failure_for_bit_field_router_compressor(
-            executable_targets, host_chips, txrx):
-        """ Handles the state where some cores have failed.
-
-        :param ExecutableTargets executable_targets:
-            cores which are running the router compressor with bitfield.
-        :param list(tuple(int,int)) host_chips:
-            chips which need host based compression
-        :param ~.Transceiver txrx: spinnman instance
-        """
-        logger.info(
-            "on chip routing table compressor with bit field has failed")
-        for core_subset in executable_targets.all_core_subsets:
-            if (core_subset.x, core_subset.y) not in host_chips:
-                host_chips.append((core_subset.x, core_subset.y))
-        cores = txrx.get_cores_in_state(
-            executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
-        logger.info("failed on cores {}", cores)
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
