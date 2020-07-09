@@ -32,6 +32,7 @@ from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource,
     ReverseIPtagResource, ResourceContainer, VariableSDRAM)
 from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -186,17 +187,17 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Flag to indicate that data will be received to inject
             enable_injection=False):
         # pylint: disable=too-many-arguments, too-many-locals
+        if vertex_slice is None:
+            if n_keys is not None:
+                vertex_slice = Slice(0, n_keys - 1)
+            else:
+                raise KeyError("Either provide a vertex_slice or n_keys")
+
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
             label, constraints, app_vertex, vertex_slice)
 
         self._reverse_iptags = None
-
-        if vertex_slice is not None:
-            self._n_keys = vertex_slice.n_atoms
-        elif n_keys is not None:
-            self._n_keys = n_keys
-        else:
-            raise KeyError("Either provide a vertex_slice or n_keys")
+        self._n_keys = vertex_slice.n_atoms
 
         # Set up for receiving live packets
         if receive_port is not None or reserve_reverse_ip_tag:
