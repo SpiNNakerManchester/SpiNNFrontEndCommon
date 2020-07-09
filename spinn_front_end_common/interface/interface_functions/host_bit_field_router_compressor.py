@@ -40,7 +40,7 @@ from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.constants import (
-    BITS_PER_WORD, BYTES_PER_WORD)
+    BYTES_PER_WORD)
 
 
 class _BitFieldData(object):
@@ -142,6 +142,9 @@ class HostBasedBitFieldRouterCompressor(object):
 
     # fraction effect for threshold
     _THRESHOLD_FRACTION_EFFECT = 2
+
+    # Number of bits per word as an int
+    _BITS_PER_WORD = 32
 
     def __init__(self):
         self._best_routing_table = None
@@ -479,8 +482,8 @@ class HostBasedBitFieldRouterCompressor(object):
         :param int neuron_id: the neuron id to find the bit in the bitfield
         :return: the bit
         """
-        word_id = int(neuron_id // BITS_PER_WORD)
-        bit_in_word = neuron_id % BITS_PER_WORD
+        word_id = int(neuron_id // self._BITS_PER_WORD)
+        bit_in_word = neuron_id % self._BITS_PER_WORD
         flag = (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
         return flag
 
@@ -511,13 +514,16 @@ class HostBasedBitFieldRouterCompressor(object):
             bit_field_base_address = \
                 bit_field_chip_base_addresses[processor_id]
 
-            # read how many bitfields there are
-            n_bit_field_entries = struct.unpack("<I", transceiver.read_memory(
-                chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD))[0]
-            reading_address = bit_field_base_address + BYTES_PER_WORD
+            # from filter_regoin_t read how many bitfields there are
+            # n_merged_filters, n_redundancy_filters, n_filters
+            _,_, n_filters = struct.unpack(
+                "<III", transceiver.read_memory(
+                    chip_x, chip_y,
+                    bit_field_base_address, BYTES_PER_WORD * 3))
+            reading_address = bit_field_base_address + BYTES_PER_WORD * 3
 
             # read in each bitfield
-            for _ in range(0, n_bit_field_entries):
+            for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
                 master_pop_key, n_words_to_read, read_pointer = struct.unpack(
                     "<III", transceiver.read_memory(
@@ -648,7 +654,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :return: the number of redundant packets being captured.
         """
         n_packets_filtered = 0
-        n_neurons = len(bitfield) * BITS_PER_WORD
+        n_neurons = len(bitfield) * self._BITS_PER_WORD
 
         for neuron_id in range(0, n_neurons):
             if self._bit_for_neuron_id(bitfield, neuron_id) == 0:
@@ -845,7 +851,7 @@ class HostBasedBitFieldRouterCompressor(object):
             best_bit_fields = self._best_bit_fields_by_processor[key]
             n_bit_fields_merged += len(best_bit_fields)
             for element in best_bit_fields:
-                n_neurons = len(element.bit_field) * BITS_PER_WORD
+                n_neurons = len(element.bit_field) * self._BITS_PER_WORD
                 for neuron_id in range(0, n_neurons):
                     is_set = self._bit_for_neuron_id(
                         element.bit_field, neuron_id)
