@@ -34,7 +34,6 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
 from spinn_front_end_common.mapping_algorithms. \
     on_chip_router_table_compression.compression import (
         Compression)
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (

@@ -516,7 +516,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
             # from filter_regoin_t read how many bitfields there are
             # n_merged_filters, n_redundancy_filters, n_filters
-            _,_, n_filters = struct.unpack(
+            _, _, n_filters = struct.unpack(
                 "<III", transceiver.read_memory(
                     chip_x, chip_y,
                     bit_field_base_address, BYTES_PER_WORD * 3))
