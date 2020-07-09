@@ -121,4 +121,4 @@ def run_system_application(
     transceiver.app_id_tracker.free_id(app_id)
 
     if (error is not None) and (handle_failure_function is None):
-        raise error
+        raise error  # pylint: disable=raising-bad-type
