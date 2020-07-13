@@ -84,8 +84,6 @@ class MachineBitFieldRouterCompressor(object):
     :param ExecutableTargets executable_targets:
         the set of targets and executables
     :param graph_mapper: mapping between graphs (could be none)
-    :param bool compress_only_when_needed:
-        whether to compress only when needed
     :param bool compress_as_much_as_possible:
         whether to compress as much as possible
     :param list(ProvenanceDataItem) provenance_data_objects:
@@ -159,8 +157,8 @@ class MachineBitFieldRouterCompressor(object):
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
             no_sync_changes, threshold_percentage,
-            executable_targets, compress_only_when_needed=True,
-            compress_as_much_as_possible=False, provenance_data_objects=None):
+            executable_targets, compress_as_much_as_possible=False,
+            provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
         :param ~.MulticastRoutingTables routing_tables:
@@ -180,7 +178,6 @@ class MachineBitFieldRouterCompressor(object):
         :param int no_sync_changes:
         :param int threshold_percentage:
         :param ExecutableTargets executable_targets:
-        :param bool compress_only_when_needed:
         :param bool compress_as_much_as_possible:
         :param list(ProvenanceDataItem) provenance_data_objects:
         :rtype: tuple(ExecutableTargets,list(ProvenanceDataItem))
@@ -219,7 +216,7 @@ class MachineBitFieldRouterCompressor(object):
         # load data into sdram
         on_host_chips = self._load_data(
             addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, compress_only_when_needed, machine,
+            routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
             matrix_addresses_and_size, time_to_try_for_each_iteration,
@@ -406,7 +403,7 @@ class MachineBitFieldRouterCompressor(object):
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, compress_only_when_needed, machine,
+            routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar, cores,
             matrix_addresses_and_size, time_per_iteration,
             bit_field_compressor_executable_path,
@@ -420,8 +417,6 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.MulticastRoutingTables routing_tables:
             the routing tables
         :param int app_id: the appid of the application
-        :param bool compress_only_when_needed:
-            whether to compress only when needed
         :param ~.ProgressBar progress_bar: progress bar
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
@@ -467,7 +462,6 @@ class MachineBitFieldRouterCompressor(object):
                     self._load_compressor_data(
                         table.x, table.y, time_per_iteration, transceiver,
                         bit_field_compressor_executable_path, cores,
-                        compress_only_when_needed,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
                     run_by_host.append((table.x, table.y))
@@ -477,7 +471,7 @@ class MachineBitFieldRouterCompressor(object):
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
-            compress_only_when_needed, compress_as_much_as_possible,
+            compress_as_much_as_possible,
             comms_sdram):
         """ Updates the user1 address for the compressor cores so they can \
             set the time per attempt.
@@ -488,8 +482,6 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
-        :param bool compress_only_when_needed:
-            whether to compress only when needed
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :param ExecutableTargets cores: the executable targets
@@ -510,13 +502,10 @@ class MachineBitFieldRouterCompressor(object):
                 self._ONE_WORDS.pack(
                     time_per_iteration * SECOND_TO_MICRO_SECOND),
                 self._USER_BYTES)
-            compressor_setting = 0
-            # bit 0 = compress_only_when_needed
-            if compress_only_when_needed:
-                compressor_setting |= 1 << self._ONLY_WHEN_NEEDED_BIT_OFFSET
-            # bit 1 = compress_as_much_as_possible
             if compress_as_much_as_possible:
-                compressor_setting |= 1 << self._AS_MUCH_AS_POSS_BIT_OFFSET
+                compressor_setting = 1
+            else:
+                compressor_setting = 0
             transceiver.write_memory(
                 chip_x, chip_y, user2_address,
                 self._ONE_WORDS.pack(compressor_setting), self._USER_BYTES)

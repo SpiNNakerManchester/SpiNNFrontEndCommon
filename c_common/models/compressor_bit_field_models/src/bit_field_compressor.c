@@ -55,9 +55,6 @@ volatile bool stop_compressing = false;
 //! Allows minimise to report if it failed due to malloc issues
 bool failed_by_malloc = false;
 
-//! Whether to run compression only when needed
-bool compress_only_when_needed = false;
-
 //! Whether to compress as much as possible
 bool compress_as_much_as_possible = false;
 
@@ -101,16 +98,22 @@ void start_compression_process(void) {
     }
 #endif
 
+    int target_length;
+    if (compress_as_much_as_possible){
+        target_length = 0;
+    } else {
+         target_length = rtr_alloc_max();
+    }
+
     // run compression
     bool success = minimise_run(
-            TARGET_LENGTH, &failed_by_malloc, &stop_compressing,
-            compress_only_when_needed, compress_as_much_as_possible);
+        target_length, &failed_by_malloc, &stop_compressing);
 
     // turn off timer and set us into pause state
     spin1_pause();
 
     // Decode whether we succeeded or failed.
-    if (success && (routing_table_get_n_entries() <= TARGET_LENGTH)) {
+    if (success && (routing_table_get_n_entries() <= rtr_alloc_max())) {
         log_info("Passed minimise_run() with success code: %d", success);
         routing_tables_save(comms_sdram->routing_tables);
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
@@ -369,16 +372,11 @@ static void initialise(void) {
     // bit 0 = compress_only_when_needed
     // bit 1 = compress_as_much_as_possible
     uint32_t int_value = this_vcpu_info->user2;
-    if (int_value & 2) {
+    if (int_value & 1) {
         compress_as_much_as_possible = true;
     }
-    if (int_value & 1) {
-        compress_only_when_needed = true;
-    }
-    log_info("int %d, compress_only_when_needed = %d "
-            "compress_as_much_as_possible = %d",
-            int_value, compress_only_when_needed,
-            compress_as_much_as_possible);
+    log_info("int %d, compress_as_much_as_possible = %d",
+            int_value, compress_as_much_as_possible);
 
     // Get the pointer for all cores
     comms_sdram = (comms_sdram_t *) this_vcpu_info->user3;

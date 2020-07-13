@@ -265,8 +265,8 @@ static inline void update_frequency(int index) {
     routes_frequency[routes_count] = 1;
     routes_count++;
     if (routes_count >= MAX_NUM_ROUTES) {
-        log_error("%d Unigue routes compression IMPOSSIBLE",
-                MAX_NUM_ROUTES + 1);
+        log_error("Best compression was %d compared to max legal of %d",
+                routes_count, MAX_NUM_ROUTES);
         // set the failed flag and exit
         malloc_extras_terminate(EXITED_CLEANLY);
     }
@@ -275,6 +275,12 @@ static inline void update_frequency(int index) {
 //! \brief Implementation of minimise()
 //! \param[in] target_length: ignored
 static inline void minimise_run(uint32_t target_length) {
+    // Verify constant used to build arrays is correct
+    if (MAX_NUM_ROUTES != rtr_alloc_max()){
+        log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
+                MAX_NUM_ROUTES, rtr_alloc_max());
+            malloc_extras_terminate(EXIT_FAIL);
+    }
 	use(target_length);
     int table_size = routing_table_get_n_entries();
 

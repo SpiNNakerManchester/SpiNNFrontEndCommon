@@ -31,7 +31,6 @@
 //! \return Whether successful or not.
 bool minimise_run(
         int target_length, bool *failed_by_malloc,
-        volatile bool *stop_compressing,
-        bool compress_only_when_needed, bool compress_as_much_as_possible);
+        volatile bool *stop_compressing);
 
 #endif  // __MINIMISE_H__
