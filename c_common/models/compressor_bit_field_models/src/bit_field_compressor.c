@@ -27,7 +27,7 @@
 #include "common/compressor_sorter_structs.h"
 #include "common/bit_field_table_generator.h"
 #include "common/minimise.h"
-#include "ordered_covering_includes/ordered_covering.h"
+#include "compressor_includes/compressor.h"
 #include "common/routing_tables.h"
 #include "common/bit_field_table_generator.h"
 
@@ -106,7 +106,7 @@ void start_compression_process(void) {
     }
 
     // run compression
-    bool success = minimise_run(
+    bool success = run_compressor(
         target_length, &failed_by_malloc, &stop_compressing);
 
     // turn off timer and set us into pause state

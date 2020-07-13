@@ -25,7 +25,6 @@
 #include "aliases.h"
 #include "bit_set.h"
 #include "merge.h"
-#include "remove_default_routes.h"
 #include "../common/routing_table.h"
 
 //! \brief State of the ordered covering
@@ -787,30 +786,7 @@ bool minimise_run(
     // Some Mundy black magic
     aliases_t aliases = aliases_init();
 
-    // remove default routes and check lengths again
-    log_debug("before rerun count");
-    int length_after_removal = routing_table_get_n_entries();
-    log_debug("after rerun count");
-    bool success = remove_default_routes_minimise(&length_after_removal, false);
-    if (!success) {
-        log_error("failed to remove default routes due to malloc. failing");
-        *failed_by_malloc = true;
-        aliases_clear(&aliases);
-        return false;
-    }
-    log_debug("after default route removal");
-
-    if (length_after_removal < target_length) {
-        log_info("remove defaults was enough.");
-        remove_default_routes_minimise(&length_after_removal, true);
-        aliases_clear(&aliases);
-        return true;
-    }
-
-    log_debug("changing target length to compress as much as poss");
-
     // start the merger process
-    log_debug("start compression true attempt");
     log_debug("n entries is %d", routing_table_get_n_entries());
     int attempts = 0;
 

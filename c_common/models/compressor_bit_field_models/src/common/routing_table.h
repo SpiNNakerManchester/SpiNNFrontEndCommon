@@ -39,4 +39,37 @@ int routing_table_get_n_entries(void);
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(int size_to_remove);
 
+//! \brief Write an entry to a specific index
+//! \param[in] entry: The entry to write
+//! \param[in] index: Where to write it.
+static inline void routing_table_put_entry(const entry_t* entry, int index) {
+    entry_t* e_ptr = routing_table_get_entry(index);
+    e_ptr->key_mask = entry->key_mask;
+    e_ptr->route = entry->route;
+    e_ptr->source = entry->source;
+}
+
+//! \brief Copy an entry from one index to another
+//! \param[in] new_index: Where to copy to
+//! \param[in] old_index: Where to copy from
+static inline void routing_table_copy_entry(int new_index, int old_index) {
+    entry_t* e_ptr = routing_table_get_entry(old_index);
+    routing_table_put_entry(e_ptr, new_index);
+}
+
+//! \brief Swap a pair of entries at the given indices
+//! \param[in] a: The first index where an entry is
+//! \param[in] b: The second index where an entry is
+static inline void swap_entries(int a, int b) {
+    log_debug("swap %u %u", a, b);
+    entry_t temp = *routing_table_get_entry(a);
+    log_debug("before %u %u %u %u",
+            temp.key_mask.key, temp.key_mask.mask, temp.route, temp.source);
+    routing_table_put_entry(routing_table_get_entry(b), a);
+    routing_table_put_entry(&temp, b);
+    entry_t temp2 = *routing_table_get_entry(b);
+    log_debug("before %u %u %u %u",
+            temp2.key_mask.key, temp2.key_mask.mask, temp2.route, temp2.source);
+}
+
 #endif  // __ROUTING_TABLE_H__
