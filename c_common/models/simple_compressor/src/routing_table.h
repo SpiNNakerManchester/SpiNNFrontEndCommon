@@ -92,37 +92,54 @@ typedef struct {
     entry_t *entries;   //!< Entries in the table
 } table_t;
 
-#if 0
-static inline void entry_copy(
-        table_t *table, uint32_t old_index, uint32_t new_index)
-{
-    table->entries[new_index].keymask = table->entries[old_index].keymask;
-    table->entries[new_index].route = table->entries[old_index].route;
-    table->entries[new_index].source = table->entries[old_index].source;
-}
-#endif
+//! \brief Gets a pointer to where this entry is stored
+//! \details Will not check if there is an entry with this id but will RTE if
+//!     the id is too large
+//! \param[in] entry_id_to_find: Id of entry to find pointer to
+//! \return pointer to the entry's location
+entry_t* routing_table_get_entry(uint32_t entry_id_to_find);
 
-//! \brief The header of the routing table information in the input data block.
+//! \brief Get the number of entries in the routing table
+//! \return number of appended entries.
+int routing_table_get_n_entries(void);
+
+//! \brief updates table stores accordingly.
 //!
-//! This is found looking for a memory block with the right tag.
-typedef struct {
-    //! Application ID to use to load the routing table. This can be left as `0`
-    //! to load routing entries with the same application ID that was used to
-    //! load this application.
-    uint32_t app_id;
+//! will RTE if this causes the total entries to become negative.
+//! \param[in] size_to_remove: the amount of size to remove from the table sets
+void routing_table_remove_from_size(int size_to_remove);
 
-    //! flag for compressing when only needed
-    uint32_t compress_only_when_needed;
+//! \brief Write an entry to a specific index
+//! \param[in] entry: The entry to write
+//! \param[in] index: Where to write it.
+static inline void routing_table_put_entry(const entry_t* entry, int index) {
+    entry_t* e_ptr = routing_table_get_entry(index);
+    e_ptr->keymask = entry->keymask;
+    e_ptr->route = entry->route;
+    e_ptr->source = entry->source;
+}
 
-    //! flag that uses the available entries of the router table instead of
-    //! compressing as much as possible.
-    uint32_t compress_as_much_as_possible;
+//! \brief Copy an entry from one index to another
+//! \param[in] new_index: Where to copy to
+//! \param[in] old_index: Where to copy from
+static inline void routing_table_copy_entry(int new_index, int old_index) {
+    entry_t* e_ptr = routing_table_get_entry(old_index);
+    routing_table_put_entry(e_ptr, new_index);
+}
 
-    //! Initial size of the routing table.
-    uint32_t table_size;
-
-    //! Routing table entries
-    entry_t entries[];
-} header_t;
+//! \brief Swap a pair of entries at the given indices
+//! \param[in] a: The first index where an entry is
+//! \param[in] b: The second index where an entry is
+static inline void swap_entries(int a, int b) {
+    log_debug("swap %u %u", a, b);
+    entry_t temp = *routing_table_get_entry(a);
+    log_debug("before %u %u %u %u",
+            temp.keymask.key, temp.keymask.mask, temp.route, temp.source);
+    routing_table_put_entry(routing_table_get_entry(b), a);
+    routing_table_put_entry(&temp, b);
+    entry_t temp2 = *routing_table_get_entry(b);
+    log_debug("before %u %u %u %u",
+            temp2.keymask.key, temp2.keymask.mask, temp2.route, temp2.source);
+}
 
 #endif  // __ROUTING_TABLE_H__

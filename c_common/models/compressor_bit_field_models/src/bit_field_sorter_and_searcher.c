@@ -29,7 +29,7 @@
 #include <data_specification.h>
 #include <malloc_extras.h>
 #include "common-typedefs.h"
-#include "common/routing_table.h"
+#include "common/routing_table_utils.h"
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"
 #include "common/bit_field_table_generator.h"

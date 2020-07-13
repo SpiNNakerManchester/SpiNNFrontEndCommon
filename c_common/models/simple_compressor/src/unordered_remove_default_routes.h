@@ -20,11 +20,12 @@
  * \brief How to remove default routes from a routing table.
  */
 
-#include <stdbool.h>
-#include "routing_table.h"
-
 #ifndef __REMOVE_DEFAULT_ROUTES_H__
 #define __REMOVE_DEFAULT_ROUTES_H__
+
+#include <stdbool.h>
+#include "routing_table.h"
+#include <debug.h>
 
 //! Picks the bits of a link out of a route
 #define LINK_MASK 0x3f
@@ -44,44 +45,53 @@ static inline bool _opposite_links(entry_t *entry) {
 
 //! \brief Remove defaultable routes from a routing table if that helps.
 //! \param[in,out] table: The table to remove the routes from.
-static inline void remove_default_routes_minimise(table_t *table) {
+static inline bool remove_default_routes_minimise(int target_length) {
+    if (routing_table_get_n_entries() <= target_length) {
+        log_info("No Minimise needed as size %u, is below target of %u",
+        routing_table_get_n_entries(),  target_length);
+        return true;
+    }
     // Work out if removing defaultable links is worthwhile
-    uint32_t after_size = table->size;
-    for (uint32_t i = 0; i < table->size; i++) {
+    int after_size = 0;
+    for (int i = 0; i < routing_table_get_n_entries(); i++) {
         // Get the current entry
-        entry_t entry = table->entries[i];
+        entry_t* entry = routing_table_get_entry(i);
 
         // See if it can be removed
-        if (_just_a_link(entry.route) &&      // Only one output, a link
-                _just_a_link(entry.source) && // Only one input, a link
-                _opposite_links(&entry)) {    // Source is opposite to sink
-            after_size--;
+        if (_just_a_link(entry->route) &&      // Only one output, a link
+                _just_a_link(entry->source) && // Only one input, a link
+                _opposite_links(entry)) {    // Source is opposite to sink
+        } else {
+            after_size++;
+            // If we won't fit afterwards, no sense trying
+            if (after_size > target_length) {
+                return false;
+            }
         }
     }
 
-    // If we won't fit afterwards, no sense trying
-    if (after_size > rtr_alloc_max()) {
-        return;
-    }
-
+    uint32_t removed = 0;
+    int last = routing_table_get_n_entries();
     // Do the actual removal
-    for (uint32_t i = 0; i < table->size; i++) {
+    for (int i = 0; i < after_size; i++) {
         // Get the current entry
-        entry_t entry = table->entries[i];
+        entry_t* entry = routing_table_get_entry(i);
 
         // See if it can be removed
-        if (_just_a_link(entry.route) &&      // Only one output, a link
-                _just_a_link(entry.source) && // Only one input, a link
-                _opposite_links(&entry)) {    // Source is opposite to sink
-            uint32_t last = table->size - 1;
+        if (_just_a_link(entry->route) &&      // Only one output, a link
+                _just_a_link(entry->source) && // Only one input, a link
+                _opposite_links(entry)) {    // Source is opposite to sink
             if (i < last) {
-                table->entries[i] = table->entries[last];
-                table->size--;
+                routing_table_copy_entry(i, last);
+                removed++;
+                last--;
                 // Reuse same i in next pass so reduce before the ++
                 i--;
             }
         }
     }
+    routing_table_remove_from_size(removed);
+    return true;
 }
 
 #endif

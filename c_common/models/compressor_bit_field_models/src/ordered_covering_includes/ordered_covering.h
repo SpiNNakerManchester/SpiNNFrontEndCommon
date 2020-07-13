@@ -775,7 +775,7 @@ static inline bool oc_merge_apply(
 //! \param[in] compress_as_much_as_possible: Only compress to normal routing
 //!       table length
 //! \return Whether successful or not.
-static inline bool oc_minimise(
+bool minimise_run(
         int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing,
         bool compress_only_when_needed, bool compress_as_much_as_possible) {

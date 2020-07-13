@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-APP = simple_minimise
-SOURCES = simple_minimise.c
+APP = simple_pair_compressor
+SOURCES = simple_compressor.c
 
 include ../fec_models.mk
+
+CFLAGS += -DUSE_PAIR

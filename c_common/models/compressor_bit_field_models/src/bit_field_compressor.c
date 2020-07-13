@@ -23,12 +23,13 @@
 #include <sdp_no_scp.h>
 #include <malloc_extras.h>
 #include "common-typedefs.h"
-#include "common/routing_table.h"
 #include "common/constants.h"
 #include "common/compressor_sorter_structs.h"
 #include "common/bit_field_table_generator.h"
-#include "compressor_includes/ordered_covering.h"
-#include "common//bit_field_table_generator.h"
+#include "common/minimise.h"
+#include "ordered_covering_includes/ordered_covering.h"
+#include "common/routing_tables.h"
+#include "common/bit_field_table_generator.h"
 
 /*****************************************************************************/
 
@@ -101,7 +102,7 @@ void start_compression_process(void) {
 #endif
 
     // run compression
-    bool success = oc_minimise(
+    bool success = minimise_run(
             TARGET_LENGTH, &failed_by_malloc, &stop_compressing,
             compress_only_when_needed, compress_as_much_as_possible);
 
@@ -110,14 +111,14 @@ void start_compression_process(void) {
 
     // Decode whether we succeeded or failed.
     if (success && (routing_table_get_n_entries() <= TARGET_LENGTH)) {
-        log_info("Passed oc_minimise() with success code: %d", success);
+        log_info("Passed minimise_run() with success code: %d", success);
         routing_tables_save(comms_sdram->routing_tables);
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
         return;
     }
 
     // Not a success, could be one of 4 failure states
-    log_info("Failed oc_minimise() with success code: %d", success);
+    log_info("Failed minimise_run() with success code: %d", success);
     if (failed_by_malloc) {  // malloc failed somewhere
         log_debug("failed malloc response");
         comms_sdram->compressor_state = FAILED_MALLOC;
@@ -140,7 +141,7 @@ void setup_routing_tables(void) {
     routing_tables_init(comms_sdram->routing_tables);
 
     if (comms_sdram->mid_point == 0) {
-        routing_table_clone_table(comms_sdram->uncompressed_router_table);
+        routing_tables_clone_table(comms_sdram->uncompressed_router_table);
     } else {
         bit_field_table_generator_create_bit_field_router_tables(
                 comms_sdram->mid_point, comms_sdram->uncompressed_router_table,

@@ -21,7 +21,7 @@
 #define __BIT_FIELD_TABLE_GENERATOR_H__
 
 #include "../common/constants.h"
-#include "../common/routing_table.h"
+#include "../common/routing_tables.h"
 #include <filter_info.h>
 
 //! max number of links on a router
@@ -95,7 +95,7 @@ void generate_table(
             }
         }
 
-        routing_table_append_new_entry(
+        routing_tables_append_new_entry(
                 original_entry.key_mask.key + atom,
                 NEURON_LEVEL_MASK, new_route, original_entry.source);
     }
@@ -182,7 +182,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
             generate_table(original[rt_i], filters, bit_field_processors,
                     bf_found);
         } else {
-            routing_table_append_entry(original[rt_i]);
+            routing_tables_append_entry(original[rt_i]);
         }
         log_debug("key %d size %d",
                 original[rt_i].key_mask.key, routing_table_get_n_entries());

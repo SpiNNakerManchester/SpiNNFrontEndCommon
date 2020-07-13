@@ -93,7 +93,7 @@ def pair_compression(
      """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
-        "simple_minimise.aplx")
+        "simple_pair_compressor.aplx")
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
         compress_only_when_needed, machine, provenance_file_path,
