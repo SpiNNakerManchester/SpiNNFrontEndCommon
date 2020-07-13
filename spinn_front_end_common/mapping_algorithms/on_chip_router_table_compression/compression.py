@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import functools
 import logging
 import os
 import struct
@@ -22,10 +23,9 @@ from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.system_control_logic import (
+    run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.interface.interface_functions import (
-    ChipIOBufExtractor)
-
 logger = logging.getLogger(__name__)
 _FOUR_WORDS = struct.Struct("<IIII")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
@@ -148,48 +148,33 @@ class Compression(object):
         # pylint: disable=too-many-arguments
 
         # build progress bar
-        progress = ProgressBar(
-            len(self._routing_tables.routing_tables) + 2,
+        progress_bar = ProgressBar(
+            len(self._routing_tables.routing_tables) * 2,
             "Running routing table compression on chip")
 
         self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
 
         # figure size of SDRAM needed for each chip for storing the routing
         # table
-        for routing_table in progress.over(self._routing_tables, False):
+        for routing_table in progress_bar.over(self._routing_tables, False):
             self._load_routing_table(routing_table)
 
         # load the router compressor executable
         executable_targets = self._load_executables()
 
-        # update progress bar
-        progress.update()
-
-        # Wait for the executable to finish
-        succeeded = False
-        try:
-            self._transceiver.wait_for_cores_to_be_in_state(
-                executable_targets.all_core_subsets, self._compressor_app_id,
-                [CPUState.FINISHED])
-            succeeded = True
-        finally:
-            # get the debug data
-            if not succeeded:
-                self._handle_failure(
-                    executable_targets)
-
-        # Check if any cores have not completed successfully
-        self._check_for_success(executable_targets, register)
-
-        # update progress bar
-        progress.update()
-
-        # stop anything that's associated with the compressor binary
-        self._transceiver.stop_application(self._compressor_app_id)
-        self._transceiver.app_id_tracker.free_id(self._compressor_app_id)
-
-        # update the progress bar
-        progress.end()
+        executable_finder = ExecutableFinder(binary_search_paths=[])
+        read_algorithm_iobuf = True
+        run_system_application(
+            executable_targets, self._compressor_app_id, self._transceiver,
+            self._provenance_file_path, executable_finder,
+            read_algorithm_iobuf,
+            functools.partial(
+                self._check_for_success,
+                register=register),
+            [CPUState.FINISHED], False, 0,
+            "compressor_on_{}_{}_{}.txt",
+            [self._binary_path],
+            progress_bar)
 
     def _load_routing_table(self, table):
         """
@@ -205,7 +190,7 @@ class Compression(object):
         # write SDRAM requirements per chip
         self._transceiver.write_memory(table.x, table.y, base_address, data)
 
-    def _check_for_success(self, executable_targets, register):
+    def _check_for_success(self, executable_targets, transceiver, register):
         """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
@@ -219,11 +204,11 @@ class Compression(object):
             for p in core_subset.processor_ids:
                 # Read the result from specified register
                 if register == 0:
-                    result = self._transceiver.read_user_0(x, y, p)
+                    result = transceiver.read_user_0(x, y, p)
                 elif register == 1:
-                    result = self._transceiver.read_user_1(x, y, p)
+                    result = transceiver.read_user_1(x, y, p)
                 elif register == 2:
-                    result = self._transceiver.read_user_2(x, y, p)
+                    result = transceiver.read_user_2(x, y, p)
                 else:
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
@@ -233,23 +218,6 @@ class Compression(object):
                     raise SpinnFrontEndException(
                         "The router compressor on {}, {} failed to complete"
                         .format(x, y))
-
-    def _handle_failure(self, executable_targets):
-        """
-        :param ExecutableTargets executable_targets:
-        """
-        logger.info("Router compressor has failed")
-        iobuf_extractor = ChipIOBufExtractor()
-        executable_finder = ExecutableFinder(binary_search_paths=[])
-        io_errors, io_warnings = iobuf_extractor(
-            self._transceiver, executable_targets, executable_finder,
-            self._provenance_file_path, self._provenance_file_path)
-        for warning in io_warnings:
-            logger.warning(warning)
-        for error in io_errors:
-            logger.error(error)
-        self._transceiver.stop_application(self._compressor_app_id)
-        self._transceiver.app_id_tracker.free_id(self._compressor_app_id)
 
     def _load_executables(self):
         """ Loads the router compressor onto the chips.
@@ -275,10 +243,8 @@ class Compression(object):
         # build executable targets
         executable_targets = ExecutableTargets()
         executable_targets.add_subsets(self._binary_path, core_subsets,
-                                       ExecutableType.RUNNING)
+                                       ExecutableType.SYSTEM)
 
-        self._transceiver.execute_application(
-            executable_targets, self._compressor_app_id)
         return executable_targets
 
     def _build_data(self, routing_table):
