@@ -332,7 +332,7 @@ def produce_key_constraint_based_off_outgoing_partitions(
     """
     if virtual_key is not None and not partition.constraints:
         keys_covered, has_tried_to_cover, key_space = \
-            _verify_if_incoming_constraints_covers_key_space(
+            _check_if_incoming_constraints_cover_key_space(
                 machine_graph=machine_graph, vertex=vertex,
                 mask=mask, virtual_key=virtual_key)
         if not keys_covered and not has_tried_to_cover:
@@ -352,7 +352,7 @@ def produce_key_constraint_based_off_outgoing_partitions(
     return list()
 
 
-def _verify_if_incoming_constraints_covers_key_space(
+def _check_if_incoming_constraints_cover_key_space(
         machine_graph, vertex, virtual_key, mask):
     """ Checks the partitions going out of the vertex and sees if there's\
         constraints that cover of try to cover the key space of the vertex.
@@ -364,22 +364,21 @@ def _verify_if_incoming_constraints_covers_key_space(
     :param int virtual_key: the key that vertex is to transmit with
     :param int mask: the mask of the key that the vertex will transmit with
     :return:
-        2 Booleans (first saying if the key space is covered, the second
-        saying if the key space was attempted to be covered), and the list of
-        free spaces that remain.
+        whether the key space is covered, whether the key space was attempted
+        to be covered, and the list of free spaces that remain.
     :rtype: tuple(bool, bool, list(ElementFreeSpace))
     """
     tried_to_cover = False
-    key_space = ElementAllocatorAlgorithm(
+    allocator = ElementAllocatorAlgorithm(
         generate_key_ranges_from_mask(virtual_key, mask))
     for partition in \
             machine_graph.get_outgoing_edge_partitions_starting_at_vertex(
                 vertex):
         if partition.traffic_type == EdgeTrafficType.MULTICAST:
-            tried_to_cover = _process_multicast_partition(
-                partition, key_space, tried_to_cover)
-    return (not key_space.space_remaining(), tried_to_cover,
-            key_space.spaces_left())
+            tried_to_cover |= _process_multicast_partition(
+                partition, allocator)
+    return (not allocator.space_remaining(), tried_to_cover,
+            allocator.spaces_left())
 
 
 def calculate_mask(n_keys):
@@ -396,29 +395,29 @@ def calculate_mask(n_keys):
     return mask, max_key
 
 
-def _process_multicast_partition(partition, key_space, tried_to_cover):
+def _process_multicast_partition(partition, allocator):
     """
     :param ~pacman.model.graphs.OutgoingEdgePartition partition:
-    :param key_space:
-    :type key_space:
+    :param allocator:
+    :type allocator:
         ~pacman.utilities.algorithm_utilities.ElementAllocatorAlgorithm
-    :param bool tried_to_cover:
-    :return: tried_to_cover
+    :return: whether this partition tries to cover the key space
     :rtype: bool
     """
     relevant_vertices = (
         edge.post_vertex
         for edge in partition.edges
-        if isinstance(edge.post_vertex,
-                      AbstractProvidesIncomingPartitionConstraints))
+        if isinstance(
+            edge.post_vertex, AbstractProvidesIncomingPartitionConstraints))
+    tried_to_cover = False
     for vertex in relevant_vertices:
         key_constraints = locate_constraints_of_type(
             vertex.get_incoming_partition_constraints(partition),
             AbstractKeyAllocatorConstraint)
         if len(key_constraints) > 1:
             raise ConfigurationException(
-                "There are too many key constraints. Please rectify "
-                "and try again")
+                "There are too many key constraints on vertex {}. "
+                "Please rectify and try again".format(vertex.label))
         elif not key_constraints:
             # No key constraints... so just skip it
             continue
@@ -427,7 +426,7 @@ def _process_multicast_partition(partition, key_space, tried_to_cover):
             for key_and_mask in key_constraint.keys_and_masks:
                 for base_key, n_keys in generate_key_ranges_from_mask(
                         key_and_mask.key, key_and_mask.mask):
-                    key_space.allocate_elements(base_key, n_keys)
+                    allocator.allocate_elements(base_key, n_keys)
                 tried_to_cover = True
     return tried_to_cover
 
