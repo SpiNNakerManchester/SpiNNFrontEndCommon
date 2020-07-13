@@ -22,6 +22,24 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class VirtualMachineGenerator(object):
     """ Generates a virtual machine with given dimensions and configuration.
+
+    :param int width: The width of the machine in chips
+    :param int height: The height of the machine in chips
+    :param int version: The version of board to create
+    :param list(tuple(int,int)) down_chips:
+        The set of chips that should be considered broken
+    :param list(tuple(int,int,int)) down_cores:
+        The set of cores that should be considered broken
+    :param list(tuple(int,int,int)) down_links:
+        The set of links that should be considered broken
+    :param int max_sdram_size: The SDRAM that should be given to each chip
+    :param int router_entries_per_chip:
+        The number of router entries to allocate.
+    :param str json_path:
+        Where to load a JSON description of the machine from, if anywhere.
+    :return: The virtual machine.
+    :rtype: ~spinn_machine.Machine
+    :raises Exception: If given bad arguments
     """
 
     __slots__ = []
@@ -33,16 +51,19 @@ class VirtualMachineGenerator(object):
             router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES,
             json_path=None):
         """
-        :param width: The width of the machine in chips
-        :param height: The height of the machine in chips
-        :param version: The version of board to create
-        :param with_monitors: If true, CPU 0 will be marked as a monitor
-        :param down_chips: The set of chips that should be considered broken
-        :param down_cores: The set of cores that should be considered broken
-        :param down_links: The set of links that should be considered broken
-        :param max_sdram_size: The SDRAM that should be given to each chip
+        :param int width:
+        :param int height:
+        :param int version:
+        :param list(tuple(int,int)) down_chips:
+        :param list(tuple(int,int,int)) down_cores:
+        :param list(tuple(int,int,int)) down_links:
+        :param int max_sdram_size:
+        :param int router_entries_per_chip:
+        :param str json_path:
+        :rtype: ~.Machine
+        :raises Exception:
         """
-        # For backward compatibily support version in csf files for now
+        # For backward compatibility support version in csf files for now
         if version is not None:
             if version in [2, 3]:
                 if height is None:
@@ -88,5 +109,9 @@ class VirtualMachineGenerator(object):
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links()
         machine.add_fpga_links()
+
+        logger.info(
+            "Created a virtual machine which has {}".format(
+                machine.cores_and_link_output_string()))
 
         return machine

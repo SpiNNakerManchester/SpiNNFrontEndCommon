@@ -19,7 +19,7 @@ import shutil
 import numpy
 from spinn_machine import SDRAM
 from pacman.model.resources import ResourceContainer
-from pacman.model.graphs.common import Slice, GraphMapper
+from pacman.model.graphs.common import Slice
 from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
@@ -73,7 +73,7 @@ class _TestApplicationVertex(
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        return _TestMachineVertex()
+        return _TestMachineVertex(label, constraints, self, vertex_slice)
 
     def requires_memory_regions_to_be_reloaded(self):
         return self._requires_regions_to_be_reloaded
@@ -105,13 +105,13 @@ class _MockCPUInfo(object):
 class _MockTransceiver(object):
     """ Pretend transceiver
     """
+    # pylint: disable=unused-argument
 
     def __init__(self, user_0_addresses, region_addresses):
         """
-
         :param user_0_addresses: dict of (x, y, p) to user_0_address
-        :param region_addresses:\
-            list of constants.MAX_MEM_REGIONS addresses to which the\
+        :param region_addresses:
+            list of constants.MAX_MEM_REGIONS addresses to which the
             base address will be added to each
         """
         self._regions_rewritten = list()
@@ -155,25 +155,20 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         m_vertex_1 = vertex.create_machine_vertex(m_slice_1, None, None, None)
         m_vertex_2 = vertex.create_machine_vertex(m_slice_2, None, None, None)
 
-        graph_mapper = GraphMapper()
-        graph_mapper.add_vertex_mapping(m_vertex_1, m_slice_1, vertex)
-        graph_mapper.add_vertex_mapping(m_vertex_2, m_slice_2, vertex)
-
         placements = Placements([
             Placement(m_vertex_1, 0, 0, 1),
             Placement(m_vertex_2, 0, 0, 2)
         ])
 
         user_0_addresses = {
-            (placement.x, placement.y, placement.p): i * 1000
+            placement.location: i * 1000
             for i, placement in enumerate(placements.placements)
         }
         region_addresses = [i for i in range(MAX_MEM_REGIONS)]
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
         reloader = DSGRegionReloader()
-        reloader.__call__(
-            transceiver, placements, "localhost", "test", False, graph_mapper)
+        reloader.__call__(transceiver, placements, "localhost", "test", False)
 
         regions_rewritten = transceiver.regions_rewritten
 
@@ -188,8 +183,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         # Check that the data rewritten is correct
         for i, placement in enumerate(placements.placements):
-            user_0_address = user_0_addresses[
-                placement.x, placement.y, placement.p]
+            user_0_address = user_0_addresses[placement.location]
             for j in range(len(reload_region_data)):
                 pos = (i * len(reload_region_data)) + j
                 region, data = reload_region_data[j]
