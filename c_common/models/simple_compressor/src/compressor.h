@@ -38,9 +38,13 @@
 #include "routing_table.h"
 
 //! \brief The callback for setting off the router compressor
-//! \param[in] unused0: unused
-//! \param[in] unused1: unused
-bool run_compressor(int compress_as_much_as_possible) {
+//! \param[in] compress_as_much_as_possible: Only compress to normal routing
+//!       table length
+//! \param[out] failed_by_malloc: Flag stating that it failed due to malloc
+//! \param[in] stop_compressing: Variable saying if the compressor should stop
+//!    and return false; _set by interrupt_ DURING the run of this method!
+bool run_compressor(int compress_as_much_as_possible, bool *failed_by_malloc,
+        volatile bool *stop_compressing) {
     // Get the target length of the routing table
     log_debug("acquire target length");
     int target_length = 0;
@@ -53,9 +57,13 @@ bool run_compressor(int compress_as_much_as_possible) {
         return true;
     }
 
-   // Perform the minimisation
+    if (stop_compressing) {
+        log_info("Not compressing as asked to stop");
+        return false;
+    }
+    // Perform the minimisation
     log_debug("minimise");
-    minimise_run(target_length);
+    minimise_run(target_length, failed_by_malloc, stop_compressing);
     log_debug("done minimise");
 
     return routing_table_get_n_entries() <= target_length;

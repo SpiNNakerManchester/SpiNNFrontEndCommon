@@ -25,9 +25,6 @@
 //! \param[out] failed_by_malloc: Flag stating that it failed due to malloc
 //! \param[out] stop_compressing: Variable saying if the compressor should stop
 //!    and return false; _set by interrupt_ DURING the run of this method!
-//! \param[in] compress_only_when_needed: Only compress when needed
-//! \param[in] compress_as_much_as_possible: Only compress to normal routing
-//!       table length
 //! \return Whether successful or not.
 bool minimise_run(
         int target_length, bool *failed_by_malloc,

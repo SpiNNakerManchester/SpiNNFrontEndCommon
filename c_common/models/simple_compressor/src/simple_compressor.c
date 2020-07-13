@@ -58,9 +58,15 @@ void compress_start(uint unused0, uint unused1) {
     log_debug("finished reading table");
 
      // Store intermediate sizes for later reporting (if we fail to minimise)
-     uint32_t size_original = routing_table_get_n_entries();
+    uint32_t size_original = routing_table_get_n_entries();
 
-    run_compressor(header->compress_as_much_as_possible);
+    // Currently not used here but used by the bitfeild stuff
+    bool failed_by_malloc=false;
+    // Currently not used here but used by the bitfeild stuff
+    bool stop_compressing=false;
+    run_compressor(header->compress_as_much_as_possible,
+        &failed_by_malloc, &stop_compressing);
+
     // report size to the host for provenance aspects
     log_info("Compressed the router table from %d to %d entries",
             size_original, routing_table_get_n_entries());

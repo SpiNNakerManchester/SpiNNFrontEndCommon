@@ -274,7 +274,11 @@ static inline void update_frequency(int index) {
 
 //! \brief Implementation of minimise()
 //! \param[in] target_length: ignored
-static inline void minimise_run(uint32_t target_length) {
+//! \param[out] failed_by_malloc: Never changed but required by api
+//! \param[in] stop_compressing: Variable saying if the compressor should stop
+//!    and return false; _set by interrupt_ DURING the run of this method!
+static inline void minimise_run(uint32_t target_length, bool *failed_by_malloc,
+        volatile bool *stop_compressing) {
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
         log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
@@ -296,6 +300,10 @@ static inline void minimise_run(uint32_t target_length) {
     }
 
     quicksort_route(0, routes_count);
+    if (stop_compressing) {
+        log_info("Stopping as asked to stop");
+        return;
+    }
 
     log_info("after sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
@@ -304,6 +312,10 @@ static inline void minimise_run(uint32_t target_length) {
 
     log_info("do quicksort_table by route %u", table_size);
     quicksort_table(0, table_size);
+    if (stop_compressing) {
+        log_info("Stopping before compression as asked to stop");
+        return;
+    }
 
     write_index = 0;
     int max_index = table_size - 1;
@@ -312,15 +324,24 @@ static inline void minimise_run(uint32_t target_length) {
     while (left <= max_index) {
         int right = left;
         uint32_t left_route = routing_table_get_entry(left)->route;
-        log_info("A %u %u %u %u", left, max_index, right, left_route);
+        log_debug("A %u %u %u %u", left, max_index, right, left_route);
         while ((right < table_size - 1) &&
                 routing_table_get_entry(right+1)->route ==
                         left_route) {
             right++;
         }
         remaining_index = right + 1;
-        log_info("compress %u %u", left, right);
+        log_debug("compress %u %u", left, right);
         compress_by_route(left, right);
+        if (write_index > rtr_alloc_max()){
+            log_error("Compression not possible as already found %d entries "
+            "where max allowed is %d", write_index, rtr_alloc_max());
+            return;
+        }
+        if (stop_compressing) {
+            log_info("Stopping during compression as asked to stop");
+            return;
+        }
         left = right + 1;
     }
 
