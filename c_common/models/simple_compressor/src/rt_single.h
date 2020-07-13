@@ -78,9 +78,6 @@ typedef struct {
     //! load this application.
     uint32_t app_id;
 
-    //! flag for compressing when only needed
-    uint32_t compress_only_when_needed;
-
     //! flag that uses the available entries of the router table instead of
     //! compressing as much as possible.
     uint32_t compress_as_much_as_possible;

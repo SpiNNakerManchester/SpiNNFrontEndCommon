@@ -28,6 +28,7 @@ from spinn_front_end_common.utilities.system_control_logic import (
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 logger = logging.getLogger(__name__)
 _FOUR_WORDS = struct.Struct("<IIII")
+_THREE_WORDS = struct.Struct("<III")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
 
@@ -58,15 +59,15 @@ def mundy_on_chip_router_compression(
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        compress_only_when_needed, machine, system_provenance_folder,
+        machine, system_provenance_folder,
         routing_tables, transceiver)
+    compression._compress_only_when_needed = compress_only_when_needed
     compression.compress(register=0)
 
 
 def pair_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path,
-        compress_only_when_needed=False,
         compress_as_much_as_possible=True):
     """ Load routing tables and compress then using the Pair Algorithm.
 
@@ -86,9 +87,6 @@ def pair_compression(
         If False, the compressor will only reduce the table until it fits in
         the router space, otherwise it will try to reduce until it until it
         can't reduce it any more
-    :param bool compress_only_when_needed:
-        If True, the compressor will only compress if the table doesn't fit in
-        the current router space, otherwise it will just load the table
     :param executable_finder: tracker of binaries.
      """
     # pylint: disable=too-many-arguments
@@ -96,8 +94,7 @@ def pair_compression(
         "simple_pair_compressor.aplx")
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        compress_only_when_needed, machine, provenance_file_path,
-        routing_tables, transceiver)
+        machine, provenance_file_path, routing_tables, transceiver)
     compression.compress(register=1)
 
 
@@ -118,7 +115,7 @@ class Compression(object):
 
     def __init__(
             self, app_id, binary_path, compress_as_much_as_possible,
-            compress_only_when_needed, machine, provenance_file_path,
+            machine, provenance_file_path,
             routing_tables, transceiver):
         """
         :param int app_id: the application ID used by the main application
@@ -134,7 +131,8 @@ class Compression(object):
         self._app_id = app_id
         self._binary_path = binary_path
         self._compress_as_much_as_possible = compress_as_much_as_possible
-        self._compress_only_when_needed = compress_only_when_needed
+        # Only used by mundy compressor we can not rebuild
+        self._compress_only_when_needed = None
         self._machine = machine
         self._provenance_file_path = provenance_file_path
         self._transceiver = transceiver
@@ -261,11 +259,19 @@ class Compression(object):
         # results in SDRAM and the router table entries
 
         data = b''
-        data += _FOUR_WORDS.pack(
-            self._app_id, int(self._compress_only_when_needed),
-            int(self._compress_as_much_as_possible),
-            # Write the size of the table
-            routing_table.number_of_entries)
+        if self._compress_only_when_needed is None:
+            data += _THREE_WORDS.pack(
+                self._app_id,
+                int(self._compress_as_much_as_possible),
+                # Write the size of the table
+                routing_table.number_of_entries)
+        else:
+            pop = 1/0
+            data += _FOUR_WORDS.pack(
+                self._app_id, int(self._compress_only_when_needed),
+                int(self._compress_as_much_as_possible),
+                # Write the size of the table
+                routing_table.number_of_entries)
 
         for entry in routing_table.multicast_routing_entries:
             data += _FOUR_WORDS.pack(
