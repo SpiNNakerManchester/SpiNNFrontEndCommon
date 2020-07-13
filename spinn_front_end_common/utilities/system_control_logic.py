@@ -88,8 +88,6 @@ def run_system_application(
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states,
             progress_bar=progress_bar)
-        if progress_bar is not None:
-            progress_bar.end()
         succeeded = True
     except (SpinnmanTimeoutException, SpinnmanException) as ex:
         succeeded = False
