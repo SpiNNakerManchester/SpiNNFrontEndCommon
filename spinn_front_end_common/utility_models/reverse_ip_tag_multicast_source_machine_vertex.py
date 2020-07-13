@@ -13,11 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import IntEnum
 import logging
 import math
 import struct
+import re
 import numpy
-from enum import IntEnum
 from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -222,10 +223,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     # assuming this must be a single integer
                     n_buffer_times += 1
             if n_buffer_times == 0:
+                # Compact long sequences of empties for readability, which
+                # reduces message output during testing at least
+                sbt = re.sub(r"(?:\[\], ){3,}\[\]", "[], ..., []",
+                             str(send_buffer_times))
                 logger.warning(
                     "Combination of send_buffer_times {} and slice {} results "
                     "in a core with a ReverseIPTagMulticastSourceMachineVertex"
-                    " which does not spike", send_buffer_times, vertex_slice)
+                    " which does not spike", sbt, vertex_slice)
         if n_buffer_times == 0:
             self._send_buffer_times = None
             self._send_buffers = None
