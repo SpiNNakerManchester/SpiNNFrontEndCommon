@@ -58,6 +58,7 @@ PROV_TOP_NAME = "bit_field_router_provenance"
 PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
 
+
 @add_metaclass(AbstractBase)
 class MachineBitFieldRouterCompressor(object):
     """ On-machine bitfield-aware routing table compression.
@@ -824,7 +825,7 @@ class MachineBitFieldRouterCompressor(object):
 
 
 class MachineBitFieldUnorderedRouterCompressor(
-    MachineBitFieldRouterCompressor):
+        MachineBitFieldRouterCompressor):
 
     @property
     @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
