@@ -19,7 +19,6 @@
 //! \brief The bitfield compressor
 #include <spin1_api.h>
 #include <debug.h>
-#include <bit_field.h>
 #include <sdp_no_scp.h>
 #include <malloc_extras.h>
 #include "common-typedefs.h"

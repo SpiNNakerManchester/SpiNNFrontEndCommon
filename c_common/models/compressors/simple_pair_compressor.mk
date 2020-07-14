@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-APP = bit_field_pair_compressor
+APP = simple_pair_compressor
 
-SOURCES = bit_field_compressor.c
+SOURCES = simple/simple_compressor.c
 
 FEC_OPT = $(OSPACE)
 
