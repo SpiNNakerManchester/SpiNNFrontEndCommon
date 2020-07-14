@@ -31,9 +31,8 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import (
         get_generality as
         ordered_covering_generality)
-from spinn_front_end_common.mapping_algorithms. \
-    on_chip_router_table_compression.compression import (
-        Compression)
+from spinn_front_end_common.mapping_algorithms.\
+    on_chip_router_table_compression.compression import make_source_hack
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
@@ -697,7 +696,7 @@ class MachineBitFieldRouterCompressor(object):
             data += self._FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                Compression.make_source_hack(entry=entry))
+                make_source_hack(entry=entry))
         return bytearray(data)
 
     @staticmethod

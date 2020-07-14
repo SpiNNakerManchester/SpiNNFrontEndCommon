@@ -135,6 +135,21 @@ def unordered_compression(
         "Running unordered routing table compression on chip")
     compression.compress(register=1)
 
+def make_source_hack(entry):
+    """ Hack to support the source requirement for the router compressor\
+        on chip
+
+    :param ~spinn_machine.MulticastRoutingEntry entry:
+        the multicast router table entry.
+    :return: return the source value
+    :rtype: int
+    """
+    if entry.defaultable:
+        return (list(entry.link_ids)[0] + 3) % 6
+    elif entry.link_ids:
+        return list(entry.link_ids)[0]
+    return 0
+
 
 class Compression(object):
     """ Compressor that uses a on chip router compressor
@@ -318,21 +333,5 @@ class Compression(object):
             data += _FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                Compression.make_source_hack(entry=entry))
+                make_source_hack(entry=entry))
         return bytearray(data)
-
-    @staticmethod
-    def make_source_hack(entry):
-        """ Hack to support the source requirement for the router compressor\
-            on chip
-
-        :param ~spinn_machine.MulticastRoutingEntry entry:
-            the multicast router table entry.
-        :return: return the source value
-        :rtype: int
-        """
-        if entry.defaultable:
-            return (list(entry.link_ids)[0] + 3) % 6
-        elif entry.link_ids:
-            return list(entry.link_ids)[0]
-        return 0
