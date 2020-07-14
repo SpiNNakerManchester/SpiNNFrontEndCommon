@@ -335,7 +335,7 @@ class MachineBitFieldRouterCompressor(object):
                 self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
 
         bit_field_compressor_executable_path = \
-            executable_finder.get_executable_path(self._COMPRESSOR_APLX)
+            executable_finder.get_executable_path(self.compressor_aplx)
 
         # add the sets
         executable_targets.add_subsets(
@@ -814,9 +814,15 @@ class MachineBitFieldRouterCompressor(object):
         data += struct.pack("<{}I".format(len(cores)), *compression_cores)
         return data
 
+
 class MachineBitFieldUnorderedRouterCompressor(MachineBitFieldRouterCompressor):
-    _COMPRESSOR_APLX = "bit_field_unordered_compressor.aplx"
+    @property
+    def compressor_aplx(self):
+        return "bit_field_unordered_compressor.aplx"
+
 
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
-    _COMPRESSOR_APLX = "bit_field_pair_compressor.aplx"
+    @property
+    def compressor_aplx(self):
+        return "bit_field_pair_compressor.aplx"
 
