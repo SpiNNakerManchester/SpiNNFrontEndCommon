@@ -97,16 +97,9 @@ void start_compression_process(void) {
     }
 #endif
 
-    int target_length;
-    if (compress_as_much_as_possible){
-        target_length = 0;
-    } else {
-         target_length = rtr_alloc_max();
-    }
-
     // run compression
     bool success = run_compressor(
-        target_length, &failed_by_malloc, &stop_compressing);
+        compress_as_much_as_possible, &failed_by_malloc, &stop_compressing);
 
     // turn off timer and set us into pause state
     spin1_pause();
