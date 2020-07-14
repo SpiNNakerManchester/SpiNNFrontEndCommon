@@ -61,16 +61,20 @@ void compress_start(uint unused0, uint unused1) {
     uint32_t size_original = routing_table_get_n_entries();
 
     // Currently not used here but used by the bitfeild stuff
-    bool failed_by_malloc=false;
+    bool failed_by_malloc = false;
     // Currently not used here but used by the bitfeild stuff
-    bool stop_compressing=false;
-    run_compressor(header->compress_as_much_as_possible,
-        &failed_by_malloc, &stop_compressing);
+    bool stop_compressing = false;
+    if (run_compressor(header->compress_as_much_as_possible,
+        &failed_by_malloc, &stop_compressing)) {
+        // report size to the host for provenance aspects
+        log_info("Compressed the router table from %d to %d entries",
+                size_original, routing_table_get_n_entries());
+    } else {
+        log_info("Exiting as compressor reported failure");
+        // set the failed flag and exit
+        malloc_extras_terminate(EXIT_FAIL);
 
-    // report size to the host for provenance aspects
-    log_info("Compressed the router table from %d to %d entries",
-            size_original, routing_table_get_n_entries());
-
+    }
     // Try to load the routing table
     log_debug("try loading tables");
     if (load_routing_table(header->app_id)) {

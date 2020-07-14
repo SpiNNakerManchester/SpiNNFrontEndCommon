@@ -52,19 +52,20 @@ bool run_compressor(int compress_as_much_as_possible, bool *failed_by_malloc,
         target_length = rtr_alloc_max();
     }
     log_info("target length of %d", target_length);
-
     if (remove_default_routes_minimise(target_length)) {
         return true;
     }
 
-    if (stop_compressing) {
+    if (*stop_compressing) {
         log_info("Not compressing as asked to stop");
         return false;
     }
     // Perform the minimisation
     log_debug("minimise");
-    minimise_run(target_length, failed_by_malloc, stop_compressing);
-    log_debug("done minimise");
+    if (minimise_run(target_length, failed_by_malloc, stop_compressing)) {
+        return routing_table_get_n_entries() <= rtr_alloc_max();
+    } else {
+        return false;
+    }
 
-    return routing_table_get_n_entries() <= target_length;
 }

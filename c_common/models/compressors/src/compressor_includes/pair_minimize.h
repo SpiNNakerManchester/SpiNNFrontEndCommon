@@ -297,25 +297,25 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         update_frequency(index);
     }
 
-    log_info("before sort %u", routes_count);
+    log_debug("before sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
     quicksort_route(0, routes_count);
-    if (stop_compressing) {
+    if (*stop_compressing) {
         log_info("Stopping as asked to stop");
         return false;
     }
 
-    log_info("after sort %u", routes_count);
+    log_debug("after sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
-    log_info("do quicksort_table by route %u", table_size);
+    log_debug("do quicksort_table by route %u", table_size);
     quicksort_table(0, table_size);
-    if (stop_compressing) {
+    if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
         return false;
     }
@@ -341,16 +341,16 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
             "where max allowed is %d", write_index, rtr_alloc_max());
             return false;
         }
-        if (stop_compressing) {
+        if (*stop_compressing) {
             log_info("Stopping during compression as asked to stop");
             return false;
         }
         left = right + 1;
     }
 
-    log_info("done %u %u", table_size, write_index);
+    log_debug("done %u %u", table_size, write_index);
 
     routing_table_remove_from_size(table_size-write_index);
-    log_info("now %u", routing_table_get_n_entries());
+    log_debug("now %u", routing_table_get_n_entries());
     return true;
 }
