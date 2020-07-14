@@ -15,7 +15,7 @@
 
 APP = bit_field_sorter_and_searcher
 
-SOURCES = bit_field_sorter_and_searcher.c
+SOURCES = sorter/bit_field_sorter_and_searcher.c
 
 CFLAGS += -DSPINNAKER -Wshadow -O0
 FEC_OPT = $(OSPACE)

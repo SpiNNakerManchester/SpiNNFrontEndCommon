@@ -21,7 +21,7 @@
 #define __BIT_FIELD_TABLE_GENERATOR_H__
 
 #include "../common/constants.h"
-#include "../common/routing_tables.h"
+#include "routing_tables.h"
 #include <filter_info.h>
 
 //! max number of links on a router

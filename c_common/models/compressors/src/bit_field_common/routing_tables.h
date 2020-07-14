@@ -22,8 +22,8 @@
 
 #include <debug.h>
 #include <malloc_extras.h>
-#include "routing_table.h"
-#include "routing_table_utils.h"
+#include "../common/routing_table.h"
+#include "routing_tables_utils.h"
 
 //=============================================================================
 // location for variables

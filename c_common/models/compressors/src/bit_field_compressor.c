@@ -24,12 +24,12 @@
 #include <malloc_extras.h>
 #include "common-typedefs.h"
 #include "common/constants.h"
-#include "common/compressor_sorter_structs.h"
-#include "common/bit_field_table_generator.h"
+#include "bit_field_common/compressor_sorter_structs.h"
+#include "bit_field_common/bit_field_table_generator.h"
 #include "common/minimise.h"
 #include "compressor_includes/compressor.h"
-#include "common/routing_tables.h"
-#include "common/bit_field_table_generator.h"
+#include "bit_field_common/routing_tables.h"
+#include "bit_field_common/bit_field_table_generator.h"
 
 /*****************************************************************************/
 
