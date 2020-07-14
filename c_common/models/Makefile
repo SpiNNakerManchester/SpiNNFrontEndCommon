@@ -18,8 +18,7 @@ BUILD_DIRS = compressors \
 	         command_sender_multicast_source \
 	         chip_power_monitor \
 	         reverse_iptag_multicast_source \
-	         system_models \
-	         simple_compressor
+	         system_models
 
 all: $(BUILD_DIRS)
 	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
