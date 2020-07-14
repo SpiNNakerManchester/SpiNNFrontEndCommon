@@ -62,7 +62,7 @@ class ProcessPartitionConstraints(object):
     @staticmethod
     def _process_application_partition(partition):
         """
-        :param ~.OutgoingEdgePartition partition:
+        :param ~.AbstractSingleSourcePartition partition:
         """
         vertex = partition.pre_vertex.app_vertex
         if isinstance(vertex, AbstractProvidesOutgoingPartitionConstraints):
@@ -78,7 +78,7 @@ class ProcessPartitionConstraints(object):
     @staticmethod
     def _process_machine_partition(partition):
         """
-        :param ~.OutgoingEdgePartition partition:
+        :param ~.AbstractSingleSourcePartition partition:
         """
         if isinstance(partition.pre_vertex,
                       AbstractProvidesOutgoingPartitionConstraints):

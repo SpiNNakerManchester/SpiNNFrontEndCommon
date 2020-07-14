@@ -64,7 +64,7 @@ class EdgeToNKeysMapper(object):
     @staticmethod
     def process_partition(partition, n_keys_map):
         """
-        :param ~pacman.model.graphs.OutgoingEdgePartition partition:
+        :param ~pacman.model.graphs.AbstractSingleSourcePartition partition:
         :param n_keys_map:
         :type n_keys_map:
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
