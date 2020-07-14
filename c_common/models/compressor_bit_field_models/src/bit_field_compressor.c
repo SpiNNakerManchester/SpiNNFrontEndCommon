@@ -113,7 +113,8 @@ void start_compression_process(void) {
     spin1_pause();
 
     // Decode whether we succeeded or failed.
-    if (success && (routing_table_get_n_entries() <= rtr_alloc_max())) {
+    int max_lenth = rtr_alloc_max();
+    if (success && (routing_table_get_n_entries() <= max_lenth)) {
         log_info("Passed minimise_run() with success code: %d", success);
         routing_tables_save(comms_sdram->routing_tables);
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;

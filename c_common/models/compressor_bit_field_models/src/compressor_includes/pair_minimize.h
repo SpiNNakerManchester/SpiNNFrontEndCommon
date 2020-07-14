@@ -35,7 +35,7 @@
 #define MAX_NUM_ROUTES 1023
 
 //! The index of the next place in the compressed table to write a route.
-static int write_index;
+static uint32_t write_index;
 
 //! The index of the first route after the ones being compressed in this step.
 static int remaining_index;
@@ -280,13 +280,15 @@ static inline void update_frequency(int index) {
 //!    and return false; _set by interrupt_ DURING the run of this method!
 bool minimise_run(int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
+    use(failed_by_malloc);
+	use(target_length);
+
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
         log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
                 MAX_NUM_ROUTES, rtr_alloc_max());
             malloc_extras_terminate(EXIT_FAIL);
     }
-	use(target_length);
     int table_size = routing_table_get_n_entries();
 
     routes_count = 0;
@@ -303,7 +305,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     quicksort_route(0, routes_count);
     if (stop_compressing) {
         log_info("Stopping as asked to stop");
-        return;
+        return false;
     }
 
     log_info("after sort %u", routes_count);
@@ -315,7 +317,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     quicksort_table(0, table_size);
     if (stop_compressing) {
         log_info("Stopping before compression as asked to stop");
-        return;
+        return false;
     }
 
     write_index = 0;
@@ -337,11 +339,11 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         if (write_index > rtr_alloc_max()){
             log_error("Compression not possible as already found %d entries "
             "where max allowed is %d", write_index, rtr_alloc_max());
-            return;
+            return false;
         }
         if (stop_compressing) {
             log_info("Stopping during compression as asked to stop");
-            return;
+            return false;
         }
         left = right + 1;
     }
@@ -350,4 +352,5 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
 
     routing_table_remove_from_size(table_size-write_index);
     log_info("now %u", routing_table_get_n_entries());
+    return true;
 }
