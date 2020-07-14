@@ -17,8 +17,10 @@ import functools
 import logging
 import struct
 from collections import defaultdict
-
+from six import add_metaclass
+from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
@@ -56,7 +58,7 @@ PROV_TOP_NAME = "bit_field_router_provenance"
 PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
 
-
+@add_metaclass(AbstractBase)
 class MachineBitFieldRouterCompressor(object):
     """ On-machine bitfield-aware routing table compression.
 
@@ -285,6 +287,13 @@ class MachineBitFieldRouterCompressor(object):
             progress_bar.end()
 
         return compressor_executable_targets, prov_items
+
+    @abstractproperty
+    def compressor_aplx(self):
+        """
+
+        :return: The name of the compressor aplx file to use
+        """
 
     def _generate_core_subsets(
             self, routing_tables, executable_finder, machine, progress_bar,
@@ -814,14 +823,18 @@ class MachineBitFieldRouterCompressor(object):
         return data
 
 
-class MachineBitFieldUnorderedRouterCompressor(MachineBitFieldRouterCompressor):
+class MachineBitFieldUnorderedRouterCompressor(
+    MachineBitFieldRouterCompressor):
+
     @property
+    @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
     def compressor_aplx(self):
         return "bit_field_unordered_compressor.aplx"
 
 
 class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
+
     @property
+    @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
     def compressor_aplx(self):
         return "bit_field_pair_compressor.aplx"
-

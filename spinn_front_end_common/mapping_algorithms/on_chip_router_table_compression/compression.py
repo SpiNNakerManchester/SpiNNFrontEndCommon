@@ -101,6 +101,7 @@ def pair_compression(
         "Running pair routing table compression on chip")
     compression.compress(register=1)
 
+
 def unordered_compression(
         routing_tables, transceiver, executable_finder,
         machine, app_id, provenance_file_path,
@@ -134,6 +135,7 @@ def unordered_compression(
         machine, provenance_file_path, routing_tables, transceiver,
         "Running unordered routing table compression on chip")
     compression.compress(register=1)
+
 
 def make_source_hack(entry):
     """ Hack to support the source requirement for the router compressor\
@@ -267,8 +269,6 @@ class Compression(object):
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
                 if result != 0:
-                    self._handle_failure(executable_targets)
-
                     raise SpinnFrontEndException(
                         "The router compressor on {}, {} failed to complete"
                         .format(x, y))
