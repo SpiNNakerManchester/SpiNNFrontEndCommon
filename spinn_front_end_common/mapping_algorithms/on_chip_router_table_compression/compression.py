@@ -39,6 +39,9 @@ def mundy_on_chip_router_compression(
         compress_as_much_as_possible=False):
     """ Load routing tables and compress them using Mundy's algorithm.
 
+    This uses an aplx built by Mundy which no longer compiles but still works
+    with the current tool chain
+
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the memory routing tables to be compressed
     :param ~spinnman.Transceiver transceiver: the spinnman interface
@@ -59,8 +62,8 @@ def mundy_on_chip_router_compression(
     binary_path = os.path.join(os.path.dirname(__file__), "rt_minimise.aplx")
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        machine, system_provenance_folder,
-        routing_tables, transceiver)
+        machine, system_provenance_folder, routing_tables, transceiver,
+        "Running Mundy routing table compression on chip")
     compression._compress_only_when_needed = compress_only_when_needed
     compression.compress(register=0)
 
@@ -94,7 +97,42 @@ def pair_compression(
         "simple_pair_compressor.aplx")
     compression = Compression(
         app_id, binary_path, compress_as_much_as_possible,
-        machine, provenance_file_path, routing_tables, transceiver)
+        machine, provenance_file_path, routing_tables, transceiver,
+        "Running pair routing table compression on chip")
+    compression.compress(register=1)
+
+def unordered_compression(
+        routing_tables, transceiver, executable_finder,
+        machine, app_id, provenance_file_path,
+        compress_as_much_as_possible=True):
+    """ Load routing tables and compress then using the unordered Algorithm.
+
+    To the best of our knowledge this is the same algorithm as the
+    mundy_on_chip_router_compression expect this one is still buildable
+    so can be maintained
+
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+        the memory routing tables to be compressed
+    :param ~spinnman.Transceiver transceiver: the spinnman interface
+    :param ~spinn_utilities.executable_finder.ExecutableFinder \
+            executable_finder:
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine representation
+    :param int app_id: the application ID used by the main application
+    :param str provenance_file_path: the path to where to write the data
+    :param bool compress_as_much_as_possible:
+        If False, the compressor will only reduce the table until it fits in
+        the router space, otherwise it will try to reduce until it until it
+        can't reduce it any more
+    :param executable_finder: tracker of binaries.
+     """
+    # pylint: disable=too-many-arguments
+    binary_path = executable_finder.get_executable_path(
+        "simple_unordered_compressor.aplx")
+    compression = Compression(
+        app_id, binary_path, compress_as_much_as_possible,
+        machine, provenance_file_path, routing_tables, transceiver,
+        "Running unordered routing table compression on chip")
     compression.compress(register=1)
 
 
@@ -109,14 +147,15 @@ class Compression(object):
          "_compress_only_when_needed",
          "_compressor_app_id",
          "_machine",
+         "_progresses_text",
          "_provenance_file_path",
          "_transceiver",
          "_routing_tables"]
 
     def __init__(
             self, app_id, binary_path, compress_as_much_as_possible,
-            machine, provenance_file_path,
-            routing_tables, transceiver):
+            machine, provenance_file_path, routing_tables, transceiver,
+            progresses_text):
         """
         :param int app_id: the application ID used by the main application
         :param str binary_path: What
@@ -127,6 +166,7 @@ class Compression(object):
         :param ~pacman.model.routing_tables.MulticastRoutingTables \
                 routing_tables:
         :param ~spinnman.Transceiver transceiver:
+        :param str progresses_text: Text to use in progress bar
         """
         self._app_id = app_id
         self._binary_path = binary_path
@@ -137,6 +177,7 @@ class Compression(object):
         self._provenance_file_path = provenance_file_path
         self._transceiver = transceiver
         self._routing_tables = routing_tables
+        self._progresses_text = progresses_text
 
     def compress(self, register):
         """ Apply the on-machine compression algorithm.
@@ -148,7 +189,7 @@ class Compression(object):
         # build progress bar
         progress_bar = ProgressBar(
             len(self._routing_tables.routing_tables) * 2,
-            "Running routing table compression on chip")
+            self._progresses_text)
 
         self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
 
@@ -266,7 +307,7 @@ class Compression(object):
                 # Write the size of the table
                 routing_table.number_of_entries)
         else:
-            pop = 1/0
+            # Mundys compressor can not be changed so uses it own structure
             data += _FOUR_WORDS.pack(
                 self._app_id, int(self._compress_only_when_needed),
                 int(self._compress_as_much_as_possible),
