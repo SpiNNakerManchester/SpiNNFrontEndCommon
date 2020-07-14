@@ -113,11 +113,11 @@ void print_header(header_t *header) {
 //! \brief Read a new copy of the routing table from SDRAM.
 //! \param[in] header: the header object
 static void read_table(header_t *header) {
-    table = MALLOC_SDRAM(
+    table = MALLOC(
         sizeof(uint32_t) + (sizeof(entry_t) * header->table_size));
     if (table == NULL) {
         log_error("failed to allocate memory for routing tables");
-            malloc_extras_terminate(EXIT_FAIL);
+        malloc_extras_terminate(EXIT_FAIL);
     }
     // Copy the size of the table
     table->size = header->table_size;
