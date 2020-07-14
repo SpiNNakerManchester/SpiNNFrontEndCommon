@@ -16,16 +16,19 @@
 from .application_finisher import ApplicationFinisher
 from .application_runner import ApplicationRunner
 from .buffer_extractor import BufferExtractor
-from .buffer_manager_creator import BufferManagerCreator
 from .chip_iobuf_clearer import ChipIOBufClearer
 from .chip_iobuf_extractor import ChipIOBufExtractor
+from .buffer_manager_creator import BufferManagerCreator
 from .chip_provenance_updater import ChipProvenanceUpdater
 from .chip_runtime_updater import ChipRuntimeUpdater
+from .compute_energy_used import ComputeEnergyUsed
 from .database_interface import DatabaseInterface
 from .system_multicast_routing_generator import (
     SystemMulticastRoutingGenerator)
 from .dsg_region_reloader import DSGRegionReloader
 from .edge_to_n_keys_mapper import EdgeToNKeysMapper
+from .energy_provenance_reporter import EnergyProvenanceReporter
+from .finalise_timing_data import FinaliseTimingData
 from .graph_binary_gatherer import GraphBinaryGatherer
 from .graph_data_specification_writer import (
     GraphDataSpecificationWriter)
@@ -33,6 +36,7 @@ from .graph_measurer import GraphMeasurer
 from .graph_provenance_gatherer import GraphProvenanceGatherer
 from .hbp_allocator import HBPAllocator
 from .hbp_max_machine_generator import HBPMaxMachineGenerator
+from .host_bit_field_router_compressor import HostBasedBitFieldRouterCompressor
 from .host_execute_data_specification import HostExecuteDataSpecification
 from .insert_chip_power_monitors_to_graphs import (
     InsertChipPowerMonitorsToGraphs)
@@ -47,9 +51,13 @@ from .insert_live_packet_gatherers_to_graphs import (
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
+from .machine_bit_field_router_compressor import (
+    MachineBitFieldRouterCompressor)
 from .machine_generator import MachineGenerator
-from .notification_protocol import NotificationProtocol
+from .create_notification_protocol import CreateNotificationProtocol
 from .placements_provenance_gatherer import PlacementsProvenanceGatherer
+from .pre_allocate_for_bit_field_router_compressor import (
+    PreAllocateForBitFieldRouterCompressor)
 from .pre_allocate_resources_for_chip_power_monitor import (
     PreAllocateResourcesForChipPowerMonitor)
 from .pre_allocate_resources_for_live_packet_gatherers import (
@@ -69,34 +77,43 @@ from .spalloc_max_machine_generator import SpallocMaxMachineGenerator
 from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
+from .read_routing_tables_from_machine import ReadRoutingTablesFromMachine
 from .sdram_outgoing_partition_allocator import SDRAMOutgoingPartitionAllocator
 
+# Put these in sorted order for Sphinx to do the right thing with docs
 __all__ = [
     "ApplicationFinisher",
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
-    "ChipRuntimeUpdater", "DatabaseInterface",
+    "ChipRuntimeUpdater", "CreateNotificationProtocol",
+    "ComputeEnergyUsed", "DatabaseInterface",
     "SystemMulticastRoutingGenerator",
     "DSGRegionReloader", "EdgeToNKeysMapper",
+    "EnergyProvenanceReporter", "FinaliseTimingData",
     "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
-    "HBPAllocator", "HBPMaxMachineGenerator",
+    "HBPAllocator", "HostBasedBitFieldRouterCompressor",
+    "HBPMaxMachineGenerator",
     "HostExecuteDataSpecification",
     "InsertChipPowerMonitorsToGraphs",
     "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
     "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs", "LoadExecutableImages",
-    "LocateExecutableStartType", "LoadFixedRoutes", "MachineGenerator",
-    "NotificationProtocol", "PlacementsProvenanceGatherer",
+    "LocateExecutableStartType", "MachineBitFieldRouterCompressor",
+    "LoadFixedRoutes", "MachineGenerator",
+    "PlacementsProvenanceGatherer",
+    "PreAllocateForBitFieldRouterCompressor",
     "PreAllocateResourcesForChipPowerMonitor",
     "PreAllocateResourcesForExtraMonitorSupport",
     "PreAllocateResourcesForLivePacketGatherers",
     "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ProvenanceJSONWriter", "ProvenanceSQLWriter", "ProvenanceXMLWriter",
+    "ReadRoutingTablesFromMachine",
     "RouterProvenanceGatherer", "RoutingSetup",
-    "RoutingTableLoader", "SpallocAllocator",
-    "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder", "VirtualMachineGenerator",
-    "SDRAMOutgoingPartitionAllocator"]
+    "RoutingTableLoader",
+    "SDRAMOutgoingPartitionAllocator",
+    "SpallocAllocator", "SpallocMaxMachineGenerator",
+    "TagsLoader", "TDMAAgendaBuilder", "VirtualMachineGenerator",
+    ]

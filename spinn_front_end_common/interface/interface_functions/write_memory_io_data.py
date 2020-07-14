@@ -16,12 +16,10 @@
 import os
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.machine import MachineGraph
 from spinnman.processes.fill_process import FillDataType
 from spinnman.utilities.io import MemoryIO, FileIO
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition as SV
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
-from spinn_front_end_common.utilities.constants import BYTES_PER_KB
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex as
@@ -32,6 +30,10 @@ class _TranscieverDelegate(object):
     __slots__ = ["_txrx", "_writer"]
 
     def __init__(self, transceiver, write_memory_function):
+        """
+        :param ~.Transceiver transceiver:
+        :param callable write_memory_function:
+        """
         self._txrx = transceiver
         self._writer = write_memory_function
 
@@ -56,14 +58,44 @@ class _TranscieverDelegate(object):
 
 class WriteMemoryIOData(object):
     """ An algorithm that handles objects implementing the interface\
-        :py:class:`AbstractUsesMemoryIO`
+        :py:class:`AbstractUsesMemoryIO`. **Callable.**
+
+    :param ~pacman.model.placements Placements placements:
+        The placements of vertices of the graph
+    :param int app_id: The ID of the application
+    :param str report_folder: The location of data files
+    :param str hostname: The host name of the machine
+    :param ~pacman.model.graphs.application.ApplicationGraph graph:
+        The application graph that generated these vertices, if known.
+        This algorithm only really cares whether it exists or not.
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        The transceiver to write data using; if None only data files
+        are written
+    :param bool uses_advanced_monitors:
+        Whether to use the Fast Data In protocol
+    :param extra_monitor_cores_to_ethernet_connection_map:
+        The mapping from chips to packet gatherer vertices.
+        Only required when `uses_advanced_monitors = True`
+    :type extra_monitor_cores_to_ethernet_connection_map:
+        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+    :param processor_to_app_data_base_address:
+        Existing dictionary of processor to base address.
+        Only required when `uses_advanced_monitors = True`
+    :type processor_to_app_data_base_address:
+        dict(tuple(int,int,int),DataWritten)
+    :param ~spinn_machine.Machine machine:
+    :return: The mapping between processor and addresses allocated
+    :rtype: dict(tuple(int,int,int),DataWritten)
     """
 
     __slots__ = [
         # The next tag to use by chip
         "_next_tag",
-        "_data_folder", "_machine", "_monitor_map", "_txrx", "_use_monitors"
+        "_data_folder", "_machine", "_monitor_map", "_txrx", "_use_monitors",
+        "_app_id", "_hostname", "_base_address_map", "_have_app_graph"
     ]
+
+    _FILENAME_TEMPLATE = "{}_data_{}_{}_{}_{}.dat"
 
     def __init__(self):
         self._next_tag = dict()
@@ -72,94 +104,104 @@ class WriteMemoryIOData(object):
         self._monitor_map = None
         self._txrx = None
         self._use_monitors = False
+        self._app_id = 0
+        self._hostname = ""
+        self._base_address_map = None
+        self._have_app_graph = False
 
     def __call__(
-            self, graph, placements, app_id, app_data_runtime_folder, hostname,
-            transceiver=None, graph_mapper=None, uses_advanced_monitors=False,
+            self, placements, app_id, report_folder, hostname,
+            app_graph=None, transceiver=None, uses_advanced_monitors=False,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None, machine=None):
         """
-        :param graph: The graph to process
-        :param placements: The placements of vertices of the graph
-        :param app_id: The ID of the application
-        :param app_data_runtime_folder: The location of data files
-        :param hostname: The host name of the machine
-        :param transceiver:\
-            The transceiver to write data using; if None only data files\
-            are written
-        :param graph_mapper: The optional mapping between graphs
-        :param processor_to_app_data_base_address:\
-            Optional existing dictionary of processor to base address
-        :return: The mapping between processor and addresses allocated
+        :param ~.Placements placements:
+        :param int app_id:
+        :param str report_folder:
+        :param str hostname:
+        :param ~.Graph app_graph:
+        :param ~.Transceiver transceiver:
+        :param bool uses_advanced_monitors:
+        :param extra_monitor_cores_to_ethernet_connection_map:
+        :type extra_monitor_cores_to_ethernet_connection_map:
+            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+        :param processor_to_app_data_base_address:
+        :type processor_to_app_data_base_address:
+            dict(tuple(int,int,int),DataWritten)
+        :param ~.Machine machine:
         :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = dict()
-        progress = ProgressBar(
-            sum(1 for _ in placements.placements), "Writing data")
+            self._base_address_map = dict()
+        else:
+            self._base_address_map = processor_to_app_data_base_address
         self._machine = machine
         self._txrx = transceiver
         self._use_monitors = uses_advanced_monitors
         self._monitor_map = extra_monitor_cores_to_ethernet_connection_map
-        self._data_folder = app_data_runtime_folder
+        self._data_folder = report_folder
+        self._hostname = hostname
+        self._app_id = app_id
+        self._have_app_graph = isinstance(app_graph, ApplicationGraph)
 
-        if isinstance(graph, ApplicationGraph):
-            for placement in progress.over(placements.placements):
-                app_vertex = graph_mapper.get_application_vertex(
-                    placement.vertex)
-                if not isinstance(app_vertex, AbstractUsesMemoryIO):
-                    continue
+        progress = ProgressBar(
+            sum(1 for _ in placements.placements), "Writing data")
+        for placement in progress.over(placements.placements):
+            vtx = self.__get_writer_vertex(placement.vertex)
+            if vtx:
                 # select the mode of writing and therefore buffer size
-                write_memory_function, _buf_size = self.__get_write_function(
-                    placement.x, placement.y)
-                self._write_data_for_vertex(
-                    placement, app_vertex, app_id, hostname,
-                    processor_to_app_data_base_address, write_memory_function)
-        elif isinstance(graph, MachineGraph):
-            for placement in progress.over(placements.placements):
-                if not isinstance(placement.vertex, AbstractUsesMemoryIO):
-                    continue
-                # select the mode of writing and therefore buffer size
-                write_memory_function, _buf_size = self.__get_write_function(
-                    placement.x, placement.y)
-                self._write_data_for_vertex(
-                    placement, placement.vertex, app_id, hostname,
-                    processor_to_app_data_base_address, write_memory_function)
+                write_memory_fun = self.__get_write_function(placement)
+                self.__write_data_for_vertex(placement, vtx, write_memory_fun)
 
-        return processor_to_app_data_base_address
+        return self._base_address_map
 
-    def __get_write_function(self, x, y):
+    def __get_writer_vertex(self, vertex):
+        """ Get a vertex that can use the API to do the writing.
+
+        Prefers the application vertex if one exists.
+
+        :param ~.MachineVertex vertex:
+        :rtype: AbstractUsesMemoryIO or None
+        """
+        if self._have_app_graph and isinstance(
+                vertex.app_vertex, AbstractUsesMemoryIO):
+            return vertex.app_vertex
+        if isinstance(vertex, AbstractUsesMemoryIO):
+            return vertex
+        return None
+
+    def __get_write_function(self, placement):
+        """ Get how to write the vertex's data if writing for real.
+
+        :param ~.Placement placement: The location (in a placement)
+        :rtype: callable
+        """
         # determine which function to use for writing memory
-        write_memory_function = Gatherer. \
-            locate_correct_write_data_function_for_chip_location(
-                machine=self._machine, x=x, y=y, transceiver=self._txrx,
-                uses_advanced_monitors=self._use_monitors,
-                extra_monitor_cores_to_ethernet_connection_map=(
-                    self._monitor_map))
-        buffer_size = 256
-        if self._use_monitors:
-            buffer_size = 120 * 1024 * BYTES_PER_KB
-        return write_memory_function, buffer_size
+        return Gatherer.locate_correct_write_data_function_for_chip_location(
+            machine=self._machine, x=placement.x, y=placement.y,
+            transceiver=self._txrx, uses_advanced_monitors=self._use_monitors,
+            extra_monitor_cores_to_ethernet_connection_map=self._monitor_map)
 
-    @staticmethod
-    def __get_used_tags(transceiver, placement, heap_address):
+    def __get_used_tags(self, placement, heap_address):
         """ Get the tags that have already been used on the given chip
 
-        :param transceiver: The transceiver to use to get the data
-        :param placement: The x,y-coordinates of the chip, as a Placement
-        :param heap_address: The address of the heap to query for tags
-        :return: A tuple of used tags
+        :param ~.Placement placement:
+            The x,y-coordinates of the chip, as a Placement
+        :param int heap_address: The address of the heap to query for tags
+        :return: The used tags
+        :rtype: iterable(int)
         """
-        heap = transceiver.get_heap(placement.x, placement.y,
-                                    heap=heap_address)
-        return (element.tag for element in heap if not element.is_free)
+        for element in self._txrx.get_heap(
+                placement.x, placement.y, heap=heap_address):
+            if not element.is_free:
+                yield element.tag
 
-    def __remote_get_next_tag(self, transceiver, placement):
+    def __remote_get_next_tag(self, placement):
         """ Get the next SDRAM tag to use for the Memory IO on a given chip
 
-        :param transceiver: The transceiver to use to query for used tags
-        :param placement: The x,y-coordinates of the chip, as a Placement
+        :param ~.Placement placement:
+            The x,y-coordinates of the chip, as a Placement
         :return: The next available tag
         """
         key = (placement.x, placement.y)
@@ -168,7 +210,7 @@ class WriteMemoryIOData(object):
             max_tag = 0
             for area in (SV.sdram_heap_address, SV.system_ram_heap_address,
                          SV.system_sdram_heap_address):
-                for tag in self.__get_used_tags(transceiver, placement, area):
+                for tag in self.__get_used_tags(placement, area):
                     max_tag = max(max_tag, tag)
             self._next_tag[key] = max_tag + 1
         next_tag = self._next_tag[key]
@@ -178,48 +220,44 @@ class WriteMemoryIOData(object):
     def __local_get_next_tag(self, placement):
         """ Get the next SDRAM tag to use for the File IO on a given chip
 
-        :param placement: The x,y-coordinates of the chip, as a Placement
+        :param ~.Placement placement:
+            The x,y-coordinates of the chip, as a Placement
         :return: The next available tag
+        :rtype: int
         """
         key = (placement.x, placement.y)  # could be other fields too
         next_tag = self._next_tag.get(key, 1)
         self._next_tag[key] = next_tag + 1
         return next_tag
 
-    def _write_data_for_vertex(
-            self, placement, vertex, app_id,
-            hostname, base_address_map, write_memory_function):
+    def __write_data_for_vertex(
+            self, placement, writer_vertex, write_memory_function):
         """ Write the data for the given vertex, if it supports the interface
 
-        :param placement: The placement of the machine vertex
-        :param vertex:\
+        :param ~.Placement placement:
+            The placement of the machine vertex, i.e., where to write to.
+        :param AbstractUsesMemoryIO writer_vertex:
             The vertex to write data for (might be an application vertex)
-        :type vertex: :py:class:`AbstractUsesMemoryIO`
-        :param app_id: The ID of the application
-        :param hostname: The host name of the machine
-        :param base_address_map: Dictionary of processor to base address
-        :param write_memory_function: \
+        :param callable write_memory_function:
             the function used to write data to spinnaker
         """
-        # pylint: disable=too-many-arguments
-        size = vertex.get_memory_io_data_size()
+        size = writer_vertex.get_memory_io_data_size()
         if self._txrx is not None:
-            tag = self.__remote_get_next_tag(self._txrx, placement)
+            tag = self.__remote_get_next_tag(placement)
             start_address = self._txrx.malloc_sdram(
-                placement.x, placement.y, size, app_id, tag)
-            end_address = start_address + size
+                placement.x, placement.y, size, self._app_id, tag)
             delegate = _TranscieverDelegate(self._txrx, write_memory_function)
-            with MemoryIO(
-                    delegate, placement.x, placement.y,
-                    start_address, end_address) as io:
-                vertex.write_data_to_memory_io(io, tag)
+            with MemoryIO(delegate, placement.x, placement.y, start_address,
+                          start_address + size) as io:
+                writer_vertex.write_data_to_memory_io(io, tag)
         else:
             tag = self.__local_get_next_tag(placement)
             start_address = 0
             filename = os.path.join(
-                self._data_folder, "{}_data_{}_{}_{}_{}.dat".format(
-                    hostname, placement.x, placement.y, placement.p, tag))
+                self._data_folder, self._FILENAME_TEMPLATE.format(
+                    self._hostname, placement.x, placement.y, placement.p,
+                    tag))
             with FileIO(filename, 0, size) as io:
-                vertex.write_data_to_memory_io(io, tag)
-        base_address_map[placement.x, placement.y, placement.p] = \
-            DataWritten(start_address, size, size)
+                writer_vertex.write_data_to_memory_io(io, tag)
+        self._base_address_map[placement.location] = DataWritten(
+            start_address, size, size)

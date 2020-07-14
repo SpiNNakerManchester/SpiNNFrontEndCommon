@@ -43,10 +43,10 @@ class MockMachine(Thread):
 
     def __init__(self, responses=None):
         """
-        :param responses:\
-            An optional list of responses to send in the order to be sent. \
-            If not specified, OK responses will be sent for every request. \
-            Note that responses can include "None" which means that no\
+        :param responses:
+            An optional list of responses to send in the order to be sent.
+            If not specified, OK responses will be sent for every request.
+            Note that responses can include "None" which means that no
             response will be sent to that request
         """
         super(MockMachine, self).__init__()
@@ -101,7 +101,7 @@ class MockMachine(Thread):
             try:
                 if self._receiver.is_ready_to_receive(10):
                     self._do_receive()
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 if self._running:
                     traceback.print_exc()
                     self._error = e
