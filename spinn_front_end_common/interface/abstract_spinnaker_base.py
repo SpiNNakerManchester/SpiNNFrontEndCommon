@@ -2626,7 +2626,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: whether the partition exists.
         :rtype: bool
         """
-        return bool(self._original_application_graph.\
+        return bool(self._original_application_graph.
                     get_outgoing_edge_partition_starting_at_vertex(
                         pre_vertex, identifier))
 
@@ -2652,7 +2652,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :return: Whether the partition exists.
         :rtype: bool
         """
-        return bool(self._original_machine_graph.\
+        return bool(self._original_machine_graph.
                     get_outgoing_edge_partition_starting_at_vertex(
                         pre_vertex, identifier))
 
