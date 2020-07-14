@@ -134,7 +134,6 @@ class MachineBitFieldRouterCompressor(object):
     # binary names
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
         "bit_field_sorter_and_searcher.aplx"
-    _COMPRESSOR_APLX = "bit_field_compressor.aplx"
 
     _PROGRESS_BAR_TEXT = \
         "on chip compressing routing tables and merging in bitfields as " \
@@ -814,3 +813,10 @@ class MachineBitFieldRouterCompressor(object):
         compression_cores = list(cores.processor_ids)
         data += struct.pack("<{}I".format(len(cores)), *compression_cores)
         return data
+
+class MachineBitFieldUnorderedRouterCompressor(MachineBitFieldRouterCompressor):
+    _COMPRESSOR_APLX = "bit_field_unordered_compressor.aplx"
+
+class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
+    _COMPRESSOR_APLX = "bit_field_pair_compressor.aplx"
+
