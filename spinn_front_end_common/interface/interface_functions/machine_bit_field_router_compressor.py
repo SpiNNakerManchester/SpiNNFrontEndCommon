@@ -237,8 +237,7 @@ class MachineBitFieldRouterCompressor(object):
                 prov_data_items=prov_items),
             [CPUState.FINISHED], True, no_sync_changes,
             "bit_field_compressor_on_{}_{}_{}.txt",
-            [bit_field_sorter_executable_path],
-            progress_bar)
+            [bit_field_sorter_executable_path], progress_bar)
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:

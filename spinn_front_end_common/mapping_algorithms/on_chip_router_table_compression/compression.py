@@ -195,6 +195,7 @@ class Compression(object):
         self._transceiver = transceiver
         self._routing_tables = routing_tables
         self._progresses_text = progresses_text
+        self._compressor_app_id = None
 
     def compress(self, register):
         """ Apply the on-machine compression algorithm.
@@ -227,10 +228,8 @@ class Compression(object):
             functools.partial(
                 self._check_for_success,
                 register=register),
-            [CPUState.FINISHED], False, 0,
-            "compressor_on_{}_{}_{}.txt",
-            [self._binary_path],
-            progress_bar)
+            [CPUState.FINISHED], False, 0, "compressor_on_{}_{}_{}.txt",
+            [self._binary_path], progress_bar)
 
     def _load_routing_table(self, table):
         """

@@ -69,7 +69,6 @@ def run_system_application(
         # fire all signals as required
         transceiver.send_signal(app_id, sync_signal)
 
-    succeeded = False
     error = None
     binary_start_types = dict()
     if binaries_to_track is None:

@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 APPS = sorter.mk compressor.mk \
-       bit_feild_unordered_compressor.mk \
-       bit_feild_pair_compressor.mk \
+       bit_field_unordered_compressor.mk \
+       bit_field_pair_compressor.mk \
        simple_pair_compressor.mk \
        simple_unordered_compressor.mk
 
