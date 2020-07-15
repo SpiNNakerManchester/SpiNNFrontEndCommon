@@ -13,11 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import math
 import struct
 import numpy
 from enum import IntEnum
 from six.moves import xrange
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
@@ -30,6 +32,7 @@ from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource,
     ReverseIPtagResource, ResourceContainer, VariableSDRAM)
 from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -60,6 +63,8 @@ from spinn_front_end_common.interface.buffer_management.recording_utilities \
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 
+logger = FormatAdapter(logging.getLogger(__name__))
+
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
 _TWO_SHORTS = struct.Struct("<HH")
@@ -79,11 +84,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
 
-    :param ~pacman.model.graphs.common.Slice vertex_slice:
-        The slice served via this multicast source
     :param str label: The label of this vertex
-    :param ReverseIpTagMultiCastSource app_vertex:
+    :param vertex_slice:
+        The slice served via this multicast source
+    :type vertex_slice: ~pacman.model.graphs.common.Slice or None
+    :param app_vertex:
         The associated application vertex
+    :type app_vertex: ReverseIpTagMultiCastSource or None
+    :param int n_keys: The number of keys to be sent via this mulitcast source
+        (can't be None if vertex_slice is also None)
     :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:
         Any initial constraints to this vertex
     :param str board_address:
@@ -151,7 +160,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, vertex_slice, label, app_vertex, constraints=None,
+            self, label,
+            vertex_slice=None,
+            app_vertex=None,
+            n_keys=None,
+            constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -176,6 +189,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Flag to indicate that data will be received to inject
             enable_injection=False):
         # pylint: disable=too-many-arguments, too-many-locals
+        if vertex_slice is None:
+            if n_keys is not None:
+                vertex_slice = Slice(0, n_keys - 1)
+            else:
+                raise KeyError("Either provide a vertex_slice or n_keys")
+
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
             label, constraints, app_vertex, vertex_slice)
 
@@ -204,6 +223,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 else:
                     # assuming this must be a single integer
                     n_buffer_times += 1
+            if n_buffer_times == 0:
+                logger.warning(
+                    "Combination of send_buffer_times {} and slice {} results "
+                    "in a core with a ReverseIPTagMulticastSourceMachineVertex"
+                    " which does not spike", send_buffer_times, vertex_slice)
         if n_buffer_times == 0:
             self._send_buffer_times = None
             self._send_buffers = None
@@ -369,8 +393,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def resources_required(self):
         sim = globals_variables.get_simulator()
         sdram = self.get_sdram_usage(
-                self._send_buffer_times, self._is_recording,
-                sim.machine_time_step, self._receive_rate, self._n_keys)
+            self._send_buffer_times, self._is_recording,
+            sim.machine_time_step, self._receive_rate, self._n_keys)
 
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
