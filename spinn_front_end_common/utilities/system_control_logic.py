@@ -13,12 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_front_end_common.interface.interface_functions import \
-    ChipIOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.exceptions import SpinnmanException, SpinnmanTimeoutException
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.interface.interface_functions import (
+    ChipIOBufExtractor)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 def run_system_application(
@@ -26,26 +26,31 @@ def run_system_application(
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         handle_failure_function, cpu_end_states, needs_sync_barrier,
         no_sync_changes, filename_template, binaries_to_track=None):
-    """ executes the app
+    """ Executes the given _system_ application. \
+        Used for on-chip expanders, compressors, etc.
 
-    :param executable_cores: the cores to run the executable on
-    :param app_id: the appid for the executable
-    :param transceiver: the SpiNNMan instance
-    :param provenance_file_path: the path for where provenance data is\
-    stored
-    :param filename_template: the iobuf filename template.
-    :param read_algorithm_iobuf: bool flag for report
-    :param executable_finder: finder for executable paths
-    :param check_for_success_function: function used to check success: \
-    expects executable_cores, transceiver, as inputs
-    :param handle_failure_function: function used to deal with failures\
-    expects executable_cores, transceiver, provenance_file_path,\
-    app_id, executable_finder as inputs
-    :param needs_sync_barrier: bool flag for if needing sync barrier
-    :param no_sync_changes: the number of times sync signal been sent
-    :param binaries_to_track: a list of binary names to check for exit state.\
-     Or None for all binaries
-    :rtype: None
+    :param ~.ExecutableTargets executable_cores:
+        the cores to run the executable on
+    :param int app_id: the app-id for the executable
+    :param ~.Transceiver transceiver: the SpiNNMan instance
+    :param str provenance_file_path:
+        the path for where provenance data is stored
+    :param ExecutableFinder executable_finder: finder for executable paths
+    :param bool read_algorithm_iobuf: whether to report IOBUFs
+    :param callable check_for_success_function:
+        function used to check success;
+        expects `executable_cores`, `transceiver` as inputs
+    :param callable handle_failure_function:
+        function used to deal with failures;
+        expects `executable_cores` as input
+    :param set(~.CPUState) cpu_end_states:
+        the states that a successful run is expected to terminate in
+    :param bool needs_sync_barrier: whether a sync barrier is needed
+    :param int no_sync_changes: the number of times sync signal been sent
+    :param str filename_template: the IOBUF filename template.
+    :param list(str) binaries_to_track:
+        A list of binary names to check for exit state.
+        Or `None` for all binaries
     """
 
     # load the executable
@@ -92,10 +97,11 @@ def run_system_application(
 
     # if doing iobuf, read iobuf
     if read_algorithm_iobuf or not succeeded:
-        iobuf_reader = ChipIOBufExtractor(filename_template=filename_template)
+        iobuf_reader = ChipIOBufExtractor(
+            filename_template=filename_template,
+            suppress_progress=succeeded)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
-            app_provenance_file_path=None,
             system_provenance_file_path=provenance_file_path)
 
     # stop anything that's associated with the compressor binary

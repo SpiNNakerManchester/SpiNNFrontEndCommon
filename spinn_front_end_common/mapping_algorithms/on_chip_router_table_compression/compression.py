@@ -36,7 +36,7 @@ def mundy_on_chip_router_compression(
         routing_tables, transceiver, machine, app_id,
         system_provenance_folder, compress_only_when_needed=True,
         compress_as_much_as_possible=False):
-    """ Load routing tables and compress then using Mundy's algorithm
+    """ Load routing tables and compress them using Mundy's algorithm.
 
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the memory routing tables to be compressed
@@ -68,7 +68,7 @@ def pair_compression(
         machine, app_id, provenance_file_path,
         compress_only_when_needed=False,
         compress_as_much_as_possible=True):
-    """ Load routing tables and compress then using Pair Algorithm
+    """ Load routing tables and compress then using the Pair Algorithm.
 
     See pacman/operations/router_compressors/pair_compressor.py which is the
     exact same algorithm implemented in Python.
@@ -127,7 +127,7 @@ class Compression(object):
         :param bool compress_only_when_needed:
         :param ~spinn_machine.Machine machine:
         :param str provenance_file_path:
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
+        :param ~pacman.model.routing_tables.MulticastRoutingTables \
                 routing_tables:
         :param ~spinnman.Transceiver transceiver:
         """
@@ -142,6 +142,7 @@ class Compression(object):
 
     def compress(self, register):
         """ Apply the on-machine compression algorithm.
+
         :param int register: number of user register to check
         """
         # pylint: disable=too-many-arguments
@@ -192,8 +193,7 @@ class Compression(object):
 
     def _load_routing_table(self, table):
         """
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
-                routing_table:
+        :param ~.MulticastRoutingTables routing_table:
             the pacman router table instance
         """
         data = self._build_data(table)
@@ -254,8 +254,8 @@ class Compression(object):
     def _load_executables(self):
         """ Loads the router compressor onto the chips.
 
-        :return:\
-            the executable targets that represent all cores/chips which have\
+        :return:
+            the executable targets that represent all cores/chips which have
             active routing tables
         :rtype: ExecutableTargets
         """
@@ -285,8 +285,7 @@ class Compression(object):
         """ Convert the router table into the data needed by the router\
             compressor c code.
 
-        :param ~pacman.model.routing_tables.MulticastRoutingTables
-                routing_table:
+        :param ~.MulticastRoutingTables routing_table:
             the pacman router table instance
         :return: The byte array of data
         :rtype: bytearray

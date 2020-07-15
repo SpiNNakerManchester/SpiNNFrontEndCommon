@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
@@ -22,20 +23,17 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class ClearReinjectionQueueMessage(AbstractSCPRequest):
-    """ An SCP Request to set the dropped packet reinjected packet types
+    """ An SCP Request to set the dropped packet reinjected packet types.
     """
 
     __slots__ = []
 
     def __init__(self, x, y, p):
         """
-        :param x: The x-coordinate of a chip, between 0 and 255
-        :type x: int
-        :param y: The y-coordinate of a chip, between 0 and 255
-        :type y: int
-        :param p: \
+        :param int x: The x-coordinate of a chip, between 0 and 255
+        :param int y: The y-coordinate of a chip, between 0 and 255
+        :param int p:
             The processor running the extra monitor vertex, between 0 and 17
-        :type p: int
         """
         # pylint: disable=too-many-arguments
         super(ClearReinjectionQueueMessage, self).__init__(
@@ -47,6 +45,7 @@ class ClearReinjectionQueueMessage(AbstractSCPRequest):
                 destination_chip_y=y),
             SCPRequestHeader(command=ReinjectorSCPCommands.CLEAR))
 
+    @overrides(AbstractSCPRequest.get_scp_response)
     def get_scp_response(self):
         return CheckOKResponse(
             "Set reinjected packet types", ReinjectorSCPCommands.CLEAR)
