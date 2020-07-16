@@ -171,6 +171,22 @@ def read_config_int(config, section, item):
     return int(value)
 
 
+def read_config_float(config, section, item):
+    """ Get the float value of a config item, returning None if the value\
+        is "None"
+
+    :param ~configparser.ConfigParser config:
+        The configuration to look things up in.
+    :param str section: The section name
+    :param str item: The item name.
+    :rtype: float or None
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return float(value)
+
+
 _BOOLEAN_STATES = {
     'true': True, '1': True, 'on': True, 'yes': True,
     'false': False, '0': False, 'off': False, 'no': False}
