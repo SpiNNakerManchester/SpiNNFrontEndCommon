@@ -27,6 +27,17 @@
 #include <spin1_api_params.h>
 #include <spin1_api.h>
 
+// Import things from spin1_api that are not explicitly exposed //
+
+//! \brief Wait for interrupt.
+//! \details Will return to just after this point after an
+//!     interrupt has been raised.
+extern void spin1_wfi(void);
+
+//! \brief Indicate whether the SYNC signal has been received.
+//! \return 0 (false) if not received and 1 (true) if received.
+extern uint resume_wait(void);
+
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
@@ -45,6 +56,9 @@ static exit_callback_t stored_exit_function = NULL;
 //! the function call to run just before resuming a simulation
 static resume_callback_t stored_resume_function = NULL;
 
+//! the function call to run at the start of simulation
+static start_callback_t stored_start_function = NULL;
+
 //! the region ID for storing provenance data from the chip
 static struct simulation_provenance *prov = NULL;
 
@@ -54,7 +68,10 @@ static callback_t sdp_callback[NUM_SDP_PORTS];
 //! the list of DMA callbacks for DMA complete callbacks
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
-//! \brief handles the storing of basic provenance data
+//! Whether the simulation uses the timer or not (default true)
+static bool uses_timer = true;
+
+//! \brief Store basic provenance data
 //! \return the address after which new provenance data can be stored
 static void *simulation_store_provenance_data(void) {
     //! gets access to the diagnostics object from SARK
@@ -71,7 +88,7 @@ static void *simulation_store_provenance_data(void) {
     return prov->provenance_data_elements;
 }
 
-//! \brief helper private method for running provenance data storage
+//! \brief Run the provenance data storage
 static void execute_provenance_storage(void) {
     if (prov != NULL) {
         log_info("Starting basic provenance gathering");
@@ -88,13 +105,11 @@ void simulation_run(void) {
     spin1_start_paused();
 }
 
-//! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
-//! \param[in] resume_function The function to call just before the simulation
-//!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback) {
     // Pause the simulation
-    spin1_pause();
+    if (uses_timer) {
+        spin1_pause();
+    }
 
     stored_resume_function = callback;
 
@@ -102,8 +117,8 @@ void simulation_handle_pause_resume(resume_callback_t callback) {
     execute_provenance_storage();
 }
 
-//! \brief a helper method for people not using the auto pause and
-//! resume functionality
+//! \brief Exit the application.
+//! \details Helper when not using the auto pause and resume functionality
 void simulation_exit(void) {
     simulation_handle_pause_resume(NULL);
 }
@@ -112,8 +127,7 @@ void simulation_ready_to_read(void) {
     sark_cpu_state(CPU_STATE_WAIT);
 }
 
-//! \brief method for sending OK response to the host when a command message
-//! is received.
+//! \brief Send an OK response to the host when a command message is received.
 //! \param[in] msg: the message object to send to the host.
 static void send_ok_response(sdp_msg_t *msg) {
     msg->cmd_rc = RC_OK;
@@ -127,12 +141,29 @@ static void send_ok_response(sdp_msg_t *msg) {
     spin1_send_sdp_msg(msg, 10);
 }
 
-//! \brief handles the new commands needed to resume the binary with a new
-//! runtime counter, as well as switching off the binary when it truly needs
-//! to be stopped.
-//! \param[in] mailbox The mailbox containing the SDP packet received
-//! \param[in] port The port on which the packet was received
-//! \return does not return anything
+//! \brief Callback when starting after synchronise
+//! \param unused0: unused
+//! \param unused1: unused
+static void synchronise_start(uint unused0, uint unused1) {
+    while (resume_wait()) {
+        spin1_wfi();
+    }
+    sark_cpu_state(CPU_STATE_RUN);
+    stored_start_function();
+
+    // If we are not using the timer, no-one else resets the event, so do it now
+    // (event comes from sark.h - this is how SARK knows whether to wait for a
+    //  SYNC0 or SYNC1 message)
+    if (!uses_timer) {
+        event.wait ^= 1;
+    }
+}
+
+//! \brief Handle the new commands needed to resume the binary with a new
+//!     runtime counter, as well as switching off the binary when it truly
+//!     needs to be stopped.
+//! \param[in] mailbox: The mailbox containing the SDP packet received
+//! \param[in] port: The port on which the packet was received
 static void simulation_control_scp_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -172,8 +203,21 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
             stored_resume_function();
             stored_resume_function = NULL;
         }
-        log_info("Resuming");
-        spin1_resume(SYNC_WAIT);
+
+        if (stored_start_function != NULL) {
+            spin1_schedule_callback(synchronise_start, 0, 0, 1);
+        }
+        if (uses_timer) {
+            log_info("Resuming");
+            spin1_resume(SYNC_WAIT);
+        } else {
+            if (event.wait) {
+                sark_cpu_state(CPU_STATE_SYNC1);
+            } else {
+                sark_cpu_state(CPU_STATE_SYNC0);
+            }
+        }
+
 
         // If we are told to send a response, send it now
         if (msg->data[0] == 1) {
@@ -221,6 +265,8 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
 }
 
 //! \brief handles the SDP callbacks interface.
+//! \param[in,out] mailbox: The pointer to the received message
+//! \param[in] port: What port the message was received on
 static void simulation_sdp_callback_handler(uint mailbox, uint port) {
     if (sdp_callback[port] != NULL) {
         // if a callback is associated with the port, process it
@@ -247,6 +293,8 @@ void simulation_sdp_callback_off(uint sdp_port) {
 }
 
 //! \brief handles the DMA transfer done callbacks interface.
+//! \param[in] unused: unused
+//! \param[in] tag: the tag of the DMA that completed
 static void simulation_dma_transfer_done_callback(uint unused, uint tag) {
     if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
         dma_complete_callbacks[tag](unused, tag);
@@ -332,4 +380,12 @@ void simulation_set_provenance_function(
 
 void simulation_set_exit_function(exit_callback_t exit_function) {
     stored_exit_function = exit_function;
+}
+
+void simulation_set_start_function(start_callback_t start_function) {
+    stored_start_function = start_function;
+}
+
+void simulation_set_uses_timer(bool sim_uses_timer) {
+    uses_timer = sim_uses_timer;
 }

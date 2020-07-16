@@ -20,4 +20,4 @@ coverage >= 4.4, < 5.0
 pytest-cov
 sphinx==1.5.3
 testfixtures
-httpretty
+httpretty != 1.0.0

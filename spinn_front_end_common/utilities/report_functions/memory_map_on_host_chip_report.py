@@ -25,22 +25,21 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
 MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
+REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
 class MemoryMapOnHostChipReport(object):
-    """ Report on memory usage.
+    """ Report on memory usage. Creates a report that states where in SDRAM \
+        each region is (read from machine)
+
+    :param str report_default_directory: the folder where reports are written
+    :param iterable(tuple(int,int,int)) dsg_targets:
+        the map between placement and file writer
+    :param ~spinnman.transceiver.Transceiver transceiver: the spinnMan instance
+    :rtype: None
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
-        """ Creates a report that states where in SDRAM each region is \
-            (read from machine)
-
-        :param report_default_directory: the folder where reports are written
-        :param dsg_targets: the map between placement and file writer
-        :param transceiver: the spinnMan instance
-        :rtype: None
-        """
-
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
         if not os.path.exists(directory_name):
@@ -58,13 +57,14 @@ class MemoryMapOnHostChipReport(object):
                                  " {} for writing.", file_name)
 
     def _describe_mem_map(self, f, txrx, x, y, p):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+        """
         # pylint: disable=too-many-arguments
         # Read the memory map data from the given core
-        user_0_addr = txrx.get_user_0_register_address_from_core(p)
-        pointer_table_addr = self._get_app_pointer_table(
-            txrx, x, y, user_0_addr)
+        region_table_addr = self._get_region_table_addr(txrx, x, y, p)
         memmap_data = txrx.read_memory(
-            x, y, pointer_table_addr, BYTES_PER_WORD * MAX_MEM_REGIONS)
+            x, y, region_table_addr, BYTES_PER_WORD * MAX_MEM_REGIONS)
 
         # Convert the map to a human-readable description
         f.write("On chip data specification executor\n\n")
@@ -74,6 +74,10 @@ class MemoryMapOnHostChipReport(object):
             f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
                 i, region_address))
 
-    def _get_app_pointer_table(self, txrx, x, y, table_pointer):
-        encoded_address = txrx.read_memory(x, y, table_pointer, BYTES_PER_WORD)
-        return _ONE_WORD.unpack_from(encoded_address)[0] + 2 * BYTES_PER_WORD
+    def _get_region_table_addr(self, txrx, x, y, p):
+        """
+        :param ~spinnman.transceiver.Transceiver txrx:
+        """
+        user_0_addr = txrx.get_user_0_register_address_from_core(p)
+        encoded_address = txrx.read_memory(x, y, user_0_addr, BYTES_PER_WORD)
+        return _ONE_WORD.unpack_from(encoded_address)[0] + REGION_HEADER_SIZE
