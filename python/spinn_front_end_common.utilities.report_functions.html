@@ -157,6 +157,174 @@
 <div class="section" id="module-spinn_front_end_common.utilities.report_functions">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.report_functions.</code><code class="descname">BitFieldCompressorReport</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/bit_field_compressor_report.html#BitFieldCompressorReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldCompressorReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Generates a report that shows the impact of the compression of         bitfields into the routing table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>report_default_directory</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; report folder</li>
+<li><strong>provenance_items</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem" title="spinn_front_end_common.utilities.utility_objs.ProvenanceDataItem"><em>ProvenanceDataItem</em></a><em>)</em><em></em>) &#8211; prov items</li>
+<li><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v)"><em>MachineGraph</em></a>) &#8211; the machine graph</li>
+<li><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v)"><em>Placements</em></a>) &#8211; the placements</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a summary, or <cite>None</cite> if the report file can&#8217;t be written</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary" title="spinn_front_end_common.utilities.report_functions.BitFieldSummary">BitFieldSummary</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.report_functions.</code><code class="descname">BitFieldSummary</code><span class="sig-paren">(</span><em>total_merged</em>, <em>max_per_chip</em>, <em>lowest_per_chip</em>, <em>total_to_merge</em>, <em>max_to_merge_per_chip</em>, <em>low_to_merge_per_chip</em>, <em>average_per_chip_merged</em>, <em>average_per_chip_to_merge</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/bit_field_summary.html#BitFieldSummary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Summary description of generated bitfields.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>total_merged</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>max_per_chip</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>lowest_per_chip</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>total_to_merge</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>max_to_merge_per_chip</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>low_to_merge_per_chip</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; </li>
+<li><strong>average_per_chip_merged</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; </li>
+<li><strong>average_per_chip_to_merge</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_merged">
+<code class="descname">average_per_chip_merged</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_merged" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_to_merge">
+<code class="descname">average_per_chip_to_merge</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_to_merge" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)">float</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.low_to_merge_per_chip">
+<code class="descname">low_to_merge_per_chip</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.low_to_merge_per_chip" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.lowest_per_chip">
+<code class="descname">lowest_per_chip</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.lowest_per_chip" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.max_per_chip">
+<code class="descname">max_per_chip</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.max_per_chip" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.max_to_merge_per_chip">
+<code class="descname">max_to_merge_per_chip</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.max_to_merge_per_chip" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.total_merged">
+<code class="descname">total_merged</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.total_merged" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BitFieldSummary.total_to_merge">
+<code class="descname">total_to_merge</code><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.total_to_merge" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.report_functions.BoardChipReport">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.report_functions.</code><code class="descname">BoardChipReport</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/board_chip_report.html#BoardChipReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BoardChipReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Report on memory usage</p>
+<dl class="attribute">
+<dt id="spinn_front_end_common.utilities.report_functions.BoardChipReport.AREA_CODE_REPORT_NAME">
+<code class="descname">AREA_CODE_REPORT_NAME</code><em class="property"> = 'board_chip_report.txt'</em><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.BoardChipReport.AREA_CODE_REPORT_NAME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="spinn_front_end_common.utilities.report_functions.EnergyReport">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.report_functions.</code><code class="descname">EnergyReport</code><span class="sig-paren">(</span><em>report_default_directory</em>, <em>version</em>, <em>spalloc_server</em>, <em>remote_spinnaker_url</em>, <em>time_scale_factor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/energy_report.html#EnergyReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.EnergyReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
@@ -294,6 +462,12 @@
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="class">
+<dt id="spinn_front_end_common.utilities.report_functions.TagsFromMachineReport">
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.utilities.report_functions.</code><code class="descname">TagsFromMachineReport</code><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/real_tags_report.html#TagsFromMachineReport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.TagsFromMachineReport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 </dd></dl>
 
 </div>
