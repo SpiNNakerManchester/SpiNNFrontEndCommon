@@ -103,7 +103,7 @@
 <span id="spinn-front-end-common-mapping-algorithms-on-chip-router-table-compression-compression-module"></span><h2>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression module<a class="headerlink" href="#module-spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression">
-<em class="property">class </em><code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">Compression</code><span class="sig-paren">(</span><em>app_id</em>, <em>binary_path</em>, <em>compress_as_much_as_possible</em>, <em>compress_only_when_needed</em>, <em>machine</em>, <em>provenance_file_path</em>, <em>routing_tables</em>, <em>transceiver</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#Compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">Compression</code><span class="sig-paren">(</span><em>app_id</em>, <em>binary_path</em>, <em>compress_as_much_as_possible</em>, <em>machine</em>, <em>provenance_file_path</em>, <em>routing_tables</em>, <em>transceiver</em>, <em>progresses_text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#Compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
 <p>Compressor that uses a on chip router compressor</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -119,6 +119,7 @@
 <li><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; </li>
 <li><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; </li>
 <li><strong>transceiver</strong> (<em>Transceiver</em>) &#8211; </li>
+<li><strong>progresses_text</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; Text to use in progress bar</li>
 </ul>
 </td>
 </tr>
@@ -138,10 +139,12 @@
 </table>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.make_source_hack">
-<em class="property">static </em><code class="descname">make_source_hack</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#Compression.make_source_hack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.Compression.make_source_hack" title="Permalink to this definition">¶</a></dt>
-<dd><p>Hack to support the source requirement for the router compressor            on chip</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.make_source_hack">
+<code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">make_source_hack</code><span class="sig-paren">(</span><em>entry</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#make_source_hack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.make_source_hack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hack to support the source requirement for the router compressor        on chip</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -156,12 +159,12 @@
 </table>
 </dd></dl>
 
-</dd></dl>
-
 <dl class="function">
 <dt id="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.mundy_on_chip_router_compression">
 <code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">mundy_on_chip_router_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>machine</em>, <em>app_id</em>, <em>system_provenance_folder</em>, <em>compress_only_when_needed=True</em>, <em>compress_as_much_as_possible=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#mundy_on_chip_router_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.mundy_on_chip_router_compression" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load routing tables and compress them using Mundy&#8217;s algorithm.</p>
+<p>This uses an aplx built by Mundy which no longer compiles but still works
+with the current tool chain</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -189,7 +192,7 @@ the current router space, otherwise it will just load the table</li>
 
 <dl class="function">
 <dt id="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.pair_compression">
-<code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">pair_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>executable_finder</em>, <em>machine</em>, <em>app_id</em>, <em>provenance_file_path</em>, <em>compress_only_when_needed=False</em>, <em>compress_as_much_as_possible=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#pair_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.pair_compression" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">pair_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>executable_finder</em>, <em>machine</em>, <em>app_id</em>, <em>provenance_file_path</em>, <em>compress_as_much_as_possible=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#pair_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.pair_compression" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load routing tables and compress then using the Pair Algorithm.</p>
 <p>See pacman/operations/router_compressors/pair_compressor.py which is the
 exact same algorithm implemented in Python.</p>
@@ -207,8 +210,35 @@ exact same algorithm implemented in Python.</p>
 <li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If False, the compressor will only reduce the table until it fits in
 the router space, otherwise it will try to reduce until it until it
 can&#8217;t reduce it any more</li>
-<li><strong>compress_only_when_needed</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If True, the compressor will only compress if the table doesn&#8217;t fit in
-the current router space, otherwise it will just load the table</li>
+<li><strong>executable_finder</strong> &#8211; tracker of binaries.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.unordered_compression">
+<code class="descclassname">spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.</code><code class="descname">unordered_compression</code><span class="sig-paren">(</span><em>routing_tables</em>, <em>transceiver</em>, <em>executable_finder</em>, <em>machine</em>, <em>app_id</em>, <em>provenance_file_path</em>, <em>compress_as_much_as_possible=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/mapping_algorithms/on_chip_router_table_compression/compression.html#unordered_compression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.compression.unordered_compression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load routing tables and compress then using the unordered Algorithm.</p>
+<p>To the best of our knowledge this is the same algorithm as the
+mundy_on_chip_router_compression expect this one is still buildable
+so can be maintained</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v)"><em>MulticastRoutingTables</em></a>) &#8211; the memory routing tables to be compressed</li>
+<li><strong>transceiver</strong> (<em>Transceiver</em>) &#8211; the spinnman interface</li>
+<li><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v)"><em>ExecutableFinder</em></a>) &#8211; </li>
+<li><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v)"><em>Machine</em></a>) &#8211; the SpiNNaker machine representation</li>
+<li><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) &#8211; the application ID used by the main application</li>
+<li><strong>provenance_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) &#8211; the path to where to write the data</li>
+<li><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a>) &#8211; If False, the compressor will only reduce the table until it fits in
+the router space, otherwise it will try to reduce until it until it
+can&#8217;t reduce it any more</li>
 <li><strong>executable_finder</strong> &#8211; tracker of binaries.</li>
 </ul>
 </td>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/compressor_includes/ordered_covering.h File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/ordered_covering_includes/ordered_covering.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_68929be46b5e429180cf406a8b7650db.html">compressor_includes</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_9ed77f8959915756d1122bf34f433f4a.html">ordered_covering_includes</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -81,8 +81,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="aliases_8h_source.html">aliases.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="bit__set_8h_source.html">bit_set.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="merge_8h_source.html">merge.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="remove__default__routes_8h_source.html">remove_default_routes.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="compressor__bit__field__models_2src_2common_2routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
 </div>
 <p><a href="ordered__covering_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -91,21 +90,21 @@ Functions</h2></td></tr>
 <tr class="memitem:a6df2d7d46162059a4d099e3828889ec8"><td class="memItemLeft" align="right" valign="top">static unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a6df2d7d46162059a4d099e3828889ec8">oc_get_insertion_point</a> (const unsigned int generality)</td></tr>
 <tr class="memdesc:a6df2d7d46162059a4d099e3828889ec8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the index where the routing table entry resulting from a merge should be inserted.  <a href="ordered__covering_8h.html#a6df2d7d46162059a4d099e3828889ec8">More...</a><br /></td></tr>
 <tr class="separator:a6df2d7d46162059a4d099e3828889ec8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a398b9d3ca9c4919c0ca19022d7066d1b"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a398b9d3ca9c4919c0ca19022d7066d1b">oc_up_check</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="simple__minimise_8c.html#a1c915f60128891589ee02f38896399ea">merge</a>, int min_goodness, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>, bool *changed)</td></tr>
+<tr class="memitem:a398b9d3ca9c4919c0ca19022d7066d1b"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a398b9d3ca9c4919c0ca19022d7066d1b">oc_up_check</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="pair__minimize_8h.html#a1c915f60128891589ee02f38896399ea">merge</a>, int min_goodness, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>, bool *changed)</td></tr>
 <tr class="memdesc:a398b9d3ca9c4919c0ca19022d7066d1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove from a merge any entries which would be covered by being existing entries if they were included in the given merge.  <a href="ordered__covering_8h.html#a398b9d3ca9c4919c0ca19022d7066d1b">More...</a><br /></td></tr>
 <tr class="separator:a398b9d3ca9c4919c0ca19022d7066d1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3edf5e53fa1eefab4180863fac7f64fd"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a3edf5e53fa1eefab4180863fac7f64fd">oc_down_check</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="simple__minimise_8c.html#a1c915f60128891589ee02f38896399ea">merge</a>, int min_goodness, <a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *aliases, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>)</td></tr>
+<tr class="memitem:a3edf5e53fa1eefab4180863fac7f64fd"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a3edf5e53fa1eefab4180863fac7f64fd">oc_down_check</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="pair__minimize_8h.html#a1c915f60128891589ee02f38896399ea">merge</a>, int min_goodness, <a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *aliases, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>)</td></tr>
 <tr class="memdesc:a3edf5e53fa1eefab4180863fac7f64fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove entries from a merge such that the merge would not cover existing entries positioned below the merge.  <a href="ordered__covering_8h.html#a3edf5e53fa1eefab4180863fac7f64fd">More...</a><br /></td></tr>
 <tr class="separator:a3edf5e53fa1eefab4180863fac7f64fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5071857be7a5d35aa0a3316d9232c8fd"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a5071857be7a5d35aa0a3316d9232c8fd">oc_get_best_merge</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *aliases, <a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *best, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>)</td></tr>
 <tr class="memdesc:a5071857be7a5d35aa0a3316d9232c8fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the best merge which can be applied to a routing table.  <a href="ordered__covering_8h.html#a5071857be7a5d35aa0a3316d9232c8fd">More...</a><br /></td></tr>
 <tr class="separator:a5071857be7a5d35aa0a3316d9232c8fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8f7b6172a620fc686eedfa606584801"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#ac8f7b6172a620fc686eedfa606584801">oc_merge_apply</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="simple__minimise_8c.html#a1c915f60128891589ee02f38896399ea">merge</a>, <a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *aliases, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>)</td></tr>
+<tr class="memitem:ac8f7b6172a620fc686eedfa606584801"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#ac8f7b6172a620fc686eedfa606584801">oc_merge_apply</a> (<a class="el" href="merge_8h.html#structmerge__t">merge_t</a> *<a class="el" href="pair__minimize_8h.html#a1c915f60128891589ee02f38896399ea">merge</a>, <a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *aliases, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>)</td></tr>
 <tr class="memdesc:ac8f7b6172a620fc686eedfa606584801"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a merge to the table against which it is defined.  <a href="ordered__covering_8h.html#ac8f7b6172a620fc686eedfa606584801">More...</a><br /></td></tr>
 <tr class="separator:ac8f7b6172a620fc686eedfa606584801"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbfc14b5cbfc6529554581ba2821b5cb"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#acbfc14b5cbfc6529554581ba2821b5cb">oc_minimise</a> (int target_length, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>, bool <a class="el" href="bit__field__compressor_8c.html#a27499168ecd781568c0aedcd623d545a">compress_only_when_needed</a>, bool <a class="el" href="bit__field__compressor_8c.html#a9701f3483027add11f0bffb0863baa2e">compress_as_much_as_possible</a>)</td></tr>
-<tr class="memdesc:acbfc14b5cbfc6529554581ba2821b5cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the ordered covering algorithm to a routing table.  <a href="ordered__covering_8h.html#acbfc14b5cbfc6529554581ba2821b5cb">More...</a><br /></td></tr>
-<tr class="separator:acbfc14b5cbfc6529554581ba2821b5cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d58db58c6a9286c610630fb466c8ffe"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ordered__covering_8h.html#a7d58db58c6a9286c610630fb466c8ffe">minimise_run</a> (int target_length, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>)</td></tr>
+<tr class="memdesc:a7d58db58c6a9286c610630fb466c8ffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply the ordered covering algorithm to a routing table.  <a href="ordered__covering_8h.html#a7d58db58c6a9286c610630fb466c8ffe">More...</a><br /></td></tr>
+<tr class="separator:a7d58db58c6a9286c610630fb466c8ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>An ordered covering of routing table entries. </p>
@@ -385,17 +384,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="acbfc14b5cbfc6529554581ba2821b5cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbfc14b5cbfc6529554581ba2821b5cb">&#9670;&nbsp;</a></span>oc_minimise()</h2>
+<a id="a7d58db58c6a9286c610630fb466c8ffe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d58db58c6a9286c610630fb466c8ffe">&#9670;&nbsp;</a></span>minimise_run()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool oc_minimise </td>
+          <td class="memname">bool minimise_run </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>target_length</em>, </td>
@@ -410,19 +406,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">volatile bool *&#160;</td>
-          <td class="paramname"><em>stop_compressing</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>compress_only_when_needed</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>compress_as_much_as_possible</em>&#160;</td>
+          <td class="paramname"><em>stop_compressing</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -430,11 +414,6 @@ Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Apply the ordered covering algorithm to a routing table. </p>
@@ -443,8 +422,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">target_length</td><td>The length to reach </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">failed_by_malloc</td><td>Flag stating that it failed due to malloc </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">stop_compressing</td><td>Variable saying if the compressor should stop and return false; <em>set by interrupt</em> DURING the run of this method! </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">compress_only_when_needed</td><td>Only compress when needed </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">compress_as_much_as_possible</td><td>Only compress to normal routing table length </td></tr>
   </table>
   </dd>
 </dl>

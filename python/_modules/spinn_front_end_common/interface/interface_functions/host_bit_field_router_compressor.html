@@ -104,7 +104,7 @@
     <span class="n">abstract_supports_bit_field_routing_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">AbstractSupportsBitFieldRoutingCompression</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BITS_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+    <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
 
 
 <span class="k">class</span> <span class="nc">_BitFieldData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -206,6 +206,9 @@
 
     <span class="c1"># fraction effect for threshold</span>
     <span class="n">_THRESHOLD_FRACTION_EFFECT</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Number of bits per word as an int</span>
+    <span class="n">_BITS_PER_WORD</span> <span class="o">=</span> <span class="mi">32</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_best_routing_table</span> <span class="o">=</span> <span class="kc">None</span>
@@ -543,8 +546,8 @@
 <span class="sd">        :param int neuron_id: the neuron id to find the bit in the bitfield</span>
 <span class="sd">        :return: the bit</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">word_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">neuron_id</span> <span class="o">//</span> <span class="n">BITS_PER_WORD</span><span class="p">)</span>
-        <span class="n">bit_in_word</span> <span class="o">=</span> <span class="n">neuron_id</span> <span class="o">%</span> <span class="n">BITS_PER_WORD</span>
+        <span class="n">word_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">neuron_id</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span><span class="p">)</span>
+        <span class="n">bit_in_word</span> <span class="o">=</span> <span class="n">neuron_id</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span>
         <span class="n">flag</span> <span class="o">=</span> <span class="p">(</span><span class="n">bit_field</span><span class="p">[</span><span class="n">word_id</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">bit_in_word</span><span class="p">)</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BIT_MASK</span>
         <span class="k">return</span> <span class="n">flag</span>
 
@@ -575,13 +578,16 @@
             <span class="n">bit_field_base_address</span> <span class="o">=</span> \
                 <span class="n">bit_field_chip_base_addresses</span><span class="p">[</span><span class="n">processor_id</span><span class="p">]</span>
 
-            <span class="c1"># read how many bitfields there are</span>
-            <span class="n">n_bit_field_entries</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&lt;I&quot;</span><span class="p">,</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
-                <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">bit_field_base_address</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">reading_address</span> <span class="o">=</span> <span class="n">bit_field_base_address</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span>
+            <span class="c1"># from filter_regoin_t read how many bitfields there are</span>
+            <span class="c1"># n_merged_filters, n_redundancy_filters, n_filters</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">n_filters</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
+                <span class="s2">&quot;&lt;III&quot;</span><span class="p">,</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+                    <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span>
+                    <span class="n">bit_field_base_address</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))</span>
+            <span class="n">reading_address</span> <span class="o">=</span> <span class="n">bit_field_base_address</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span> <span class="o">*</span> <span class="mi">3</span>
 
             <span class="c1"># read in each bitfield</span>
-            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bit_field_entries</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_filters</span><span class="p">):</span>
                 <span class="c1"># master pop key, n words and read pointer</span>
                 <span class="n">master_pop_key</span><span class="p">,</span> <span class="n">n_words_to_read</span><span class="p">,</span> <span class="n">read_pointer</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span>
                     <span class="s2">&quot;&lt;III&quot;</span><span class="p">,</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
@@ -712,7 +718,7 @@
 <span class="sd">        :return: the number of redundant packets being captured.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_packets_filtered</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">n_neurons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bitfield</span><span class="p">)</span> <span class="o">*</span> <span class="n">BITS_PER_WORD</span>
+        <span class="n">n_neurons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bitfield</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span>
 
         <span class="k">for</span> <span class="n">neuron_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_for_neuron_id</span><span class="p">(</span><span class="n">bitfield</span><span class="p">,</span> <span class="n">neuron_id</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -909,7 +915,7 @@
             <span class="n">best_bit_fields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_bit_fields_by_processor</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="n">n_bit_fields_merged</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_bit_fields</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">best_bit_fields</span><span class="p">:</span>
-                <span class="n">n_neurons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span> <span class="o">*</span> <span class="n">BITS_PER_WORD</span>
+                <span class="n">n_neurons</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">bit_field</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_BITS_PER_WORD</span>
                 <span class="k">for</span> <span class="n">neuron_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_neurons</span><span class="p">):</span>
                     <span class="n">is_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bit_for_neuron_id</span><span class="p">(</span>
                         <span class="n">element</span><span class="o">.</span><span class="n">bit_field</span><span class="p">,</span> <span class="n">neuron_id</span><span class="p">)</span>

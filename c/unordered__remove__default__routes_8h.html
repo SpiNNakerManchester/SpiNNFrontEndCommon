@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/minimise/src/unordered_remove_default_routes.h File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/simple/unordered_remove_default_routes.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_704abb719010324016bd189cc664ccf0.html">minimise</a></li><li class="navelem"><a class="el" href="dir_c6323418fe5a85689ca5953d5e80234b.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_a2d89133402316965f38208d7dba2c15.html">simple</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -78,7 +78,8 @@ $(function() {
 <p>How to remove default routes from a routing table.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="minimise_2src_2routing__table_8h_source.html">routing_table.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="routing__table_8h_source.html">routing_table.h</a>&quot;</code><br />
+<code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 </div>
 <p><a href="unordered__remove__default__routes_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -91,15 +92,15 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4f870fda25d0a3fd5de8fe64642399bc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unordered__remove__default__routes_8h.html#a4f870fda25d0a3fd5de8fe64642399bc">remove_default_routes_minimise</a> (<a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *<a class="el" href="minimise_8h.html#a8aa4114869bdb42b8ce3a3e9cfbe6714">table</a>)</td></tr>
-<tr class="memdesc:a4f870fda25d0a3fd5de8fe64642399bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove defaultable routes from a routing table if that helps.  <a href="unordered__remove__default__routes_8h.html#a4f870fda25d0a3fd5de8fe64642399bc">More...</a><br /></td></tr>
-<tr class="separator:a4f870fda25d0a3fd5de8fe64642399bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54dd4a9043019754b1ce523f2b2e1b9f"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="unordered__remove__default__routes_8h.html#a54dd4a9043019754b1ce523f2b2e1b9f">remove_default_routes_minimise</a> (int target_length)</td></tr>
+<tr class="memdesc:a54dd4a9043019754b1ce523f2b2e1b9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove defaultable routes from a routing table if that helps.  <a href="unordered__remove__default__routes_8h.html#a54dd4a9043019754b1ce523f2b2e1b9f">More...</a><br /></td></tr>
+<tr class="separator:a54dd4a9043019754b1ce523f2b2e1b9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>How to remove default routes from a routing table. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a4f870fda25d0a3fd5de8fe64642399bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f870fda25d0a3fd5de8fe64642399bc">&#9670;&nbsp;</a></span>remove_default_routes_minimise()</h2>
+<a id="a54dd4a9043019754b1ce523f2b2e1b9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54dd4a9043019754b1ce523f2b2e1b9f">&#9670;&nbsp;</a></span>remove_default_routes_minimise()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -108,10 +109,10 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void remove_default_routes_minimise </td>
+          <td class="memname">static bool remove_default_routes_minimise </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *&#160;</td>
-          <td class="paramname"><em>table</em></td><td>)</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>target_length</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/bit_field_compressor.c File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/bit_field_compressor.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -81,15 +81,15 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;spin1_api.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
-<code>#include &lt;bit_field.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="sdp__no__scp_8h_source.html">sdp_no_scp.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="compressor__bit__field__models_2src_2common_2routing__table_8h_source.html">common/routing_table.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="constants_8h_source.html">common/constants.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="compressor__sorter__structs_8h_source.html">common/compressor_sorter_structs.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="bit__field__table__generator_8h_source.html">common/bit_field_table_generator.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="ordered__covering_8h_source.html">compressor_includes/ordered_covering.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="compressor__sorter__structs_8h_source.html">bit_field_common/compressor_sorter_structs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="bit__field__table__generator_8h_source.html">bit_field_common/bit_field_table_generator.h</a>&quot;</code><br />
+<code>#include &quot;common/minimise.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="compressor_8h_source.html">compressor_includes/compressor.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="routing__tables_8h_source.html">bit_field_common/routing_tables.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
@@ -162,10 +162,6 @@ volatile bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" h
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a> = false</td></tr>
 <tr class="memdesc:a027c6543a6965ac8b64d261505a94f39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows minimise to report if it failed due to malloc issues. <br /></td></tr>
 <tr class="separator:a027c6543a6965ac8b64d261505a94f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27499168ecd781568c0aedcd623d545a"><td class="memItemLeft" align="right" valign="top"><a id="a27499168ecd781568c0aedcd623d545a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__compressor_8c.html#a27499168ecd781568c0aedcd623d545a">compress_only_when_needed</a> = false</td></tr>
-<tr class="memdesc:a27499168ecd781568c0aedcd623d545a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to run compression only when needed. <br /></td></tr>
-<tr class="separator:a27499168ecd781568c0aedcd623d545a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9701f3483027add11f0bffb0863baa2e"><td class="memItemLeft" align="right" valign="top"><a id="a9701f3483027add11f0bffb0863baa2e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__compressor_8c.html#a9701f3483027add11f0bffb0863baa2e">compress_as_much_as_possible</a> = false</td></tr>
 <tr class="memdesc:a9701f3483027add11f0bffb0863baa2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to compress as much as possible. <br /></td></tr>

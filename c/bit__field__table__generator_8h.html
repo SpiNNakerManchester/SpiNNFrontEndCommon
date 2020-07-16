@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/common/bit_field_table_generator.h File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/bit_field_common/bit_field_table_generator.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_6c5c13ba6f8b8124c7ce49931c6c93bd.html">common</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_cee6987024209291200cb0be51bcb6a8.html">bit_field_common</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -78,7 +78,7 @@ $(function() {
 <p>The table generator support code.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="constants_8h_source.html">../common/constants.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="compressor__bit__field__models_2src_2common_2routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="routing__tables_8h_source.html">routing_tables.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="filter__info_8h_source.html">filter_info.h</a>&gt;</code><br />
 </div>
 <p><a href="bit__field__table__generator_8h_source.html">Go to the source code of this file.</a></p>
@@ -99,19 +99,19 @@ Functions</h2></td></tr>
 <tr class="memitem:ae418a7d916acc1c8414e63962acbf150"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#ae418a7d916acc1c8414e63962acbf150">count_unique_keys</a> (<a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>, int midpoint)</td></tr>
 <tr class="memdesc:ae418a7d916acc1c8414e63962acbf150"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count the number of unique keys in the list up to the midpoint.  <a href="bit__field__table__generator_8h.html#ae418a7d916acc1c8414e63962acbf150">More...</a><br /></td></tr>
 <tr class="separator:ae418a7d916acc1c8414e63962acbf150"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50a1dbe2c13c2f83f20876206b62541a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a50a1dbe2c13c2f83f20876206b62541a">generate_table</a> (<a class="el" href="minimise_2src_2routing__table_8h.html#structentry__t">entry_t</a> original_entry, <a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> **restrict filters, uint32_t *restrict bit_field_processors, int bf_found)</td></tr>
+<tr class="memitem:a50a1dbe2c13c2f83f20876206b62541a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a50a1dbe2c13c2f83f20876206b62541a">generate_table</a> (<a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> original_entry, <a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> **restrict filters, uint32_t *restrict bit_field_processors, int bf_found)</td></tr>
 <tr class="memdesc:a50a1dbe2c13c2f83f20876206b62541a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a routing tables by merging an entry and a list of bitfields by processor.  <a href="bit__field__table__generator_8h.html#a50a1dbe2c13c2f83f20876206b62541a">More...</a><br /></td></tr>
 <tr class="separator:a50a1dbe2c13c2f83f20876206b62541a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#af67eedbb6f9ea96b5d8eb2cede279c48">bit_field_table_generator_max_size</a> (int mid_point, <a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *restrict uncompressed_table, <a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
+<tr class="memitem:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#af67eedbb6f9ea96b5d8eb2cede279c48">bit_field_table_generator_max_size</a> (int mid_point, <a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *restrict uncompressed_table, <a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
 <tr class="memdesc:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a midpoint and read the sorted bitfields, computing the max size of the routing table.  <a href="bit__field__table__generator_8h.html#af67eedbb6f9ea96b5d8eb2cede279c48">More...</a><br /></td></tr>
 <tr class="separator:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a21802cfb2fb38de48a9e03478079e327"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a21802cfb2fb38de48a9e03478079e327">bit_field_table_generator_create_bit_field_router_tables</a> (int mid_point, <a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *restrict uncompressed_table, <a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
+<tr class="memitem:a21802cfb2fb38de48a9e03478079e327"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a21802cfb2fb38de48a9e03478079e327">bit_field_table_generator_create_bit_field_router_tables</a> (int mid_point, <a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *restrict uncompressed_table, <a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
 <tr class="memdesc:a21802cfb2fb38de48a9e03478079e327"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a midpoint and read the sorted bitfields up to that point, generating bitfield routing tables and loading them into SDRAM for transfer to a compressor processor.  <a href="bit__field__table__generator_8h.html#a21802cfb2fb38de48a9e03478079e327">More...</a><br /></td></tr>
 <tr class="separator:a21802cfb2fb38de48a9e03478079e327"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf4394175d87de06a83d8793ace043e4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#abf4394175d87de06a83d8793ace043e4">print_table</a> (<a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *<a class="el" href="minimise_8h.html#a8aa4114869bdb42b8ce3a3e9cfbe6714">table</a>)</td></tr>
+<tr class="memitem:abf4394175d87de06a83d8793ace043e4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#abf4394175d87de06a83d8793ace043e4">print_table</a> (<a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *<a class="el" href="rt__single_8h.html#a8aa4114869bdb42b8ce3a3e9cfbe6714">table</a>)</td></tr>
 <tr class="memdesc:abf4394175d87de06a83d8793ace043e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">debugging print for a pointer to a table.  <a href="bit__field__table__generator_8h.html#abf4394175d87de06a83d8793ace043e4">More...</a><br /></td></tr>
 <tr class="separator:abf4394175d87de06a83d8793ace043e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6236cf9295f7f8805153cbbdd3c8cfc3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a6236cf9295f7f8805153cbbdd3c8cfc3">sort_table_by_key</a> (<a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *<a class="el" href="minimise_8h.html#a8aa4114869bdb42b8ce3a3e9cfbe6714">table</a>)</td></tr>
+<tr class="memitem:a6236cf9295f7f8805153cbbdd3c8cfc3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a6236cf9295f7f8805153cbbdd3c8cfc3">sort_table_by_key</a> (<a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *<a class="el" href="rt__single_8h.html#a8aa4114869bdb42b8ce3a3e9cfbe6714">table</a>)</td></tr>
 <tr class="memdesc:a6236cf9295f7f8805153cbbdd3c8cfc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">sorts a given table so that the entries in the table are by key value.  <a href="bit__field__table__generator_8h.html#a6236cf9295f7f8805153cbbdd3c8cfc3">More...</a><br /></td></tr>
 <tr class="separator:a6236cf9295f7f8805153cbbdd3c8cfc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -165,7 +165,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void generate_table </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="minimise_2src_2routing__table_8h.html#structentry__t">entry_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structentry__t">entry_t</a>&#160;</td>
           <td class="paramname"><em>original_entry</em>, </td>
         </tr>
         <tr>
@@ -225,7 +225,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *restrict&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *restrict&#160;</td>
           <td class="paramname"><em>uncompressed_table</em>, </td>
         </tr>
         <tr>
@@ -278,7 +278,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *restrict&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *restrict&#160;</td>
           <td class="paramname"><em>uncompressed_table</em>, </td>
         </tr>
         <tr>
@@ -321,7 +321,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void print_table </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *&#160;</td>
           <td class="paramname"><em>table</em></td><td>)</td>
           <td></td>
         </tr>
@@ -347,7 +347,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void sort_table_by_key </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *&#160;</td>
           <td class="paramname"><em>table</em></td><td>)</td>
           <td></td>
         </tr>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/common/routing_table_utils.h File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/bit_field_common/routing_tables_utils.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_6c5c13ba6f8b8124c7ce49931c6c93bd.html">common</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_cee6987024209291200cb0be51bcb6a8.html">bit_field_common</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -71,7 +71,7 @@ $(function() {
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">routing_table_utils.h File Reference</div>  </div>
+<div class="title">routing_tables_utils.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -81,35 +81,35 @@ $(function() {
 <code>#include &lt;<a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="compressor__sorter__structs_8h_source.html">compressor_sorter_structs.h</a>&quot;</code><br />
 </div>
-<p><a href="routing__table__utils_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="routing__tables__utils_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a032503e76d6f69bc67e99e909c8125da"><td class="memItemLeft" align="right" valign="top"><a id="a032503e76d6f69bc67e99e909c8125da"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#a032503e76d6f69bc67e99e909c8125da">TABLE_SIZE</a>&#160;&#160;&#160;1024</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#a032503e76d6f69bc67e99e909c8125da">TABLE_SIZE</a>&#160;&#160;&#160;1024</td></tr>
 <tr class="memdesc:a032503e76d6f69bc67e99e909c8125da"><td class="mdescLeft">&#160;</td><td class="mdescRight">number of entries in each sub table <br /></td></tr>
 <tr class="separator:a032503e76d6f69bc67e99e909c8125da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a61113da663120ff8a3e513f3fa77b74b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#a61113da663120ff8a3e513f3fa77b74b">TABLE_SHIFT</a>&#160;&#160;&#160;10</td></tr>
-<tr class="memdesc:a61113da663120ff8a3e513f3fa77b74b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shift to go from entry <code>_id</code> to table id.  <a href="routing__table__utils_8h.html#a61113da663120ff8a3e513f3fa77b74b">More...</a><br /></td></tr>
+<tr class="memitem:a61113da663120ff8a3e513f3fa77b74b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#a61113da663120ff8a3e513f3fa77b74b">TABLE_SHIFT</a>&#160;&#160;&#160;10</td></tr>
+<tr class="memdesc:a61113da663120ff8a3e513f3fa77b74b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shift to go from entry <code>_id</code> to table id.  <a href="routing__tables__utils_8h.html#a61113da663120ff8a3e513f3fa77b74b">More...</a><br /></td></tr>
 <tr class="separator:a61113da663120ff8a3e513f3fa77b74b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc50bea329a314178f9df558d994abc9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#abc50bea329a314178f9df558d994abc9">LOCAL_ID_ADD</a>&#160;&#160;&#160;1023</td></tr>
-<tr class="memdesc:abc50bea329a314178f9df558d994abc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">bitwise add to get sub table id.  <a href="routing__table__utils_8h.html#abc50bea329a314178f9df558d994abc9">More...</a><br /></td></tr>
+<tr class="memitem:abc50bea329a314178f9df558d994abc9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#abc50bea329a314178f9df558d994abc9">LOCAL_ID_ADD</a>&#160;&#160;&#160;1023</td></tr>
+<tr class="memdesc:abc50bea329a314178f9df558d994abc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">bitwise add to get sub table id.  <a href="routing__tables__utils_8h.html#abc50bea329a314178f9df558d994abc9">More...</a><br /></td></tr>
 <tr class="separator:abc50bea329a314178f9df558d994abc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a2b5eeb43d1d1cbb5950f1c4fe509bc7c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#a2b5eeb43d1d1cbb5950f1c4fe509bc7c">routing_table_utils_free</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables, uint32_t start_point)</td></tr>
-<tr class="memdesc:a2b5eeb43d1d1cbb5950f1c4fe509bc7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does all frees for the multi_table object par ones before the start point.  <a href="routing__table__utils_8h.html#a2b5eeb43d1d1cbb5950f1c4fe509bc7c">More...</a><br /></td></tr>
-<tr class="separator:a2b5eeb43d1d1cbb5950f1c4fe509bc7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3dd8b84def8e8cb1b3e4119bc34b8511"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#a3dd8b84def8e8cb1b3e4119bc34b8511">routing_table_utils_free_all</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables)</td></tr>
-<tr class="memdesc:a3dd8b84def8e8cb1b3e4119bc34b8511"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does all frees for the multi_table object.  <a href="routing__table__utils_8h.html#a3dd8b84def8e8cb1b3e4119bc34b8511">More...</a><br /></td></tr>
-<tr class="separator:a3dd8b84def8e8cb1b3e4119bc34b8511"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1fbc7aedc95310a32fcd1810d97cd93"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#ab1fbc7aedc95310a32fcd1810d97cd93">routing_table_utils_malloc</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables, uint32_t max_entries)</td></tr>
-<tr class="memdesc:ab1fbc7aedc95310a32fcd1810d97cd93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Routing table to handle at least n_entries.  <a href="routing__table__utils_8h.html#ab1fbc7aedc95310a32fcd1810d97cd93">More...</a><br /></td></tr>
-<tr class="separator:ab1fbc7aedc95310a32fcd1810d97cd93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63ad3e4b606488a88d45b94ea85dffeb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__table__utils_8h.html#a63ad3e4b606488a88d45b94ea85dffeb">routing_table_utils_convert</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables)</td></tr>
-<tr class="memdesc:a63ad3e4b606488a88d45b94ea85dffeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts the multitable to a single routing table and free the rest.  <a href="routing__table__utils_8h.html#a63ad3e4b606488a88d45b94ea85dffeb">More...</a><br /></td></tr>
-<tr class="separator:a63ad3e4b606488a88d45b94ea85dffeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0556ae1bab1bb476a28906abd1b4fae"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#ae0556ae1bab1bb476a28906abd1b4fae">routing_tables_utils_free</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables, uint32_t start_point)</td></tr>
+<tr class="memdesc:ae0556ae1bab1bb476a28906abd1b4fae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does all frees for the multi_table object par ones before the start point.  <a href="routing__tables__utils_8h.html#ae0556ae1bab1bb476a28906abd1b4fae">More...</a><br /></td></tr>
+<tr class="separator:ae0556ae1bab1bb476a28906abd1b4fae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2b87e9be8188bb776b0426d6ba7e1d0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#ac2b87e9be8188bb776b0426d6ba7e1d0">routing_tables_utils_free_all</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables)</td></tr>
+<tr class="memdesc:ac2b87e9be8188bb776b0426d6ba7e1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does all frees for the multi_table object.  <a href="routing__tables__utils_8h.html#ac2b87e9be8188bb776b0426d6ba7e1d0">More...</a><br /></td></tr>
+<tr class="separator:ac2b87e9be8188bb776b0426d6ba7e1d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62a2cef63b709da2cff331bb140097d9"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#a62a2cef63b709da2cff331bb140097d9">routing_tables_utils_malloc</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables, uint32_t max_entries)</td></tr>
+<tr class="memdesc:a62a2cef63b709da2cff331bb140097d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Routing table to handle at least n_entries.  <a href="routing__tables__utils_8h.html#a62a2cef63b709da2cff331bb140097d9">More...</a><br /></td></tr>
+<tr class="separator:a62a2cef63b709da2cff331bb140097d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa31268404af3ce2f67545fa98bdbd802"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="routing__tables__utils_8h.html#aa31268404af3ce2f67545fa98bdbd802">routing_tables_utils_convert</a> (<a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict tables)</td></tr>
+<tr class="memdesc:aa31268404af3ce2f67545fa98bdbd802"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts the multitable to a single routing table and free the rest.  <a href="routing__tables__utils_8h.html#aa31268404af3ce2f67545fa98bdbd802">More...</a><br /></td></tr>
+<tr class="separator:aa31268404af3ce2f67545fa98bdbd802"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Compound routing table utilities. </p>
@@ -127,7 +127,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Shift to go from entry <code>_id</code> to table id. </p>
-<p>2<sup>TABLE_SHIFT</sup> needs to be <a class="el" href="routing__table__utils_8h.html#a032503e76d6f69bc67e99e909c8125da" title="number of entries in each sub table">TABLE_SIZE</a> </p>
+<p>2<sup>TABLE_SHIFT</sup> needs to be <a class="el" href="routing__tables__utils_8h.html#a032503e76d6f69bc67e99e909c8125da" title="number of entries in each sub table">TABLE_SIZE</a> </p>
 
 </div>
 </div>
@@ -144,13 +144,13 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>bitwise add to get sub table id. </p>
-<p>Needs to be <a class="el" href="routing__table__utils_8h.html#a032503e76d6f69bc67e99e909c8125da" title="number of entries in each sub table">TABLE_SIZE</a> - 1; </p>
+<p>Needs to be <a class="el" href="routing__tables__utils_8h.html#a032503e76d6f69bc67e99e909c8125da" title="number of entries in each sub table">TABLE_SIZE</a> - 1; </p>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a2b5eeb43d1d1cbb5950f1c4fe509bc7c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2b5eeb43d1d1cbb5950f1c4fe509bc7c">&#9670;&nbsp;</a></span>routing_table_utils_free()</h2>
+<a id="ae0556ae1bab1bb476a28906abd1b4fae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0556ae1bab1bb476a28906abd1b4fae">&#9670;&nbsp;</a></span>routing_tables_utils_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -159,7 +159,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void routing_table_utils_free </td>
+          <td class="memname">static void routing_tables_utils_free </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict&#160;</td>
           <td class="paramname"><em>tables</em>, </td>
@@ -194,8 +194,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a3dd8b84def8e8cb1b3e4119bc34b8511"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3dd8b84def8e8cb1b3e4119bc34b8511">&#9670;&nbsp;</a></span>routing_table_utils_free_all()</h2>
+<a id="ac2b87e9be8188bb776b0426d6ba7e1d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2b87e9be8188bb776b0426d6ba7e1d0">&#9670;&nbsp;</a></span>routing_tables_utils_free_all()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -204,7 +204,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void routing_table_utils_free_all </td>
+          <td class="memname">static void routing_tables_utils_free_all </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict&#160;</td>
           <td class="paramname"><em>tables</em></td><td>)</td>
@@ -228,8 +228,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ab1fbc7aedc95310a32fcd1810d97cd93"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab1fbc7aedc95310a32fcd1810d97cd93">&#9670;&nbsp;</a></span>routing_table_utils_malloc()</h2>
+<a id="a62a2cef63b709da2cff331bb140097d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62a2cef63b709da2cff331bb140097d9">&#9670;&nbsp;</a></span>routing_tables_utils_malloc()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -238,7 +238,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool routing_table_utils_malloc </td>
+          <td class="memname">static bool routing_tables_utils_malloc </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict&#160;</td>
           <td class="paramname"><em>tables</em>, </td>
@@ -275,8 +275,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a63ad3e4b606488a88d45b94ea85dffeb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a63ad3e4b606488a88d45b94ea85dffeb">&#9670;&nbsp;</a></span>routing_table_utils_convert()</h2>
+<a id="aa31268404af3ce2f67545fa98bdbd802"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa31268404af3ce2f67545fa98bdbd802">&#9670;&nbsp;</a></span>routing_tables_utils_convert()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -285,7 +285,7 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a>* routing_table_utils_convert </td>
+          <td class="memname">static <a class="el" href="routing__table_8h.html#structtable__t">table_t</a>* routing_tables_utils_convert </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a> *restrict&#160;</td>
           <td class="paramname"><em>tables</em></td><td>)</td>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/compressor_includes/aliases.h File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/ordered_covering_includes/aliases.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_68929be46b5e429180cf406a8b7650db.html">compressor_includes</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_9ed77f8959915756d1122bf34f433f4a.html">ordered_covering_includes</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -78,7 +78,7 @@ $(function() {
 <p>Aliases in the routing tree.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="compressor__bit__field__models_2src_2common_2routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 </div>
 <p><a href="aliases_8h_source.html">Go to the source code of this file.</a></p>
@@ -100,7 +100,7 @@ Functions</h2></td></tr>
 <tr class="memitem:abd1879eea45f5571b2c42f82329b2979"><td class="memItemLeft" align="right" valign="top">static alias_list_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#abd1879eea45f5571b2c42f82329b2979">alias_list_new</a> (unsigned int max_size)</td></tr>
 <tr class="memdesc:abd1879eea45f5571b2c42f82329b2979"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new list on the stack.  <a href="aliases_8h.html#abd1879eea45f5571b2c42f82329b2979">More...</a><br /></td></tr>
 <tr class="separator:abd1879eea45f5571b2c42f82329b2979"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14d3480b3b5722e0dd8371ebe4b81132"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a14d3480b3b5722e0dd8371ebe4b81132">alias_list_append</a> (alias_list_t *as, <a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> val, uint32_t source)</td></tr>
+<tr class="memitem:a14d3480b3b5722e0dd8371ebe4b81132"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a14d3480b3b5722e0dd8371ebe4b81132">alias_list_append</a> (alias_list_t *as, <a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> val, uint32_t source)</td></tr>
 <tr class="memdesc:a14d3480b3b5722e0dd8371ebe4b81132"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append an element to a list.  <a href="aliases_8h.html#a14d3480b3b5722e0dd8371ebe4b81132">More...</a><br /></td></tr>
 <tr class="separator:a14d3480b3b5722e0dd8371ebe4b81132"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab59cd4c13d3914c71577cb05374d179d"><td class="memItemLeft" align="right" valign="top">static alias_element_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#ab59cd4c13d3914c71577cb05374d179d">alias_list_get</a> (alias_list_t *as, unsigned int i)</td></tr>
@@ -115,16 +115,16 @@ Functions</h2></td></tr>
 <tr class="memitem:ae26498c61ce8ba636c6575dc8b0fb2cb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#ae26498c61ce8ba636c6575dc8b0fb2cb">aliases_init</a> (void)</td></tr>
 <tr class="memdesc:ae26498c61ce8ba636c6575dc8b0fb2cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new, empty, aliases container.  <a href="aliases_8h.html#ae26498c61ce8ba636c6575dc8b0fb2cb">More...</a><br /></td></tr>
 <tr class="separator:ae26498c61ce8ba636c6575dc8b0fb2cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9eb763ec2a8808f11d4da3de1d759b1e"><td class="memItemLeft" align="right" valign="top">static alias_list_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">aliases_find</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key)</td></tr>
+<tr class="memitem:a9eb763ec2a8808f11d4da3de1d759b1e"><td class="memItemLeft" align="right" valign="top">static alias_list_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">aliases_find</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key)</td></tr>
 <tr class="memdesc:a9eb763ec2a8808f11d4da3de1d759b1e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve an element from an aliases container.  <a href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">More...</a><br /></td></tr>
 <tr class="separator:a9eb763ec2a8808f11d4da3de1d759b1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e0ec45ebbce00250c9aff64101d00de"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">aliases_contains</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key)</td></tr>
+<tr class="memitem:a9e0ec45ebbce00250c9aff64101d00de"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">aliases_contains</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key)</td></tr>
 <tr class="memdesc:a9e0ec45ebbce00250c9aff64101d00de"><td class="mdescLeft">&#160;</td><td class="mdescRight">See if the aliases contain holds an element.  <a href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">More...</a><br /></td></tr>
 <tr class="separator:a9e0ec45ebbce00250c9aff64101d00de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07e8976dfe05cef7b7acda7805d93df6"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6">aliases_insert</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key, alias_list_t *value)</td></tr>
+<tr class="memitem:a07e8976dfe05cef7b7acda7805d93df6"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6">aliases_insert</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key, alias_list_t *value)</td></tr>
 <tr class="memdesc:a07e8976dfe05cef7b7acda7805d93df6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add/overwrite an element into an aliases tree.  <a href="aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6">More...</a><br /></td></tr>
 <tr class="separator:a07e8976dfe05cef7b7acda7805d93df6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab71f8d3612ebd57fd1d9184571d487b8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">aliases_remove</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key)</td></tr>
+<tr class="memitem:ab71f8d3612ebd57fd1d9184571d487b8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">aliases_remove</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key)</td></tr>
 <tr class="memdesc:ab71f8d3612ebd57fd1d9184571d487b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove an element from an aliases tree.  <a href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">More...</a><br /></td></tr>
 <tr class="separator:ab71f8d3612ebd57fd1d9184571d487b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae87489ed04311ca2fc87d2751d425de7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="aliases_8h.html#ae87489ed04311ca2fc87d2751d425de7">aliases_clear</a> (<a class="el" href="aliases_8h.html#structaliases__t">aliases_t</a> *a)</td></tr>
@@ -150,7 +150,7 @@ Functions</h2></td></tr>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="a11dba7181893de415239c53ed5ab7d76"></a><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a></td>
+<a id="a11dba7181893de415239c53ed5ab7d76"></a><a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a></td>
 <td class="fieldname">
 km</td>
 <td class="fielddoc">
@@ -291,7 +291,7 @@ pointer to first element </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
           <td class="paramname"><em>val</em>, </td>
         </tr>
         <tr>
@@ -490,7 +490,7 @@ pointer to first element </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
           <td class="paramname"><em>key</em>&#160;</td>
         </tr>
         <tr>
@@ -536,7 +536,7 @@ pointer to first element </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
           <td class="paramname"><em>key</em>&#160;</td>
         </tr>
         <tr>
@@ -582,7 +582,7 @@ pointer to first element </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
@@ -635,7 +635,7 @@ pointer to first element </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a>&#160;</td>
           <td class="paramname"><em>key</em>&#160;</td>
         </tr>
         <tr>

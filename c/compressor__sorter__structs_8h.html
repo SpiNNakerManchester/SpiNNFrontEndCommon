@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/common/compressor_sorter_structs.h File Reference</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/bit_field_common/compressor_sorter_structs.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_6c5c13ba6f8b8124c7ce49931c6c93bd.html">common</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_cee6987024209291200cb0be51bcb6a8.html">bit_field_common</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -79,22 +79,14 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="filter__info_8h_source.html">filter_info.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="key__atom__map_8h_source.html">key_atom_map.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
 </div>
 <p><a href="compressor__sorter__structs_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:structkey__mask__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a></td></tr>
-<tr class="memdesc:structkey__mask__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds key and mask.  <a href="compressor__sorter__structs_8h.html#structkey__mask__t">More...</a><br /></td></tr>
-<tr class="separator:structkey__mask__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structentry__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="minimise_2src_2routing__table_8h.html#structentry__t">entry_t</a></td></tr>
-<tr class="memdesc:structentry__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds data for a routing table entry.  <a href="minimise_2src_2routing__table_8h.html#structentry__t">More...</a><br /></td></tr>
-<tr class="separator:structentry__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structtable__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a></td></tr>
-<tr class="memdesc:structtable__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds a routing table description.  <a href="minimise_2src_2routing__table_8h.html#structtable__t">More...</a><br /></td></tr>
-<tr class="separator:structtable__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:structmulti__table__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structmulti__table__t">multi_table_t</a></td></tr>
-<tr class="memdesc:structmulti__table__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the data to initialise routing_table.h.  <a href="compressor__sorter__structs_8h.html#structmulti__table__t">More...</a><br /></td></tr>
+<tr class="memdesc:structmulti__table__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds the data to initialise <a class="el" href="routing__table_8h.html" title="Utilities for a single routing table.">routing_table.h</a>.  <a href="compressor__sorter__structs_8h.html#structmulti__table__t">More...</a><br /></td></tr>
 <tr class="separator:structmulti__table__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:structcompressor__processors__top__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="compressor__sorter__structs_8h.html#structcompressor__processors__top__t">compressor_processors_top_t</a></td></tr>
 <tr class="memdesc:structcompressor__processors__top__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">the list of cores that can be used as compressor processor  <a href="compressor__sorter__structs_8h.html#structcompressor__processors__top__t">More...</a><br /></td></tr>
@@ -147,118 +139,6 @@ Enumerations</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Structures and enumerations for the bitfield compressor sorter. </p>
 </div><hr/><h2 class="groupheader">Data Structure Documentation</h2>
-<a name="structkey__mask__t" id="structkey__mask__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structkey__mask__t">&#9670;&nbsp;</a></span>key_mask_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct key_mask_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>Holds key and mask. </p>
-<p>========================================================================= structs </p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="adf30ccd47145700406a26a3aeb2bf12d"></a>uint32_t</td>
-<td class="fieldname">
-key</td>
-<td class="fielddoc">
-Key for the key_mask. </td></tr>
-<tr><td class="fieldtype">
-<a id="a30a1c9a534c37968116826cf7f1e5bab"></a>uint32_t</td>
-<td class="fieldname">
-mask</td>
-<td class="fielddoc">
-Mask for the key_mask. </td></tr>
-</table>
-
-</div>
-</div>
-<a name="structentry__t" id="structentry__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structentry__t">&#9670;&nbsp;</a></span>entry_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct entry_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>Holds data for a routing table entry. </p>
-<p>A routing entry that knows where it came from, goes to, and when it enables. </p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a225a585fd5012060cc494b0b0ea636cc"></a><a class="el" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a></td>
-<td class="fieldname">
-key_mask</td>
-<td class="fielddoc">
-Key and mask. </td></tr>
-<tr><td class="fieldtype">
-<a id="aae50acecb462e9fcb4e13bbe5cf27ac7"></a>uint32_t</td>
-<td class="fieldname">
-route</td>
-<td class="fielddoc">
-Routing direction. </td></tr>
-<tr><td class="fieldtype">
-<a id="afb8d4f42b34d157f71de0021a2f6e079"></a>uint32_t</td>
-<td class="fieldname">
-source</td>
-<td class="fielddoc">
-Source of packets arriving at this entry. <p>Source of packets arriving at this entry. Used to determine whether this entry can be defaulted. </p>
-</td></tr>
-<tr><td class="fieldtype">
-<a id="ab7e23420dbb1ecf92921f9b3297fb6de"></a><a class="el" href="minimise_2src_2routing__table_8h.html#structkeymask__t">keymask_t</a></td>
-<td class="fieldname">
-keymask</td>
-<td class="fielddoc">
-Key and mask. </td></tr>
-</table>
-
-</div>
-</div>
-<a name="structtable__t" id="structtable__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structtable__t">&#9670;&nbsp;</a></span>table_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct table_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>Holds a routing table description. </p>
-<p>A routing table is made of an ordered list of entries. </p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a78df0d6fd3348442567f7ab8b834101b"></a>uint32_t</td>
-<td class="fieldname">
-size</td>
-<td class="fielddoc">
-Number of entries in the table. </td></tr>
-<tr><td class="fieldtype">
-<a id="a78c84fd4064e0f3cf4b77a1874209e60"></a><a class="el" href="minimise_2src_2routing__table_8h.html#structentry__t">entry_t</a></td>
-<td class="fieldname">
-entries[]</td>
-<td class="fielddoc">
-Entries in the table. </td></tr>
-<tr><td class="fieldtype">
-<a id="a7f887fc88301a4ce739a4db4e8118daa"></a><a class="el" href="minimise_2src_2routing__table_8h.html#structentry__t">entry_t</a> *</td>
-<td class="fieldname">
-entries</td>
-<td class="fielddoc">
-Entries in the table. </td></tr>
-</table>
-
-</div>
-</div>
 <a name="structmulti__table__t" id="structmulti__table__t"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#structmulti__table__t">&#9670;&nbsp;</a></span>multi_table_t</h2>
 
@@ -270,11 +150,12 @@ Entries in the table. </td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<div class="textblock"><p>Holds the data to initialise routing_table.h. </p>
+<div class="textblock"><p>Holds the data to initialise <a class="el" href="routing__table_8h.html" title="Utilities for a single routing table.">routing_table.h</a>. </p>
+<p>========================================================================= structs </p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="aaca19377972d2042c5cfd18a011eea1f"></a><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> **</td>
+<a id="aaca19377972d2042c5cfd18a011eea1f"></a><a class="el" href="routing__table_8h.html#structtable__t">table_t</a> **</td>
 <td class="fieldname">
 sub_tables</td>
 <td class="fielddoc">
@@ -290,7 +171,7 @@ The number of individual subtables. </td></tr>
 <td class="fieldname">
 n_entries</td>
 <td class="fielddoc">
-The number of <a class="el" href="minimise_2src_2routing__table_8h.html#structentry__t" title="Holds data for a routing table entry.">entry_t</a> entries actually in the tables. </td></tr>
+The number of <a class="el" href="routing__table_8h.html#structentry__t" title="Holds data for a routing table entry.">entry_t</a> entries actually in the tables. </td></tr>
 <tr><td class="fieldtype">
 <a id="a28f878e25b9b5e52bdeaa576c0ad713e"></a>uint32_t</td>
 <td class="fieldname">
@@ -352,7 +233,7 @@ app_id</td>
 <td class="fielddoc">
 the application ID </td></tr>
 <tr><td class="fieldtype">
-<a id="a8082501788d19b0833dc0d130c0bd796"></a><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a></td>
+<a id="a8082501788d19b0833dc0d130c0bd796"></a><a class="el" href="routing__table_8h.html#structtable__t">table_t</a></td>
 <td class="fieldname">
 uncompressed_table</td>
 <td class="fielddoc">
@@ -437,7 +318,7 @@ mid_point</td>
 <td class="fielddoc">
 how many bit fields were used to make those tables </td></tr>
 <tr><td class="fieldtype">
-<a id="a69f0516a2f97f34460eea02de697034e"></a><a class="el" href="minimise_2src_2routing__table_8h.html#structtable__t">table_t</a> *</td>
+<a id="a69f0516a2f97f34460eea02de697034e"></a><a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *</td>
 <td class="fieldname">
 uncompressed_router_table</td>
 <td class="fielddoc">

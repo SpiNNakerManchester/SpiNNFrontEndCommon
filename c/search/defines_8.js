@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['kill_5ftime_2109',['KILL_TIME',['../bit__field__sorter__and__searcher_8c.html#acf36c228ebab2d1aeea784bd9f6660f3',1,'bit_field_sorter_and_searcher.c']]]
+  ['kill_5ftime_2040',['KILL_TIME',['../bit__field__sorter__and__searcher_8c.html#acf36c228ebab2d1aeea784bd9f6660f3',1,'bit_field_sorter_and_searcher.c']]]
 ];

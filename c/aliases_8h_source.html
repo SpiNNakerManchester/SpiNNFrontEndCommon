@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SpiNNFrontEndCommon: models/compressor_bit_field_models/src/compressor_includes/aliases.h Source File</title>
+<title>SpiNNFrontEndCommon: models/compressors/src/ordered_covering_includes/aliases.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_325ec9df79d624cb147699f199e87581.html">compressor_bit_field_models</a></li><li class="navelem"><a class="el" href="dir_fb5d11208e7007048f6dfc3af476cc88.html">src</a></li><li class="navelem"><a class="el" href="dir_68929be46b5e429180cf406a8b7650db.html">compressor_includes</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_1ae4179d5e953611aae20c997279e02c.html">models</a></li><li class="navelem"><a class="el" href="dir_4d48dcb52c1129c7f295596471d8e2b3.html">compressors</a></li><li class="navelem"><a class="el" href="dir_e84f3a1393fbcf8a053f50eb9c57fc65.html">src</a></li><li class="navelem"><a class="el" href="dir_9ed77f8959915756d1122bf34f433f4a.html">ordered_covering_includes</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -99,7 +99,7 @@ $(function() {
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">/* Vector-like object ********************************************************/</span></div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>_alias_element_t {  <span class="comment">// Element of an alias list</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span>    <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key_mask;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span>    <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key_mask;</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    uint32_t source;</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;} alias_element_t;</div>
@@ -129,7 +129,7 @@ $(function() {
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
 <div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="aliases_8h.html#a14d3480b3b5722e0dd8371ebe4b81132">   78</a></span>&#160;<span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code" href="aliases_8h.html#a14d3480b3b5722e0dd8371ebe4b81132">alias_list_append</a>(</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        alias_list_t *as, <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> val, uint32_t source) {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        alias_list_t *as, <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> val, uint32_t source) {</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordflow">if</span> (as-&gt;n_elements &lt; as-&gt;max_size) {</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        (&amp;as-&gt;data)[as-&gt;n_elements].key_mask = val;</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        (&amp;as-&gt;data)[as-&gt;n_elements].source = source;</div>
@@ -170,7 +170,7 @@ $(function() {
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment">// Implemented as an AA tree</span></div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
 <div class="line"><a name="l00129"></a><span class="lineno"><a class="line" href="aliases_8h.html">  129</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">union </span><a class="code" href="aliases_8h.html#uniona__key__t">a_key_t</a> {</div>
-<div class="line"><a name="l00131"></a><span class="lineno"><a class="line" href="aliases_8h.html#a11dba7181893de415239c53ed5ab7d76">  131</a></span>&#160;    <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> <a class="code" href="aliases_8h.html#a11dba7181893de415239c53ed5ab7d76">km</a>;</div>
+<div class="line"><a name="l00131"></a><span class="lineno"><a class="line" href="aliases_8h.html#a11dba7181893de415239c53ed5ab7d76">  131</a></span>&#160;    <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> <a class="code" href="aliases_8h.html#a11dba7181893de415239c53ed5ab7d76">km</a>;</div>
 <div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160; </div>
 <div class="line"><a name="l00134"></a><span class="lineno"><a class="line" href="aliases_8h.html#a40e8e923daf5ac0cb335333baae13561">  134</a></span>&#160;    int64_t <a class="code" href="aliases_8h.html#a40e8e923daf5ac0cb335333baae13561">as_int</a>;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;} <a class="code" href="aliases_8h.html#uniona__key__t">a_key_t</a>;</div>
@@ -214,7 +214,7 @@ $(function() {
 <div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    <span class="keywordflow">return</span> NULL;  <span class="comment">// We didn&#39;t find the requested item</span></div>
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;}</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160; </div>
-<div class="line"><a name="l00194"></a><span class="lineno"><a class="line" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">  194</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> alias_list_t *<a class="code" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">aliases_find</a>(<a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key) {</div>
+<div class="line"><a name="l00194"></a><span class="lineno"><a class="line" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">  194</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> alias_list_t *<a class="code" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">aliases_find</a>(<a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key) {</div>
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    <span class="comment">// Search the tree</span></div>
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    <a class="code" href="aliases_8h.html#structnode__t">node_t</a> *node = _aliases_find_node(a-&gt;<a class="code" href="aliases_8h.html#a6908a06e47739e8e6c22c744e5f7d5ad">root</a>, (<a class="code" href="aliases_8h.html#uniona__key__t">a_key_t</a>) key);</div>
 <div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;    <span class="keywordflow">if</span> (node == NULL) {</div>
@@ -223,7 +223,7 @@ $(function() {
 <div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <span class="keywordflow">return</span> node-&gt;<a class="code" href="aliases_8h.html#ae1cb5bb0e613117d2cfe482152354d34">val</a>;</div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;}</div>
 <div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160; </div>
-<div class="line"><a name="l00207"></a><span class="lineno"><a class="line" href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">  207</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">aliases_contains</a>(<a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key) {</div>
+<div class="line"><a name="l00207"></a><span class="lineno"><a class="line" href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">  207</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="aliases_8h.html#a9e0ec45ebbce00250c9aff64101d00de">aliases_contains</a>(<a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key) {</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="aliases_8h.html#a9eb763ec2a8808f11d4da3de1d759b1e">aliases_find</a>(a, key) != NULL;</div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;}</div>
 <div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160; </div>
@@ -303,14 +303,14 @@ $(function() {
 <div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160; </div>
 <div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160; </div>
 <div class="line"><a name="l00302"></a><span class="lineno"><a class="line" href="aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6">  302</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">bool</span> <a class="code" href="aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6">aliases_insert</a>(</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        <a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key, alias_list_t *value) {</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        <a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key, alias_list_t *value) {</div>
 <div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    <span class="comment">// Insert into, and balance, the tree</span></div>
 <div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
 <div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;   <span class="keywordflow">return</span> _aliases_insert(a-&gt;<a class="code" href="aliases_8h.html#a6908a06e47739e8e6c22c744e5f7d5ad">root</a>, (<a class="code" href="aliases_8h.html#uniona__key__t">a_key_t</a>) key, value);</div>
 <div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;}</div>
 <div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160; </div>
 <div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160; </div>
-<div class="line"><a name="l00313"></a><span class="lineno"><a class="line" href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">  313</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">aliases_remove</a>(<a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a> key) {</div>
+<div class="line"><a name="l00313"></a><span class="lineno"><a class="line" href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">  313</a></span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="aliases_8h.html#ab71f8d3612ebd57fd1d9184571d487b8">aliases_remove</a>(<a class="code" href="aliases_8h.html#structaliases__t">aliases_t</a> *a, <a class="code" href="routing__table_8h.html#structkey__mask__t">key_mask_t</a> key) {</div>
 <div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="comment">// XXX This is a hack which removes the reference to the element in the</span></div>
 <div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="comment">// tree but doesn&#39;t remove the Node from the tree.</span></div>
 <div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    <a class="code" href="aliases_8h.html#structnode__t">node_t</a> *n = _aliases_find_node(a-&gt;<a class="code" href="aliases_8h.html#a6908a06e47739e8e6c22c744e5f7d5ad">root</a>, (<a class="code" href="aliases_8h.html#uniona__key__t">a_key_t</a>) key);</div>
@@ -352,8 +352,8 @@ $(function() {
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aaliases_8h_html_a11dba7181893de415239c53ed5ab7d76"><div class="ttname"><a href="aliases_8h.html#a11dba7181893de415239c53ed5ab7d76">a_key_t::km</a></div><div class="ttdeci">key_mask_t km</div><div class="ttdoc">key mast combo</div><div class="ttdef"><b>Definition:</b> aliases.h:131</div></div>
 <div class="ttc" id="aaliases_8h_html_a71bf323efd78c8700b1110ebb74ec50a"><div class="ttname"><a href="aliases_8h.html#a71bf323efd78c8700b1110ebb74ec50a">alias_list_join</a></div><div class="ttdeci">static void alias_list_join(alias_list_t *a, alias_list_t *b)</div><div class="ttdoc">Append a list to an existing list.</div><div class="ttdef"><b>Definition:</b> aliases.h:101</div></div>
+<div class="ttc" id="arouting__table_8h_html_structkey__mask__t"><div class="ttname"><a href="routing__table_8h.html#structkey__mask__t">key_mask_t</a></div><div class="ttdoc">Holds key and mask.</div><div class="ttdef"><b>Definition:</b> routing_table.h:26</div></div>
 <div class="ttc" id="aaliases_8h_html_ae26498c61ce8ba636c6575dc8b0fb2cb"><div class="ttname"><a href="aliases_8h.html#ae26498c61ce8ba636c6575dc8b0fb2cb">aliases_init</a></div><div class="ttdeci">static aliases_t aliases_init(void)</div><div class="ttdoc">Create a new, empty, aliases container.</div><div class="ttdef"><b>Definition:</b> aliases.h:163</div></div>
-<div class="ttc" id="acompressor__sorter__structs_8h_html_structkey__mask__t"><div class="ttname"><a href="compressor__sorter__structs_8h.html#structkey__mask__t">key_mask_t</a></div><div class="ttdoc">Holds key and mask.</div><div class="ttdef"><b>Definition:</b> compressor_sorter_structs.h:71</div></div>
 <div class="ttc" id="aaliases_8h_html_a14d3480b3b5722e0dd8371ebe4b81132"><div class="ttname"><a href="aliases_8h.html#a14d3480b3b5722e0dd8371ebe4b81132">alias_list_append</a></div><div class="ttdeci">static bool alias_list_append(alias_list_t *as, key_mask_t val, uint32_t source)</div><div class="ttdoc">Append an element to a list.</div><div class="ttdef"><b>Definition:</b> aliases.h:78</div></div>
 <div class="ttc" id="aaliases_8h_html_a07e8976dfe05cef7b7acda7805d93df6"><div class="ttname"><a href="aliases_8h.html#a07e8976dfe05cef7b7acda7805d93df6">aliases_insert</a></div><div class="ttdeci">static bool aliases_insert(aliases_t *a, key_mask_t key, alias_list_t *value)</div><div class="ttdoc">Add/overwrite an element into an aliases tree.</div><div class="ttdef"><b>Definition:</b> aliases.h:302</div></div>
 <div class="ttc" id="aaliases_8h_html_ae8ecc830654d85bb42c7bdf9a40d26f4"><div class="ttname"><a href="aliases_8h.html#ae8ecc830654d85bb42c7bdf9a40d26f4">node_t::level</a></div><div class="ttdeci">unsigned int level</div><div class="ttdoc">tree level maybe?</div><div class="ttdef"><b>Definition:</b> aliases.h:146</div></div>
