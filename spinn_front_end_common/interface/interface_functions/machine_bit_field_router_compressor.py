@@ -84,7 +84,6 @@ class MachineBitFieldRouterCompressor(object):
         before its considered a success
     :param ExecutableTargets executable_targets:
         the set of targets and executables
-    :param graph_mapper: mapping between graphs (could be none)
     :param bool compress_only_when_needed:
         whether to compress only when needed
     :param bool compress_as_much_as_possible:
