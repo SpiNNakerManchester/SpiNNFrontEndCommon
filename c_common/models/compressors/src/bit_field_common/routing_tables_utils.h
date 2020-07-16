@@ -17,8 +17,8 @@
 
 //! \file
 //! \brief Compound routing table utilities.
-#ifndef __ROUTING_TABLE_UTILS_H__
-#define __ROUTING_TABLE_UTILS_H__
+#ifndef __ROUTING_TABLES_UTILS_H__
+#define __ROUTING_TABLES_UTILS_H__
 
 #include <debug.h>
 #include <malloc_extras.h>
@@ -44,7 +44,7 @@
 //!     the start point
 //! \param[in] tables: pointer to the metadata to be freed
 //! \param[in] start_point: where in the array to start freeing from.
-static void routing_table_utils_free(
+static void routing_tables_utils_free(
         multi_table_t *restrict tables, uint32_t start_point) {
     if (tables->n_sub_tables == 0) {
         // Already freed or never malloced
@@ -61,8 +61,8 @@ static void routing_table_utils_free(
 
 //! \brief Does all frees for the multi_table object
 //! \param[in] tables: pointer to the metadata to be freed
-static void routing_table_utils_free_all(multi_table_t *restrict tables) {
-    routing_table_utils_free(tables, 0);
+static void routing_tables_utils_free_all(multi_table_t *restrict tables) {
+    routing_tables_utils_free(tables, 0);
 }
 
 //! \brief Prepares the Routing table to handle at least n_entries
@@ -75,7 +75,7 @@ static void routing_table_utils_free_all(multi_table_t *restrict tables) {
 //! \param[in] tables: the collection of tables to prepare
 //! \param[in] max_entries: maximum number of entries table should hold
 //! \return True if and only if all table(s) could be malloced
-static inline bool routing_table_utils_malloc(
+static inline bool routing_tables_utils_malloc(
         multi_table_t *restrict tables, uint32_t max_entries) {
     tables->n_sub_tables = ((max_entries - 1) >> TABLE_SHIFT) + 1;
     tables->max_entries = max_entries;
@@ -98,7 +98,7 @@ static inline bool routing_table_utils_malloc(
         if (tables->sub_tables[i] == NULL) {
             log_error("failed to allocate memory for routing tables");
             tables->n_sub_tables = i;
-            routing_table_utils_free_all(tables);
+            routing_tables_utils_free_all(tables);
             return false;
         }
         tables->sub_tables[i]->size = 0;
@@ -113,7 +113,7 @@ static inline bool routing_table_utils_malloc(
     if (tables->sub_tables[tables->n_sub_tables - 1] == NULL) {
         log_error("failed to allocate memory for routing tables");
         tables->n_sub_tables = tables->n_sub_tables - 1;
-        routing_table_utils_free_all(tables);
+        routing_tables_utils_free_all(tables);
         return false;
     }
     // init the size
@@ -136,7 +136,7 @@ static inline bool routing_table_utils_malloc(
 //! will RTE if the routing table has too many entries to fit into a router
 //! \param[in] tables: the multitable to convert
 //! \return A pointer to a traditional router table
-static inline table_t* routing_table_utils_convert(
+static inline table_t* routing_tables_utils_convert(
         multi_table_t *restrict tables) {
     log_debug("converting table with %d entries over %d tables",
             tables->n_sub_tables, tables->n_entries);
@@ -155,8 +155,8 @@ static inline table_t* routing_table_utils_convert(
     table_t* first_table = tables->sub_tables[0];
 
     // Free the rest
-    routing_table_utils_free(tables, 1);
+    routing_tables_utils_free(tables, 1);
     return first_table;
 }
 
-#endif  // __ROUTING_TABLE_UTILS_H__
+#endif  // __ROUTING_TABLES_UTILS_H__

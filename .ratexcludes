@@ -7,5 +7,6 @@
 **/*.json
 **/c_common/models/**/build/*.txt
 **/iobuf_for_*.txt
+**/compressor_on_*.txt
 **/test_output/**
 **/.nojekyll

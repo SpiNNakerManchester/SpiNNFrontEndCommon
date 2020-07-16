@@ -17,12 +17,13 @@
 
 //! \file
 //! \brief Utilities for a single routing table
-#ifndef __ROUTING_TABLE_H__
-#define __ROUTING_TABLE_H__
+#ifndef __ROUTING_TABLES_H__
+#define __ROUTING_TABLES_H__
 
 #include <debug.h>
 #include <malloc_extras.h>
-#include "routing_table_utils.h"
+#include "../common/routing_table.h"
+#include "routing_tables_utils.h"
 
 //=============================================================================
 // location for variables
@@ -38,7 +39,7 @@ multi_table_t multi_table;
 //! \param[in] marker: int that should be different in every call so we can
 //!     detect where MUNDY was reading past the end of the table
 //! \return pointer to the entry's location
-entry_t* routing_table_get_entry_marked(uint32_t entry_id_to_find, int marker) {
+entry_t* routing_tables_get_entry_marked(uint32_t entry_id_to_find, int marker) {
     uint32_t table_id = entry_id_to_find >> TABLE_SHIFT;
     if (table_id >= multi_table.n_sub_tables) {
         log_error("Id %d to big for %d tables marker %d",
@@ -56,18 +57,13 @@ entry_t* routing_table_get_entry_marked(uint32_t entry_id_to_find, int marker) {
     return &multi_table.sub_tables[table_id]->entries[local_id];
 }
 
-//! \brief Gets a pointer to where this entry is stored
-//! \details Will not check if there is an entry with this id but will RTE if
-//!     the id is too large
-//! \param[in] entry_id_to_find: Id of entry to find pointer to
-//! \return pointer to the entry's location
 entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
-    return routing_table_get_entry_marked(entry_id_to_find, -1);
+    return routing_tables_get_entry_marked(entry_id_to_find, -1);
 }
 
 //! \brief Gets a pointer to where to append an entry to the routing table.
 //! \return pointer to the entry's location
-entry_t* routing_table_append_get_entry(void) {
+entry_t* routing_tables_append_get_entry(void) {
     // check that we're not hitting the max entries supported by the table
     if (multi_table.n_entries == (int) multi_table.max_entries) {
         log_error(
@@ -102,8 +98,8 @@ entry_t* routing_table_append_get_entry(void) {
 //!     table.
 //! \details will RTE if is this appended fails.
 //! \param[in] original_entry: The Routing Table entry to be copied in
-void routing_table_append_entry(entry_t original_entry) {
-    entry_t *new_entry = routing_table_append_get_entry();
+void routing_tables_append_entry(entry_t original_entry) {
+    entry_t *new_entry = routing_tables_append_get_entry();
     new_entry->key_mask.key = original_entry.key_mask.key;
     new_entry->key_mask.mask = original_entry.key_mask.mask;
     new_entry->source = original_entry.source;
@@ -117,17 +113,15 @@ void routing_table_append_entry(entry_t original_entry) {
 //! \param[in] mask: The key for the new entry to be added
 //! \param[in] route: The key for the new entry to be added
 //! \param[in] source: The key for the new entry to be added
-void routing_table_append_new_entry(
+void routing_tables_append_new_entry(
         uint32_t key, uint32_t mask, uint32_t route, uint32_t source) {
-    entry_t *restrict new_entry = routing_table_append_get_entry();
+    entry_t *restrict new_entry = routing_tables_append_get_entry();
     new_entry->key_mask.key = key;
     new_entry->key_mask.mask = mask;
     new_entry->source = source;
     new_entry->route = route;
 }
 
-//! \brief Get the number of entries in the routing table
-//! \return number of appended entries.
 int routing_table_get_n_entries(void) {
     return multi_table.n_entries;
 }
@@ -160,10 +154,6 @@ void routing_tables_save(multi_table_t *restrict tables) {
             tables->n_sub_tables, tables->n_entries);
 }
 
-//! \brief updates table stores accordingly.
-//!
-//! will RTE if this causes the total entries to become negative.
-//! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(int size_to_remove) {
     if (size_to_remove > multi_table.n_entries) {
         log_error("Remove %d large than n_entries %d",
@@ -177,10 +167,10 @@ void routing_table_remove_from_size(int size_to_remove) {
 //! \details Will _not_ free the space any previous tables held.
 //!     Makes a Deep copy of the original.
 //! \param[in] original: the table to be cloned
-void routing_table_clone_table(table_t *restrict original) {
+void routing_tables_clone_table(table_t *restrict original) {
     for (uint32_t i = 0; i < original->size; i++) {
-        routing_table_append_entry(original->entries[i]);
+        routing_tables_append_entry(original->entries[i]);
     }
 }
 
-#endif  // __ROUTING_TABLE_H__
+#endif  // __ROUTING_TABLES_H__
