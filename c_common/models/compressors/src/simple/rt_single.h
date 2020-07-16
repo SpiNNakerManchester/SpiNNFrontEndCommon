@@ -89,11 +89,11 @@ typedef struct {
     entry_t entries[];
 } header_t;
 
-int routing_table_get_n_entries(void) {
+uint32_t routing_table_get_n_entries(void) {
     return table->size;
 }
 
-void routing_table_remove_from_size(int size_to_remove) {
+void routing_table_remove_from_size(uint32_t size_to_remove) {
     table->size -= size_to_remove;
 }
 

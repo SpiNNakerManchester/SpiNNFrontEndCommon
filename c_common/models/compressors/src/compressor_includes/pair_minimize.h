@@ -30,6 +30,7 @@
  */
 #include <debug.h>
 #include "../common/routing_table.h"
+#include <stdbool.h>
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
@@ -65,7 +66,7 @@ static inline entry_t merge(const entry_t* entry1, const entry_t* entry2) {
 //! \brief Write an entry to a specific index
 //! \param[in] entry: The entry to write
 //! \param[in] index: Where to write it.
-static inline void _entry(const entry_t* entry, int index) {
+static inline void _entry(const entry_t* entry, uint32_t index) {
     entry_t* e_ptr = routing_table_get_entry(index);
     e_ptr->key_mask = entry->key_mask;
     e_ptr->route = entry->route;
@@ -78,16 +79,13 @@ static inline void _entry(const entry_t* entry, int index) {
 //! \param[in] left: The index of the first route to consider.
 //! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged
-static inline bool find_merge(int left, int index) {
+static inline bool find_merge(uint32_t left, uint32_t index) {
     const entry_t *entry1 = routing_table_get_entry(left);
     const entry_t *entry2 = routing_table_get_entry(index);
     const entry_t merged = merge(entry1, entry2);
 
-    for (int check = remaining_index;
-            check < routing_table_get_n_entries();
-            check++) {
-        const entry_t *check_entry =
-                routing_table_get_entry(check);
+    for (uint32_t i = remaining_index; i < routing_table_get_n_entries(); i++) {
+        const entry_t *check_entry = routing_table_get_entry(i);
         if (key_mask_intersect(check_entry->key_mask, merged.key_mask)) {
             return false;
         }
@@ -99,11 +97,11 @@ static inline bool find_merge(int left, int index) {
 //! \brief Does the actual routing compression
 //! \param[in] left: The start of the section of table to compress
 //! \param[in] right: The end of the section of table to compress
-static inline void compress_by_route(int left, int right) {
+static inline void compress_by_route(uint32_t left, uint32_t right) {
     while (left < right) {
         bool merged = false;
 
-        for (int index = left + 1; index <= right; index++) {
+        for (uint32_t index = left + 1; index <= right; index++) {
             merged = find_merge(left, index);
             if (merged) {
                 routing_table_copy_entry(index, right--);
@@ -127,7 +125,7 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     if (route_a == route_b) {
         return 0;
     }
-    for (uint i = 0; i < routes_count; i++) {
+    for (uint32_t i = 0; i < routes_count; i++) {
         if (routes[i] == route_a) {
             return 1;
         }
@@ -147,8 +145,8 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
 //!                 inclusive lowest index
 //! \param[in] high: the second index into the array of the section to sort;
 //!                  exclusive highest index
-static void quicksort_table(int low, int high) {
-    if (low < high - 1) {
+static void quicksort_table(uint32_t low, uint32_t high) {
+    if (low + 1 < high) {
         // pick low entry for the pivot
         uint32_t pivot = routing_table_get_entry(low)->route;
         // Location of entry currently being checked.
@@ -156,19 +154,18 @@ static void quicksort_table(int low, int high) {
         //     the right most entry with a value greater than the pivot
         //     or high indicating there are no entries greater than the pivot
         //Start at low + 1 as entry low is the pivot
-        int check = low + 1;
+        uint32_t check = low + 1;
         // Location to write any smaller values to
         // Will always point to most left entry with pivot value
         // If we find any less than swap with the first pivot
-        int l_write = low;
+        uint32_t l_write = low;
         // Location to write any greater values to
         // Until the algorithm ends this will point to an unsorted value
         // if we find any higher swap with last entry in the sort section
-        int h_write = high - 1;
+        uint32_t h_write = high - 1;
 
         while (check <= h_write) {
-            uint32_t check_route =
-                    routing_table_get_entry(check)->route;
+            uint32_t check_route = routing_table_get_entry(check)->route;
             int compare = compare_routes(check_route, pivot);
             if (compare < 0) {
                 // swap the check to the left, and then
@@ -195,7 +192,7 @@ static void quicksort_table(int low, int high) {
 //!
 //! \param[in] index_a: The index of the first route
 //! \param[in] index_b: The index of the second route
-static inline void swap_routes(int index_a, int index_b) {
+static inline void swap_routes(uint32_t index_a, uint32_t index_b) {
     uint32_t temp = routes_frequency[index_a];
     routes_frequency[index_a] = routes_frequency[index_b];
     routes_frequency[index_b] = temp;
@@ -212,8 +209,8 @@ static inline void swap_routes(int index_a, int index_b) {
 //!                 inclusive low point of range
 //! \param[in] high: the second index into the array of the section to sort;
 //!                  exclusive high point of range
-static void quicksort_route(int low, int high) {
-    if (low < high - 1) {
+static void quicksort_route(uint32_t low, uint32_t high) {
+    if (low + 1 < high) {
         // pick low entry for the pivot
         uint pivot = routes_frequency[low];
         // Location of entry currently being checked.
@@ -221,15 +218,15 @@ static void quicksort_route(int low, int high) {
         //     the right most entry with a value greater than the pivot
         //     or high indicating there are no entries greater than the pivot
         //Start at low + 1 as entry low is the pivot
-        int check = low + 1;
+        uint32_t check = low + 1;
         // Location to write any smaller values to
         // Will always point to most left entry with pivot value
         // If we find any less than swap with the first pivot
-        int l_write = low;
+        uint32_t l_write = low;
         // Location to write any greater values to
         // Until the algorithm ends this will point to an unsorted value
         // if we find any higher swap with last entry in the sort section
-        int h_write = high -1;
+        uint32_t h_write = high - 1;
 
         while (check <= h_write) {
             if (routes_frequency[check] < pivot) {
@@ -253,9 +250,9 @@ static void quicksort_route(int low, int high) {
 
 //! \brief Computes route histogram
 //! \param[in] index: The index of the cell to update
-static inline void update_frequency(int index) {
+static inline void update_frequency(uint32_t index) {
     uint32_t route = routing_table_get_entry(index)->route;
-    for (uint i = 0; i < routes_count; i++) {
+    for (uint32_t i = 0; i < routes_count; i++) {
         if (routes[i] == route) {
             routes_frequency[i]++;
             return;
@@ -278,27 +275,31 @@ static inline void update_frequency(int index) {
 //! \param[out] failed_by_malloc: Never changed but required by api
 //! \param[in] stop_compressing: Variable saying if the compressor should stop
 //!    and return false; _set by interrupt_ DURING the run of this method!
-bool minimise_run(int target_length, bool *failed_by_malloc,
+bool minimise_run(uint32_t target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     use(failed_by_malloc);
 	use(target_length);
 
     // Verify constant used to build arrays is correct
-    if (MAX_NUM_ROUTES != rtr_alloc_max()){
+    if (MAX_NUM_ROUTES != rtr_alloc_max()) {
         log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
                 MAX_NUM_ROUTES, rtr_alloc_max());
-            malloc_extras_terminate(EXIT_FAIL);
+        malloc_extras_terminate(EXIT_FAIL);
     }
-    int table_size = routing_table_get_n_entries();
+    uint32_t table_size = routing_table_get_n_entries();
+    if (table_size < 1) {
+        log_info("empty routing table; nothing to do");
+        return true;
+    }
 
     routes_count = 0;
 
-    for (int index = 0; index < table_size; index++) {
+    for (uint32_t index = 0; index < table_size; index++) {
         update_frequency(index);
     }
 
     log_debug("before sort %u", routes_count);
-    for (uint i = 0; i < routes_count; i++) {
+    for (uint32_t i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
@@ -309,7 +310,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     }
 
     log_debug("after sort %u", routes_count);
-    for (uint i = 0; i < routes_count; i++) {
+    for (uint32_t i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
@@ -321,16 +322,15 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     }
 
     write_index = 0;
-    int max_index = table_size - 1;
-    int left = 0;
+    uint32_t max_index = table_size - 1;
+    uint32_t left = 0;
 
     while (left <= max_index) {
-        int right = left;
+        uint32_t right = left;
         uint32_t left_route = routing_table_get_entry(left)->route;
         log_debug("A %u %u %u %u", left, max_index, right, left_route);
         while ((right < table_size - 1) &&
-                routing_table_get_entry(right+1)->route ==
-                        left_route) {
+                routing_table_get_entry(right+1)->route == left_route) {
             right++;
         }
         remaining_index = right + 1;

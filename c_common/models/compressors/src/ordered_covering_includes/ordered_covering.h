@@ -37,17 +37,16 @@ typedef struct _sets_t {
 //!     should be inserted.
 //! \param[in] generality: The number of least-significant bits masked out
 //! \return The insertion point for this generality factor
-static unsigned int oc_get_insertion_point(
-        const unsigned int generality) {
+static uint32_t oc_get_insertion_point(const uint32_t generality) {
     // Perform a binary search of the table to find entries of generality - 1
-    const unsigned int g_m_1 = generality - 1;
-    int bottom = 0;
-    int top = routing_table_get_n_entries();
-    int pos = top / 2;
+    const uint32_t g_m_1 = generality - 1;
+    uint32_t bottom = 0;
+    uint32_t top = routing_table_get_n_entries();
+    uint32_t pos = top / 2;
 
     // get first entry
     entry_t* entry = routing_table_get_entry(pos);
-    unsigned int count_xs = key_mask_count_xs(entry->key_mask);
+    uint32_t count_xs = key_mask_count_xs(entry->key_mask);
 
     // iterate till found something
     while ((bottom < pos) && (pos < top) && (count_xs != g_m_1)) {
@@ -98,13 +97,13 @@ static inline bool oc_up_check(
     min_goodness = (min_goodness > 0) ? min_goodness : 0;
 
     // Get the point where the merge will be inserted into the table.
-    unsigned int generality = key_mask_count_xs(merge->key_mask);
-    unsigned int insertion_index = oc_get_insertion_point(generality);
+    uint32_t generality = key_mask_count_xs(merge->key_mask);
+    uint32_t insertion_index = oc_get_insertion_point(generality);
 
     // For every entry in the merge check that the entry would not be covered by
     // any existing entries if it were to be merged.
 
-    for (unsigned int _i = routing_table_get_n_entries(),
+    for (uint32_t _i = routing_table_get_n_entries(),
             i = routing_table_get_n_entries() - 1;
             (_i > 0) && (merge_goodness(merge) > min_goodness);
             _i--, i--) {
@@ -123,7 +122,7 @@ static inline bool oc_up_check(
 
         // Otherwise look through the table from the insertion point to the
         // current entry position to ensure that nothing covers the merge.
-        for (unsigned int j = i + 1; j < insertion_index; j++) {
+        for (uint32_t j = i + 1; j < insertion_index; j++) {
             key_mask_t other_km = routing_table_get_entry(j)->key_mask;
 
             // If the key masks intersect then remove this entry from the merge
@@ -157,12 +156,13 @@ static inline bool oc_up_check(
 //! \param[in,out] set_to_zero: Variable holding the bits to set to zero
 //! \param[in,out] set_to_one: Variable holding the bits to set to one
 static void _get_settable(
-        key_mask_t merge_km, key_mask_t covered_km, unsigned int *stringency,
-        uint32_t *set_to_zero, uint32_t *set_to_one) {
+        key_mask_t merge_km, key_mask_t covered_km,
+        uint32_t *restrict stringency,
+        uint32_t *restrict set_to_zero, uint32_t *restrict set_to_one) {
     // We can "set" any bit where the merge contains an X and the covered
     // entry doesn't.
     uint32_t setable = ~key_mask_get_xs(covered_km) & key_mask_get_xs(merge_km);
-    unsigned int new_stringency = __builtin_popcount(setable);
+    uint32_t new_stringency = __builtin_popcount(setable);
 
     uint32_t this_set_to_zero = setable &  covered_km.key;
     uint32_t this_set_to_one  = setable & ~covered_km.key;
@@ -202,9 +202,8 @@ static inline __sets_t _get_removables(
         // Loop through the table adding to the working set any entries with
         // either a X or a 0 or 1 (as specified by `to_one`) to the working set
         // of entries to remove.
-        int entry = 0;
-        for (int i = 0; i < routing_table_get_n_entries(); i++) {
-
+        uint32_t entry = 0;
+        for (uint32_t i = 0; i < routing_table_get_n_entries(); i++) {
             // Skip if this isn't an entry
             if (!merge_contains(m, i)) {
                 continue;
@@ -269,7 +268,7 @@ static bool oc_down_check(
         // Record if there were any covered entries
         bool covered_entries = false;
         // Not at all stringent
-        unsigned int stringency = 33;
+        uint32_t stringency = 33;
         // Mask of which bits could be set to zero
         uint32_t set_to_zero = 0x0;
         // Mask of which bits could be set to one
@@ -278,10 +277,10 @@ static bool oc_down_check(
         // Look at every entry between the insertion index and the end of the
         // table to see if there are any entries which could be covered by the
         // entry resulting from the merge.
-        int insertion_point =
+        uint32_t insertion_point =
                 oc_get_insertion_point(key_mask_count_xs(merge->key_mask));
 
-        for (int i = insertion_point;
+        for (uint32_t i = insertion_point;
                 i < routing_table_get_n_entries() && stringency > 0;
                 i++) {
             // safety check for timing limits
@@ -309,7 +308,7 @@ static bool oc_down_check(
                             log_error("failed due to timing");
                             return false;
                         }
-                        for (unsigned int j = 0; j < the_alias_list->n_elements;
+                        for (uint32_t j = 0; j < the_alias_list->n_elements;
                                 j++) {
 
                             // safety check for timing limits
@@ -402,8 +401,8 @@ static bool oc_down_check(
         sets = _get_removables(merge, set_to_one, true, sets);
 
         // Remove the specified entries
-        int entry = 0;
-        for (int i = 0; i <routing_table_get_n_entries(); i++) {
+        uint32_t entry = 0;
+        for (uint32_t i = 0; i <routing_table_get_n_entries(); i++) {
             // safety check for timing limits
             if (*stop_compressing) {
                 log_error("failed due to timing");
@@ -493,7 +492,7 @@ static inline bool oc_get_best_merge(
     // For every entry in the table see with which other entries it could be
     // merged.
     log_debug("starting search for merge entry");
-    for (int i = 0; i < routing_table_get_n_entries(); i++) {
+    for (uint32_t i = 0; i < routing_table_get_n_entries(); i++) {
         // safety check for timing limits
         if (*stop_compressing) {
             log_info("closed due to stop request");
@@ -523,7 +522,7 @@ static inline bool oc_get_best_merge(
 
         // Try to merge with other entries
         log_debug("starting second search at index %d", i);
-        for (int j = i+1; j < routing_table_get_n_entries(); j++) {
+        for (uint32_t j = i + 1; j < routing_table_get_n_entries(); j++) {
             // safety check for timing limits
             if (*stop_compressing) {
                 log_info("closed due to stop request");
@@ -641,12 +640,12 @@ static inline bool oc_merge_apply(
             new_entry.source, merge->entries.count);
 
     // Get the insertion point for the new entry
-    int insertion_point =
+    uint32_t insertion_point =
             oc_get_insertion_point(key_mask_count_xs(merge->key_mask));
     log_debug("the insertion point is %d", insertion_point);
 
     // Keep track of the amount of reduction of the finished table
-    int reduced_size = 0;
+    uint32_t reduced_size = 0;
 
     // Create a new aliases list with sufficient space for the key_masks of all
     // of the entries in the merge. NOTE: IS THIS REALLY REQUIRED!?
@@ -669,11 +668,12 @@ static inline bool oc_merge_apply(
 
     // Use two iterators to move through the table copying entries from one
     // position to the other as required.
-    int insert = 0;
+    uint32_t insert = 0;
 
     log_debug("routing table entries = %d", routing_table_get_n_entries());
 
-    for (int remove = 0; remove < routing_table_get_n_entries(); remove++) {
+    for (uint32_t remove = 0; remove < routing_table_get_n_entries();
+            remove++) {
         // Grab the current entry before we possibly overwrite it
         entry_t* current = routing_table_get_entry(remove);
         log_debug("bacon");
@@ -772,7 +772,7 @@ static inline bool oc_merge_apply(
 //!    and return false; _set by interrupt_ DURING the run of this method!
 //! \return Whether successful or not.
 bool minimise_run(
-        int target_length, bool *failed_by_malloc,
+        uint32_t target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     // check if any compression actually needed
     log_debug("n entries before compression is %d",
@@ -788,7 +788,7 @@ bool minimise_run(
 
     // start the merger process
     log_debug("n entries is %d", routing_table_get_n_entries());
-    int attempts = 0;
+    uint32_t attempts = 0;
 
     while ((routing_table_get_n_entries() > target_length) &&
             !*stop_compressing) {
@@ -801,13 +801,13 @@ bool minimise_run(
                 &aliases, &merge, failed_by_malloc, stop_compressing);
         if (!success) {
             log_debug("failed to do get best merge. "
-                    "the number of merge cycles were %d", attempts);
+                    "the number of merge cycles were %u", attempts);
             aliases_clear(&aliases);
             return false;
         }
 
         log_debug("best merge end");
-        unsigned int count = merge.entries.count;
+        uint32_t count = merge.entries.count;
 
         if (count > 1) {
             // Apply the merge to the table if it would result in merging
@@ -836,7 +836,7 @@ bool minimise_run(
         if (count < 2) {
             break;
         }
-        attempts += 1;
+        attempts++;
     }
 
     // shut down timer. as passed the compression

@@ -47,12 +47,12 @@ bool run_compressor(int compress_as_much_as_possible, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     // Get the target length of the routing table
     log_debug("acquire target length");
-    int target_length = 0;
+    uint32_t target_length = 0;
     if (compress_as_much_as_possible == 0) {
         target_length = rtr_alloc_max();
     }
-    log_info("target length of %d", target_length);
-    if (remove_default_routes_minimise(target_length)) {
+    log_info("target length of %u", target_length);
+    if (remove_default_routes_minimise((int) target_length)) {
         return true;
     }
 

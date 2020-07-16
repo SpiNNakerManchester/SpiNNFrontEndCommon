@@ -45,15 +45,15 @@ static inline bool _opposite_links(entry_t *entry) {
 
 //! \brief Remove defaultable routes from a routing table if that helps.
 //! \param[in,out] table: The table to remove the routes from.
-static inline bool remove_default_routes_minimise(int target_length) {
+static inline bool remove_default_routes_minimise(uint32_t target_length) {
     if (routing_table_get_n_entries() <= target_length) {
         log_info("No Minimise needed as size %u, is below target of %u",
         routing_table_get_n_entries(),  target_length);
         return true;
     }
     // Work out if removing defaultable links is worthwhile
-    int after_size = 0;
-    for (int i = 0; i < routing_table_get_n_entries(); i++) {
+    uint32_t after_size = 0;
+    for (uint32_t i = 0; i < routing_table_get_n_entries(); i++) {
         // Get the current entry
         entry_t* entry = routing_table_get_entry(i);
 
@@ -71,9 +71,9 @@ static inline bool remove_default_routes_minimise(int target_length) {
     }
 
     uint32_t removed = 0;
-    int last = routing_table_get_n_entries();
+    uint32_t last = routing_table_get_n_entries();
     // Do the actual removal
-    for (int i = 0; i < after_size; i++) {
+    for (uint32_t i = 0; i < after_size; i++) {
         // Get the current entry
         entry_t* entry = routing_table_get_entry(i);
 

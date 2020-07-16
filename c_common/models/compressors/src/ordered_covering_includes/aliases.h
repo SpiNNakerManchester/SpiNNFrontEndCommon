@@ -41,9 +41,9 @@ typedef struct _alias_element_t {  // Element of an alias list
 //! \brief Linked list of arrays
 typedef struct _alias_list_t {
     //! Elements in this instance
-    unsigned int n_elements;
+    uint32_t n_elements;
     //! Max number of elements in this instance
-    unsigned int max_size;
+    uint32_t max_size;
     //! Next element in list of lists
     struct _alias_list_t *next;
     //! Data region
@@ -53,14 +53,14 @@ typedef struct _alias_list_t {
 //! \brief Create a new list on the stack
 //! \param[in] max_size: max size of memory to allocate to new list
 //! \return new alias list. or NULL if not allocated
-static alias_list_t* alias_list_new(unsigned int max_size) {
+static alias_list_t* alias_list_new(uint32_t max_size) {
     // Compute how much memory to allocate
-    unsigned int size =
+    uint32_t size =
             sizeof(alias_list_t) + (max_size - 1) * sizeof(alias_element_t);
 
     // Allocate and then fill in values
     alias_list_t *as = MALLOC(size);
-    if (as == NULL){
+    if (as == NULL) {
         return NULL;
     }
 
@@ -91,7 +91,7 @@ static bool alias_list_append(
 //! \param[in] as: the alias to locate a element from
 //! \param[in] i: the index to get
 //! \return the alias element for the i
-static alias_element_t alias_list_get(alias_list_t *as, unsigned int i) {
+static alias_element_t alias_list_get(alias_list_t *as, uint32_t i) {
     return (&as->data)[i];
 }
 
@@ -143,7 +143,7 @@ typedef struct node_t {
     alias_list_t *val;
 
     //! tree level maybe?
-    unsigned int level;
+    uint32_t level;
 
     //! left child
     struct node_t *left;

@@ -27,7 +27,7 @@
 //!    and return false; _set by interrupt_ DURING the run of this method!
 //! \return Whether successful or not.
 bool minimise_run(
-        int target_length, bool *failed_by_malloc,
+        uint32_t target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing);
 
 #endif  // __MINIMISE_H__

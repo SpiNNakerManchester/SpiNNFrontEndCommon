@@ -61,18 +61,19 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find);
 
 //! \brief Get the number of entries in the routing table
 //! \return number of appended entries.
-int routing_table_get_n_entries(void);
+uint32_t routing_table_get_n_entries(void);
 
 //! \brief updates table stores accordingly.
 //!
 //! will RTE if this causes the total entries to become negative.
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
-void routing_table_remove_from_size(int size_to_remove);
+void routing_table_remove_from_size(uint32_t size_to_remove);
 
 //! \brief Write an entry to a specific index
 //! \param[in] entry: The entry to write
 //! \param[in] index: Where to write it.
-static inline void routing_table_put_entry(const entry_t* entry, int index) {
+static inline void routing_table_put_entry(
+        const entry_t* entry, uint32_t index) {
     entry_t* e_ptr = routing_table_get_entry(index);
     e_ptr->key_mask = entry->key_mask;
     e_ptr->route = entry->route;
@@ -82,7 +83,8 @@ static inline void routing_table_put_entry(const entry_t* entry, int index) {
 //! \brief Copy an entry from one index to another
 //! \param[in] new_index: Where to copy to
 //! \param[in] old_index: Where to copy from
-static inline void routing_table_copy_entry(int new_index, int old_index) {
+static inline void routing_table_copy_entry(
+        uint32_t new_index, uint32_t old_index) {
     entry_t* e_ptr = routing_table_get_entry(old_index);
     routing_table_put_entry(e_ptr, new_index);
 }
@@ -90,7 +92,7 @@ static inline void routing_table_copy_entry(int new_index, int old_index) {
 //! \brief Swap a pair of entries at the given indices
 //! \param[in] a: The first index where an entry is
 //! \param[in] b: The second index where an entry is
-static inline void swap_entries(int a, int b) {
+static inline void swap_entries(uint32_t a, uint32_t b) {
     log_debug("swap %u %u", a, b);
     entry_t temp = *routing_table_get_entry(a);
     log_debug("before %u %u %u %u",
@@ -116,7 +118,7 @@ static inline uint32_t key_mask_get_xs(key_mask_t km) {
 //! \brief Get a count of the Xs in a key_mask
 //! \param[in] km: the key mask struct to count
 //! \return the number of bits set in the mask
-static inline unsigned int key_mask_count_xs(key_mask_t km) {
+static inline uint32_t key_mask_count_xs(key_mask_t km) {
     return __builtin_popcount(key_mask_get_xs(km));
 }
 

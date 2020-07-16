@@ -39,7 +39,8 @@ multi_table_t multi_table;
 //! \param[in] marker: int that should be different in every call so we can
 //!     detect where MUNDY was reading past the end of the table
 //! \return pointer to the entry's location
-entry_t* routing_tables_get_entry_marked(uint32_t entry_id_to_find, int marker) {
+entry_t* routing_tables_get_entry_marked(
+        uint32_t entry_id_to_find, int marker) {
     uint32_t table_id = entry_id_to_find >> TABLE_SHIFT;
     if (table_id >= multi_table.n_sub_tables) {
         log_error("Id %d to big for %d tables marker %d",
@@ -65,14 +66,14 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
 //! \return pointer to the entry's location
 entry_t* routing_tables_append_get_entry(void) {
     // check that we're not hitting the max entries supported by the table
-    if (multi_table.n_entries == (int) multi_table.max_entries) {
+    if ((uint32_t) multi_table.n_entries == multi_table.max_entries) {
         log_error(
                 "there is no more space in this multi-table for this entry.");
         malloc_extras_terminate(RTE_SWERR);
     }
 
     // locate right table index
-    uint32_t table_id = multi_table.n_entries >> TABLE_SHIFT;
+    uint32_t table_id = ((uint32_t) multi_table.n_entries) >> TABLE_SHIFT;
     if (table_id >= multi_table.n_sub_tables) {
         log_error("Id %d to big for %d tables",
                 multi_table.n_entries, multi_table.n_sub_tables);
@@ -80,7 +81,7 @@ entry_t* routing_tables_append_get_entry(void) {
     }
 
     // locate entry index
-    uint32_t local_id = multi_table.n_entries & LOCAL_ID_ADD;
+    uint32_t local_id = ((uint32_t) multi_table.n_entries) & LOCAL_ID_ADD;
     if (local_id != multi_table.sub_tables[table_id]->size) {
         log_error("Id %d has local_id %d which is big for %d table",
                 multi_table.n_entries, local_id,
@@ -106,9 +107,8 @@ void routing_tables_append_entry(entry_t original_entry) {
     new_entry->route = original_entry.route;
 }
 
-//! Inserts an new entry after the last known entry in the table.
-//!
-//! will RTE if is this appended fails.
+//! \brief Inserts an new entry after the last known entry in the table.
+//! \details Will RTE if is this appended fails.
 //! \param[in] key: The key for the new entry to be added
 //! \param[in] mask: The key for the new entry to be added
 //! \param[in] route: The key for the new entry to be added
@@ -122,13 +122,12 @@ void routing_tables_append_new_entry(
     new_entry->route = route;
 }
 
-int routing_table_get_n_entries(void) {
-    return multi_table.n_entries;
+uint32_t routing_table_get_n_entries(void) {
+    return (uint32_t) multi_table.n_entries;
 }
 
 //! \brief Prepares the Routing table based on passed in pointers and counts
-//!
-//! NOTE: Will NOT Free the space any previous tables held
+//! \note Will _not_ free the space any previous tables held
 //! \param[in] table: Pointer to the metadata to init
 void routing_tables_init(multi_table_t* table) {
     multi_table.sub_tables = table->sub_tables;
@@ -154,8 +153,8 @@ void routing_tables_save(multi_table_t *restrict tables) {
             tables->n_sub_tables, tables->n_entries);
 }
 
-void routing_table_remove_from_size(int size_to_remove) {
-    if (size_to_remove > multi_table.n_entries) {
+void routing_table_remove_from_size(uint32_t size_to_remove) {
+    if (size_to_remove > (uint32_t) multi_table.n_entries) {
         log_error("Remove %d large than n_entries %d",
                 size_to_remove, multi_table.n_entries);
         malloc_extras_terminate(RTE_SWERR);

@@ -43,10 +43,10 @@ enum compressor_interrupt_priorities {
 
 //! \brief Timer controls, as it seems timer in massive waits doesn't
 //!     necessarily engage properly. Ticks once per millisecond.
-int counter = 0;
+uint32_t counter = 0;
 //! \brief Maximum value of ::counter, at which point the compressor should
 //!     shut itself down. Number of milliseconds to allow for a compressor run.
-int max_counter = 0;
+uint32_t max_counter = 0;
 
 //! Whether the compressor should shut down
 volatile bool stop_compressing = false;
@@ -105,7 +105,7 @@ void start_compression_process(void) {
     spin1_pause();
 
     // Decode whether we succeeded or failed.
-    int max_length = rtr_alloc_max();
+    uint32_t max_length = rtr_alloc_max();
     if (success && (routing_table_get_n_entries() <= max_length)) {
         log_info("Passed minimise_run() with success code: %d", success);
         routing_tables_save(comms_sdram->routing_tables);

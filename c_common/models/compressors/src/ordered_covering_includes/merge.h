@@ -54,7 +54,7 @@ typedef struct merge_t {
 //! \param[in] merge: the merge
 //! \return the goodness of the merge.
 static int merge_goodness(merge_t *merge) {
-    return merge->entries.count - 1;
+    return (int) merge->entries.count - 1;
 }
 
 //! \brief Clear a merge
@@ -94,7 +94,7 @@ static inline void merge_delete(merge_t *m) {
 //! \brief Add an entry to the merge
 //! \param[in] m: the merge to add to
 //! \param[in] i: the entry bit to flag as potential merge-able entry
-static inline void merge_add(merge_t *m, unsigned int i) {
+static inline void merge_add(merge_t *m, uint32_t i) {
     // Add the entry to the bit set contained in the merge
     if (bit_set_add(&m->entries, i)) {
         entry_t *entry = routing_table_get_entry(i);
@@ -119,7 +119,7 @@ static inline void merge_add(merge_t *m, unsigned int i) {
 //! \param[in] m: the merge to check if a bit is set
 //! \param[in] i: the bit to check
 //! \return true if the bit is set false otherwise.
-static inline bool merge_contains(merge_t *m, unsigned int i) {
+static inline bool merge_contains(merge_t *m, uint32_t i) {
   return bit_set_contains(&(m->entries), i);
 }
 
@@ -127,7 +127,7 @@ static inline bool merge_contains(merge_t *m, unsigned int i) {
 //! \brief Remove an entry from the merge
 //! \param[in] m: the merge to unset a bit from
 //! \param[in] i: the entry id to unset
-static inline void merge_remove(merge_t *m, unsigned int i) {
+static inline void merge_remove(merge_t *m, uint32_t i) {
     // Remove the entry from the bit_set contained in the merge
     if (bit_set_remove(&m->entries, i)) {
         // Rebuild the key and mask from scratch
@@ -135,7 +135,7 @@ static inline void merge_remove(merge_t *m, unsigned int i) {
         m->source = INIT_SOURCE;
         m->key_mask.key  = FULL;
         m->key_mask.mask = EMPTY;
-        for (int j = 0; j < routing_table_get_n_entries(); j++) {
+        for (uint32_t j = 0; j < routing_table_get_n_entries(); j++) {
             entry_t *e = routing_table_get_entry(j);
 
             if (bit_set_contains(&m->entries, j)) {
