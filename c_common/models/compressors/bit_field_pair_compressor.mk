@@ -13,14 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-APP = bit_field_sorter_and_searcher
+APP = bit_field_pair_compressor
 
-SOURCES = bit_field_sorter_and_searcher.c
+SOURCES = bit_field_compressor.c
 
-CFLAGS += -DSPINNAKER -Wshadow -O0
 FEC_OPT = $(OSPACE)
-#FEC_OPT = -O0
 
 include ../fec_models.mk
 
-
+CFLAGS += -DUSE_PAIR
