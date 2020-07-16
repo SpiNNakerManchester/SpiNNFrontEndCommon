@@ -13,8 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.overrides import overrides
-from pacman.model.graphs.application import ApplicationVertex
 from .abstract_one_app_one_machine_vertex import AbstractOneAppOneMachineVertex
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex)
@@ -56,4 +54,3 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
             extra_monitors_by_chip=extra_monitors_by_chip,
             report_default_directory=report_default_directory,
             write_data_speed_up_reports=write_data_speed_up_reports)
-
