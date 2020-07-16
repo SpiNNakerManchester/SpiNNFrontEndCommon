@@ -19,7 +19,7 @@
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="BitFieldCompressorReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</python_module>
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
         <python_class>BitFieldCompressorReport</python_class>
         <input_definitions>
             <parameter>
