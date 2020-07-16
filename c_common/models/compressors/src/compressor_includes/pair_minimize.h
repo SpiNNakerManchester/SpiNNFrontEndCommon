@@ -28,24 +28,14 @@
  * The memory address with tag "1" is expected contain the following struct
  * (entry_t is defined in `routing_table.h` but is described below).
  */
-#include <spin1_api.h>
 #include <debug.h>
-#include <common-typedefs.h>
-#include <malloc_extras.h>
-#include "unordered_remove_default_routes.h"
-#include "minimise.h"
-
-#include <spin1_api.h>
-#include <debug.h>
-#include <common-typedefs.h>
-#include "unordered_remove_default_routes.h"
-#include "minimise.h"
+#include "../common/routing_table.h"
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
 
 //! The index of the next place in the compressed table to write a route.
-static int write_index;
+static uint32_t write_index;
 
 //! The index of the first route after the ones being compressed in this step.
 static int remaining_index;
@@ -56,7 +46,7 @@ static uint32_t routes[MAX_NUM_ROUTES];
 //! Route frequency histogram.
 static uint32_t routes_frequency[MAX_NUM_ROUTES] = {0};
 
-//! Count of unique routes (as opposed to routes with just different keymasks).
+//! Count of unique routes (as opposed to routes with just different key_masks).
 static uint32_t routes_count;
 
 //! \brief Merges a single pair of route entries.
@@ -65,11 +55,21 @@ static uint32_t routes_count;
 //! \return A new merged route that will eventually replace the two inputs.
 static inline entry_t merge(const entry_t* entry1, const entry_t* entry2) {
     entry_t result = {
-        .keymask = keymask_merge(entry1->keymask, entry2->keymask),
+        .key_mask = key_mask_merge(entry1->key_mask, entry2->key_mask),
         .route = entry1->route,
         .source = (entry1->source == entry2->source ? entry1->source : 0)
     };
     return result;
+}
+
+//! \brief Write an entry to a specific index
+//! \param[in] entry: The entry to write
+//! \param[in] index: Where to write it.
+static inline void _entry(const entry_t* entry, int index) {
+    entry_t* e_ptr = routing_table_get_entry(index);
+    e_ptr->key_mask = entry->key_mask;
+    e_ptr->route = entry->route;
+    e_ptr->source = entry->source;
 }
 
 //! \brief Finds if two routes can be merged.
@@ -79,20 +79,20 @@ static inline entry_t merge(const entry_t* entry1, const entry_t* entry2) {
 //! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged
 static inline bool find_merge(int left, int index) {
-    const entry_t *entry1 = routing_table_sdram_stores_get_entry(left);
-    const entry_t *entry2 = routing_table_sdram_stores_get_entry(index);
+    const entry_t *entry1 = routing_table_get_entry(left);
+    const entry_t *entry2 = routing_table_get_entry(index);
     const entry_t merged = merge(entry1, entry2);
 
     for (int check = remaining_index;
-            check < routing_table_sdram_get_n_entries();
+            check < routing_table_get_n_entries();
             check++) {
         const entry_t *check_entry =
-                routing_table_sdram_stores_get_entry(check);
-        if (keymask_intersect(check_entry->keymask, merged.keymask)) {
+                routing_table_get_entry(check);
+        if (key_mask_intersect(check_entry->key_mask, merged.key_mask)) {
             return false;
         }
     }
-    put_entry(&merged, left);
+    routing_table_put_entry(&merged, left);
     return true;
 }
 
@@ -106,16 +106,16 @@ static inline void compress_by_route(int left, int right) {
         for (int index = left + 1; index <= right; index++) {
             merged = find_merge(left, index);
             if (merged) {
-                copy_entry(index, right--);
+                routing_table_copy_entry(index, right--);
                 break;
             }
         }
         if (!merged) {
-            copy_entry(write_index++, left++);
+            routing_table_copy_entry(write_index++, left++);
         }
     }
     if (left == right) {
-        copy_entry(write_index++, left);
+        routing_table_copy_entry(write_index++, left);
     }
 }
 
@@ -150,7 +150,7 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
 static void quicksort_table(int low, int high) {
     if (low < high - 1) {
         // pick low entry for the pivot
-        uint32_t pivot = routing_table_sdram_stores_get_entry(low)->route;
+        uint32_t pivot = routing_table_get_entry(low)->route;
         // Location of entry currently being checked.
         // At the end check will point to either
         //     the right most entry with a value greater than the pivot
@@ -168,7 +168,7 @@ static void quicksort_table(int low, int high) {
 
         while (check <= h_write) {
             uint32_t check_route =
-                    routing_table_sdram_stores_get_entry(check)->route;
+                    routing_table_get_entry(check)->route;
             int compare = compare_routes(check_route, pivot);
             if (compare < 0) {
                 // swap the check to the left, and then
@@ -254,7 +254,7 @@ static void quicksort_route(int low, int high) {
 //! \brief Computes route histogram
 //! \param[in] index: The index of the cell to update
 static inline void update_frequency(int index) {
-    uint32_t route = routing_table_sdram_stores_get_entry(index)->route;
+    uint32_t route = routing_table_get_entry(index)->route;
     for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route) {
             routes_frequency[i]++;
@@ -265,18 +265,31 @@ static inline void update_frequency(int index) {
     routes_frequency[routes_count] = 1;
     routes_count++;
     if (routes_count >= MAX_NUM_ROUTES) {
-        log_error("%d Unigue routes compression IMPOSSIBLE",
-                MAX_NUM_ROUTES + 1);
+        log_error("Best compression was %d compared to max legal of %d",
+                routes_count, MAX_NUM_ROUTES);
         // set the failed flag and exit
         malloc_extras_terminate(EXITED_CLEANLY);
     }
 }
 
+
 //! \brief Implementation of minimise()
 //! \param[in] target_length: ignored
-static inline void simple_minimise(uint32_t target_length) {
+//! \param[out] failed_by_malloc: Never changed but required by api
+//! \param[in] stop_compressing: Variable saying if the compressor should stop
+//!    and return false; _set by interrupt_ DURING the run of this method!
+bool minimise_run(int target_length, bool *failed_by_malloc,
+        volatile bool *stop_compressing) {
+    use(failed_by_malloc);
 	use(target_length);
-    int table_size = routing_table_sdram_get_n_entries();
+
+    // Verify constant used to build arrays is correct
+    if (MAX_NUM_ROUTES != rtr_alloc_max()){
+        log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
+                MAX_NUM_ROUTES, rtr_alloc_max());
+            malloc_extras_terminate(EXIT_FAIL);
+    }
+    int table_size = routing_table_get_n_entries();
 
     routes_count = 0;
 
@@ -284,20 +297,28 @@ static inline void simple_minimise(uint32_t target_length) {
         update_frequency(index);
     }
 
-    log_info("before sort %u", routes_count);
+    log_debug("before sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
     quicksort_route(0, routes_count);
+    if (*stop_compressing) {
+        log_info("Stopping as asked to stop");
+        return false;
+    }
 
-    log_info("after sort %u", routes_count);
+    log_debug("after sort %u", routes_count);
     for (uint i = 0; i < routes_count; i++) {
         log_debug("%u", routes[i]);
     }
 
-    log_info("do quicksort_table by route %u", table_size);
+    log_debug("do quicksort_table by route %u", table_size);
     quicksort_table(0, table_size);
+    if (*stop_compressing) {
+        log_info("Stopping before compression as asked to stop");
+        return false;
+    }
 
     write_index = 0;
     int max_index = table_size - 1;
@@ -305,40 +326,31 @@ static inline void simple_minimise(uint32_t target_length) {
 
     while (left <= max_index) {
         int right = left;
-        uint32_t left_route = routing_table_sdram_stores_get_entry(left)->route;
-        log_info("A %u %u %u %u", left, max_index, right, left_route);
+        uint32_t left_route = routing_table_get_entry(left)->route;
+        log_debug("A %u %u %u %u", left, max_index, right, left_route);
         while ((right < table_size - 1) &&
-                routing_table_sdram_stores_get_entry(right+1)->route ==
+                routing_table_get_entry(right+1)->route ==
                         left_route) {
             right++;
         }
         remaining_index = right + 1;
-        log_info("compress %u %u", left, right);
+        log_debug("compress %u %u", left, right);
         compress_by_route(left, right);
+        if (write_index > rtr_alloc_max()){
+            log_error("Compression not possible as already found %d entries "
+            "where max allowed is %d", write_index, rtr_alloc_max());
+            return false;
+        }
+        if (*stop_compressing) {
+            log_info("Stopping during compression as asked to stop");
+            return false;
+        }
         left = right + 1;
     }
 
-    log_info("done %u %u", table_size, write_index);
+    log_debug("done %u %u", table_size, write_index);
 
     routing_table_remove_from_size(table_size-write_index);
-    log_info("now %u", routing_table_sdram_get_n_entries());
-}
-
-//! \brief Minimises the routing table.
-//! \param[in] target_length:
-//!     How many entries we want the table to have after minimisation
-void minimise(uint32_t target_length) {
-    simple_minimise(target_length);
-}
-
-//! \brief the main entrance.
-void c_main(void) {
-    log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
-    malloc_extras_turn_off_safety();
-
-    // kick-start the process
-    spin1_schedule_callback(compress_start, 0, 0, 3);
-
-    // go
-    spin1_start(SYNC_NOWAIT);	//##
+    log_debug("now %u", routing_table_get_n_entries());
+    return true;
 }
