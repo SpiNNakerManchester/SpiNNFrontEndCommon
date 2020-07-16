@@ -29,11 +29,11 @@
 #include <data_specification.h>
 #include <malloc_extras.h>
 #include "common-typedefs.h"
-#include "common/routing_table.h"
 #include "common/constants.h"
-#include "common/compressor_sorter_structs.h"
-#include "common/bit_field_table_generator.h"
-#include "sorter_includes/bit_field_reader.h"
+#include "bit_field_common/routing_tables_utils.h"
+#include "bit_field_common/compressor_sorter_structs.h"
+#include "bit_field_common/bit_field_table_generator.h"
+#include "bit_field_reader.h"
 
 //============================================================================
 // #defines and enums
@@ -204,7 +204,7 @@ static inline bool set_up_tested_mid_points(void) {
 static inline bool pass_instructions_to_compressor(
     uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
 
-    bool success = routing_table_utils_malloc(
+    bool success = routing_tables_utils_malloc(
             comms_sdram[processor_id].routing_tables, table_size);
     if (!success) {
         log_info("failed to create bitfield tables for midpoint %d",
@@ -242,7 +242,7 @@ static inline bool pass_instructions_to_compressor(
 static inline void malloc_tables_and_set_off_bit_compressor(
         int mid_point, int processor_id) {
     // free any previous routing tables
-    routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
 
     // malloc space for the routing tables
     uint32_t table_size = bit_field_table_generator_max_size(
@@ -732,11 +732,11 @@ void process_success(int mid_point, int processor_id) {
         }
 
         // Get last table and free the rest
-        last_compressed_table = routing_table_utils_convert(
+        last_compressed_table = routing_tables_utils_convert(
             comms_sdram[processor_id].routing_tables);
         log_debug("n entries is %d", last_compressed_table->size);
     } else {
-        routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+        routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
     }
 
     // kill any search below this point, as they all redundant as
@@ -755,7 +755,7 @@ void process_success(int mid_point, int processor_id) {
 //! \param[in] mid_point: The mid-point that failed
 //! \param[in] processor_id: The compressor processor ID
 void process_failed_malloc(int mid_point, int processor_id) {
-    routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
     // Remove the flag that say this midpoint has been checked
     bit_field_clear(tested_mid_points, mid_point);
 
@@ -799,7 +799,7 @@ void process_failed(int mid_point, int processor_id) {
         log_info("lowest_failure: %d already lower than mid_point:%d",
                 lowest_failure, mid_point);
     }
-    routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+    routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
 
     // tell all compression processors trying midpoints above this one
     // to stop, as its highly likely a waste of time.
@@ -861,7 +861,7 @@ void process_compressor_response(
         // compressor stopped at the request of the sorter.
         log_info("ack from forced from processor %d doing mid point %d",
                 processor_id, mid_point);
-        routing_table_utils_free_all(comms_sdram[processor_id].routing_tables);
+        routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
         break;
 
     case UNUSED:

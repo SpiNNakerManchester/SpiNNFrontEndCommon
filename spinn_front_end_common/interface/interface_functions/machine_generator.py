@@ -14,10 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+
+from spinn_utilities.log import FormatAdapter
 from spinnman.connections import SocketAddressWithChip
+from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+import time
+import logging
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class MachineGenerator(object):
@@ -68,6 +75,23 @@ class MachineGenerator(object):
     :rtype: tuple(~spinnman.transceiver.Transceiver, ~spinn_machine.Machine)
     """
 
+    POWER_CYCLE_WARNING = (
+        "When power-cycling a board, it is recommended that you wait for 30 "
+        "seconds before attempting a reboot. Therefore, the tools will now "
+        "wait for 30 seconds. If you wish to avoid this wait, please set "
+        "reset_machine_on_startup = False in the [Machine] section of the "
+        "relevant configuration (cfg) file.")
+
+    POWER_CYCLE_FAILURE_WARNING = (
+        "The end user requested the power-cycling of the board. But the "
+        "tools did not have the required BMP connection to facilitate a "
+        "power-cycling, and therefore will not do so. please set the "
+        "bmp_names accordingly in the [Machine] section of the relevant "
+        "configuration (cfg) file. Or use a machine assess process which "
+        "provides the BMP data (such as a spalloc system) or finally set "
+        "reset_machine_on_startup = False in the [Machine] section of the "
+        "relevant configuration (cfg) file to avoid this warning in future.")
+
     __slots__ = []
 
     def __call__(
@@ -116,13 +140,19 @@ class MachineGenerator(object):
             default_report_directory=default_report_directory)
 
         if reset_machine_on_start_up:
-            txrx.power_off_machine()
+            success = txrx.power_off_machine()
+            if success:
+                logger.warning(self.POWER_CYCLE_WARNING)
+                time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
+                logger.warning("Power cycle wait complete")
+            else:
+                logger.warning(self.POWER_CYCLE_FAILURE_WARNING)
 
         # do auto boot if possible
         if board_version is None:
             raise ConfigurationException(
-                "Please set a machine version number in the configuration "
-                "file (spynnaker.cfg or pacman.cfg)")
+                "Please set a machine version number in the "
+                "corresponding configuration (cfg) file")
         txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         return txrx.get_machine_details(), txrx

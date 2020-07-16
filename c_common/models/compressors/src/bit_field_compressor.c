@@ -19,16 +19,16 @@
 //! \brief The bitfield compressor
 #include <spin1_api.h>
 #include <debug.h>
-#include <bit_field.h>
 #include <sdp_no_scp.h>
 #include <malloc_extras.h>
 #include "common-typedefs.h"
-#include "common/routing_table.h"
 #include "common/constants.h"
-#include "common/compressor_sorter_structs.h"
-#include "common/bit_field_table_generator.h"
-#include "compressor_includes/ordered_covering.h"
-#include "common//bit_field_table_generator.h"
+#include "bit_field_common/compressor_sorter_structs.h"
+#include "bit_field_common/bit_field_table_generator.h"
+#include "common/minimise.h"
+#include "compressor_includes/compressor.h"
+#include "bit_field_common/routing_tables.h"
+#include "bit_field_common/bit_field_table_generator.h"
 
 /*****************************************************************************/
 
@@ -53,9 +53,6 @@ volatile bool stop_compressing = false;
 
 //! Allows minimise to report if it failed due to malloc issues
 bool failed_by_malloc = false;
-
-//! Whether to run compression only when needed
-bool compress_only_when_needed = false;
 
 //! Whether to compress as much as possible
 bool compress_as_much_as_possible = false;
@@ -101,23 +98,23 @@ void start_compression_process(void) {
 #endif
 
     // run compression
-    bool success = oc_minimise(
-            TARGET_LENGTH, &failed_by_malloc, &stop_compressing,
-            compress_only_when_needed, compress_as_much_as_possible);
+    bool success = run_compressor(
+        compress_as_much_as_possible, &failed_by_malloc, &stop_compressing);
 
     // turn off timer and set us into pause state
     spin1_pause();
 
     // Decode whether we succeeded or failed.
-    if (success && (routing_table_get_n_entries() <= TARGET_LENGTH)) {
-        log_info("Passed oc_minimise() with success code: %d", success);
+    int max_length = rtr_alloc_max();
+    if (success && (routing_table_get_n_entries() <= max_length)) {
+        log_info("Passed minimise_run() with success code: %d", success);
         routing_tables_save(comms_sdram->routing_tables);
         comms_sdram->compressor_state = SUCCESSFUL_COMPRESSION;
         return;
     }
 
     // Not a success, could be one of 4 failure states
-    log_info("Failed oc_minimise() with success code: %d", success);
+    log_info("Failed minimise_run() with success code: %d", success);
     if (failed_by_malloc) {  // malloc failed somewhere
         log_debug("failed malloc response");
         comms_sdram->compressor_state = FAILED_MALLOC;
@@ -140,7 +137,7 @@ void setup_routing_tables(void) {
     routing_tables_init(comms_sdram->routing_tables);
 
     if (comms_sdram->mid_point == 0) {
-        routing_table_clone_table(comms_sdram->uncompressed_router_table);
+        routing_tables_clone_table(comms_sdram->uncompressed_router_table);
     } else {
         bit_field_table_generator_create_bit_field_router_tables(
                 comms_sdram->mid_point, comms_sdram->uncompressed_router_table,
@@ -368,16 +365,11 @@ static void initialise(void) {
     // bit 0 = compress_only_when_needed
     // bit 1 = compress_as_much_as_possible
     uint32_t int_value = this_vcpu_info->user2;
-    if (int_value & 2) {
+    if (int_value & 1) {
         compress_as_much_as_possible = true;
     }
-    if (int_value & 1) {
-        compress_only_when_needed = true;
-    }
-    log_info("int %d, compress_only_when_needed = %d "
-            "compress_as_much_as_possible = %d",
-            int_value, compress_only_when_needed,
-            compress_as_much_as_possible);
+    log_info("int %d, compress_as_much_as_possible = %d",
+            int_value, compress_as_much_as_possible);
 
     // Get the pointer for all cores
     comms_sdram = (comms_sdram_t *) this_vcpu_info->user3;

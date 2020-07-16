@@ -25,7 +25,6 @@
 #include "aliases.h"
 #include "bit_set.h"
 #include "merge.h"
-#include "remove_default_routes.h"
 #include "../common/routing_table.h"
 
 //! \brief State of the ordered covering
@@ -771,20 +770,15 @@ static inline bool oc_merge_apply(
 //! \param[out] failed_by_malloc: Flag stating that it failed due to malloc
 //! \param[out] stop_compressing: Variable saying if the compressor should stop
 //!    and return false; _set by interrupt_ DURING the run of this method!
-//! \param[in] compress_only_when_needed: Only compress when needed
-//! \param[in] compress_as_much_as_possible: Only compress to normal routing
-//!       table length
 //! \return Whether successful or not.
-static inline bool oc_minimise(
+bool minimise_run(
         int target_length, bool *failed_by_malloc,
-        volatile bool *stop_compressing,
-        bool compress_only_when_needed, bool compress_as_much_as_possible) {
+        volatile bool *stop_compressing) {
     // check if any compression actually needed
     log_debug("n entries before compression is %d",
             routing_table_get_n_entries());
 
-    if (compress_only_when_needed &&
-            (routing_table_get_n_entries() < target_length)) {
+    if (routing_table_get_n_entries() < target_length) {
         log_info("does not need compression.");
         return true;
     }
@@ -792,37 +786,7 @@ static inline bool oc_minimise(
     // Some Mundy black magic
     aliases_t aliases = aliases_init();
 
-    // remove default routes and check lengths again
-    log_debug("before rerun count");
-    int length_after_removal = routing_table_get_n_entries();
-    log_debug("after rerun count");
-    bool success = remove_default_routes_minimise(&length_after_removal, false);
-    if (!success) {
-        log_error("failed to remove default routes due to malloc. failing");
-        *failed_by_malloc = true;
-        aliases_clear(&aliases);
-        return false;
-    }
-    log_debug("after default route removal");
-
-    log_debug("before check for remove ");
-
-    if (compress_only_when_needed && (length_after_removal < target_length)) {
-        log_info("remove defaults was enough.");
-        remove_default_routes_minimise(&length_after_removal, true);
-        aliases_clear(&aliases);
-        return true;
-    }
-
-    log_debug("changing target length to compress as much as poss");
-    // by setting target length to 0, it'll not finish till no other merges
-    // are available.
-    if (compress_as_much_as_possible) {
-        target_length = 0;
-    }
-
     // start the merger process
-    log_debug("start compression true attempt");
     log_debug("n entries is %d", routing_table_get_n_entries());
     int attempts = 0;
 

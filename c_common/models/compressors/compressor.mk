@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2019-2020 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,15 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-BUILD_DIRS = compressors \
-	         live_packet_gather \
-	         command_sender_multicast_source \
-	         chip_power_monitor \
-	         reverse_iptag_multicast_source \
-	         system_models
+APP = bit_field_compressor
 
-all: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
+SOURCES = bit_field_compressor.c
 
-clean: $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d clean || exit $$?; done
+FEC_OPT = $(OSPACE)
+
+include ../fec_models.mk
+
+CFLAGS += -DUSE_PAIR

@@ -24,6 +24,7 @@
 // BIT_FIELD.h. IS LEFT DUE TO THE AMOUNT THAT IS USED IN THE COMPRESSOR.
 // DAMN WELL LOOKS LIKE A FILTER_INFO.h
 
+#include <bit_field.h>
 #include <stdint.h>
 #include <malloc_extras.h>
 #include "../common/constants.h"

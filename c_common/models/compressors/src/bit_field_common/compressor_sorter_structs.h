@@ -22,6 +22,7 @@
 
 #include <filter_info.h>
 #include <key_atom_map.h>
+#include "../common/routing_table.h"
 
 //!===========================================================================
 //! enums
@@ -66,36 +67,6 @@ typedef enum instructions_to_compressor {
 
 //!=========================================================================
 //! structs
-
-//! \brief Holds key and mask
-typedef struct key_mask_t {
-    //! Key for the key_mask
-    uint32_t key;
-
-    //! Mask for the key_mask
-    uint32_t mask;
-} key_mask_t;
-
-//! \brief Holds data for a routing table entry
-typedef struct entry_t {
-    //! Key and mask
-    key_mask_t key_mask;
-
-    //! Routing direction
-    uint32_t route;
-
-    //! Source of packets arriving at this entry
-    uint32_t source;
-} entry_t;
-
-//! \brief Holds a routing table description
-typedef struct table_t {
-    //! Number of entries in the table
-    uint32_t size;
-
-    //! Entries in the table
-    entry_t entries[];
-} table_t;
 
 //! \brief Holds the data to initialise routing_table.h
 typedef struct multi_table_t {
