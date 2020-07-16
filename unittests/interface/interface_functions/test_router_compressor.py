@@ -49,7 +49,7 @@ class MockTransceiverError(object):
             time_between_polls=0.1,
             error_states=frozenset(
                 {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG}),
-            counts_between_full_check=100):
+            counts_between_full_check=100, progress_bar=None):
         # Return immediately
         pass
 

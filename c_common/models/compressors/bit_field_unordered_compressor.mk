@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-APPS = sorter.mk compressor.mk
+APP = bit_field_unordered_compressor
 
-all: $(APPS)
-	for f in $(APPS); do $(MAKE) -f $$f || exit $$?; done
+SOURCES = bit_field_compressor.c
 
-clean: $(DIRS)
-	for f in $(APPS); do $(MAKE) -f $$f clean || exit $$?; done
+FEC_OPT = $(OSPACE)
+
+include ../fec_models.mk
