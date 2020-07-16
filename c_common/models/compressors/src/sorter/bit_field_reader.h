@@ -25,7 +25,7 @@
 #include <debug.h>
 #include <malloc_extras.h>
 #include "common/constants.h"
-#include "common/compressor_sorter_structs.h"
+#include "bit_field_common/compressor_sorter_structs.h"
 
 //! For each possible processor the first index of a row for that processor
 static int processor_heads[MAX_PROCESSORS];
