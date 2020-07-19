@@ -43,13 +43,13 @@ typedef struct sdram_block {
     //! Base address of where the SDRAM block starts
     uchar *sdram_base_address;
     //! Size of block in bytes
-    uint size;
+    uint32_t size;
 } sdram_block;
 
 //! Holds host-allocated SDRAM blocks outside the heap
 typedef struct available_sdram_blocks {
     //! Number of blocks of SDRAM which can be utilised outside of alloc
-    int n_blocks;
+    uint32_t n_blocks;
     //! VLA of SDRAM blocks
     sdram_block blocks[];
 } available_sdram_blocks;

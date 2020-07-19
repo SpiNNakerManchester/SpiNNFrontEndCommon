@@ -56,7 +56,7 @@ static heap_t *stolen_sdram_heap = NULL;
 void **malloc_points = NULL;
 
 //! base line for the tracker array size. will grow with usage
-int malloc_points_size = 4;
+uint32_t malloc_points_size = 4;
 
 // ===========================================================================
 // functions
@@ -96,18 +96,17 @@ void malloc_extras_terminate(uint result_code) {
 bool malloc_extras_check(void *ptr) {
     // only check if safety is turned on. else its not possible to check.
     if (safety) {
-        int *int_pointer = (int *) ptr;
+        uint32_t *int_pointer = (uint32_t *) ptr;
         int_pointer = int_pointer - 1;
-        int words = int_pointer[0];
+        uint32_t words = int_pointer[0];
 
-        for (int buffer_index = 0; buffer_index < BUFFER_WORDS;
-                buffer_index++) {
-            uint32_t flag = int_pointer[words + buffer_index];
+        for (uint32_t i = 0; i < BUFFER_WORDS; i++) {
+            uint32_t flag = int_pointer[words + i];
             if (flag != SAFETY_FLAG) {
                 bool found = false;
-                for (int index = 0; index < malloc_points_size; index ++) {
-                    if ((malloc_points[index] != 0) &&
-                            (malloc_points[index] == ptr)) {
+                for (uint32_t j = 0; j < malloc_points_size; j ++) {
+                    if ((malloc_points[j] != 0) &&
+                            (malloc_points[j] == ptr)) {
                         found = true;
                     }
                 }
@@ -119,7 +118,6 @@ bool malloc_extras_check(void *ptr) {
                 return false;
              }
         }
-        return true;
     }
     return true;
 }
@@ -127,12 +125,12 @@ bool malloc_extras_check(void *ptr) {
 //! \brief allows the ability to read the size of a malloc.
 //! \param[in] ptr: the pointer to get the size in words of.
 //! \return returns the size of a given malloc in words.
-int malloc_extras_malloc_size(void *ptr) {
+uint32_t malloc_extras_malloc_size(void *ptr) {
     // only able to be figured out if safety turned on.
     if (safety) {
         // locate and return the len at the front of the malloc.
-        int *int_pointer = (int *) ptr;
-        int_pointer = int_pointer - 1;
+        uint32_t *int_pointer = (uint32_t *) ptr;
+        int_pointer--;
         return int_pointer[0];
     }
 
@@ -162,10 +160,10 @@ void malloc_extras_check_all_marked(int marker) {
     // only check if safety turned on. else pointless.
     if (safety) {
         bool failed = false;
-        for (int index = 0; index < malloc_points_size; index ++) {
-            if (malloc_points[index] != 0 &&
-                    !malloc_extras_check(malloc_points[index])) {
-                log_error("the malloc with index %d has overran", index);
+        for (uint32_t i = 0; i < malloc_points_size; i ++) {
+            if (malloc_points[i] != 0 &&
+                    !malloc_extras_check(malloc_points[i])) {
+                log_error("the malloc with index %u has overran", i);
                 log_error("this test is marked by marker %d", marker);
                 failed = true;
             }
@@ -187,14 +185,14 @@ void malloc_extras_check_all(void) {
 //!     to steal.
 //! \param[in] sdram_heap: the true SDRAM heap
 //! \return the number of SDRAM blocks to utilise
-static inline int find_n_available_mallocs(heap_t *sdram_heap) {
-    int n_available_true_malloc = 0;
+static inline uint32_t find_n_available_mallocs(heap_t *sdram_heap) {
+    uint32_t n_available_true_malloc = 0;
     block_t *free_blk = sdram_heap->free;
 
     // traverse blocks till none more available
     while (free_blk != NULL) {
         free_blk = free_blk->free;
-        n_available_true_malloc += 1;
+        n_available_true_malloc++;
     }
     return n_available_true_malloc;
 }
@@ -207,23 +205,23 @@ static void build_malloc_tracker(void) {
             ALLOC_LOCK);
     if (malloc_points == NULL) {
         log_error("FAILED to allocate the tracker code!");
-        rt_error(RTE_SWERR);
+        rt_error(RTE_MALLOC);
     }
 
     // set tracker.
-    for (int index = 0; index < malloc_points_size; index ++) {
-        malloc_points[index] = 0;
+    for (uint32_t i = 0; i < malloc_points_size; i ++) {
+        malloc_points[i] = 0;
     }
 }
 
 //! \brief count how much space available given expected block costs
 //! \param[in] sizes_region: the SDRAM loc where addresses to steal are located
 //! \return size available given expected block costs
-static inline uint find_free_space_available(
+static inline uint32_t find_free_space_available(
         available_sdram_blocks *sizes_region) {
-    uint free = 0;
-    for (int index = 0; index < sizes_region->n_blocks; index++) {
-        free += sizes_region->blocks[index].size - sizeof(block_t);
+    uint32_t free = 0;
+    for (uint32_t i = 0; i < sizes_region->n_blocks; i++) {
+        free += sizes_region->blocks[i].size - sizeof(block_t);
     }
     return free;
 }
@@ -234,14 +232,14 @@ static inline uint find_free_space_available(
 static inline bool add_heap_to_collection(
         sdram_block *list_of_available_blocks) {
     // go through true heap and allocate and add to end of list.
-    int position = 0;
+    uint32_t position = 0;
 
     // loop over the true heap and add accordingly.
     while (sv->sdram_heap->free != NULL) {
         block_t *next_blk = sv->sdram_heap->free->next;
 
         // get next size minus the size it'll need to put in when alloc'ing
-        int size = ((uchar *) next_blk - (uchar *) sv->sdram_heap->free) -
+        uint32_t size = ((uchar *) next_blk - (uchar *) sv->sdram_heap->free) -
                 sizeof(block_t);
 
         // make life easier by saying blocks have to be bigger than the heap.
@@ -266,11 +264,11 @@ static inline bool add_heap_to_collection(
 //! \param[in] n_mallocs: the number of mallocs expected to be done.
 //! \param[in] list_of_available_blocks: the mallocs from the original heap.
 static inline void make_heap_structure(
-        available_sdram_blocks *sizes_region, int n_mallocs,
+        available_sdram_blocks *sizes_region, uint32_t n_mallocs,
         sdram_block *list_of_available_blocks) {
     // generate position pointers
-    int stolen_current_index = 0;
-    int heap_current_index = 0;
+    uint32_t stolen_current_index = 0;
+    uint32_t heap_current_index = 0;
     bool first = true;
     block_t *previous = NULL;
     block_t *previous_free = NULL;
@@ -279,7 +277,7 @@ static inline void make_heap_structure(
     while (stolen_current_index < sizes_region->n_blocks ||
             heap_current_index < n_mallocs) {
         // build pointers to try to reduce code space
-        int *to_process;
+        uint32_t *to_process;
         sdram_block *to_process_blocks;
 
         // determine which tracker to utilise
@@ -352,8 +350,8 @@ static inline void make_heap_structure(
 //! prints out the fake heap as if the spin1 alloc was operating over it
 static inline void print_free_sizes_in_heap(void) {
     block_t *free_blk = stolen_sdram_heap->free;
-    uint total_size = 0;
-    uint index = 0;
+    uint32_t total_size = 0;
+    uint32_t index = 0;
 
     // traverse blocks till none more available
     while (free_blk) {
@@ -392,8 +390,8 @@ bool malloc_extras_initialise_and_build_fake_heap(
     // hard set stolen sdram heap to the default heap. in case no fake heap
     stolen_sdram_heap = sv->sdram_heap;
 
-    /* if planning to track all mallocs and frees to verify no
-     overwrites/corruption. build the initial malloc tracker*/
+    // if planning to track all mallocs and frees to verify no
+    // overwrites/corruption. build the initial malloc tracker
     if (safety) {
         build_malloc_tracker();
     }
@@ -470,7 +468,7 @@ void malloc_extras_free_marked(void *ptr, int marker) {
 
     // track if the pointer has been corrupted before trying to free it.
     // only possible if safety been turned on
-    int *int_pointer = (int *) ptr;
+    uint32_t *int_pointer = (uint32_t *) ptr;
     if (safety) {
         if (!malloc_extras_check(ptr)) {
             log_error("over ran whatever is being freed");
@@ -479,7 +477,7 @@ void malloc_extras_free_marked(void *ptr, int marker) {
         }
 
         bool found = false;
-        int index = 0;
+        uint32_t index = 0;
         while (!found && index < malloc_points_size) {
             if (malloc_points[index] == ptr) {
                 found = true;
@@ -499,7 +497,7 @@ void malloc_extras_free_marked(void *ptr, int marker) {
     }
 
     // if safe to free, free from the correct heap based off position.
-    if ((int) ptr >= DTCM_BASE && (int) ptr <= DTCM_TOP) {
+    if ((uint32_t) ptr >= DTCM_BASE && (uint32_t) ptr < DTCM_TOP) {
         sark_xfree(sark.heap, int_pointer, ALLOC_LOCK);
     } else {
         sark_xfree(stolen_sdram_heap, int_pointer, ALLOC_LOCK);
@@ -513,7 +511,7 @@ void malloc_extras_free(void *ptr) {
 //! \brief doubles the size of the SDRAM malloc tracker
 static inline void build_bigger_size(void) {
     // make twice as big tracker
-    int new_malloc_points_size = malloc_points_size * 2;
+    uint32_t new_malloc_points_size = malloc_points_size * 2;
 
     // make new tracker
     void **temp_pointer = sark_xalloc(
@@ -523,17 +521,17 @@ static inline void build_bigger_size(void) {
     // check for null
     if (temp_pointer == NULL) {
         log_error("failed to allocate space for next range.");
-        rt_error(RTE_SWERR);
-    }
-
-    // init the new store
-    for (int index = 0; index < new_malloc_points_size; index ++) {
-        temp_pointer[index] = 0;
+        rt_error(RTE_MALLOC);
     }
 
     // move from old to new
-    for (int index = 0; index < malloc_points_size; index ++) {
-        temp_pointer[index] = malloc_points[index];
+    for (uint32_t i = 0; i < malloc_points_size; i++) {
+        temp_pointer[i] = malloc_points[i];
+    }
+
+    // init the new store
+    for (uint32_t i = malloc_points_size; i < new_malloc_points_size; i++) {
+        temp_pointer[i] = 0;
     }
 
     // free old and update pointers
@@ -546,8 +544,8 @@ static inline void build_bigger_size(void) {
 //!     allocation of malloc markers if full already.
 //! \return the index in the current malloc tracker to put this new malloc
 //!     pointer.
-static inline int find_free_malloc_index(void) {
-    int index;
+static inline uint32_t find_free_malloc_index(void) {
+    uint32_t index;
     for (index = 0; index < malloc_points_size; index ++) {
         if (malloc_points[index] == 0) {
             return index;
@@ -560,39 +558,36 @@ static inline int find_free_malloc_index(void) {
 
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
-//! \return the address of the block of memory to utilise.
-static void *safe_sdram_malloc(uint bytes) {
+//! \return the address of the block of memory to utilise; never NULL.
+static SARK_IS_A_MALLOC(1) void *safe_sdram_malloc(uint bytes) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
     if (p == NULL) {
         log_error("Failed to malloc %u bytes.\n", bytes);
+        rt_error(RTE_MALLOC);
     }
 
-    return (void *) p;
+    return p;
 }
 
 //! \brief adds the len and buffers to a given malloc pointer.
 //! \details Stores in the malloc tracker and prints index if required.
 //! \param[in] p: The allocated buffer
 //! \param[in] bytes: The size of the buffer in \p p
-static void add_safety_len_and_padding(int *p, uint bytes) {
+static void add_safety_len_and_padding(uint32_t *p, uint32_t bytes) {
     // add len
-    int n_words = (int) ((bytes - MINUS_POINT) / BYTE_TO_WORD);
+    uint32_t n_words = ((bytes - MINUS_POINT) / BYTE_TO_WORD);
     p[0] = n_words;
 
     // fill in buffer at end of malloc.
-    for (int buffer_word = 0; buffer_word < BUFFER_WORDS; buffer_word++) {
-        p[n_words + buffer_word] = SAFETY_FLAG;
+    for (uint32_t i = 0; i < BUFFER_WORDS; i++) {
+        p[n_words + i] = SAFETY_FLAG;
     }
 
     // add malloc to the malloc tracker.
-    int malloc_point_index = find_free_malloc_index();
-    if (malloc_point_index == -1) {
-        log_error("cant track this malloc. failing");
-        rt_error(RTE_SWERR);
-    }
-    malloc_points[malloc_point_index] = (void *)  &p[1];
+    uint32_t malloc_point_index = find_free_malloc_index();
+    malloc_points[malloc_point_index] = (void *) &p[1];
 
     // only print if its currently set to print (saves iobuf)
     if (to_print) {
@@ -608,7 +603,7 @@ void *malloc_extras_sdram_malloc_wrapper(uint bytes) {
     }
 
     // malloc from SDRAM heap.
-    int * p = safe_sdram_malloc(bytes);
+    uint32_t *p = safe_sdram_malloc(bytes);
 
     // if safety, add the len and buffers and return location for app code.
     if (safety) {
@@ -628,7 +623,7 @@ void *malloc_extras_malloc(uint bytes) {
     }
 
     // try DTCM if allowed (not safe if overused, due to stack overflows)
-    int *p = NULL;
+    uint32_t *p = NULL;
     if (use_dtcm) {
         p = sark_alloc(bytes, 1);
 
