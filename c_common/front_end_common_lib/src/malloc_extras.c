@@ -32,6 +32,8 @@
 #define BUFFER_WORDS    (MINUS_POINT / BYTE_TO_WORD)
 //! minimum size of heap to steal from SARK
 #define MIN_SIZE_HEAP   32
+//! marks an unknown allocation
+#define UNKNOWN_MARKER  (-1)
 
 //============================================================================
 // control flags
@@ -96,8 +98,8 @@ void malloc_extras_terminate(uint result_code) {
 bool malloc_extras_check(void *ptr) {
     // only check if safety is turned on. else its not possible to check.
     if (safety) {
-        uint32_t *int_pointer = (uint32_t *) ptr;
-        int_pointer = int_pointer - 1;
+        uint32_t *int_pointer = ptr;
+        int_pointer--;
         uint32_t words = int_pointer[0];
 
         for (uint32_t i = 0; i < BUFFER_WORDS; i++) {
@@ -105,8 +107,7 @@ bool malloc_extras_check(void *ptr) {
             if (flag != SAFETY_FLAG) {
                 bool found = false;
                 for (uint32_t j = 0; j < malloc_points_size; j ++) {
-                    if ((malloc_points[j] != 0) &&
-                            (malloc_points[j] == ptr)) {
+                    if (malloc_points[j] == ptr) {
                         found = true;
                     }
                 }
@@ -129,7 +130,7 @@ uint32_t malloc_extras_malloc_size(void *ptr) {
     // only able to be figured out if safety turned on.
     if (safety) {
         // locate and return the len at the front of the malloc.
-        uint32_t *int_pointer = (uint32_t *) ptr;
+        uint32_t *int_pointer = ptr;
         int_pointer--;
         return int_pointer[0];
     }
@@ -178,7 +179,7 @@ void malloc_extras_check_all_marked(int marker) {
 }
 
 void malloc_extras_check_all(void) {
-    malloc_extras_check_all_marked(-1);
+    malloc_extras_check_all_marked(UNKNOWN_MARKER);
 }
 
 //! \brief cycles through the true heap and figures how many blocks there are
@@ -244,7 +245,7 @@ static inline bool add_heap_to_collection(
 
         // make life easier by saying blocks have to be bigger than the heap.
         // so all spaces can be used for heaps
-        uchar *b_address = sark_xalloc(sv->sdram_heap, size, 0, ALLOC_LOCK);
+        void *b_address = sark_xalloc(sv->sdram_heap, size, 0, ALLOC_LOCK);
         if (b_address == NULL) {
             log_error("failed to allocate %d", size);
             return false;
@@ -255,6 +256,15 @@ static inline bool add_heap_to_collection(
         position++;
     }
     return true;
+}
+
+//! \brief Gets the next block from a chunk of SDRAM
+//! \details Helper for make_heap_structure()
+//! \param[in] this_block: The block in SDRAM
+//! \return The individual block
+static inline block_t *next_block(sdram_block *this_block) {
+    uint32_t base_addr = (uint32_t) this_block->sdram_base_address;
+    return (block_t *) (base_addr + this_block->size - sizeof(block_t));
 }
 
 //! \brief builds the new heap struct over our stolen and proper claimed
@@ -278,22 +288,22 @@ static inline void make_heap_structure(
             heap_current_index < n_mallocs) {
         // build pointers to try to reduce code space
         uint32_t *to_process;
-        sdram_block *to_process_blocks;
+        sdram_block *to_process_block;
 
         // determine which tracker to utilise
-        uint top_stolen = (uint) sizes_region->blocks[
+        uint32_t top_stolen = (uint32_t) sizes_region->blocks[
                 stolen_current_index].sdram_base_address;
-        uint top_true = (uint) list_of_available_blocks[
+        uint32_t top_true = (uint32_t) list_of_available_blocks[
                 heap_current_index].sdram_base_address;
 
         // determine which one to utilise now
         if ((stolen_current_index < sizes_region->n_blocks) &&
                 top_stolen < top_true) {
             to_process = &stolen_current_index;
-            to_process_blocks = sizes_region->blocks;
+            to_process_block = &sizes_region->blocks[stolen_current_index];
         } else {
             to_process = &heap_current_index;
-            to_process_blocks = list_of_available_blocks;
+            to_process_block = &list_of_available_blocks[heap_current_index];
         }
 
         // if has not already set up the heap struct, set it up
@@ -302,12 +312,9 @@ static inline void make_heap_structure(
             first = false;
 
             // set up stuff we can
-            stolen_sdram_heap->free = (block_t *)
-                    to_process_blocks[*to_process].sdram_base_address;
+            stolen_sdram_heap->free = to_process_block->sdram_base_address;
 
-            stolen_sdram_heap->free->next = (block_t *) (
-                    to_process_blocks[*to_process].sdram_base_address +
-                    to_process_blocks[*to_process].size - sizeof(block_t));
+            stolen_sdram_heap->free->next = next_block(to_process_block);
 
             stolen_sdram_heap->free->free = NULL;
             stolen_sdram_heap->first = stolen_sdram_heap->free;
@@ -317,14 +324,11 @@ static inline void make_heap_structure(
             previous_free = stolen_sdram_heap->free;
         } else {
             // set up block in block
-            block_t *free = (block_t *)
-                    to_process_blocks[*to_process].sdram_base_address;
+            block_t *free = to_process_block->sdram_base_address;
             free->free = NULL;
 
             // update next block
-            free->next = (block_t *) (
-                    to_process_blocks[*to_process].sdram_base_address +
-                    to_process_blocks[*to_process].size - sizeof(block_t));
+            free->next = next_block(to_process_block);
             free->next->free = NULL;
             free->next->next = NULL;
 
@@ -349,18 +353,17 @@ static inline void make_heap_structure(
 
 //! prints out the fake heap as if the spin1 alloc was operating over it
 static inline void print_free_sizes_in_heap(void) {
-    block_t *free_blk = stolen_sdram_heap->free;
     uint32_t total_size = 0;
     uint32_t index = 0;
 
     // traverse blocks till none more available
-    while (free_blk) {
-        uint size = (uchar *) free_blk->next - (uchar *) free_blk;
+    for (block_t *free_blk = stolen_sdram_heap->free; free_blk;
+            free_blk = free_blk->free) {
+        uint size = (uint32_t) free_blk->next - (uint32_t) free_blk;
         log_info("free block %d has address %x and size of %d",
                 index, free_blk, size);
 
         total_size += size;
-        free_blk = free_blk->free;
         index++;
     }
 
@@ -368,12 +371,11 @@ static inline void print_free_sizes_in_heap(void) {
 }
 
 //! \details sets up trackers for this core if asked.
-//! \note DOES NOT REBUILD THE FAKE HEAP!
-bool malloc_extras_initialise_with_fake_heap(
-        heap_t *heap_location) {
+//! \note Does not rebuild the fake heap!
+bool malloc_extras_initialise_with_fake_heap(heap_t *heap_location) {
     stolen_sdram_heap = heap_location;
 
-    // if no real stolen SDRAM heap. point at the original SDRAM heap.
+    // if no real stolen SDRAM heap, point at the original SDRAM heap.
     if (stolen_sdram_heap == NULL) {
         stolen_sdram_heap = sv->sdram_heap;
     }
@@ -423,9 +425,10 @@ bool malloc_extras_initialise_and_build_fake_heap(
         }
 
         // deallocate 32 bytes from first handed down to be the heap object
-        stolen_sdram_heap = (heap_t *)
-                sizes_region->blocks[0].sdram_base_address;
-        sizes_region->blocks[0].sdram_base_address += MIN_SIZE_HEAP;
+        stolen_sdram_heap = sizes_region->blocks[0].sdram_base_address;
+        char *ptr = sizes_region->blocks[0].sdram_base_address;
+        ptr += MIN_SIZE_HEAP;
+        sizes_region->blocks[0].sdram_base_address += ptr;
         sizes_region->blocks[0].size -= MIN_SIZE_HEAP;
     }
 
@@ -505,7 +508,7 @@ void malloc_extras_free_marked(void *ptr, int marker) {
 }
 
 void malloc_extras_free(void *ptr) {
-    malloc_extras_free_marked(ptr, -1);
+    malloc_extras_free_marked(ptr, UNKNOWN_MARKER);
 }
 
 //! \brief doubles the size of the SDRAM malloc tracker

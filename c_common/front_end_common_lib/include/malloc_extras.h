@@ -41,7 +41,7 @@ typedef enum exit_states_for_user_one {
 //! An SDRAM block outside the heap
 typedef struct sdram_block {
     //! Base address of where the SDRAM block starts
-    uchar *sdram_base_address;
+    void *sdram_base_address;
     //! Size of block in bytes
     uint32_t size;
 } sdram_block;
