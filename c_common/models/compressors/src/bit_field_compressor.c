@@ -133,7 +133,7 @@ void start_compression_process(void) {
 
 //! \brief Initialise the abstraction layer of many routing tables as single
 //!     big table.
-void setup_routing_tables(void) {
+static void setup_routing_tables(void) {
     routing_tables_init(comms_sdram->routing_tables);
 
     if (comms_sdram->mid_point == 0) {
@@ -146,15 +146,15 @@ void setup_routing_tables(void) {
 }
 
 //! \brief Run the compressor process as requested
-void run_compression_process(void) {
+static void run_compression_process(void) {
     if (comms_sdram->mid_point > 0) {
-        log_info("Run with %d tables and %d mid_point out of %d bitfields",
-            comms_sdram->routing_tables->n_sub_tables,
-            comms_sdram->mid_point,
-            comms_sdram->sorted_bit_fields->n_bit_fields);
+        log_info("Run with %d tables and %d mid_point out of %u bitfields",
+                comms_sdram->routing_tables->n_sub_tables,
+                comms_sdram->mid_point,
+                comms_sdram->sorted_bit_fields->n_bit_fields);
     } else {
         log_info("Run with %d tables and no bitfields",
-            comms_sdram->routing_tables->n_sub_tables);
+                comms_sdram->routing_tables->n_sub_tables);
     }
     log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);

@@ -71,13 +71,13 @@ typedef enum instructions_to_compressor {
 //! \brief Holds the data to initialise routing_table.h
 typedef struct multi_table_t {
     //! The individual subtables
-    table_t** sub_tables;
+    table_t **sub_tables;
     //! The number of individual subtables
     uint32_t n_sub_tables;
     //! The number of entry_t entries actually in the tables.
     // NOTE: is a int because ordered covering uses ints for len of tables
     // and we did not feel safe to change that.
-    int n_entries;
+    uint32_t n_entries;
     //! The max number of entries supported by this multitable.
     uint32_t max_entries;
 } multi_table_t;
@@ -103,29 +103,29 @@ typedef struct uncompressed_table_region_data_t {
 //!     but separate to avoid SDRAM rewrites
 typedef struct sorted_bit_fields_t {
     //! length of the arrays
-    int n_bit_fields;
+    uint32_t n_bit_fields;
     //! list of bitfield associated processor IDs.
-    int* processor_ids;
+    int *processor_ids;
     //! the list of bitfields in sorted order based off best effect.
-    filter_info_t** bit_fields;
+    filter_info_t **bit_fields;
     //! the sort order based on best contribution to reducing redundancy
-    int* sort_order;
+    int *sort_order;
 } sorted_bit_fields_t;
 
 //! \brief SDRAM area to communicate between sorter and compressor
 typedef struct comms_sdram_t {
     //! The state the compressor is in
-    compressor_states compressor_state;
+    volatile compressor_states compressor_state;
     //! The last instruction passed from the sorter to the compressor
-    instructions_to_compressor sorter_instruction;
+    volatile instructions_to_compressor sorter_instruction;
     //! how many bit fields were used to make those tables
     int mid_point;
     //! Pointer to the shared version of the uncompressed routing table
-    table_t* uncompressed_router_table;
+    table_t *uncompressed_router_table;
     //! Pointer to the uncompressed tables metadata
     multi_table_t *routing_tables;
     //! Pointer to the whole sorted_bit_fields data
-    sorted_bit_fields_t  *sorted_bit_fields;
+    sorted_bit_fields_t *sorted_bit_fields;
     //! initialise value for malloc_extras (Same for all compressors)
     heap_t *fake_heap_data;
 } comms_sdram_t;
@@ -145,9 +145,9 @@ typedef struct region_addresses_t {
     //! Minimum percentage of bitfields to be merge in (currently ignored)
     uint32_t threshold;
     //! Pointer to the area malloced to hold the comms_sdram
-    comms_sdram_t* comms_sdram;
+    comms_sdram_t *comms_sdram;
     //! Number of triples in the list
-    int n_triples;
+    uint32_t n_triples;
     //! The mappings
     triples_t triples[];
 } region_addresses_t;

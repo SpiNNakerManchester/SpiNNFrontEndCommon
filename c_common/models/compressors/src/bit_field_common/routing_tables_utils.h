@@ -123,7 +123,7 @@ static inline bool routing_tables_utils_malloc(
             tables->sub_tables[tables->n_sub_tables - 1]->size);
 
     // debugging please keep.
-    log_debug("n table %d entries %d",
+    log_debug("n table %d entries %u",
             tables->n_sub_tables, tables->n_entries);
     for (uint32_t i = 0; i < tables->n_sub_tables; i++) {
         log_debug("table %d size %d", i, tables->sub_tables[i]->size);
@@ -138,12 +138,12 @@ static inline bool routing_tables_utils_malloc(
 //! \return A pointer to a traditional router table
 static inline table_t* routing_tables_utils_convert(
         multi_table_t *restrict tables) {
-    log_debug("converting table with %d entries over %d tables",
+    log_debug("converting table with %d entries over %u tables",
             tables->n_sub_tables, tables->n_entries);
 
     // if table too big for a router. RTE.
     if (tables->n_entries > TABLE_SIZE) {
-        log_error("At %d There are too many entries to convert to a table_t",
+        log_error("At %u There are too many entries to convert to a table_t",
                 tables->n_entries);
         malloc_extras_terminate(RTE_SWERR);
     }

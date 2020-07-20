@@ -114,7 +114,7 @@ void print_header(header_t *header) {
 //! \param[in] header: the header object
 static void read_table(header_t *header) {
     table = MALLOC(
-        sizeof(uint32_t) + (sizeof(entry_t) * header->table_size));
+            sizeof(uint32_t) + (sizeof(entry_t) * header->table_size));
     if (table == NULL) {
         log_error("failed to allocate memory for routing tables");
         malloc_extras_terminate(EXIT_FAIL);
@@ -147,11 +147,10 @@ bool load_routing_table(uint32_t app_id) {
         entry_t entry = table->entries[i];
         uint32_t route = entry.route | (app_id << 24);
         uint success = rtr_mc_set(
-            entry_id + i, entry.key_mask.key, entry.key_mask.mask, route);
+                entry_id + i, entry.key_mask.key, entry.key_mask.mask, route);
         if (success == RTR_MC_SET_FAILED) {
-            log_error(
-                "failed to set a router table entry at index %d",
-                entry_id + i);
+            log_error("failed to set a router table entry at index %d",
+                    entry_id + i);
         }
     }
 
@@ -167,7 +166,7 @@ void cleanup_and_exit(header_t *header) {
     log_debug("free sdram blocks which held router tables");
     FREE(table->entries);
     // Free the block of SDRAM used to load the routing table.
-    sark_xfree(sv->sdram_heap, (void *) header, ALLOC_LOCK);
+    sark_xfree(sv->sdram_heap, header, ALLOC_LOCK);
 
     log_info("completed router compressor");
     malloc_extras_terminate(EXITED_CLEANLY);

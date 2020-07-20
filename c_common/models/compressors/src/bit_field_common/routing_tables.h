@@ -66,24 +66,24 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
 //! \return pointer to the entry's location
 entry_t* routing_tables_append_get_entry(void) {
     // check that we're not hitting the max entries supported by the table
-    if ((uint32_t) multi_table.n_entries == multi_table.max_entries) {
+    if (multi_table.n_entries == multi_table.max_entries) {
         log_error(
                 "there is no more space in this multi-table for this entry.");
         malloc_extras_terminate(RTE_SWERR);
     }
 
     // locate right table index
-    uint32_t table_id = ((uint32_t) multi_table.n_entries) >> TABLE_SHIFT;
+    uint32_t table_id = multi_table.n_entries >> TABLE_SHIFT;
     if (table_id >= multi_table.n_sub_tables) {
-        log_error("Id %d to big for %d tables",
+        log_error("Id %u to big for %u tables",
                 multi_table.n_entries, multi_table.n_sub_tables);
         malloc_extras_terminate(RTE_SWERR);
     }
 
     // locate entry index
-    uint32_t local_id = ((uint32_t) multi_table.n_entries) & LOCAL_ID_ADD;
+    uint32_t local_id = multi_table.n_entries & LOCAL_ID_ADD;
     if (local_id != multi_table.sub_tables[table_id]->size) {
-        log_error("Id %d has local_id %d which is big for %d table",
+        log_error("Id %u has local_id %u which is big for %u table",
                 multi_table.n_entries, local_id,
                 multi_table.sub_tables[table_id]->size);
         malloc_extras_terminate(RTE_SWERR);
@@ -123,13 +123,13 @@ void routing_tables_append_new_entry(
 }
 
 uint32_t routing_table_get_n_entries(void) {
-    return (uint32_t) multi_table.n_entries;
+    return multi_table.n_entries;
 }
 
 //! \brief Prepares the Routing table based on passed in pointers and counts
 //! \note Will _not_ free the space any previous tables held
 //! \param[in] table: Pointer to the metadata to init
-void routing_tables_init(multi_table_t* table) {
+void routing_tables_init(multi_table_t *table) {
     multi_table.sub_tables = table->sub_tables;
     multi_table.n_sub_tables = table->n_sub_tables;
     multi_table.n_entries = table->n_entries;
@@ -138,7 +138,7 @@ void routing_tables_init(multi_table_t* table) {
             multi_table.n_sub_tables, multi_table.n_entries);
 
     for (uint32_t i = 0; i <  multi_table.n_sub_tables; i++) {
-        log_debug("table %d size %d", i, multi_table.sub_tables[i]->size);
+        log_debug("table %u size %u", i, multi_table.sub_tables[i]->size);
     }
 }
 
@@ -154,8 +154,8 @@ void routing_tables_save(multi_table_t *restrict tables) {
 }
 
 void routing_table_remove_from_size(uint32_t size_to_remove) {
-    if (size_to_remove > (uint32_t) multi_table.n_entries) {
-        log_error("Remove %d large than n_entries %d",
+    if (size_to_remove > multi_table.n_entries) {
+        log_error("Remove %u large than n_entries %u",
                 size_to_remove, multi_table.n_entries);
         malloc_extras_terminate(RTE_SWERR);
     }
