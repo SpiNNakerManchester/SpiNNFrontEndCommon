@@ -149,7 +149,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // semantic sugar to avoid referencing
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
-    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    uint32_t *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     entry_t *restrict original = uncompressed_table->entries;
     uint32_t original_size = uncompressed_table->size;
@@ -163,7 +163,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
     for (uint32_t i = 0; i < original_size; i++) {
         uint32_t key = original[i].key_mask.key;
         log_debug("key %d", key);
-        int bf_found = 0;
+        uint32_t bf_found = 0;
 
         while ((bf_idx < n_bit_fields) && (bit_fields[bf_idx]->key == key)) {
             if (sort_order[bf_idx] < mid_point) {

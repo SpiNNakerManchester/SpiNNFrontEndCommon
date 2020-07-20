@@ -53,7 +53,7 @@ static uint32_t detect_redundant_packet_count(
 static inline void order_bitfields(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // Semantic sugar to avoid extra lookup all the time
-    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    uint32_t *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order =  sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
 
@@ -114,7 +114,7 @@ static inline void sort_by_order(
     // There is one check per row in the for loop plus if the first fails
     // up to one more for each row about to be moved to the correct place.
 
-    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    uint32_t *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
 
@@ -124,7 +124,7 @@ static inline void sort_by_order(
         while (sort_order[i] != (int) i) {
             int j = sort_order[i];
             // If not swap the data there into the correct place
-            int temp_processor_id = processor_ids[i];
+            uint32_t temp_processor_id = processor_ids[i];
             processor_ids[i] = processor_ids[j];
             processor_ids[j] = temp_processor_id;
 
@@ -132,7 +132,7 @@ static inline void sort_by_order(
             sort_order[i] = sort_order[j];
             sort_order[j] = temp_sort_order;
 
-            filter_info_t* bit_field_temp = bit_fields[i];
+            filter_info_t *bit_field_temp = bit_fields[i];
             bit_fields[i] = bit_fields[j];
             bit_fields[j] = bit_field_temp;
         }
@@ -144,12 +144,12 @@ static inline void sort_by_order(
 static inline void sort_by_key(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // Semantic sugar to avoid extra lookup all the time
-    int *restrict processor_ids = sorted_bit_fields->processor_ids;
+    uint32_t *restrict processor_ids = sorted_bit_fields->processor_ids;
     int *restrict sort_order = sorted_bit_fields->sort_order;
     filter_info_t **restrict bit_fields = sorted_bit_fields->bit_fields;
 
     for (uint32_t i = 1, j; i < sorted_bit_fields->n_bit_fields ; i++) {
-        int temp_proc_id = processor_ids[i];
+        uint32_t temp_proc_id = processor_ids[i];
         uint32_t temp_order = sort_order[i];
         filter_info_t *temp_bf = bit_fields[i];
 
@@ -196,7 +196,7 @@ static inline void fills_in_sorted_bit_fields_and_tracker(
         // locate data for malloc memory calcs
         filter_region_t *restrict filter_region =
                 region_addresses->triples[i].filter;
-        int processor = region_addresses->triples[i].processor;
+        uint32_t processor = region_addresses->triples[i].processor;
 
         if (filter_region->n_redundancy_filters == 0) {
             // no bitfields to point at or sort so total can stay zero
@@ -292,7 +292,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
     for (uint32_t i = 0; i < region_addresses->n_triples; i++) {
         const triples_t *triple = &region_addresses->triples[i];
         n_bit_fields += triple->filter->n_redundancy_filters;
-        log_info("Core %d has %u bitfields of which %u have redundancy",
+        log_info("Core %u has %u bitfields of which %u have redundancy",
                 triple->processor, triple->filter->n_filters,
                 triple->filter->n_redundancy_filters);
     }
@@ -312,7 +312,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
         }
 
         sorted_bit_fields->processor_ids = MALLOC_SDRAM(
-                n_bit_fields * sizeof(int));
+                n_bit_fields * sizeof(uint32_t));
         if (sorted_bit_fields->processor_ids == NULL) {
             log_error("cannot allocate memory for sorted bitfield processor ids");
             FREE(sorted_bit_fields->bit_fields);

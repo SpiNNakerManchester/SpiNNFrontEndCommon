@@ -105,7 +105,7 @@ typedef struct sorted_bit_fields_t {
     //! length of the arrays
     uint32_t n_bit_fields;
     //! list of bitfield associated processor IDs.
-    int *processor_ids;
+    uint32_t *processor_ids;
     //! the list of bitfields in sorted order based off best effect.
     filter_info_t **bit_fields;
     //! the sort order based on best contribution to reducing redundancy
@@ -137,7 +137,7 @@ typedef struct triples_t {
     //! Key and mask associated with the bitfield
     key_atom_data_t *key_atom;
     //! The core associated with the bitfield
-    int processor;
+    uint32_t processor;
 } triples_t;
 
 //! \brief top-level structure in the addresses area

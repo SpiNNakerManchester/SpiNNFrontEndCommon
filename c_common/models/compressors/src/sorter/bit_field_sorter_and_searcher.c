@@ -90,7 +90,7 @@ available_sdram_blocks *restrict usable_sdram_regions;
 int best_success = FAILED_TO_FIND;
 
 //! Lowest midpoint that record failure
-int lowest_failure;
+uint32_t lowest_failure;
 
 //! The minimum number of bitfields to be merged in
 uint32_t threshold_in_bitfields;
@@ -154,7 +154,7 @@ static inline bool load_routing_table_into_router(void) {
 //! \brief Send a message forcing the processor to stop its compression
 //!     attempt
 //! \param[in] processor_id: the processor ID to send a ::FORCE_TO_STOP to
-void send_force_stop_message(uint32_t processor_id) {
+static inline void send_force_stop_message(uint32_t processor_id) {
     // Get reference to communications block
     comms_sdram_t *comms = &comms_sdram[processor_id];
     if (comms->sorter_instruction == RUN) {
@@ -167,7 +167,7 @@ void send_force_stop_message(uint32_t processor_id) {
 //! \details This is critical as it tells the processor to clear the result
 //!     field
 //! \param[in] processor_id: the processor ID to send a ::PREPARE to
-void send_prepare_message(int processor_id) {
+static inline void send_prepare_message(uint32_t processor_id) {
     // Get reference to communications block
     comms_sdram_t *comms = &comms_sdram[processor_id];
     // set message params
@@ -243,7 +243,7 @@ static inline bool pass_instructions_to_compressor(
 //! \param[in] mid_point: The mid-point to start at
 //! \param[in] processor_id: The processor to run the compression on
 static inline void malloc_tables_and_set_off_bit_compressor(
-        int mid_point, int processor_id) {
+        int mid_point, uint32_t processor_id) {
     // Get reference to communications block
     comms_sdram_t *comms = &comms_sdram[processor_id];
     // free any previous routing tables
@@ -265,8 +265,8 @@ static inline void malloc_tables_and_set_off_bit_compressor(
         comms->sorter_instruction = DO_NOT_USE;
 
         for (int p_id = 0; p_id < MAX_PROCESSORS; p_id++) {
-            if ((comms_sdram[p_id].sorter_instruction == PREPARE) ||
-                    (comms_sdram[p_id].sorter_instruction == TO_BE_PREPARED)) {
+            instructions_to_compressor inst = comms_sdram[p_id].sorter_instruction;
+            if ((inst == PREPARE) || (inst == TO_BE_PREPARED)) {
                 comms_sdram[p_id].sorter_instruction = DO_NOT_USE;
             }
         }
@@ -283,14 +283,15 @@ static inline void malloc_tables_and_set_off_bit_compressor(
 //! \return The address in the addresses region for the processor ID, or
 //!     `NULL` if none found.
 static inline filter_region_t *find_processor_bit_field_region(
-        int processor_id) {
+        uint32_t processor_id) {
     // find the right bitfield region
-    for (int r_id = 0; r_id < region_addresses->n_triples; r_id++) {
-        int region_proc_id = region_addresses->triples[r_id].processor;
+    uint32_t n_triples = region_addresses->n_triples;
+    for (uint32_t i = 0; i < n_triples; i++) {
+        int region_proc_id = region_addresses->triples[i].processor;
         log_debug("is looking for %d and found %d",
                 processor_id, region_proc_id);
         if (region_proc_id == processor_id) {
-            return region_addresses->triples[r_id].filter;
+            return region_addresses->triples[i].filter;
         }
     }
 
@@ -317,11 +318,10 @@ static inline void set_n_merged_filters(void) {
     for (uint32_t i = 0; i < sorted_bit_fields->n_bit_fields; i++) {
         int test = sorted_bit_fields->sort_order[i];
         if (test <= best_success) {
-            int processor_id = sorted_bit_fields->processor_ids[i];
+            uint32_t processor_id = sorted_bit_fields->processor_ids[i];
             if (test > highest_order[processor_id]) {
                 highest_order[processor_id] = test;
-                highest_key[processor_id] =
-                        sorted_bit_fields->bit_fields[i]->key;
+                highest_key[processor_id] = sorted_bit_fields->bit_fields[i]->key;
             }
         }
     }
@@ -334,7 +334,7 @@ static inline void set_n_merged_filters(void) {
 
     // Set n_redundancy_filters
     for (uint32_t i = 0; i < region_addresses->n_triples; i++) {
-        int processor_id = region_addresses->triples[i].processor;
+        uint32_t processor_id = region_addresses->triples[i].processor;
         filter_region_t *filter = region_addresses->triples[i].filter;
 
         // Find the index of highest one merged in
@@ -380,7 +380,7 @@ static inline int locate_next_mid_point(void) {
     // the current length of the currently detected space
     int current_length = 0;
 
-    log_debug("best_success %d lowest_failure %d",
+    log_debug("best_success %d lowest_failure %u",
             best_success, lowest_failure);
 
     // iterate over the range to binary search, looking for biggest block to
@@ -391,18 +391,17 @@ static inline int locate_next_mid_point(void) {
     // any best length, and so best end is never set and lengths will still be
     // 0 at the end of the for loop. -1 is a special midpoint which higher
     // code knows to recognise as no more exploration needed.
-    for (int index = best_success + 1; index <= lowest_failure; index++) {
-        log_debug("index: %d, value: %u current_length: %d",
-                index, bit_field_test(tested_mid_points, index),
-                current_length);
+    for (uint32_t i = best_success + 1; i <= lowest_failure; i++) {
+        log_debug("index: %u, value: %u current_length: %d",
+                i, bit_field_test(tested_mid_points, i), current_length);
 
         // verify that the index has been used before
-        if (bit_field_test(tested_mid_points, index)) {
+        if (bit_field_test(tested_mid_points, i)) {
            // if used before and is the end of the biggest block seen so far.
            // Record and repeat.
            if (current_length > best_length) {
                 best_length = current_length;
-                best_end = index - 1;
+                best_end = i - 1;
                 log_debug("found best_length: %d best_end %d",
                         best_length, best_end);
            // if not the end of the biggest block, ignore (log for debugging)
@@ -414,7 +413,7 @@ static inline int locate_next_mid_point(void) {
            current_length = 0;
         // not set, so still within a block, increase len.
         } else {
-           current_length += 1;
+           current_length++;
         }
     }
 
@@ -466,7 +465,7 @@ static inline void handle_best_cleanup(void) {
 //! \details This includes mallocing the comp_instruction_t user
 //! \param[in] processor_id: The ID of the processor to prepare
 //! \return True if the preparation succeeded.
-bool prepare_processor_first_time(int processor_id) {
+bool prepare_processor_first_time(uint32_t processor_id) {
     // Get reference to communications block
     comms_sdram_t *comms = &comms_sdram[processor_id];
     comms->sorter_instruction = PREPARE;
@@ -475,7 +474,7 @@ bool prepare_processor_first_time(int processor_id) {
     comms->routing_tables = MALLOC_SDRAM(sizeof(multi_table_t));
     if (comms->routing_tables == NULL) {
         comms->sorter_instruction = DO_NOT_USE;
-        log_error("Error mallocing routing bake pointer on  %d", processor_id);
+        log_error("Error mallocing routing bake pointer on %u", processor_id);
         return false;
     }
 
@@ -494,7 +493,7 @@ bool prepare_processor_first_time(int processor_id) {
         spin1_delay_us(SDRAM_POLL_DELAY);
         if (++count > SDRAM_POLL_ATTEMPTS) {
             comms->sorter_instruction = DO_NOT_USE;
-            log_error("compressor failed to reply %d", processor_id);
+            log_error("compressor failed to reply %u", processor_id);
             return false;
         }
     }
@@ -503,15 +502,16 @@ bool prepare_processor_first_time(int processor_id) {
 
 //! \brief Get the next processor id which is ready to run a compression.
 //! \details May result in preparing a processor in the process.
-//! \return The processor ID of the next available processor, or
-//!     #FAILED_TO_FIND if none
-int find_prepared_processor(void) {
+//! \param[out] processor_id: The processor ID of the next available processor
+//! \return True if a processor was found, false if not
+static inline bool find_prepared_processor(uint32_t *processor_id) {
     // Look for a prepared one
     for (uint32_t p = 0; p < MAX_PROCESSORS; p++) {
         if (comms_sdram[p].sorter_instruction == PREPARE &&
                 comms_sdram[p].compressor_state == PREPARED) {
-            log_debug("found prepared %d", p);
-            return p;
+            log_debug("found prepared %u", p);
+            *processor_id = p;
+            return true;
         }
     }
 
@@ -522,27 +522,28 @@ int find_prepared_processor(void) {
 
     // Look for a processor never used and  prepare it
     for (uint32_t p = 0; p < MAX_PROCESSORS; p++) {
-        log_debug("processor_id %d status %d",
+        log_debug("processor_id %u status %d",
                 p, comms_sdram[p].sorter_instruction);
         if (comms_sdram[p].sorter_instruction == TO_BE_PREPARED) {
             if (prepare_processor_first_time(p)) {
-                log_debug("found to be prepared %d", p);
-                return (int) p;
+                log_debug("found to be prepared %u", p);
+                *processor_id = p;
+                return true;
             }
-            log_debug("first failed %d", p);
+            log_debug("first failed %u", p);
         }
     }
     log_debug("FAILED %d", FAILED_TO_FIND);
-    return FAILED_TO_FIND;
+    return false;
 }
 
 //! \brief Get the next processor ID which is ready to run a compression.
 //! \param[in] midpoint: The mid-point this processor will use
 //! \return The processor ID of the next available processor, or
 //!     #FAILED_TO_FIND if none
-int find_compressor_processor_and_set_tracker(uint32_t midpoint) {
-    int p = find_prepared_processor();
-    if (p > FAILED_TO_FIND) {
+static int find_compressor_processor_and_set_tracker(uint32_t midpoint) {
+    uint32_t p = (uint32_t) (FAILED_TO_FIND);
+    if (find_prepared_processor(&p)) {
         // allocate this core to do this midpoint.
         comms_sdram[p].mid_point = midpoint;
         // set the tracker to use this midpoint
@@ -577,7 +578,7 @@ bool setup_no_bitfields_attempt(void) {
 
 //! \brief Check if a compressor processor is available.
 //! \return Whether at least one processor is ready to compress
-bool all_compressor_processors_busy(void) {
+static bool all_compressor_processors_busy(void) {
     for (uint32_t p = 0; p < MAX_PROCESSORS; p++) {
         log_debug("processor_id %d status %d",
                 p, comms_sdram[p].sorter_instruction);
@@ -781,7 +782,7 @@ void process_failed_malloc(int mid_point, uint32_t processor_id) {
 //! \param[in] mid_point: The mid-point that failed
 //! \param[in] processor_id: The compressor processor ID
 void process_failed(int mid_point, uint32_t processor_id) {
-    // safety check to ensure we dont go on if the uncompressed failed
+    // safety check to ensure we don't go on if the uncompressed failed
     if (mid_point <= (int) threshold_in_bitfields) {
         if (threshold_in_bitfields == NO_BIT_FIELDS) {
             log_error("The no bitfields attempted failed! Giving up");
@@ -795,12 +796,12 @@ void process_failed(int mid_point, uint32_t processor_id) {
         }
         malloc_extras_terminate(EXIT_FAIL);
     }
-    if (lowest_failure > mid_point) {
-        log_info("Changing lowest_failure from: %d to mid_point:%d",
+    if (lowest_failure > (uint32_t) mid_point) {
+        log_info("Changing lowest_failure from: %u to mid_point:%d",
                 lowest_failure, mid_point);
-        lowest_failure = mid_point;
+        lowest_failure = (uint32_t) mid_point;
     } else {
-        log_info("lowest_failure: %d already lower than mid_point:%d",
+        log_info("lowest_failure: %u already lower than mid_point:%d",
                 lowest_failure, mid_point);
     }
     routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
@@ -943,7 +944,7 @@ void start_binary_search(void) {
         malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
 
         // Find the next step which may change due to rounding
-        int step = ((mid_point - threshold_in_bitfields) / available);
+        int step = (mid_point - threshold_in_bitfields) / available;
         if (step < 1) {
             step = 1;
         }
@@ -994,7 +995,7 @@ void start_compression_process(uint unused0, uint unused1) {
     bit_field_reader_read_in_bit_fields(region_addresses, sorted_bit_fields);
 
     // the first possible failure is all bitfields so set there.
-    lowest_failure = (int) sorted_bit_fields->n_bit_fields;
+    lowest_failure = sorted_bit_fields->n_bit_fields;
     log_debug("finished reading bitfields at time step: %d", time_steps);
 
     //TODO: safety code to be removed
