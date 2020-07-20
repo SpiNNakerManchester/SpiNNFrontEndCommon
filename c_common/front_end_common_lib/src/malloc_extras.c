@@ -428,7 +428,7 @@ bool malloc_extras_initialise_and_build_fake_heap(
         stolen_sdram_heap = sizes_region->blocks[0].sdram_base_address;
         char *ptr = sizes_region->blocks[0].sdram_base_address;
         ptr += MIN_SIZE_HEAP;
-        sizes_region->blocks[0].sdram_base_address += ptr;
+        sizes_region->blocks[0].sdram_base_address = ptr;
         sizes_region->blocks[0].size -= MIN_SIZE_HEAP;
     }
 
@@ -562,7 +562,10 @@ static inline uint32_t find_free_malloc_index(void) {
 //! \brief allows a search of the SDRAM heap.
 //! \param[in] bytes: the number of bytes to allocate.
 //! \return the address of the block of memory to utilise; never NULL.
-static SARK_IS_A_MALLOC(1) void *safe_sdram_malloc(uint bytes) {
+#ifndef DOXYGEN
+__attribute__((__malloc__, alloc_size(1), assume_aligned(4)))
+#endif
+static void *safe_sdram_malloc(uint bytes) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
 
