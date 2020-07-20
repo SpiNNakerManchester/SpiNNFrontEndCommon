@@ -43,6 +43,7 @@ class ApplicationRunner(object):
     :param int no_sync_changes: Number of synchronisation changes
     :param int time_threshold:
     :param bool run_until_complete:
+    :param ~spinn_machine.machine.Machine: the spinn machine instance
     :return: Number of synchronisation changes
     :rtype: int
     :raises ConfigurationException:
