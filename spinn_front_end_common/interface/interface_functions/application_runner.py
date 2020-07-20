@@ -54,7 +54,7 @@ class ApplicationRunner(object):
     def __call__(
             self, buffer_manager, notification_interface, executable_types,
             app_id, txrx, runtime_in_us, time_scale_factor, no_sync_changes,
-            time_threshold, run_until_complete=False):
+            time_threshold, machine, run_until_complete=False):
         # pylint: disable=too-many-arguments
         logger.info("*** Running simulation... *** ")
 
@@ -72,6 +72,12 @@ class ApplicationRunner(object):
 
         # every thing is in sync0 so load the initial buffers
         buffer_manager.load_initial_buffers()
+
+        # clear away any router diagnostics that have been set due to all
+        # loading applications
+        for chip in machine.chips:
+            if not chip.virtual:
+                txrx.clear_router_diagnostic_counters(chip.x, chip.y)
 
         # wait till external app is ready for us to start if required
         notification_interface.wait_for_confirmation()
