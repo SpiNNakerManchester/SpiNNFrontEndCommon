@@ -243,7 +243,7 @@ static inline bool pass_instructions_to_compressor(
 //! \param[in] mid_point: The mid-point to start at
 //! \param[in] processor_id: The processor to run the compression on
 static inline void malloc_tables_and_set_off_bit_compressor(
-        int mid_point, uint32_t processor_id) {
+        uint32_t mid_point, uint32_t processor_id) {
     // Get reference to communications block
     comms_sdram_t *comms = &comms_sdram[processor_id];
     // free any previous routing tables
@@ -251,7 +251,7 @@ static inline void malloc_tables_and_set_off_bit_compressor(
 
     // malloc space for the routing tables
     uint32_t table_size = bit_field_table_generator_max_size(
-            mid_point, &uncompressed_router_table->uncompressed_table,
+            (int) mid_point, &uncompressed_router_table->uncompressed_table,
             sorted_bit_fields);
 
     // if successful, try setting off the bitfield compression
@@ -352,24 +352,25 @@ static inline void set_n_merged_filters(void) {
 }
 
 //! \brief Locate the next valid midpoint to test
-//! \return The midpoint, or #FAILED_TO_FIND if no midpoints left
-static inline int locate_next_mid_point(void) {
+//! \param[out[ midpoint: The midpoint
+//! \return True if a midpoint is found
+static inline bool locate_next_mid_point(uint32_t *midpoint) {
     if (sorted_bit_fields->n_bit_fields == 0) {
-        return FAILED_TO_FIND;
+        return false;
     }
 
     // if not tested yet / reset test all
     if (!bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields)) {
         log_info("Retrying all which is mid_point %d",
                 sorted_bit_fields->n_bit_fields);
-        return sorted_bit_fields->n_bit_fields;
+        *midpoint = sorted_bit_fields->n_bit_fields;
+        return true;
     }
 
     // need to find a midpoint
     log_debug("n_bf_addresses %d tested_mid_points %d",
             sorted_bit_fields->n_bit_fields,
-            bit_field_test(tested_mid_points,
-                    sorted_bit_fields->n_bit_fields));
+            bit_field_test(tested_mid_points, sorted_bit_fields->n_bit_fields));
 
     // the last point of the longest space
     int best_end = FAILED_TO_FIND;
@@ -391,7 +392,7 @@ static inline int locate_next_mid_point(void) {
     // any best length, and so best end is never set and lengths will still be
     // 0 at the end of the for loop. -1 is a special midpoint which higher
     // code knows to recognise as no more exploration needed.
-    for (uint32_t i = best_success + 1; i <= lowest_failure; i++) {
+    for (uint32_t i = (uint32_t)(best_success + 1); i <= lowest_failure; i++) {
         log_debug("index: %u, value: %u current_length: %d",
                 i, bit_field_test(tested_mid_points, i), current_length);
 
@@ -417,22 +418,23 @@ static inline int locate_next_mid_point(void) {
         }
     }
 
-    // use the best less half (shifted) of the best length
-    int new_mid_point = best_end - (best_length >> 1);
-    log_debug("returning mid point %d", new_mid_point);
-
-    // set the mid point to be tested. (safe as we de-set if we fail later on)
-    if (new_mid_point >= 0) {
-        log_debug("setting new mid point %d", new_mid_point);
-
-        // just a safety check, as this has caught us before.
-        if (bit_field_test(tested_mid_points, new_mid_point)) {
-            log_info("HOW THE HELL DID YOU GET HERE!");
-            malloc_extras_terminate(EXIT_SWERR);
-        }
+    if (best_length == 0) {
+        // Never found anything
+        return false;
     }
 
-    return new_mid_point;
+    // use the best less half (shifted) of the best length
+    uint32_t new_mid_point = best_end - (best_length >> 1);
+    log_debug("returning mid point %d", new_mid_point);
+
+    // just a safety check, as this has caught us before.
+    if (bit_field_test(tested_mid_points, new_mid_point)) {
+        log_info("HOW THE HELL DID YOU GET HERE!");
+        malloc_extras_terminate(EXIT_SWERR);
+    }
+
+    *midpoint = new_mid_point;
+    return true;
 }
 
 //! \brief Clean up when we've found a good compression
@@ -539,22 +541,24 @@ static inline bool find_prepared_processor(uint32_t *processor_id) {
 
 //! \brief Get the next processor ID which is ready to run a compression.
 //! \param[in] midpoint: The mid-point this processor will use
-//! \return The processor ID of the next available processor, or
-//!     #FAILED_TO_FIND if none
-static int find_compressor_processor_and_set_tracker(uint32_t midpoint) {
-    uint32_t p = (uint32_t) (FAILED_TO_FIND);
-    if (find_prepared_processor(&p)) {
-        // allocate this core to do this midpoint.
-        comms_sdram[p].mid_point = midpoint;
-        // set the tracker to use this midpoint
-        bit_field_set(tested_mid_points, midpoint);
-        // return processor id
+//! \param[out] processor_id: The processor ID of the next available processor
+//! \return True if there is an available processor, false if not
+static bool find_compressor_processor_and_set_tracker(
+        uint32_t midpoint, uint32_t *processor_id) {
+    uint32_t p;
+    if (!find_prepared_processor(&p)) {
+        return false;
     }
-    log_debug("returning %d", p);
-    return p;
+    // allocate this core to do this midpoint.
+    comms_sdram[p].mid_point = midpoint;
+    // set the tracker to use this midpoint
+    bit_field_set(tested_mid_points, midpoint);
+    // return processor id
+    *processor_id = p;
+    return true;
 }
 
-//! \brief Set up the compression attempt for the no bitfield version.
+//! \brief Set up the compression attempt for the no-bitfield version.
 //! \return Whether setting off the compression attempt was successful.
 bool setup_no_bitfields_attempt(void) {
     if (threshold_in_bitfields > 0) {
@@ -563,8 +567,8 @@ bool setup_no_bitfields_attempt(void) {
         return true;
     }
 
-    int p = find_compressor_processor_and_set_tracker(NO_BIT_FIELDS);
-    if (p == FAILED_TO_FIND) {
+    uint32_t p;
+    if (!find_compressor_processor_and_set_tracker(NO_BIT_FIELDS, &p)) {
         log_error("No processor available for no bitfield attempt");
         malloc_extras_terminate(RTE_SWERR);
     }
@@ -620,9 +624,9 @@ bool exit_carry_on_if_all_compressor_processors_done(void) {
     }
 
     // Check there is nothing left to do
-    int mid_point = locate_next_mid_point();
-    if (mid_point != FAILED_TO_FIND) {
-        log_error("Ran out of processors while still having mid_point %d to do",
+    uint32_t mid_point;
+    if (locate_next_mid_point(&mid_point)) {
+        log_error("Ran out of processors while still having mid_point %u to do",
                 mid_point);
         malloc_extras_terminate(RTE_SWERR);
         // Should never get here but break out of the loop
@@ -680,10 +684,8 @@ void carry_on_binary_search(void) {
     }
     log_debug("start carry_on_binary_search");
 
-    int mid_point = locate_next_mid_point();
-    log_debug("available with midpoint %d", mid_point);
-
-    if (mid_point == FAILED_TO_FIND) {
+    uint32_t mid_point;
+    if (!locate_next_mid_point(&mid_point)) {
         // OK, lets turn all ready processors off as done.
         for (uint32_t p = 0; p < MAX_PROCESSORS; p++) {
             // Get reference to communications block
@@ -698,7 +700,9 @@ void carry_on_binary_search(void) {
         return;
     }
 
-    int processor_id = find_compressor_processor_and_set_tracker(mid_point);
+    log_debug("available with midpoint %u", mid_point);
+    uint32_t processor_id;
+    (void) find_compressor_processor_and_set_tracker(mid_point, &processor_id);
     log_debug("start create at time step: %u", time_steps);
     malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
     log_debug("end create at time step: %u", time_steps);
@@ -926,22 +930,22 @@ void start_binary_search(void) {
     // Set off the worse acceptable (note no bitfield would have been set off
     // earlier)
     if (threshold_in_bitfields > 0) {
-        int processor_id = find_compressor_processor_and_set_tracker(
-                threshold_in_bitfields);
-        malloc_tables_and_set_off_bit_compressor(
-                threshold_in_bitfields, processor_id);
+        uint32_t p;
+        (void) find_compressor_processor_and_set_tracker(
+                threshold_in_bitfields, &p);
+        malloc_tables_and_set_off_bit_compressor(threshold_in_bitfields, p);
     }
 
     // create slices and set off each slice.
     uint32_t mid_point = sorted_bit_fields->n_bit_fields;
     while ((available > 0) && (mid_point > threshold_in_bitfields)) {
-        int processor_id = find_compressor_processor_and_set_tracker(mid_point);
+        uint32_t p;
         // Check the processor replied and has not been turned of by previous
-        if (processor_id == FAILED_TO_FIND) {
+        if (!find_compressor_processor_and_set_tracker(mid_point, &p)) {
             log_error("No processor available in start_binary_search");
             return;
         }
-        malloc_tables_and_set_off_bit_compressor(mid_point, processor_id);
+        malloc_tables_and_set_off_bit_compressor(mid_point, p);
 
         // Find the next step which may change due to rounding
         int step = (mid_point - threshold_in_bitfields) / available;
