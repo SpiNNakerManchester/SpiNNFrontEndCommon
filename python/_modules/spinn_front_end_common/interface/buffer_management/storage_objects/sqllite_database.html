@@ -143,6 +143,33 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DELETE FROM region_extra&quot;</span><span class="p">)</span></div>
 
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractDatabase</span><span class="o">.</span><span class="n">clear_region</span><span class="p">)</span>
+<div class="viewcode-block" id="SqlLiteDatabase.clear_region"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region">[docs]</a>    <span class="k">def</span> <span class="nf">clear_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT region_id FROM region_view</span>
+<span class="sd">                    WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                        AND local_region_index = ? AND fetches &gt; 0 LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)):</span>
+                <span class="n">locus</span> <span class="o">=</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;region_id&quot;</span><span class="p">],</span> <span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE region SET</span>
+<span class="sd">                    content = CAST(&#39;&#39; AS BLOB), content_len = 0,</span>
+<span class="sd">                    fetches = 0, append_time = NULL</span>
+<span class="sd">                WHERE region_id = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">locus</span><span class="p">)</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                DELETE FROM region_extra WHERE region_id = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">locus</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
     <span class="k">def</span> <span class="nf">__init_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set up the database if required. &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">row_factory</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Row</span>

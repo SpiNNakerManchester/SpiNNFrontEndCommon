@@ -156,6 +156,21 @@
 <span class="sd">            keeping data after reset.</span>
 
 <span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbstractDatabase.clear_region"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region">[docs]</a>    <span class="k">def</span> <span class="nf">clear_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clears the data for a single region.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method _loses information!_</span>
+
+<span class="sd">        :param int x: x coordinate of the chip</span>
+<span class="sd">        :param int y: y coordinate of the chip</span>
+<span class="sd">        :param int p: Core within the specified chip</span>
+<span class="sd">        :param int region: Region containing the data to be cleared</span>
+<span class="sd">        :return: True if any region was changed</span>
+<span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span></div></div>
 </pre></div>
 

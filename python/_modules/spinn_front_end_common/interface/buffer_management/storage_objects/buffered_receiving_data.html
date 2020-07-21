@@ -350,8 +350,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_packet_sent</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_sequence_no</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span></div>
 
-    <span class="c1"># ToDo Being changed in later PR so currently broken</span>
-<div class="viewcode-block" id="BufferedReceivingData.clear"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+<div class="viewcode-block" id="BufferedReceivingData.clear"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Clears the data from a given data region (only clears things\</span>
 <span class="sd">            associated with a given data recording region).</span>
 
@@ -361,12 +360,9 @@
 <span class="sd">        :param int region_id: the recording region ID to clear data from</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unimplemented method&quot;</span><span class="p">)</span></div></div>
-        <span class="c1"># del self._end_buffering_state[x, y, p, region_id]</span>
-        <span class="c1"># with self._db:</span>
-        <span class="c1">#     c = self._db.cursor()</span>
-        <span class="c1">#     self.__delete_contents(c, x, y, p, region_id)</span>
-        <span class="c1"># del self._is_flushed[x, y, p, region_id]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_region</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_end_buffering_state</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_flushed</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region_id</span><span class="p">]</span></div></div>
 </pre></div>
 
           </div>
