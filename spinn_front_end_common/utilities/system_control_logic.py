@@ -24,8 +24,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 def run_system_application(
         executable_cores, app_id, transceiver, provenance_file_path,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
-        cpu_end_states, needs_sync_barrier, no_sync_changes,
-        filename_template, binaries_to_track=None, progress_bar=None):
+        cpu_end_states, needs_sync_barrier, filename_template,
+        binaries_to_track=None, progress_bar=None):
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
@@ -43,7 +43,6 @@ def run_system_application(
     :param set(~.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
-    :param int no_sync_changes: the number of times sync signal been sent
     :param str filename_template: the IOBUF filename template.
     :param list(str) binaries_to_track:
         A list of binary names to check for exit state.
@@ -58,16 +57,9 @@ def run_system_application(
     transceiver.execute_application(executable_cores, app_id)
 
     if needs_sync_barrier:
-        if no_sync_changes % 2 == 0:
-            sync_signal = Signal.SYNC0
-        else:
-            sync_signal = Signal.SYNC1
-        # when it falls out of the running, it'll be in a next sync \
-        # state, thus update needed
-        no_sync_changes += 1
 
         # fire all signals as required
-        transceiver.send_signal(app_id, sync_signal)
+        transceiver.send_signal(app_id, Signal.SYNC0)
 
     error = None
     binary_start_types = dict()
