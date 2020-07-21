@@ -88,8 +88,8 @@
 <div class="viewcode-block" id="run_system_application"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.system_control_logic.run_system_application">[docs]</a><span class="k">def</span> <span class="nf">run_system_application</span><span class="p">(</span>
         <span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">provenance_file_path</span><span class="p">,</span>
         <span class="n">executable_finder</span><span class="p">,</span> <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
-        <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
-        <span class="n">filename_template</span><span class="p">,</span> <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span>
+        <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Executes the given _system_ application. \</span>
 <span class="sd">        Used for on-chip expanders, compressors, etc.</span>
 
@@ -107,7 +107,6 @@
 <span class="sd">    :param set(~.CPUState) cpu_end_states:</span>
 <span class="sd">        the states that a successful run is expected to terminate in</span>
 <span class="sd">    :param bool needs_sync_barrier: whether a sync barrier is needed</span>
-<span class="sd">    :param int no_sync_changes: the number of times sync signal been sent</span>
 <span class="sd">    :param str filename_template: the IOBUF filename template.</span>
 <span class="sd">    :param list(str) binaries_to_track:</span>
 <span class="sd">        A list of binary names to check for exit state.</span>
@@ -122,16 +121,9 @@
     <span class="n">transceiver</span><span class="o">.</span><span class="n">execute_application</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">needs_sync_barrier</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">no_sync_changes</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC1</span>
-        <span class="c1"># when it falls out of the running, it&#39;ll be in a next sync \</span>
-        <span class="c1"># state, thus update needed</span>
-        <span class="n">no_sync_changes</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># fire all signals as required</span>
-        <span class="n">transceiver</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">sync_signal</span><span class="p">)</span>
+        <span class="n">transceiver</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span><span class="p">)</span>
 
     <span class="n">error</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">binary_start_types</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>

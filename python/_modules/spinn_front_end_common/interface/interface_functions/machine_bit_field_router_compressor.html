@@ -144,7 +144,6 @@
 <span class="sd">    :param bool use_timer_cut_off:</span>
 <span class="sd">    :param int machine_time_step:</span>
 <span class="sd">    :param int time_scale_factor:</span>
-<span class="sd">    :param int no_sync_changes:</span>
 <span class="sd">    :param int threshold_percentage: the percentage of bitfields to do on chip\</span>
 <span class="sd">        before its considered a success</span>
 <span class="sd">    :param ExecutableTargets executable_targets:</span>
@@ -221,9 +220,8 @@
             <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">produce_report</span><span class="p">,</span> <span class="n">default_report_folder</span><span class="p">,</span>
             <span class="n">target_length</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">,</span> <span class="n">time_to_try_for_each_iteration</span><span class="p">,</span>
             <span class="n">use_timer_cut_off</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
-            <span class="n">no_sync_changes</span><span class="p">,</span> <span class="n">threshold_percentage</span><span class="p">,</span>
-            <span class="n">executable_targets</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">provenance_data_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="n">threshold_percentage</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span>
+            <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">provenance_data_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; entrance for routing table compression with bit field</span>
 
 <span class="sd">        :param ~.MulticastRoutingTables routing_tables:</span>
@@ -240,7 +238,6 @@
 <span class="sd">        :param bool use_timer_cut_off:</span>
 <span class="sd">        :param int machine_time_step:</span>
 <span class="sd">        :param int time_scale_factor:</span>
-<span class="sd">        :param int no_sync_changes:</span>
 <span class="sd">        :param int threshold_percentage:</span>
 <span class="sd">        :param ExecutableTargets executable_targets:</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
@@ -299,7 +296,7 @@
                 <span class="n">host_chips</span><span class="o">=</span><span class="n">on_host_chips</span><span class="p">,</span>
                 <span class="n">sorter_binary_path</span><span class="o">=</span><span class="n">bit_field_sorter_executable_path</span><span class="p">,</span>
                 <span class="n">prov_data_items</span><span class="o">=</span><span class="n">prov_items</span><span class="p">),</span>
-            <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">],</span> <span class="kc">True</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">],</span> <span class="kc">True</span><span class="p">,</span>
             <span class="s2">&quot;bit_field_compressor_on_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.txt&quot;</span><span class="p">,</span>
             <span class="p">[</span><span class="n">bit_field_sorter_executable_path</span><span class="p">],</span> <span class="n">progress_bar</span><span class="p">)</span>
 
