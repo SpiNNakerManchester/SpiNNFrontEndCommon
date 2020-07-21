@@ -19,7 +19,7 @@
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="BitFieldCompressorReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.bit_field_compressor_report</python_module>
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
         <python_class>BitFieldCompressorReport</python_class>
         <input_definitions>
             <parameter>
@@ -51,7 +51,7 @@
         </outputs>
     </algorithm>
     <algorithm name="BoardChipReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.board_chip_report</python_module>
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
         <python_class>BoardChipReport</python_class>
         <input_definitions>
             <parameter>
@@ -69,7 +69,7 @@
         </required_inputs>
     </algorithm>
     <algorithm name="FixedRouteFromMachineReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.fixed_route_from_machine_report</python_module>
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
         <python_class>FixedRouteFromMachineReport</python_class>
         <input_definitions>
             <parameter>
@@ -157,6 +157,25 @@
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
             <token>DataLoaded</token>
+        </required_inputs>
+    </algorithm>
+    <algorithm name="TagsFromMachineReport">
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
+        <python_class>TagsFromMachineReport</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>report_default_directory</param_name>
+            <param_name>transceiver</param_name>
+            <token part="DSGSystemDataLoaded">DataLoaded</token>
         </required_inputs>
     </algorithm>
 </algorithms>

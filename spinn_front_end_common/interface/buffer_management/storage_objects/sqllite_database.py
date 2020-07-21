@@ -79,6 +79,33 @@ class SqlLiteDatabase(AbstractDatabase):
                 """)
             cursor.execute("DELETE FROM region_extra")
 
+    @overrides(AbstractDatabase.clear_region)
+    def clear_region(self, x, y, p, region):
+        with self._db:
+            cursor = self._db.cursor()
+            for row in cursor.execute(
+                    """
+                    SELECT region_id FROM region_view
+                    WHERE x = ? AND y = ? AND processor = ?
+                        AND local_region_index = ? AND fetches > 0 LIMIT 1
+                    """, (x, y, p, region)):
+                locus = (row["region_id"], )
+                break
+            else:
+                return False
+            cursor.execute(
+                """
+                UPDATE region SET
+                    content = CAST('' AS BLOB), content_len = 0,
+                    fetches = 0, append_time = NULL
+                WHERE region_id = ?
+                """, locus)
+            cursor.execute(
+                """
+                DELETE FROM region_extra WHERE region_id = ?
+                """, locus)
+            return True
+
     def __init_db(self):
         """ Set up the database if required. """
         self._db.row_factory = sqlite3.Row

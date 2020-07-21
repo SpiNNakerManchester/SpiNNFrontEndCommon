@@ -228,7 +228,7 @@ class Compression(object):
             functools.partial(
                 self._check_for_success,
                 register=register),
-            [CPUState.FINISHED], False, 0, "compressor_on_{}_{}_{}.txt",
+            [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",
             [self._binary_path], progress_bar)
 
     def _load_routing_table(self, table):

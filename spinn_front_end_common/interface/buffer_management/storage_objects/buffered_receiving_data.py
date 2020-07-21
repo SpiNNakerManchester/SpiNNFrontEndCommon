@@ -286,8 +286,7 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
 
-    # ToDo Being changed in later PR so currently broken
-    def clear(self, x, y, p, region_id):  # pylint: disable=unused-argument
+    def clear(self, x, y, p, region_id):
         """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
@@ -297,9 +296,6 @@ class BufferedReceivingData(object):
         :param int region_id: the recording region ID to clear data from
         :rtype: None
         """
-        logger.warning("unimplemented method")
-        # del self._end_buffering_state[x, y, p, region_id]
-        # with self._db:
-        #     c = self._db.cursor()
-        #     self.__delete_contents(c, x, y, p, region_id)
-        # del self._is_flushed[x, y, p, region_id]
+        if self._db.clear_region(x, y, p, region_id):
+            del self._end_buffering_state[x, y, p, region_id]
+            del self._is_flushed[x, y, p, region_id]
