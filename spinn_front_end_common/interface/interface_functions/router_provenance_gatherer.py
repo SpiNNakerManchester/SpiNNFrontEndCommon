@@ -278,7 +278,7 @@ class RouterProvenanceGatherer(object):
                  reinjection_status.n_reinjected_packets +
                  reinjection_status.n_link_dumps +
                  reinjection_status.n_processor_dumps) <
-                 router_diagnostic.n_dropped_multicast_packets)
+                router_diagnostic.n_dropped_multicast_packets)
         items.append(ProvenanceDataItem(
             self.__add_name(names, "Dropped_Multicast_Packets"),
             str(router_diagnostic.n_dropped_multicast_packets),
