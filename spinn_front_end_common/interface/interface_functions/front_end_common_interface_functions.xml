@@ -186,10 +186,6 @@
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
             <parameter>
-                <param_name>no_sync_changes</param_name>
-                <param_type>NoSyncChanges</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -247,7 +243,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>no_sync_changes</param_name>
             <param_name>executable_finder</param_name>
             <param_name>read_algorithm_iobuf</param_name>
             <param_name>routing_tables</param_name>
@@ -312,10 +307,6 @@
                 <param_type>SystemProvenanceFilePath</param_type>
             </parameter>
             <parameter>
-                <param_name>no_sync_changes</param_name>
-                <param_type>NoSyncChanges</param_type>
-            </parameter>
-            <parameter>
                 <param_name>compress_as_much_as_possible</param_name>
                 <param_type>CompressionAsFarAsPos</param_type>
             </parameter>
@@ -373,7 +364,6 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>no_sync_changes</param_name>
             <param_name>executable_finder</param_name>
             <param_name>read_algorithm_iobuf</param_name>
             <param_name>routing_tables</param_name>
@@ -1524,6 +1514,11 @@
                 <param_name>run_until_complete</param_name>
                 <param_type>RunUntilCompleteFlag</param_type>
             </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryMachine</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>buffer_manager</param_name>
@@ -1535,6 +1530,7 @@
             <param_name>time_scale_factor</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
+            <param_name>machine</param_name>
             <token>DataLoaded</token>
             <token>BinariesLoaded</token>
         </required_inputs>
