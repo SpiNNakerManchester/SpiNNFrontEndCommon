@@ -24,8 +24,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 def run_system_application(
         executable_cores, app_id, transceiver, provenance_file_path,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
-        handle_failure_function, cpu_end_states, needs_sync_barrier,
-        no_sync_changes, filename_template, binaries_to_track=None):
+        cpu_end_states, needs_sync_barrier, filename_template,
+        binaries_to_track=None, progress_bar=None):
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
@@ -40,35 +40,28 @@ def run_system_application(
     :param callable check_for_success_function:
         function used to check success;
         expects `executable_cores`, `transceiver` as inputs
-    :param callable handle_failure_function:
-        function used to deal with failures;
-        expects `executable_cores` as input
     :param set(~.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
-    :param int no_sync_changes: the number of times sync signal been sent
     :param str filename_template: the IOBUF filename template.
     :param list(str) binaries_to_track:
         A list of binary names to check for exit state.
         Or `None` for all binaries
+    :param progress_bar: Possible progress bar to update.
+           end() will be called after state checked
+    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
+
     """
 
     # load the executable
     transceiver.execute_application(executable_cores, app_id)
 
     if needs_sync_barrier:
-        if no_sync_changes % 2 == 0:
-            sync_signal = Signal.SYNC0
-        else:
-            sync_signal = Signal.SYNC1
-        # when it falls out of the running, it'll be in a next sync \
-        # state, thus update needed
-        no_sync_changes += 1
 
         # fire all signals as required
-        transceiver.send_signal(app_id, sync_signal)
+        transceiver.send_signal(app_id, Signal.SYNC0)
 
-    succeeded = False
+    error = None
     binary_start_types = dict()
     if binaries_to_track is None:
         check_targets = executable_cores
@@ -84,12 +77,18 @@ def run_system_application(
     # Wait for the executable to finish
     try:
         transceiver.wait_for_cores_to_be_in_state(
-            check_targets.all_core_subsets, app_id, cpu_end_states)
+            check_targets.all_core_subsets, app_id, cpu_end_states,
+            progress_bar=progress_bar)
+        if progress_bar is not None:
+            progress_bar.end()
         succeeded = True
-    except (SpinnmanTimeoutException, SpinnmanException):
-        if handle_failure_function is not None:
-            handle_failure_function(executable_cores)
+    except (SpinnmanTimeoutException, SpinnmanException) as ex:
         succeeded = False
+        # Delay the exception until iobuff is ready
+        error = ex
+
+    if progress_bar is not None:
+        progress_bar.end()
 
     # Check if any cores have not completed successfully
     if succeeded and check_for_success_function is not None:
@@ -99,7 +98,7 @@ def run_system_application(
     if read_algorithm_iobuf or not succeeded:
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
-            suppress_progress=succeeded)
+            suppress_progress=False)
         iobuf_reader(
             transceiver, executable_cores, executable_finder,
             system_provenance_file_path=provenance_file_path)
@@ -107,3 +106,8 @@ def run_system_application(
     # stop anything that's associated with the compressor binary
     transceiver.stop_application(app_id)
     transceiver.app_id_tracker.free_id(app_id)
+
+    if error is not None:
+        raise error  # pylint: disable=raising-bad-type
+
+    return succeeded

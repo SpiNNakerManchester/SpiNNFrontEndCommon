@@ -32,6 +32,7 @@ from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource,
     ReverseIPtagResource, ResourceContainer, VariableSDRAM)
 from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -83,11 +84,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
 
-    :param ~pacman.model.graphs.common.Slice vertex_slice:
-        The slice served via this multicast source
     :param str label: The label of this vertex
-    :param ReverseIpTagMultiCastSource app_vertex:
+    :param vertex_slice:
+        The slice served via this multicast source
+    :type vertex_slice: ~pacman.model.graphs.common.Slice or None
+    :param app_vertex:
         The associated application vertex
+    :type app_vertex: ReverseIpTagMultiCastSource or None
+    :param int n_keys: The number of keys to be sent via this mulitcast source
+        (can't be None if vertex_slice is also None)
     :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:
         Any initial constraints to this vertex
     :param str board_address:
@@ -155,7 +160,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, vertex_slice, label, app_vertex, constraints=None,
+            self, label,
+            vertex_slice=None,
+            app_vertex=None,
+            n_keys=None,
+            constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -180,6 +189,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Flag to indicate that data will be received to inject
             enable_injection=False):
         # pylint: disable=too-many-arguments, too-many-locals
+        if vertex_slice is None:
+            if n_keys is not None:
+                vertex_slice = Slice(0, n_keys - 1)
+            else:
+                raise KeyError("Either provide a vertex_slice or n_keys")
+
         super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
             label, constraints, app_vertex, vertex_slice)
 

@@ -17,13 +17,15 @@ import functools
 import logging
 import struct
 from collections import defaultdict
-
+from six import add_metaclass
+from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
-    SpinnmanUnexpectedResponseCodeException, SpinnmanException)
+    SpinnmanUnexpectedResponseCodeException)
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -31,10 +33,8 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import (
         get_generality as
         ordered_covering_generality)
-from spinn_front_end_common.mapping_algorithms. \
-    on_chip_router_table_compression.compression import (
-        Compression)
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.mapping_algorithms.\
+    on_chip_router_table_compression.compression import make_source_hack
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.exceptions import (
@@ -59,6 +59,7 @@ PROV_CHIP_NAME = "router_at_chip_{}_{}"
 MERGED_NAME = "bit_fields_merged"
 
 
+@add_metaclass(AbstractBase)
 class MachineBitFieldRouterCompressor(object):
     """ On-machine bitfield-aware routing table compression.
 
@@ -79,14 +80,11 @@ class MachineBitFieldRouterCompressor(object):
     :param bool use_timer_cut_off:
     :param int machine_time_step:
     :param int time_scale_factor:
-    :param int no_sync_changes:
     :param int threshold_percentage: the percentage of bitfields to do on chip\
         before its considered a success
     :param ExecutableTargets executable_targets:
         the set of targets and executables
     :param graph_mapper: mapping between graphs (could be none)
-    :param bool compress_only_when_needed:
-        whether to compress only when needed
     :param bool compress_as_much_as_possible:
         whether to compress as much as possible
     :param list(ProvenanceDataItem) provenance_data_objects:
@@ -137,12 +135,13 @@ class MachineBitFieldRouterCompressor(object):
     # binary names
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
         "bit_field_sorter_and_searcher.aplx"
-    _COMPRESSOR_APLX = "bit_field_compressor.aplx"
 
     _PROGRESS_BAR_TEXT = \
         "on chip compressing routing tables and merging in bitfields as " \
         "appropriate"
-
+    _HOST_BAR_TEXT = \
+        "on host compressing routing tables and merging in bitfields as " \
+        "appropriate"
     _ON_CHIP_ERROR_MESSAGE = \
         "The router compressor with bit field on {}, {} failed to complete. " \
         "Will execute host based routing compression instead"
@@ -157,8 +156,7 @@ class MachineBitFieldRouterCompressor(object):
             read_algorithm_iobuf, produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
-            no_sync_changes, threshold_percentage,
-            executable_targets, compress_only_when_needed=True,
+            threshold_percentage, executable_targets,
             compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
@@ -176,10 +174,8 @@ class MachineBitFieldRouterCompressor(object):
         :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
-        :param int no_sync_changes:
         :param int threshold_percentage:
         :param ExecutableTargets executable_targets:
-        :param bool compress_only_when_needed:
         :param bool compress_as_much_as_possible:
         :param list(ProvenanceDataItem) provenance_data_objects:
         :rtype: tuple(ExecutableTargets,list(ProvenanceDataItem))
@@ -218,7 +214,7 @@ class MachineBitFieldRouterCompressor(object):
         # load data into sdram
         on_host_chips = self._load_data(
             addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, compress_only_when_needed, machine,
+            routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
             matrix_addresses_and_size, time_to_try_for_each_iteration,
@@ -226,30 +222,26 @@ class MachineBitFieldRouterCompressor(object):
             bit_field_sorter_executable_path, threshold_percentage)
 
         # load and run binaries
-        try:
-            system_control_logic.run_system_application(
-                compressor_executable_targets,
-                routing_table_compressor_app_id, transceiver,
-                provenance_file_path, executable_finder,
-                read_algorithm_iobuf,
-                functools.partial(
-                    self._check_bit_field_router_compressor_for_success,
-                    host_chips=on_host_chips,
-                    sorter_binary_path=bit_field_sorter_executable_path,
-                    prov_data_items=prov_items),
-                functools.partial(
-                    self._handle_failure_for_bit_field_router_compressor,
-                    host_chips=on_host_chips, txrx=transceiver),
-                [CPUState.FINISHED], True, no_sync_changes,
-                "bit_field_compressor_on_{}_{}_{}.txt",
-                [bit_field_sorter_executable_path])
-        except (SpinnmanException, SpinnFrontEndException):
-            self._handle_failure_for_bit_field_router_compressor(
-                compressor_executable_targets, on_host_chips, transceiver)
+        system_control_logic.run_system_application(
+            compressor_executable_targets,
+            routing_table_compressor_app_id, transceiver,
+            provenance_file_path, executable_finder,
+            read_algorithm_iobuf,
+            functools.partial(
+                self._check_bit_field_router_compressor_for_success,
+                host_chips=on_host_chips,
+                sorter_binary_path=bit_field_sorter_executable_path,
+                prov_data_items=prov_items),
+            [CPUState.FINISHED], True,
+            "bit_field_compressor_on_{}_{}_{}.txt",
+            [bit_field_sorter_executable_path], progress_bar)
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
+            progress_bar = ProgressBar(
+                total_number_of_things_to_do=len(on_host_chips),
+                string_describing_what_being_progressed=self._HOST_BAR_TEXT)
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
@@ -289,10 +281,16 @@ class MachineBitFieldRouterCompressor(object):
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)
 
-        # complete progress bar
-        progress_bar.end()
+            progress_bar.end()
 
         return compressor_executable_targets, prov_items
+
+    @abstractproperty
+    def compressor_aplx(self):
+        """
+
+        :return: The name of the compressor aplx file to use
+        """
 
     def _generate_core_subsets(
             self, routing_tables, executable_finder, machine, progress_bar,
@@ -342,7 +340,7 @@ class MachineBitFieldRouterCompressor(object):
                 self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
 
         bit_field_compressor_executable_path = \
-            executable_finder.get_executable_path(self._COMPRESSOR_APLX)
+            executable_finder.get_executable_path(self.compressor_aplx)
 
         # add the sets
         executable_targets.add_subsets(
@@ -407,29 +405,9 @@ class MachineBitFieldRouterCompressor(object):
                     names, str(total_bit_fields_merged)))
         return True
 
-    @staticmethod
-    def _handle_failure_for_bit_field_router_compressor(
-            executable_targets, host_chips, txrx):
-        """ Handles the state where some cores have failed.
-
-        :param ExecutableTargets executable_targets:
-            cores which are running the router compressor with bitfield.
-        :param list(tuple(int,int)) host_chips:
-            chips which need host based compression
-        :param ~.Transceiver txrx: spinnman instance
-        """
-        logger.info(
-            "on chip routing table compressor with bit field has failed")
-        for core_subset in executable_targets.all_core_subsets:
-            if (core_subset.x, core_subset.y) not in host_chips:
-                host_chips.append((core_subset.x, core_subset.y))
-        cores = txrx.get_cores_in_state(
-            executable_targets.all_core_subsets, [CPUState.RUN_TIME_EXCEPTION])
-        logger.info("failed on cores {}", cores)
-
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, compress_only_when_needed, machine,
+            routing_tables, app_id, machine,
             compress_as_much_as_possible, progress_bar, cores,
             matrix_addresses_and_size, time_per_iteration,
             bit_field_compressor_executable_path,
@@ -443,8 +421,6 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.MulticastRoutingTables routing_tables:
             the routing tables
         :param int app_id: the appid of the application
-        :param bool compress_only_when_needed:
-            whether to compress only when needed
         :param ~.ProgressBar progress_bar: progress bar
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
@@ -490,7 +466,6 @@ class MachineBitFieldRouterCompressor(object):
                     self._load_compressor_data(
                         table.x, table.y, time_per_iteration, transceiver,
                         bit_field_compressor_executable_path, cores,
-                        compress_only_when_needed,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
                     run_by_host.append((table.x, table.y))
@@ -500,7 +475,7 @@ class MachineBitFieldRouterCompressor(object):
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
-            compress_only_when_needed, compress_as_much_as_possible,
+            compress_as_much_as_possible,
             comms_sdram):
         """ Updates the user1 address for the compressor cores so they can \
             set the time per attempt.
@@ -511,8 +486,6 @@ class MachineBitFieldRouterCompressor(object):
         :param ~.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
-        :param bool compress_only_when_needed:
-            whether to compress only when needed
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :param ExecutableTargets cores: the executable targets
@@ -533,13 +506,10 @@ class MachineBitFieldRouterCompressor(object):
                 self._ONE_WORDS.pack(
                     time_per_iteration * SECOND_TO_MICRO_SECOND),
                 self._USER_BYTES)
-            compressor_setting = 0
-            # bit 0 = compress_only_when_needed
-            if compress_only_when_needed:
-                compressor_setting |= 1 << self._ONLY_WHEN_NEEDED_BIT_OFFSET
-            # bit 1 = compress_as_much_as_possible
             if compress_as_much_as_possible:
-                compressor_setting |= 1 << self._AS_MUCH_AS_POSS_BIT_OFFSET
+                compressor_setting = 1
+            else:
+                compressor_setting = 0
             transceiver.write_memory(
                 chip_x, chip_y, user2_address,
                 self._ONE_WORDS.pack(compressor_setting), self._USER_BYTES)
@@ -732,7 +702,7 @@ class MachineBitFieldRouterCompressor(object):
             data += self._FOUR_WORDS.pack(
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
-                Compression.make_source_hack(entry=entry))
+                make_source_hack(entry=entry))
         return bytearray(data)
 
     @staticmethod
@@ -848,3 +818,20 @@ class MachineBitFieldRouterCompressor(object):
         compression_cores = list(cores.processor_ids)
         data += struct.pack("<{}I".format(len(cores)), *compression_cores)
         return data
+
+
+class MachineBitFieldUnorderedRouterCompressor(
+        MachineBitFieldRouterCompressor):
+
+    @property
+    @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
+    def compressor_aplx(self):
+        return "bit_field_unordered_compressor.aplx"
+
+
+class MachineBitFieldPairRouterCompressor(MachineBitFieldRouterCompressor):
+
+    @property
+    @overrides(MachineBitFieldRouterCompressor.compressor_aplx)
+    def compressor_aplx(self):
+        return "bit_field_pair_compressor.aplx"
