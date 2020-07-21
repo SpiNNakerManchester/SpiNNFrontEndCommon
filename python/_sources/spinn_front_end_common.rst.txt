@@ -9,7 +9,6 @@ Subpackages
     spinn_front_end_common.abstract_models
     spinn_front_end_common.common_model_binaries
     spinn_front_end_common.interface
-    spinn_front_end_common.mapping_algorithms
     spinn_front_end_common.utilities
     spinn_front_end_common.utility_models
 
