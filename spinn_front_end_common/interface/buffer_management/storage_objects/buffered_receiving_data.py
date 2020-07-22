@@ -360,7 +360,10 @@ class BufferedReceivingData(object):
         :type region_id: int
         :rtype: None
         """
-        logger.warning("unimplemented method")
+        if self._db.clear_region(x, y, p, region_id):
+            del self._end_buffering_state[x, y, p, region_id]
+            del self._is_flushed[x, y, p, region_id]
+#         logger.warning("unimplemented method")
         # del self._end_buffering_state[x, y, p, region_id]
         # with self._db:
         #     c = self._db.cursor()
