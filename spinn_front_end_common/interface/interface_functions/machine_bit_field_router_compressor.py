@@ -33,7 +33,7 @@ from pacman.operations.router_compressors.mundys_router_compressor.\
     ordered_covering import (
         get_generality as
         ordered_covering_generality)
-from spinn_front_end_common.mapping_algorithms.\
+from spinn_front_end_common.interface.interface_functions.\
     on_chip_router_table_compression.compression import make_source_hack
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
@@ -80,7 +80,6 @@ class MachineBitFieldRouterCompressor(object):
     :param bool use_timer_cut_off:
     :param int machine_time_step:
     :param int time_scale_factor:
-    :param int no_sync_changes:
     :param int threshold_percentage: the percentage of bitfields to do on chip\
         before its considered a success
     :param ExecutableTargets executable_targets:
@@ -157,9 +156,8 @@ class MachineBitFieldRouterCompressor(object):
             read_algorithm_iobuf, produce_report, default_report_folder,
             target_length, routing_infos, time_to_try_for_each_iteration,
             use_timer_cut_off, machine_time_step, time_scale_factor,
-            no_sync_changes, threshold_percentage,
-            executable_targets, compress_as_much_as_possible=False,
-            provenance_data_objects=None):
+            threshold_percentage, executable_targets,
+            compress_as_much_as_possible=False, provenance_data_objects=None):
         """ entrance for routing table compression with bit field
 
         :param ~.MulticastRoutingTables routing_tables:
@@ -176,7 +174,6 @@ class MachineBitFieldRouterCompressor(object):
         :param bool use_timer_cut_off:
         :param int machine_time_step:
         :param int time_scale_factor:
-        :param int no_sync_changes:
         :param int threshold_percentage:
         :param ExecutableTargets executable_targets:
         :param bool compress_as_much_as_possible:
@@ -235,7 +232,7 @@ class MachineBitFieldRouterCompressor(object):
                 host_chips=on_host_chips,
                 sorter_binary_path=bit_field_sorter_executable_path,
                 prov_data_items=prov_items),
-            [CPUState.FINISHED], True, no_sync_changes,
+            [CPUState.FINISHED], True,
             "bit_field_compressor_on_{}_{}_{}.txt",
             [bit_field_sorter_executable_path], progress_bar)
 

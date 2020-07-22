@@ -93,3 +93,18 @@ class AbstractDatabase(object):
 
         :rtype: None
         """
+
+    @abstractmethod
+    def clear_region(self, x, y, p, region):
+        """ Clears the data for a single region.
+
+        .. note::
+            This method _loses information!_
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be cleared
+        :return: True if any region was changed
+        :rtype: bool
+        """
