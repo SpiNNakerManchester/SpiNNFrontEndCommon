@@ -43,6 +43,42 @@ CREATE VIEW IF NOT EXISTS provenance_view AS
     FROM source NATURAL JOIN description NATURAL JOIN provenance;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Show purely core level provenance, as most used
+CREATE VIEW IF NOT EXISTS core_provenance_view AS
+    SELECT source_name, description_name, the_value FROM source
+    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
+    LIKE '%vertex%';
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Show purely edge level provenance, as most used
+CREATE VIEW IF NOT EXISTS edge_provenance_view AS
+    SELECT source_name, description_name, the_value FROM source
+    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
+    LIKE '%connector%';
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Show purely pacman level provenance, as most used
+CREATE VIEW IF NOT EXISTS pacman_provenance_view AS
+    SELECT source_name, description_name, the_value FROM source
+    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
+    LIKE 'pacman';
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Show purely version level provenance, as most used
+CREATE VIEW IF NOT EXISTS version_provenance_view AS
+    SELECT source_name, description_name, the_value FROM source
+    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
+    LIKE 'version_data';
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Show purely router level provenance, as most used
+CREATE VIEW IF NOT EXISTS router_provenance_view AS
+    SELECT source_name, description_name, the_value FROM source
+    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
+    LIKE 'router_provenance';
+
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Compute some basic statistics over the provenance
 CREATE VIEW IF NOT EXISTS stats_view AS
     SELECT
