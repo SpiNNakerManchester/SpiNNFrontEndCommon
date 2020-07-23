@@ -74,21 +74,6 @@ enum functionality_to_port_num_map {
 //! threshold for SDRAM vs DTCM when allocating ::received_seq_nums_store
 #define SDRAM_VS_DTCM_THRESHOLD 40000
 
-//! Offsets into messages
-enum {
-    //! \brief location of command IDs in SDP message
-    COMMAND_ID = 0,
-
-    //! \brief location of where the seq num is in the packet
-    SEQ_NUM_LOC = 0,
-
-    //! \brief location of the transaction id in the packet
-    TRANSACTION_ID = 1,
-
-    //! \brief location of the start of raw data in the packet
-    START_OF_DATA = 2
-};
-
 //! flag when all seq numbers are missing
 #define ALL_MISSING_FLAG 0xFFFFFFFE
 
@@ -118,6 +103,8 @@ enum {
     //! inbound seqs
     ITEMS_PER_MISSING_PACKET =
             ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
+    //! number of payload words in a full standard data out packet
+    DATA_OUT_NORMAL_PACKET_WORDS = ITEMS_PER_DATA_PACKET - 2
 };
 
 //-----------------------------------------------------------------------------
@@ -126,7 +113,7 @@ enum {
 
 //! meaning of payload in first data in SDP packet
 typedef struct receive_data_to_location_msg_t {
-    uint command;        //!< The meaning of the message
+    uint command;        //!< Always ::SDP_SEND_DATA_TO_LOCATION_CMD
     uint transaction_id; //!< The transaction that the message is taking part in
     address_t address;   //!< Where the stream will be writing to in memory
     ushort chip_y;       //!< Board-local y coordinate of chip to do write on
@@ -136,7 +123,7 @@ typedef struct receive_data_to_location_msg_t {
 
 //! meaning of payload in subsequent data in SDP packets
 typedef struct receive_seq_data_msg_t {
-    uint command;        //!< The meaning of the message
+    uint command;        //!< Always ::SDP_SEND_SEQ_DATA_CMD
     uint transaction_id; //!< The transaction that the message is taking part in
     uint seq_num;        //!< The sequence number of this message
     uint data[];         //!< The payload of real data
@@ -153,48 +140,55 @@ typedef struct sdp_msg_out_payload_t {
 } sdp_msg_out_payload_t;
 
 //! the key that causes data out sequence number to be processed
-static uint32_t new_sequence_key = 0;
+static uint new_sequence_key = 0;
 
 //! the key that says this is the first item of data in a data out stream
-static uint32_t first_data_key = 0;
+static uint first_data_key = 0;
 
 //! the key that provides a new data out transaction ID
-static uint32_t transaction_id_key = 0;
+static uint transaction_id_key = 0;
 
 //! the key that marks the end of a data out stream
-static uint32_t end_flag_key = 0;
+static uint end_flag_key = 0;
 
 //! the key that marks an ordinary word within a data out stream
-static uint32_t basic_data_key = 0;
+static uint basic_data_key = 0;
 
 //! default seq num
-static uint32_t seq_num = FIRST_SEQ_NUM;
+static uint seq_num = FIRST_SEQ_NUM;
 
 //! maximum sequence number
-static uint32_t max_seq_num = 0xFFFFFFFF;
+static uint max_seq_num = 0xFFFFFFFF;
 
 //! The Data In transaction ID. Used to distinguish streams of packets
-static uint32_t transaction_id = 0;
+static uint transaction_id = 0;
 
 //! The Data Out transaction ID. Used to distinguish streams of packets
-static uint32_t data_out_transaction_id = 0;
+static uint data_out_transaction_id = 0;
+
+//! The format of a data out message.
+typedef struct {
+    uint sequence_number;   //!< The sequence number
+    uint transaction_id;    //!< The transaction ID
+    //! \brief The payload words (plus 1 to protect against memory overwrites
+    //! with command messages)
+    uint data[DATA_OUT_NORMAL_PACKET_WORDS];
+} data_out_msg_t;
 
 //! data holders for the SDP packet (plus 1 to protect against memory
 //! overwrites with command messages)
-static uint32_t data[ITEMS_PER_DATA_PACKET];
+static data_out_msg_t data;
 
 //! index into ::data
-static uint32_t position_in_store = 0;
+static int position_in_store = 0;
 
 //! SDP message holder for transmissions
 static sdp_msg_pure_data my_msg;
 
 //! human readable definitions of each DSG region in SDRAM
 enum {
-    //! Index of general configuration region
-    CONFIG,
-    //! Index of chip-to-key mapping table
-    CHIP_TO_KEY
+    CONFIG,             //!< Index of general configuration region
+    CHIP_TO_KEY         //!< Index of chip-to-key mapping table
 };
 
 //! The layout of the Data Out configuration region
@@ -210,10 +204,26 @@ typedef struct data_out_config_t {
     //! The key used to indicate a general data item in a stream
     const uint basic_data_key;
     //! \brief The ID of the IPtag to send the SDP packets out to host on
-    //!
-    //! Note that the host is responsible for configuring the tag.
+    //! \note The host is responsible for configuring the tag.
     const uint tag_id;
 } data_out_config_t;
+
+//! meaning of payload in retransmission requests
+typedef struct data_in_retransmit_message_t {
+    uint command_id;            //!< Always ::SDP_TELL_MISSING_BACK_TO_HOST
+    uint transaction_id;        //!< The transaction ID
+} data_in_retransmit_message_t;
+
+//! meaning of payload in *all* data-in messages; really a tagged union
+typedef union data_in_message_payload_t {
+    uint command_id;            //!< What command is this?
+    //! The message gives a location to start writing at
+    receive_data_to_location_msg_t receive_loc;
+    //! The message gives some data to write
+    receive_seq_data_msg_t receive_data;
+    //! The message asks for what packets have not been received
+    data_in_retransmit_message_t retransmit;
+} data_in_message_payload_t;
 
 //! values for the priority for each callback
 enum {
@@ -255,7 +265,7 @@ static uint last_seen_seq_num = 0;
 //! Where the current stream of data started in SDRAM.
 static uint start_sdram_address = 0;
 
-//! Human readable definitions of the offsets for data in multicast key
+//! \brief Human readable definitions of the offsets for data in multicast key
 //! elements. These act as commands sent to the target extra monitor core.
 typedef enum {
     //! Payload contains a write address
@@ -266,24 +276,23 @@ typedef enum {
     BOUNDARY_KEY_OFFSET = 2,
 } key_offsets;
 
-//! Associates a _board-local_ coordinate with a key for talking to the extra
-//! monitor on that chip.
+//! \brief Associates a _board-local_ coordinate with a key for talking to the
+//! extra monitor on that chip.
 struct chip_key_data_t {
-    uint32_t x_coord;  //!< Board local x coordinate of extra monitor
-    uint32_t y_coord;  //!< Board local y coordinate of extra monitor
-    uint32_t base_key; //!< Base key to use for talking to that chip
+    uint x_coord;   //!< Board local x coordinate of extra monitor
+    uint y_coord;   //!< Board local y coordinate of extra monitor
+    uint base_key;  //!< Base key to use for talking to that chip
 };
 
 //! The layout of the Data In configuration region
 typedef struct data_in_config_t {
     //! The number of extra monitors that we can talk to
-    const uint32_t n_extra_monitors;
+    const uint n_extra_monitors;
     //! The base key for reinjection control messages
-    const uint32_t reinjector_base_key;
+    const uint reinjector_base_key;
     //! \brief The configuration data for routing messages to specific extra
-    //! monitors.
-    //!
-    //! Used to populate ::data_in_mc_key_map
+    //!     monitors.
+    //! \details Used to populate ::data_in_mc_key_map
     const struct chip_key_data_t chip_to_key[];
 } data_in_config_t;
 
@@ -293,7 +302,7 @@ typedef struct data_in_config_t {
 
 //! \brief Writes the updated transaction ID to the user1
 //! \param[in] transaction_id: The transaction ID to publish
-static void publish_transaction_id_to_user_1(int transaction_id) {
+static void publish_transaction_id_to_user_1(uint transaction_id) {
 // Get pointer to 1st virtual processor info struct in SRAM
     vcpu_t *virtual_processor_table = (vcpu_t*) SV_VCPU;
 
@@ -322,11 +331,9 @@ static inline void send_mc_message(key_offsets command, uint payload) {
 }
 
 //! \brief Sanity checking for writes, ensuring that they're to the _buffered_
-//! SDRAM range.
-//!
-//! Note that the RTE here is good as it is better (easier to debug, easier to
-//! comprehend) than having corrupt memory actually written.
-//!
+//!     SDRAM range.
+//! \note the RTE here is good as it is better (easier to debug, easier to
+//!     comprehend) than having corrupt memory actually written.
 //! \param[in] write_address: where we are going to write.
 //! \param[in] n_elements: the number of words we are going to write.
 static inline void sanity_check_write(uint write_address, uint n_elements) {
@@ -344,12 +351,11 @@ static inline void sanity_check_write(uint write_address, uint n_elements) {
 //! \brief sends multicast messages accordingly for an SDP message
 //! \param[in] data: the actual data from the SDP message
 //! \param[in] n_elements: the number of data items in the SDP message
-//! \param[in] set_write_address: bool flag for if we should send the
-//!                               address where our writes will start;
-//!                               this is not set every time to reduce
-//!                               on-chip network overhead
-//! \param[in] write_address: the sdram address where this block of data is
-//!                           to be written to
+//! \param[in] set_write_address: whether we should send the address where our
+//!     writes will start; this is not set every time to reduce on-chip network
+//!     overhead
+//! \param[in] write_address:
+//!     the SDRAM address where this block of data is to be written to
 static void process_sdp_message_into_mc_messages(
         const uint *data, uint n_elements, bool set_write_address,
         uint write_address) {
@@ -366,9 +372,7 @@ static void process_sdp_message_into_mc_messages(
 }
 
 //! \brief creates a store for sequence numbers in a memory store.
-//!
-//! May allocate in either DTCM (preferred) or SDRAM.
-//!
+//! \details May allocate in either DTCM (preferred) or SDRAM.
 //! \param[in] max_seq: the max seq num expected during this stage
 static void create_sequence_number_bitfield(uint max_seq) {
     if (received_seq_nums_store != NULL) {
@@ -382,14 +386,14 @@ static void create_sequence_number_bitfield(uint max_seq) {
         alloc_in_sdram = false;
         if (max_seq_num >= SDRAM_VS_DTCM_THRESHOLD || (NULL ==
                 (received_seq_nums_store = spin1_malloc(
-                        size_of_bitfield * sizeof(uint32_t))))) {
+                        size_of_bitfield * sizeof(uint))))) {
             received_seq_nums_store = sark_xalloc(
-                    sv->sdram_heap, size_of_bitfield * sizeof(uint32_t), 0,
+                    sv->sdram_heap, size_of_bitfield * sizeof(uint), 0,
                     ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
             if (received_seq_nums_store == NULL) {
                 log_error(
                         "Failed to allocate %u bytes for missing seq num store",
-                        size_of_bitfield * sizeof(uint32_t));
+                        size_of_bitfield * sizeof(uint));
                 rt_error(RTE_SWERR);
             }
             alloc_in_sdram = true;
@@ -433,7 +437,7 @@ static inline void set_message_length(const void *end) {
 }
 
 //! \brief handles reading the address, chips and max packets from a
-//! SDP message (command: ::SDP_SEND_DATA_TO_LOCATION_CMD)
+//!     SDP message (command: ::SDP_SEND_DATA_TO_LOCATION_CMD)
 //! \param[in] receive_data_cmd: The message to parse
 static void process_address_data(
         const receive_data_to_location_msg_t *receive_data_cmd) {
@@ -508,23 +512,20 @@ static void send_finished_response(void) {
 }
 
 //! \brief searches through received sequence numbers and transmits missing ones
-//! back to host for retransmission
+//!     back to host for retransmission
 //! \param[in] msg: The message asking for the missed seq nums
 static void process_missing_seq_nums_and_request_retransmission(
-        const sdp_msg_pure_data *msg) {
+        const data_in_retransmit_message_t *msg) {
     // verify in right state
-    uint this_message_transaction_id = msg->data[TRANSACTION_ID];
-    if (received_seq_nums_store == NULL &&
-            this_message_transaction_id != transaction_id) {
-        log_debug(
-            "received missing seq numbers before a location with a "
-            "transaction id which is stale.");
-        return;
-    }
-    if (received_seq_nums_store == NULL &&
-            this_message_transaction_id  == transaction_id) {
-        log_debug("received tell request when already sent finish. resending");
-        send_finished_response();
+    if (received_seq_nums_store == NULL) {
+        if (msg->transaction_id != transaction_id) {
+            log_debug("received missing seq numbers before a location with a "
+                    "transaction id which is stale.");
+        } else {
+            log_debug("received tell request when already sent finish. "
+                    "resending");
+            send_finished_response();
+        }
         return;
     }
 
@@ -595,7 +596,7 @@ static inline uint n_elements_in_msg(
 //! \param[in] source: Where to copy from
 //! \param[in] n_words: The number of words to copy
 static inline void copy_data(
-        void *restrict target, const void *source, uint n_words) {
+        void *restrict target, const void *restrict source, uint n_words) {
     uint *to = target;
     const uint *from = source;
     while (n_words-- > 0) {
@@ -604,25 +605,21 @@ static inline void copy_data(
 }
 
 //! \brief Handles receipt and parsing of a message full of sequence numbers
-//! that need to be retransmitted (command: ::SDP_SEND_SEQ_DATA_CMD)
-//! \param[in] msg: The message to parse (really of type receive_seq_data_msg_t)
-static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
-    // cast to the receive seq data
-    const receive_seq_data_msg_t *receive_data_cmd =
-            (receive_seq_data_msg_t *) msg->data;
-
+//!     that need to be retransmitted (command: ::SDP_SEND_SEQ_DATA_CMD)
+//! \param[in] msg: The message to parse
+static inline void receive_seq_data(const receive_seq_data_msg_t *msg) {
     // check for bad states
     if (received_seq_nums_store == NULL) {
         log_debug("received data before being given a location");
         return;
     }
-    if (receive_data_cmd->transaction_id != transaction_id) {
+    if (msg->transaction_id != transaction_id) {
         log_debug("received data from a different transaction");
         return;
     }
 
     // all good, process data
-    uint seq = receive_data_cmd->seq_num;
+    uint seq = msg->seq_num;
     log_debug("Sequence data, seq:%u", seq);
     if (seq > max_seq_num) {
         log_error("Bad sequence number %u when max is %u!", seq, max_seq_num);
@@ -638,42 +635,42 @@ static inline void receive_seq_data(const sdp_msg_pure_data *msg) {
     }
     last_seen_seq_num = seq;
 
-    uint n_elements = n_elements_in_msg(msg, receive_data_cmd->data);
+    uint n_elements = n_elements_in_msg((void *) msg, msg->data);
     log_debug("n elements is %d", n_elements);
     sanity_check_write(this_sdram_address, n_elements);
     if (chip_x == 0 && chip_y == 0) {
         // directly write the data to where it belongs
-        for (uint data_index = 0; data_index < n_elements; data_index++) {
-            log_debug("data is %x", receive_data_cmd->data[data_index]);
+        for (uint i = 0; i < n_elements; i++) {
+            log_debug("data is %x", msg->data[i]);
         }
-        copy_data(
-                (address_t) this_sdram_address, receive_data_cmd->data,
-                n_elements);
+        copy_data((void *) this_sdram_address, msg->data, n_elements);
     } else {
         // transmit data to chip; the data lasts to the end of the message
         process_sdp_message_into_mc_messages(
-                receive_data_cmd->data, n_elements,
-                send_sdram_address, this_sdram_address);
+                msg->data, n_elements, send_sdram_address, this_sdram_address);
     }
 }
 
 //! \brief processes SDP messages for the Data In protocol
 //! \param[in] msg: the SDP message
 static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
-    uint command = msg->data[COMMAND_ID];
+    const data_in_message_payload_t *message =
+            (const data_in_message_payload_t *) msg->data;
+    uint command = message->command_id;
 
     // check for separate commands
     switch (command) {
     case SDP_SEND_DATA_TO_LOCATION_CMD:
         // translate elements to variables
-        process_address_data((receive_data_to_location_msg_t *) msg->data);
+        process_address_data(&message->receive_loc);
         break;
     case SDP_SEND_SEQ_DATA_CMD:
-        receive_seq_data(msg);
+        receive_seq_data(&message->receive_data);
         break;
     case SDP_TELL_MISSING_BACK_TO_HOST:
         log_debug("Checking for missing");
-        process_missing_seq_nums_and_request_retransmission(msg);
+        process_missing_seq_nums_and_request_retransmission(
+                &message->retransmit);
         break;
     default:
         log_error("Failed to recognise command id %u", command);
@@ -681,10 +678,10 @@ static void data_in_receive_sdp_data(const sdp_msg_pure_data *msg) {
 }
 
 //! \brief sends the basic timeout command via multicast to the extra monitors
-//! \param[in,out] msg: the request to send the timeout; will be updated with
-//!                     result
+//! \param[in,out] msg:
+//!     the request to send the timeout; will be updated with result
 //! \param[in] key: the multicast key to use here
-static void send_timeout(sdp_msg_t* msg, uint32_t key) {
+static void send_timeout(sdp_msg_t* msg, uint key) {
     if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
         msg->cmd_rc = RC_ARG;
         return;
@@ -696,8 +693,8 @@ static void send_timeout(sdp_msg_t* msg, uint32_t key) {
 }
 
 //! \brief sends the clear message to all extra monitors on this board
-//! \param[in,out] msg: the request to send the clear; will be updated with
-//!                     result
+//! \param[in,out] msg:
+//!     the request to send the clear; will be updated with result
 static void send_clear_message(sdp_msg_t* msg) {
     while (spin1_send_mc_packet(
             reinject_clear_mc_key, 0, WITH_PAYLOAD) == 0) {
@@ -707,8 +704,8 @@ static void send_clear_message(sdp_msg_t* msg) {
 }
 
 //! \brief handles the commands for the reinjector code.
-//! \param[in,out] msg: the message with the commands; will be updated with
-//!                     result
+//! \param[in,out] msg:
+//!     the message with the commands; will be updated with result
 static void reinjection_sdp_command(sdp_msg_t *msg) {
     // handle the key conversion
     switch (msg->cmd_rc) {
@@ -763,8 +760,9 @@ static void receive_sdp_message(uint mailbox, uint port) {
 
 //! \brief sends data to the host via SDP (using ::my_msg)
 static void send_data(void) {
-    copy_data(&my_msg.data, data, position_in_store);
-    my_msg.length = sizeof(sdp_hdr_t) + position_in_store * sizeof(uint);
+    uint payload_size = (uint)(position_in_store + 2);
+    copy_data(&my_msg.data, data, payload_size);
+    my_msg.length = sizeof(sdp_hdr_t) + payload_size * sizeof(uint);
 
     if (seq_num > max_seq_num) {
         log_error("Got a funky seq num in sending; max is %d, received %d",
@@ -774,60 +772,55 @@ static void send_data(void) {
     send_sdp_message();
 
     seq_num++;
-    data[SEQ_NUM_LOC] = seq_num;
-    data[TRANSACTION_ID] = data_out_transaction_id;
-    position_in_store = START_OF_DATA;
+    data->sequence_number = seq_num;
+    data->transaction_id = data_out_transaction_id;
+    position_in_store = 0;
 }
 
 //! \brief Handles receipt of a fixed route packet with payload from the
-//!        SpiNNaker network.
+//!     SpiNNaker network.
 //! \param[in] key: The key in the packet
 //! \param[in] payload: The payload in the packet
 static void receive_data(uint key, uint payload) {
+    // This would be a switch() except the keys are runtime-determined
     if (key == new_sequence_key) {
-        if (position_in_store != START_OF_DATA) {
+        if (position_in_store != 0) {
             log_info("sending surplus data from new seq setting");
             send_data();
         }
 
         log_info("new seq num to set is %d", payload);
-        data[SEQ_NUM_LOC] = payload;
-        data[TRANSACTION_ID] = data_out_transaction_id;
+        data->sequence_number = payload;
+        data->transaction_id = data_out_transaction_id;
         seq_num = payload;
-        position_in_store = START_OF_DATA;
+        position_in_store = 0;
 
         if (payload > max_seq_num) {
             log_error("Got a funky seq num; max is %d, received %d",
                     max_seq_num, payload);
         }
+    } else if (key == first_data_key) {
+        log_info("received new stream with max %d", payload);
+        seq_num = FIRST_SEQ_NUM;
+        data->sequence_number = seq_num;
+        position_in_store = -1; // Next stream word is transaction ID!
+        max_seq_num = payload;
+    } else if (key == transaction_id_key) {
+        data_out_transaction_id = payload;
+        data->transaction_id = data_out_transaction_id;
+        position_in_store = 0;
+    } else if (key == end_flag_key) {
+        // set end flag bit in seq num
+        data->sequence_number |= 1 << 31;
+        send_data();
+        log_info("sent all data");
     } else {
-        data[position_in_store] = payload;
+        // Ordinary payload word
+        data->data[position_in_store] = payload;
         position_in_store++;
 
-        if (key == first_data_key) {
-            log_info("received new stream with max %d", payload);
-            seq_num = FIRST_SEQ_NUM;
-            data[SEQ_NUM_LOC] = seq_num;
-            position_in_store = TRANSACTION_ID;
-            max_seq_num = payload;
-        }
-
-        if (key == transaction_id_key) {
-            data_out_transaction_id = payload;
-            data[TRANSACTION_ID] = data_out_transaction_id;
-            position_in_store = START_OF_DATA;
-        }
-
-        if (key == end_flag_key) {
-            // set end flag bit in seq num
-            data[SEQ_NUM_LOC] |= 1 << 31;
-
-            // adjust size as last payload not counted
-            position_in_store--;
-
-            send_data();
-            log_info("sent all data");
-        } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
+        // Send if we're full
+        if (position_in_store == DATA_OUT_NORMAL_PACKET_WORDS) {
             send_data();
         }
     }
@@ -881,7 +874,7 @@ static void initialise(void) {
             data_specification_get_region(CHIP_TO_KEY, ds_regions);
 
     // sort out bitfield for reinjection ack tracking
-    uint32_t n_extra_monitors = chip_key_map->n_extra_monitors;
+    uint n_extra_monitors = chip_key_map->n_extra_monitors;
 
     // read in the keys for mc packets for data in
     for (uint i = 0; i < n_extra_monitors; i++) {
@@ -902,9 +895,9 @@ static void initialise(void) {
 }
 
 //! \brief This function is called at application start-up.
-//!
-//! It is used to register event callbacks (delegated to initialise()) and
-//! begin the simulation.
+//! \details
+//!     It is used to register event callbacks (delegated to initialise()) and
+//!     begin the simulation.
 void c_main(void) {
     log_info("Configuring packet gatherer");
 
