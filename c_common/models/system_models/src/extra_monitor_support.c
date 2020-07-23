@@ -27,6 +27,7 @@
 // SARK-based program
 #include <sark.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <common-typedefs.h>
 #include "common.h"
 
@@ -407,6 +408,32 @@ enum callback_priorities {
     DMA = 0
 };
 
+// TODO
+typedef union {
+    uint32_t words[ITEMS_PER_DATA_PACKET];
+    struct {
+        uint32_t max_seq_num;
+        uint32_t transaction_id;
+        uint32_t data[];
+    } data_buffer;
+    struct {
+        uint32_t this_seq_num;
+        uint32_t data[];
+    } missing_seq_buffer;
+} data_out_transmission_buffer_t;
+
+enum transmission_offsets {
+    DATA_FIRST_TRANSMISSION_OFFSET =
+            offsetof(data_out_transmission_buffer_t, data_buffer.data) /
+            sizeof(uint),
+    DATA_NEXT_TRANSMISSION_OFFSET =
+            offsetof(data_out_transmission_buffer_t, words) /
+            sizeof(uint),
+    DATA_RETRANSMISSION_OFFSET =
+            offsetof(data_out_transmission_buffer_t, missing_seq_buffer.data) /
+            sizeof(uint)
+};
+
 // ------------------------------------------------------------------------
 // global variables for reinjector functionality
 // ------------------------------------------------------------------------
@@ -494,7 +521,7 @@ static bool data_in_last_table_load_was_system = false;
 // transmission stuff
 
 //! The DTCM buffers holding data to transmit. DMA targets.
-static uint32_t data_out_data_to_transmit[N_DMA_BUFFERS][ITEMS_PER_DATA_PACKET];
+static data_out_transmission_buffer_t data_out_data_to_transmit[N_DMA_BUFFERS];
 
 //! \brief Which ::data_out_data_to_transmit buffer is the target of the current
 //! DMA transfer.
@@ -1426,18 +1453,18 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 }
 
 //! \brief takes a DMA'ed block and transmits its contents as fixed route
-//! packets to the packet gatherer.
-//! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
+//!     packets to the packet gatherer.
+//! \param[in] dma_buffer: the DMA buffer to send
 //! \param[in] n_elements_to_send: the number of multicast packets to send
 //! \param[in] first_packet_key: the first key to transmit with.
 //! \param[in] second_packet_key: the second key to transmit with; all
-//! subsequent packets use the default key.
+//!     subsequent packets use the default key.
 static void data_out_send_data_block(
-        uint32_t current_dma_pointer, uint32_t n_elements_to_send,
+        data_out_transmission_buffer_t *dma_buffer, uint32_t n_elements_to_send,
         uint32_t first_packet_key, uint32_t second_packet_key) {
     // send data
     for (uint i = 0; i < n_elements_to_send; i++) {
-        uint32_t current_data = data_out_data_to_transmit[current_dma_pointer][i];
+        uint32_t current_data = dma_buffer->words[i];
 
         send_fixed_route_packet(first_packet_key, current_data);
 
@@ -1470,17 +1497,19 @@ static inline void data_out_start_dma_read(
     dma[DMA_DESC] = desc;
 }
 
-//! \brief sets off a DMA reading a block of SDRAM in preparation for sending to
-//! the packet gatherer
+//! \brief sets off a DMA reading a block of SDRAM in preparation for sending
+//!     to the packet gatherer
 //! \param[in] dma_tag: the DMA tag associated with this read.
-//!            transmission or retransmission
+//!     ::DMA_TAG_READ_FOR_TRANSMISSION or ::DMA_TAG_RETRANSMISSION_READING
 //! \param[in] offset: where in the data array to start writing to
 //! \param[in] items_to_read: the number of word items to read
 static void data_out_read(
-        uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+        uint32_t dma_tag, enum transmission_offsets offset,
+        uint32_t items_to_read) {
     // set off DMA
-    data_out_transmit_dma_pointer =
+    uint32_t current_buffer_ptr =
             (data_out_transmit_dma_pointer + 1) % N_DMA_BUFFERS;
+    data_out_transmit_dma_pointer = current_buffer_ptr;
 
     address_t data_sdram_position =
             &data_out_store_address[data_out_position_in_store];
@@ -1491,7 +1520,7 @@ static void data_out_read(
 
     // set off DMA
     data_out_start_dma_read(dma_tag, data_sdram_position,
-            &data_out_data_to_transmit[data_out_transmit_dma_pointer][offset],
+            &data_out_data_to_transmit[current_buffer_ptr].words[offset],
             items_to_read);
 }
 
@@ -1506,9 +1535,9 @@ static void data_out_send_end_flag(void) {
 //! previous is being transferred over the network.
 //!
 //! Callback associated with ::DMA_TAG_READ_FOR_TRANSMISSION
-static void data_out_dma_complete_reading_for_original_transmission(void) {
+static void data_out_dma_complete_reading_for_original_transmission(
+        data_out_transmission_buffer_t *dma_buffer) {
     // set up state
-    uint32_t current_dma_pointer = data_out_transmit_dma_pointer;
     uint32_t key_to_transmit = data_out_basic_data_key;
     uint32_t second_key_to_transmit = data_out_basic_data_key;
     uint32_t items_read_this_time = data_out_num_items_read;
@@ -1516,8 +1545,8 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
     // put size in bytes if first send
     if (data_out_first_transmission) {
         //io_printf(IO_BUF, "in first\n");
-        data_out_data_to_transmit[current_dma_pointer][0] = data_out_max_seq_num;
-        data_out_data_to_transmit[current_dma_pointer][1] = data_out_transaction_id;
+        dma_buffer->data_buffer.max_seq_num = data_out_max_seq_num;
+        dma_buffer->data_buffer.transaction_id = data_out_transaction_id;
         key_to_transmit = data_out_first_data_key;
         second_key_to_transmit = data_out_transaction_id_key;
         data_out_first_transmission = false;
@@ -1539,11 +1568,12 @@ static void data_out_dma_complete_reading_for_original_transmission(void) {
         }
 
         // set off another read and transmit DMA'ed one
-        data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
-        data_out_send_data_block(current_dma_pointer, items_read_this_time,
+        data_out_read(DMA_TAG_READ_FOR_TRANSMISSION,
+                DATA_NEXT_TRANSMISSION_OFFSET, num_items_to_read);
+        data_out_send_data_block(dma_buffer, items_read_this_time,
                 key_to_transmit, second_key_to_transmit);
     } else {
-        data_out_send_data_block(current_dma_pointer, items_read_this_time,
+        data_out_send_data_block(dma_buffer, items_read_this_time,
                 key_to_transmit, second_key_to_transmit);
 
         // send end flag.
@@ -1674,11 +1704,13 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
 
         if (left_over_portion < SDP_PAYLOAD_WORDS) {
             data_out_retransmitted_seq_num_items_read = left_over_portion + 1;
-            data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
+            data_out_read(DMA_TAG_RETRANSMISSION_READING,
+                    DATA_RETRANSMISSION_OFFSET, left_over_portion);
         } else {
             data_out_retransmitted_seq_num_items_read =
                     ITEMS_PER_DATA_PACKET - TRANSACTION_ID_SIZE;
-            data_out_read(DMA_TAG_RETRANSMISSION_READING, 1, SDP_PAYLOAD_WORDS);
+            data_out_read(DMA_TAG_RETRANSMISSION_READING,
+                    DATA_RETRANSMISSION_OFFSET, SDP_PAYLOAD_WORDS);
         }
     } else {        // finished data send, tell host its done
         data_out_send_end_flag();
@@ -1693,9 +1725,10 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
 //! \brief DMA complete callback for have read missing sequence number data.
 //!
 //! Callback associated with ::DMA_TAG_RETRANSMISSION_READING
-static void data_out_dma_complete_reading_retransmission_data(void) {
+static void data_out_dma_complete_reading_retransmission_data(
+        data_out_transmission_buffer_t *dma_buffer) {
     // set sequence number as first element
-    data_out_data_to_transmit[data_out_transmit_dma_pointer][0] =
+    dma_buffer->missing_seq_buffer.this_seq_num =
             data_out_missing_seq_num_being_processed;
     if (data_out_missing_seq_num_being_processed > data_out_max_seq_num) {
         io_printf(IO_BUF,
@@ -1705,8 +1738,7 @@ static void data_out_dma_complete_reading_retransmission_data(void) {
 
     // send new data back to host
     data_out_send_data_block(
-            data_out_transmit_dma_pointer,
-            data_out_retransmitted_seq_num_items_read,
+            dma_buffer, data_out_retransmitted_seq_num_items_read,
             data_out_new_sequence_key, data_out_basic_data_key);
 
     data_out_read_data_position++;
@@ -1719,7 +1751,7 @@ static void data_out_dma_complete_writing_missing_seq_to_sdram(void) {
 }
 
 //! \brief the handler for all messages coming in for data speed up
-//! functionality.
+//!     functionality.
 //! \param[in] msg: the SDP message (without SCP header)
 static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     sdp_data_out_t *message = (sdp_data_out_t *) msg->data;
@@ -1765,12 +1797,8 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         data_out_n_elements_to_read_from_sdram =
                 bytes_to_read_write / sizeof(uint);
 
-        if (data_out_n_elements_to_read_from_sdram < SDP_PAYLOAD_WORDS) {
-            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 2,
-                    data_out_n_elements_to_read_from_sdram);
-        } else {
-            data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, 2, SDP_PAYLOAD_WORDS);
-        }
+        data_out_read(DMA_TAG_READ_FOR_TRANSMISSION, DATA_FIRST_TRANSMISSION_OFFSET,
+                min(data_out_n_elements_to_read_from_sdram, SDP_PAYLOAD_WORDS));
         return;
     }
     case SDP_CMD_START_OF_MISSING_SDP_PACKETS:
@@ -1786,8 +1814,8 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
         if (data_out_n_missing_seq_packets != 0) {
             io_printf(IO_BUF, "forcing start of retransmission packet\n");
             data_out_n_missing_seq_packets = 0;
-            data_out_missing_seq_num_sdram_address[data_out_n_missing_seq_nums_in_sdram++] =
-                    END_FLAG;
+            data_out_missing_seq_num_sdram_address[
+                    data_out_n_missing_seq_nums_in_sdram++] = END_FLAG;
             data_out_read_data_position = 0;
             data_out_position_for_retransmission = 0;
             data_out_in_retransmission_mode = true;
@@ -1860,13 +1888,15 @@ static INT_HANDLER data_out_dma_complete(void) {
         // Only do something if we have not been told to stop
         switch (data_out_dma_port_last_used) {
         case DMA_TAG_READ_FOR_TRANSMISSION:
-            data_out_dma_complete_reading_for_original_transmission();
+            data_out_dma_complete_reading_for_original_transmission(
+                    &data_out_data_to_transmit[data_out_transmit_dma_pointer]);
             break;
         case DMA_TAG_READ_FOR_RETRANSMISSION:
             data_out_dma_complete_read_missing_seqeuence_nums();
             break;
         case DMA_TAG_RETRANSMISSION_READING:
-            data_out_dma_complete_reading_retransmission_data();
+            data_out_dma_complete_reading_retransmission_data(
+                    &data_out_data_to_transmit[data_out_transmit_dma_pointer]);
             break;
         case DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS:
             data_out_dma_complete_writing_missing_seq_to_sdram();
@@ -2034,7 +2064,7 @@ static void data_in_initialise(void) {
 
     // set up mc interrupts to deal with data writing
     set_vic_callback(
-        MC_PAYLOAD_SLOT, CC_MC_INT, process_mc_payload_packet);
+            MC_PAYLOAD_SLOT, CC_MC_INT, process_mc_payload_packet);
 }
 
 //-----------------------------------------------------------------------------

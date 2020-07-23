@@ -177,7 +177,7 @@ typedef struct {
 
 //! data holders for the SDP packet (plus 1 to protect against memory
 //! overwrites with command messages)
-static data_out_msg_t data;
+static data_out_msg_t data_out_msg;
 
 //! index into ::data
 static int position_in_store = 0;
@@ -761,7 +761,7 @@ static void receive_sdp_message(uint mailbox, uint port) {
 //! \brief sends data to the host via SDP (using ::my_msg)
 static void send_data(void) {
     uint payload_size = (uint)(position_in_store + 2);
-    copy_data(&my_msg.data, data, payload_size);
+    copy_data(&my_msg.data, &data_out_msg, payload_size);
     my_msg.length = sizeof(sdp_hdr_t) + payload_size * sizeof(uint);
 
     if (seq_num > max_seq_num) {
@@ -772,8 +772,8 @@ static void send_data(void) {
     send_sdp_message();
 
     seq_num++;
-    data->sequence_number = seq_num;
-    data->transaction_id = data_out_transaction_id;
+    data_out_msg.sequence_number = seq_num;
+    data_out_msg.transaction_id = data_out_transaction_id;
     position_in_store = 0;
 }
 
@@ -790,8 +790,8 @@ static void receive_data(uint key, uint payload) {
         }
 
         log_info("new seq num to set is %d", payload);
-        data->sequence_number = payload;
-        data->transaction_id = data_out_transaction_id;
+        data_out_msg.sequence_number = payload;
+        data_out_msg.transaction_id = data_out_transaction_id;
         seq_num = payload;
         position_in_store = 0;
 
@@ -802,21 +802,21 @@ static void receive_data(uint key, uint payload) {
     } else if (key == first_data_key) {
         log_info("received new stream with max %d", payload);
         seq_num = FIRST_SEQ_NUM;
-        data->sequence_number = seq_num;
+        data_out_msg.sequence_number = seq_num;
         position_in_store = -1; // Next stream word is transaction ID!
         max_seq_num = payload;
     } else if (key == transaction_id_key) {
         data_out_transaction_id = payload;
-        data->transaction_id = data_out_transaction_id;
+        data_out_msg.transaction_id = data_out_transaction_id;
         position_in_store = 0;
     } else if (key == end_flag_key) {
         // set end flag bit in seq num
-        data->sequence_number |= 1 << 31;
+        data_out_msg.sequence_number |= 1 << 31;
         send_data();
         log_info("sent all data");
     } else {
         // Ordinary payload word
-        data->data[position_in_store] = payload;
+        data_out_msg.data[position_in_store] = payload;
         position_in_store++;
 
         // Send if we're full
