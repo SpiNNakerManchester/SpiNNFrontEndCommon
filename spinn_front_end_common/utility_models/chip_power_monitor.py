@@ -21,9 +21,7 @@ from spinn_front_end_common.abstract_models import (
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
-class ChipPowerMonitor(
-        ApplicationVertex, AbstractHasAssociatedBinary,
-        AbstractGeneratesDataSpecification):
+class ChipPowerMonitor(ApplicationVertex, AbstractGeneratesDataSpecification):
     """ Represents idle time recording code in a application graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
@@ -65,10 +63,6 @@ class ChipPowerMonitor(
                     machine_vertex.resources_required)
         return machine_vertex
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return ChipPowerMonitorMachineVertex.binary_file_name()
-
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
                    "n_machine_time_steps": "PlanNTimeSteps"})
@@ -91,10 +85,6 @@ class ChipPowerMonitor(
         placement.vertex.generate_data_specification(
             spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return ChipPowerMonitorMachineVertex.binary_start_type()
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
