@@ -209,6 +209,10 @@ class Compression(object):
             len(self._routing_tables.routing_tables) * 2,
             self._progresses_text)
 
+        if len(self._routing_tables.routing_tables) == 0:
+            progress_bar.end()
+            return
+
         self._compressor_app_id = self._transceiver.app_id_tracker.get_new_id()
 
         # figure size of SDRAM needed for each chip for storing the routing
