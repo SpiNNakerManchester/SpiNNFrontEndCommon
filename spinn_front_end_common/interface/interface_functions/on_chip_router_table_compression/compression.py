@@ -173,7 +173,8 @@ class Compression(object):
         "_provenance_file_path",
         "_transceiver",
         "_routing_tables",
-        "_write_compressor_iobuf"]
+        "_write_compressor_iobuf",
+        "__failures"]
 
     def __init__(
             self, app_id, binary_path, compress_as_much_as_possible,
@@ -204,6 +205,7 @@ class Compression(object):
         self._progresses_text = progresses_text
         self._compressor_app_id = None
         self._write_compressor_iobuf = write_compressor_iobuf
+        self.__failures = []
 
     def compress(self, register):
         """ Apply the on-machine compression algorithm.
@@ -241,6 +243,9 @@ class Compression(object):
                 register=register),
             [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",
             [self._binary_path], progress_bar)
+        if self.__failures:
+            raise SpinnFrontEndException(
+                "The router compressor failed on {}".format(self.__failures))
 
     def _load_routing_table(self, table):
         """
@@ -279,10 +284,8 @@ class Compression(object):
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
                 if result != 0:
-                    raise SpinnFrontEndException(
-                        "The router compressor on {}, {} failed to complete"
-                        .format(x, y))
-
+                    self.__failures.append((x,y))
+        return len(self.__failures) == 0
 
     def _load_executables(self):
         """ Loads the router compressor onto the chips.
