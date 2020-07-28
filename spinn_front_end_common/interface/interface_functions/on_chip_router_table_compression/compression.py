@@ -284,7 +284,7 @@ class Compression(object):
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure
                 if result != 0:
-                    self.__failures.append((x,y))
+                    self.__failures.append((x, y))
         return len(self.__failures) == 0
 
     def _load_executables(self):
