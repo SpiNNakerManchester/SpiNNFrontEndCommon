@@ -95,7 +95,7 @@ def run_system_application(
         succeeded = check_for_success_function(executable_cores, transceiver)
 
     # if doing iobuf or on failure (succeeded is None is not failure)
-    if read_algorithm_iobuf or succeeded == False: # noqa: E712
+    if read_algorithm_iobuf or succeeded == False:  # noqa: E712
         iobuf_reader = ChipIOBufExtractor(
             filename_template=filename_template,
             suppress_progress=False)
