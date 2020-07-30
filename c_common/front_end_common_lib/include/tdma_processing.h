@@ -27,6 +27,14 @@
 #ifndef _TDMA_PROCESSING_H_
 #define _TDMA_PROCESSING_H_
 
+//! stores the format of the TDMA processing state in SDRAM
+struct tdma_parameters {
+    uint32_t core_slot;
+    uint32_t time_between_spikes;
+    uint32_t time_between_cores;
+    uint32_t initial_offset;
+} tdma_parameters;
+
 //! \brief hands back the number of times the TDMA was behind
 uint32_t tdma_processing_times_behind(void);
 
@@ -41,11 +49,15 @@ void tdma_processing_reset_phase(void);
 //! \brief internal method for sending a spike with the TDMA tie in
 //! \param[in] index: the atom index.
 //! \param[in] phase: the current phase this vertex thinks its in.
+//! \param[in] payload: the payload to send
+//! \param[in] payload_marker: the marker about having a payload or not.
+//!            should be either PAYLOAD or NO_PAYLOAD from spin1_api.h
 //! \param[in] n_atoms: the number of atoms in this TDMA.
 //! \param[in] timer_period:
 //! \param[in] timer_count:
 void tdma_processing_send_packet(
-        uint32_t index, uint32_t key, uint timer_period, uint timer_count,
+        uint32_t index, uint32_t transmission_key, uint32_t payload,
+        uint32_t payload_marker, uint timer_period, uint timer_count,
         uint32_t n_atoms);
 
 #endif // _TDMA_PROCESSING_H_

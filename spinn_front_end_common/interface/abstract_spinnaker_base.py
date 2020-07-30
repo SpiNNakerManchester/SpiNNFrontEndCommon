@@ -1552,6 +1552,9 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         algorithms = list()
 
+        # process for TDMA required cores
+        algorithms.append("LocalTDMABuilder")
+
         if self._live_packet_recorder_params:
             algorithms.append(
                 "InsertLivePacketGatherersToGraphs")

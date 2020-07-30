@@ -26,14 +26,7 @@
 
 #include <debug.h>
 #include <stdbool.h>
-
-//! stores the format of the TDMA processing state in SDRAM
-struct tdma_parameters {
-    uint32_t core_slot;
-    uint32_t time_between_spikes;
-    uint32_t time_between_cores;
-    uint32_t initial_offset;
-} tdma_parameters;
+#include <tdma_processing.h>
 
 //! which phase in the TDMA we're in
 static uint32_t phase;
@@ -93,13 +86,17 @@ void tdma_processing_reset_phase(void) {
 //! \brief internal method for sending a spike with the TDMA tie in
 //! \param[in] index: the atom index.
 //! \param[in] phase: the current phase this vertex thinks its in.
+//! \param[in] payload: the payload to send
+//! \param[in] payload_marker: the marker about having a payload or not.
+//!            should be either PAYLOAD or NO_PAYLOAD from spin1_api.h
 //! \param[in] transmission_key: the key to transmit with
 //! \param[in] n_atoms: the number of atoms in this TDMA.
 //! \param[in] timer_period:
 //! \param[in] timer_count:
 void tdma_processing_send_packet(
-        uint32_t index, uint32_t transmission_key, uint timer_period,
-        uint timer_count, uint32_t n_atoms) {
+        uint32_t index, uint32_t transmission_key, uint32_t payload,
+        uint32_t payload_marker, uint timer_period, uint timer_count,
+        uint32_t n_atoms) {
 
     // Spin1 API ticks - to know when the timer wraps
     extern uint ticks;
@@ -129,7 +126,7 @@ void tdma_processing_send_packet(
                     "missed the whole TDMA. go NOW! for atom %d on tick %d",
                     index, ticks);
                 while (!spin1_send_mc_packet(
-                        transmission_key, 0, NO_PAYLOAD)) {
+                        transmission_key, payload, payload_marker)) {
                     spin1_delay_us(1);
                 }
                 return;
@@ -155,7 +152,7 @@ void tdma_processing_send_packet(
 
     // Send the spike
     log_debug("sending spike %d", transmission_key);
-    while (!spin1_send_mc_packet(transmission_key, 0, NO_PAYLOAD)) {
+    while (!spin1_send_mc_packet(transmission_key, payload, payload_marker)) {
         spin1_delay_us(1);
     }
 
