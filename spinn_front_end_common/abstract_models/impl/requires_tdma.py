@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from spinn_front_end_common.abstract_models.abstract_requires_tdma import \
     AbstractRequiresTDMA
 from spinn_front_end_common.utilities import constants
@@ -72,5 +73,3 @@ class RequiresTDMA(AbstractRequiresTDMA):
     @overrides(AbstractRequiresTDMA.get_n_cores)
     def get_n_cores(self, app_vertex):
         return len(app_vertex.vertex_slices)
-
-

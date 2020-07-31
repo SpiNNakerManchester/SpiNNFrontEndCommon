@@ -94,7 +94,7 @@ class LocalTDMABuilder(object):
         # get config params
         (pop_level_spike_control, time_between_cores,
          fraction_of_sending, fraction_of_waiting) = self.config_values()
-            
+
         # calculate for each app vertex if the time needed fits
         pop_verts = list()
         for app_vertex in application_graph.vertices:
@@ -186,7 +186,7 @@ class LocalTDMABuilder(object):
     def config_values(self):
         # get config
         config = globals_variables.get_simulator().config
-        
+
         # set the number of cores expected to fire at any given time
         pop_level_spike_control = helpful_functions.read_config_int(
             config, "Simulation", "pop_spike_quantity")
