@@ -189,7 +189,7 @@ class LocalTDMABuilder(object):
 
         # set the number of cores expected to fire at any given time
         pop_level_spike_control = helpful_functions.read_config_int(
-            config, "Simulation", "pop_spike_quantity")
+            config, "Simulation", "app_machine_quantity")
         if pop_level_spike_control is None:
             pop_level_spike_control = self._DEFAULT_N_CORES_AT_SAME_TIME
 
