@@ -81,7 +81,7 @@ $(function() {
 
 <p>The implementation of the Extra Monitor.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;sark.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">sark.h</a>&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="common_8h_source.html">common.h</a>&quot;</code><br />
@@ -91,9 +91,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structdumped__packet__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structdumped__packet__t">dumped_packet_t</a></td></tr>
 <tr class="memdesc:structdumped__packet__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">dumped packet type  <a href="extra__monitor__support_8c.html#structdumped__packet__t">More...</a><br /></td></tr>
 <tr class="separator:structdumped__packet__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structpkt__queue__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structpkt__queue__t">pkt_queue_t</a></td></tr>
-<tr class="memdesc:structpkt__queue__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">packet queue type  <a href="extra__monitor__support_8c.html#structpkt__queue__t">More...</a><br /></td></tr>
-<tr class="separator:structpkt__queue__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:scamp_8h"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/extra__monitor__support_8c.html#scamp_8h">pkt_queue_t</a></td></tr>
+<tr class="memdesc:scamp_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">packet queue type <br /></td></tr>
+<tr class="separator:scamp_8h"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:structsdp__data__out__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structsdp__data__out__t">sdp_data_out_t</a></td></tr>
 <tr class="memdesc:structsdp__data__out__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">message payload for the data speed up out SDP messages  <a href="extra__monitor__support_8c.html#structsdp__data__out__t">More...</a><br /></td></tr>
 <tr class="separator:structsdp__data__out__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -342,27 +342,26 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae35277172e3b42f22218009fe98a2402"><td class="memItemLeft" align="right" valign="top"><a id="ae35277172e3b42f22218009fe98a2402"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ae35277172e3b42f22218009fe98a2402">spin1_wfi</a> (void)</td></tr>
-<tr class="memdesc:ae35277172e3b42f22218009fe98a2402"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for interrupt. (Undisclosed import from Spin1API.) <br /></td></tr>
+<tr class="memitem:ae35277172e3b42f22218009fe98a2402"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ae35277172e3b42f22218009fe98a2402">spin1_wfi</a> (void)</td></tr>
+<tr class="memdesc:ae35277172e3b42f22218009fe98a2402"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for interrupt. (Undisclosed import from Spin1API.)  <a href="extra__monitor__support_8c.html#ae35277172e3b42f22218009fe98a2402">More...</a><br /></td></tr>
 <tr class="separator:ae35277172e3b42f22218009fe98a2402"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d542339b492b2ad62a803b09b001365"><td class="memItemLeft" align="right" valign="top"><a id="a6d542339b492b2ad62a803b09b001365"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6d542339b492b2ad62a803b09b001365">sark_int_han</a> (void)</td></tr>
 <tr class="memdesc:a6d542339b492b2ad62a803b09b001365"><td class="mdescLeft">&#160;</td><td class="mdescRight">The standard SARK CPU interrupt handler. <br /></td></tr>
 <tr class="separator:a6d542339b492b2ad62a803b09b001365"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa7ba56ad4e43d1f252ddb7e8b178869e">dsg_block</a> (uint index)</td></tr>
+<tr class="memitem:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa7ba56ad4e43d1f252ddb7e8b178869e">dsg_block</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> index)</td></tr>
 <tr class="memdesc:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the DSG region with the given index.  <a href="extra__monitor__support_8c.html#aa7ba56ad4e43d1f252ddb7e8b178869e">More...</a><br /></td></tr>
 <tr class="separator:aa7ba56ad4e43d1f252ddb7e8b178869e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63d6a04c17d2ce291d74265353332f52"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a63d6a04c17d2ce291d74265353332f52">publish_transaction_id</a> (int <a class="el" href="data__speed__up__packet__gatherer_8c.html#a87f9e7ddbb607ed91afc2e1c7c9a4a52">transaction_id</a>)</td></tr>
 <tr class="memdesc:a63d6a04c17d2ce291d74265353332f52"><td class="mdescLeft">&#160;</td><td class="mdescRight">publishes the current transaction ID to the user1 register.  <a href="extra__monitor__support_8c.html#a63d6a04c17d2ce291d74265353332f52">More...</a><br /></td></tr>
 <tr class="separator:a63d6a04c17d2ce291d74265353332f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1be01cae613050e36c4f549c87ae0a84"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1be01cae613050e36c4f549c87ae0a84">sdram_alloc</a> (uint size)</td></tr>
+<tr class="memitem:a1be01cae613050e36c4f549c87ae0a84"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1be01cae613050e36c4f549c87ae0a84">sdram_alloc</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> size)</td></tr>
 <tr class="memdesc:a1be01cae613050e36c4f549c87ae0a84"><td class="mdescLeft">&#160;</td><td class="mdescRight">allocate a block of SDRAM (to be freed with <a class="el" href="extra__monitor__support_8c.html#aaf46efbdfe7f99bd30f5c16cab24594d" title="free a block of SDRAM allocated with sdram_alloc()">sdram_free()</a>)  <a href="extra__monitor__support_8c.html#a1be01cae613050e36c4f549c87ae0a84">More...</a><br /></td></tr>
 <tr class="separator:a1be01cae613050e36c4f549c87ae0a84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf46efbdfe7f99bd30f5c16cab24594d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aaf46efbdfe7f99bd30f5c16cab24594d">sdram_free</a> (void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>)</td></tr>
 <tr class="memdesc:aaf46efbdfe7f99bd30f5c16cab24594d"><td class="mdescLeft">&#160;</td><td class="mdescRight">free a block of SDRAM allocated with <a class="el" href="extra__monitor__support_8c.html#a1be01cae613050e36c4f549c87ae0a84" title="allocate a block of SDRAM (to be freed with sdram_free())">sdram_alloc()</a>  <a href="extra__monitor__support_8c.html#aaf46efbdfe7f99bd30f5c16cab24594d">More...</a><br /></td></tr>
 <tr class="separator:aaf46efbdfe7f99bd30f5c16cab24594d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcd337d4b9965adcf2fe541a65330121"><td class="memItemLeft" align="right" valign="top">static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#adcd337d4b9965adcf2fe541a65330121">sdram_max_block_size</a> (void)</td></tr>
+<tr class="memitem:adcd337d4b9965adcf2fe541a65330121"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#adcd337d4b9965adcf2fe541a65330121">sdram_max_block_size</a> (void)</td></tr>
 <tr class="memdesc:adcd337d4b9965adcf2fe541a65330121"><td class="mdescLeft">&#160;</td><td class="mdescRight">the maximum SDRAM block size  <a href="extra__monitor__support_8c.html#adcd337d4b9965adcf2fe541a65330121">More...</a><br /></td></tr>
 <tr class="separator:adcd337d4b9965adcf2fe541a65330121"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad360265d909740de3d1186236c5c897c"><td class="memItemLeft" align="right" valign="top">static sdp_msg_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ad360265d909740de3d1186236c5c897c">get_message_from_mailbox</a> (void)</td></tr>
@@ -372,7 +371,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extr
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a28cb6a39c61408fb29e5aa70c50ac72e">vic_interrupt_done</a> (void)</td></tr>
 <tr class="memdesc:a28cb6a39c61408fb29e5aa70c50ac72e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marks the end of an interrupt handler from the VIC's perspective. <br /></td></tr>
 <tr class="separator:a28cb6a39c61408fb29e5aa70c50ac72e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f8d524da3fce071fd279eca4715e81d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9f8d524da3fce071fd279eca4715e81d">set_vic_callback</a> (uint8_t slot, uint type, <a class="el" href="extra__monitor__support_8c.html#a6d626fdf464bc6f2160d0bc92243b027">isr_t</a> callback)</td></tr>
+<tr class="memitem:a9f8d524da3fce071fd279eca4715e81d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9f8d524da3fce071fd279eca4715e81d">set_vic_callback</a> (uint8_t slot, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> type, <a class="el" href="extra__monitor__support_8c.html#a6d626fdf464bc6f2160d0bc92243b027">isr_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:a9f8d524da3fce071fd279eca4715e81d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Install an interrupt handler.  <a href="extra__monitor__support_8c.html#a9f8d524da3fce071fd279eca4715e81d">More...</a><br /></td></tr>
 <tr class="separator:a9f8d524da3fce071fd279eca4715e81d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53152f7717876fe6e69cbfcb4ff13c76"><td class="memItemLeft" align="right" valign="top"><a id="a53152f7717876fe6e69cbfcb4ff13c76"></a>
@@ -387,7 +386,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a0c0d13de480b18622bcc1d4d8905fadd">reinjection_timer_callback</a> (void)</td></tr>
 <tr class="memdesc:a0c0d13de480b18622bcc1d4d8905fadd"><td class="mdescLeft">&#160;</td><td class="mdescRight">the plugin callback for the timer <br /></td></tr>
 <tr class="separator:a0c0d13de480b18622bcc1d4d8905fadd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9c066ab47040e8e838cf5b88c66b2429"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9c066ab47040e8e838cf5b88c66b2429">reinjection_reinject_packet</a> (const <a class="el" href="extra__monitor__support_8c.html#structdumped__packet__t">dumped_packet_t</a> *pkt)</td></tr>
+<tr class="memitem:a9c066ab47040e8e838cf5b88c66b2429"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9c066ab47040e8e838cf5b88c66b2429">reinjection_reinject_packet</a> (const <a class="el" href="extra__monitor__support_8c.html#structdumped__packet__t">dumped_packet_t</a> *<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">pkt</a>)</td></tr>
 <tr class="memdesc:a9c066ab47040e8e838cf5b88c66b2429"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does the actual reinjection of a packet.  <a href="extra__monitor__support_8c.html#a9c066ab47040e8e838cf5b88c66b2429">More...</a><br /></td></tr>
 <tr class="separator:a9c066ab47040e8e838cf5b88c66b2429"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad5a261b512d062d60b1391120e6eef7"><td class="memItemLeft" align="right" valign="top"><a id="aad5a261b512d062d60b1391120e6eef7"></a>
@@ -401,10 +400,10 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a183e66b300e1ed3e782e5b141a69e7f1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a183e66b300e1ed3e782e5b141a69e7f1">reinjection_read_packet_types</a> (const <a class="el" href="extra__monitor__support_8c.html#structreinject__config__t">reinject_config_t</a> *<a class="el" href="reverse__iptag__multicast__source_8c.html#structconfig">config</a>)</td></tr>
 <tr class="memdesc:a183e66b300e1ed3e782e5b141a69e7f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">reads a DSG memory region to set packet types for reinjection  <a href="extra__monitor__support_8c.html#a183e66b300e1ed3e782e5b141a69e7f1">More...</a><br /></td></tr>
 <tr class="separator:a183e66b300e1ed3e782e5b141a69e7f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab980ed73f46a26ebaef3d348656b6f00"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ab980ed73f46a26ebaef3d348656b6f00">reinjection_set_timeout</a> (uint payload)</td></tr>
+<tr class="memitem:ab980ed73f46a26ebaef3d348656b6f00"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ab980ed73f46a26ebaef3d348656b6f00">reinjection_set_timeout</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> payload)</td></tr>
 <tr class="memdesc:ab980ed73f46a26ebaef3d348656b6f00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the wait1 router timeout.  <a href="extra__monitor__support_8c.html#ab980ed73f46a26ebaef3d348656b6f00">More...</a><br /></td></tr>
 <tr class="separator:ab980ed73f46a26ebaef3d348656b6f00"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9263b36e3b51be0dcc0404ac3266d7e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ad9263b36e3b51be0dcc0404ac3266d7e">reinjection_set_emergency_timeout</a> (uint payload)</td></tr>
+<tr class="memitem:ad9263b36e3b51be0dcc0404ac3266d7e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ad9263b36e3b51be0dcc0404ac3266d7e">reinjection_set_emergency_timeout</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> payload)</td></tr>
 <tr class="memdesc:ad9263b36e3b51be0dcc0404ac3266d7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the wait2 router timeout.  <a href="extra__monitor__support_8c.html#ad9263b36e3b51be0dcc0404ac3266d7e">More...</a><br /></td></tr>
 <tr class="separator:ad9263b36e3b51be0dcc0404ac3266d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7ade7ffe332b73e233b53c502f2f051"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#af7ade7ffe332b73e233b53c502f2f051">reinjection_set_timeout_sdp</a> (sdp_msg_t *msg)</td></tr>
@@ -432,7 +431,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a95f32d825a42b3ac4aee9d234c208652"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a95f32d825a42b3ac4aee9d234c208652">reinjection_clear_message</a> (sdp_msg_t *msg)</td></tr>
 <tr class="memdesc:a95f32d825a42b3ac4aee9d234c208652"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the queue of messages to reinject.  <a href="extra__monitor__support_8c.html#a95f32d825a42b3ac4aee9d234c208652">More...</a><br /></td></tr>
 <tr class="separator:a95f32d825a42b3ac4aee9d234c208652"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d64f649b9cab5fd167e81ded4459f87"><td class="memItemLeft" align="right" valign="top">static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a2d64f649b9cab5fd167e81ded4459f87">reinjection_sdp_command</a> (sdp_msg_t *msg)</td></tr>
+<tr class="memitem:a2d64f649b9cab5fd167e81ded4459f87"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a2d64f649b9cab5fd167e81ded4459f87">reinjection_sdp_command</a> (sdp_msg_t *msg)</td></tr>
 <tr class="memdesc:a2d64f649b9cab5fd167e81ded4459f87"><td class="mdescLeft">&#160;</td><td class="mdescRight">handles the commands for the reinjector code.  <a href="extra__monitor__support_8c.html#a2d64f649b9cab5fd167e81ded4459f87">More...</a><br /></td></tr>
 <tr class="separator:a2d64f649b9cab5fd167e81ded4459f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8607a1f465ee25f354d3e84210217c55"><td class="memItemLeft" align="right" valign="top"><a id="a8607a1f465ee25f354d3e84210217c55"></a>
@@ -455,16 +454,16 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a787d1adf1616b9a7ed4d2bbc09912f38">data_in_process_boundary</a> (void)</td></tr>
 <tr class="memdesc:a787d1adf1616b9a7ed4d2bbc09912f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets the state due to reaching the end of a data stream. <br /></td></tr>
 <tr class="separator:a787d1adf1616b9a7ed4d2bbc09912f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb0f548fd857a9e92df7fac58a9dc46f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aeb0f548fd857a9e92df7fac58a9dc46f">data_in_process_address</a> (uint <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>)</td></tr>
+<tr class="memitem:aeb0f548fd857a9e92df7fac58a9dc46f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aeb0f548fd857a9e92df7fac58a9dc46f">data_in_process_address</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>)</td></tr>
 <tr class="memdesc:aeb0f548fd857a9e92df7fac58a9dc46f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the next location to write data at.  <a href="extra__monitor__support_8c.html#aeb0f548fd857a9e92df7fac58a9dc46f">More...</a><br /></td></tr>
 <tr class="separator:aeb0f548fd857a9e92df7fac58a9dc46f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aea9870871b1adda1b5bf1558ef06a950"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aea9870871b1adda1b5bf1558ef06a950">data_in_process_data</a> (uint <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>)</td></tr>
+<tr class="memitem:aea9870871b1adda1b5bf1558ef06a950"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aea9870871b1adda1b5bf1558ef06a950">data_in_process_data</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>)</td></tr>
 <tr class="memdesc:aea9870871b1adda1b5bf1558ef06a950"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a word in a stream and advances the write pointer.  <a href="extra__monitor__support_8c.html#aea9870871b1adda1b5bf1558ef06a950">More...</a><br /></td></tr>
 <tr class="separator:aea9870871b1adda1b5bf1558ef06a950"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a807dbc6601bcfe6e6dce32c7da0653b8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a807dbc6601bcfe6e6dce32c7da0653b8">process_mc_payload_packet</a> (void)</td></tr>
 <tr class="memdesc:a807dbc6601bcfe6e6dce32c7da0653b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process a multicast packet with payload.  <a href="extra__monitor__support_8c.html#a807dbc6601bcfe6e6dce32c7da0653b8">More...</a><br /></td></tr>
 <tr class="separator:a807dbc6601bcfe6e6dce32c7da0653b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0125819c448bd5ac984158f88e70b523"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a0125819c448bd5ac984158f88e70b523">data_in_load_router</a> (<a class="el" href="extra__monitor__support_8c.html#structrouter__entry__t">router_entry_t</a> *sdram_address, uint n_entries)</td></tr>
+<tr class="memitem:a0125819c448bd5ac984158f88e70b523"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a0125819c448bd5ac984158f88e70b523">data_in_load_router</a> (<a class="el" href="extra__monitor__support_8c.html#structrouter__entry__t">router_entry_t</a> *sdram_address, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> n_entries)</td></tr>
 <tr class="memdesc:a0125819c448bd5ac984158f88e70b523"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes router entries to the router.  <a href="extra__monitor__support_8c.html#a0125819c448bd5ac984158f88e70b523">More...</a><br /></td></tr>
 <tr class="separator:a0125819c448bd5ac984158f88e70b523"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f09b4488c00697db12540a961c49b8d"><td class="memItemLeft" align="right" valign="top"><a id="a9f09b4488c00697db12540a961c49b8d"></a>
@@ -477,7 +476,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a7f9f6b65aaf34e5a02a2fe4da6153cae"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a7f9f6b65aaf34e5a02a2fe4da6153cae">data_in_speed_up_load_in_application_routes</a> (void)</td></tr>
 <tr class="memdesc:a7f9f6b65aaf34e5a02a2fe4da6153cae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets up application routes on router.  <a href="extra__monitor__support_8c.html#a7f9f6b65aaf34e5a02a2fe4da6153cae">More...</a><br /></td></tr>
 <tr class="separator:a7f9f6b65aaf34e5a02a2fe4da6153cae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11724dc00f7ccb028ba86be37b209d91"><td class="memItemLeft" align="right" valign="top">static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a11724dc00f7ccb028ba86be37b209d91">data_in_speed_up_command</a> (sdp_msg_t *msg)</td></tr>
+<tr class="memitem:a11724dc00f7ccb028ba86be37b209d91"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a11724dc00f7ccb028ba86be37b209d91">data_in_speed_up_command</a> (sdp_msg_t *msg)</td></tr>
 <tr class="memdesc:a11724dc00f7ccb028ba86be37b209d91"><td class="mdescLeft">&#160;</td><td class="mdescRight">The handler for all control messages coming in for data in speed up functionality.  <a href="extra__monitor__support_8c.html#a11724dc00f7ccb028ba86be37b209d91">More...</a><br /></td></tr>
 <tr class="separator:a11724dc00f7ccb028ba86be37b209d91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a557102399f9b8dc952de95ae9add8cd7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a557102399f9b8dc952de95ae9add8cd7">send_fixed_route_packet</a> (uint32_t key, uint32_t <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>)</td></tr>
@@ -486,10 +485,10 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:ac94c03355aebb5a82bc96fd9295671a7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ac94c03355aebb5a82bc96fd9295671a7">data_out_send_data_block</a> (uint32_t current_dma_pointer, uint32_t n_elements_to_send, uint32_t first_packet_key, uint32_t second_packet_key)</td></tr>
 <tr class="memdesc:ac94c03355aebb5a82bc96fd9295671a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">takes a DMA'ed block and transmits its contents as fixed route packets to the packet gatherer.  <a href="extra__monitor__support_8c.html#ac94c03355aebb5a82bc96fd9295671a7">More...</a><br /></td></tr>
 <tr class="separator:ac94c03355aebb5a82bc96fd9295671a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1324429b42f8b4ff74c5834ea0a3a849"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1324429b42f8b4ff74c5834ea0a3a849">data_out_start_dma_read</a> (uint32_t dma_tag, void *source, void *destination, uint n_words)</td></tr>
+<tr class="memitem:a1324429b42f8b4ff74c5834ea0a3a849"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1324429b42f8b4ff74c5834ea0a3a849">data_out_start_dma_read</a> (uint32_t dma_tag, void *source, void *destination, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> n_words)</td></tr>
 <tr class="memdesc:a1324429b42f8b4ff74c5834ea0a3a849"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initiate a DMA read, copying from SDRAM into DTCM.  <a href="extra__monitor__support_8c.html#a1324429b42f8b4ff74c5834ea0a3a849">More...</a><br /></td></tr>
 <tr class="separator:a1324429b42f8b4ff74c5834ea0a3a849"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4f5386354711adbef7b0f6a4379754c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa4f5386354711adbef7b0f6a4379754c">data_out_read</a> (uint32_t dma_tag, uint32_t offset, uint32_t items_to_read)</td></tr>
+<tr class="memitem:aa4f5386354711adbef7b0f6a4379754c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa4f5386354711adbef7b0f6a4379754c">data_out_read</a> (uint32_t dma_tag, uint32_t <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/normal_8c.html#a638ef372ed2ec556988b492934d0dcdd">offset</a>, uint32_t items_to_read)</td></tr>
 <tr class="memdesc:aa4f5386354711adbef7b0f6a4379754c"><td class="mdescLeft">&#160;</td><td class="mdescRight">sets off a DMA reading a block of SDRAM in preparation for sending to the packet gatherer  <a href="extra__monitor__support_8c.html#aa4f5386354711adbef7b0f6a4379754c">More...</a><br /></td></tr>
 <tr class="separator:aa4f5386354711adbef7b0f6a4379754c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e66aa00d1c5765b63cd57772d4c082d"><td class="memItemLeft" align="right" valign="top"><a id="a2e66aa00d1c5765b63cd57772d4c082d"></a>
@@ -499,10 +498,10 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a695dc55d6efe784d8f6b82980536b836"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a695dc55d6efe784d8f6b82980536b836">data_out_dma_complete_reading_for_original_transmission</a> (void)</td></tr>
 <tr class="memdesc:a695dc55d6efe784d8f6b82980536b836"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA complete callback for reading for original transmission.  <a href="extra__monitor__support_8c.html#a695dc55d6efe784d8f6b82980536b836">More...</a><br /></td></tr>
 <tr class="separator:a695dc55d6efe784d8f6b82980536b836"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31ee3b6152326aa084caf545bf03da73"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a31ee3b6152326aa084caf545bf03da73">data_out_write_missing_seq_nums_into_sdram</a> (uint32_t <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>[], uint length, uint32_t start_offset)</td></tr>
+<tr class="memitem:a31ee3b6152326aa084caf545bf03da73"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a31ee3b6152326aa084caf545bf03da73">data_out_write_missing_seq_nums_into_sdram</a> (uint32_t <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>[], <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> length, uint32_t start_offset)</td></tr>
 <tr class="memdesc:a31ee3b6152326aa084caf545bf03da73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic write sequence numbers to SDRAM that need retransmitting.  <a href="extra__monitor__support_8c.html#a31ee3b6152326aa084caf545bf03da73">More...</a><br /></td></tr>
 <tr class="separator:a31ee3b6152326aa084caf545bf03da73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae75f1c5daf6b6e6ddf299b6f98c4eb3e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ae75f1c5daf6b6e6ddf299b6f98c4eb3e">data_out_store_missing_seq_nums</a> (uint32_t <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>[], uint length, bool first)</td></tr>
+<tr class="memitem:ae75f1c5daf6b6e6ddf299b6f98c4eb3e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#ae75f1c5daf6b6e6ddf299b6f98c4eb3e">data_out_store_missing_seq_nums</a> (uint32_t <a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>[], <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> length, bool first)</td></tr>
 <tr class="memdesc:ae75f1c5daf6b6e6ddf299b6f98c4eb3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store sequence numbers into SDRAM.  <a href="extra__monitor__support_8c.html#ae75f1c5daf6b6e6ddf299b6f98c4eb3e">More...</a><br /></td></tr>
 <tr class="separator:ae75f1c5daf6b6e6ddf299b6f98c4eb3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a49d0ef596b564543c2cb1952948f23bd"><td class="memItemLeft" align="right" valign="top"><a id="a49d0ef596b564543c2cb1952948f23bd"></a>
@@ -552,35 +551,35 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extr
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:af287ff174e0cb123014a511a610abd86"><td class="memItemLeft" align="right" valign="top">static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#af287ff174e0cb123014a511a610abd86">reinject_p2p_source_id</a></td></tr>
+<tr class="memitem:af287ff174e0cb123014a511a610abd86"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#af287ff174e0cb123014a511a610abd86">reinject_p2p_source_id</a></td></tr>
 <tr class="memdesc:af287ff174e0cb123014a511a610abd86"><td class="mdescLeft">&#160;</td><td class="mdescRight">The content of the communications controller SAR register.  <a href="extra__monitor__support_8c.html#af287ff174e0cb123014a511a610abd86">More...</a><br /></td></tr>
 <tr class="separator:af287ff174e0cb123014a511a610abd86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82764ba52c9dbd303b36dac27602af70"><td class="memItemLeft" align="right" valign="top"><a id="a82764ba52c9dbd303b36dac27602af70"></a>
-static <a class="el" href="extra__monitor__support_8c.html#structpkt__queue__t">pkt_queue_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a82764ba52c9dbd303b36dac27602af70">reinject_pkt_queue</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/extra__monitor__support_8c.html#scamp_8h">pkt_queue_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a82764ba52c9dbd303b36dac27602af70">reinject_pkt_queue</a></td></tr>
 <tr class="memdesc:a82764ba52c9dbd303b36dac27602af70"><td class="mdescLeft">&#160;</td><td class="mdescRight">dumped packet queue <br /></td></tr>
 <tr class="separator:a82764ba52c9dbd303b36dac27602af70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6de3756eab35784c8f03b747c2976a8"><td class="memItemLeft" align="right" valign="top"><a id="af6de3756eab35784c8f03b747c2976a8"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#af6de3756eab35784c8f03b747c2976a8">reinject_n_dropped_packets</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#af6de3756eab35784c8f03b747c2976a8">reinject_n_dropped_packets</a></td></tr>
 <tr class="memdesc:af6de3756eab35784c8f03b747c2976a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count of all packets dropped by router. <br /></td></tr>
 <tr class="separator:af6de3756eab35784c8f03b747c2976a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d091e689f79b054e5b8dd19cea99b57"><td class="memItemLeft" align="right" valign="top"><a id="a1d091e689f79b054e5b8dd19cea99b57"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1d091e689f79b054e5b8dd19cea99b57">reinject_n_missed_dropped_packets</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a1d091e689f79b054e5b8dd19cea99b57">reinject_n_missed_dropped_packets</a></td></tr>
 <tr class="memdesc:a1d091e689f79b054e5b8dd19cea99b57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count of packets dumped because the router was itself overloaded. <br /></td></tr>
 <tr class="separator:a1d091e689f79b054e5b8dd19cea99b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a888f276fa9cba0095219a5cf8cda5760"><td class="memItemLeft" align="right" valign="top"><a id="a888f276fa9cba0095219a5cf8cda5760"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a888f276fa9cba0095219a5cf8cda5760">reinject_n_dropped_packet_overflows</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a888f276fa9cba0095219a5cf8cda5760">reinject_n_dropped_packet_overflows</a></td></tr>
 <tr class="memdesc:a888f276fa9cba0095219a5cf8cda5760"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count of packets lost because we ran out of queue space. <br /></td></tr>
 <tr class="separator:a888f276fa9cba0095219a5cf8cda5760"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a295e93ea6e66734ab30344ad33ae3a3c"><td class="memItemLeft" align="right" valign="top"><a id="a295e93ea6e66734ab30344ad33ae3a3c"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a295e93ea6e66734ab30344ad33ae3a3c">reinject_n_reinjected_packets</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a295e93ea6e66734ab30344ad33ae3a3c">reinject_n_reinjected_packets</a></td></tr>
 <tr class="memdesc:a295e93ea6e66734ab30344ad33ae3a3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count of all packets reinjected. <br /></td></tr>
 <tr class="separator:a295e93ea6e66734ab30344ad33ae3a3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27ca80eac0372b8ed4173cacbdd7cbb2"><td class="memItemLeft" align="right" valign="top"><a id="a27ca80eac0372b8ed4173cacbdd7cbb2"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a27ca80eac0372b8ed4173cacbdd7cbb2">reinject_n_link_dumped_packets</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a27ca80eac0372b8ed4173cacbdd7cbb2">reinject_n_link_dumped_packets</a></td></tr>
 <tr class="memdesc:a27ca80eac0372b8ed4173cacbdd7cbb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estimated count of packets dropped by router because a destination link is busy. <br /></td></tr>
 <tr class="separator:a27ca80eac0372b8ed4173cacbdd7cbb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a2f24dcce42f9410d83e56fc8d5555b"><td class="memItemLeft" align="right" valign="top"><a id="a5a2f24dcce42f9410d83e56fc8d5555b"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a5a2f24dcce42f9410d83e56fc8d5555b">reinject_n_processor_dumped_packets</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a5a2f24dcce42f9410d83e56fc8d5555b">reinject_n_processor_dumped_packets</a></td></tr>
 <tr class="memdesc:a5a2f24dcce42f9410d83e56fc8d5555b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Estimated count of packets dropped by router because a destination core (local) is busy. <br /></td></tr>
 <tr class="separator:a5a2f24dcce42f9410d83e56fc8d5555b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a732f0cdaa1bb431c2dcfe09e8ae663c8"><td class="memItemLeft" align="right" valign="top"><a id="a732f0cdaa1bb431c2dcfe09e8ae663c8"></a>
@@ -604,27 +603,27 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memdesc:ac3166c3e4f0d826c7d8f8140621d54f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether we are running the reinjector. <br /></td></tr>
 <tr class="separator:ac3166c3e4f0d826c7d8f8140621d54f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5029e7440b25ce52431389c133b60b64"><td class="memItemLeft" align="right" valign="top"><a id="a5029e7440b25ce52431389c133b60b64"></a>
-static <a class="el" href="extra__monitor__support_8c.html#structrouter__entry__t">router_entry_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a5029e7440b25ce52431389c133b60b64">data_in_saved_application_router_table</a> = NULL</td></tr>
+static <a class="el" href="extra__monitor__support_8c.html#structrouter__entry__t">router_entry_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a5029e7440b25ce52431389c133b60b64">data_in_saved_application_router_table</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a5029e7440b25ce52431389c133b60b64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where we save a copy of the application code's router table while the system router table entries are loaded. <br /></td></tr>
 <tr class="separator:a5029e7440b25ce52431389c133b60b64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a953e7b7350c1fe37a7d96e6f8e092a13"><td class="memItemLeft" align="right" valign="top"><a id="a953e7b7350c1fe37a7d96e6f8e092a13"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a953e7b7350c1fe37a7d96e6f8e092a13">data_in_address_key</a> = 0</td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a953e7b7350c1fe37a7d96e6f8e092a13">data_in_address_key</a> = 0</td></tr>
 <tr class="memdesc:a953e7b7350c1fe37a7d96e6f8e092a13"><td class="mdescLeft">&#160;</td><td class="mdescRight">This packet contains the address of the start of a stream. <br /></td></tr>
 <tr class="separator:a953e7b7350c1fe37a7d96e6f8e092a13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ff14c47db0d9143bada6d01827743a3"><td class="memItemLeft" align="right" valign="top"><a id="a6ff14c47db0d9143bada6d01827743a3"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6ff14c47db0d9143bada6d01827743a3">data_in_data_key</a> = 0</td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6ff14c47db0d9143bada6d01827743a3">data_in_data_key</a> = 0</td></tr>
 <tr class="memdesc:a6ff14c47db0d9143bada6d01827743a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">This packet contains a word of data in the stream. <br /></td></tr>
 <tr class="separator:a6ff14c47db0d9143bada6d01827743a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61e7d23cc7eb9dc56b295edd50c5d9c2"><td class="memItemLeft" align="right" valign="top"><a id="a61e7d23cc7eb9dc56b295edd50c5d9c2"></a>
-static uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a61e7d23cc7eb9dc56b295edd50c5d9c2">data_in_boundary_key</a> = 0</td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a61e7d23cc7eb9dc56b295edd50c5d9c2">data_in_boundary_key</a> = 0</td></tr>
 <tr class="memdesc:a61e7d23cc7eb9dc56b295edd50c5d9c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This packet is the end of a stream. <br /></td></tr>
 <tr class="separator:a61e7d23cc7eb9dc56b295edd50c5d9c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adbdd94d659ebf34794c1998ce9504d36"><td class="memItemLeft" align="right" valign="top"><a id="adbdd94d659ebf34794c1998ce9504d36"></a>
-static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#adbdd94d659ebf34794c1998ce9504d36">data_in_write_address</a> = NULL</td></tr>
+static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#adbdd94d659ebf34794c1998ce9504d36">data_in_write_address</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:adbdd94d659ebf34794c1998ce9504d36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where we will write the next received word. <code>NULL</code> if not in a stream. <br /></td></tr>
 <tr class="separator:adbdd94d659ebf34794c1998ce9504d36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5678e75e2c4ef2ff8c4f375f91950b00"><td class="memItemLeft" align="right" valign="top"><a id="a5678e75e2c4ef2ff8c4f375f91950b00"></a>
-static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a5678e75e2c4ef2ff8c4f375f91950b00">data_in_first_write_address</a> = NULL</td></tr>
+static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a5678e75e2c4ef2ff8c4f375f91950b00">data_in_first_write_address</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a5678e75e2c4ef2ff8c4f375f91950b00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where we wrote the first word in the stream. <code>NULL</code> if not in a stream. <br /></td></tr>
 <tr class="separator:a5678e75e2c4ef2ff8c4f375f91950b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a73f6ce57515df28189660ed99ebe66"><td class="memItemLeft" align="right" valign="top"><a id="a8a73f6ce57515df28189660ed99ebe66"></a>
@@ -679,7 +678,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <tr class="memdesc:ae84f265faa115a357a603cc6a4ad00b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of words that remain to be read from SDRAM. <br /></td></tr>
 <tr class="separator:ae84f265faa115a357a603cc6a4ad00b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6295b0d23630f9f06adc22e6a6a13c58"><td class="memItemLeft" align="right" valign="top"><a id="a6295b0d23630f9f06adc22e6a6a13c58"></a>
-static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6295b0d23630f9f06adc22e6a6a13c58">data_out_missing_seq_num_sdram_address</a> = NULL</td></tr>
+static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6295b0d23630f9f06adc22e6a6a13c58">data_out_missing_seq_num_sdram_address</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a6295b0d23630f9f06adc22e6a6a13c58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Buffer in SDRAM where the sequence numbers of missing packets are stored. <br /></td></tr>
 <tr class="separator:a6295b0d23630f9f06adc22e6a6a13c58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a669243ffdd32847bd1046a2b3bf5908e"><td class="memItemLeft" align="right" valign="top"><a id="a669243ffdd32847bd1046a2b3bf5908e"></a>
@@ -710,7 +709,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memdesc:ad8814e4fe93b74f80faf3acfd914761e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether we're transmitting or retransmitting. <br /></td></tr>
 <tr class="separator:ad8814e4fe93b74f80faf3acfd914761e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa250d4c913d4b950d9d0d382ce216545"><td class="memItemLeft" align="right" valign="top"><a id="aa250d4c913d4b950d9d0d382ce216545"></a>
-static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa250d4c913d4b950d9d0d382ce216545">data_out_store_address</a> = NULL</td></tr>
+static <a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa250d4c913d4b950d9d0d382ce216545">data_out_store_address</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:aa250d4c913d4b950d9d0d382ce216545"><td class="mdescLeft">&#160;</td><td class="mdescRight">The location in SDRAM where data is being read out from. <br /></td></tr>
 <tr class="separator:aa250d4c913d4b950d9d0d382ce216545"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56cb3f4cea59422f39ac5d8ce4b55341"><td class="memItemLeft" align="right" valign="top"><a id="a56cb3f4cea59422f39ac5d8ce4b55341"></a>
@@ -737,7 +736,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#addf118157dfca26d24510be20acd1b81">data_out_stop</a> = false</td></tr>
 <tr class="memdesc:addf118157dfca26d24510be20acd1b81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the data out streaming has been asked to stop. <br /></td></tr>
 <tr class="separator:addf118157dfca26d24510be20acd1b81"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3608cf1cb7158da57c233aef395c97f2"><td class="memItemLeft" align="right" valign="top">static ushort&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a3608cf1cb7158da57c233aef395c97f2">my_addr</a></td></tr>
+<tr class="memitem:a3608cf1cb7158da57c233aef395c97f2"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#ab95f123a6c9bcfee6a343170ef8c5f69">ushort</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a3608cf1cb7158da57c233aef395c97f2">my_addr</a></td></tr>
 <tr class="memdesc:a3608cf1cb7158da57c233aef395c97f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where are we (as a P2P address)?  <a href="extra__monitor__support_8c.html#a3608cf1cb7158da57c233aef395c97f2">More...</a><br /></td></tr>
 <tr class="separator:a3608cf1cb7158da57c233aef395c97f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -760,60 +759,23 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="aab0565cf977329a4739ade3b3f2e844f"></a>uint</td>
+<a id="aab0565cf977329a4739ade3b3f2e844f"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 hdr</td>
 <td class="fielddoc">
 Header word of packet. </td></tr>
 <tr><td class="fieldtype">
-<a id="a6b5263ef13a71be2c15022933a387c85"></a>uint</td>
+<a id="a6b5263ef13a71be2c15022933a387c85"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 key</td>
 <td class="fielddoc">
 Key word of packet. </td></tr>
 <tr><td class="fieldtype">
-<a id="a03beb1cb99850dd096a63d9f2a6dfa98"></a>uint</td>
+<a id="a03beb1cb99850dd096a63d9f2a6dfa98"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 pld</td>
 <td class="fielddoc">
 Payload word of packet (might be undefined) </td></tr>
-</table>
-
-</div>
-</div>
-<a name="structpkt__queue__t" id="structpkt__queue__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structpkt__queue__t">&#9670;&nbsp;</a></span>pkt_queue_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct pkt_queue_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>packet queue type </p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a74ecd5f19599fa68a60dec3cae78ee0b"></a>uint</td>
-<td class="fieldname">
-head</td>
-<td class="fielddoc">
-Index of head of queue in circular buffer. </td></tr>
-<tr><td class="fieldtype">
-<a id="a433a7abe699cde52d9e6f5aaf5665c59"></a>uint</td>
-<td class="fieldname">
-tail</td>
-<td class="fielddoc">
-<p>Index of tail of queue in circular buffer </p>
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a14053b38b0682efd3e52cb2299ad22b9"></a><a class="el" href="extra__monitor__support_8c.html#structdumped__packet__t">dumped_packet_t</a></td>
-<td class="fieldname">
-queue[<a class="el" href="extra__monitor__support_8c.html#abbb67719a1d8919da0a8e73c9332d6f9">PKT_QUEUE_SIZE</a>]</td>
-<td class="fielddoc">
-Circular buffer used to implement the queue of packets to reinject. </td></tr>
 </table>
 
 </div>
@@ -839,7 +801,7 @@ command</td>
 <td class="fielddoc">
 What operation are we dealing with. </td></tr>
 <tr><td class="fieldtype">
-<a id="a87337a5784d807c39ff28b6f463b2c24"></a>uint</td>
+<a id="a87337a5784d807c39ff28b6f463b2c24"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 transaction_id</td>
 <td class="fielddoc">
@@ -852,7 +814,7 @@ sdram_location</td>
 <td class="fielddoc">
 What location are we talking about. </td></tr>
 <tr><td class="fieldtype">
-<a id="a41ccbc9810fbed38dca069aca5f33cd0"></a>uint</td>
+<a id="a41ccbc9810fbed38dca069aca5f33cd0"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 length</td>
 <td class="fielddoc">
@@ -960,57 +922,57 @@ The system (non-app, non-SCAMP) router entries to use for Data In. </td></tr>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="a4b631a8de3287462a343c318430e8dd9"></a>uint</td>
+<a id="a4b631a8de3287462a343c318430e8dd9"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 router_timeout</td>
 <td class="fielddoc">
 The current router timeout. <p>See <a href="https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf">SpiNNaker Data Sheet</a>, Section 10.11, register r0, field wait1 </p>
 </td></tr>
 <tr><td class="fieldtype">
-<a id="a7611755227781d9b840afd8d7656698d"></a>uint</td>
+<a id="a7611755227781d9b840afd8d7656698d"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 router_emergency_timeout</td>
 <td class="fielddoc">
 The current router emergency timeout. <p>See <a href="https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf">SpiNNaker Data Sheet</a>, Section 10.11, register r0, field wait2 </p>
 </td></tr>
 <tr><td class="fieldtype">
-<a id="a3e42fd79f91ed0ede85a61cb7dcb1dbe"></a>uint</td>
+<a id="a3e42fd79f91ed0ede85a61cb7dcb1dbe"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 n_dropped_packets</td>
 <td class="fielddoc">
 The number of packets that were dropped. </td></tr>
 <tr><td class="fieldtype">
-<a id="a3ff85ce436c86576814e5eff74f9f96e"></a>uint</td>
+<a id="a3ff85ce436c86576814e5eff74f9f96e"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 n_missed_dropped_packets</td>
 <td class="fielddoc">
 The number of packets that were dumped by the router. </td></tr>
 <tr><td class="fieldtype">
-<a id="a2c4d6cc6b731fcd2c83d1489aae91eef"></a>uint</td>
+<a id="a2c4d6cc6b731fcd2c83d1489aae91eef"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 n_dropped_packets_overflows</td>
 <td class="fielddoc">
 The number of packets that were dropped due to overflow. </td></tr>
 <tr><td class="fieldtype">
-<a id="a340effbe069bf9d32cd940677f15f364"></a>uint</td>
+<a id="a340effbe069bf9d32cd940677f15f364"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 n_reinjected_packets</td>
 <td class="fielddoc">
 The number of packets that were reinjected. </td></tr>
 <tr><td class="fieldtype">
-<a id="aee6ec70930b66670b120410723add706"></a>uint</td>
+<a id="aee6ec70930b66670b120410723add706"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 n_link_dumped_packets</td>
 <td class="fielddoc">
 The number of packets dropped because a link was busy. </td></tr>
 <tr><td class="fieldtype">
-<a id="a71a33457107cbde6b8654eac5b4f39c8"></a>uint</td>
+<a id="a71a33457107cbde6b8654eac5b4f39c8"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 n_processor_dumped_packets</td>
 <td class="fielddoc">
 The number of packets dropped because a processor was busy. </td></tr>
 <tr><td class="fieldtype">
-<a id="a7ac45356b203987a7d257c8ab9e25c7e"></a>uint</td>
+<a id="a7ac45356b203987a7d257c8ab9e25c7e"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 packet_types_reinjected</td>
 <td class="fielddoc">
@@ -1034,35 +996,35 @@ What packet types are we reinjecting. </td></tr>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="ac6e10ac6340f77f1d8c48072b94935c4"></a>uint</td>
+<a id="ac6e10ac6340f77f1d8c48072b94935c4"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 multicast_flag</td>
 <td class="fielddoc">
 Whether we are reinjecting multicast packets. <dl class="section warning"><dt>Warning</dt><dd>The sense is inverted; 0 means inject, and 1 means don't </dd></dl>
 </td></tr>
 <tr><td class="fieldtype">
-<a id="ada549f911c5cc2b22a584294b7987e34"></a>uint</td>
+<a id="ada549f911c5cc2b22a584294b7987e34"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 point_to_point_flag</td>
 <td class="fielddoc">
 Whether we are reinjecting point-to-point packets. <dl class="section warning"><dt>Warning</dt><dd>The sense is inverted; 0 means inject, and 1 means don't </dd></dl>
 </td></tr>
 <tr><td class="fieldtype">
-<a id="adb706c21153e28c866baaab3646fdf4c"></a>uint</td>
+<a id="adb706c21153e28c866baaab3646fdf4c"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 fixed_route_flag</td>
 <td class="fielddoc">
 Whether we are reinjecting fixed route packets. <dl class="section warning"><dt>Warning</dt><dd>The sense is inverted; 0 means inject, and 1 means don't </dd></dl>
 </td></tr>
 <tr><td class="fieldtype">
-<a id="a1a21ed20bd505bac7fa471622e04a3a5"></a>uint</td>
+<a id="a1a21ed20bd505bac7fa471622e04a3a5"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 nearest_neighbour_flag</td>
 <td class="fielddoc">
 Whether we are reinjecting nearest neighbour packets. <dl class="section warning"><dt>Warning</dt><dd>The sense is inverted; 0 means inject, and 1 means don't </dd></dl>
 </td></tr>
 <tr><td class="fieldtype">
-<a id="a94527a3e704b9cb4c5204f2f28a98ee2"></a>uint</td>
+<a id="a94527a3e704b9cb4c5204f2f28a98ee2"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 reinjection_base_mc_key</td>
 <td class="fielddoc">
@@ -1086,31 +1048,31 @@ reinjection_base_mc_key</td>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="ac170f2043b3812720b13d86e7c877291"></a>uint</td>
+<a id="ac170f2043b3812720b13d86e7c877291"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 my_key</td>
 <td class="fielddoc">
 The key to say here is a piece of data. </td></tr>
 <tr><td class="fieldtype">
-<a id="a474fde2ef57c75ed2ad3aee8129b1aa7"></a>uint</td>
+<a id="a474fde2ef57c75ed2ad3aee8129b1aa7"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 new_seq_key</td>
 <td class="fielddoc">
 The key to say that we are starting a new sequence. </td></tr>
 <tr><td class="fieldtype">
-<a id="af543e7b58565d7f57e4d193c10d1281f"></a>uint</td>
+<a id="af543e7b58565d7f57e4d193c10d1281f"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 first_data_key</td>
 <td class="fielddoc">
 The key to say that this data is the first. </td></tr>
 <tr><td class="fieldtype">
-<a id="adc59144475280cb3acd0153504e13eca"></a>uint</td>
+<a id="adc59144475280cb3acd0153504e13eca"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 transaction_id_key</td>
 <td class="fielddoc">
 The key to say that this data is a transaction identifier. </td></tr>
 <tr><td class="fieldtype">
-<a id="a89aa0734bf6c89896933caaef7a10f0d"></a>uint</td>
+<a id="a89aa0734bf6c89896933caaef7a10f0d"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 end_flag_key</td>
 <td class="fielddoc">
@@ -1135,13 +1097,13 @@ The key to say that we've finished transmitting data. </td></tr>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="a406db90b5e45aaebf77cb6173588e4b1"></a>uint</td>
+<a id="a406db90b5e45aaebf77cb6173588e4b1"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 dse_magic_number</td>
 <td class="fielddoc">
 Magic number (== 0xAD130AD6) </td></tr>
 <tr><td class="fieldtype">
-<a id="a00f8b032c6046171aa0aba956e75579b"></a>uint</td>
+<a id="a00f8b032c6046171aa0aba956e75579b"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
 <td class="fieldname">
 dse_version</td>
 <td class="fielddoc">
@@ -1561,6 +1523,29 @@ Pointers to DSG regions. </td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="ae35277172e3b42f22218009fe98a2402"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae35277172e3b42f22218009fe98a2402">&#9670;&nbsp;</a></span>spin1_wfi()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void spin1_wfi </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Wait for interrupt. (Undisclosed import from Spin1API.) </p>
+<p>Wait for interrupt. (Undisclosed import from Spin1API.)</p>
+<p>Wait for interrupt (semi-public part of Spin1API)</p>
+<p>Wait for interrupt. </p>
+
+</div>
+</div>
 <a id="aa7ba56ad4e43d1f252ddb7e8b178869e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa7ba56ad4e43d1f252ddb7e8b178869e">&#9670;&nbsp;</a></span>dsg_block()</h2>
 
@@ -1573,7 +1558,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="memname">static void* dsg_block </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1644,7 +1629,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="memname">static void* sdram_alloc </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>size</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1711,7 +1696,7 @@ Pointers to DSG regions. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint sdram_max_block_size </td>
+          <td class="memname">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> sdram_max_block_size </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1777,7 +1762,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>type</em>, </td>
         </tr>
         <tr>
@@ -1891,7 +1876,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="memname">static void reinjection_set_timeout </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>payload</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1925,7 +1910,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="memname">static void reinjection_set_emergency_timeout </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>payload</em></td><td>)</td>
           <td></td>
         </tr>
@@ -2204,7 +2189,7 @@ Pointers to DSG regions. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint reinjection_sdp_command </td>
+          <td class="memname">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> reinjection_sdp_command </td>
           <td>(</td>
           <td class="paramtype">sdp_msg_t *&#160;</td>
           <td class="paramname"><em>msg</em></td><td>)</td>
@@ -2241,7 +2226,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="memname">static void data_in_process_address </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>data</em></td><td>)</td>
           <td></td>
         </tr>
@@ -2275,7 +2260,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="memname">static void data_in_process_data </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>data</em></td><td>)</td>
           <td></td>
         </tr>
@@ -2352,7 +2337,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>n_entries</em>&#160;</td>
         </tr>
         <tr>
@@ -2452,7 +2437,7 @@ Pointers to DSG regions. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint data_in_speed_up_command </td>
+          <td class="memname">static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> data_in_speed_up_command </td>
           <td>(</td>
           <td class="paramtype">sdp_msg_t *&#160;</td>
           <td class="paramname"><em>msg</em></td><td>)</td>
@@ -2612,7 +2597,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>n_words</em>&#160;</td>
         </tr>
         <tr>
@@ -2742,7 +2727,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>length</em>, </td>
         </tr>
         <tr>
@@ -2794,7 +2779,7 @@ Pointers to DSG regions. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>length</em>, </td>
         </tr>
         <tr>
@@ -2966,7 +2951,7 @@ Pointers to DSG regions. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint reinject_p2p_source_id</td>
+          <td class="memname"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> reinject_p2p_source_id</td>
         </tr>
       </table>
   </td>
@@ -3041,7 +3026,7 @@ Pointers to DSG regions. </td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">ushort my_addr</td>
+          <td class="memname"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#ab95f123a6c9bcfee6a343170ef8c5f69">ushort</a> my_addr</td>
         </tr>
       </table>
   </td>

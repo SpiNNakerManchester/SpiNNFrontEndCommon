@@ -81,11 +81,11 @@ $(function() {
 <p>The implementation of the Live Packet Gatherer.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&gt;</code><br />
-<code>#include &lt;circular_buffer.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html">circular_buffer.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="data__specification_8h_source.html">data_specification.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="simulation_8h_source.html">simulation.h</a>&gt;</code><br />
-<code>#include &lt;spin1_api.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html">spin1_api.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="eieio_8h_source.html">eieio.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -176,25 +176,25 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a6d1a0e5db4fd68f79657a9afd4ebdfdd"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a6d1a0e5db4fd68f79657a9afd4ebdfdd">record_provenance_data</a> (<a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a> provenance_region_address)</td></tr>
 <tr class="memdesc:a6d1a0e5db4fd68f79657a9afd4ebdfdd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store provenance data elements into SDRAM.  <a href="live__packet__gather_8c.html#a6d1a0e5db4fd68f79657a9afd4ebdfdd">More...</a><br /></td></tr>
 <tr class="separator:a6d1a0e5db4fd68f79657a9afd4ebdfdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa51de182df34173453b5d99dcd2ffedc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#aa51de182df34173453b5d99dcd2ffedc">timer_callback</a> (uint unused0, uint unused1)</td></tr>
+<tr class="memitem:aa51de182df34173453b5d99dcd2ffedc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#aa51de182df34173453b5d99dcd2ffedc">timer_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
 <tr class="memdesc:aa51de182df34173453b5d99dcd2ffedc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Periodic timer callback.  <a href="live__packet__gather_8c.html#aa51de182df34173453b5d99dcd2ffedc">More...</a><br /></td></tr>
 <tr class="separator:aa51de182df34173453b5d99dcd2ffedc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad667297628644c302e04d8db4a95c19f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ad667297628644c302e04d8db4a95c19f">flush_events_if_full</a> (void)</td></tr>
 <tr class="memdesc:ad667297628644c302e04d8db4a95c19f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flush events to the outside world if our internal buffers are now full.  <a href="live__packet__gather_8c.html#ad667297628644c302e04d8db4a95c19f">More...</a><br /></td></tr>
 <tr class="separator:ad667297628644c302e04d8db4a95c19f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98afe58f49858b0e6abf03cf5d428daf"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a98afe58f49858b0e6abf03cf5d428daf">process_incoming_event</a> (uint key)</td></tr>
+<tr class="memitem:a98afe58f49858b0e6abf03cf5d428daf"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a98afe58f49858b0e6abf03cf5d428daf">process_incoming_event</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> key)</td></tr>
 <tr class="memdesc:a98afe58f49858b0e6abf03cf5d428daf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes an incoming multicast packet without payload.  <a href="live__packet__gather_8c.html#a98afe58f49858b0e6abf03cf5d428daf">More...</a><br /></td></tr>
 <tr class="separator:a98afe58f49858b0e6abf03cf5d428daf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab78bc1a282a2780529d544e3152eb40d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ab78bc1a282a2780529d544e3152eb40d">process_incoming_event_payload</a> (uint key, uint payload)</td></tr>
+<tr class="memitem:ab78bc1a282a2780529d544e3152eb40d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ab78bc1a282a2780529d544e3152eb40d">process_incoming_event_payload</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> key, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> payload)</td></tr>
 <tr class="memdesc:ab78bc1a282a2780529d544e3152eb40d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Processes an incoming multicast packet with payload.  <a href="live__packet__gather_8c.html#ab78bc1a282a2780529d544e3152eb40d">More...</a><br /></td></tr>
 <tr class="separator:ab78bc1a282a2780529d544e3152eb40d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb128103c5a51261c2c900b00b9d7e57"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#aeb128103c5a51261c2c900b00b9d7e57">incoming_event_process_callback</a> (uint unused0, uint unused1)</td></tr>
+<tr class="memitem:aeb128103c5a51261c2c900b00b9d7e57"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#aeb128103c5a51261c2c900b00b9d7e57">incoming_event_process_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
 <tr class="memdesc:aeb128103c5a51261c2c900b00b9d7e57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handler for processing incoming packets that have been locally queued.  <a href="live__packet__gather_8c.html#aeb128103c5a51261c2c900b00b9d7e57">More...</a><br /></td></tr>
 <tr class="separator:aeb128103c5a51261c2c900b00b9d7e57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af672f0dc4d9950e71de65e3eb28f2571"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#af672f0dc4d9950e71de65e3eb28f2571">incoming_event_callback</a> (uint key, uint unused)</td></tr>
+<tr class="memitem:af672f0dc4d9950e71de65e3eb28f2571"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#af672f0dc4d9950e71de65e3eb28f2571">incoming_event_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> key, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused)</td></tr>
 <tr class="memdesc:af672f0dc4d9950e71de65e3eb28f2571"><td class="mdescLeft">&#160;</td><td class="mdescRight">FIQ handler for incoming packets without payload.  <a href="live__packet__gather_8c.html#af672f0dc4d9950e71de65e3eb28f2571">More...</a><br /></td></tr>
 <tr class="separator:af672f0dc4d9950e71de65e3eb28f2571"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5781513c66ebf0173e0225b196c50d6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6">incoming_event_payload_callback</a> (uint key, uint payload)</td></tr>
+<tr class="memitem:ad5781513c66ebf0173e0225b196c50d6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6">incoming_event_payload_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> key, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> payload)</td></tr>
 <tr class="memdesc:ad5781513c66ebf0173e0225b196c50d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">FIQ handler for incoming packets with payload.  <a href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6">More...</a><br /></td></tr>
 <tr class="separator:ad5781513c66ebf0173e0225b196c50d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e8a9983373837ed220f1708539a8007"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a6e8a9983373837ed220f1708539a8007">read_parameters</a> (struct <a class="el" href="live__packet__gather_8c.html#structlpg__config">lpg_config</a> *sdram_config)</td></tr>
@@ -222,7 +222,7 @@ static uint16_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="e
 <tr class="memdesc:a88602dba84a3488743c07f3ffa417791"><td class="mdescLeft">&#160;</td><td class="mdescRight">The location of the EIEIO header in the message. <br /></td></tr>
 <tr class="separator:a88602dba84a3488743c07f3ffa417791"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a74ea269cc74583bc5da3e46ff4346b18"><td class="memItemLeft" align="right" valign="top"><a id="a74ea269cc74583bc5da3e46ff4346b18"></a>
-static uint16_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a74ea269cc74583bc5da3e46ff4346b18">sdp_msg_aer_payload_prefix</a> = NULL</td></tr>
+static uint16_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a74ea269cc74583bc5da3e46ff4346b18">sdp_msg_aer_payload_prefix</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a74ea269cc74583bc5da3e46ff4346b18"><td class="mdescLeft">&#160;</td><td class="mdescRight">The location of the payload prefix in the message. <code>NULL</code> if no prefix. <br /></td></tr>
 <tr class="separator:a74ea269cc74583bc5da3e46ff4346b18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a269df62d3476d6450e2eb2da339a686d"><td class="memItemLeft" align="right" valign="top"><a id="a269df62d3476d6450e2eb2da339a686d"></a>
@@ -258,15 +258,15 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <tr class="memdesc:a2178bb4764f423b1534a9631b0cc6e5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">When we will run until. <br /></td></tr>
 <tr class="separator:a2178bb4764f423b1534a9631b0cc6e5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ee6c18f2c55e2b60ea4194d4722f735"><td class="memItemLeft" align="right" valign="top"><a id="a9ee6c18f2c55e2b60ea4194d4722f735"></a>
-static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a9ee6c18f2c55e2b60ea4194d4722f735">infinite_run</a> = FALSE</td></tr>
+static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a9ee6c18f2c55e2b60ea4194d4722f735">infinite_run</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa93f0eb578d23995850d61f7d61c55c1">FALSE</a></td></tr>
 <tr class="memdesc:a9ee6c18f2c55e2b60ea4194d4722f735"><td class="mdescLeft">&#160;</td><td class="mdescRight">TRUE if we're running without bound. FALSE if we're only running for a limited period of time. <br /></td></tr>
 <tr class="separator:a9ee6c18f2c55e2b60ea4194d4722f735"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5672e37e363e98e6053064ec9532cb7d"><td class="memItemLeft" align="right" valign="top"><a id="a5672e37e363e98e6053064ec9532cb7d"></a>
-static circular_buffer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a5672e37e363e98e6053064ec9532cb7d">without_payload_buffer</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#a549d5bcaed4164249aee6a6828a51e6f">circular_buffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#a5672e37e363e98e6053064ec9532cb7d">without_payload_buffer</a></td></tr>
 <tr class="memdesc:a5672e37e363e98e6053064ec9532cb7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Circular buffer of incoming multicast packets that lack payloads. <br /></td></tr>
 <tr class="separator:a5672e37e363e98e6053064ec9532cb7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abadd6fad1a586f95ded2bde05611c848"><td class="memItemLeft" align="right" valign="top"><a id="abadd6fad1a586f95ded2bde05611c848"></a>
-static circular_buffer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#abadd6fad1a586f95ded2bde05611c848">with_payload_buffer</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#a549d5bcaed4164249aee6a6828a51e6f">circular_buffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="live__packet__gather_8c.html#abadd6fad1a586f95ded2bde05611c848">with_payload_buffer</a></td></tr>
 <tr class="memdesc:abadd6fad1a586f95ded2bde05611c848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Circular buffer of incoming multicast packets that have payloads. <br /></td></tr>
 <tr class="separator:abadd6fad1a586f95ded2bde05611c848"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d64a3afb9a87c1f7cfe42fb6387e24f"><td class="memItemLeft" align="right" valign="top"><a id="a7d64a3afb9a87c1f7cfe42fb6387e24f"></a>
@@ -642,13 +642,13 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
         <tr>
           <td class="memname">static void timer_callback </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -717,7 +717,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
         <tr>
           <td class="memname">static void process_incoming_event </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>key</em></td><td>)</td>
           <td></td>
         </tr>
@@ -751,13 +751,13 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
         <tr>
           <td class="memname">static void process_incoming_event_payload </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>payload</em>&#160;</td>
         </tr>
         <tr>
@@ -796,13 +796,13 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
         <tr>
           <td class="memname">static void incoming_event_process_callback </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -819,7 +819,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 </div><div class="memdoc">
 
 <p>Handler for processing incoming packets that have been locally queued. </p>
-<p>Triggered by calling spin1_trigger_user_event() in <a class="el" href="live__packet__gather_8c.html#af672f0dc4d9950e71de65e3eb28f2571" title="FIQ handler for incoming packets without payload.">incoming_event_callback()</a> and <a class="el" href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6" title="FIQ handler for incoming packets with payload.">incoming_event_payload_callback()</a>, which (being attached to the FIQ) just enqueue messages for later handling. Delegates to <a class="el" href="live__packet__gather_8c.html#a98afe58f49858b0e6abf03cf5d428daf" title="Processes an incoming multicast packet without payload.">process_incoming_event()</a> and <a class="el" href="live__packet__gather_8c.html#ab78bc1a282a2780529d544e3152eb40d" title="Processes an incoming multicast packet with payload.">process_incoming_event_payload()</a> for actual processing.</p>
+<p>Triggered by calling <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a19505c72d4618b8c00646d4dff1a328f">spin1_trigger_user_event()</a> in <a class="el" href="live__packet__gather_8c.html#af672f0dc4d9950e71de65e3eb28f2571" title="FIQ handler for incoming packets without payload.">incoming_event_callback()</a> and <a class="el" href="live__packet__gather_8c.html#ad5781513c66ebf0173e0225b196c50d6" title="FIQ handler for incoming packets with payload.">incoming_event_payload_callback()</a>, which (being attached to the FIQ) just enqueue messages for later handling. Delegates to <a class="el" href="live__packet__gather_8c.html#a98afe58f49858b0e6abf03cf5d428daf" title="Processes an incoming multicast packet without payload.">process_incoming_event()</a> and <a class="el" href="live__packet__gather_8c.html#ab78bc1a282a2780529d544e3152eb40d" title="Processes an incoming multicast packet with payload.">process_incoming_event_payload()</a> for actual processing.</p>
 <p>Packets without payload are slightly higher priority than packets with payload.</p>
 <p>Sends multiple SDP packets if required.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -844,13 +844,13 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
         <tr>
           <td class="memname">static void incoming_event_callback </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused</em>&#160;</td>
         </tr>
         <tr>
@@ -890,13 +890,13 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
         <tr>
           <td class="memname">static void incoming_event_payload_callback </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>payload</em>&#160;</td>
         </tr>
         <tr>
@@ -949,7 +949,7 @@ Maximum number of packets to send per timestep, or 0 for "send them all". </td><
 </div><div class="memdoc">
 
 <p>Copies the application configuration from DSG SDRAM to DTCM. </p>
-<p>Note that it's faster to copy by field than to use spin1_memcpy()!</p>
+<p>Note that it's faster to copy by field than to use <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a8c23f19c28f2c3ed0a9b86ce8c98802d">spin1_memcpy()</a>!</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">sdram_config</td><td>Where to copy from </td></tr>

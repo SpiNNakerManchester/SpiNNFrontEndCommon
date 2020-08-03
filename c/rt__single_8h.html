@@ -80,7 +80,7 @@ $(function() {
 <p>SpiNNaker routing table minimisation.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &lt;spin1_api.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html">spin1_api.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="malloc__extras_8h_source.html">malloc_extras.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="routing__table_8h_source.html">../common/routing_table.h</a>&quot;</code><br />
@@ -97,7 +97,7 @@ Data Structures</h2></td></tr>
 Macros</h2></td></tr>
 <tr class="memitem:a72d10a02534aa3861e8c2006389f37dd"><td class="memItemLeft" align="right" valign="top"><a id="a72d10a02534aa3861e8c2006389f37dd"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#a72d10a02534aa3861e8c2006389f37dd">RTR_MC_SET_FAILED</a>&#160;&#160;&#160;0</td></tr>
-<tr class="memdesc:a72d10a02534aa3861e8c2006389f37dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">flag for if a rtr_mc_set() failure. <br /></td></tr>
+<tr class="memdesc:a72d10a02534aa3861e8c2006389f37dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">flag for if a <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark__hw_8c.html#a81ca61e30076d1724a68027b63f6e970">rtr_mc_set()</a> failure. <br /></td></tr>
 <tr class="separator:a72d10a02534aa3861e8c2006389f37dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -121,7 +121,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ab9c251df329e64d57c69eb63241ba6dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load a routing table to the router.  <a href="rt__single_8h.html#ab9c251df329e64d57c69eb63241ba6dd">More...</a><br /></td></tr>
 <tr class="separator:ab9c251df329e64d57c69eb63241ba6dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44e81459c3c028d1d4052f8835dfd430"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rt__single_8h.html#a44e81459c3c028d1d4052f8835dfd430">cleanup_and_exit</a> (<a class="el" href="rt__single_8h.html#structheader__t">header_t</a> *header)</td></tr>
-<tr class="memdesc:a44e81459c3c028d1d4052f8835dfd430"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free memory allocated and call spin1_exit() and sets the user0 error code correctly.  <a href="rt__single_8h.html#a44e81459c3c028d1d4052f8835dfd430">More...</a><br /></td></tr>
+<tr class="memdesc:a44e81459c3c028d1d4052f8835dfd430"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free memory allocated and call <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#abe0417e22d07fa7bcdcfcc4ae29f7443">spin1_exit()</a> and sets the user0 error code correctly.  <a href="rt__single_8h.html#a44e81459c3c028d1d4052f8835dfd430">More...</a><br /></td></tr>
 <tr class="separator:a44e81459c3c028d1d4052f8835dfd430"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
@@ -359,7 +359,7 @@ Routing table entries. </td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Free memory allocated and call spin1_exit() and sets the user0 error code correctly. </p>
+<p>Free memory allocated and call <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#abe0417e22d07fa7bcdcfcc4ae29f7443">spin1_exit()</a> and sets the user0 error code correctly. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">header</td><td>the header object </td></tr>

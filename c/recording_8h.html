@@ -81,7 +81,7 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&gt;</code><br />
-<code>#include &lt;spin1_api.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html">spin1_api.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="buffered__eieio__defs_8h_source.html">buffered_eieio_defs.h</a>&gt;</code><br />
 </div>
 <p><a href="recording_8h_source.html">Go to the source code of this file.</a></p>
@@ -124,16 +124,16 @@ typedef uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab68ebe7d072fc3565cfd411a12c79b6e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#ab68ebe7d072fc3565cfd411a12c79b6e">recording_do_record_and_notify</a> (<a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a> channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> callback)</td></tr>
+<tr class="memitem:ab68ebe7d072fc3565cfd411a12c79b6e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#ab68ebe7d072fc3565cfd411a12c79b6e">recording_do_record_and_notify</a> (<a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a> channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:ab68ebe7d072fc3565cfd411a12c79b6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">records some data into a specific recording channel, calling a callback function once complete. DO NOT CALL THIS DIRECTLY. Use <a class="el" href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd" title="records some data into a specific recording channel.">recording_record()</a> or <a class="el" href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002" title="records some data into a specific recording channel, calling a callback function once complete">recording_record_and_notify()</a>.  <a href="recording_8h.html#ab68ebe7d072fc3565cfd411a12c79b6e">More...</a><br /></td></tr>
 <tr class="separator:ab68ebe7d072fc3565cfd411a12c79b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a222af7edbef5e36638e02c7292d69cbd"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd">recording_record</a> (<a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a> channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size_bytes)</td></tr>
+<tr class="memitem:a222af7edbef5e36638e02c7292d69cbd"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd">recording_record</a> (<a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a> channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size_bytes)</td></tr>
 <tr class="memdesc:a222af7edbef5e36638e02c7292d69cbd"><td class="mdescLeft">&#160;</td><td class="mdescRight">records some data into a specific recording channel.  <a href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd">More...</a><br /></td></tr>
 <tr class="separator:a222af7edbef5e36638e02c7292d69cbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abcccef6af7f56edb46e1ea9f5f674ca2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#abcccef6af7f56edb46e1ea9f5f674ca2">recording_bad_offset</a> (void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size)</td></tr>
+<tr class="memitem:abcccef6af7f56edb46e1ea9f5f674ca2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#abcccef6af7f56edb46e1ea9f5f674ca2">recording_bad_offset</a> (void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size)</td></tr>
 <tr class="memdesc:abcccef6af7f56edb46e1ea9f5f674ca2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints an error about DMA API abuse and RTEs.  <a href="recording_8h.html#abcccef6af7f56edb46e1ea9f5f674ca2">More...</a><br /></td></tr>
 <tr class="separator:abcccef6af7f56edb46e1ea9f5f674ca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b14976af9b5980e3dbbc5c9b463f002"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002">recording_record_and_notify</a> (<a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a> channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> callback)</td></tr>
+<tr class="memitem:a1b14976af9b5980e3dbbc5c9b463f002"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002">recording_record_and_notify</a> (<a class="el" href="recording_8h.html#aac9b40b7ef0c537e17b658d18cb83ff6">channel_index_t</a> channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a> size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:a1b14976af9b5980e3dbbc5c9b463f002"><td class="mdescLeft">&#160;</td><td class="mdescRight">records some data into a specific recording channel, calling a callback function once complete  <a href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002">More...</a><br /></td></tr>
 <tr class="separator:a1b14976af9b5980e3dbbc5c9b463f002"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61f4d74e9f18ff231c0b3926cb144b3b"><td class="memItemLeft" align="right" valign="top"><a id="a61f4d74e9f18ff231c0b3926cb144b3b"></a>
@@ -371,7 +371,7 @@ sequence</td>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
           <td class="paramname"><em>size_bytes</em>, </td>
         </tr>
         <tr>
@@ -426,7 +426,7 @@ sequence</td>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
           <td class="paramname"><em>size_bytes</em>&#160;</td>
         </tr>
         <tr>
@@ -470,7 +470,7 @@ sequence</td>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
           <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
@@ -517,7 +517,7 @@ sequence</td>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
           <td class="paramname"><em>size_bytes</em>, </td>
         </tr>
         <tr>

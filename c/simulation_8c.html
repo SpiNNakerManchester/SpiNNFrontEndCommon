@@ -80,15 +80,15 @@ $(function() {
 <div class="textblock"><code>#include &quot;<a class="el" href="simulation_8h_source.html">simulation.h</a>&quot;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
-<code>#include &lt;spin1_api_params.h&gt;</code><br />
-<code>#include &lt;spin1_api.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api__params_8h.html">spin1_api_params.h</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html">spin1_api.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae35277172e3b42f22218009fe98a2402"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#ae35277172e3b42f22218009fe98a2402">spin1_wfi</a> (void)</td></tr>
 <tr class="memdesc:ae35277172e3b42f22218009fe98a2402"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for interrupt.  <a href="simulation_8c.html#ae35277172e3b42f22218009fe98a2402">More...</a><br /></td></tr>
 <tr class="separator:ae35277172e3b42f22218009fe98a2402"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9f44dd3bd8b9d8ccf8e9a8924e2a194"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aa9f44dd3bd8b9d8ccf8e9a8924e2a194">resume_wait</a> (void)</td></tr>
+<tr class="memitem:aa9f44dd3bd8b9d8ccf8e9a8924e2a194"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aa9f44dd3bd8b9d8ccf8e9a8924e2a194">resume_wait</a> (void)</td></tr>
 <tr class="memdesc:aa9f44dd3bd8b9d8ccf8e9a8924e2a194"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicate whether the SYNC signal has been received.  <a href="simulation_8c.html#aa9f44dd3bd8b9d8ccf8e9a8924e2a194">More...</a><br /></td></tr>
 <tr class="separator:aa9f44dd3bd8b9d8ccf8e9a8924e2a194"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a294d6d9f4e2429ed1240419281dae728"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a294d6d9f4e2429ed1240419281dae728">simulation_store_provenance_data</a> (void)</td></tr>
@@ -102,7 +102,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#af61ddf5f0c5e996122dafddc0c858c27">simulation_run</a> (void)</td></tr>
 <tr class="memdesc:af61ddf5f0c5e996122dafddc0c858c27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts the simulation running, returning when it is complete,. <br /></td></tr>
 <tr class="separator:af61ddf5f0c5e996122dafddc0c858c27"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0232ce3ec1de4e364cd55f0b6780c3b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a0232ce3ec1de4e364cd55f0b6780c3b1">simulation_handle_pause_resume</a> (<a class="el" href="simulation_8h.html#a297edb28b00e53ce4e92076ec27b89c9">resume_callback_t</a> callback)</td></tr>
+<tr class="memitem:a0232ce3ec1de4e364cd55f0b6780c3b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a0232ce3ec1de4e364cd55f0b6780c3b1">simulation_handle_pause_resume</a> (<a class="el" href="simulation_8h.html#a297edb28b00e53ce4e92076ec27b89c9">resume_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:a0232ce3ec1de4e364cd55f0b6780c3b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">cleans up the house keeping, falls into a sync state and handles the resetting up of states as required to resume. Note that following this function, the code should call simulation_ready_to_read (see later).  <a href="simulation_8c.html#a0232ce3ec1de4e364cd55f0b6780c3b1">More...</a><br /></td></tr>
 <tr class="separator:a0232ce3ec1de4e364cd55f0b6780c3b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30a9172f6da9bcef24fad1cf22d35f3b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a30a9172f6da9bcef24fad1cf22d35f3b">simulation_exit</a> (void)</td></tr>
@@ -115,28 +115,28 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simu
 <tr class="memitem:a6c653236c4630a8eeea114ea48897246"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a6c653236c4630a8eeea114ea48897246">send_ok_response</a> (sdp_msg_t *msg)</td></tr>
 <tr class="memdesc:a6c653236c4630a8eeea114ea48897246"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send an OK response to the host when a command message is received.  <a href="simulation_8c.html#a6c653236c4630a8eeea114ea48897246">More...</a><br /></td></tr>
 <tr class="separator:a6c653236c4630a8eeea114ea48897246"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab6be610af3e9296fe2941a642e2bbc78"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#ab6be610af3e9296fe2941a642e2bbc78">synchronise_start</a> (uint unused0, uint unused1)</td></tr>
+<tr class="memitem:ab6be610af3e9296fe2941a642e2bbc78"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#ab6be610af3e9296fe2941a642e2bbc78">synchronise_start</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused0, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused1)</td></tr>
 <tr class="memdesc:ab6be610af3e9296fe2941a642e2bbc78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback when starting after synchronise.  <a href="simulation_8c.html#ab6be610af3e9296fe2941a642e2bbc78">More...</a><br /></td></tr>
 <tr class="separator:ab6be610af3e9296fe2941a642e2bbc78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2f4389fd280128116a2efce8415ab38e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a2f4389fd280128116a2efce8415ab38e">simulation_control_scp_callback</a> (uint mailbox, uint port)</td></tr>
+<tr class="memitem:a2f4389fd280128116a2efce8415ab38e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a2f4389fd280128116a2efce8415ab38e">simulation_control_scp_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> mailbox, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> port)</td></tr>
 <tr class="memdesc:a2f4389fd280128116a2efce8415ab38e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle the new commands needed to resume the binary with a new runtime counter, as well as switching off the binary when it truly needs to be stopped.  <a href="simulation_8c.html#a2f4389fd280128116a2efce8415ab38e">More...</a><br /></td></tr>
 <tr class="separator:a2f4389fd280128116a2efce8415ab38e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4227d447f54674428b6c1b2637e171d1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4227d447f54674428b6c1b2637e171d1">simulation_sdp_callback_handler</a> (uint mailbox, uint port)</td></tr>
+<tr class="memitem:a4227d447f54674428b6c1b2637e171d1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4227d447f54674428b6c1b2637e171d1">simulation_sdp_callback_handler</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> mailbox, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> port)</td></tr>
 <tr class="memdesc:a4227d447f54674428b6c1b2637e171d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">handles the SDP callbacks interface.  <a href="simulation_8c.html#a4227d447f54674428b6c1b2637e171d1">More...</a><br /></td></tr>
 <tr class="separator:a4227d447f54674428b6c1b2637e171d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6adba51d4f70993683698a8c1fd1c7f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aa6adba51d4f70993683698a8c1fd1c7f">simulation_sdp_callback_on</a> (uint <a class="el" href="recording_8c.html#a5408e7bf83ea6c8d55bc29559253558c">sdp_port</a>, callback_t callback)</td></tr>
+<tr class="memitem:aa6adba51d4f70993683698a8c1fd1c7f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aa6adba51d4f70993683698a8c1fd1c7f">simulation_sdp_callback_on</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> <a class="el" href="recording_8c.html#a5408e7bf83ea6c8d55bc29559253558c">sdp_port</a>, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa0453a7dfd80bc7f68b399e7aabd1053">callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:aa6adba51d4f70993683698a8c1fd1c7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Registers an additional SDP callback on a given SDP port. This is required when using simulation_register_sdp_callback, as this will register its own SDP handler.  <a href="simulation_8c.html#aa6adba51d4f70993683698a8c1fd1c7f">More...</a><br /></td></tr>
 <tr class="separator:aa6adba51d4f70993683698a8c1fd1c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a858f08b0b25920dcabb2554d3d88aa88"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a858f08b0b25920dcabb2554d3d88aa88">simulation_sdp_callback_off</a> (uint <a class="el" href="recording_8c.html#a5408e7bf83ea6c8d55bc29559253558c">sdp_port</a>)</td></tr>
+<tr class="memitem:a858f08b0b25920dcabb2554d3d88aa88"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a858f08b0b25920dcabb2554d3d88aa88">simulation_sdp_callback_off</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> <a class="el" href="recording_8c.html#a5408e7bf83ea6c8d55bc29559253558c">sdp_port</a>)</td></tr>
 <tr class="memdesc:a858f08b0b25920dcabb2554d3d88aa88"><td class="mdescLeft">&#160;</td><td class="mdescRight">disables SDP callbacks on the given port  <a href="simulation_8c.html#a858f08b0b25920dcabb2554d3d88aa88">More...</a><br /></td></tr>
 <tr class="separator:a858f08b0b25920dcabb2554d3d88aa88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84a98491fc54eab9adbb4883ab26e980"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a84a98491fc54eab9adbb4883ab26e980">simulation_dma_transfer_done_callback</a> (uint unused, uint tag)</td></tr>
+<tr class="memitem:a84a98491fc54eab9adbb4883ab26e980"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a84a98491fc54eab9adbb4883ab26e980">simulation_dma_transfer_done_callback</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> tag)</td></tr>
 <tr class="memdesc:a84a98491fc54eab9adbb4883ab26e980"><td class="mdescLeft">&#160;</td><td class="mdescRight">handles the DMA transfer done callbacks interface.  <a href="simulation_8c.html#a84a98491fc54eab9adbb4883ab26e980">More...</a><br /></td></tr>
 <tr class="separator:a84a98491fc54eab9adbb4883ab26e980"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70e4e472b7e7a790e85005e22dc3e8c9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a70e4e472b7e7a790e85005e22dc3e8c9">simulation_dma_transfer_done_callback_on</a> (uint tag, callback_t callback)</td></tr>
+<tr class="memitem:a70e4e472b7e7a790e85005e22dc3e8c9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a70e4e472b7e7a790e85005e22dc3e8c9">simulation_dma_transfer_done_callback_on</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> tag, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa0453a7dfd80bc7f68b399e7aabd1053">callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:a70e4e472b7e7a790e85005e22dc3e8c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">registers a DMA transfer callback to the simulation system  <a href="simulation_8c.html#a70e4e472b7e7a790e85005e22dc3e8c9">More...</a><br /></td></tr>
 <tr class="separator:a70e4e472b7e7a790e85005e22dc3e8c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adee541cc2640414b2117540149ff5ac8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#adee541cc2640414b2117540149ff5ac8">simulation_dma_transfer_done_callback_off</a> (uint tag)</td></tr>
+<tr class="memitem:adee541cc2640414b2117540149ff5ac8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#adee541cc2640414b2117540149ff5ac8">simulation_dma_transfer_done_callback_off</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> tag)</td></tr>
 <tr class="memdesc:adee541cc2640414b2117540149ff5ac8"><td class="mdescLeft">&#160;</td><td class="mdescRight">turns off a registered callback for a given DMA transfer done tag  <a href="simulation_8c.html#adee541cc2640414b2117540149ff5ac8">More...</a><br /></td></tr>
 <tr class="separator:adee541cc2640414b2117540149ff5ac8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50aa823811a4ece62bc4047f22fef56a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a50aa823811a4ece62bc4047f22fef56a">simulation_initialise</a> (<a class="el" href="common-typedefs_8h.html#ac8dc08dd5f5827994d1b06351f925669">address_t</a> address, uint32_t expected_app_magic_number, uint32_t *timer_period, uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer, uint32_t *time_pointer, int sdp_packet_callback_priority, int dma_transfer_done_callback_priority)</td></tr>
@@ -173,31 +173,31 @@ static uint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="e
 <tr class="memdesc:a6d7ad46c64ed7cf411e833a6b0c2a27e"><td class="mdescLeft">&#160;</td><td class="mdescRight">the pointer to the current simulation time <br /></td></tr>
 <tr class="separator:a6d7ad46c64ed7cf411e833a6b0c2a27e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a818a3ba975d585ec4289703ad3aad5a1"><td class="memItemLeft" align="right" valign="top"><a id="a818a3ba975d585ec4289703ad3aad5a1"></a>
-static <a class="el" href="simulation_8h.html#a6c2edff3efdc3d7b4848c01c88c94fdd">prov_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a818a3ba975d585ec4289703ad3aad5a1">stored_provenance_function</a> = NULL</td></tr>
+static <a class="el" href="simulation_8h.html#a6c2edff3efdc3d7b4848c01c88c94fdd">prov_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a818a3ba975d585ec4289703ad3aad5a1">stored_provenance_function</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a818a3ba975d585ec4289703ad3aad5a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">the function call to run when extracting provenance data from the chip <br /></td></tr>
 <tr class="separator:a818a3ba975d585ec4289703ad3aad5a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b94b7430a28548dd8ec1224c833a486"><td class="memItemLeft" align="right" valign="top"><a id="a4b94b7430a28548dd8ec1224c833a486"></a>
-static <a class="el" href="simulation_8h.html#a2da0c81f277d8bac42313f3b01186da8">exit_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4b94b7430a28548dd8ec1224c833a486">stored_exit_function</a> = NULL</td></tr>
+static <a class="el" href="simulation_8h.html#a2da0c81f277d8bac42313f3b01186da8">exit_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4b94b7430a28548dd8ec1224c833a486">stored_exit_function</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a4b94b7430a28548dd8ec1224c833a486"><td class="mdescLeft">&#160;</td><td class="mdescRight">the function call to run when received a exit command. <br /></td></tr>
 <tr class="separator:a4b94b7430a28548dd8ec1224c833a486"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf1968b778a76eb8ea3fca6f1b52450f"><td class="memItemLeft" align="right" valign="top"><a id="aaf1968b778a76eb8ea3fca6f1b52450f"></a>
-static <a class="el" href="simulation_8h.html#a297edb28b00e53ce4e92076ec27b89c9">resume_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aaf1968b778a76eb8ea3fca6f1b52450f">stored_resume_function</a> = NULL</td></tr>
+static <a class="el" href="simulation_8h.html#a297edb28b00e53ce4e92076ec27b89c9">resume_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#aaf1968b778a76eb8ea3fca6f1b52450f">stored_resume_function</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:aaf1968b778a76eb8ea3fca6f1b52450f"><td class="mdescLeft">&#160;</td><td class="mdescRight">the function call to run just before resuming a simulation <br /></td></tr>
 <tr class="separator:aaf1968b778a76eb8ea3fca6f1b52450f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7aea94c494dda48bd695448e8a24df08"><td class="memItemLeft" align="right" valign="top"><a id="a7aea94c494dda48bd695448e8a24df08"></a>
-static <a class="el" href="simulation_8h.html#a452ef9b2f6d19c09218bbaaf2d8640bc">start_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a7aea94c494dda48bd695448e8a24df08">stored_start_function</a> = NULL</td></tr>
+static <a class="el" href="simulation_8h.html#a452ef9b2f6d19c09218bbaaf2d8640bc">start_callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a7aea94c494dda48bd695448e8a24df08">stored_start_function</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a7aea94c494dda48bd695448e8a24df08"><td class="mdescLeft">&#160;</td><td class="mdescRight">the function call to run at the start of simulation <br /></td></tr>
 <tr class="separator:a7aea94c494dda48bd695448e8a24df08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bb0659b37967eff10c71814f70034d5"><td class="memItemLeft" align="right" valign="top"><a id="a7bb0659b37967eff10c71814f70034d5"></a>
-static struct <a class="el" href="simulation_8h.html#structsimulation__provenance">simulation_provenance</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a7bb0659b37967eff10c71814f70034d5">prov</a> = NULL</td></tr>
+static struct <a class="el" href="simulation_8h.html#structsimulation__provenance">simulation_provenance</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a7bb0659b37967eff10c71814f70034d5">prov</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a7bb0659b37967eff10c71814f70034d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">the region ID for storing provenance data from the chip <br /></td></tr>
 <tr class="separator:a7bb0659b37967eff10c71814f70034d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1be75697fa2cd3365ff3059c3131d887"><td class="memItemLeft" align="right" valign="top"><a id="a1be75697fa2cd3365ff3059c3131d887"></a>
-static callback_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a1be75697fa2cd3365ff3059c3131d887">sdp_callback</a> [NUM_SDP_PORTS]</td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa0453a7dfd80bc7f68b399e7aabd1053">callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a1be75697fa2cd3365ff3059c3131d887">sdp_callback</a> [<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a321f6e755eca39f34a67bb72223fe7d7">NUM_SDP_PORTS</a>]</td></tr>
 <tr class="memdesc:a1be75697fa2cd3365ff3059c3131d887"><td class="mdescLeft">&#160;</td><td class="mdescRight">the list of SDP callbacks for ports <br /></td></tr>
 <tr class="separator:a1be75697fa2cd3365ff3059c3131d887"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4bf26e8ec229181adc9a69d87946e77d"><td class="memItemLeft" align="right" valign="top"><a id="a4bf26e8ec229181adc9a69d87946e77d"></a>
-static callback_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4bf26e8ec229181adc9a69d87946e77d">dma_complete_callbacks</a> [<a class="el" href="simulation_8h.html#a32f1804051e7d6421d835b856f6b01b0">MAX_DMA_CALLBACK_TAG</a>]</td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa0453a7dfd80bc7f68b399e7aabd1053">callback_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="simulation_8c.html#a4bf26e8ec229181adc9a69d87946e77d">dma_complete_callbacks</a> [<a class="el" href="simulation_8h.html#a32f1804051e7d6421d835b856f6b01b0">MAX_DMA_CALLBACK_TAG</a>]</td></tr>
 <tr class="memdesc:a4bf26e8ec229181adc9a69d87946e77d"><td class="mdescLeft">&#160;</td><td class="mdescRight">the list of DMA callbacks for DMA complete callbacks <br /></td></tr>
 <tr class="separator:a4bf26e8ec229181adc9a69d87946e77d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca76fb1ad481f24208277f1d19ef1c3a"><td class="memItemLeft" align="right" valign="top"><a id="aca76fb1ad481f24208277f1d19ef1c3a"></a>
@@ -225,7 +225,8 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 
 <p>Wait for interrupt. </p>
-<p>Will return to just after this point after an interrupt has been raised. </p>
+<p>Will return to just after this point after an interrupt has been raised.</p>
+<p>Wait for interrupt. </p>
 
 </div>
 </div>
@@ -236,7 +237,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint resume_wait </td>
+          <td class="memname"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> resume_wait </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -374,13 +375,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static void synchronise_start </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused0</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused1</em>&#160;</td>
         </tr>
         <tr>
@@ -419,13 +420,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static void simulation_control_scp_callback </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>mailbox</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>port</em>&#160;</td>
         </tr>
         <tr>
@@ -464,13 +465,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static void simulation_sdp_callback_handler </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>mailbox</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>port</em>&#160;</td>
         </tr>
         <tr>
@@ -506,13 +507,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">bool simulation_sdp_callback_on </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>sdp_port</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">callback_t&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa0453a7dfd80bc7f68b399e7aabd1053">callback_t</a>&#160;</td>
           <td class="paramname"><em>sdp_callback</em>&#160;</td>
         </tr>
         <tr>
@@ -544,7 +545,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">void simulation_sdp_callback_off </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>sdp_port</em></td><td>)</td>
           <td></td>
         </tr>
@@ -573,13 +574,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">static void simulation_dma_transfer_done_callback </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>tag</em>&#160;</td>
         </tr>
         <tr>
@@ -615,13 +616,13 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">bool simulation_dma_transfer_done_callback_on </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>tag</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">callback_t&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8h.html#aa0453a7dfd80bc7f68b399e7aabd1053">callback_t</a>&#160;</td>
           <td class="paramname"><em>callback</em>&#160;</td>
         </tr>
         <tr>
@@ -653,7 +654,7 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td class="memname">void simulation_dma_transfer_done_callback_off </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>tag</em></td><td>)</td>
           <td></td>
         </tr>

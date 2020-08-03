@@ -82,9 +82,9 @@ $(function() {
 <div class="textblock"><code>#include &lt;<a class="el" href="recording_8h_source.html">recording.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="simulation_8h_source.html">simulation.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="buffered__eieio__defs_8h_source.html">buffered_eieio_defs.h</a>&gt;</code><br />
-<code>#include &lt;sark.h&gt;</code><br />
-<code>#include &lt;circular_buffer.h&gt;</code><br />
-<code>#include &lt;spin1_api_params.h&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html">sark.h</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html">circular_buffer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api__params_8h.html">spin1_api_params.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="debug_8h_source.html">debug.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -129,28 +129,28 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reco
 <tr class="memitem:aa2dc3adc7cf4f90d3012a88147080b5e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aa2dc3adc7cf4f90d3012a88147080b5e">recording_host_data_read_ack</a> (const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a> msg)</td></tr>
 <tr class="memdesc:aa2dc3adc7cf4f90d3012a88147080b5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handles a <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254" title="Host confirming message received to read data.">HOST_DATA_READ_ACK</a> EIEIO message.  <a href="recording_8c.html#aa2dc3adc7cf4f90d3012a88147080b5e">More...</a><br /></td></tr>
 <tr class="separator:aa2dc3adc7cf4f90d3012a88147080b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a712522f1d0055e8c29f0eddb9e4ea374"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a712522f1d0055e8c29f0eddb9e4ea374">recording_eieio_packet_handler</a> (const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a> msg, uint length)</td></tr>
+<tr class="memitem:a712522f1d0055e8c29f0eddb9e4ea374"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a712522f1d0055e8c29f0eddb9e4ea374">recording_eieio_packet_handler</a> (const <a class="el" href="buffered__eieio__defs_8h.html#ab1cb4165aa150178971770a1a95d332d">eieio_msg_t</a> msg, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> length)</td></tr>
 <tr class="memdesc:a712522f1d0055e8c29f0eddb9e4ea374"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives an EIEIO message intended for the recording code.  <a href="recording_8c.html#a712522f1d0055e8c29f0eddb9e4ea374">More...</a><br /></td></tr>
 <tr class="separator:a712522f1d0055e8c29f0eddb9e4ea374"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2fbf08fec2d96c8c6e8e8a3a5144c7f"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac2fbf08fec2d96c8c6e8e8a3a5144c7f">compute_available_space_in_channel</a> (uint8_t channel)</td></tr>
 <tr class="memdesc:ac2fbf08fec2d96c8c6e8e8a3a5144c7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Work out the space available in the given channel for recording.  <a href="recording_8c.html#ac2fbf08fec2d96c8c6e8e8a3a5144c7f">More...</a><br /></td></tr>
 <tr class="separator:ac2fbf08fec2d96c8c6e8e8a3a5144c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af695b9f5933b3cb417fd2a0b97748e2d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#af695b9f5933b3cb417fd2a0b97748e2d">recording_write_one_chunk</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, void *<a class="el" href="reverse__iptag__multicast__source_8c.html#a1457f38508d0ff5bab79b395dee38daa">write_pointer</a>, uint32_t length, void *finished_write_pointer, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> callback)</td></tr>
+<tr class="memitem:af695b9f5933b3cb417fd2a0b97748e2d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#af695b9f5933b3cb417fd2a0b97748e2d">recording_write_one_chunk</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, void *<a class="el" href="reverse__iptag__multicast__source_8c.html#a1457f38508d0ff5bab79b395dee38daa">write_pointer</a>, uint32_t length, void *finished_write_pointer, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:af695b9f5933b3cb417fd2a0b97748e2d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transfer a contiguous block of memory to SDRAM.  <a href="recording_8c.html#af695b9f5933b3cb417fd2a0b97748e2d">More...</a><br /></td></tr>
 <tr class="separator:af695b9f5933b3cb417fd2a0b97748e2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ccce811dde996328f9b7a6c01694c9c"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a0ccce811dde996328f9b7a6c01694c9c">recording_write_memory</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t length, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> callback)</td></tr>
+<tr class="memitem:a0ccce811dde996328f9b7a6c01694c9c"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a0ccce811dde996328f9b7a6c01694c9c">recording_write_memory</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t length, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:a0ccce811dde996328f9b7a6c01694c9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a recording to the SDRAM buffers.  <a href="recording_8c.html#a0ccce811dde996328f9b7a6c01694c9c">More...</a><br /></td></tr>
 <tr class="separator:a0ccce811dde996328f9b7a6c01694c9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#acfdd3c9b063bc16f1199c9c8df20ff4b">create_buffer_message</a> (<a class="el" href="recording_8h.html#structread__request__packet__data">read_request_packet_data</a> *datum, uint channel, uint8_t *<a class="el" href="reverse__iptag__multicast__source_8c.html#aef1ab53109ddf408618b407c8fbb6e35">read_pointer</a>, uint32_t space_to_be_read)</td></tr>
+<tr class="memitem:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#acfdd3c9b063bc16f1199c9c8df20ff4b">create_buffer_message</a> (<a class="el" href="recording_8h.html#structread__request__packet__data">read_request_packet_data</a> *datum, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> channel, uint8_t *<a class="el" href="reverse__iptag__multicast__source_8c.html#aef1ab53109ddf408618b407c8fbb6e35">read_pointer</a>, uint32_t space_to_be_read)</td></tr>
 <tr class="memdesc:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a buffer message component into the sequence to be sent to the host.  <a href="recording_8c.html#acfdd3c9b063bc16f1199c9c8df20ff4b">More...</a><br /></td></tr>
 <tr class="separator:acfdd3c9b063bc16f1199c9c8df20ff4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac320310c01dea5c0d14f69e80be0c328"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac320310c01dea5c0d14f69e80be0c328">recording_send_buffering_out_trigger_message</a> (bool flush_all)</td></tr>
 <tr class="memdesc:ac320310c01dea5c0d14f69e80be0c328"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a message to host ask for for our buffers to be flushed.  <a href="recording_8c.html#ac320310c01dea5c0d14f69e80be0c328">More...</a><br /></td></tr>
 <tr class="separator:ac320310c01dea5c0d14f69e80be0c328"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#abad4c1a43ddb2eb8a503df45d5e9c9e5">buffering_in_handler</a> (uint mailbox, uint port)</td></tr>
+<tr class="memitem:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#abad4c1a43ddb2eb8a503df45d5e9c9e5">buffering_in_handler</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> mailbox, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> port)</td></tr>
 <tr class="memdesc:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives an SDP message intended for the recording code.  <a href="recording_8c.html#abad4c1a43ddb2eb8a503df45d5e9c9e5">More...</a><br /></td></tr>
 <tr class="separator:abad4c1a43ddb2eb8a503df45d5e9c9e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a2d5af6f8f54d33cd27b8ca7e79a06e49">recording_do_record_and_notify</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> callback)</td></tr>
+<tr class="memitem:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a2d5af6f8f54d33cd27b8ca7e79a06e49">recording_do_record_and_notify</a> (uint8_t channel, void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size_bytes, <a class="el" href="recording_8h.html#ab2be151e62f791d3873a01d47983e162">recording_complete_callback_t</a> <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spin1__api_8c.html#a7f4271a2bb359cefd04d8ca74346ca05">callback</a>)</td></tr>
 <tr class="memdesc:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="mdescLeft">&#160;</td><td class="mdescRight">records some data into a specific recording channel, calling a callback function once complete. DO NOT CALL THIS DIRECTLY. Use <a class="el" href="recording_8h.html#a222af7edbef5e36638e02c7292d69cbd" title="records some data into a specific recording channel.">recording_record()</a> or <a class="el" href="recording_8h.html#a1b14976af9b5980e3dbbc5c9b463f002" title="records some data into a specific recording channel, calling a callback function once complete">recording_record_and_notify()</a>.  <a href="recording_8c.html#a2d5af6f8f54d33cd27b8ca7e79a06e49">More...</a><br /></td></tr>
 <tr class="separator:a2d5af6f8f54d33cd27b8ca7e79a06e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed39e1c2631fc1ede077efc548833728"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aed39e1c2631fc1ede077efc548833728">recording_bad_offset</a> (void *<a class="el" href="data__speed__up__packet__gatherer_8c.html#a6a05a7e807994b650dfb7a6bbfa5abbf">data</a>, uint32_t size)</td></tr>
@@ -164,7 +164,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a61f4d74e9f18ff231c0b3926cb144b3b">recording_finalise</a> (void)</td></tr>
 <tr class="memdesc:a61f4d74e9f18ff231c0b3926cb144b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finishes recording - should only be called if recording_flags is not 0. <br /></td></tr>
 <tr class="separator:a61f4d74e9f18ff231c0b3926cb144b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89e7759f30eca8e5ed7086c816ce8259"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a89e7759f30eca8e5ed7086c816ce8259">recording_dma_finished</a> (uint unused, uint tag)</td></tr>
+<tr class="memitem:a89e7759f30eca8e5ed7086c816ce8259"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a89e7759f30eca8e5ed7086c816ce8259">recording_dma_finished</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> unused, <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> tag)</td></tr>
 <tr class="memdesc:a89e7759f30eca8e5ed7086c816ce8259"><td class="mdescLeft">&#160;</td><td class="mdescRight">updates host read point as DMA has finished  <a href="recording_8c.html#a89e7759f30eca8e5ed7086c816ce8259">More...</a><br /></td></tr>
 <tr class="separator:a89e7759f30eca8e5ed7086c816ce8259"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ad0438aef1104ef15158add655a679c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a3ad0438aef1104ef15158add655a679c">recording_initialize</a> (void **recording_data_address, uint32_t *<a class="el" href="reverse__iptag__multicast__source_8c.html#a9a97f21dc7fccaac8071bcd29894bccb">recording_flags</a>)</td></tr>
@@ -181,19 +181,19 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reco
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"><td class="memItemLeft" align="right" valign="top"><a id="ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"></a>
-static circular_buffer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8">dma_complete_buffer</a></td></tr>
+static <a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/circular__buffer_8h.html#a549d5bcaed4164249aee6a6828a51e6f">circular_buffer</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8">dma_complete_buffer</a></td></tr>
 <tr class="memdesc:ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Circular queue for DMA complete addresses. <br /></td></tr>
 <tr class="separator:ac7e39dd91ffdd9e5bcc83d0c9bc8bfb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa60a1c8e869554e779c6c0f0ec1911da"><td class="memItemLeft" align="right" valign="top"><a id="aa60a1c8e869554e779c6c0f0ec1911da"></a>
-static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aa60a1c8e869554e779c6c0f0ec1911da">g_recording_channels</a> = NULL</td></tr>
+static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#aa60a1c8e869554e779c6c0f0ec1911da">g_recording_channels</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:aa60a1c8e869554e779c6c0f0ec1911da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing all possible channels. In DTCM. <br /></td></tr>
 <tr class="separator:aa60a1c8e869554e779c6c0f0ec1911da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a809b66e68e928376d8dac65804b55cc3"><td class="memItemLeft" align="right" valign="top"><a id="a809b66e68e928376d8dac65804b55cc3"></a>
-static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a809b66e68e928376d8dac65804b55cc3">region_addresses</a> = NULL</td></tr>
+static <a class="el" href="recording_8c.html#structrecording__channel__t">recording_channel_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a809b66e68e928376d8dac65804b55cc3">region_addresses</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a809b66e68e928376d8dac65804b55cc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing all possible channels. In SDRAM. <br /></td></tr>
 <tr class="separator:a809b66e68e928376d8dac65804b55cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ecc84cb4f3c678a32f5a8f6c609d59d"><td class="memItemLeft" align="right" valign="top"><a id="a8ecc84cb4f3c678a32f5a8f6c609d59d"></a>
-static uint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a8ecc84cb4f3c678a32f5a8f6c609d59d">region_sizes</a> = NULL</td></tr>
+static uint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="recording_8c.html#a8ecc84cb4f3c678a32f5a8f6c609d59d">region_sizes</a> = <a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a070d2ce7b6bb7e5c05602aa8c308d0c4">NULL</a></td></tr>
 <tr class="memdesc:a8ecc84cb4f3c678a32f5a8f6c609d59d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array containing the sizes of buffers. In DTCM. <br /></td></tr>
 <tr class="separator:a8ecc84cb4f3c678a32f5a8f6c609d59d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb1826b8e34ca738f009136c3e3be22d"><td class="memItemLeft" align="right" valign="top"><a id="abb1826b8e34ca738f009136c3e3be22d"></a>
@@ -528,7 +528,7 @@ The last sequence number. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>length</em>&#160;</td>
         </tr>
         <tr>
@@ -745,7 +745,7 @@ The last sequence number. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>channel</em>, </td>
         </tr>
         <tr>
@@ -832,13 +832,13 @@ The last sequence number. </td></tr>
         <tr>
           <td class="memname">static void buffering_in_handler </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>mailbox</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>port</em>&#160;</td>
         </tr>
         <tr>
@@ -887,7 +887,7 @@ The last sequence number. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
           <td class="paramname"><em>size_bytes</em>, </td>
         </tr>
         <tr>
@@ -933,7 +933,7 @@ The last sequence number. </td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="common-typedefs_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/bit__field_8h.html#a29d85914ddff32967d85ada69854206d">size_t</a>&#160;</td>
           <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
@@ -968,13 +968,13 @@ The last sequence number. </td></tr>
         <tr>
           <td class="memname">static void recording_dma_finished </td>
           <td>(</td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>unused</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint&#160;</td>
+          <td class="paramtype"><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a>&#160;</td>
           <td class="paramname"><em>tag</em>&#160;</td>
         </tr>
         <tr>
