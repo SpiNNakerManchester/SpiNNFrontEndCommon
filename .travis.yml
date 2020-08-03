@@ -72,6 +72,7 @@ before_script:
   # Initialise builds against spinnaker_tools
   - make -C $SPINN_DIRS
   - make -C spinn_common install
+  - make -C c_common sllt.tag common.tag
 
 script:
   # Python
@@ -92,7 +93,7 @@ script:
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -q -T -b json -d _build/doctrees-json -D language=en . _build/json
   - support/travis-sphinx.sh singlehtml -q -T -b singlehtml -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
-  - ( cd $TRAVIS_BUILD_DIR/c_common && exec doxygen )
+  - make -C $TRAVIS_BUILD_DIR/c_common doxygen
 
 after_success:
   - cd $TRAVIS_BUILD_DIR
