@@ -2309,6 +2309,7 @@
     <includes id="constants_8h" name="constants.h" local="yes" imported="no">common/constants.h</includes>
     <includes id="compressor__sorter__structs_8h" name="compressor_sorter_structs.h" local="yes" imported="no">bit_field_common/compressor_sorter_structs.h</includes>
     <includes id="bit__field__table__generator_8h" name="bit_field_table_generator.h" local="yes" imported="no">bit_field_common/bit_field_table_generator.h</includes>
+    <includes id="minimise_8h" name="minimise.h" local="yes" imported="no">common/minimise.h</includes>
     <includes id="compressor_8h" name="compressor.h" local="yes" imported="no">compressor_includes/compressor.h</includes>
     <includes id="routing__tables_8h" name="routing_tables.h" local="yes" imported="no">bit_field_common/routing_tables.h</includes>
     <member kind="define">
@@ -2544,6 +2545,18 @@
       <anchorfile>constants_8h.html</anchorfile>
       <anchor>a06a361793cd452d8bf77be63631b1b2b</anchor>
       <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="file">
+    <name>minimise.h</name>
+    <path>/home/travis/build/SpiNNakerManchester/SpiNNFrontEndCommon/c_common/models/compressors/src/common/</path>
+    <filename>minimise_8h.html</filename>
+    <member kind="function">
+      <type>bool</type>
+      <name>minimise_run</name>
+      <anchorfile>minimise_8h.html</anchorfile>
+      <anchor>a7d58db58c6a9286c610630fb466c8ffe</anchor>
+      <arglist>(int target_length, bool *failed_by_malloc, volatile bool *stop_compressing)</arglist>
     </member>
   </compound>
   <compound kind="file">
