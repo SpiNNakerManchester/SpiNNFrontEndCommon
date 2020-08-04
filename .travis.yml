@@ -72,7 +72,7 @@ before_script:
   # Initialise builds against spinnaker_tools
   - make -C $SPINN_DIRS
   - make -C spinn_common install
-  - make -C c_common sllt.tag common.tag
+  - make -C c_common doxysetup
 
 script:
   # Python

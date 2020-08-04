@@ -50,5 +50,6 @@ endif
 
 doxygen: $(TAGFILES)
 	$(DOXYGEN)
+doxysetup: $(TAGFILES)
 
-.PHONY: all build install clean doxygen
+.PHONY: all build install clean doxygen doxysetup
