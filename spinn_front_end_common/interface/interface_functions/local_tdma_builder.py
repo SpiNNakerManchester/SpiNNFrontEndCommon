@@ -27,7 +27,13 @@ logger = logging.getLogger(__name__)
 
 
 class LocalTDMABuilder(object):
-    """
+    """ Builds a localised TDMA which allows a number of machine vertices 
+    of the same application vertex to fire at the same time. Ensures that 
+    other application vertices are not firing at the same time. Verfies if 
+    the total time required fits into the time scale factor and machien time 
+    step. Below are text diagrams to show how this works in prinicple.  
+    
+    
     # Figure bits needed to figure out time between spikes.
         # cores 0-4 have 2 atoms, core 5 has 1 atom
         #############################################
@@ -39,7 +45,7 @@ class LocalTDMABuilder(object):
         #       |------| T
         #              X                      X
         #                      X <- T3
-        # T = time_between_cores T2 = time_between_spikes
+        # T = time_between_cores T2 = time_between_phases
         # T3 = end of TDMA (equiv of ((n_phases + 1) * T2))
         # cutoff = 2. n_phases = 3 max_atoms = 2
 
@@ -51,7 +57,7 @@ class LocalTDMABuilder(object):
         # __time_between_cores = microseconds.
 
     # figure initial offset (used to try to interleave packets from other
-        # populations into the TDMA without extending the overall time, and
+        # app verts into the TDMA without extending the overall time, and
         # trying to stop multiple packets in flight at same time).
 
         # Figure bits needed to figure out time between spikes.
@@ -77,7 +83,7 @@ class LocalTDMABuilder(object):
         "TDMA in the given time. The population would need a time "
         "scale factor of {} to correctly execute this TDMA.")
 
-    # fraction of the real time we will use for spike transmissions
+    # default fraction of the real time we will use for spike transmissions
     FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
     FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
@@ -90,47 +96,66 @@ class LocalTDMABuilder(object):
     def __call__(
             self, application_graph, machine_graph, machine_time_step,
             time_scale_factor, n_keys_map):
+        """ main entrance
+        
+        :param application_graph: app graph
+        :param machine_graph: machine graph
+        :param machine_time_step: the machine time step
+        :param time_scale_factor: the time scale factor
+        :param n_keys_map: the map of parittions to n keys. 
+        :rtype: None 
+        """
 
         # get config params
-        (pop_level_spike_control, time_between_cores,
+        (app_machine_quantity, time_between_cores,
          fraction_of_sending, fraction_of_waiting) = self.config_values()
 
         # calculate for each app vertex if the time needed fits
-        pop_verts = list()
+        app_verts = list()
         for app_vertex in application_graph.vertices:
             if isinstance(app_vertex, AbstractRequiresTDMA):
-                pop_verts.append(app_vertex)
+                app_verts.append(app_vertex)
 
                 # get timings
-                (n_phases, n_slots, time_between_spikes) = (
+                (n_phases, n_slots, time_between_phases) = (
                     self._generate_times(
-                        machine_graph, app_vertex, pop_level_spike_control,
+                        machine_graph, app_vertex, app_machine_quantity,
                         time_between_cores, n_keys_map))
 
                 # store in tracker
                 app_vertex.set_other_timings(
-                    time_between_cores, n_slots, time_between_spikes)
+                    time_between_cores, n_slots, time_between_phases)
 
                 # test timings
                 self._test_timings(
-                    n_phases, time_between_spikes, machine_time_step,
+                    n_phases, time_between_phases, machine_time_step,
                     time_scale_factor, fraction_of_sending, app_vertex.label)
 
-        # get initial offset
+        # get initial offset for each app vertex.
         for app_vertex in application_graph.vertices:
             if isinstance(app_vertex, AbstractRequiresTDMA):
                 initial_offset = self._generate_initial_offset(
-                    app_vertex, pop_verts, time_between_cores,
+                    app_vertex, app_verts, time_between_cores,
                     machine_time_step, time_scale_factor, fraction_of_waiting)
                 app_vertex.set_initial_offset(initial_offset)
 
     @staticmethod
     def _generate_initial_offset(
-            app_vertex, pop_verts, time_between_cores,
+            app_vertex, app_verts, time_between_cores,
             machine_time_step, time_scale_factor, fraction_of_waiting):
+        """ figures from the app vertex index the initial offset.
+        
+        :param app_vertex: the app vertex in question
+        :param app_verts: the list of app vertices. 
+        :param time_between_cores: the time between cores
+        :param machine_time_step: the machine time step
+        :param time_scale_factor: the time scale factor
+        :param fraction_of_waiting: the fraction of time for waiting
+        :return: the initial offset for this app vertex.
+        """
 
-        initial_offset = pop_verts.index(app_vertex) * int(
-            math.ceil(len(pop_verts) / time_between_cores))
+        initial_offset = app_verts.index(app_vertex) * int(
+            math.ceil(len(app_verts) / time_between_cores))
         # add the offset of a portion of the time step BEFORE doing any
         # slots to allow initial processing to work.
         initial_offset += int(math.ceil(
@@ -139,8 +164,20 @@ class LocalTDMABuilder(object):
 
     @staticmethod
     def _generate_times(
-            machine_graph, app_vertex, pop_level_spike_control,
+            machine_graph, app_vertex, app_machine_quantity,
             time_between_cores, n_keys_map):
+        """ generates the number of phases needed for this app vertex, as well
+        as the number of slots and the time between spikes for this app vertex
+        given the number of machine verts to fire at the same time from a
+        given app vertex.
+
+        :param machine_graph: machine graph
+        :param app_vertex: the app vertex
+        :param app_machine_quantity: the pop spike control level
+        :param time_between_cores: the time between cores
+        :param n_keys_map: the partition to n keys map.
+        :return: ( n_phases, n_slots, time_between_phases) for this app vertex
+        """
 
         # Figure total T2s
         n_phases = app_vertex.find_n_phases_for(
@@ -148,18 +185,31 @@ class LocalTDMABuilder(object):
 
         # how many hops between T2's
         n_cores = app_vertex.get_n_cores(app_vertex)
-        n_slots = int(math.ceil(n_cores / pop_level_spike_control))
+        n_slots = int(math.ceil(n_cores / app_machine_quantity))
 
         # figure T2
-        time_between_spikes = int(math.ceil(time_between_cores * n_slots))
+        time_between_phases = int(math.ceil(time_between_cores * n_slots))
 
-        return n_phases, n_slots, time_between_spikes
+        return n_phases, n_slots, time_between_phases
 
     def _test_timings(
-            self, n_phases, time_between_spikes, machine_time_step,
+            self, n_phases, time_between_phases, machine_time_step,
             time_scale_factor, fraction_of_sending, label):
+        """ verifies that the timings fit into the time scale factor and
+        machine time step.
+
+        :param n_phases: the max number of phases this tdma needs for a \
+        given app vertex
+        :param time_between_phases: the time between phases.
+        :param machine_time_step: the machine time step
+        :param time_scale_factor: the time scale factor
+        :param fraction_of_sending: fraction of time step for sending packets
+        :param label: the app vertex we're considering at this point
+        :return:
+        """
+
         # figure how much time this TDMA needs
-        total_time_needed = n_phases * time_between_spikes
+        total_time_needed = n_phases * time_between_phases
 
         # figure how much time the TDMA has in transmission
         total_time_available = int(math.ceil(
@@ -173,7 +223,7 @@ class LocalTDMABuilder(object):
                 label, time_scale_factor_needed)
             logger.error(msg)
             raise ConfigurationException(msg)
-        else:
+        else: # maybe this warn could be thrown away?
             if total_time_needed != 0:
                 true_fraction = 1 / (
                     (machine_time_step * time_scale_factor) /
@@ -184,14 +234,21 @@ class LocalTDMABuilder(object):
                         true_fraction))
 
     def config_values(self):
+        """ read the config for the right params. Check the 2 fractions are
+        together less than 1. else broken
+
+        :return: (app_machine_quantity, time_between_cores,
+                fraction_of_sending, fraction_of_waiting)
+        """
+
         # get config
         config = globals_variables.get_simulator().config
 
         # set the number of cores expected to fire at any given time
-        pop_level_spike_control = helpful_functions.read_config_int(
+        app_machine_quantity = helpful_functions.read_config_int(
             config, "Simulation", "app_machine_quantity")
-        if pop_level_spike_control is None:
-            pop_level_spike_control = self._DEFAULT_N_CORES_AT_SAME_TIME
+        if app_machine_quantity is None:
+            app_machine_quantity = self._DEFAULT_N_CORES_AT_SAME_TIME
 
         # set the time between cores to fire
         time_between_cores = helpful_functions.read_config_float(
@@ -222,5 +279,5 @@ class LocalTDMABuilder(object):
             raise ConfigurationException(
                 "the 2 fractions of timing need to be at most 1.")
 
-        return (pop_level_spike_control, time_between_cores,
+        return (app_machine_quantity, time_between_cores,
                 fraction_of_sending, fraction_of_waiting)

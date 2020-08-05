@@ -266,7 +266,7 @@ class RouterProvenanceGatherer(object):
             self.__add_name(names, "External_Multicast_Packets"),
             str(router_diagnostic.n_external_multicast_packets)))
 
-        # simpilfy the if by making components of it outside.
+        # simplify the if by making components of it outside.
         has_dropped = router_diagnostic.n_dropped_multicast_packets > 0
         missing_stuff = None
         has_reinjection = reinjection_status is not None
