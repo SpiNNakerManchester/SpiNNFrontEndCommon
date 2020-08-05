@@ -27,6 +27,17 @@ from spinn_utilities.overrides import overrides
 _ONE_WORD = struct.Struct("<I")
 
 
+def add_name(names, name):
+    """
+            :param iterable(str) names:
+            :param str name:
+            :rtype: list(str)
+            """
+    new_names = list(names)
+    new_names.append(name)
+    return new_names
+
+
 @add_metaclass(AbstractBase)
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine):
@@ -185,9 +196,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param str name:
         :rtype: list(str)
         """
-        new_names = list(names)
-        new_names.append(name)
-        return new_names
+        return add_name(names, name)
 
     @staticmethod
     def _add_names(names, extra_names):

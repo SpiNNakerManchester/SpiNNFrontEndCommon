@@ -125,6 +125,7 @@ void tdma_processing_send_packet(
                 log_info(
                     "missed the whole TDMA. go NOW! for atom %d on tick %d",
                     index, ticks);
+                n_behind_times += 1;
                 while (!spin1_send_mc_packet(
                         transmission_key, payload, payload_marker)) {
                     spin1_delay_us(1);
@@ -141,13 +142,8 @@ void tdma_processing_send_packet(
          initial_offset));
 
     // Wait until the expected time to send
-    int counter = 0;
     while ((ticks == timer_count) && (tc[T1_COUNT] > expected_time)) {
-        counter +=1;
         // Do Nothing
-    }
-    if (counter == 0) {
-        n_behind_times += 1;
     }
 
     // Send the spike

@@ -77,3 +77,15 @@ class AbstractRequiresTDMA(object):
         :param app_vertex: the app vertex in question
         :return: the number of cores to use in the TDMA
         """
+
+    @abstractmethod
+    def get_tdma_provenance_item(self, names, x, y, p, tdma_slots_missed):
+        """ returns the provenance items used for the tdma provenance
+
+        :param names: the names for the prov data item
+        :param x: chip x
+        :param y: chip y
+        :param p: processor id
+        :param tdma_slots_missed: the number of tdma slots missed
+        :return the provenance data items.
+        """

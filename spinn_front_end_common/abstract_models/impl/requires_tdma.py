@@ -15,7 +15,10 @@
 
 from spinn_front_end_common.abstract_models.abstract_requires_tdma import \
     AbstractRequiresTDMA
+from spinn_front_end_common.interface.provenance.\
+    provides_provenance_data_from_machine_impl import add_name
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 from spinn_utilities.overrides import overrides
 
 
@@ -24,6 +27,11 @@ class RequiresTDMA(AbstractRequiresTDMA):
     # 1. core slot, 2. micro secs before spike,
     # 3. time between cores 4. initial offset.
     TDMA_N_ELEMENTS = 4
+
+    TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
+    TDMA_MISSED_SLOTS_MESSAGE = (
+        "The TDMA fell behind by {} times on core {}, {}, {}. "
+        "try increasing the time_between_cores in the corresponding .cfg")
 
     def __init__(self):
         AbstractRequiresTDMA.__init__(self)
@@ -73,3 +81,11 @@ class RequiresTDMA(AbstractRequiresTDMA):
     @overrides(AbstractRequiresTDMA.get_n_cores)
     def get_n_cores(self, app_vertex):
         return len(app_vertex.vertex_slices)
+
+    @overrides(AbstractRequiresTDMA.get_tdma_provenance_item)
+    def get_tdma_provenance_item(self, names, x, y, p, tdma_slots_missed):
+        return ProvenanceDataItem(
+            add_name(names, self.TDMA_MISSED_SLOTS_NAME),
+            tdma_slots_missed, report=tdma_slots_missed > 0,
+            message=self.TDMA_MISSED_SLOTS_MESSAGE.format(
+                tdma_slots_missed, x, y, p))
