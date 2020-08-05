@@ -27,13 +27,12 @@ logger = logging.getLogger(__name__)
 
 
 class LocalTDMABuilder(object):
-    """ Builds a localised TDMA which allows a number of machine vertices 
-    of the same application vertex to fire at the same time. Ensures that 
-    other application vertices are not firing at the same time. Verfies if 
-    the total time required fits into the time scale factor and machien time 
-    step. Below are text diagrams to show how this works in prinicple.  
-    
-    
+    """ Builds a localised TDMA which allows a number of machine vertices
+    of the same application vertex to fire at the same time. Ensures that
+    other application vertices are not firing at the same time. Verifies if
+    the total time required fits into the time scale factor and machine time
+    step. Below are text diagrams to show how this works in principle.
+
     # Figure bits needed to figure out time between spikes.
         # cores 0-4 have 2 atoms, core 5 has 1 atom
         #############################################
@@ -97,13 +96,13 @@ class LocalTDMABuilder(object):
             self, application_graph, machine_graph, machine_time_step,
             time_scale_factor, n_keys_map):
         """ main entrance
-        
-        :param application_graph: app graph
-        :param machine_graph: machine graph
-        :param machine_time_step: the machine time step
-        :param time_scale_factor: the time scale factor
-        :param n_keys_map: the map of parittions to n keys. 
-        :rtype: None 
+
+        :param application_graph: app graph.
+        :param machine_graph: machine graph.
+        :param machine_time_step: the machine time step.
+        :param time_scale_factor: the time scale factor.
+        :param n_keys_map: the map of partitions to n keys.
+        :rtype: None
         """
 
         # get config params
@@ -144,13 +143,13 @@ class LocalTDMABuilder(object):
             app_vertex, app_verts, time_between_cores,
             machine_time_step, time_scale_factor, fraction_of_waiting):
         """ figures from the app vertex index the initial offset.
-        
-        :param app_vertex: the app vertex in question
-        :param app_verts: the list of app vertices. 
-        :param time_between_cores: the time between cores
-        :param machine_time_step: the machine time step
-        :param time_scale_factor: the time scale factor
-        :param fraction_of_waiting: the fraction of time for waiting
+
+        :param app_vertex: the app vertex in question.
+        :param app_verts: the list of app vertices.
+        :param time_between_cores: the time between cores.
+        :param machine_time_step: the machine time step.
+        :param time_scale_factor: the time scale factor.
+        :param fraction_of_waiting: the fraction of time for waiting.
         :return: the initial offset for this app vertex.
         """
 
@@ -223,7 +222,7 @@ class LocalTDMABuilder(object):
                 label, time_scale_factor_needed)
             logger.error(msg)
             raise ConfigurationException(msg)
-        else: # maybe this warn could be thrown away?
+        else:  # maybe this warn could be thrown away?
             if total_time_needed != 0:
                 true_fraction = 1 / (
                     (machine_time_step * time_scale_factor) /
