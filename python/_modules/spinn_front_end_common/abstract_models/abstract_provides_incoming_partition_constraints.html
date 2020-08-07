@@ -90,10 +90,10 @@
 
     <span class="nd">@abstractmethod</span>
 <div class="viewcode-block" id="AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">get_incoming_partition_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get constraints to be added to the given edge that goes in to\</span>
-<span class="sd">            a vertex of this vertex.</span>
+        <span class="sd">&quot;&quot;&quot; Get constraints to be added to the given edge partition that goes\</span>
+<span class="sd">            into a vertex of this vertex.</span>
 
-<span class="sd">        :param ~pacman.model.graphs.AbstractOutgoingEdgePartition partition:</span>
+<span class="sd">        :param ~pacman.model.graphs.OutgoingEdgePartition partition:</span>
 <span class="sd">            An partition that goes in to this vertex</span>
 <span class="sd">        :return: A list of constraints</span>
 <span class="sd">        :rtype: list(~pacman.model.constraints.AbstractConstraint)</span>
