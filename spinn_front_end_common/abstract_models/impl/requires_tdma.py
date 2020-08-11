@@ -24,8 +24,7 @@ from spinn_utilities.overrides import overrides
 
 class RequiresTDMA(AbstractRequiresTDMA):
 
-    # 1. core slot, 2. micro secs before spike,
-    # 3. time between cores 4. initial offset.
+    # 1. initial expected time, 2. min expected time, 3. time between cores
     TDMA_N_ELEMENTS = 4
 
     TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"

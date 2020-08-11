@@ -25,6 +25,9 @@ from spinn_utilities.logger_utils import warn_once
 
 logger = logging.getLogger(__name__)
 
+# The number of clock cycles per nanosecond used by the CPU
+_CYCLES_PER_NS = 200
+
 
 class LocalTDMABuilder(object):
     """ Builds a localised TDMA which allows a number of machine vertices
@@ -115,66 +118,46 @@ class LocalTDMABuilder(object):
             if isinstance(app_vertex, AbstractRequiresTDMA):
                 app_verts.append(app_vertex)
 
-                # get timings
-                (n_phases, n_slots, time_between_phases) = (
-                    self._generate_times(
-                        machine_graph, app_vertex, app_machine_quantity,
-                        time_between_cores, n_keys_map))
-
-                # store in tracker
-                app_vertex.set_other_timings(
-                    time_between_cores, n_slots, time_between_phases)
-
-                # test timings
-                self._test_timings(
-                    n_phases, time_between_phases, machine_time_step,
-                    time_scale_factor, fraction_of_sending, app_vertex.label)
-
         # get initial offset for each app vertex.
-        for app_vertex in application_graph.vertices:
-            if isinstance(app_vertex, AbstractRequiresTDMA):
-                initial_offset = self._generate_initial_offset(
-                    app_vertex, app_verts, time_between_cores,
-                    machine_time_step, time_scale_factor, fraction_of_waiting)
-                app_vertex.set_initial_offset(initial_offset)
+        for app_vertex in app_verts:
+            # get timings
+            (n_phases, n_slots, time_between_phases) = (
+                self._generate_times(
+                    machine_graph, app_vertex, app_machine_quantity,
+                    time_between_cores, n_keys_map))
 
-    @staticmethod
-    def _generate_initial_offset(
-            app_vertex, app_verts, time_between_cores,
-            machine_time_step, time_scale_factor, fraction_of_waiting):
-        """ figures from the app vertex index the initial offset.
+            # store in tracker
+            app_vertex.set_other_timings(
+                time_between_cores, n_slots, time_between_phases)
 
-        :param app_vertex: the app vertex in question.
-        :param app_verts: the list of app vertices.
-        :param time_between_cores: the time between cores.
-        :param machine_time_step: the machine time step.
-        :param time_scale_factor: the time scale factor.
-        :param fraction_of_waiting: the fraction of time for waiting.
-        :return: the initial offset for this app vertex.
-        """
-
-        initial_offset = app_verts.index(app_vertex) * int(
-            math.ceil(len(app_verts) / time_between_cores))
-        # add the offset of a portion of the time step BEFORE doing any
-        # slots to allow initial processing to work.
-        initial_offset += int(math.ceil(
-            (machine_time_step * time_scale_factor) * fraction_of_waiting))
-        return initial_offset
+            # test timings
+            self._test_timings(
+                n_phases, time_between_phases, machine_time_step,
+                time_scale_factor, fraction_of_sending, app_vertex.label)
+            initial_offset = self._generate_initial_offset(
+                app_vertex, app_verts, time_between_cores,
+                machine_time_step, time_scale_factor, fraction_of_waiting)
+            app_vertex.set_initial_offset(initial_offset)
 
     @staticmethod
     def _generate_times(
-            machine_graph, app_vertex, app_machine_quantity,
-            time_between_cores, n_keys_map):
+            machine_graph, app_verts, app_vertex, app_machine_quantity,
+            time_between_cores, n_keys_map, machine_time_step,
+            time_scale_factor, fraction_of_waiting):
         """ generates the number of phases needed for this app vertex, as well
         as the number of slots and the time between spikes for this app vertex
         given the number of machine verts to fire at the same time from a
         given app vertex.
 
         :param machine_graph: machine graph
+        :param app_verts: the list of app vertices.
         :param app_vertex: the app vertex
         :param app_machine_quantity: the pop spike control level
         :param time_between_cores: the time between cores
         :param n_keys_map: the partition to n keys map.
+        :param machine_time_step: the machine time step.
+        :param time_scale_factor: the time scale factor.
+        :param fraction_of_waiting: the fraction of time for waiting.
         :return: ( n_phases, n_slots, time_between_phases) for this app vertex
         """
 
@@ -183,11 +166,18 @@ class LocalTDMABuilder(object):
             app_vertex, machine_graph, n_keys_map)
 
         # how many hops between T2's
-        n_cores = app_vertex.get_n_cores(app_vertex)
+        n_cores = len(app_vertex.machine_vertices)
         n_slots = int(math.ceil(n_cores / app_machine_quantity))
 
         # figure T2
         time_between_phases = int(math.ceil(time_between_cores * n_slots))
+
+        initial_offset = app_verts.index(app_vertex) * int(
+            math.ceil(len(app_verts) / time_between_cores))
+        # add the offset of a portion of the time step BEFORE doing any
+        # slots to allow initial processing to work.
+        initial_offset += int(math.ceil(
+            (machine_time_step * time_scale_factor) * fraction_of_waiting))
 
         return n_phases, n_slots, time_between_phases
 
