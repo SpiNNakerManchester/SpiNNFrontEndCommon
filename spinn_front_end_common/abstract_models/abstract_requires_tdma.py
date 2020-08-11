@@ -46,12 +46,15 @@ class AbstractRequiresTDMA(object):
 
     @abstractmethod
     def set_other_timings(
-            self, time_between_cores, n_slots, time_between_spikes):
+            self, time_between_cores, n_slots, time_between_spikes, n_phases,
+            ns_per_cycle):
         """ sets the other timings needed for the TDMA
 
         :param time_between_cores: time between cores
         :param n_slots: the number of slots
         :param time_between_spikes: the time to wait between spikes
+        :param n_phases: the number of phases
+        :param ns_per_cycle: the number of nano-seconds per TDMA cycle
         :rtype: None
         """
 
