@@ -105,6 +105,24 @@ class MatrixDatabase(object):
         return source_name + "_"  + variable_name + "_" + str(first_id) \
                + postfix
 
+    def _drop_views(self, cursor, source_name, variable_name):
+        cursor.execute(
+                """
+                DELETE FROM global_metadata
+                WHERE source_name = ? AND variable_name = ?
+                """, (source_name, variable_name))
+        if cursor.rowcount == 0:
+            # No views to drop
+            return
+        cursor.execute("DROP TABLE IF EXISTS " +
+                       self._table_name(source_name, variable_name, SIMPLE))
+        cursor.execute("DROP VIEW IF EXISTS " +
+                       self._table_name(source_name, variable_name, TIME_STAMPS))
+        cursor.execute("DROP VIEW IF EXISTS " +
+                       self._table_name(source_name, variable_name, FULL))
+        cursor.execute("DROP VIEW IF EXISTS " +
+                       self._table_name(source_name, variable_name, AS_FLOAT))
+
     def _get_local_table(self, cursor, source_name, variable_name, neuron_ids):
         """
         Ensures a table exists to hold data from one core.
@@ -164,7 +182,7 @@ class MatrixDatabase(object):
 
         if len(table_names) == 1:
             # No views needed use the single raw table
-            return table_names[1]
+            return table_names[0]
 
         # Create a view using natural join
         simple_name = self._table_name(source_name, variable_name, SIMPLE)
@@ -259,8 +277,7 @@ class MatrixDatabase(object):
         fields = names[0]
         for name in names[1:]:
             fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
-        float_name = self._table_name(
-            source_name, variable_name, AS_FLOAT)
+        float_name = self._table_name(source_name, variable_name, AS_FLOAT)
 
         ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
             float_name, fields, best_source)
@@ -291,6 +308,7 @@ class MatrixDatabase(object):
         """
         with self._db:
             cursor = self._db.cursor()
+            self._drop_views(cursor, source_name, variable_name)
             table_name = self._get_local_table(
                 cursor, source_name, variable_name, neuron_ids)
             cursor.execute("SELECT * FROM {}".format(table_name))
@@ -335,15 +353,12 @@ class MatrixDatabase(object):
                 variables[row["source_name"]].append(row["variable_name"])
         return variables
 
-    def create_views(self):
+    def create_all_views(self):
         """
         Creates views for all the source / variable pairs
 
         Can safely be called more than once and a second call will add new
         source/ variable pairs but not update already existing ones
-
-        note: This method assumes that all core with data for a
-            source/variable pair have inserted at least once or all not yet.
 
         """
         variables = self.get_variable_map()

@@ -65,7 +65,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
         self.assertEqual(vother, db.get_data("pop2", "v")[1])
         db.create_all_views()
-        self.assertEqual(9, len(db.get_views()))
+        self.assertEqual(5, len(db.get_views()))
 
         gsyn2 =  gsyn2_1 +  gsyn2_2
         self.assertEqual(gsyn2, db.get_data("pop1", "gsyn")[1])
@@ -75,7 +75,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         v = [z[0] + z[1][1:] for z in zip(v1,v2)]
         self.assertEqual(v, db.get_data("pop1", "v")[1])
 
-        self.assertEqual(9, len(db.get_views()))
+        self.assertEqual(5, len(db.get_views()))
 
     def test_missing_data(self):
         db_file = os.path.join(os.path.dirname(__file__), "missing.sqlite3")
@@ -84,12 +84,16 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
         timesteps1 = [0,1,2,4,5]
         timesteps2 = [2,1,4,5,3]
+        timesteps3 = [0,2,1,4,5,3]
         neuron_ids1 = range(2)
         neuron_ids2 = range(2, 4, 2)
+        neuron_ids3 = range(3, 5, 2)
         v1 = self._random_data(timesteps1, neuron_ids1)
         db.insert_items("pop1", "v", neuron_ids1, v1)
         v2 = self._random_data(timesteps2, neuron_ids2)
         db.insert_items("pop1", "v", neuron_ids2, v2)
+        v3 = self._random_data(timesteps3, neuron_ids3)
+        db.insert_items("pop1", "v", neuron_ids3, v3)
 
         meta = db.get_variable_map()
         self.assertIn("pop1", meta)
