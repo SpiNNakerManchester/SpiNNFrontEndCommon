@@ -85,7 +85,7 @@ class MatrixDatabase(object):
             sql = f.read()
         self._db.executescript(sql)
 
-    def _get_local_table(self, source_name, variable_name, neuron_ids):
+    def _get_local_table(self, cursor, source_name, variable_name, neuron_ids):
         """
         Ensures a table exists to hold data from one core.
 
@@ -93,27 +93,27 @@ class MatrixDatabase(object):
         constants and no not overlap with any other cores with for the same
         source and variable pair
 
+        :param ~sqlite3.Cursor cursor:
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
         :param list neuron_ids: The ids for this core. Many be integers
         :return: Name of the database table created for this data
         """
-        with self._db:
-            for row in self._db.execute(
-                    """
-                    SELECT table_name
-                    FROM local_metadata
-                    WHERE source_name = ? AND variable_name = ? 
-                        AND first_neuron_id = ?
-                    LIMIT 1
-                    """, (source_name, variable_name, neuron_ids[0])):
-                return row["table_name"]
+        for row in cursor.execute(
+                """
+                SELECT table_name
+                FROM local_metadata
+                WHERE source_name = ? AND variable_name = ? 
+                    AND first_neuron_id = ?
+                LIMIT 1
+                """, (source_name, variable_name, neuron_ids[0])):
+            return row["table_name"]
 
         table_name = source_name + "_" + variable_name + "_" + \
                      str(neuron_ids[0])
         neuron_ids_str = ",".join(["'" + str(id) + "'" for id in neuron_ids])
-        self._db.execute(
+        cursor.execute(
             """
             INSERT INTO local_metadata(
                 source_name, variable_name, table_name, first_neuron_id) 
@@ -122,63 +122,62 @@ class MatrixDatabase(object):
 
         ddl_statement = "CREATE TABLE {} (timestamp, {})".format(
             table_name, neuron_ids_str)
-        self._db.execute(ddl_statement)
+        cursor.execute(ddl_statement)
         return table_name
 
-    def _get_global_view(self, source_name, variable_name):
+    def _get_global_view(self, cursor, source_name, variable_name):
         """
         Ensures a view exists to data for all cores with this data
 
         note: It is assumed that this is only called after all cores have
             inserted data at least once.
 
+        :param ~sqlite3.Cursor cursor:
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
         :return: Name of the database view created for this data
         """
-        with self._db:
-            for row in self._db.execute(
-                    """
-                    SELECT view_name FROM global_metadata
-                    WHERE source_name = ? AND variable_name = ?
-                    LIMIT 1
-                    """, (source_name, variable_name)):
-                return row["view_name"]
-
-            table_names = []
-            for row in self._db.execute(
-                    """
-                    SELECT table_name FROM local_metadata
-                    WHERE source_name = ? AND variable_name = ?
-                    ORDER BY first_neuron_id
-                    """, (source_name, variable_name)):
-                table_names.append(row["table_name"])
-
-            view_name = source_name + "_" + variable_name
-            ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
-                view_name, " NATURAL JOIN ".join(table_names))
-            self._db.execute(ddl_statement)
-            self._db.execute(
+        for row in cursor.execute(
                 """
-                INSERT INTO global_metadata(
-                    source_name, variable_name, view_name) 
-                VALUES(?,?,?)
-                """,
-                (source_name, variable_name, view_name))
+                SELECT view_name FROM global_metadata
+                WHERE source_name = ? AND variable_name = ?
+                LIMIT 1
+                """, (source_name, variable_name)):
+            return row["view_name"]
 
-            cursor = self._db.cursor()
-            cursor.execute("SELECT * FROM {}".format(view_name))
-            names = [description[0] for description in cursor.description]
+        table_names = []
+        for row in cursor.execute(
+                """
+                SELECT table_name FROM local_metadata
+                WHERE source_name = ? AND variable_name = ?
+                ORDER BY first_neuron_id
+                """, (source_name, variable_name)):
+            table_names.append(row["table_name"])
 
-            fields = names[0]
-            for name in names[1:]:
-                fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
-            ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
-                view_name+"_as_float", fields, view_name)
-            self._db.execute(ddl_statement)
+        view_name = source_name + "_" + variable_name
+        ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
+            view_name, " NATURAL JOIN ".join(table_names))
+        cursor.execute(ddl_statement)
+        cursor.execute(
+            """
+            INSERT INTO global_metadata(
+                source_name, variable_name, view_name) 
+            VALUES(?,?,?)
+            """,
+            (source_name, variable_name, view_name))
 
-            return view_name
+        cursor.execute("SELECT * FROM {}".format(view_name))
+        names = [description[0] for description in cursor.description]
+
+        fields = names[0]
+        for name in names[1:]:
+            fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
+        ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
+            view_name+"_as_float", fields, view_name)
+        cursor.execute(ddl_statement)
+
+        return view_name
 
     def insert_items(self, source_name, variable_name, neuron_ids, data):
         """
@@ -201,10 +200,10 @@ class MatrixDatabase(object):
         :param iterable(iterable) data: The values to load
         :return: Name of the database table created for this data
         """
-        table_name = self._get_local_table(
-            source_name, variable_name, neuron_ids)
         with self._db:
             cursor = self._db.cursor()
+            table_name = self._get_local_table(
+                cursor, source_name, variable_name, neuron_ids)
             cursor.execute("SELECT * FROM {}".format(table_name))
             query = "INSERT INTO {} VALUES ({})".format(
                 table_name, ",".join("?" for _ in cursor.description))
@@ -259,9 +258,11 @@ class MatrixDatabase(object):
 
         """
         variables = self.get_variable_map()
-        for source_name, variables in variables.items():
-            for variable_name in variables:
-                self._get_global_view(source_name, variable_name)
+        with self._db:
+            cursor = self._db.cursor()
+            for source_name, variables in variables.items():
+                for variable_name in variables:
+                    self._get_global_view(cursor, source_name, variable_name)
 
     def get_data(self, source_name, variable_name):
         """
@@ -276,9 +277,10 @@ class MatrixDatabase(object):
             all the data with a timestamp as the first column
         :rtype: tuple(list, list(list(int))
         """
-        view_name = self._get_global_view(source_name, variable_name)
         with self._db:
             cursor = self._db.cursor()
+            view_name = self._get_global_view(
+                cursor, source_name, variable_name)
             cursor.execute("SELECT * FROM {}".format(view_name))
             names = [description[0] for description in cursor.description]
             data = [list(row[:]) for row in cursor.fetchall()]
