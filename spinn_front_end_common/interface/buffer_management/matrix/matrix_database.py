@@ -85,7 +85,20 @@ class MatrixDatabase(object):
             sql = f.read()
         self._db.executescript(sql)
 
-    def _get_local_metadata(self, source_name, variable_name, neuron_ids):
+    def _get_local_table(self, source_name, variable_name, neuron_ids):
+        """
+        Ensures a table exists to hold data from one core.
+
+        note: It is assumed that the neuron_ids for one core/variable remains
+        constants and no not overlap with any other cores with for the same
+        source and variable pair
+
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param list neuron_ids: The ids for this core. Many be integers
+        :return: Name of the database table created for this data
+        """
         with self._db:
             for row in self._db.execute(
                     """
@@ -97,7 +110,8 @@ class MatrixDatabase(object):
                     """, (source_name, variable_name, neuron_ids[0])):
                 return row["table_name"]
 
-        table_name = source_name + "_" + variable_name + "_" + str(neuron_ids[0])
+        table_name = source_name + "_" + variable_name + "_" + \
+                     str(neuron_ids[0])
         neuron_ids_str = ",".join(["'" + str(id) + "'" for id in neuron_ids])
         self._db.execute(
             """
@@ -111,7 +125,18 @@ class MatrixDatabase(object):
         self._db.execute(ddl_statement)
         return table_name
 
-    def _get_global_metadata(self, source_name, variable_name):
+    def _get_global_view(self, source_name, variable_name):
+        """
+        Ensures a view exists to data for all cores with this data
+
+        note: It is assumed that this is only called after all cores have
+            inserted data at least once.
+
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :return: Name of the database view created for this data
+        """
         with self._db:
             for row in self._db.execute(
                     """
@@ -156,18 +181,37 @@ class MatrixDatabase(object):
             return view_name
 
     def insert_items(self, source_name, variable_name, neuron_ids, data):
-        table_name = self._get_local_metadata(
+        """
+        Inserts data for one core for this variable
+
+        The first column of the data is assumed to hold timestamps
+        the rest data for each of the ids in neuron_ids
+
+        note: Many be called more than once for the same core/variable as
+        long as the timestamps are unigue
+
+        note: It is assumed that the neuron_ids for one core/variable remains
+        constants and no not overlap with any other cores with for the same
+        source and variable pair
+
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param list neuron_ids: The ids for this core. Many be integers
+        :param iterable(iterable) data: The values to load
+        :return: Name of the database table created for this data
+        """
+        table_name = self._get_local_table(
             source_name, variable_name, neuron_ids)
         with self._db:
             cursor = self._db.cursor()
             cursor.execute("SELECT * FROM {}".format(table_name))
             query = "INSERT INTO {} VALUES ({})".format(
                 table_name, ",".join("?" for _ in cursor.description))
-            print(query)
             cursor.executemany(query, data)
 
     def clear_ds(self):
-        """ Clear all saved data specification data
+        """ Clear all saved data
         """
         with self._db:
             names = [row["name"]
@@ -187,6 +231,11 @@ class MatrixDatabase(object):
                 self._db.execute("DELETE FROM " + name)
 
     def get_variable_map(self):
+        """
+        Gets a map of all sources and variables stored in the database
+
+        :return: dict of sources names to a list of variable names
+        """
         variables = defaultdict(list)
         with self._db:
             for row in self._db.execute(
@@ -199,16 +248,49 @@ class MatrixDatabase(object):
         return variables
 
     def create_views(self):
+        """
+        Creates views for all the source / variable pairs
+
+        Can safely be called more than once and a second call will add new
+        source/ variable pairs but not update already existing ones
+
+        note: This method assumes that all core with data for a
+            source/variable pair have inserted at least once or all not yet.
+
+        """
         variables = self.get_variable_map()
-        for source_name, variables in variables.iteritems():
+        for source_name, variables in variables.items():
             for variable_name in variables:
-                self._get_global_metadata(source_name, variable_name)
+                self._get_global_view(source_name, variable_name)
 
     def get_data(self, source_name, variable_name):
-        view_name = self._get_global_metadata(source_name, variable_name)
+        """
+        Gets the data for all cores for this source_name, variabkle name
+
+        note: Current implementaion does not handle missing data well
+
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :return: Fist of colun names (timestamp + nueron ids) and
+            all the data with a timestamp as the first column
+        :rtype: tuple(list, list(list(int))
+        """
+        view_name = self._get_global_view(source_name, variable_name)
         with self._db:
             cursor = self._db.cursor()
             cursor.execute("SELECT * FROM {}".format(view_name))
             names = [description[0] for description in cursor.description]
             data = [list(row[:]) for row in cursor.fetchall()]
             return names, data
+
+    def get_views(self):
+        """
+        Gets a list of the currently created views.
+
+        :return: list of the names of all views in the database
+        """
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='view'")
+            return cursor.fetchall()

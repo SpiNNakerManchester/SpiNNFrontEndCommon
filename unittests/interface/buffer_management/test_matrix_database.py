@@ -36,10 +36,10 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         db = MatrixDatabase(db_file)
         db.clear_ds()
 
-        timesteps1 = range(100)
-        timesteps2 = range(100, 1000, 4)
-        neuron_ids1 = range(10)
-        neuron_ids2 = range(10, 30, 2)
+        timesteps1 = range(3)
+        timesteps2 = range(3, 7)
+        neuron_ids1 = range(2)
+        neuron_ids2 = range(2, 4, 2)
         v1_1 = self._random_data(timesteps1, neuron_ids1)
         db.insert_items("pop1", "v", neuron_ids1, v1_1)
         v1_2 = self._random_data(timesteps1, neuron_ids2)
@@ -50,7 +50,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         db.insert_items("pop1", "v", neuron_ids2, v2_2)
         gsyn2_1 = self._random_data(timesteps2, neuron_ids1)
         db.insert_items("pop1", "gsyn", neuron_ids1, gsyn2_1)
-        gsyn2_2 = self._random_data(timesteps2, neuron_ids2)
+        gsyn2_2 = self._random_data(timesteps2, neuron_ids1)
         db.insert_items("pop1", "gsyn", neuron_ids1, gsyn2_2)
         vother = self._random_data(timesteps1, neuron_ids1)
         db.insert_items("pop2", "v", neuron_ids1, vother)
@@ -63,12 +63,16 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         self.assertIn("pop2", meta)
         self.assertEqual(2, len(meta))
 
-        v1 = v1_1 + v1_2
-        v2 = v2_1 + v2_2
-        v = [z[0] + z[1][1:] for z in zip(v1,v2)]
-        self.assertEqual(v1, db.get_data("pop1", "v")[1])
+        self.assertEqual(vother, db.get_data("pop2", "v")[1])
+        db.create_views()
+        self.assertEqual(6, len(db.get_views()))
+
         gsyn2 =  gsyn2_1 +  gsyn2_2
         self.assertEqual(gsyn2, db.get_data("pop1", "gsyn")[1])
-        self.assertEqual(vother, db.get_data("pop2", "v")[1])
 
+        v1 = v1_1 + v2_1
+        v2 = v1_2 + v2_2
+        v = [z[0] + z[1][1:] for z in zip(v1,v2)]
+        self.assertEqual(v, db.get_data("pop1", "v")[1])
 
+        self.assertEqual(6, len(db.get_views()))
