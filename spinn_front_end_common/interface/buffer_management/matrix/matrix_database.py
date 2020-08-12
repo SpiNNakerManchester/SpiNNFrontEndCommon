@@ -19,6 +19,11 @@ import sqlite3
 
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "matrix_database.sql")
+RAW = "_raw"
+FULL = "_full"
+SIMPLE = "_simple"
+AS_FLOAT = "_as_float"
+TIME_STAMPS = "_timestamps"
 
 
 class MatrixDatabase(object):
@@ -85,6 +90,21 @@ class MatrixDatabase(object):
             sql = f.read()
         self._db.executescript(sql)
 
+    def _table_name(
+            self, source_name, variable_name, postfix, first_id=None):
+        """
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param str postfix: Extra to add on to the end
+        :param first_id: first id for this core
+        :return: name for this table/view
+        """
+        if first_id is None:
+            first_id = "ALL"
+        return source_name + "_"  + variable_name + "_" + str(first_id) \
+               + postfix
+
     def _get_local_table(self, cursor, source_name, variable_name, neuron_ids):
         """
         Ensures a table exists to hold data from one core.
@@ -110,8 +130,8 @@ class MatrixDatabase(object):
                 """, (source_name, variable_name, neuron_ids[0])):
             return row["table_name"]
 
-        table_name = source_name + "_" + variable_name + "_" + \
-                     str(neuron_ids[0])
+        table_name = self._table_name(
+            source_name, variable_name, RAW, neuron_ids[0])
         neuron_ids_str = ",".join(["'" + str(id) + "'" for id in neuron_ids])
         cursor.execute(
             """
@@ -124,6 +144,75 @@ class MatrixDatabase(object):
             table_name, neuron_ids_str)
         cursor.execute(ddl_statement)
         return table_name
+
+    def _count(self, cursor, name):
+        query = "SELECT COUNT(*) FROM " + name
+        cursor.execute(query)
+        return cursor.fetchone()
+
+    def _find_best_source(self, cursor, source_name, variable_name):
+
+        # Find the tables to include
+        table_names = []
+        for row in cursor.execute(
+                """
+                SELECT table_name FROM local_metadata
+                WHERE source_name = ? AND variable_name = ?
+                ORDER BY first_neuron_id
+                """, (source_name, variable_name)):
+            table_names.append(row["table_name"])
+
+        if len(table_names) == 1:
+            # No views needed use the single raw table
+            return table_names[1]
+
+        # Create a view using natural join
+        simple_name = self._table_name(source_name, variable_name, SIMPLE)
+        ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
+            simple_name, " NATURAL JOIN ".join(table_names))
+        cursor.execute(ddl_statement)
+
+        # Create a view that list all timestamps in any of the tables
+        keys_name = self._table_name(source_name, variable_name, TIME_STAMPS)
+        unsorted_ddl = " UNION ".join("SELECT timestamp FROM " + name
+                                      for name in table_names)
+        sorted_ddl = """
+            CREATE VIEW {} AS SELECT timestamp FROM ({}) 
+            order by timestamp
+            """.format(keys_name, unsorted_ddl)
+        cursor.execute(sorted_ddl)
+
+        # Check the simple view includes all timestamps
+        simple_count = self._count(cursor, simple_name)
+        keys_count = self._count(cursor, keys_name)
+        if simple_count == keys_count:
+            return simple_name
+
+        # Check each table to see if it includes all timestamps
+        best_names = []
+        for table_name in table_names:
+            table_count = self._count(cursor, table_name)
+            if table_count == keys_count:
+                best_names.append(table_name)
+            else:
+                # Data missing so create a view with NULLs
+                full_name = FULL.join(table_name.rsplit(RAW, 1))
+                cursor.execute(
+                    """
+                    CREATE VIEW {} 
+                    AS SELECT * 
+                    FROM {} 
+                    LEFT JOIN {} USING(timestamp)
+                    """.format(full_name, keys_name, table_name))
+                best_names.append(full_name)
+
+        # Create a view using natural join over the complete data for each
+        full_name = self._table_name(source_name, variable_name, FULL)
+        ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
+            full_name, " NATURAL JOIN ".join(best_names))
+        cursor.execute(ddl_statement)
+        return full_name
+
 
     def _get_global_view(self, cursor, source_name, variable_name):
         """
@@ -140,11 +229,11 @@ class MatrixDatabase(object):
         """
         for row in cursor.execute(
                 """
-                SELECT view_name FROM global_metadata
+                SELECT best_source FROM global_metadata
                 WHERE source_name = ? AND variable_name = ?
                 LIMIT 1
                 """, (source_name, variable_name)):
-            return row["view_name"]
+            return row["best_source"]
 
         table_names = []
         for row in cursor.execute(
@@ -155,29 +244,29 @@ class MatrixDatabase(object):
                 """, (source_name, variable_name)):
             table_names.append(row["table_name"])
 
-        view_name = source_name + "_" + variable_name
-        ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
-            view_name, " NATURAL JOIN ".join(table_names))
-        cursor.execute(ddl_statement)
+        best_source = self._find_best_source(cursor, source_name, variable_name)
         cursor.execute(
             """
             INSERT INTO global_metadata(
-                source_name, variable_name, view_name) 
+                source_name, variable_name, best_source) 
             VALUES(?,?,?)
             """,
-            (source_name, variable_name, view_name))
+            (source_name, variable_name, best_source))
 
-        cursor.execute("SELECT * FROM {}".format(view_name))
+        cursor.execute("SELECT * FROM {}".format(best_source))
         names = [description[0] for description in cursor.description]
 
         fields = names[0]
         for name in names[1:]:
             fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
+        float_name = self._table_name(
+            source_name, variable_name, AS_FLOAT)
+
         ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
-            view_name+"_as_float", fields, view_name)
+            float_name, fields, best_source)
         cursor.execute(ddl_statement)
 
-        return view_name
+        return best_source
 
     def insert_items(self, source_name, variable_name, neuron_ids, data):
         """

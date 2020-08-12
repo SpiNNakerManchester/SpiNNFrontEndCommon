@@ -27,4 +27,4 @@ CREATE TABLE IF NOT EXISTS local_metadata(
 CREATE TABLE IF NOT EXISTS global_metadata(
 	source_name STRING NOT NULL,
 	variable_name STRING NOT NULL,
-	view_name STRING NOT NULL);
+	best_source STRING NOT NULL);
