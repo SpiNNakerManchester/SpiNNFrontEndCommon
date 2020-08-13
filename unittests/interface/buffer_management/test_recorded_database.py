@@ -16,8 +16,9 @@
 import os
 import random
 import unittest
-from spinn_front_end_common.interface.buffer_management.matrix import (
-    MatrixDatabase)
+from spinn_front_end_common.interface.buffer_management.recorded import (
+    RecordedDatabase)
+
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
@@ -33,7 +34,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
     def test_use_database(self):
         db_file = os.path.join(os.path.dirname(__file__), "main_test.sqlite3")
-        db = MatrixDatabase(db_file)
+        db = RecordedDatabase(db_file)
         db.clear_ds()
 
         timesteps1 = range(3)
@@ -80,7 +81,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
     def test_missing_data(self):
         db_file = os.path.join(os.path.dirname(__file__), "missing.sqlite3")
-        db = MatrixDatabase(db_file)
+        db = RecordedDatabase(db_file)
         db.clear_ds()
 
         timesteps1 = [0,1,2,4,5]

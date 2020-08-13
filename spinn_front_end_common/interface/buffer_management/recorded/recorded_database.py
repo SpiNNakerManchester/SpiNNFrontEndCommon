@@ -18,7 +18,7 @@ import os
 import sqlite3
 
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "matrix_database.sql")
+_DDL_FILE = os.path.join(os.path.dirname(__file__), "recorded_database.sql")
 RAW = "_raw"
 FULL = "_full"
 SIMPLE = "_simple"
@@ -26,7 +26,7 @@ AS_FLOAT = "_as_float"
 KEYS = "_keys"
 
 
-class MatrixDatabase(object):
+class RecordedDatabase(object):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::

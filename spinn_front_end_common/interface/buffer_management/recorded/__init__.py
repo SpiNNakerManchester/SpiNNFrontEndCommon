@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .matrix_database import MatrixDatabase
+from .recorded_database import RecordedDatabase
 
 __all__ = [
-    "MatrixDatabase"]
+    "RecordedDatabase"]
