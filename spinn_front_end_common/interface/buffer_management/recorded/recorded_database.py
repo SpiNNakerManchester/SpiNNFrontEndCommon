@@ -101,7 +101,7 @@ class RecordedDatabase(object):
         :param first_id: first id for this core
         :return: name for this table/view
         """
-        name = source_name + "_"  + variable_name + "_"
+        name = source_name + "_" + variable_name + "_"
         if first_id is None:
             return name + "ALL" + postfix
         return name + str(first_id) + postfix
@@ -154,7 +154,7 @@ class RecordedDatabase(object):
         cursor.execute(
             """
             INSERT INTO local_metadata(
-                source_name, variable_name, table_name, first_neuron_id, 
+                source_name, variable_name, table_name, first_neuron_id,
                 data_type)
             VALUES(?,?,?,?,?)
             """, (source_name, variable_name, table_name, atom_ids[0], MATRIX))
