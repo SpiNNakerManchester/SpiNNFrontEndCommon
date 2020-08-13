@@ -71,12 +71,12 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         db.create_all_views()
         self.assertEqual(5, len(db.get_views()))
 
-        gsyn2 =  gsyn2_1 +  gsyn2_2
+        gsyn2 = gsyn2_1 + gsyn2_2
         self.assertEqual(gsyn2, db.get_data("pop1", "gsyn")[1])
 
         v1 = v1_1 + v2_1
         v2 = v1_2 + v2_2
-        v = [z[0] + z[1][1:] for z in zip(v1,v2)]
+        v = [z[0] + z[1][1:] for z in zip(v1, v2)]
         self.assertEqual(v, db.get_data("pop1", "v")[1])
 
         self.assertEqual(5, len(db.get_views()))
@@ -88,9 +88,9 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         db = RecordedDatabase(db_file)
         db.clear_ds()
 
-        timesteps1 = [0,1,2,4,5]
-        timesteps2 = [2,1,4,5,3]
-        timesteps3 = [0,2,1,4,5,3]
+        timesteps1 = [0, 1, 2, 4, 5]
+        timesteps2 = [2, 1, 4, 5, 3]
+        timesteps3 = [0, 2, 1, 4, 5, 3]
         neuron_ids1 = range(2)
         neuron_ids2 = range(2, 4, 2)
         neuron_ids3 = range(3, 5, 2)

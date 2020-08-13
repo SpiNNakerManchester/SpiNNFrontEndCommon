@@ -25,6 +25,7 @@ SIMPLE = "_simple"
 AS_FLOAT = "_as_float"
 KEYS = "_keys"
 MATRIX = "matrix"
+TYPE_ERROR = "{} {} has already been save as {} so can not save it as {}"
 
 
 class RecordedDatabase(object):
@@ -100,10 +101,10 @@ class RecordedDatabase(object):
         :param first_id: first id for this core
         :return: name for this table/view
         """
+        name = source_name + "_"  + variable_name + "_"
         if first_id is None:
-            first_id = "ALL"
-        return source_name + "_"  + variable_name + "_" + str(first_id) \
-               + postfix
+            return name + "ALL" + postfix
+        return name + str(first_id) + postfix
 
     def _drop_views(self, cursor, source_name, variable_name):
         cursor.execute(
@@ -140,12 +141,12 @@ class RecordedDatabase(object):
                 """
                 SELECT data_type
                 FROM local_metadata
-                WHERE source_name = ? AND variable_name = ? 
+                WHERE source_name = ? AND variable_name = ?
                 """, (source_name, variable_name)):
             if row["data_type"] != MATRIX:
-                raise Exception("{} {} has already been save as {} "
-                                "so can not save it as MATRIX".format(
-                    source_name, variable_name, row["data_type"]))
+                msg = TYPE_ERROR.format(
+                    source_name, variable_name, row["data_type"], MATRIX)
+                raise Exception(msg)
 
         table_name = self._table_name(
             source_name, variable_name, RAW, atom_ids[0])
@@ -153,7 +154,8 @@ class RecordedDatabase(object):
         cursor.execute(
             """
             INSERT INTO local_metadata(
-                source_name, variable_name, table_name, first_neuron_id, data_type) 
+                source_name, variable_name, table_name, first_neuron_id, 
+                data_type)
             VALUES(?,?,?,?,?)
             """, (source_name, variable_name, table_name, atom_ids[0], MATRIX))
 
@@ -163,7 +165,8 @@ class RecordedDatabase(object):
         return table_name
 
     def _get_local_table(
-            self, cursor, source_name, variable_name, key, atom_ids, data_type):
+            self, cursor, source_name, variable_name, key, atom_ids,
+            data_type):
         """
         Ensures a table exists to hold data from one core.
 
@@ -179,14 +182,14 @@ class RecordedDatabase(object):
                 """
                 SELECT table_name, data_type
                 FROM local_metadata
-                WHERE source_name = ? AND variable_name = ? 
+                WHERE source_name = ? AND variable_name = ?
                     AND first_neuron_id = ?
                 LIMIT 1
                 """, (source_name, variable_name, atom_ids[0])):
             if row["data_type"] != data_type:
-                raise Exception("{} {} has already been save as {} "
-                                "so can not save it as {}".format(
-                    source_name, variable_name, row["data_type"], data_type))
+                msg = TYPE_ERROR.format(
+                    source_name, variable_name, row["data_type"], data_type)
+                raise Exception(msg)
             return row["table_name"]
 
         if data_type == MATRIX:
@@ -216,7 +219,7 @@ class RecordedDatabase(object):
         unsorted_ddl = " UNION ".join(select_key + name
                                       for name in table_names)
         sorted_ddl = """
-            CREATE VIEW {0} AS SELECT {1} FROM ({2}) 
+            CREATE VIEW {0} AS SELECT {1} FROM ({2})
             order by {1}
             """.format(keys_view, key, unsorted_ddl)
         cursor.execute(sorted_ddl)
@@ -238,9 +241,9 @@ class RecordedDatabase(object):
                 full_view = FULL.join(table_name.rsplit(RAW, 1))
                 cursor.execute(
                     """
-                    CREATE VIEW {} 
-                    AS SELECT * 
-                    FROM {} 
+                    CREATE VIEW {}
+                    AS SELECT *
+                    FROM {}
                     LEFT JOIN {} USING({})
                     """.format(full_view, keys_view, table_name, key))
                 best_names.append(full_view)
@@ -275,7 +278,6 @@ class RecordedDatabase(object):
                 cursor, source_name, variable_name, table_names), data_type
         raise Exception("Unexpected table data_type {}".format(data_type))
 
-
     def _get_global_view(self, cursor, source_name, variable_name):
         """
         Ensures a view exists to data for all cores with this data
@@ -302,7 +304,7 @@ class RecordedDatabase(object):
         cursor.execute(
             """
             INSERT INTO global_metadata(
-                source_name, variable_name, best_source, data_type) 
+                source_name, variable_name, best_source, data_type)
             VALUES(?, ?, ?, ?)
             """,
             (source_name, variable_name, best_source, data_type))
@@ -364,17 +366,15 @@ class RecordedDatabase(object):
         """ Clear all saved data
         """
         with self._db:
-            names = [row["name"]
-                            for row in self._db.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table'")]
+            names = [row["name"] for row in self._db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'")]
             for name in self.META_TABLES:
                 names.remove(name)
             for name in names:
                 self._db.execute("DROP TABLE " + name)
             self._db.execute("DELETE FROM local_metadata")
-            names = [row["name"]
-                            for row in self._db.execute(
-                    "SELECT name FROM sqlite_master WHERE type='view'")]
+            names = [row["name"] for row in self._db.execute(
+                "SELECT name FROM sqlite_master WHERE type='view'")]
             for name in names:
                 self._db.execute("DROP VIEW " + name)
             for name in self.META_TABLES:
@@ -390,8 +390,8 @@ class RecordedDatabase(object):
         with self._db:
             for row in self._db.execute(
                     """
-                    SELECT source_name, variable_name 
-                    FROM local_metadata 
+                    SELECT source_name, variable_name
+                    FROM local_metadata
                     GROUP BY source_name, variable_name
                     """):
                 variables[row["source_name"]].append(row["variable_name"])
