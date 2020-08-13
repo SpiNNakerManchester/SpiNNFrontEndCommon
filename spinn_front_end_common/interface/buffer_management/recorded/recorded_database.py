@@ -431,7 +431,7 @@ class RecordedDatabase(object):
                 cursor, source_name, variable_name)
             cursor.execute("SELECT * FROM {}".format(view_name))
             names = [description[0] for description in cursor.description]
-            data = [list(row[:]) for row in cursor.fetchall()]
+            data = [list(row) for row in cursor.fetchall()]
             return names, data
 
     def get_views(self):
