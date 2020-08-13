@@ -34,6 +34,8 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
     def test_use_database(self):
         db_file = os.path.join(os.path.dirname(__file__), "main_test.sqlite3")
+        if os.path.exists(db_file):
+            os.remove(db_file)
         db = RecordedDatabase(db_file)
         db.clear_ds()
 
@@ -43,19 +45,19 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         neuron_ids2 = range(2, 4, 2)
         key = "timestamp"
         v1_1 = self._random_data(timesteps1, neuron_ids1)
-        db.insert_items("pop1", "v", key, neuron_ids1, v1_1)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids1, v1_1)
         v1_2 = self._random_data(timesteps1, neuron_ids2)
-        db.insert_items("pop1", "v", key, neuron_ids2, v1_2)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids2, v1_2)
         v2_1 = self._random_data(timesteps2, neuron_ids1)
-        db.insert_items("pop1", "v", key, neuron_ids1, v2_1)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids1, v2_1)
         v2_2 = self._random_data(timesteps2, neuron_ids2)
-        db.insert_items("pop1", "v", key, neuron_ids2, v2_2)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids2, v2_2)
         gsyn2_1 = self._random_data(timesteps2, neuron_ids1)
-        db.insert_items("pop1", "gsyn", key, neuron_ids1, gsyn2_1)
+        db.insert_matrix_items("pop1", "gsyn", key, neuron_ids1, gsyn2_1)
         gsyn2_2 = self._random_data(timesteps2, neuron_ids1)
-        db.insert_items("pop1", "gsyn", key, neuron_ids1, gsyn2_2)
+        db.insert_matrix_items("pop1", "gsyn", key, neuron_ids1, gsyn2_2)
         vother = self._random_data(timesteps1, neuron_ids1)
-        db.insert_items("pop2", "v", key, neuron_ids1, vother)
+        db.insert_matrix_items("pop2", "v", key, neuron_ids1, vother)
 
         meta = db.get_variable_map()
         self.assertIn("pop1", meta)
@@ -81,6 +83,8 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
     def test_missing_data(self):
         db_file = os.path.join(os.path.dirname(__file__), "missing.sqlite3")
+        if os.path.exists(db_file):
+            os.remove(db_file)
         db = RecordedDatabase(db_file)
         db.clear_ds()
 
@@ -92,11 +96,11 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         neuron_ids3 = range(3, 5, 2)
         key = "bacon"
         v1 = self._random_data(timesteps1, neuron_ids1)
-        db.insert_items("pop1", "v", key, neuron_ids1, v1)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids1, v1)
         v2 = self._random_data(timesteps2, neuron_ids2)
-        db.insert_items("pop1", "v", key, neuron_ids2, v2)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids2, v2)
         v3 = self._random_data(timesteps3, neuron_ids3)
-        db.insert_items("pop1", "v", key, neuron_ids3, v3)
+        db.insert_matrix_items("pop1", "v", key, neuron_ids3, v3)
 
         meta = db.get_variable_map()
         self.assertIn("pop1", meta)

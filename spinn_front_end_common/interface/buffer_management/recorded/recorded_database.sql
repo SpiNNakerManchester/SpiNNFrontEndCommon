@@ -23,10 +23,12 @@ CREATE TABLE IF NOT EXISTS local_metadata(
 	variable_name STRING NOT NULL,
 	table_name STRING NOT NULL,
 	first_neuron_id INTEGER NOT NULL,
+	data_type STRING NOT NULL,
 	UNIQUE(source_name, variable_name, first_neuron_id));
 
 CREATE TABLE IF NOT EXISTS global_metadata(
 	source_name STRING NOT NULL,
 	variable_name STRING NOT NULL,
 	best_source STRING NOT NULL,
+	data_type STRING NOT NULL,
 	UNIQUE(source_name, variable_name));

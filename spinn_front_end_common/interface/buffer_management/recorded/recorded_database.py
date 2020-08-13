@@ -24,6 +24,7 @@ FULL = "_full"
 SIMPLE = "_simple"
 AS_FLOAT = "_as_float"
 KEYS = "_keys"
+MATRIX = "matrix"
 
 
 class RecordedDatabase(object):
@@ -50,7 +51,6 @@ class RecordedDatabase(object):
         :param str database_file: The name of a file that contains (or will\
             contain) an SQLite database holding the data. If omitted, an\
             unshared in-memory database will be used.
-        :type database_file: str
         """
         if database_file is None:
             database_file = ":memory:"  # Magic name!
@@ -123,8 +123,47 @@ class RecordedDatabase(object):
         cursor.execute("DROP VIEW IF EXISTS " +
                        self._table_name(source_name, variable_name, AS_FLOAT))
 
-    def _get_local_table(
+    def _create_matrix_table(
             self, cursor, source_name, variable_name, key, atom_ids):
+        """
+        Creates a matrix table to hold data from one core.
+
+        :param ~sqlite3.Cursor cursor:
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param str key:
+        :param list atom_ids: The ids for this core. Many be integers
+        :return: Name of the database table created for this data
+        """
+        for row in cursor.execute(
+                """
+                SELECT data_type
+                FROM local_metadata
+                WHERE source_name = ? AND variable_name = ? 
+                """, (source_name, variable_name)):
+            if row["data_type"] != MATRIX:
+                raise Exception("{} {} has already been save as {} "
+                                "so can not save it as MATRIX".format(
+                    source_name, variable_name, row["data_type"]))
+
+        table_name = self._table_name(
+            source_name, variable_name, RAW, atom_ids[0])
+        neuron_ids_str = ",".join(["'" + str(id) + "'" for id in atom_ids])
+        cursor.execute(
+            """
+            INSERT INTO local_metadata(
+                source_name, variable_name, table_name, first_neuron_id, data_type) 
+            VALUES(?,?,?,?,?)
+            """, (source_name, variable_name, table_name, atom_ids[0], MATRIX))
+
+        ddl_statement = "CREATE TABLE {} ({}, {})".format(
+            table_name, key, neuron_ids_str)
+        cursor.execute(ddl_statement)
+        return table_name
+
+    def _get_local_table(
+            self, cursor, source_name, variable_name, key, atom_ids, data_type):
         """
         Ensures a table exists to hold data from one core.
 
@@ -138,49 +177,29 @@ class RecordedDatabase(object):
         """
         for row in cursor.execute(
                 """
-                SELECT table_name
+                SELECT table_name, data_type
                 FROM local_metadata
                 WHERE source_name = ? AND variable_name = ? 
                     AND first_neuron_id = ?
                 LIMIT 1
                 """, (source_name, variable_name, atom_ids[0])):
+            if row["data_type"] != data_type:
+                raise Exception("{} {} has already been save as {} "
+                                "so can not save it as {}".format(
+                    source_name, variable_name, row["data_type"], data_type))
             return row["table_name"]
 
-        table_name = self._table_name(
-            source_name, variable_name, RAW, atom_ids[0])
-        neuron_ids_str = ",".join(["'" + str(id) + "'" for id in atom_ids])
-        cursor.execute(
-            """
-            INSERT INTO local_metadata(
-                source_name, variable_name, table_name, first_neuron_id) 
-            VALUES(?,?,?,?)
-            """, (source_name, variable_name, table_name, atom_ids[0]))
-
-        ddl_statement = "CREATE TABLE {} ({}, {})".format(
-            table_name, key, neuron_ids_str)
-        cursor.execute(ddl_statement)
-        return table_name
+        if data_type == MATRIX:
+            return self._create_matrix_table(
+                cursor, source_name, variable_name, key, atom_ids)
+        raise Exception("Unexpected table data_type {}".format(data_type))
 
     def _count(self, cursor, name):
         for row in cursor.execute("SELECT COUNT(*) AS count FROM " + name):
             return row["count"]
 
-    def _find_best_source(self, cursor, source_name, variable_name):
-
-        # Find the tables to include
-        table_names = []
-        for row in cursor.execute(
-                """
-                SELECT table_name FROM local_metadata
-                WHERE source_name = ? AND variable_name = ?
-                ORDER BY first_neuron_id
-                """, (source_name, variable_name)):
-            table_names.append(row["table_name"])
-
-        if len(table_names) == 1:
-            # No views needed use the single raw table
-            return table_names[0]
-
+    def _create_matrix_views(
+            self, cursor, source_name, variable_name, table_names):
         # Create a view using natural join
         simple_view = self._table_name(source_name, variable_name, SIMPLE)
         ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
@@ -233,6 +252,29 @@ class RecordedDatabase(object):
         cursor.execute(ddl_statement)
         return full_view
 
+    def _find_best_source(self, cursor, source_name, variable_name):
+
+        # Find the tables to include
+        table_names = []
+        data_type = None
+        for row in cursor.execute(
+                """
+                SELECT table_name, data_type FROM local_metadata
+                WHERE source_name = ? AND variable_name = ?
+                ORDER BY first_neuron_id
+                """, (source_name, variable_name)):
+            data_type = row["data_type"]
+            table_names.append(row["table_name"])
+
+        if len(table_names) == 1:
+            # No views needed use the single raw table
+            return table_names[0], data_type
+
+        if data_type == MATRIX:
+            return self._create_matrix_views(
+                cursor, source_name, variable_name, table_names), data_type
+        raise Exception("Unexpected table data_type {}".format(data_type))
+
 
     def _get_global_view(self, cursor, source_name, variable_name):
         """
@@ -255,39 +297,32 @@ class RecordedDatabase(object):
                 """, (source_name, variable_name)):
             return row["best_source"]
 
-        table_names = []
-        for row in cursor.execute(
-                """
-                SELECT table_name FROM local_metadata
-                WHERE source_name = ? AND variable_name = ?
-                ORDER BY first_neuron_id
-                """, (source_name, variable_name)):
-            table_names.append(row["table_name"])
-
-        best_source = self._find_best_source(cursor, source_name, variable_name)
+        best_source, data_type = self._find_best_source(
+            cursor, source_name, variable_name)
         cursor.execute(
             """
             INSERT INTO global_metadata(
-                source_name, variable_name, best_source) 
-            VALUES(?,?,?)
+                source_name, variable_name, best_source, data_type) 
+            VALUES(?, ?, ?, ?)
             """,
-            (source_name, variable_name, best_source))
+            (source_name, variable_name, best_source, data_type))
 
-        cursor.execute("SELECT * FROM {}".format(best_source))
-        names = [description[0] for description in cursor.description]
+        if data_type == MATRIX:
+            cursor.execute("SELECT * FROM {}".format(best_source))
+            names = [description[0] for description in cursor.description]
 
-        fields = names[0]
-        for name in names[1:]:
-            fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
-        float_name = self._table_name(source_name, variable_name, AS_FLOAT)
+            fields = names[0]
+            for name in names[1:]:
+                fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
+            float_name = self._table_name(source_name, variable_name, AS_FLOAT)
 
-        ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
-            float_name, fields, best_source)
-        cursor.execute(ddl_statement)
+            ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
+                float_name, fields, best_source)
+            cursor.execute(ddl_statement)
 
         return best_source
 
-    def insert_items(
+    def insert_matrix_items(
             self, source_name, variable_name, key, atom_ids, data):
         """
         Inserts data for one core for this variable
@@ -319,7 +354,7 @@ class RecordedDatabase(object):
             cursor = self._db.cursor()
             self._drop_views(cursor, source_name, variable_name)
             table_name = self._get_local_table(
-                cursor, source_name, variable_name, key, atom_ids)
+                cursor, source_name, variable_name, key, atom_ids, MATRIX)
             cursor.execute("SELECT * FROM {}".format(table_name))
             query = "INSERT INTO {} VALUES ({})".format(
                 table_name, ",".join("?" for _ in cursor.description))
