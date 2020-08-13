@@ -23,7 +23,7 @@ RAW = "_raw"
 FULL = "_full"
 SIMPLE = "_simple"
 AS_FLOAT = "_as_float"
-TIME_STAMPS = "_timestamps"
+KEYS = "_keys"
 
 
 class MatrixDatabase(object):
@@ -117,25 +117,23 @@ class MatrixDatabase(object):
         cursor.execute("DROP TABLE IF EXISTS " +
                        self._table_name(source_name, variable_name, SIMPLE))
         cursor.execute("DROP VIEW IF EXISTS " +
-                       self._table_name(source_name, variable_name, TIME_STAMPS))
+                       self._table_name(source_name, variable_name, KEYS))
         cursor.execute("DROP VIEW IF EXISTS " +
                        self._table_name(source_name, variable_name, FULL))
         cursor.execute("DROP VIEW IF EXISTS " +
                        self._table_name(source_name, variable_name, AS_FLOAT))
 
-    def _get_local_table(self, cursor, source_name, variable_name, neuron_ids):
+    def _get_local_table(
+            self, cursor, source_name, variable_name, key, atom_ids):
         """
         Ensures a table exists to hold data from one core.
-
-        note: It is assumed that the neuron_ids for one core/variable remains
-        constants and no not overlap with any other cores with for the same
-        source and variable pair
 
         :param ~sqlite3.Cursor cursor:
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
-        :param list neuron_ids: The ids for this core. Many be integers
+        :param str key:
+        :param list atom_ids: The ids for this core. Many be integers
         :return: Name of the database table created for this data
         """
         for row in cursor.execute(
@@ -145,28 +143,27 @@ class MatrixDatabase(object):
                 WHERE source_name = ? AND variable_name = ? 
                     AND first_neuron_id = ?
                 LIMIT 1
-                """, (source_name, variable_name, neuron_ids[0])):
+                """, (source_name, variable_name, atom_ids[0])):
             return row["table_name"]
 
         table_name = self._table_name(
-            source_name, variable_name, RAW, neuron_ids[0])
-        neuron_ids_str = ",".join(["'" + str(id) + "'" for id in neuron_ids])
+            source_name, variable_name, RAW, atom_ids[0])
+        neuron_ids_str = ",".join(["'" + str(id) + "'" for id in atom_ids])
         cursor.execute(
             """
             INSERT INTO local_metadata(
                 source_name, variable_name, table_name, first_neuron_id) 
             VALUES(?,?,?,?)
-            """, (source_name, variable_name, table_name, neuron_ids[0]))
+            """, (source_name, variable_name, table_name, atom_ids[0]))
 
-        ddl_statement = "CREATE TABLE {} (timestamp, {})".format(
-            table_name, neuron_ids_str)
+        ddl_statement = "CREATE TABLE {} ({}, {})".format(
+            table_name, key, neuron_ids_str)
         cursor.execute(ddl_statement)
         return table_name
 
     def _count(self, cursor, name):
-        query = "SELECT COUNT(*) FROM " + name
-        cursor.execute(query)
-        return cursor.fetchone()
+        for row in cursor.execute("SELECT COUNT(*) AS count FROM " + name):
+            return row["count"]
 
     def _find_best_source(self, cursor, source_name, variable_name):
 
@@ -185,28 +182,33 @@ class MatrixDatabase(object):
             return table_names[0]
 
         # Create a view using natural join
-        simple_name = self._table_name(source_name, variable_name, SIMPLE)
+        simple_view = self._table_name(source_name, variable_name, SIMPLE)
         ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
-            simple_name, " NATURAL JOIN ".join(table_names))
+            simple_view, " NATURAL JOIN ".join(table_names))
         cursor.execute(ddl_statement)
 
-        # Create a view that list all timestamps in any of the tables
-        keys_name = self._table_name(source_name, variable_name, TIME_STAMPS)
-        unsorted_ddl = " UNION ".join("SELECT timestamp FROM " + name
+        # Find the name of the key column
+        cursor.execute("SELECT * FROM {}".format(table_names[0]))
+        key = cursor.description[0][0]
+
+        # Create a view that list all keys in any of the tables
+        keys_view = self._table_name(source_name, variable_name, KEYS)
+        select_key = "SELECT {} FROM ".format(key)
+        unsorted_ddl = " UNION ".join(select_key + name
                                       for name in table_names)
         sorted_ddl = """
-            CREATE VIEW {} AS SELECT timestamp FROM ({}) 
-            order by timestamp
-            """.format(keys_name, unsorted_ddl)
+            CREATE VIEW {0} AS SELECT {1} FROM ({2}) 
+            order by {1}
+            """.format(keys_view, key, unsorted_ddl)
         cursor.execute(sorted_ddl)
 
-        # Check the simple view includes all timestamps
-        simple_count = self._count(cursor, simple_name)
-        keys_count = self._count(cursor, keys_name)
+        # Check the simple view includes all keys
+        simple_count = self._count(cursor, simple_view)
+        keys_count = self._count(cursor, keys_view)
         if simple_count == keys_count:
-            return simple_name
+            return simple_view
 
-        # Check each table to see if it includes all timestamps
+        # Check each table to see if it includes all keys
         best_names = []
         for table_name in table_names:
             table_count = self._count(cursor, table_name)
@@ -214,22 +216,22 @@ class MatrixDatabase(object):
                 best_names.append(table_name)
             else:
                 # Data missing so create a view with NULLs
-                full_name = FULL.join(table_name.rsplit(RAW, 1))
+                full_view = FULL.join(table_name.rsplit(RAW, 1))
                 cursor.execute(
                     """
                     CREATE VIEW {} 
                     AS SELECT * 
                     FROM {} 
-                    LEFT JOIN {} USING(timestamp)
-                    """.format(full_name, keys_name, table_name))
-                best_names.append(full_name)
+                    LEFT JOIN {} USING({})
+                    """.format(full_view, keys_view, table_name, key))
+                best_names.append(full_view)
 
         # Create a view using natural join over the complete data for each
-        full_name = self._table_name(source_name, variable_name, FULL)
+        full_view = self._table_name(source_name, variable_name, FULL)
         ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
-            full_name, " NATURAL JOIN ".join(best_names))
+            full_view, " NATURAL JOIN ".join(best_names))
         cursor.execute(ddl_statement)
-        return full_name
+        return full_view
 
 
     def _get_global_view(self, cursor, source_name, variable_name):
@@ -285,24 +287,31 @@ class MatrixDatabase(object):
 
         return best_source
 
-    def insert_items(self, source_name, variable_name, neuron_ids, data):
+    def insert_items(
+            self, source_name, variable_name, key, atom_ids, data):
         """
         Inserts data for one core for this variable
 
-        The first column of the data is assumed to hold timestamps
-        the rest data for each of the ids in neuron_ids
+        This method can be called multiple times for the same
+        source_name, variable_name, atom_ids combination and the data will go
+        into one table
 
-        note: Many be called more than once for the same core/variable as
-        long as the timestamps are unigue
+        The first column of the data is assumed to hold the key
+        For each source_name, variable_name, atom_ids triple there should never
+        be more than one row with the same key. (Even in different calls)
 
-        note: It is assumed that the neuron_ids for one core/variable remains
-        constants and no not overlap with any other cores with for the same
-        source and variable pair
+        The remaining columns will hold the data for each id in atom_ids.
+        So the with of the data must be len(atom_ids) + 1
+
+        note: Each atom_id must be unigue (including to the key)
+            within all calls with the same source_name, variable_name pair
+        Multiple calls can repeat atom_ids as long as the list is identical
 
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
-        :param list neuron_ids: The ids for this core. Many be integers
+        :param str key: The name for the first/key column
+        :param list atom_ids: The global ids for this core. Many be integers
         :param iterable(iterable) data: The values to load
         :return: Name of the database table created for this data
         """
@@ -310,7 +319,7 @@ class MatrixDatabase(object):
             cursor = self._db.cursor()
             self._drop_views(cursor, source_name, variable_name)
             table_name = self._get_local_table(
-                cursor, source_name, variable_name, neuron_ids)
+                cursor, source_name, variable_name, key, atom_ids)
             cursor.execute("SELECT * FROM {}".format(table_name))
             query = "INSERT INTO {} VALUES ({})".format(
                 table_name, ",".join("?" for _ in cursor.description))
@@ -377,8 +386,8 @@ class MatrixDatabase(object):
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
-        :return: Fist of colun names (timestamp + nueron ids) and
-            all the data with a timestamp as the first column
+        :return: List of column names (key + atom ids) and
+            all the data with a key as the first column
         :rtype: tuple(list, list(list(int))
         """
         with self._db:
