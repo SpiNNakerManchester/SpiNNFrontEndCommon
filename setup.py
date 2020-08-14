@@ -60,6 +60,7 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Operating System :: MacOS",
 
+        "Programming Language :: C",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
