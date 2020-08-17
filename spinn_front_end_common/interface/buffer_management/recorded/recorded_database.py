@@ -293,11 +293,11 @@ class RecordedDatabase(object):
         """
         for row in cursor.execute(
                 """
-                SELECT best_source FROM global_metadata
+                SELECT best_source, data_type FROM global_metadata
                 WHERE source_name = ? AND variable_name = ?
                 LIMIT 1
                 """, (source_name, variable_name)):
-            return row["best_source"]
+            return row["best_source"], row["data_type"]
 
         best_source, data_type = self._find_best_source(
             cursor, source_name, variable_name)
@@ -321,8 +321,9 @@ class RecordedDatabase(object):
             ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
                 float_name, fields, best_source)
             cursor.execute(ddl_statement)
+            return best_source, data_type
 
-        return best_source
+        raise NotImplementedError("Unexpected data_type {}.format(data_type)")
 
     def insert_matrix_items(
             self, source_name, variable_name, key, atom_ids, data):
@@ -427,12 +428,15 @@ class RecordedDatabase(object):
         """
         with self._db:
             cursor = self._db.cursor()
-            view_name = self._get_global_view(
+            best_source, data_type = self._get_global_view(
                 cursor, source_name, variable_name)
-            cursor.execute("SELECT * FROM {}".format(view_name))
-            names = [description[0] for description in cursor.description]
-            data = [list(row) for row in cursor.fetchall()]
-            return names, data
+            if data_type == MATRIX:
+                cursor.execute("SELECT * FROM {}".format(best_source))
+                names = [description[0] for description in cursor.description]
+                data = [list(row) for row in cursor.fetchall()]
+                return names, data
+
+        raise NotImplementedError("Unexpected data_type {}.format(data_type)")
 
     def get_views(self):
         """
