@@ -95,11 +95,14 @@ class RecordedDatabase(object):
     def _table_name(
             self, source_name, variable_name, postfix, first_id=None):
         """
+        Creates a table name based on the parameters
+
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
         :param str postfix: Extra to add on to the end
         :param first_id: first id for this core
+        :type first_id: str or None
         :return: name for this table/view
         """
         name = source_name + "_" + variable_name + "_"
@@ -108,6 +111,15 @@ class RecordedDatabase(object):
         return name + str(first_id) + postfix
 
     def _drop_views(self, cursor, source_name, variable_name):
+        """
+        Drops all views associated this source and variable pair
+
+        :param ~sqlite3.Cursor cursor:
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :return:
+        """
         cursor.execute(
                 """
                 DELETE FROM global_metadata
@@ -148,7 +160,6 @@ class RecordedDatabase(object):
                     source_name, variable_name, row["data_type"], data_type)
                 raise Exception(msg)
 
-
     def _create_matrix_table(
             self, cursor, source_name, variable_name, key, atom_ids):
         """
@@ -181,7 +192,7 @@ class RecordedDatabase(object):
     def _create_exists_table(
             self, cursor, source_name, variable_name, key):
         """
-        Creates a matrix table to hold data from one core.
+        Creates an exists table to hold data from all cores.
 
         :param ~sqlite3.Cursor cursor:
         :param str source_name: The global name for the source.
@@ -256,12 +267,37 @@ class RecordedDatabase(object):
 
         raise Exception("Unexpected table data_type {}".format(data_type))
 
-    def _count(self, cursor, name):
-        for row in cursor.execute("SELECT COUNT(*) AS count FROM " + name):
+    def _count(self, cursor, table_name):
+        """
+        Counts the rows in a table
+
+        :param ~sqlite3.Cursor cursor:
+        :param str table_name:
+        :return: The number of rows in the table
+        :rtype int
+        """
+        for row in cursor.execute("SELECT COUNT(*) AS count FROM " + table_name):
             return row["count"]
 
     def _create_matrix_views(
             self, cursor, source_name, variable_name, table_names):
+        """
+        Creates the required views for this source and variable.
+
+        Always creates a "simple" view which is a natural join of all locals
+        Also creates a "keys" view which has the keys in any local
+
+        It then check for missing data (keys) in each local
+        and if so creates "full" views which include NULL rows as needed
+        If required it creates a "full" view joining all the locals/ views
+        so that there is no missing data
+
+        :param ~sqlite3.Cursor cursor:
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param list(str) table_names: Name of local tables
+        """
         # Create a view using natural join
         simple_view = self._table_name(source_name, variable_name, SIMPLE)
         ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
@@ -314,14 +350,21 @@ class RecordedDatabase(object):
         cursor.execute(ddl_statement)
         return full_view
 
-    """
-    SELECT table_name, data_type FROM local_metadata
-                    WHERE source_name = "pop1" AND variable_name = "spikes"
-    SELECT table_name, data_type, * FROM local_metadata
-                    WHERE source_name = "pop1" and variable_name = "spikes"                
-    """
-
     def _find_best_source(self, cursor, source_name, variable_name):
+        """
+        Finds the best source for this source variable pair
+
+        Where there is only one local table returns that.
+        Otherwise a suitable view is created
+
+        :param ~sqlite3.Cursor cursor:
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+
+        :return: Name of table/view and the data_type
+        :rtype str, str
+        """
 
         # Find the tables to include
         table_names = []
@@ -346,10 +389,10 @@ class RecordedDatabase(object):
 
     def _get_global_view(self, cursor, source_name, variable_name):
         """
-        Ensures a view exists to data for all cores with this data
+        Ensures a single table or view exists to data for all cores
+        with this data
 
-        note: It is assumed that this is only called after all cores have
-            inserted data at least once.
+        note: It is assumed that data exists for this source and variable
 
         :param ~sqlite3.Cursor cursor:
         :param str source_name: The global name for the source.
@@ -357,6 +400,7 @@ class RecordedDatabase(object):
         :param str variable_name: The name for the variable being stored
         :return: Name of the database view created for this data
         """
+        # Check if a single table / view is already known
         for row in cursor.execute(
                 """
                 SELECT best_source, data_type FROM global_metadata
@@ -365,8 +409,10 @@ class RecordedDatabase(object):
                 """, (source_name, variable_name)):
             return row["best_source"], row["data_type"]
 
+        # Find the best source and type
         best_source, data_type = self._find_best_source(
             cursor, source_name, variable_name)
+        # Save this info
         cursor.execute(
             """
             INSERT INTO global_metadata(
@@ -375,10 +421,13 @@ class RecordedDatabase(object):
             """,
             (source_name, variable_name, best_source, data_type))
 
+        # It is currently assumed all matrix data is fixed point
         if data_type == MATRIX:
-            cursor.execute("SELECT * FROM {}".format(best_source))
+            # Get the column names
+            cursor.execute("SELECT * FROM {} LIMIT 1".format(best_source))
             names = [description[0] for description in cursor.description]
 
+            # Add a view converting fixed point to floats
             fields = names[0]
             for name in names[1:]:
                 fields += ", '{0}' / 65536.0 AS '{0}'".format(name)
@@ -406,7 +455,10 @@ class RecordedDatabase(object):
         The remaining columns will hold the data for each id in atom_ids.
         So the with of the data must be len(atom_ids) + 1
 
-        note: Each atom_id must be unigue (including to the key)
+        Clears any views for this source and variable pair
+        so that which views are required is recomputed based on the new data
+
+        note: Each atom_id must be unigue
             within all calls with the same source_name, variable_name pair
         Multiple calls can repeat atom_ids as long as the list is identical
 
@@ -448,7 +500,6 @@ class RecordedDatabase(object):
         :param str variable_name: The name for the variable being stored
         :param str key: The name for the values in the second/key column
         :param iterable(iterable) data: The values to load
-        :return: Name of the database table created for this data
         """
         with self._db:
             cursor = self._db.cursor()
@@ -514,8 +565,6 @@ class RecordedDatabase(object):
     def get_data(self, source_name, variable_name):
         """
         Gets the data for all cores for this source_name, variabkle name
-
-        note: Current implementaion does not handle missing data well
 
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
