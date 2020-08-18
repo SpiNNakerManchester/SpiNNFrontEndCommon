@@ -43,7 +43,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         return data
 
     def test_use_database(self):
-        db_file = os.path.join(os.path.dirname(__file__), "main_test.sqlite3")
+        db_file = os.path.join(os.path.dirname(__file__), "test.sqlite3")
         if os.path.exists(db_file):
             os.remove(db_file)
         db = RecordedDatabase(db_file)
@@ -77,18 +77,34 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         s2_2 = self._random_exists_data(timesteps2, neuron_ids2)
         db.insert_exists_items("pop1", "spikes", key, s2_2)
 
+        timesteps1 = [0, 1, 2, 4, 5]
+        timesteps2 = [2, 1, 4, 5, 3]
+        timesteps3 = [0, 2, 1, 4, 5, 3]
+        neuron_ids1 = range(2)
+        neuron_ids2 = range(2, 4, 2)
+        neuron_ids3 = range(3, 5, 2)
+        key = "bacon"
+        f1 = self._random_matrix_data(timesteps1, neuron_ids1)
+        db.insert_matrix_items("pop1", "foo", key, neuron_ids1, f1)
+        f2 = self._random_matrix_data(timesteps2, neuron_ids2)
+        db.insert_matrix_items("pop1", "foo", key, neuron_ids2, f2)
+        f3 = self._random_matrix_data(timesteps3, neuron_ids3)
+        db.insert_matrix_items("pop1", "foo", key, neuron_ids3, f3)
+
         meta = db.get_variable_map()
         self.assertIn("pop1", meta)
         self.assertIn("v", meta["pop1"])
         self.assertIn("gsyn", meta["pop1"])
+        self.assertIn("foo", meta["pop1"])
         self.assertIn("spikes", meta["pop1"])
-        self.assertEqual(3, len(meta["pop1"]))
+        self.assertEqual(4, len(meta["pop1"]))
+        self.assertIn("pop2", meta)
         self.assertIn("pop2", meta)
         self.assertEqual(2, len(meta))
 
         self.assertEqual(vother, db.get_data("pop2", "v")[1])
         db.create_all_views()
-        self.assertEqual(5, len(db.get_views()))
+        n_views = len(db.get_views())
 
         gsyn2 = gsyn2_1 + gsyn2_2
         self.assertEqual(gsyn2, db.get_data("pop1", "gsyn")[1])
@@ -107,34 +123,9 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         # Not guaranteed to be in order but are so far
         self.assertEqual(spikes, db.get_data("pop1", "spikes")[1])
 
-        self.assertEqual(5, len(db.get_views()))
+        foo_result = db.get_data("pop1", "foo")[1]
+        self.assertEqual(6, len(foo_result))
 
-    def test_missing_data(self):
-        db_file = os.path.join(os.path.dirname(__file__), "missing.sqlite3")
-        if os.path.exists(db_file):
-            os.remove(db_file)
-        db = RecordedDatabase(db_file)
-        db.clear_ds()
 
-        timesteps1 = [0, 1, 2, 4, 5]
-        timesteps2 = [2, 1, 4, 5, 3]
-        timesteps3 = [0, 2, 1, 4, 5, 3]
-        neuron_ids1 = range(2)
-        neuron_ids2 = range(2, 4, 2)
-        neuron_ids3 = range(3, 5, 2)
-        key = "bacon"
-        v1 = self._random_matrix_data(timesteps1, neuron_ids1)
-        db.insert_matrix_items("pop1", "v", key, neuron_ids1, v1)
-        v2 = self._random_matrix_data(timesteps2, neuron_ids2)
-        db.insert_matrix_items("pop1", "v", key, neuron_ids2, v2)
-        v3 = self._random_matrix_data(timesteps3, neuron_ids3)
-        db.insert_matrix_items("pop1", "v", key, neuron_ids3, v3)
-
-        meta = db.get_variable_map()
-        self.assertIn("pop1", meta)
-        self.assertIn("v", meta["pop1"])
-        self.assertEqual(1, len(meta["pop1"]))
-        self.assertEqual(1, len(meta))
-
-        v_result = db.get_data("pop1", "v")[1]
-        self.assertEqual(6, len(v_result))
+        # check getting data did not ada any additional views
+        self.assertEqual(n_views, len(db.get_views()))
