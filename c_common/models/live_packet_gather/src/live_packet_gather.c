@@ -246,10 +246,7 @@ static void record_provenance_data(address_t provenance_region_address) {
 //!     flush_events()) and handles pausing as required.
 //! \param unused0: unused
 //! \param unused1: unused
-static void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
     // flush the spike message and sent it over the Ethernet
     flush_events();
 
@@ -357,10 +354,8 @@ static void process_incoming_event_payload(uint key, uint payload) {
 //!     Sends multiple SDP packets if required.
 //! \param unused0: Ignored
 //! \param unused1: Ignored
-static void incoming_event_process_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-
+static void incoming_event_process_callback(
+        UNUSED uint unused0, UNUSED uint unused1) {
     do {
         uint32_t key, payload;
 
@@ -386,8 +381,7 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
 //!     process_incoming_event().
 //! \param[in] key: The key of the incoming packet.
 //! \param unused: unused
-static void incoming_event_callback(uint key, uint unused) {
-    use(unused);
+static void incoming_event_callback(uint key, UNUSED uint unused) {
     log_debug("Received key %x", key);
 
     if (circular_buffer_add(without_payload_buffer, key)) {

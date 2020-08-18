@@ -31,6 +31,7 @@
 #include <debug.h>
 #include "../common/routing_table.h"
 #include <stdbool.h>
+#include "common-typedefs.h"
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
@@ -269,11 +270,8 @@ static inline void update_frequency(int index) {
     }
 }
 
-bool minimise_run(int target_length, bool *failed_by_malloc,
+bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
         volatile bool *stop_compressing) {
-    use(failed_by_malloc);
-	use(target_length);
-
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
         log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
