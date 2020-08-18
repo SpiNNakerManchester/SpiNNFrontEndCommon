@@ -126,6 +126,5 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         foo_result = db.get_data("pop1", "foo")[1]
         self.assertEqual(6, len(foo_result))
 
-
         # check getting data did not ada any additional views
         self.assertEqual(n_views, len(db.get_views()))
