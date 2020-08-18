@@ -276,7 +276,8 @@ class RecordedDatabase(object):
         :return: The number of rows in the table
         :rtype int
         """
-        for row in cursor.execute("SELECT COUNT(*) AS count FROM " + table_name):
+        for row in cursor.execute(
+                "SELECT COUNT(*) AS count FROM " + table_name):
             return row["count"]
 
     def _create_matrix_views(
