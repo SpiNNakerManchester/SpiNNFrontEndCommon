@@ -16,12 +16,10 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Command Sender Multicast Source.
-//!
-//! The purpose of this application is to inject SpiNNaker packets into the
-//! on-chip network at specified times. It is used (among other things) to
-//! implement the SpikeSourceArray model in sPyNNaker.
+//! \details The purpose of this application is to inject SpiNNaker packets
+//!     into the on-chip network at specified times. It is used (among other
+//!     things) to implement the SpikeSourceArray model in sPyNNaker.
 
 #include <common-typedefs.h>
 #include <data_specification.h>

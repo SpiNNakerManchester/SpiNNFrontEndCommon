@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief On-chip compression utilities
 //! \file
 //! \brief The bitfield compressor
 #include <spin1_api.h>

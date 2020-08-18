@@ -16,11 +16,9 @@
  */
 
 //! \file
-//!
 //! \brief Definitions for the streaming-over-EIEIO buffering protocol.
-//!
-//! Note that this protocol is now mostly deprecated in favour of the
-//! substantially-faster automatic pause-and-resume protocol.
+//! \note This protocol is now mostly deprecated in favour of the
+//!     substantially-faster automatic pause-and-resume protocol.
 
 #ifndef BUFFERED_EIEIO_DEFS_H
 #define BUFFERED_EIEIO_DEFS_H

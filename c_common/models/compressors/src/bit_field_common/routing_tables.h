@@ -56,11 +56,6 @@ entry_t* routing_tables_get_entry_marked(uint32_t entry_id_to_find, int marker) 
     return &multi_table.sub_tables[table_id]->entries[local_id];
 }
 
-//! \brief Get a pointer to where this entry is stored
-//! \details Will not check if there is an entry with this id but will RTE if
-//!     the id is too large
-//! \param[in] entry_id_to_find: Id of entry to find pointer to
-//! \return pointer to the entry's location
 entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
     return routing_tables_get_entry_marked(entry_id_to_find, -1);
 }
@@ -158,9 +153,6 @@ void routing_tables_save(multi_table_t *restrict tables) {
             tables->n_sub_tables, tables->n_entries);
 }
 
-//! \brief Trim entries off the multitable
-//! \note Does *not* free those entries!
-//! \param[in] size_to_remove: The number of entries to remove
 void routing_table_remove_from_size(int size_to_remove) {
     if (size_to_remove > multi_table.n_entries) {
         log_error("Remove %d large than n_entries %d",

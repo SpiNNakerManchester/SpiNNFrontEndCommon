@@ -273,8 +273,7 @@ typedef struct sdp_data_out_t {
     //! What operation are we dealing with
     data_out_sdp_commands command;
     //! \brief What is the transaction ID
-    //!
-    //! This is used to stop confusion when critical packets get lost
+    //! \details This is used to stop confusion when critical packets get lost
     uint transaction_id;
     //! What location are we talking about
     address_t sdram_location;
@@ -1238,7 +1237,7 @@ static INT_HANDLER process_mc_payload_packet(void) {
 }
 
 //! \brief Write router entries to the router.
-//! \param[in] sdram_address: the sdram address where the router entries reside
+//! \param[in] sdram_address: the SDRAM address where the router entries reside
 //! \param[in] n_entries: how many router entries to read in
 static void data_in_load_router(
         router_entry_t *sdram_address, uint n_entries) {
@@ -1280,7 +1279,7 @@ static void data_in_load_router(
     }
 }
 
-//! \brief Read in routers entries and places in the application SDRAM location
+//! \brief Copy router entries to the application router-table SDRAM store.
 static void data_in_save_router(void) {
     rtr_entry_t router_entry;
     data_in_application_table_n_valid_entries = 0;
@@ -1824,8 +1823,9 @@ static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
 }
 
 //! \brief The handler for all DMAs complete.
+//! \details Depending on the dma_tag used with data_out_start_dma_read(),
+//! calls one of:
 //!
-//! Depending on the dma_tag used with data_out_start_dma_read(), calls one of:
 //! * data_out_dma_complete_reading_for_original_transmission()
 //! * data_out_dma_complete_read_missing_seqeuence_nums()
 //! * data_out_dma_complete_reading_retransmission_data()

@@ -16,8 +16,9 @@
  */
 
 /**
+ * \dir
+ * \brief Simple routing table compressor
  * \file
- *
  * \brief SpiNNaker routing table minimisation.
  *
  * Minimises a routing table loaded into SDRAM and load the minimised table into

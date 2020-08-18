@@ -16,9 +16,7 @@
  */
 
 /*! \file
- *
  *  \brief implementation of recording.h
- *
  */
 
 #include <recording.h>
@@ -37,8 +35,7 @@ extern void spin1_wfi(void);
 // Structures
 //---------------------------------------
 //! \brief Structure that defines a channel in memory.
-//!
-//! Channels are implemented using a circular buffer.
+//! \details Channels are implemented using a circular buffer.
 typedef struct recording_channel_t {
     uint8_t *start;             //!< The first byte of the buffer
     uint8_t *current_write;     //!< Where the next write to the buffer will go
@@ -49,9 +46,8 @@ typedef struct recording_channel_t {
     //! Flag to say if recordings were lost due to buffer overflow
     uint8_t missing_info;
     //! \brief Whether the most recent operation on the buffer was a read or a
-    //! write.
-    //!
-    //! This allows the read and write pointer to overlap sensibly.
+    //!     write.
+    //! \details This allows the read and write pointer to overlap sensibly.
     buffered_operations last_buffer_operation;
 } recording_channel_t;
 
@@ -108,9 +104,8 @@ static uint32_t last_time_buffering_trigger = 0;
 //! Threshold on space remaining when a host offload is triggered.
 static uint32_t buffer_size_before_trigger = 0;
 
-//! Threshold on time when a host offload is triggered.
-//!
-//! Independent of ::buffer_size_before_trigger
+//! \brief Threshold on time when a host offload is triggered.
+//! \details Independent of ::buffer_size_before_trigger
 static uint32_t time_between_triggers = 0;
 
 //! A pointer to the last sequence number to write once recording is complete

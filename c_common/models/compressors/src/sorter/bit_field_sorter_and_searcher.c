@@ -17,10 +17,9 @@
 
 //! \file
 //! \brief SpiNNaker routing table minimisation with bitfield integration
-//! control processor.
-//!
-//! Controls the attempt to minimise the router entries with bitfield
-//! components.
+//!     control processor.
+//! \details Controls the attempt to minimise the router entries with bitfield
+//!     components.
 
 #include <spin1_api.h>
 #include <debug.h>

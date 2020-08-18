@@ -91,7 +91,7 @@ bool recording_do_record_and_notify(
 //! \param[in] channel: the channel to store the data into.
 //! \param[in] data: the data to store into the channel.
 //! \param[in] size_bytes: the number of bytes that this data will take up.
-//!            This may be any number of bytes, not just whole words.
+//!     This may be any number of bytes, not just whole words.
 //! \return Whether the data has been stored in the channel.
 static inline bool recording_record(
         channel_index_t channel, void *data, size_t size_bytes) {

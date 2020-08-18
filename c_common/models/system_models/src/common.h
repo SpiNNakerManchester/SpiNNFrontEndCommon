@@ -44,9 +44,8 @@ enum reinjector_command_codes {
 };
 
 //! \brief Human readable definitions of the offsets for multicast key elements
-//! for reinjection.
-//!
-//! These act as commands sent to the target extra monitor core.
+//!     for reinjection.
+//! \details These act as commands sent to the target extra monitor core.
 typedef enum {
     //! Set the router's wait1 timeout
     ROUTER_TIMEOUT_OFFSET = 0,

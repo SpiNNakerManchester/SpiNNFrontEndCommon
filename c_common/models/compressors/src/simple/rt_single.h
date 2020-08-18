@@ -65,8 +65,7 @@
 #define RTR_MC_SET_FAILED 0
 
 //! \brief The table being manipulated.
-//!
-//! This is common across all the functions in this file.
+//! \details This is common across all the functions in this file.
 table_t *table;
 
 //! \brief The header of the routing table information in the input data block.

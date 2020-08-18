@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \file
+//! \brief Implementation of malloc_extras.h
+
 #include <sark.h>
 #include <common-typedefs.h>
 #include <debug.h>
@@ -369,8 +372,11 @@ static inline void print_free_sizes_in_heap(void) {
     log_info("total free size is %d", total_size);
 }
 
-//! \details Set up trackers for this core if asked.
-//! \note DOES NOT REBUILD THE FAKE HEAP!
+//! \brief Update the fake heap to join in the extra space from another heap.
+//! \note Does not rebuild the fake heap!
+//! \param[in] heap_location:
+//!     Where the heap is, or `NULL` to use the real heap.
+//! \return Whether it succeeded
 bool malloc_extras_initialise_with_fake_heap(
         heap_t *heap_location) {
     stolen_sdram_heap = heap_location;

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief Compression by ordered covering manipulation
 //! \file
 //! \brief An ordered covering of routing table entries
 #ifndef __ORDERED_COVERING_H__

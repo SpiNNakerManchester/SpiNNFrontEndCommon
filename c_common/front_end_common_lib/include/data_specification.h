@@ -30,10 +30,10 @@
 #include "common-typedefs.h"
 
 //! \brief The central structure that the DSE writes.
-//!
-//! A pointer to this will be placed in user0 before the application launches.
-//! The number of entries in the table is application-specific, and is not
-//! checked.
+//! \details
+//!     A pointer to this will be placed in user0 before the application
+//!     launches. The number of entries in the table is application-specific,
+//!     and is not checked.
 typedef struct data_specification_metadata_t {
     //! A magic number, used to verify that the pointer is sane.
     uint32_t magic_number;
@@ -44,12 +44,11 @@ typedef struct data_specification_metadata_t {
 } data_specification_metadata_t;
 
 //! \brief Get the location of the data for this core using the user0 entry
-//!        of the SARK VCPU structure.
+//!     of the SARK VCPU structure.
 //! \details
 //!     Locates the start address for a core in SDRAM. This value is loaded
 //!     into the user0 register of the core during the tool chain loading.
-//!
-//!     Does not validate the value! That's the job of
+//! \warning Does not validate the value! That's the job of
 //!     data_specification_read_header()
 //! \return The address of the generated data
 data_specification_metadata_t *data_specification_get_data_address(void);

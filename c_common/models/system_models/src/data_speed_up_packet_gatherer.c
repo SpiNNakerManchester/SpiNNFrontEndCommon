@@ -110,12 +110,11 @@ enum {
 //! Counts of items in a packet
 enum {
     //! \brief size of data stored in packet with command and seq
-    //!
-    //! defined from calculation
+    //! \details defined by calculation
     DATA_IN_NORMAL_PACKET_WORDS =
             ITEMS_PER_DATA_PACKET - SEND_SEQ_DATA_HEADER_WORDS,
     //! \brief size of payload for a packet describing the batch of missing
-    //! inbound seqs
+    //!     inbound seqs
     ITEMS_PER_MISSING_PACKET =
             ITEMS_PER_DATA_PACKET - SEND_MISSING_SEQ_HEADER_WORDS,
 };
@@ -210,8 +209,7 @@ typedef struct data_out_config_t {
     //! The key used to indicate a general data item in a stream
     const uint basic_data_key;
     //! \brief The ID of the IPtag to send the SDP packets out to host on
-    //!
-    //! Note that the host is responsible for configuring the tag.
+    //! \note The host is responsible for configuring the tag.
     const uint tag_id;
 } data_out_config_t;
 

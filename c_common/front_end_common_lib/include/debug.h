@@ -92,8 +92,8 @@ extern void log_error(const char *message, ...);
 extern void log_warning(const char *message, ...);
 
 //! \brief Log an informational message. This is the lowest level of message
-//!        normally printed. Informational messages indicate (presumably)
-//!        correct functioning of this component.
+//!     normally printed. Informational messages indicate (presumably) correct
+//!     functioning of this component.
 //! \details
 //!     Calls to this function are rewritten during the build process to be
 //!     calls to log_mini_info(); the rewrite also encodes the message so that
@@ -112,7 +112,7 @@ extern void log_debug(const char *message, ...);
 
 //! \brief Type-pun a float as a 32-bit unsigned integer.
 //! \details Defeats unwanted casting.
-//! \param[in] f The floating point number
+//! \param[in] f: The floating point number
 //! \return The integer that is the bits of the float
 static inline uint32_t float_to_int(float f) {
     union {
@@ -134,7 +134,7 @@ typedef union {
 
 //! \brief Type-pun the lower 32 bits of a double as a 32-bit unsigned integer.
 //! \details Defeats unwanted casting.
-//! \param[in] d The floating point number
+//! \param[in] d: The floating point number
 //! \return The integer that is the lower bits of the double
 static inline uint32_t double_to_lower(double d) {
     __upper_lower_t dat;
@@ -155,7 +155,7 @@ static inline uint32_t double_to_upper(double d) {
 }
 
 //! \brief Print a debug message if level is less than or equal to the
-//!        LOG_LEVEL.
+//!     LOG_LEVEL.
 //! \details
 //!     This is the actual logging implementation, though the core of it just
 //!     delegates to the IOBUF system. Note that interrupts are disabled while

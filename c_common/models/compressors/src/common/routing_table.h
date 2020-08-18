@@ -63,8 +63,9 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find);
 //! \return number of appended entries.
 int routing_table_get_n_entries(void);
 
-//! \brief Update table stores accordingly.
+//! \brief Trim entries off the multitable
 //! \details Will RTE if this causes the total entries to become negative.
+//! \note Does *not* free those entries!
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(int size_to_remove);
 

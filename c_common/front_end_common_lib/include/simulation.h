@@ -82,12 +82,14 @@ typedef resume_callback_t start_callback_t;
 //! \brief Initialise the simulation interface.
 //! \details This involves:
 //! 1. Reading the timing details for the simulation out of a region,
-//!        which is formatted as:
-//!            uint32_t magic_number;
-//!            uint32_t timer_period;
-//!            uint32_t n_simulation_ticks;
+//!     which is formatted as:
+//!
+//!         uint32_t magic_number;
+//!         uint32_t timer_period;
+//!         uint32_t n_simulation_ticks;
+//!
 //! 2. setting the simulation SDP port code that supports multiple runs of the
-//!        executing code through front end calls.
+//!     executing code through front end calls.
 //! 3. setting up the registration for storing provenance data
 //! \param[in] address: The address of the region
 //! \param[in] expected_application_magic_number:
@@ -117,12 +119,14 @@ bool simulation_initialise(
 //! \brief Initialise the simulation interface for step-based simulation.
 //! \details This involves:
 //! 1. Reading the timing details for the simulation out of a region,
-//!        which is formatted as:
-//!            uint32_t magic_number;
-//!            uint32_t timer_period; (ignored in this case)
-//!            uint32_t n_simulation_steps;
+//!     which is formatted as:
+//!
+//!         uint32_t magic_number;
+//!         uint32_t timer_period; // ignored in this case
+//!         uint32_t n_simulation_steps;
+//!
 //! 2. setting the simulation SDP port code that supports multiple runs of the
-//!        executing code through front end calls.
+//!     executing code through front end calls.
 //! 3. setting up the registration for storing provenance data
 //! \param[in] address: The address of the region
 //! \param[in] expected_application_magic_number:

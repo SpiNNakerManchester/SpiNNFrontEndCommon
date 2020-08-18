@@ -269,12 +269,6 @@ static inline void update_frequency(int index) {
     }
 }
 
-
-//! \brief Implementation of minimise()
-//! \param[in] target_length: ignored
-//! \param[out] failed_by_malloc: Never changed but required by api
-//! \param[in] stop_compressing: Variable saying if the compressor should stop
-//!    and return false; _set by interrupt_ DURING the run of this method!
 bool minimise_run(int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     use(failed_by_malloc);

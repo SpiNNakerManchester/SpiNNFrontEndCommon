@@ -54,7 +54,6 @@
  */
 
 //! \file
-//!
 //! \brief Data type definitions for SpiNNaker Neuron-modelling.
 
 #ifndef __COMMON_TYPEDEFS_H__

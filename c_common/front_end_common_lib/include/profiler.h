@@ -16,11 +16,9 @@
  */
 
 //! \file
-//!
 //! \brief Support for code profiling.
-//!
-//! The profiler is known to have an impact on performance, and requires the
-//! use of the secondary system timer for this core.
+//! \details The profiler is known to have an impact on performance, and
+//!     requires the use of the secondary system timer for this core.
 
 #ifndef PROFILER_H
 #define PROFILER_H
@@ -33,15 +31,13 @@
 //---------------------------------------
 
 //! \brief Initialise the profiler from a SDRAM region.
-//!
-//! \param data_region: The pointer to the region, which must be laid out
-//! according to the profiler_region structure.
+//! \param[in] data_region: The pointer to the region, which must be laid out
+//!     according to the profiler_region structure.
 void profiler_init(uint32_t* data_region);
 
 //! \brief Finalise profiling.
-//!
-//! This includes the potentially slow process of writing to
-//! profiler_region::count
+//! \details This includes the potentially slow process of writing to
+//!     profiler_region::count
 void profiler_finalise(void);
 
 //! \brief The layout of the profiler's DSG region.
@@ -49,10 +45,11 @@ struct profiler_region {
     //! \brief The number of samples taken
     uint32_t count;
     //! \brief The samples.
-    //!
-    //! Each sample is the timestamp (taken from a free-running timer) at the
-    //! point a sample was taken, and a tag identifying what the sample point
-    //! was. (Two words. Not formed into a structure for historical reasons.)
+    //! \details
+    //!     Each sample is the timestamp (taken from a free-running timer) at
+    //!     the point a sample was taken, and a tag identifying what the sample
+    //!     point was. (Two words. Not formed into a structure for historical
+    //!     reasons.)
     uint32_t samples[];
 };
 
@@ -94,9 +91,8 @@ extern struct profiler_state profiler_state;
 
 //! \brief Write a profiler entry.
 //! \param[in] tag: Value that identifies the location being profiled.
-//!
-//! Requires two words of profiler storage to record an entry, one for the
-//! high-resolution timestamp and one for the tag.
+//! \details Requires two words of profiler storage to record an entry, one for
+//!     the high-resolution timestamp and one for the tag.
 static inline void profiler_write_entry(uint32_t tag) {
     if (profiler_samples_remaining > 0) {
         *profiler_state.output++ = tc[T2_COUNT];
@@ -107,8 +103,7 @@ static inline void profiler_write_entry(uint32_t tag) {
 
 //! \brief Write an entry with all interrupts disabled.
 //! \param[in] tag: Value that identifies the location being profiled.
-//!
-//! See profiler_write_entry().
+//! \details See profiler_write_entry().
 static inline void profiler_write_entry_disable_irq_fiq(uint32_t tag) {
     uint sr = spin1_irq_disable();
     spin1_fiq_disable();
@@ -118,8 +113,7 @@ static inline void profiler_write_entry_disable_irq_fiq(uint32_t tag) {
 
 //! \brief Write an entry with just fast interrupts disabled.
 //! \param[in] tag: Value that identifies the location being profiled.
-//!
-//! See profiler_write_entry().
+//! \details See profiler_write_entry().
 static inline void profiler_write_entry_disable_fiq(uint32_t tag) {
     uint sr = spin1_fiq_disable();
     profiler_write_entry(tag);

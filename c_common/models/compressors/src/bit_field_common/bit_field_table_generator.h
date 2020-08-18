@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//! \dir
+//! \brief Support code for working with bitfields (synaptic matrices, etc.)
 //! \file
 //! \brief The table generator support code
 #ifndef __BIT_FIELD_TABLE_GENERATOR_H__

@@ -94,9 +94,6 @@ void malloc_extras_check_all_marked(int marker);
 //!     easy marker to track back to the application user code.
 void malloc_extras_check_all(void);
 
-//! \brief Update heap to join in the extra space from another heap.
-//! \param[in] heap_location: address where heap is located
-//! \return whether initialisation was successful.
 bool malloc_extras_initialise_with_fake_heap(heap_t *heap_location);
 
 //! \brief Build a new heap based off stolen SDRAM blocks from cores'
