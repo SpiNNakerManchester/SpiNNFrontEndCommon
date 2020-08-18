@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS local_metadata(
 	source_name STRING NOT NULL,
 	variable_name STRING NOT NULL,
 	table_name STRING NOT NULL,
-	first_neuron_id INTEGER NOT NULL,
+	first_neuron_id INTEGER,
 	data_type STRING NOT NULL,
 	UNIQUE(source_name, variable_name, first_neuron_id));
 

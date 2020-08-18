@@ -22,7 +22,7 @@ from spinn_front_end_common.interface.buffer_management.recorded import (
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
-    def _random_data(self, timesteps, neuron_ids):
+    def _random_matrix_data(self, timesteps, neuron_ids):
         data = []
         for timestep in timesteps:
             line = []
@@ -30,6 +30,16 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             for _ in neuron_ids:
                 line.append(random.randint(0, 100000000))
             data.append(line)
+        return data
+
+    def _random_exists_data(self, timesteps, neuron_ids):
+        data = []
+        for timestep in timesteps:
+            for neuron_id in neuron_ids:
+                count = random.randint(-10, 5)
+                for _ in range(count):
+                    line = [neuron_id, timestep]
+                    data.append(line)
         return data
 
     def test_use_database(self):
@@ -44,26 +54,35 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         neuron_ids1 = range(2)
         neuron_ids2 = range(2, 4, 2)
         key = "timestamp"
-        v1_1 = self._random_data(timesteps1, neuron_ids1)
+        v1_1 = self._random_matrix_data(timesteps1, neuron_ids1)
         db.insert_matrix_items("pop1", "v", key, neuron_ids1, v1_1)
-        v1_2 = self._random_data(timesteps1, neuron_ids2)
+        v1_2 = self._random_matrix_data(timesteps1, neuron_ids2)
         db.insert_matrix_items("pop1", "v", key, neuron_ids2, v1_2)
-        v2_1 = self._random_data(timesteps2, neuron_ids1)
+        v2_1 = self._random_matrix_data(timesteps2, neuron_ids1)
         db.insert_matrix_items("pop1", "v", key, neuron_ids1, v2_1)
-        v2_2 = self._random_data(timesteps2, neuron_ids2)
+        v2_2 = self._random_matrix_data(timesteps2, neuron_ids2)
         db.insert_matrix_items("pop1", "v", key, neuron_ids2, v2_2)
-        gsyn2_1 = self._random_data(timesteps2, neuron_ids1)
+        gsyn2_1 = self._random_matrix_data(timesteps2, neuron_ids1)
         db.insert_matrix_items("pop1", "gsyn", key, neuron_ids1, gsyn2_1)
-        gsyn2_2 = self._random_data(timesteps2, neuron_ids1)
+        gsyn2_2 = self._random_matrix_data(timesteps2, neuron_ids1)
         db.insert_matrix_items("pop1", "gsyn", key, neuron_ids1, gsyn2_2)
-        vother = self._random_data(timesteps1, neuron_ids1)
+        vother = self._random_matrix_data(timesteps1, neuron_ids1)
         db.insert_matrix_items("pop2", "v", key, neuron_ids1, vother)
+        s1_1 = self._random_exists_data(timesteps1, neuron_ids1)
+        db.insert_exists_items("pop1", "spikes", key, s1_1)
+        s1_2 = self._random_exists_data(timesteps1, neuron_ids2)
+        db.insert_exists_items("pop1", "spikes", key, s1_2)
+        s2_1 = self._random_exists_data(timesteps2, neuron_ids1)
+        db.insert_exists_items("pop1", "spikes", key, s2_1)
+        s2_2 = self._random_exists_data(timesteps2, neuron_ids2)
+        db.insert_exists_items("pop1", "spikes", key, s2_2)
 
         meta = db.get_variable_map()
         self.assertIn("pop1", meta)
         self.assertIn("v", meta["pop1"])
         self.assertIn("gsyn", meta["pop1"])
-        self.assertEqual(2, len(meta["pop1"]))
+        self.assertIn("spikes", meta["pop1"])
+        self.assertEqual(3, len(meta["pop1"]))
         self.assertIn("pop2", meta)
         self.assertEqual(2, len(meta))
 
@@ -77,7 +96,16 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         v1 = v1_1 + v2_1
         v2 = v1_2 + v2_2
         v = [z[0] + z[1][1:] for z in zip(v1, v2)]
+        # Not guaranteed to be in order but are so far
         self.assertEqual(v, db.get_data("pop1", "v")[1])
+
+        spikes = []
+        spikes.extend(s1_1)
+        spikes.extend(s1_2)
+        spikes.extend(s2_1)
+        spikes.extend(s2_2)
+        # Not guaranteed to be in order but are so far
+        self.assertEqual(spikes, db.get_data("pop1", "spikes")[1])
 
         self.assertEqual(5, len(db.get_views()))
 
@@ -95,11 +123,11 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         neuron_ids2 = range(2, 4, 2)
         neuron_ids3 = range(3, 5, 2)
         key = "bacon"
-        v1 = self._random_data(timesteps1, neuron_ids1)
+        v1 = self._random_matrix_data(timesteps1, neuron_ids1)
         db.insert_matrix_items("pop1", "v", key, neuron_ids1, v1)
-        v2 = self._random_data(timesteps2, neuron_ids2)
+        v2 = self._random_matrix_data(timesteps2, neuron_ids2)
         db.insert_matrix_items("pop1", "v", key, neuron_ids2, v2)
-        v3 = self._random_data(timesteps3, neuron_ids3)
+        v3 = self._random_matrix_data(timesteps3, neuron_ids3)
         db.insert_matrix_items("pop1", "v", key, neuron_ids3, v3)
 
         meta = db.get_variable_map()

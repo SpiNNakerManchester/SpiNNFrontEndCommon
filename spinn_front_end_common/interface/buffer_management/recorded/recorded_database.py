@@ -25,6 +25,7 @@ SIMPLE = "_simple"
 AS_FLOAT = "_as_float"
 KEYS = "_keys"
 MATRIX = "matrix"
+EXISTS = "exists"
 TYPE_ERROR = "{} {} has already been save as {} so can not save it as {}"
 
 
@@ -124,6 +125,30 @@ class RecordedDatabase(object):
         cursor.execute("DROP VIEW IF EXISTS " +
                        self._table_name(source_name, variable_name, AS_FLOAT))
 
+    def _check_previous_data_type(
+            self, cursor, source_name, variable_name, data_type):
+        """
+        Check that no existing table for this data has a different type
+
+        :param ~sqlite3.Cursor cursor:
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param str data_type: Tyoe of data for this source_name and
+            variable_name pair
+        """
+        for row in cursor.execute(
+                """
+                SELECT data_type
+                FROM local_metadata
+                WHERE source_name = ? AND variable_name = ?
+                """, (source_name, variable_name)):
+            if row["data_type"] != data_type:
+                msg = TYPE_ERROR.format(
+                    source_name, variable_name, row["data_type"], data_type)
+                raise Exception(msg)
+
+
     def _create_matrix_table(
             self, cursor, source_name, variable_name, key, atom_ids):
         """
@@ -133,21 +158,10 @@ class RecordedDatabase(object):
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
-        :param str key:
+        :param str key: name of the key column
         :param list atom_ids: The ids for this core. Many be integers
         :return: Name of the database table created for this data
         """
-        for row in cursor.execute(
-                """
-                SELECT data_type
-                FROM local_metadata
-                WHERE source_name = ? AND variable_name = ?
-                """, (source_name, variable_name)):
-            if row["data_type"] != MATRIX:
-                msg = TYPE_ERROR.format(
-                    source_name, variable_name, row["data_type"], MATRIX)
-                raise Exception(msg)
-
         table_name = self._table_name(
             source_name, variable_name, RAW, atom_ids[0])
         neuron_ids_str = ",".join(["'" + str(id) + "'" for id in atom_ids])
@@ -164,9 +178,35 @@ class RecordedDatabase(object):
         cursor.execute(ddl_statement)
         return table_name
 
+    def _create_exists_table(
+            self, cursor, source_name, variable_name, key):
+        """
+        Creates a matrix table to hold data from one core.
+
+        :param ~sqlite3.Cursor cursor:
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param str key: name of the key column
+        :return: Name of the database table created for this data
+        """
+        table_name = self._table_name(source_name, variable_name, RAW)
+        cursor.execute(
+            """
+            INSERT INTO local_metadata(
+                source_name, variable_name, table_name, first_neuron_id,
+                data_type)
+            VALUES(?,?,?,?,?)
+            """, (source_name, variable_name, table_name, None, EXISTS))
+
+        ddl_statement = "CREATE TABLE {} (atom_id{}, key)".format(
+            table_name, key)
+        cursor.execute(ddl_statement)
+        return table_name
+
     def _get_local_table(
-            self, cursor, source_name, variable_name, key, atom_ids,
-            data_type):
+            self, cursor, source_name, variable_name, key, data_type,
+            atom_ids=None):
         """
         Ensures a table exists to hold data from one core.
 
@@ -174,27 +214,46 @@ class RecordedDatabase(object):
         :param str source_name: The global name for the source.
             (ApplicationVertex name)
         :param str variable_name: The name for the variable being stored
-        :param str key:
-        :param list atom_ids: The ids for this core. Many be integers
+        :param str key: Name of the key column if there is one
+        :param atom_ids: The ids for this core. Many be integers.
+            Or None if there is a single table for all cores
+        :type atom_ids: list(int) or None
         :return: Name of the database table created for this data
         """
-        for row in cursor.execute(
+        if atom_ids:
+            cursor.execute(
                 """
                 SELECT table_name, data_type
                 FROM local_metadata
                 WHERE source_name = ? AND variable_name = ?
                     AND first_neuron_id = ?
                 LIMIT 1
-                """, (source_name, variable_name, atom_ids[0])):
+                """, (source_name, variable_name, atom_ids[0]))
+        else:
+            cursor.execute(
+                """
+                SELECT table_name, data_type
+                FROM local_metadata
+                WHERE source_name = ? AND variable_name = ?
+                    AND first_neuron_id IS NULL
+                LIMIT 1
+                """, (source_name, variable_name))
+        for row in cursor.fetchall():
             if row["data_type"] != data_type:
                 msg = TYPE_ERROR.format(
                     source_name, variable_name, row["data_type"], data_type)
                 raise Exception(msg)
             return row["table_name"]
 
+        self._check_previous_data_type(
+            cursor, source_name, variable_name, data_type)
         if data_type == MATRIX:
             return self._create_matrix_table(
                 cursor, source_name, variable_name, key, atom_ids)
+        if data_type == EXISTS:
+            return self._create_exists_table(
+                cursor, source_name, variable_name, key)
+
         raise Exception("Unexpected table data_type {}".format(data_type))
 
     def _count(self, cursor, name):
@@ -254,6 +313,13 @@ class RecordedDatabase(object):
             full_view, " NATURAL JOIN ".join(best_names))
         cursor.execute(ddl_statement)
         return full_view
+
+    """
+    SELECT table_name, data_type FROM local_metadata
+                    WHERE source_name = "pop1" AND variable_name = "spikes"
+    SELECT table_name, data_type, * FROM local_metadata
+                    WHERE source_name = "pop1" and variable_name = "spikes"                
+    """
 
     def _find_best_source(self, cursor, source_name, variable_name):
 
@@ -321,9 +387,8 @@ class RecordedDatabase(object):
             ddl_statement = "CREATE VIEW {} AS SELECT {} FROM {}".format(
                 float_name, fields, best_source)
             cursor.execute(ddl_statement)
-            return best_source, data_type
 
-        raise NotImplementedError("Unexpected data_type {}.format(data_type)")
+        return best_source, data_type
 
     def insert_matrix_items(
             self, source_name, variable_name, key, atom_ids, data):
@@ -357,7 +422,40 @@ class RecordedDatabase(object):
             cursor = self._db.cursor()
             self._drop_views(cursor, source_name, variable_name)
             table_name = self._get_local_table(
-                cursor, source_name, variable_name, key, atom_ids, MATRIX)
+                cursor, source_name, variable_name, key, MATRIX, atom_ids)
+            # Get the column names
+            cursor.execute("SELECT * FROM {} LIMIT 1".format(table_name))
+            query = "INSERT INTO {} VALUES ({})".format(
+                table_name, ",".join("?" for _ in cursor.description))
+            cursor.executemany(query, data)
+
+    def insert_exists_items(
+            self, source_name, variable_name, key, data):
+        """
+        Inserts data for one core for this variable
+
+        This method can be called multiple times for the same
+        source_name, variable_name, atom_ids combination and the data will go
+        into one table
+
+        The first column of the data is assumed to hold the atom_id
+        The second column of the data is assumed to hold the key.
+        Each row in the data should have exactly two elements.
+        There can be multiple rows with the same atom_id and key values
+
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param str key: The name for the values in the second/key column
+        :param iterable(iterable) data: The values to load
+        :return: Name of the database table created for this data
+        """
+        with self._db:
+            cursor = self._db.cursor()
+            self._drop_views(cursor, source_name, variable_name)
+            table_name = self._get_local_table(
+                cursor, source_name, variable_name, key, EXISTS)
+            # Get the column names
             cursor.execute("SELECT * FROM {}".format(table_name))
             query = "INSERT INTO {} VALUES ({})".format(
                 table_name, ",".join("?" for _ in cursor.description))
@@ -430,11 +528,10 @@ class RecordedDatabase(object):
             cursor = self._db.cursor()
             best_source, data_type = self._get_global_view(
                 cursor, source_name, variable_name)
-            if data_type == MATRIX:
-                cursor.execute("SELECT * FROM {}".format(best_source))
-                names = [description[0] for description in cursor.description]
-                data = [list(row) for row in cursor.fetchall()]
-                return names, data
+            cursor.execute("SELECT * FROM {}".format(best_source))
+            names = [description[0] for description in cursor.description]
+            data = [list(row) for row in cursor.fetchall()]
+            return names, data
 
         raise NotImplementedError("Unexpected data_type {}.format(data_type)")
 
