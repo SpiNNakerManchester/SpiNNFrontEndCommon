@@ -43,16 +43,35 @@ typedef struct data_specification_metadata_t {
     void *regions[];
 } data_specification_metadata_t;
 
+//! \brief Get the location of the data for this core using the user0 entry
+//!        of the SARK VCPU structure.
+//! \details
+//!     Locates the start address for a core in SDRAM. This value is loaded
+//!     into the user0 register of the core during the tool chain loading.
+//!
+//!     Does not validate the value! That's the job of
+//!     data_specification_read_header()
+//! \return The address of the generated data
 data_specification_metadata_t *data_specification_get_data_address(void);
 
+//! \brief Read the header from the address given and checks if the parameters
+//!     are of the correct values.
+//! \details
+//!     Reads the header written by a DSE and checks that the magic number
+//!     which is written by every DSE is consistent. Inconsistent DSE magic
+//!     numbers would reflect a model being used with an different DSE
+//!     interface than the DSE used by the host machine, or that the address
+//!     discovered by data_specification_get_data_address() is incorrect.
+//! \param[in] ds_regions: The address of the start of the data generated
+//! \return true if a valid header was found, or false if was not
 bool data_specification_read_header(data_specification_metadata_t *ds_regions);
 
-//! \brief Gets the address of a region
+//! \brief Get the address of a region
 //! \param[in] region: the ID of the region, starting at 0
 //! \param[in] ds_regions: The address of the start of the data generated; it
-//!                        is the caller's job to validate this first.
+//!     is the caller's job to validate this first.
 //! \return The address of the specified region. This function does not know
-//! the actual type of the region.
+//!     the actual type of the region.
 static inline void *data_specification_get_region(
         uint32_t region, data_specification_metadata_t *ds_regions) {
     return ds_regions->regions[region];

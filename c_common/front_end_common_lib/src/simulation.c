@@ -264,7 +264,7 @@ static void simulation_control_scp_callback(uint mailbox, uint port) {
     }
 }
 
-//! \brief handles the SDP callbacks interface.
+//! \brief Handle the SDP callbacks interface.
 //! \param[in,out] mailbox: The pointer to the received message
 //! \param[in] port: What port the message was received on
 static void simulation_sdp_callback_handler(uint mailbox, uint port) {
@@ -292,7 +292,7 @@ void simulation_sdp_callback_off(uint sdp_port) {
     sdp_callback[sdp_port] = NULL;
 }
 
-//! \brief handles the DMA transfer done callbacks interface.
+//! \brief Handle the DMA transfer done callbacks interface.
 //! \param[in] unused: unused
 //! \param[in] tag: the tag of the DMA that completed
 static void simulation_dma_transfer_done_callback(uint unused, uint tag) {

@@ -189,7 +189,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
     }
 }
 
-//! \brief debugging print for a pointer to a table.
+//! \brief Debugging print for a pointer to a table.
 //! \param[in] table: the table pointer to print
 void print_table(table_t *table) {
    entry_t *entries = table->entries;
@@ -200,8 +200,7 @@ void print_table(table_t *table) {
    }
 }
 
-//! \brief sorts a given table so that the entries in the table are by key
-//!     value.
+//! \brief Sort a given table so that the entries in the table are by key.
 //! \param[in] table: the table to sort.
 void sort_table_by_key(table_t *table) {
     uint32_t size = table->size;

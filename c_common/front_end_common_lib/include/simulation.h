@@ -79,61 +79,69 @@ typedef void (*exit_callback_t)(void);
 //! the definition of the callback used to call a function once at start
 typedef resume_callback_t start_callback_t;
 
-//! \brief initialises the simulation interface which involves:
+//! \brief Initialise the simulation interface.
+//! \details This involves:
 //! 1. Reading the timing details for the simulation out of a region,
 //!        which is formatted as:
 //!            uint32_t magic_number;
 //!            uint32_t timer_period;
 //!            uint32_t n_simulation_ticks;
 //! 2. setting the simulation SDP port code that supports multiple runs of the
-//! executing code through front end calls.
+//!        executing code through front end calls.
 //! 3. setting up the registration for storing provenance data
 //! \param[in] address: The address of the region
-//! \param[in] expected_application_magic_number: The expected value of the magic
-//!            number that checks if the data was meant for this code
-//! \param[out] timer_period: Pointer to an int to receive the timer period,
-//!             in microseconds
-//! \param[in] simulation_ticks_pointer: Pointer to the number of simulation
-//!            ticks, to allow this to be updated when requested via SDP
-//! \param[in] infinite_run_pointer: Pointer to the infinite run flag, to allow
-//!            this to be updated when requested via SDP
-//! \param[in] time_pointer: Pointer to the current time, to allow this to be
-//!            updated when requested via SDP
-//! \param[in] sdp_packet_callback_priority: The priority to use for the
-//!            SDP packet reception
-//! \param[in] dma_transfer_complete_priority: The priority to use for the
-//!            DMA transfer complete callbacks
-//! \return True if the data was found, false otherwise
+//! \param[in] expected_application_magic_number:
+//!     The expected value of the magic number that checks if the data was
+//!     meant for this code
+//! \param[out] timer_period: The timer period, in microseconds
+//! \param[in] simulation_ticks_pointer:
+//!     Pointer to the number of simulation ticks, to allow this to be updated
+//!     when requested via SDP. Must have lifetime the same as the application
+//! \param[in] infinite_run_pointer:
+//!     Pointer to the infinite run flag, to allow this to be updated when
+//!     requested via SDP.  Must have lifetime the same as the application
+//! \param[in] time_pointer:
+//!     Pointer to the current time, to allow this to be updated when requested
+//!     via SDP. Must have lifetime the same as the application
+//! \param[in] sdp_packet_callback_priority:
+//!     The priority to use for the SDP packet reception
+//! \param[in] dma_transfer_complete_priority:
+//!     The priority to use for the DMA transfer complete callbacks
+//! \return Whether the configuration data was found.
 bool simulation_initialise(
         address_t address, uint32_t expected_application_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
         uint32_t *infinite_run_pointer, uint32_t *time_pointer,
         int sdp_packet_callback_priority, int dma_transfer_complete_priority);
 
-//! \brief initialises the simulation interface for step-based simulation,
-//! which involves:
+//! \brief Initialise the simulation interface for step-based simulation.
+//! \details This involves:
 //! 1. Reading the timing details for the simulation out of a region,
 //!        which is formatted as:
 //!            uint32_t magic_number;
 //!            uint32_t timer_period; (ignored in this case)
 //!            uint32_t n_simulation_steps;
 //! 2. setting the simulation SDP port code that supports multiple runs of the
-//! executing code through front end calls.
+//!        executing code through front end calls.
 //! 3. setting up the registration for storing provenance data
-//! \param[in] address The address of the region
-//! \param[in] expected_application_magic_number The expected value of the magic
-//!            number that checks if the data was meant for this code
-//! \param[in] simulation_steps_pointer Pointer to the number of simulation
-//!            steps, to allow this to be updated when requested via SDP
-//! \param[in] infinite_steps_pointer Pointer to the infinite steps flag, to
-//!            allow this to be updated when requested via SDP
-//! \param[in] step_pointer Pointer to the current step, to allow this to be
-//!            updated when requested via SDP
-//! \param[in] sdp_packet_callback_priority The priority to use for the
-//!            SDP packet reception
-//! \param[in] dma_transfer_complete_priority The priority to use for the
-//!            DMA transfer complete callbacks
-//! \return True if the data was found, false otherwise
+//! \param[in] address: The address of the region
+//! \param[in] expected_application_magic_number:
+//!     The expected value of the magic number that checks if the data was
+//!     meant for this code
+//! \param[in] simulation_steps_pointer:
+//!     Pointer to the number of simulation steps, to allow this to be updated
+//!     when requested via SDP. Must have lifetime the same as the application
+//! \param[in] infinite_steps_pointer:
+//!     Pointer to the infinite steps flag, to allow this to be updated when
+//!     requested via SDP. Must have lifetime the same as the application
+//! \param[in] step_pointer:
+//!     Pointer to the current step, to allow this to be updated when requested
+//!     via SDP. Must have lifetime the same as the application
+//! \param[in] sdp_packet_callback_priority:
+//!     The priority to use for the SDP packet reception
+//! \param[in] dma_transfer_complete_priority:
+//!     The priority to use for the DMA transfer complete callbacks
+//! \return Whether the configuration data was found.
 static inline bool simulation_steps_initialise(
         address_t address, uint32_t expected_application_magic_number,
         uint32_t *simulation_steps_pointer, uint32_t *infinite_steps_pointer,
@@ -149,14 +157,14 @@ static inline bool simulation_steps_initialise(
 
 //! \brief Set the address of the data region where provenance data is to be
 //!        stored
-//! \param[in] provenance_data_address: the address where provenance data should
-//!            be stored
+//! \param[in] provenance_data_address:
+//!     the address where provenance data should be stored
 void simulation_set_provenance_data_address(address_t provenance_data_address);
 
 //! \brief Set an additional callback function to store extra provenance data
 //! \param[in] provenance_function: function to call for extra provenance data
-//! \param[in] provenance_data_address: the address where provenance data should
-//!            be stored
+//! \param[in] provenance_data_address:
+//!     the address where provenance data should be stored
 void simulation_set_provenance_function(
         prov_callback_t provenance_function, address_t provenance_data_address);
 
@@ -171,53 +179,54 @@ void simulation_set_exit_function(exit_callback_t exit_function);
 //!            simulation to start.  Executed before "synchronisation".
 void simulation_set_start_function(start_callback_t start_function);
 
-//! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.  Note that
-//!        following this function, the code should call
-//!        simulation_ready_to_read (see later).
+//! \brief Clean up the house keeping, fall into a sync state and handle
+//!     the resetting up of states as required to resume.
+//! \note Following this function, the code should call
+//!     simulation_ready_to_read()
 //! \param[in] callback: The function to call just before the simulation
-//!            is resumed (to allow the resetting of the simulation)
+//!     is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback);
 
-//! \brief a helper method for people not using the auto pause and
-//! resume functionality
+//! \brief Mark the simulation as completed.
+//! \details This is a helper method for people not using the auto pause and
+//!     resume functionality
 void simulation_exit(void);
 
-//! \brief Starts the simulation running, returning when it is complete,
+//! \brief Start the simulation running, returning when it is complete,
 void simulation_run(void);
 
-//! \brief Indicates that all data has been written and the core is going
-//!        idle, so any data can now be read
+//! \brief Indicate that all data has been written and the core is going
+//!     idle, so any data can now be read
 void simulation_ready_to_read(void);
 
-//! \brief Registers an additional SDP callback on a given SDP port.  This is
-//!        required when using simulation_register_sdp_callback, as this will
-//!        register its own SDP handler.
+//! \brief Register an additional SDP callback on a given SDP port.
+//! \details This is required when using simulation_register_sdp_callback() as
+//!     this will register its own SDP handler.
 //! \param[in] sdp_port: The SDP port to use
 //! \param[in] sdp_callback: The callback to call when a packet is received
-//! \return true if successful, false otherwise
+//! \return whether the registration was successful
 bool simulation_sdp_callback_on(
         uint sdp_port, callback_t sdp_callback);
 
-//! \brief disables SDP callbacks on the given port
+//! \brief Disable SDP callbacks on the given port
 //! \param[in] sdp_port: The SDP port to disable callbacks for
 void simulation_sdp_callback_off(uint sdp_port);
 
-//! \brief registers a DMA transfer callback to the simulation system
+//! \brief Register a DMA transfer callback to the simulation system
 //! \param[in] tag: the DMA transfer tag to register against
 //! \param[in] callback: the callback to register for the given tag
-//! \return true if successful, false otherwise
+//! \return whether the registration was successful
 bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback);
 
-//! \brief turns off a registered callback for a given DMA transfer done tag
+//! \brief Turn off a registered callback for a given DMA transfer done tag
 //! \param[in] tag: the DMA transfer tag to de-register
 void simulation_dma_transfer_done_callback_off(uint tag);
 
-//! \brief set whether the simulation uses the timer.  By default it will
-//!        be assumed that simulations use the timer unless this function is
-//!        called.
-//! \param[in] sim_uses_timer: Whether the simulation uses the timer (true)
-//!                            or not (false)
+//! \brief Set whether the simulation uses the timer.
+//! \details By default, it is assumed that simulations use the timer unless
+//!     this function is called.
+//! \param[in] sim_uses_timer:
+//!     Whether the simulation uses the timer (true) or not (false)
 void simulation_set_uses_timer(bool sim_uses_timer);
 
 #endif // _SIMULATION_H_

@@ -69,7 +69,7 @@ static uint reinject_emergency_timeout_mc_key;
 //! the multicast key used for clear reinjector queue to all extra monitors
 static uint reinject_clear_mc_key;
 
-//! \brief sets up the multicast keys for the reinjection multicast API
+//! \brief Set up the multicast keys for the reinjection multicast API
 //! \param[in] base_mc_key: the base key for the api.
 static void initialise_reinjection_mc_api(uint32_t base_mc_key) {
     // set the router timeout keys
@@ -85,7 +85,7 @@ static void initialise_reinjection_mc_api(uint32_t base_mc_key) {
 //! Flag for cap on transaction id
 #define TRANSACTION_CAP 0xFFFFFFF
 
-//! \brief Updates an SDP message so its content (a response to the message)
+//! \brief Update an SDP message so its content (a response to the message)
 //!        goes back to where the message came from.
 //! \param[in,out] msg: the SDP message to reflect
 //! \param[in] body_length: the length of the response

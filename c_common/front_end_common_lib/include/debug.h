@@ -74,49 +74,44 @@
 #include "spin-print.h"
 #include <assert.h>
 
-//! \brief This function logs errors. Errors usually indicate a serious fault
-//! in the program, and that it is about to terminate abnormally (RTE).
-//!
-//! Calls to this function are rewritten during the build process to be calls
-//! to log_mini_error(); the rewrite also encodes the message so that it is
-//! handled more efficiently by the binary deployed to SpiNNaker.
-//!
+//! \brief Log an error. Errors usually indicate a serious fault
+//!     in the program, and that it is about to terminate abnormally (RTE).
+//! \details
+//!     Calls to this function are rewritten during the build process to be
+//!     calls to log_mini_error(); the rewrite also encodes the message so that
+//!     it is handled more efficiently by the binary deployed to SpiNNaker.
 //! \param[in] message: The user-defined part of the error message.
 extern void log_error(const char *message, ...);
 
-//! \brief This function logs warnings.
-//!
-//! Calls to this function are rewritten during the build process to be calls
-//! to log_mini_warning(); the rewrite also encodes the message so that it is
-//! handled more efficiently by the binary deployed to SpiNNaker.
-//!
+//! \brief Log a warning.
+//! \details
+//!     Calls to this function are rewritten during the build process to be
+//!     calls to log_mini_warning(); the rewrite also encodes the message so
+//!     that it is handled more efficiently by the binary deployed to SpiNNaker.
 //! \param[in] message: The user-defined part of the error message.
 extern void log_warning(const char *message, ...);
 
-//! \brief This function logs informational messages. This is the lowest level
-//!        of message normally printed.
-//!
-//! Calls to this function are rewritten during the build process to be calls
-//! to log_mini_info(); the rewrite also encodes the message so that it is
-//! handled more efficiently by the binary deployed to SpiNNaker.
-//!
+//! \brief Log an informational message. This is the lowest level of message
+//!        normally printed. Informational messages indicate (presumably)
+//!        correct functioning of this component.
+//! \details
+//!     Calls to this function are rewritten during the build process to be
+//!     calls to log_mini_info(); the rewrite also encodes the message so that
+//!     it is handled more efficiently by the binary deployed to SpiNNaker.
 //! \param[in] message: The user-defined part of the error message.
 extern void log_info(const char *message, ...);
 
-//! \brief This function logs debugging messages. This level of message is
-//! normally not printed except when the binary is built in debug mode
-//!
-//! Calls to this function are rewritten during the build process to be calls
-//! to log_mini_debug(); the rewrite also encodes the message so that it is
-//! handled more efficiently by the binary deployed to SpiNNaker.
-//!
+//! \brief Log a debugging message. This level of message is normally not
+//!     printed except when the binary is built in debug mode
+//! \details
+//!     Calls to this function are rewritten during the build process to be
+//!     calls to log_mini_debug(); the rewrite also encodes the message so that
+//!     it is handled more efficiently by the binary deployed to SpiNNaker.
 //! \param[in] message: The user-defined part of the error message.
 extern void log_debug(const char *message, ...);
 
 //! \brief Type-pun a float as a 32-bit unsigned integer.
-//!
-//! Defeats unwanted casting.
-//!
+//! \details Defeats unwanted casting.
 //! \param[in] f The floating point number
 //! \return The integer that is the bits of the float
 static inline uint32_t float_to_int(float f) {
@@ -129,51 +124,44 @@ static inline uint32_t float_to_int(float f) {
     return dat.i;
 }
 
-typedef struct {
-    uint32_t lower;
-    uint32_t upper;
+typedef union {
+    double dbl;
+    struct pair {
+        uint32_t lower;
+        uint32_t upper;
+    } ints;
 } __upper_lower_t;
 
 //! \brief Type-pun the lower 32 bits of a double as a 32-bit unsigned integer.
-//!
-//! Defeats unwanted casting.
-//!
+//! \details Defeats unwanted casting.
 //! \param[in] d The floating point number
 //! \return The integer that is the lower bits of the double
 static inline uint32_t double_to_lower(double d) {
-    union {
-        double d;
-        __upper_lower_t ints;
-    } dat;
+    __upper_lower_t dat;
 
-    dat.d = d;
+    dat.dbl = d;
     return dat.ints.lower;
 }
 
 //! \brief Type-pun the higher 32 bits of a double as a 32-bit unsigned integer.
-//!
-//! Defeats unwanted casting.
-//!
-//! \param[in] d The floating point number
+//! \details Defeats unwanted casting.
+//! \param[in] d: The floating point number
 //! \return The integer that is the higher bits of the double
 static inline uint32_t double_to_upper(double d) {
-    union {
-        double d;
-        __upper_lower_t ints;
-    } dat;
+    __upper_lower_t dat;
 
-    dat.d = d;
+    dat.dbl = d;
     return dat.ints.upper;
 }
 
-//! \brief This macro prints a debug message if level is less than or equal
-//!        to the LOG_LEVEL
-//!
-//! This is the actual logging implementation, though the core of it just
-//! delegates to the IOBUF system.
-//!
-//! \param[in] level The level of the messsage
-//! \param[in] message The user-defined part of the debug message.
+//! \brief Print a debug message if level is less than or equal to the
+//!        LOG_LEVEL.
+//! \details
+//!     This is the actual logging implementation, though the core of it just
+//!     delegates to the IOBUF system. Note that interrupts are disabled while
+//!     the message is written into the IOBUF.
+//! \param[in] level: The level of the messsage
+//! \param[in] message: The user-defined part of the debug message.
 #define __log_mini(level, message, ...) \
     do {                                                  \
 	    if (level <= LOG_LEVEL) {                         \
@@ -183,23 +171,23 @@ static inline uint32_t double_to_upper(double d) {
 	    }                                                 \
     } while (0)
 
-//! \brief This macro logs errors. Do not call directly!
-//! \param[in] message The user-defined part of the error message.
+//! \brief Log an error. Do not call directly!
+//! \param[in] message: The user-defined part of the error message.
 #define log_mini_error(message, ...) \
     __log_mini(LOG_ERROR, message, ##__VA_ARGS__)
 
-//! \brief This macro logs warnings. Do not call directly!
-//! \param[in] message The user-defined part of the error message.
+//! \brief Log a warning. Do not call directly!
+//! \param[in] message: The user-defined part of the error message.
 #define log_mini_warning(message, ...) \
     __log_mini(LOG_WARNING, message, ##__VA_ARGS__)
 
-//! \brief This macro logs information. Do not call directly!
-//! \param[in] message The user-defined part of the error message.
+//! \brief Log an information message. Do not call directly!
+//! \param[in] message: The user-defined part of the error message.
 #define log_mini_info(message, ...) \
     __log_mini(LOG_INFO, message, ##__VA_ARGS__)
 
-//! \brief This macro logs debug messages. Do not call directly!
-//! \param[in] message The user-defined part of the error message.
+//! \brief Logs a debug message. Do not call directly!
+//! \param[in] message: The user-defined part of the error message.
 #define log_mini_debug(message, ...) \
     __log_mini(LOG_DEBUG, message, ##__VA_ARGS__)
 

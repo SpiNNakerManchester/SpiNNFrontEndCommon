@@ -28,20 +28,18 @@
 #define TABLE_SIZE 1024
 
 //! \brief Shift to go from entry \p _id to table id.
-//!
-//! 2<sup>TABLE_SHIFT</sup> needs to be ::TABLE_SIZE
+//! \details 2<sup>TABLE_SHIFT</sup> needs to be ::TABLE_SIZE
 #define TABLE_SHIFT 10
 
 //! \brief bitwise add to get sub table id.
-//!
-//! Needs to be ::TABLE_SIZE - 1;
+//! \details Needs to be ::TABLE_SIZE - 1;
 #define LOCAL_ID_ADD 1023
 
 //=============================================================================
 //state for reduction in parameters being passed around
 
-//! \brief Does all frees for the multi_table object par ones before
-//!     the start point
+//! \brief Do all frees for the multi_table object except for ones before
+//!     the start point.
 //! \param[in] tables: pointer to the metadata to be freed
 //! \param[in] start_point: where in the array to start freeing from.
 static void routing_tables_utils_free(
@@ -59,19 +57,19 @@ static void routing_tables_utils_free(
     tables->n_entries = 0;
 }
 
-//! \brief Does all frees for the multi_table object
+//! \brief Do all frees for the multi_table object
 //! \param[in] tables: pointer to the metadata to be freed
 static void routing_tables_utils_free_all(multi_table_t *restrict tables) {
     routing_tables_utils_free(tables, 0);
 }
 
-//! \brief Prepares the Routing table to handle at least n_entries
+//! \brief Prepare the routing table to handle at least \p max_entries
+//! \details
+//!     Will do all the the mallocs needed to hold at least \p max_entries.
+//!     The actual size may be rounded up but this behaviour should not be
+//!     counted on in the future.
 //!
-//! Will do all the the mallocs needed to hold at least max_entries
-//! The actual size may be rounded up but this behaviour should not be counted
-//! on in the future.
-//!
-//! Will NOT Free the space any previous tables held
+//! Will *not* free the space any previous tables held
 //! \param[in] tables: the collection of tables to prepare
 //! \param[in] max_entries: maximum number of entries table should hold
 //! \return True if and only if all table(s) could be malloced
@@ -131,9 +129,9 @@ static inline bool routing_tables_utils_malloc(
     return true;
 }
 
-//! \brief Converts the multitable to a single routing table and free the rest
-//!
-//! will RTE if the routing table has too many entries to fit into a router
+//! \brief Convert the multitable to a single routing table and free the rest
+//! \details Will RTE if the routing table has too many entries to fit into a
+//!     router
 //! \param[in] tables: the multitable to convert
 //! \return A pointer to a traditional router table
 static inline table_t* routing_tables_utils_convert(

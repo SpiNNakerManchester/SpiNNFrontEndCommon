@@ -38,14 +38,6 @@ enum {
     VERSION_SHIFT = 16
 };
 
-//! \brief Gets the location of the data for this core using the user0 entry
-//!        of the SARK VCPU structure
-//!
-//! Locates the start address for a core in SDRAM. This value is loaded into
-//! the user0 register of the core during the tool chain loading.
-//!
-//! Does not validate the value! That's data_specification_read_header()
-//! \return The address of the generated data
 data_specification_metadata_t *data_specification_get_data_address(void) {
     // Get pointer to 1st virtual processor info struct in SRAM
     vcpu_t *virtual_processor_table = (vcpu_t*) SV_VCPU;
@@ -60,16 +52,6 @@ data_specification_metadata_t *data_specification_get_data_address(void) {
     return (data_specification_metadata_t *) user0;
 }
 
-//! \brief Reads the header from the address given and checks if the parameters
-//! are of the correct values
-//!
-//! Reads the header written by a DSE and checks that the magic number which is
-//! written by every DSE is consistent. Inconsistent DSE magic numbers would
-//! reflect a model being used with an different DSE interface than the DSE
-//! used by the host machine.
-//!
-//! \param[in] ds_regions: The address of the start of the data generated
-//! \return true if a valid header was found, or false if was not
 bool data_specification_read_header(
         data_specification_metadata_t *ds_regions) {
     // Check for the magic number

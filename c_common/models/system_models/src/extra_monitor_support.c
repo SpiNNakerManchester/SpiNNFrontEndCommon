@@ -16,13 +16,12 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Extra Monitor.
-//!
-//! The purpose of this application is to provide extra monitor functions (such
-//! as reinjection control) that do not fit in SCAMP, and to provide an
-//! endpoint on each chip for streaming data in and out at high speed (while
-//! the main user application is not running).
+//! \details
+//!     The purpose of this application is to provide extra monitor functions
+//!     (such as reinjection control) that do not fit in SCAMP, and to provide
+//!     an endpoint on each chip for streaming data in and out at high speed
+//!     (while the main user application is not running).
 
 // SARK-based program
 #include <sark.h>
@@ -43,20 +42,18 @@
 //-----------------------------------------------------------------------------
 
 //! \brief Use DMA bursts of 16 words (2<sup>16</sup>)
-//!
-//! See [SpiNNaker Data Sheet][datasheet], Section 7.4, register r3
+//! \details See [SpiNNaker Data Sheet][datasheet], Section 7.4, register r3
 //!
 //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
 #define DMA_BURST_SIZE 4
 
 //! \brief Use a DMA width of double words
-//!
-//! See [SpiNNaker Data Sheet][datasheet], Section 7.4, register r3
+//! \details See [SpiNNaker Data Sheet][datasheet], Section 7.4, register r3
 //!
 //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
 #define DMA_WIDTH 1
 
-//! the number of DMA buffers to build
+//! The number of DMA buffers to build
 #define N_DMA_BUFFERS 2
 
 //! Flags for the type of DMA to request
@@ -71,9 +68,9 @@ enum {
 // magic numbers for data speed up extractor
 //-----------------------------------------------------------------------------
 
-//! flag size for saying ended, in bytes
+//! Flag size for saying ended, in bytes
 #define END_FLAG_SIZE 4
-//! flag for saying stuff has ended
+//! Flag for saying stuff has ended
 #define END_FLAG      0xFFFFFFFF
 
 //! Sizes of things to do with data speed up out message sizes
@@ -243,14 +240,14 @@ enum packet_types {
 // structs used in system
 // ------------------------------------------------------------------------
 
-//! dumped packet type
+//! Dumped packet type
 typedef struct dumped_packet_t {
     uint hdr; //!< Header word of packet
     uint key; //!< Key word of packet
     uint pld; //!< Payload word of packet (might be undefined)
 } dumped_packet_t;
 
-//! packet queue type
+//! Packet queue type
 typedef struct pkt_queue_t {
     uint head; //!< Index of head of queue in circular buffer
     uint tail; //!< Index of tail of queue in circular buffer
@@ -271,7 +268,7 @@ enum dma_tags_for_data_speed_up {
     DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS = 3
 };
 
-//! \brief message payload for the data speed up out SDP messages
+//! \brief Message payload for the data speed up out SDP messages
 typedef struct sdp_data_out_t {
     //! What operation are we dealing with
     data_out_sdp_commands command;
@@ -285,14 +282,14 @@ typedef struct sdp_data_out_t {
     uint length;
 } sdp_data_out_t;
 
-//! \brief router entry positions in sdram
+//! \brief Router entry positions in SDRAM
 typedef struct router_entry_t {
     uint32_t key;   //!< The SpiNNaker router key
     uint32_t mask;  //!< The SpiNNaker router mask
     uint32_t route; //!< The SpiNNaker router route (to use when masked key matches)
 } router_entry_t;
 
-//! \brief data positions in sdram for data in config
+//! \brief data positions in SDRAM for data in config
 typedef struct data_in_data_items {
     //! What key to use to receive an address to write to
     uint32_t address_mc_key;
@@ -313,17 +310,17 @@ enum missing_seq_num_data_positions {
     START_OF_MISSING_SEQ_NUMS = 3,
 };
 
-//! defintion of response packet for reinjector status
+//! Definition of response packet for reinjector status
 typedef struct reinjector_status_response_packet_t {
     //! \brief The current router timeout
-    //!
-    //! See [SpiNNaker Data Sheet][datasheet], Section 10.11, register r0, field wait1
+    //! \details See [SpiNNaker Data Sheet][datasheet], Section 10.11,
+    //!     register r0, field wait1
     //!
     //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
     uint router_timeout;
     //! \brief The current router emergency timeout
-    //!
-    //! See [SpiNNaker Data Sheet][datasheet], Section 10.11, register r0, field wait2
+    //! \details See [SpiNNaker Data Sheet][datasheet], Section 10.11,
+    //!     register r0, field wait2
     //!
     //! [datasheet]: https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf
     uint router_emergency_timeout;
@@ -343,7 +340,7 @@ typedef struct reinjector_status_response_packet_t {
     uint packet_types_reinjected;
 } reinjector_status_response_packet_t;
 
-//! how the reinjection configuration is laid out in memory.
+//! How the reinjection configuration is laid out in memory.
 typedef struct reinject_config_t {
     //! \brief Whether we are reinjecting multicast packets
     //! \warning The sense is inverted; 0 means inject, and 1 means don't
@@ -387,7 +384,7 @@ enum speed_up_in_command {
     SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES = 8
 };
 
-//! human readable definitions of each element in the transmission region
+//! Human-readable definitions of each element in the transmission region
 typedef struct data_speed_out_config_t {
     //! The key to say here is a piece of data
     uint my_key;
@@ -412,46 +409,45 @@ enum callback_priorities {
 // ------------------------------------------------------------------------
 
 //! \brief The content of the communications controller SAR register.
-//!
-//! Specifically, the P2P source identifier.
+//! \details Specifically, the P2P source identifier.
 static uint reinject_p2p_source_id;
 
-//! \brief dumped packet queue
+//! Dumped packet queue
 static pkt_queue_t reinject_pkt_queue;
 
 // statistics
-//! \brief Count of all packets dropped by router.
+//! Count of all packets dropped by router.
 static uint reinject_n_dropped_packets;
 
-//! \brief Count of packets dumped because the router was itself overloaded.
+//! Count of packets dumped because the router was itself overloaded.
 static uint reinject_n_missed_dropped_packets;
 
-//! \brief Count of packets lost because we ran out of queue space.
+//! Count of packets lost because we ran out of queue space.
 static uint reinject_n_dropped_packet_overflows;
 
-//! \brief Count of all packets reinjected.
+//! Count of all packets reinjected.
 static uint reinject_n_reinjected_packets;
 
 //! \brief Estimated count of packets dropped by router because a destination
-//! link is busy.
+//!     link is busy.
 static uint reinject_n_link_dumped_packets;
 
 //! \brief Estimated count of packets dropped by router because a destination
-//! core (local) is busy.
+//!     core (local) is busy.
 static uint reinject_n_processor_dumped_packets;
 
 // Determine what to reinject
 
-//! \brief Flag: whether to reinject multicast packets.
+//! Whether to reinject multicast packets.
 static bool reinject_mc;
 
-//! \brief Flag: whether to reinject point-to-point packets.
+//! Whether to reinject point-to-point packets.
 static bool reinject_pp;
 
-//! \brief Flag: whether to reinject nearest neighbour packets.
+//! Whether to reinject nearest neighbour packets.
 static bool reinject_nn;
 
-//! \brief Flag: whether to reinject fixed route packets.
+//! Whether to reinject fixed route packets.
 static bool reinject_fr;
 
 //! Whether we are running the reinjector
@@ -463,7 +459,7 @@ static bool reinject_run = true;
 
 // data in variables
 //! \brief Where we save a copy of the application code's router table while the
-//! system router table entries are loaded.
+//!     system router table entries are loaded.
 static router_entry_t *data_in_saved_application_router_table = NULL;
 
 //! This packet contains the address of the start of a stream.
@@ -497,7 +493,7 @@ static bool data_in_last_table_load_was_system = false;
 static uint32_t data_out_data_to_transmit[N_DMA_BUFFERS][ITEMS_PER_DATA_PACKET];
 
 //! \brief Which ::data_out_data_to_transmit buffer is the target of the current
-//! DMA transfer.
+//!     DMA transfer.
 static uint32_t data_out_transmit_dma_pointer = 0;
 
 //! Index (by words) into the block of SDRAM being read.
@@ -507,9 +503,8 @@ static uint32_t data_out_position_in_store = 0;
 static uint32_t data_out_num_items_read = 0;
 
 //! \brief The current transaction identifier, identifying the stream of items
-//! being moved.
-//!
-//! Also written to the user1 SARK register
+//!     being moved.
+//! \details Also written to the user1 SARK register
 static uint32_t data_out_transaction_id = 0;
 
 //! Whether we are about the first transmission in a stream.
@@ -541,8 +536,7 @@ static uint32_t data_out_max_seq_num = 0;
 // retransmission DMA stuff
 
 //! \brief DTCM buffer of sequence numbers to be retransmitted.
-//!
-//! Gets filled from ::data_out_missing_seq_num_sdram_address by DMA
+//! \details Gets filled from ::data_out_missing_seq_num_sdram_address by DMA
 static uint32_t data_out_retransmit_seq_nums[ITEMS_PER_DATA_PACKET];
 
 //! Used to track where we are in the retransmissions.
@@ -552,7 +546,7 @@ static uint32_t data_out_position_for_retransmission = 0;
 static uint32_t data_out_missing_seq_num_being_processed = 0;
 
 //! \brief Index into ::data_out_retransmit_seq_nums used to track where we are
-//! in a chunk of sequence numbers to retransmit.
+//!     in a chunk of sequence numbers to retransmit.
 static uint32_t data_out_read_data_position = 0;
 
 //! The tag of the current DMA.
@@ -602,16 +596,14 @@ static volatile isr_t* const _vic_vectors = (isr_t *) (VIC_BASE + 0x100);
 static volatile uint* const _vic_controls = (uint *) (VIC_BASE + 0x200);
 
 //! \brief Where are we (as a P2P address)?
-//!
-//! Used for error reporting.
+//! \details Used for error reporting.
 static ushort my_addr;
 
 //! The SARK virtual processor information table in SRAM.
 static vcpu_t *const _sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
 
 //! \brief DSG metadata
-//!
-//! Must structurally match data_specification_metadata_t
+//! \details Must structurally match data_specification_metadata_t
 typedef struct dsg_header_t {
     uint dse_magic_number;      //!< Magic number (== 0xAD130AD6)
     uint dse_version;           //!< Version (== 0x00010000)
@@ -619,9 +611,7 @@ typedef struct dsg_header_t {
 } dsg_header_t;
 
 //! \brief Get the DSG region with the given index.
-//!
-//! Does *not* validate the DSG header!
-//!
+//! \details Does *not* validate the DSG header!
 //! \param[in] index: The index into the region table.
 //! \return The address of the region
 static inline void *dsg_block(uint index) {
@@ -630,17 +620,15 @@ static inline void *dsg_block(uint index) {
     return dsg_header->regions[index];
 }
 
-//! \brief publishes the current transaction ID to the user1 register.
-//!
-//! The register is a place where it can be read from host and by debugging
-//! tools.
-//!
+//! \brief Publish the current transaction ID to the user1 register.
+//! \details The register is a place where it can be read from host and by
+//!     debugging tools.
 //! \param[in] transaction_id: The value to store
 static void publish_transaction_id(int transaction_id) {
     _sark_virtual_processor_info[sark.virt_cpu].user1 = transaction_id;
 }
 
-//! \brief allocate a block of SDRAM (to be freed with sdram_free())
+//! \brief Allocate a block of SDRAM (to be freed with sdram_free())
 //! \param[in] size: the size of the block
 //! \return a pointer to the block, or `NULL` if allocation failed
 static inline void *sdram_alloc(uint size) {
@@ -648,22 +636,22 @@ static inline void *sdram_alloc(uint size) {
             ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
 }
 
-//! \brief free a block of SDRAM allocated with sdram_alloc()
+//! \brief Free a block of SDRAM allocated with sdram_alloc()
 //! \param[in] data: the block to free
 static inline void sdram_free(void *data) {
     sark_xfree(sv->sdram_heap, data,
             ALLOC_LOCK | ALLOC_ID | (sark_vec->app_id << 8));
 }
 
-//! \brief the maximum SDRAM block size
+//! \brief The maximum SDRAM block size
 //! \return The maximum size of heap memory block that may be allocated in SDRAM
 static inline uint sdram_max_block_size(void) {
     return sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
 }
 
-//! \brief How to get an SDP message out of the mailbox correctly.
+//! \brief Get an SDP message out of the mailbox correctly.
 //! \return The retrieved message, or `NULL` if message buffer allocation
-//! failed.
+//!     failed.
 static inline sdp_msg_t *get_message_from_mailbox(void) {
     sdp_msg_t *shm_msg = (sdp_msg_t *) sark.vcpu->mbox_ap_msg;
     sdp_msg_t *msg = sark_msg_get();
@@ -675,7 +663,7 @@ static inline sdp_msg_t *get_message_from_mailbox(void) {
     return msg;
 }
 
-//! Marks the end of an interrupt handler from the VIC's perspective.
+//! Mark the end of an interrupt handler from the VIC's perspective.
 static inline void vic_interrupt_done(void) {
     vic[VIC_VADDR] = (uint) vic;
 }
@@ -700,18 +688,18 @@ static inline void set_vic_callback(uint8_t slot, uint type, isr_t callback) {
 // ------------------------------------------------------------------------
 
 //! \brief Enable the interrupt when the Communications Controller can accept
-//! another packet.
+//!     another packet.
 static inline void reinjection_enable_comms_interrupt(void) {
     vic[VIC_ENABLE] = 1 << CC_TNF_INT;
 }
 
 //! \brief Disable the interrupt when the Communications Controller can accept
-//! another packet.
+//!     another packet.
 static inline void reinjection_disable_comms_interrupt(void) {
     vic[VIC_DISABLE] = 1 << CC_TNF_INT;
 }
 
-//! \brief the plugin callback for the timer
+//! \brief The plugin callback for the timer
 static INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
     tc[T1_INT_CLR] = 1;
@@ -738,7 +726,7 @@ static INT_HANDLER reinjection_timer_callback(void) {
     vic_interrupt_done();
 }
 
-//! \brief Does the actual reinjection of a packet.
+//! \brief Do the actual reinjection of a packet.
 //! \param[in] pkt: The packet to reinject.
 static inline void reinjection_reinject_packet(const dumped_packet_t *pkt) {
     // write header and route,
@@ -758,7 +746,7 @@ static inline void reinjection_reinject_packet(const dumped_packet_t *pkt) {
 }
 
 //! \brief Called when the router can accept a packet and the reinjection queue
-//! is non-empty.
+//!     is non-empty.
 static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
@@ -796,7 +784,7 @@ static INT_HANDLER reinjection_ready_to_send_callback(void) {
     vic_interrupt_done();
 }
 
-//! \brief the callback plugin for handling dropped packets
+//! \brief The callback plugin for handling dropped packets.
 static INT_HANDLER reinjection_dropped_packet_callback(void) {
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
@@ -869,7 +857,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
     }
 }
 
-//! \brief reads a DSG memory region to set packet types for reinjection
+//! \brief Read a DSG memory region to set packet types for reinjection
 //! \param[in] config: where to read the reinjection packet types from
 static void reinjection_read_packet_types(const reinject_config_t *config) {
     // process multicast reinject flag
@@ -926,11 +914,9 @@ static inline void reinjection_set_emergency_timeout(uint payload) {
 }
 
 //! \brief Set the router wait1 timeout.
-//!
-//! Delegates to reinjection_set_timeout()
-//!
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \details Delegates to reinjection_set_timeout()
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
     io_printf(IO_BUF, "setting router timeouts via sdp\n");
@@ -945,11 +931,9 @@ static inline int reinjection_set_timeout_sdp(sdp_msg_t *msg) {
 }
 
 //! \brief Set the router wait2 timeout.
-//!
-//! Delegates to reinjection_set_emergency_timeout()
-//!
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \details Delegates to reinjection_set_emergency_timeout()
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
     io_printf(IO_BUF, "setting router emergency timeouts via sdp\n");
@@ -966,8 +950,8 @@ static inline int reinjection_set_emergency_timeout_sdp(sdp_msg_t *msg) {
 }
 
 //! \brief Set the re-injection options.
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_mc = msg->arg1;
@@ -987,8 +971,8 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
 }
 
 //! \brief Get the status and put it in the packet
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_get_status(sdp_msg_t *msg) {
     reinjector_status_response_packet_t *data =
@@ -1024,8 +1008,8 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
 }
 
 //! \brief Reset the counters
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_reset_counters(sdp_msg_t *msg) {
     reinject_n_dropped_packets = 0;
@@ -1041,8 +1025,8 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
 }
 
 //! \brief Stop the reinjector.
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_exit(sdp_msg_t *msg) {
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
@@ -1070,8 +1054,9 @@ static void reinjection_clear(void) {
 }
 
 //! \brief Clear the queue of messages to reinject.
-//! \param[in,out] msg: The message requesting the change. Will be updated with
-//! response
+//! \details Delegates to reinjection_clear()
+//! \param[in,out] msg:
+//!     The message requesting the change. Will be updated with response
 //! \return The payload size of the response message.
 static inline int reinjection_clear_message(sdp_msg_t *msg) {
     reinjection_clear();
@@ -1080,9 +1065,9 @@ static inline int reinjection_clear_message(sdp_msg_t *msg) {
     return 0;
 }
 
-//! \brief handles the commands for the reinjector code.
-//! \param[in,out] msg: The message with the command. Will be updated with
-//! response.
+//! \brief Handle the commands for the reinjector code.
+//! \param[in,out] msg:
+//!     The message with the command. Will be updated with response.
 //! \return the length of extra data put into the message for return
 static uint reinjection_sdp_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
@@ -1127,13 +1112,13 @@ static void reinjection_configure_timer(void) {
     tc[T1_BG_LOAD] = sv->cpu_clk * TICK_PERIOD;
 }
 
-//! \brief Store this chip's p2p address for future use.
+//! Store this chip's p2p address for future use.
 static void reinjection_configure_comms_controller(void) {
     // remember SAR register contents (p2p source ID)
     reinject_p2p_source_id = cc[CC_SAR] & 0x0000ffff;
 }
 
-//! \brief sets up SARK and router to have a interrupt when a packet is dropped
+//! Set up SARK and router to have a interrupt when a packet is dropped
 static void reinjection_configure_router(void) {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
@@ -1155,7 +1140,7 @@ static void reinjection_configure_router(void) {
 // data in speed up main functions
 //-----------------------------------------------------------------------------
 
-//! Clears all (non-SARK/SCAMP) entries from the router.
+//! Clear all (non-SARK/SCAMP) entries from the router.
 static void data_in_clear_router(void) {
     rtr_entry_t router_entry;
 
@@ -1176,7 +1161,7 @@ static void data_in_clear_router(void) {
 #endif
 }
 
-//! Resets the state due to reaching the end of a data stream
+//! Reset the state due to reaching the end of a data stream
 static inline void data_in_process_boundary(void) {
     if (data_in_write_address) {
 #ifdef DEBUG_DATA_IN
@@ -1188,7 +1173,7 @@ static inline void data_in_process_boundary(void) {
     data_in_first_write_address = NULL;
 }
 
-//! \brief Sets the next location to write data at
+//! \brief Set the next location to write data at
 //! \param[in] data: The address to write at
 static inline void data_in_process_address(uint data) {
     if (data_in_write_address) {
@@ -1200,7 +1185,7 @@ static inline void data_in_process_address(uint data) {
     data_in_first_write_address = data_in_write_address = (address_t) data;
 }
 
-//! \brief Writes a word in a stream and advances the write pointer.
+//! \brief Write a word in a stream and advances the write pointer.
 //! \param[in] data: The word to write
 static inline void data_in_process_data(uint data) {
     // data keys require writing to next point in sdram
@@ -1214,8 +1199,7 @@ static inline void data_in_process_data(uint data) {
 }
 
 //! \brief Process a multicast packet with payload.
-//!
-//! Shared between the reinjection and data in code paths. Calls one of:
+//! \details Shared between the reinjection and data in code paths. Calls one of:
 //!
 //! * reinjection_set_timeout()
 //! * reinjection_set_emergency_timeout()
@@ -1253,7 +1237,7 @@ static INT_HANDLER process_mc_payload_packet(void) {
     vic_interrupt_done();
 }
 
-//! \brief Writes router entries to the router.
+//! \brief Write router entries to the router.
 //! \param[in] sdram_address: the sdram address where the router entries reside
 //! \param[in] n_entries: how many router entries to read in
 static void data_in_load_router(
@@ -1296,7 +1280,7 @@ static void data_in_load_router(
     }
 }
 
-//! \brief reads in routers entries and places in application sdram location
+//! \brief Read in routers entries and places in the application SDRAM location
 static void data_in_save_router(void) {
     rtr_entry_t router_entry;
     data_in_application_table_n_valid_entries = 0;
@@ -1319,9 +1303,8 @@ static void data_in_save_router(void) {
     }
 }
 
-//! \brief Sets up system routes on router.
-//!
-//! Required by the data in speed up functionality.
+//! \brief Set up system routes on router.
+//! \details Required by the data in speed up functionality.
 //! \param[in] items: The collection of system routes to load.
 static void data_in_speed_up_load_in_system_tables(
         data_in_data_items_t *items) {
@@ -1343,9 +1326,8 @@ static void data_in_speed_up_load_in_system_tables(
             items->system_router_entries, items->n_system_router_entries);
 }
 
-//! \brief Sets up application routes on router.
-//!
-//! Required by data in speed up functionality.
+//! \brief Set up application routes on router.
+//! \details Required by data in speed up functionality.
 static void data_in_speed_up_load_in_application_routes(void) {
     // clear the currently loaded routing table entries
     data_in_clear_router();
@@ -1359,10 +1341,10 @@ static void data_in_speed_up_load_in_application_routes(void) {
 }
 
 //! \brief The handler for all control messages coming in for data in speed up
-//! functionality.
-//! \param[in,out] msg: the SDP message (without SCP header); will be updated
-//! with response
-//! \return complete code if successful
+//!     functionality.
+//! \param[in,out] msg:
+//!     the SDP message (without SCP header); will be updated with response
+//! \return the length of the body of the SDP response message
 static uint data_in_speed_up_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
     case SDP_COMMAND_FOR_SAVING_APPLICATION_MC_ROUTING:
@@ -1402,7 +1384,7 @@ static uint data_in_speed_up_command(sdp_msg_t *msg) {
 // data speed up out main functions
 //-----------------------------------------------------------------------------
 
-//! \brief Sends a fixed route packet with payload.
+//! \brief Send a fixed route packet with payload.
 //! \param[in] key: The "key" (first word) of the packet.
 //! \param[in] data: The "data" (second word) of the packet.
 static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
@@ -1425,13 +1407,13 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
     cc[CC_TXKEY] = key;
 }
 
-//! \brief takes a DMA'ed block and transmits its contents as fixed route
-//! packets to the packet gatherer.
+//! \brief Take a DMA'ed block and transmit its contents as fixed route
+//!     packets to the packet gatherer.
 //! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
 //! \param[in] n_elements_to_send: the number of multicast packets to send
 //! \param[in] first_packet_key: the first key to transmit with.
 //! \param[in] second_packet_key: the second key to transmit with; all
-//! subsequent packets use the default key.
+//!     subsequent packets use the default key.
 static void data_out_send_data_block(
         uint32_t current_dma_pointer, uint32_t n_elements_to_send,
         uint32_t first_packet_key, uint32_t second_packet_key) {
@@ -1451,15 +1433,13 @@ static void data_out_send_data_block(
 }
 
 //! \brief Initiate a DMA read, copying from SDRAM into DTCM.
-//!
-//! This is a basic operation. It does not include any safeguards.
-//!
+//! \details This is a basic operation. It does not include any safeguards.
 //! \param[in] dma_tag: A label for what is being read. Should be one of the
-//! values in dma_tags_for_data_speed_up
+//!     values in dma_tags_for_data_speed_up
 //! \param[in] source: Where in SDRAM to read from.
 //! \param[in] destination: Where in DTCM to write to.
 //! \param[in] n_words: The number of _words_ to transfer. Can be up to 32k
-//! _words_.
+//!     _words_.
 static inline void data_out_start_dma_read(
         uint32_t dma_tag, void *source, void *destination, uint n_words) {
     uint desc = DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
@@ -1470,10 +1450,10 @@ static inline void data_out_start_dma_read(
     dma[DMA_DESC] = desc;
 }
 
-//! \brief sets off a DMA reading a block of SDRAM in preparation for sending to
-//! the packet gatherer
+//! \brief Set off a DMA reading a block of SDRAM in preparation for sending to
+//!     the packet gatherer
 //! \param[in] dma_tag: the DMA tag associated with this read.
-//!            transmission or retransmission
+//!     transmission or retransmission
 //! \param[in] offset: where in the data array to start writing to
 //! \param[in] items_to_read: the number of word items to read
 static void data_out_read(
@@ -1495,15 +1475,15 @@ static void data_out_read(
             items_to_read);
 }
 
-//! \brief Sends the end flag to the packet gatherer.
+//! \brief Send the end flag to the packet gatherer.
 static void data_out_send_end_flag(void) {
     send_fixed_route_packet(data_out_end_flag_key, END_FLAG);
 }
 
 //! \brief DMA complete callback for reading for original transmission
-//!
-//! Uses a pair of buffers in DTCM so data can be read in from SDRAM while the
-//! previous is being transferred over the network.
+//! \details
+//!     Uses a pair of buffers in DTCM so data can be read in from SDRAM while
+//!     the previous is being transferred over the network.
 //!
 //! Callback associated with ::DMA_TAG_READ_FOR_TRANSMISSION
 static void data_out_dma_complete_reading_for_original_transmission(void) {
@@ -1576,14 +1556,13 @@ static void data_out_write_missing_seq_nums_into_sdram(
 }
 
 //! \brief Store sequence numbers into SDRAM.
-//!
-//! Acts as a memory management front end to
-//! data_out_write_missing_seq_nums_into_sdram()
-//!
+//! \details
+//!     Acts as a memory management front end to
+//!     data_out_write_missing_seq_nums_into_sdram()
 //! \param[in] data: the message data to read into SDRAM
 //! \param[in] length: how much data to read
 //! \param[in] first: if first packet about missing sequence numbers. If so
-//! there is different behaviour
+//!     there is different behaviour
 static void data_out_store_missing_seq_nums(
         uint32_t data[], uint length, bool first) {
     uint32_t start_reading_offset = START_OF_MISSING_MORE;
@@ -1633,7 +1612,7 @@ static void data_out_store_missing_seq_nums(
     }
 }
 
-//! \brief sets off a DMA for retransmission stuff
+//! \brief Set off a DMA for retransmission stuff
 static void data_out_retransmission_dma_read(void) {
     // locate where we are in SDRAM
     address_t data_sdram_position =
@@ -1645,10 +1624,9 @@ static void data_out_retransmission_dma_read(void) {
             ITEMS_PER_DATA_PACKET);
 }
 
-//! \brief reads in missing sequence numbers and sets off the reading of
-//! SDRAM for the equivalent data
-//!
-//! Callback associated with ::DMA_TAG_READ_FOR_RETRANSMISSION
+//! \brief Read in missing sequence numbers and set off the reading of
+//!     SDRAM for the equivalent data
+//! \details Callback associated with ::DMA_TAG_READ_FOR_RETRANSMISSION
 static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
     // check if at end of read missing sequence numbers
     if (data_out_read_data_position > ITEMS_PER_DATA_PACKET) {
@@ -1691,8 +1669,7 @@ static void data_out_dma_complete_read_missing_seqeuence_nums(void) {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data.
-//!
-//! Callback associated with ::DMA_TAG_RETRANSMISSION_READING
+//! \details Callback associated with ::DMA_TAG_RETRANSMISSION_READING
 static void data_out_dma_complete_reading_retransmission_data(void) {
     // set sequence number as first element
     data_out_data_to_transmit[data_out_transmit_dma_pointer][0] =
@@ -1718,8 +1695,8 @@ static void data_out_dma_complete_writing_missing_seq_to_sdram(void) {
     io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
-//! \brief the handler for all messages coming in for data speed up
-//! functionality.
+//! \brief Handler for all messages coming in for data speed up
+//!     functionality.
 //! \param[in] msg: the SDP message (without SCP header)
 static void data_out_speed_up_command(sdp_msg_pure_data *msg) {
     sdp_data_out_t *message = (sdp_data_out_t *) msg->data;
@@ -1881,7 +1858,7 @@ static INT_HANDLER data_out_dma_complete(void) {
     vic_interrupt_done();
 }
 
-//! \brief the handler for DMA errors
+//! Handler for DMA errors
 static INT_HANDLER data_out_dma_error(void) {
     io_printf(IO_BUF, "DMA failed: 0x%08x\n", dma[DMA_STAT]);
     dma[DMA_CTRL] = 0x4;
@@ -1889,7 +1866,7 @@ static INT_HANDLER data_out_dma_error(void) {
     rt_error(RTE_DABT);
 }
 
-//! \brief the handler for DMA timeouts (hopefully unlikely...)
+//! Handler for DMA timeouts (hopefully unlikely...)
 static INT_HANDLER data_out_dma_timeout(void) {
     io_printf(IO_BUF, "DMA timeout: 0x%08x\n", dma[DMA_STAT]);
     dma[DMA_CTRL] = 0x10;
@@ -1964,7 +1941,7 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
-//! \brief Sets up data and callbacks required by the reinjection system.
+//! \brief Set up data and callbacks required by the reinjection system.
 static void reinjection_initialise(void) {
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
@@ -1985,7 +1962,7 @@ static void reinjection_initialise(void) {
     vic[VIC_SELECT] = 1 << RTR_DUMP_INT;
 }
 
-//! \brief Sets up data and callbacks required by the data speed up system.
+//! \brief Set up data and callbacks required by the data speed up system.
 static void data_out_initialise(void) {
     data_speed_out_config_t *config = dsg_block(CONFIG_DATA_SPEED_UP_OUT);
     data_out_basic_data_key = config->my_key;
@@ -2011,7 +1988,7 @@ static void data_out_initialise(void) {
     dma[DMA_GCTL] = 0x1ffc00; // enable DMA done and error interrupt
 }
 
-//! \brief Sets up data and callback required by the data in speed up system.
+//! \brief Set up data and callback required by the data in speed up system.
 static void data_in_initialise(void) {
     data_in_saved_application_router_table = sdram_alloc(
             N_USABLE_ROUTER_ENTRIES * sizeof(router_entry_t));

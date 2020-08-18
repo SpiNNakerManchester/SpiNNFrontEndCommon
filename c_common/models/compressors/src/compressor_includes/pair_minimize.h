@@ -30,6 +30,7 @@
  */
 #include <debug.h>
 #include "../common/routing_table.h"
+#include <stdbool.h>
 
 //! Absolute maximum number of routes that we may produce
 #define MAX_NUM_ROUTES 1023
@@ -49,7 +50,7 @@ static uint32_t routes_frequency[MAX_NUM_ROUTES] = {0};
 //! Count of unique routes (as opposed to routes with just different key_masks).
 static uint32_t routes_count;
 
-//! \brief Merges a single pair of route entries.
+//! \brief Merge a single pair of route entries.
 //! \param[in] entry1: The first route to merge.
 //! \param[in] entry2: The second route to merge.
 //! \return A new merged route that will eventually replace the two inputs.
@@ -72,7 +73,7 @@ static inline void _entry(const entry_t* entry, int index) {
     e_ptr->source = entry->source;
 }
 
-//! \brief Finds if two routes can be merged.
+//! \brief Find if two routes can be merged.
 //! \details If they are merged, the entry at the index of left is also
 //!     replaced with the merged route.
 //! \param[in] left: The index of the first route to consider.
@@ -96,7 +97,7 @@ static inline bool find_merge(int left, int index) {
     return true;
 }
 
-//! \brief Does the actual routing compression
+//! \brief Do the actual routing compression
 //! \param[in] left: The start of the section of table to compress
 //! \param[in] right: The end of the section of table to compress
 static inline void compress_by_route(int left, int right) {
@@ -190,9 +191,7 @@ static void quicksort_table(int low, int high) {
 }
 
 //! \brief Swap two routes
-//!
-//! Also swaps the corresponding information in routes_frequency
-//!
+//! \details Also swaps the corresponding information in routes_frequency
 //! \param[in] index_a: The index of the first route
 //! \param[in] index_b: The index of the second route
 static inline void swap_routes(int index_a, int index_b) {
@@ -205,9 +204,7 @@ static inline void swap_routes(int index_a, int index_b) {
 }
 
 //! \brief Implementation of quicksort for routes based on frequency.
-//!
-//! The routes must be non-overlapping pre-minimisation routes.
-//!
+//! \details The routes must be non-overlapping pre-minimisation routes.
 //! \param[in] low: the first index into the array of the section to sort;
 //!                 inclusive low point of range
 //! \param[in] high: the second index into the array of the section to sort;
@@ -251,7 +248,7 @@ static void quicksort_route(int low, int high) {
     }
 }
 
-//! \brief Computes route histogram
+//! \brief Compute the route histogram
 //! \param[in] index: The index of the cell to update
 static inline void update_frequency(int index) {
     uint32_t route = routing_table_get_entry(index)->route;

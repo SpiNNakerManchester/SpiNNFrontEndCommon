@@ -124,9 +124,9 @@ bool malloc_extras_check(void *ptr) {
     return true;
 }
 
-//! \brief allows the ability to read the size of a malloc.
+//! \brief Get the size of a malloc'd block.
 //! \param[in] ptr: the pointer to get the size in words of.
-//! \return returns the size of a given malloc in words.
+//! \return the size of a given malloc in words.
 int malloc_extras_malloc_size(void *ptr) {
     // only able to be figured out if safety turned on.
     if (safety) {
@@ -141,7 +141,7 @@ int malloc_extras_malloc_size(void *ptr) {
     return 0;
 }
 
-//! \brief checks a given pointer with a marker
+//! \brief Check a given pointer with a marker
 //! \param[in] ptr: the pointer marker for whats being checked.
 //! \param[in] marker: the numerical marker for this test. allowing easier
 //!     tracking of where this check was called in the user application code
@@ -183,7 +183,7 @@ void malloc_extras_check_all(void) {
     malloc_extras_check_all_marked(-1);
 }
 
-//! \brief cycles through the true heap and figures how many blocks there are
+//! \brief Cycle through the true heap and figure how many blocks there are
 //!     to steal.
 //! \param[in] sdram_heap: the true SDRAM heap
 //! \return the number of SDRAM blocks to utilise
@@ -199,7 +199,7 @@ static inline int find_n_available_mallocs(heap_t *sdram_heap) {
     return n_available_true_malloc;
 }
 
-//! \brief builds a tracker for mallocs. for debug purposes
+//! \brief Build a tracker for mallocs. for debug purposes
 static void build_malloc_tracker(void) {
     // malloc tracker
     malloc_points = sark_xalloc(
@@ -216,7 +216,7 @@ static void build_malloc_tracker(void) {
     }
 }
 
-//! \brief count how much space available given expected block costs
+//! \brief Count how much space available given expected block costs
 //! \param[in] sizes_region: the SDRAM loc where addresses to steal are located
 //! \return size available given expected block costs
 static inline uint find_free_space_available(
@@ -228,7 +228,7 @@ static inline uint find_free_space_available(
     return free;
 }
 
-//! \brief steals all SDRAM spaces from true heap
+//! \brief Steal all SDRAM spaces from true heap
 //! \param[in] list_of_available_blocks: location for stolen heap bits to go
 //! \return true if successful. false otherwise
 static inline bool add_heap_to_collection(
@@ -259,7 +259,7 @@ static inline bool add_heap_to_collection(
     return true;
 }
 
-//! \brief builds the new heap struct over our stolen and proper claimed
+//! \brief Build the new heap struct over our stolen and proper claimed
 //!     SDRAM spaces.
 //! \param[in] sizes_region: the struct that contains addresses and sizes that
 //!     have already been allocated, but which we can use.
@@ -349,7 +349,7 @@ static inline void make_heap_structure(
     stolen_sdram_heap->last->next = NULL;
 }
 
-//! prints out the fake heap as if the spin1 alloc was operating over it
+//! Print out the fake heap as if spin1_alloc() was operating over it
 static inline void print_free_sizes_in_heap(void) {
     block_t *free_blk = stolen_sdram_heap->free;
     uint total_size = 0;
@@ -369,7 +369,7 @@ static inline void print_free_sizes_in_heap(void) {
     log_info("total free size is %d", total_size);
 }
 
-//! \details sets up trackers for this core if asked.
+//! \details Set up trackers for this core if asked.
 //! \note DOES NOT REBUILD THE FAKE HEAP!
 bool malloc_extras_initialise_with_fake_heap(
         heap_t *heap_location) {
@@ -455,9 +455,9 @@ bool malloc_extras_initialise_and_build_fake_heap(
     return true;
 }
 
-//! \brief builds a new heap with no stolen SDRAM and sets up the malloc
+//! \brief Build a new heap with no stolen SDRAM and sets up the malloc
 //!     tracker if required.
-//! \return bool where true is a successful initialisation and false otherwise.
+//! \return Whether there was a successful initialisation.
 bool malloc_extras_initialise_no_fake_heap_data(void) {
     return malloc_extras_initialise_and_build_fake_heap(NULL);
 }
@@ -510,7 +510,7 @@ void malloc_extras_free(void *ptr) {
     malloc_extras_free_marked(ptr, -1);
 }
 
-//! \brief doubles the size of the SDRAM malloc tracker
+//! \brief Double the size of the SDRAM malloc tracker
 static inline void build_bigger_size(void) {
     // make twice as big tracker
     int new_malloc_points_size = malloc_points_size * 2;
@@ -542,7 +542,7 @@ static inline void build_bigger_size(void) {
     malloc_points_size = new_malloc_points_size;
 }
 
-//! \brief locates a new spot in the malloc tracker. may force a new
+//! \brief Locate a new spot in the malloc tracker. May force a new
 //!     allocation of malloc markers if full already.
 //! \return the index in the current malloc tracker to put this new malloc
 //!     pointer.
@@ -558,9 +558,9 @@ static inline int find_free_malloc_index(void) {
     return index + 1;
 }
 
-//! \brief allows a search of the SDRAM heap.
+//! \brief Allocates from the SDRAM heap, logging on failure.
 //! \param[in] bytes: the number of bytes to allocate.
-//! \return the address of the block of memory to utilise.
+//! \return the address of the block of memory.
 static void *safe_sdram_malloc(uint bytes) {
     // try SDRAM stolen from the cores synaptic matrix areas.
     uint32_t *p = sark_xalloc(stolen_sdram_heap, bytes, 0, ALLOC_LOCK);
@@ -572,7 +572,7 @@ static void *safe_sdram_malloc(uint bytes) {
     return (void *) p;
 }
 
-//! \brief adds the len and buffers to a given malloc pointer.
+//! \brief Add the len and buffers to a given malloc pointer.
 //! \details Stores in the malloc tracker and prints index if required.
 //! \param[in] p: The allocated buffer
 //! \param[in] bytes: The size of the buffer in \p p

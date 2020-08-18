@@ -908,7 +908,7 @@ void check_compressors(uint unused0, uint unused1) {
     log_info("exiting the interrupt, to allow the binary to finish");
 }
 
-//! \brief Start binary search on all compressors dividing the bitfields as
+//! \brief Start binary search on all compressors, dividing the bitfields as
 //!     evenly as possible.
 void start_binary_search(void) {
     // Find the number of available processors

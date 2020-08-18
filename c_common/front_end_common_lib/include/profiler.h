@@ -38,7 +38,7 @@
 //! according to the profiler_region structure.
 void profiler_init(uint32_t* data_region);
 
-//! \brief Finalises profiling.
+//! \brief Finalise profiling.
 //!
 //! This includes the potentially slow process of writing to
 //! profiler_region::count

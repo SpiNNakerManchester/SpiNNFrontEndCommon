@@ -18,7 +18,7 @@
 //! \file
 //! \brief Aliases in the routing tree.
 //! \details Aliases are built using a trie structure as this avoids the need
-//! for rebalancing at the cost of more memory.
+//!     for rebalancing at the cost of more memory.
 #ifndef __ALIASES_H__
 #define __ALIASES_H__
 
@@ -319,7 +319,7 @@ static inline void aliases_remove(aliases_t *a, key_mask_t key) {
     }
 }
 
-//! \brief clears a node from the alias tree
+//! \brief Clear a node from the alias tree
 //! \param[in] n: the note to clear from the alias tree
 static void _aliases_clear(node_t *n) { // DO NOT INLINE; RECURSIVE!
     if (n == NULL) {

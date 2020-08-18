@@ -16,9 +16,8 @@
  */
 
 //! \file
-//!
 //! \brief The implementation of the Chip Power Monitor.
-//!
+//! \details
 //! The purpose of this application is to monitor the activity of the other CPU
 //! cores on the chip on which it runs. It does this using the SpiNNaker System
 //! Controller, enabling it to run with just the overhead due to using a core;
@@ -52,8 +51,7 @@ struct sample_params {
 };
 
 //! \brief The recording channel we use.
-//!
-//! Only one recording channel is used by this application.
+//! \details Only one recording channel is used by this application.
 static const uint32_t RECORDING_CHANNEL_ID = 0;
 
 //! values for the priority for each callback
@@ -85,31 +83,30 @@ static uint32_t sample_frequency;
 
 //! \brief Read which cores on the chip are asleep right now.
 //! \return A word (with 18 relevant bits in the low bits of the word) where a
-//! bit is set when a core is asleep and waiting for events, and clear when
-//! the core is active.
-//!
-//! Note that this accesses into the SpiNNaker System Controller hardware (see
-//! Data Sheet, section 14, register 25).
+//!     bit is set when a core is asleep and waiting for events, and clear when
+//!     the core is active.
+//! \note This accesses into the SpiNNaker System Controller hardware (see
+//!     Data Sheet, section 14, register 25).
 static uint32_t get_sample(void) {
     return sc[SC_SLEEP] & ((1 << NUM_CPUS) - 1);
 }
 
-//! \brief Computes a random value used to break up chance periodicities in
-//! sampling.
+//! \brief Compute a random value used to break up chance periodicities in
+//!     sampling.
 //! \return The number of times a busy loop must run.
 static uint32_t get_random_busy(void) {
     return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
 }
 
-//! \brief Synchronously records the current contents of the core_counters to
-//! the recording region.
+//! \brief Synchronously record the current contents of the core_counters to
+//!     the recording region.
 static void record_aggregate_sample(void) {
     recording_record(
             RECORDING_CHANNEL_ID, core_counters, sizeof(core_counters));
 }
 
-//! \brief Resets the state of the core_counters and the sample_count variables
-//! to zero.
+//! \brief Reset the state of the core_counters and the sample_count variables
+//!     to zero.
 static void reset_core_counters(void) {
     for (uint32_t i = 0 ; i < NUM_CPUS ; i++) {
         core_counters[i] = 0;
@@ -131,9 +128,8 @@ static void resume_callback(void) {
 }
 
 //! \brief Accumulate a count of how active each core on the current chip is.
-//! The counter for the core is incremented if the core is active.
-//!
-//! Uses get_sample() to obtain the state of the cores.
+//!     The counter for the core is incremented if the core is active.
+//! \details Uses get_sample() to obtain the state of the cores.
 static void count_core_states(void) {
     uint32_t sample = get_sample();
 
@@ -144,9 +140,9 @@ static void count_core_states(void) {
     }
 }
 
-//! \brief Called to actually record a sample.
-//! \param unused0 unused
-//! \param unused1 unused
+//! \brief Actually record a sample.
+//! \param unused0: unused
+//! \param unused1: unused
 static void sample_in_slot(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -185,9 +181,9 @@ static void sample_in_slot(uint unused0, uint unused1) {
     recording_do_timestep_update(time);
 }
 
-//! \brief Reads the configuration of the application out of the configuration
-//! region.
-//! \param[in] sample_params Pointer to the configuration region.
+//! \brief Read the configuration of the application out of the configuration
+//!     region.
+//! \param[in] sample_params: Pointer to the configuration region.
 //! \return True if the read was successful. (Does not currently fail.)
 static bool read_parameters(struct sample_params *sample_params) {
     sample_count_limit = sample_params->count_limit;
@@ -197,7 +193,7 @@ static bool read_parameters(struct sample_params *sample_params) {
     return true;
 }
 
-//! \brief Initialises the program.
+//! \brief Initialise the program.
 //! \return True if initialisation succeeded, false if it failed.
 static bool initialize(void) {
     data_specification_metadata_t *ds_regions =
@@ -226,9 +222,9 @@ static bool initialize(void) {
 }
 
 //! \brief The application entry point.
-//!
-//! Initialises the application state, installs all required callbacks, and
-//! runs the "simulation" loop until told to terminate.
+//! \details
+//!     Initialises the application state, installs all required callbacks, and
+//!     runs the "simulation" loop until told to terminate.
 void c_main(void) {
     if (!initialize()) {
         log_error("failed to initialise");
