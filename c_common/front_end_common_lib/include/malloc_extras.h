@@ -23,6 +23,7 @@
 #include <sark.h>
 #include <common-typedefs.h>
 #include <debug.h>
+#include <stdbool.h>
 
 //! The different states to report through `vcpu->user1`
 typedef enum exit_states_for_user_one {
