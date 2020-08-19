@@ -81,8 +81,6 @@
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationEdge</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineEdge</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> \
-    <span class="n">EdgeToNKeysMapper</span>
 
 
 <div class="viewcode-block" id="InsertEdgesToLivePacketGatherers"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.InsertEdgesToLivePacketGatherers">[docs]</a><span class="k">class</span> <span class="nc">InsertEdgesToLivePacketGatherers</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -168,6 +166,19 @@
                         <span class="n">application_graph</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span>
                         <span class="n">p_ids</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_process_partitions</span><span class="p">(</span><span class="n">partitions</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; helper method to add to n keys map</span>
+
+<span class="sd">        :param set partitions: the partitions to add keys for</span>
+<span class="sd">        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map: the key map</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">partitions</span><span class="p">:</span>
+            <span class="n">n_keys</span> <span class="o">=</span> <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">get_n_keys_for_partition</span><span class="p">(</span>
+                <span class="n">partition</span><span class="p">)</span>
+            <span class="n">n_keys_map</span><span class="o">.</span><span class="n">set_n_keys_for_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_connect_lpg_vertex_in_application_graph</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">app_graph</span><span class="p">,</span> <span class="n">m_graph</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">p_ids</span><span class="p">,</span>
             <span class="n">n_keys_map</span><span class="p">):</span>
@@ -208,9 +219,7 @@
                 <span class="k">if</span> <span class="n">n_keys_map</span><span class="p">:</span>
                     <span class="n">m_partitions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">m_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span>
                         <span class="n">machine_edge</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">m_partitions</span><span class="p">:</span>
-            <span class="n">EdgeToNKeysMapper</span><span class="o">.</span><span class="n">process_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_partitions</span><span class="p">(</span><span class="n">m_partitions</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_connect_lpg_vertex_in_machine_graph</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">m_graph</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">p_ids</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
@@ -232,9 +241,7 @@
             <span class="c1"># add to n_keys_map if needed</span>
             <span class="k">if</span> <span class="n">n_keys_map</span><span class="p">:</span>
                 <span class="n">partitions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">m_graph</span><span class="o">.</span><span class="n">get_outgoing_partition_for_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">partitions</span><span class="p">:</span>
-            <span class="n">EdgeToNKeysMapper</span><span class="o">.</span><span class="n">process_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_partitions</span><span class="p">(</span><span class="n">partitions</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_find_closest_live_packet_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Locates the LPG on the nearest Ethernet-connected chip to the\</span>

@@ -80,8 +80,6 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">pacman.model.routing_info</span> <span class="kn">import</span> <span class="n">DictBasedMachinePartitionNKeysMap</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractProvidesNKeysForPartition</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 
 
@@ -95,6 +93,12 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
+    <span class="n">PROG_BAR_NAME</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Getting number of keys required by each edge using application graph&quot;</span><span class="p">)</span>
+    <span class="n">ERROR_MSG</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;A machine graph is required for this mapper. Please choose and try &quot;</span>
+        <span class="s2">&quot;again&quot;</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.MachineGraph machine_graph:</span>
@@ -102,48 +106,24 @@
 <span class="sd">        :raises: ConfigurationException</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">machine_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="s2">&quot;A machine graph is required for this mapper. &quot;</span>
-                <span class="s2">&quot;Please choose and try again&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ERROR_MSG</span><span class="p">)</span>
 
         <span class="c1"># Generate an n_keys map for the graph and add constraints</span>
         <span class="n">n_keys_map</span> <span class="o">=</span> <span class="n">DictBasedMachinePartitionNKeysMap</span><span class="p">()</span>
 
         <span class="c1"># generate progress bar</span>
-        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-            <span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">,</span>
-            <span class="s2">&quot;Getting number of keys required by each edge using &quot;</span>
-            <span class="s2">&quot;application graph&quot;</span><span class="p">)</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">PROG_BAR_NAME</span><span class="p">)</span>
 
         <span class="c1"># iterate over each partition in the graph</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">machine_graph</span><span class="o">.</span>\
-                    <span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span>
-                        <span class="n">vertex</span><span class="p">):</span>
+                    <span class="n">get_outgoing_edge_partitions_starting_at_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">partition</span><span class="o">.</span><span class="n">traffic_type</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">process_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">)</span>
+                    <span class="n">n_keys</span> <span class="o">=</span> <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">get_n_keys_for_partition</span><span class="p">(</span>
+                        <span class="n">partition</span><span class="p">)</span>
+                    <span class="n">n_keys_map</span><span class="o">.</span><span class="n">set_n_keys_for_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">n_keys_map</span>
-
-    <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="EdgeToNKeysMapper.process_partition"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.EdgeToNKeysMapper.process_partition">[docs]</a>    <span class="k">def</span> <span class="nf">process_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.graphs.OutgoingEdgePartition partition:</span>
-<span class="sd">        :param n_keys_map:</span>
-<span class="sd">        :type n_keys_map:</span>
-<span class="sd">            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pre_vertex</span> <span class="o">=</span> <span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span>
-        <span class="n">vertex_slice</span> <span class="o">=</span> <span class="n">pre_vertex</span><span class="o">.</span><span class="n">vertex_slice</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partition</span><span class="o">.</span><span class="n">pre_vertex</span><span class="p">,</span> <span class="n">AbstractProvidesNKeysForPartition</span><span class="p">):</span>
-            <span class="n">n_keys</span> <span class="o">=</span> <span class="n">pre_vertex</span><span class="o">.</span><span class="n">get_n_keys_for_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pre_vertex</span> <span class="o">=</span> <span class="n">pre_vertex</span><span class="o">.</span><span class="n">app_vertex</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pre_vertex</span><span class="p">,</span> <span class="n">AbstractProvidesNKeysForPartition</span><span class="p">):</span>
-                <span class="n">n_keys</span> <span class="o">=</span> <span class="n">pre_vertex</span><span class="o">.</span><span class="n">get_n_keys_for_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">n_keys</span> <span class="o">=</span> <span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span>
-        <span class="n">n_keys_map</span><span class="o">.</span><span class="n">set_n_keys_for_partition</span><span class="p">(</span><span class="n">partition</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">n_keys_map</span></div>
 </pre></div>
 
           </div>
