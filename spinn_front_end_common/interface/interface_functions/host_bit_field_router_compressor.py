@@ -34,8 +34,6 @@ from pacman.operations.router_compressors import Entry
 from pacman.operations.router_compressors.mundys_router_compressor import (
     ordered_covering as
     rigs_compressor)
-from spinn_front_end_common.abstract_models import (
-    AbstractProvidesNKeysForPartition)
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
@@ -272,22 +270,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 key = routing_infos.get_first_key_from_pre_vertex(
                     vertex, partition.identifier)
 
-                app_vertex = vertex.app_vertex
-                if app_vertex is not None:
-                    if isinstance(
-                            app_vertex, AbstractProvidesNKeysForPartition):
-                        key_to_n_atoms_map[key] = \
-                            app_vertex.get_n_keys_for_partition(partition)
-                    else:
-                        key_to_n_atoms_map[key] = vertex.vertex_slice.n_atoms
-                else:
-                    if isinstance(vertex, AbstractProvidesNKeysForPartition):
-                        key_to_n_atoms_map[key] = \
-                            vertex.get_n_keys_for_partition(partition)
-                    else:
-                        key_to_n_atoms_map[
-                            routing_infos.get_first_key_from_pre_vertex(
-                                vertex, partition.identifier)] = 1
+                key_to_n_atoms_map[key] =\
+                    vertex.get_n_keys_for_partition(partition)
         return key_to_n_atoms_map
 
     def generate_report_path(self, default_report_folder):

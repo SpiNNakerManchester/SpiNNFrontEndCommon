@@ -16,8 +16,6 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
-from spinn_front_end_common.abstract_models import (
-    AbstractProvidesNKeysForPartition)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
@@ -69,14 +67,5 @@ class EdgeToNKeysMapper(object):
         :type n_keys_map:
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
-        pre_vertex = partition.pre_vertex
-        vertex_slice = pre_vertex.vertex_slice
-        if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
-            n_keys = pre_vertex.get_n_keys_for_partition(partition)
-        else:
-            pre_vertex = pre_vertex.app_vertex
-            if isinstance(pre_vertex, AbstractProvidesNKeysForPartition):
-                n_keys = pre_vertex.get_n_keys_for_partition(partition)
-            else:
-                n_keys = vertex_slice.n_atoms
+        n_keys = partition.pre_vertex.get_n_keys_for_partition(partition)
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
