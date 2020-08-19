@@ -270,8 +270,8 @@ class HostBasedBitFieldRouterCompressor(object):
                 key = routing_infos.get_first_key_from_pre_vertex(
                     vertex, partition.identifier)
 
-                key_to_n_atoms_map[key] =\
-                    vertex.get_n_keys_for_partition(partition)
+                key_to_n_atoms_map[key] = (
+                    vertex.get_n_keys_for_partition(partition))
         return key_to_n_atoms_map
 
     def generate_report_path(self, default_report_folder):
