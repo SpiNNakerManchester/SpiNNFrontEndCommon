@@ -299,15 +299,27 @@ class RecordedDatabase(object):
         :param str variable_name: The name for the variable being stored
         :param list(str) table_names: Name of local tables
         """
-        # Create a view using natural join
-        simple_view = self._table_name(source_name, variable_name, SIMPLE)
-        ddl_statement = "CREATE VIEW {} AS SELECT * FROM {}".format(
-            simple_view, " NATURAL JOIN ".join(table_names))
-        cursor.execute(ddl_statement)
+        all_view = self._table_name(source_name, variable_name, SIMPLE)
 
         # Find the name of the key column
         cursor.execute("SELECT * FROM {}".format(table_names[0]))
         key = cursor.description[0][0]
+
+        # Create a query using natural join
+        natural = "SELECT * FROM {}".format(
+            " NATURAL JOIN ".join(table_names))
+
+        count = "SELECT MIN({0}) AS min, MAX({0}) as max, count(*) as count from ({1})".format(key, natural)
+        cursor.execute(count)
+        row = cursor.fetchone()
+        the_min = row["min"]
+        the_max = row["max"]
+        keys_count = row["count"]
+
+        if keys_count == the_max - the_min + 1:
+            best_ddl = "CREATE VIEW {0} AS {1}".format(all_view, natural)
+            cursor.execute(best_ddl)
+            return all_view
 
         # Create a view that list all keys in any of the tables
         keys_view = self._table_name(source_name, variable_name, KEYS)
@@ -321,10 +333,10 @@ class RecordedDatabase(object):
         cursor.execute(sorted_ddl)
 
         # Check the simple view includes all keys
-        simple_count = self._count(cursor, simple_view)
-        keys_count = self._count(cursor, keys_view)
-        if simple_count == keys_count:
-            return simple_view
+        #simple_count = self._count(cursor, simple_view)
+        #keys_count = self._count(cursor, keys_view)
+        #if simple_count == keys_count:
+        #    return simple_view
 
         # Check each table to see if it includes all keys
         best_names = []
