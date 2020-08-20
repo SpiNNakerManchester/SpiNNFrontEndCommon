@@ -210,7 +210,7 @@ class RecordedDatabase(object):
             VALUES(?,?,?,?,?)
             """, (source_name, variable_name, table_name, None, EXISTS))
 
-        ddl_statement = "CREATE TABLE {} (atom_id{}, key)".format(
+        ddl_statement = "CREATE TABLE {} (atom_id, {})".format(
             table_name, key)
         cursor.execute(ddl_statement)
         return table_name
