@@ -321,16 +321,13 @@ class RecordedDatabase(object):
             cursor.execute(best_ddl)
             return all_view
 
-        # Create a view that list all keys in any of the tables
-        keys_view = self._table_name(source_name, variable_name, KEYS)
-        select_key = "SELECT {} FROM ".format(key)
-        unsorted_ddl = " UNION ".join(select_key + name
-                                      for name in table_names)
-        sorted_ddl = """
-            CREATE VIEW {0} AS SELECT {1} FROM ({2})
-            order by {1}
-            """.format(keys_view, key, unsorted_ddl)
-        cursor.execute(sorted_ddl)
+        # Create query that list all keys in any of the tables
+        keys_query = """
+            (WITH RECURSIVE cnt({0}) AS ( SELECT {1}
+            UNION ALL
+            SELECT {0} + {2} FROM cnt
+            LIMIT {3})
+            SELECT {0} FROM cnt)""".format(key, the_min, 1, the_max)
 
         # Check the simple view includes all keys
         #simple_count = self._count(cursor, simple_view)
@@ -347,7 +344,7 @@ class RecordedDatabase(object):
             else:
                 # Data missing so create a view with NULLs
                 inner = "(SELECT * FROM {} LEFT JOIN {} USING({}))".format(
-                    keys_view, table_name, key)
+                    keys_query, table_name, key)
                 best_names.append(inner)
 
         # Create a view using natural join over the complete data for each
