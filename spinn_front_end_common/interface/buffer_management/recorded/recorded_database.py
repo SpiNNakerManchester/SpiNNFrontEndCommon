@@ -334,15 +334,9 @@ class RecordedDatabase(object):
                 best_names.append(table_name)
             else:
                 # Data missing so create a view with NULLs
-                full_view = FULL.join(table_name.rsplit(RAW, 1))
-                cursor.execute(
-                    """
-                    CREATE VIEW {}
-                    AS SELECT *
-                    FROM {}
-                    LEFT JOIN {} USING({})
-                    """.format(full_view, keys_view, table_name, key))
-                best_names.append(full_view)
+                inner = "(SELECT * FROM {} LEFT JOIN {} USING({}))".format(
+                    keys_view, table_name, key)
+                best_names.append(inner)
 
         # Create a view using natural join over the complete data for each
         full_view = self._table_name(source_name, variable_name, FULL)
