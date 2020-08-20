@@ -370,12 +370,10 @@
 <span class="sd">    :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:</span>
 <span class="sd">    :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">app_vertex</span> <span class="o">=</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">app_vertex</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span></div>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <span class="k">def</span> <span class="nf">_emergency_state_check</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>

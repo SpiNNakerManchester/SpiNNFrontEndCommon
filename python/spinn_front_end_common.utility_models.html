@@ -373,7 +373,7 @@ running</li>
 <dl class="class">
 <dt id="spinn_front_end_common.utility_models.ChipPowerMonitor">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">ChipPowerMonitor</code><span class="sig-paren">(</span><em>label</em>, <em>n_samples_per_recording</em>, <em>sampling_frequency</em>, <em>constraints=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code></p>
 <p>Represents idle time recording code in a application graph.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -429,34 +429,6 @@ or None to use the default slice</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.ChipPowerMonitor.get_binary_file_name">
-<code class="descname">get_binary_file_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.get_binary_file_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.get_binary_file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the binary name to be run for this vertex.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.ChipPowerMonitor.get_binary_start_type">
-<code class="descname">get_binary_start_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.get_binary_start_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.get_binary_start_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the start type of the binary to be run.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></td>
 </tr>
 </tbody>
 </table>
@@ -1636,7 +1608,7 @@ and updates the extra monitor.</p>
 <dl class="class">
 <dt id="spinn_front_end_common.utility_models.LivePacketGather">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">LivePacketGather</code><span class="sig-paren">(</span><em>lpg_params</em>, <em>constraints=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather.html#LivePacketGather"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGather" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code></p>
 <p>A model which stores all the events it receives during a timer tick        and then compresses them into Ethernet packets and sends them out of        a SpiNNaker machine.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1687,34 +1659,6 @@ or None to use the default slice</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.LivePacketGather.get_binary_file_name">
-<code class="descname">get_binary_file_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather.html#LivePacketGather.get_binary_file_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGather.get_binary_file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the binary name to be run for this vertex.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.LivePacketGather.get_binary_start_type">
-<code class="descname">get_binary_start_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather.html#LivePacketGather.get_binary_start_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGather.get_binary_start_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the start type of the binary to be run.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></td>
 </tr>
 </tbody>
 </table>
@@ -2056,7 +2000,7 @@ repeat is 0</li>
 <dl class="class">
 <dt id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource">
 <em class="property">class </em><code class="descclassname">spinn_front_end_common.utility_models.</code><code class="descname">ReverseIpTagMultiCastSource</code><span class="sig-paren">(</span><em>n_keys</em>, <em>label=None</em>, <em>constraints=None</em>, <em>max_atoms_per_core=9223372036854775807</em>, <em>board_address=None</em>, <em>receive_port=None</em>, <em>receive_sdp_port=1</em>, <em>receive_tag=None</em>, <em>receive_rate=10</em>, <em>virtual_key=None</em>, <em>prefix=None</em>, <em>prefix_type=None</em>, <em>check_keys=False</em>, <em>send_buffer_times=None</em>, <em>send_buffer_partition_id=None</em>, <em>reserve_reverse_ip_tag=False</em>, <em>enable_injection=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_has_associated_binary.AbstractHasAssociatedBinary</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.impl.provides_key_to_atom_mapping_impl.ProvidesKeyToAtomMappingImpl</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">pacman.model.graphs.application.application_vertex.ApplicationVertex</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_generates_data_specification.AbstractGeneratesDataSpecification</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.abstract_provides_outgoing_partition_constraints.AbstractProvidesOutgoingPartitionConstraints</span></code>, <code class="xref py py-class docutils literal"><span class="pre">spinn_front_end_common.abstract_models.impl.provides_key_to_atom_mapping_impl.ProvidesKeyToAtomMappingImpl</span></code></p>
 <p>A model which will allow events to be injected into a SpiNNaker        machine and converted into multicast packets.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2139,34 +2083,6 @@ or None to use the default slice</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_binary_file_name">
-<code class="descname">get_binary_file_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.get_binary_file_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_binary_file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the binary name to be run for this vertex.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_binary_start_type">
-<code class="descname">get_binary_start_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.get_binary_start_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_binary_start_type" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the start type of the binary to be run.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></td>
 </tr>
 </tbody>
 </table>
