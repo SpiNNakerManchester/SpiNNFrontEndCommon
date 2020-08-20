@@ -21,6 +21,7 @@
 //!     The purpose of this application is to inject SpiNNaker packets into the
 //!     on-chip network dynamically.
 
+#include <stddef.h>
 #include <common-typedefs.h>
 #include <data_specification.h>
 #include <debug.h>
@@ -401,13 +402,11 @@ static inline void signal_software_error(
 //! \return The number of available bytes.
 static inline uint32_t get_sdram_buffer_space_available(void) {
     if (read_pointer < write_pointer) {
-        uint32_t final_space =
-                (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
-        uint32_t initial_space =
-                (uint32_t) read_pointer - (uint32_t) buffer_region;
-        return final_space + initial_space;
+        ptrdiff_t final_space = end_of_buffer_region - write_pointer;
+        ptrdiff_t initial_space = read_pointer - buffer_region;
+        return (uint32_t) (final_space + initial_space);
     } else if (write_pointer < read_pointer) {
-        return (uint32_t) read_pointer - (uint32_t) write_pointer;
+        return (uint32_t) (read_pointer - write_pointer);
     } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
         // If pointers are equal, buffer is full if last operation is write
         return 0;
@@ -515,10 +514,9 @@ static inline bool add_eieio_packet_to_sdram(
     if ((read_pointer < write_pointer) ||
             (read_pointer == write_pointer &&
                 last_buffer_operation == BUFFER_OPERATION_READ)) {
-        uint32_t final_space =
-                (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
+        ptrdiff_t final_space = end_of_buffer_region - write_pointer;
 
-        if (final_space >= length) {
+        if ((uint32_t) final_space >= length) {
             log_debug("Packet fits in final space of %d", final_space);
 
             spin1_memcpy(write_pointer, msg_ptr, length);
@@ -529,20 +527,19 @@ static inline bool add_eieio_packet_to_sdram(
             }
             return true;
         } else {
-            uint32_t total_space = final_space +
-                    ((uint32_t) read_pointer - (uint32_t) buffer_region);
-            if (total_space < length) {
+            ptrdiff_t total_space = final_space + (read_pointer - buffer_region);
+            if ((uint32_t) total_space < length) {
                 log_debug("Not enough space (%d bytes)", total_space);
                 return false;
             }
 
             log_debug("Copying first %d bytes to final space of %d",
                     length, final_space);
-            spin1_memcpy(write_pointer, msg_ptr, final_space);
+            spin1_memcpy(write_pointer, msg_ptr, (uint32_t) final_space);
             write_pointer = buffer_region;
             msg_ptr += final_space;
 
-            uint32_t final_len = length - final_space;
+            uint32_t final_len = (uint32_t) (length - final_space);
             log_debug("Copying remaining %d bytes", final_len);
             spin1_memcpy(write_pointer, msg_ptr, final_len);
             write_pointer += final_len;
@@ -553,9 +550,8 @@ static inline bool add_eieio_packet_to_sdram(
             return true;
         }
     } else if (write_pointer < read_pointer) {
-        uint32_t middle_space =
-                (uint32_t) read_pointer - (uint32_t) write_pointer;
-        if (middle_space < length) {
+        ptrdiff_t middle_space = read_pointer - write_pointer;
+        if ((uint32_t) middle_space < length) {
             log_debug("Not enough space in middle (%d bytes)", middle_space);
             return false;
         }

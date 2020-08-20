@@ -76,12 +76,12 @@
 //! \param[in] x: The variable that is "used". Not safe with floating point!
 
 #ifndef use
-#define use(x) do {} while ((x)!=(x))
+#define use(x)      ((void) (x))
 #endif
 
 // Used to mark a parameter as unused
 #ifndef UNUSED
-#define UNUSED __attribute__((__unused__))
+#define UNUSED      __attribute__((__unused__))
 #endif
 
 // Define int/uint helper macros to create the correct
