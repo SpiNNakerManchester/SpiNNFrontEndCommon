@@ -30,7 +30,6 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities import globals_variables
 
 
