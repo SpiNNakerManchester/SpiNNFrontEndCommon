@@ -280,6 +280,22 @@ class RecordedDatabase(object):
                 "SELECT COUNT(*) AS count FROM " + table_name):
             return row["count"]
 
+    def _count_keys(self, cursor, key, table_name):
+        """
+        Counts the min key, max key and count of the rows in a table
+
+        :param ~sqlite3.Cursor cursor:
+        :param str table_name:
+        :return: The number of rows in the table
+        :rtype int, int, int
+        """
+        for row in cursor.execute(
+                """
+                    SELECT MIN({0}) AS min, MAX({0}) as max, 
+                    count(*) as count from ({1})
+                    """.format(key, table_name)):
+            return row["min"], row["max"], row["count"]
+
     def _create_matrix_views(
             self, cursor, source_name, variable_name, table_names):
         """
@@ -305,41 +321,29 @@ class RecordedDatabase(object):
         cursor.execute("SELECT * FROM {}".format(table_names[0]))
         key = cursor.description[0][0]
 
-        # Create a query using natural join
-        natural = "SELECT * FROM {}".format(
-            " NATURAL JOIN ".join(table_names))
-
-        count = "SELECT MIN({0}) AS min, MAX({0}) as max, count(*) as count from ({1})".format(key, natural)
-        cursor.execute(count)
-        row = cursor.fetchone()
-        the_min = row["min"]
-        the_max = row["max"]
-        keys_count = row["count"]
-
-        if keys_count == the_max - the_min + 1:
-            best_ddl = "CREATE VIEW {0} AS {1}".format(all_view, natural)
-            cursor.execute(best_ddl)
-            return all_view
+        counts = []
+        the_min, the_max, count = self._count_keys(cursor, key, table_names[0])
+        counts.append(count)
+        for table_name in table_names[1:]:
+            a_min, a_max, count = self._count_keys(cursor, key, table_name)
+            if a_min < the_min:
+                the_min = a_min
+            if a_max > the_max:
+                the_max = a_max
+            counts.append(count)
+        keys_count = the_max - the_min + 1
 
         # Create query that list all keys in any of the tables
-        keys_query = """
-            (WITH RECURSIVE cnt({0}) AS ( SELECT {1}
-            UNION ALL
-            SELECT {0} + {2} FROM cnt
-            LIMIT {3})
-            SELECT {0} FROM cnt)""".format(key, the_min, 1, the_max)
-
-        # Check the simple view includes all keys
-        #simple_count = self._count(cursor, simple_view)
-        #keys_count = self._count(cursor, keys_view)
-        #if simple_count == keys_count:
-        #    return simple_view
+        # avoid triple quote style as it makes string longer
+        keys_query = "(WITH RECURSIVE cnt({0})AS(SELECT {1} UNION ALL " \
+                     "SELECT {0}+{2} FROM cnt LIMIT {3})" \
+                     "SELECT {0} FROM cnt)".format(
+            key, the_min, 1, the_max + 1)
 
         # Check each table to see if it includes all keys
         best_names = []
-        for table_name in table_names:
-            table_count = self._count(cursor, table_name)
-            if table_count == keys_count:
+        for i, table_name in enumerate(table_names):
+            if counts[i] == keys_count:
                 best_names.append(table_name)
             else:
                 # Data missing so create a view with NULLs

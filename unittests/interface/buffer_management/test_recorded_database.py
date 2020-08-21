@@ -32,6 +32,17 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             data.append(line)
         return data
 
+    def _random_lossy_matrix_data(self, timesteps, neuron_ids):
+        data = []
+        for timestep in timesteps:
+            if random.random() < 0.9:
+                line = []
+                line.append(timestep)
+                for _ in neuron_ids:
+                    line.append(random.randint(0, 100000000))
+                data.append(line)
+        return data
+
     def _random_exists_data(self, timesteps, neuron_ids):
         data = []
         for timestep in timesteps:
@@ -128,3 +139,15 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
         # check getting data did not ada any additional views
         self.assertEqual(n_views, len(db.get_views()))
+
+    def test_big_database(self):
+        db_file = os.path.join(os.path.dirname(__file__), "big.sqlite3")
+        if os.path.exists(db_file):
+            os.remove(db_file)
+        db = RecordedDatabase(db_file)
+        for i in range(10):
+            neuron_ids = range(i*150,(i+1)*150)
+            timesteps = range(1000)
+            data = self._random_lossy_matrix_data(timesteps, neuron_ids)
+            db.insert_matrix_items("pop1", "v", "timestep", neuron_ids, data)
+        db.create_all_views()
