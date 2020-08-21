@@ -17,18 +17,41 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table assigning ids to source names
-CREATE TABLE IF NOT EXISTS local_metadata(
-	source_name STRING NOT NULL,
-	variable_name STRING NOT NULL,
-	table_name STRING NOT NULL,
-	first_neuron_id INTEGER,
-	data_type STRING NOT NULL,
-	UNIQUE(source_name, variable_name, first_neuron_id));
+--  Table of source names and other infor which the user may have provided
+CREATE TABLE IF NOT EXISTS sources(
+    source_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_name STRING NOT NULL,
+	description STRING,
+    id_offset INTEGER);
 
-CREATE TABLE IF NOT EXISTS global_metadata(
-	source_name STRING NOT NULL,
-	variable_name STRING NOT NULL,
-	best_source STRING NOT NULL,
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+--  Table of variables names and other info which the user may have provided
+CREATE TABLE IF NOT EXISTS variables(
+    variable_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    variable_name STRING NOT NULL,
+    source_id INTEGER,
+	units STRING,
+	min_key INTEGER,
+	max_key INTEGER,
+	key_step INTEGER NON NULL,
 	data_type STRING NOT NULL,
-	UNIQUE(source_name, variable_name));
+	table_type STRING NOT NULL,
+    UNIQUE(source_id, variable_name));
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+--  Table by variable of system generated info for each core
+CREATE TABLE IF NOT EXISTS local_metadata(
+	variable_id INTEGER NOT NULL,
+	first_neuron_id INTEGER,
+	raw_table STRING NOT NULL,
+	best_source STRING,
+	UNIQUE(variable_id, first_neuron_id));
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+--  Table by variable of system generated info for all cores
+CREATE TABLE IF NOT EXISTS global_metadata(
+	variable_id STRING NOT NULL,
+	best_source STRING,
+	min_key INTEGER NOT NULL,
+	max_key INTEGER NOT NULL,
+	UNIQUE(variable_id));

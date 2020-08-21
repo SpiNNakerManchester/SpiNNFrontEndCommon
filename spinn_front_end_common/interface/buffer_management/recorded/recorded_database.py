@@ -447,6 +447,33 @@ class RecordedDatabase(object):
 
         return best_source, data_type
 
+    def _get_source_id(self, cursor, source_name):
+        for row in cursor.execute(
+                """
+                SELECT source_id
+                FROM sources
+                WHERE source_name = ?
+                LIMIT 1
+                """, [source_name]):
+            return row["source_id"]
+
+        cursor.execute(
+            "INSERT INTO sources(source_name) VALUES(?)", [source_name])
+        return cursor.lastrowid
+
+    def register_source(self, source_name, description=None, id_offset=None):
+         with self._db:
+            cursor = self._db.cursor()
+            source_id = self._get_source_id(cursor, source_name)
+            if description:
+                cursor.execute(
+                    "UPDATE sources SET description = ? WHERE SOURCE_NAME = ?",
+                    (source_name, description))
+            if id_offset:
+                cursor.execute(
+                    "UPDATE sources SET id_offset = ? WHERE SOURCE_NAME = ?",
+                    (source_name, id_offset))
+
     def insert_matrix_items(
             self, source_name, variable_name, key, atom_ids, data):
         """
@@ -519,24 +546,6 @@ class RecordedDatabase(object):
             query = "INSERT INTO {} VALUES ({})".format(
                 table_name, ",".join("?" for _ in cursor.description))
             cursor.executemany(query, data)
-
-    def clear_ds(self):
-        """ Clear all saved data
-        """
-        with self._db:
-            names = [row["name"] for row in self._db.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'")]
-            for name in self.META_TABLES:
-                names.remove(name)
-            for name in names:
-                self._db.execute("DROP TABLE " + name)
-            self._db.execute("DELETE FROM local_metadata")
-            names = [row["name"] for row in self._db.execute(
-                "SELECT name FROM sqlite_master WHERE type='view'")]
-            for name in names:
-                self._db.execute("DROP VIEW " + name)
-            for name in self.META_TABLES:
-                self._db.execute("DELETE FROM " + name)
 
     def get_variable_map(self):
         """

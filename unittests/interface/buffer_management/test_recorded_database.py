@@ -58,7 +58,13 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         if os.path.exists(db_file):
             os.remove(db_file)
         db = RecordedDatabase(db_file)
-        db.clear_ds()
+        db.register_source("pop1", "The data from polulation 1", 100)
+
+    def est_use_database(self):
+        db_file = os.path.join(os.path.dirname(__file__), "test.sqlite3")
+        if os.path.exists(db_file):
+            os.remove(db_file)
+        db = RecordedDatabase(db_file)
 
         timesteps1 = range(3)
         timesteps2 = range(3, 7)
@@ -140,7 +146,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         # check getting data did not ada any additional views
         self.assertEqual(n_views, len(db.get_views()))
 
-    def test_big_database(self):
+    def est_big_database(self):
         db_file = os.path.join(os.path.dirname(__file__), "big.sqlite3")
         if os.path.exists(db_file):
             os.remove(db_file)
