@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS variables(
 	min_key INTEGER,
 	max_key INTEGER,
 	key_step INTEGER NON NULL,
-	data_type STRING NOT NULL,
-	table_type STRING NOT NULL,
+	data_type STRING,
+	table_type STRING,
     UNIQUE(source_id, variable_name));
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

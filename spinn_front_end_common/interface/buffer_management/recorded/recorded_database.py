@@ -462,17 +462,113 @@ class RecordedDatabase(object):
         return cursor.lastrowid
 
     def register_source(self, source_name, description=None, id_offset=None):
-         with self._db:
+        """
+        Register or update a source adding an optional description and offset
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param description: The description of this source to be stored
+        :type description: str or None
+        :param id_offset: An optional offset that can be used to combine ids
+            from this source and others
+        :type id_offset: int or None
+        """
+        with self._db:
             cursor = self._db.cursor()
             source_id = self._get_source_id(cursor, source_name)
             if description:
                 cursor.execute(
-                    "UPDATE sources SET description = ? WHERE SOURCE_NAME = ?",
-                    (source_name, description))
+                    "UPDATE sources SET description = ? WHERE source_id = ?",
+                    (description, source_id))
             if id_offset:
                 cursor.execute(
-                    "UPDATE sources SET id_offset = ? WHERE SOURCE_NAME = ?",
-                    (source_name, id_offset))
+                    "UPDATE sources SET id_offset = ? WHERE source_id = ?",
+                    (id_offset, source_id))
+
+    def _get_variable_id(self, cursor, source_name, variable_name):
+        source_id = self._get_source_id(cursor, source_name)
+        for row in cursor.execute(
+                """
+                SELECT variable_id, data_type, table_type
+                FROM variables
+                WHERE source_id = ? AND variable_id = ?
+                LIMIT 1
+                """, [source_id, variable_name]):
+            return row["variable_id"], row["data_type"], row["table_type"]
+
+        cursor.execute(
+            "INSERT INTO variables(source_id, variable_name) VALUES(?,?)",
+            [source_name, variable_name])
+        return cursor.lastrowid, None, None
+
+    def register_variable(
+            self, source_name, variable_name, data_type=None, table_type=None,
+            units=None, min_key=None, max_key=None,	key_step=None):
+        """
+        Register or update the metadata for a variable.
+
+        :param str source_name: The global name for the source.
+            (ApplicationVertex name)
+        :param str variable_name: The name for the variable being stored
+        :param str data_type: Type of data to be saved
+        :param str table_type: Type of table to save this data in
+        :param units: Name of the units of the data
+        :type units: str or None
+        :param min_key: Provided minimum value for keys data.
+            If None the assumption is the lowest found is correct
+        :type min_key: int or None
+        :param max_key: Provided maximum value for keys data.
+            If None the assumption is the highest found is correct
+        :type min_key: int or None
+        :param key_step: Provided step between each key value,
+            In None the assumption is 1
+        """
+        with self._db:
+            cursor = self._db.cursor()
+            variable_id, x_data_type, x_table_type = self._get_variable_id(
+                cursor, source_name, variable_name)
+
+            if x_data_type is None:
+                if data_type:
+                    cursor.execute(
+                        """"
+                        UPDATE variables SET data_type = ? 
+                        WHERE variable_id = ?""",
+                        (data_type, variable_id))
+            else:
+                if data_type and data_type != x_data_type:
+                    msg = TYPE_ERROR.format(
+                        source_name, variable_name,  x_data_type, data_type)
+                    raise Exception(msg)
+
+            if x_table_type is None:
+                if table_type:
+                    cursor.execute(
+                        """"
+                        UPDATE variables SET table_type = ? 
+                        WHERE variable_id = ?""",
+                        (table_type, variable_id))
+            else:
+                if table_type and table_type != x_table_type:
+                    msg = TYPE_ERROR.format(
+                        source_name, variable_name,  x_table_type, table_type)
+                    raise Exception(msg)
+
+            if units:
+                cursor.execute(
+                    "UPDATE variables SET units = ? WHERE variable_id = ?",
+                    (units, variable_id))
+            if min_key:
+                cursor.execute(
+                    "UPDATE variables SET min_key = ? WHERE variable_id = ?",
+                    (min_key, variable_id))
+            if max_key:
+                cursor.execute(
+                    "UPDATE variables SET max_key = ? WHERE variable_id = ?",
+                    (max_key, variable_id))
+            if key_step:
+                cursor.execute(
+                    "UPDATE variables SET key_step = ? WHERE variable_id = ?",
+                    (key_step, variable_id))
 
     def insert_matrix_items(
             self, source_name, variable_name, key, atom_ids, data):

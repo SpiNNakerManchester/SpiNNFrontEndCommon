@@ -59,6 +59,8 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             os.remove(db_file)
         db = RecordedDatabase(db_file)
         db.register_source("pop1", "The data from polulation 1", 100)
+        db.register_variable(
+            "pop1", "v", units="v", min_key=0,  max_key=1000, key_step=1)
 
     def est_use_database(self):
         db_file = os.path.join(os.path.dirname(__file__), "test.sqlite3")
