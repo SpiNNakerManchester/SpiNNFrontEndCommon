@@ -111,7 +111,7 @@ __attribute__((noreturn)) void recording_bad_offset(
 //! \details That is to say if the value  has either of the bottom two bits
 //!     set (as words are 4 bytes on SpiNNaker).
 //! \param[in] value: The value to test
-//! \return True if the value is not word aligned.
+//! \return Whether the value is not word aligned.
 static inline bool _not_word_aligned(uint32_t value) {
     return (value & 3) != 0;
 }
@@ -145,7 +145,7 @@ void recording_finalise(void);
 //! \brief Initialise the recording of data
 //! \param[in,out] recording_data_address:
 //!     The start of the data about the recording, updated to point to just
-//!     after the data if return True. Data is:
+//!     after the data if return was True. Data is:
 //! ```
 //! {
 //!    // number of potential recording regions

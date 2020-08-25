@@ -79,7 +79,7 @@ static inline void _entry(const entry_t* entry, int index) {
 //!     replaced with the merged route.
 //! \param[in] left: The index of the first route to consider.
 //! \param[in] index: The index of the second route to consider.
-//! \return True if the entries were merged
+//! \return Whether the entries were merged
 static inline bool find_merge(int left, int index) {
     const entry_t *entry1 = routing_table_get_entry(left);
     const entry_t *entry2 = routing_table_get_entry(index);

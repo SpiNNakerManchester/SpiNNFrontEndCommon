@@ -60,7 +60,6 @@ static inline void order_bitfields(
     // To label each row in sort order
     for (int sorted_index = 0; sorted_index < sorted_bit_fields->n_bit_fields;
             sorted_index++) {
-
         // Find the processor with highest number of packets coming in
         int worst_processor = 0;
         uint32_t highest_neurons = 0;

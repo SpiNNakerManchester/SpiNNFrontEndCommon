@@ -74,7 +74,7 @@ static alias_list_t* alias_list_new(unsigned int max_size) {
 //! \param[in] as: the alias list to append to
 //! \param[in] val: the key mask to append to the alias
 //! \param[in] source: the source to append to the alias
-//! \return bool saying if it successfully appended or not
+//! \return Whether it successfully appended or not
 static bool alias_list_append(
         alias_list_t *as, key_mask_t val, uint32_t source) {
     if (as->n_elements < as->max_size) {

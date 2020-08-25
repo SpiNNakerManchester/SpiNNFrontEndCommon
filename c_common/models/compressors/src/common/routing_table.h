@@ -124,7 +124,7 @@ static inline unsigned int key_mask_count_xs(key_mask_t km) {
 //! \brief Determine if two key_masks would match any of the same keys
 //! \param[in] a: key mask struct a
 //! \param[in] b: key mask struct b
-//! \return bool that says if these key masks intersect
+//! \return Whether these key masks intersect
 static inline bool key_mask_intersect(key_mask_t a, key_mask_t b) {
     return (a.key & b.mask) == (b.key & a.mask);
 }

@@ -72,7 +72,6 @@ void compress_start(UNUSED uint unused0, UNUSED uint unused1) {
         log_info("Exiting as compressor reported failure");
         // set the failed flag and exit
         malloc_extras_terminate(EXIT_FAIL);
-
     }
     // Try to load the routing table
     log_debug("try loading tables");

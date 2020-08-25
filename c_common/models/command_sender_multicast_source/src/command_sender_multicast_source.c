@@ -186,7 +186,7 @@ static void run_start_resume_commands(void) {
 //! \brief Copy the list of commands to run at particular times into DTCM.
 //! \param[in] sdram_timed_commands: The memory region containing the
 //!     description of what commands to send and when.
-//! \return True if we succeeded, false if we failed (due to memory problems)
+//! \return Whether we succeeded; if not, it was due to memory problems.
 static bool read_scheduled_parameters(timed_command_list *sdram_timed_commands) {
     n_timed_commands = sdram_timed_commands->size;
     log_info("%d timed commands", n_timed_commands);
@@ -215,7 +215,7 @@ static bool read_scheduled_parameters(timed_command_list *sdram_timed_commands) 
 //! \brief Copy the list of commands to run on start or resume into DTCM.
 //! \param[in] sdram_commands:
 //!     The memory region containing the description of what commands to send.
-//! \return True if we succeeded, false if we failed (due to memory problems)
+//! \return Whether we succeeded; if not, it was due to memory problems.
 static bool read_start_resume_commands(command_list *sdram_commands) {
     n_start_resume_commands = sdram_commands->size;
     log_info("%u start/resume commands", n_start_resume_commands);
@@ -240,7 +240,7 @@ static bool read_start_resume_commands(command_list *sdram_commands) {
 //! \brief Copy the list of commands to run on stop or pause into DTCM.
 //! \param[in] sdram_commands:
 //!     The memory region containing the description of what commands to send.
-//! \return True if we succeeded, false if we failed (due to memory problems)
+//! \return Whether we succeeded; if not, it was due to memory problems.
 static bool read_pause_stop_commands(command_list *sdram_commands) {
     n_pause_stop_commands = sdram_commands->size;
     log_info("%u pause/stop commands", n_pause_stop_commands);
@@ -301,7 +301,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
 
 //! \brief Initialise the core.
 //! \param[out] timer_period: The timer tick period.
-//! \return True if initialisation succeeded.
+//! \return Whether initialisation succeeded.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =

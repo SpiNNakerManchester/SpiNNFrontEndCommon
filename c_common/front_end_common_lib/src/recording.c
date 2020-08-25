@@ -132,7 +132,7 @@ static read_request_packet_data *read_request_data;
 //---------------------------------------
 //! \brief Check that a channel has been initialised
 //! \param[in] channel the channel to check
-//! \return True if the channel has been initialised or false otherwise
+//! \return Whether the channel has been initialised
 static inline bool has_been_initialised(uint8_t channel) {
     return g_recording_channels[channel].start != NULL;
 }
@@ -140,7 +140,7 @@ static inline bool has_been_initialised(uint8_t channel) {
 //----------------------------------------
 //! \brief Close a channel
 //! \param[in] channel the channel to close
-//! \return True if the channel was successfully closed and False otherwise.
+//! \return Whether the channel was successfully closed.
 static inline bool close_channel(uint8_t channel) {
     g_recording_channels[channel].start = NULL;
     g_recording_channels[channel].end = NULL;
@@ -309,7 +309,7 @@ static void recording_write_one_chunk(
 //! \param[in] callback: Optional callback. If not `NULL`, the recording will
 //!     be done asynchronously by DMA and this callback will be called once the
 //!     write is finished. If `NULL`, the recording will be done synchronously.
-//! \return True if the recording was successfully written or enqueued for
+//! \return Whether the recording was successfully written or enqueued for
 //!     writing.
 static inline bool recording_write_memory(
         uint8_t channel, void *data, uint32_t length,

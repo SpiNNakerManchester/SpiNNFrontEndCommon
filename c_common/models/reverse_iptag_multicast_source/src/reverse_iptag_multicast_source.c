@@ -501,7 +501,7 @@ static inline uint32_t extract_time_from_eieio_msg(
 //! \brief Place a packet into the buffer.
 //! \param[in] eieio_msg_ptr: The EIEIO message to store.
 //! \param[in] length: The size of the message.
-//! \return True if the packet was added, false if it was dropped due to the
+//! \return Whether the packet was added; if not, it was dropped due to the
 //!     buffer being full.
 static inline bool add_eieio_packet_to_sdram(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
@@ -573,7 +573,7 @@ static inline bool add_eieio_packet_to_sdram(
 //! \brief Handle an SDP message containing 16 bit events. The events are
 //!     converted into SpiNNaker multicast packets and sent.
 //! \param[in] event_pointer: Where the events start
-//! \param[in] pkt_prefix_upper: True if the prefix is an upper prefix.
+//! \param[in] pkt_prefix_upper: Whether the prefix is an upper prefix.
 //! \param[in] pkt_count: The number of events.
 //! \param[in] pkt_key_prefix: The prefix for keys.
 //! \param[in] pkt_payload_prefix: The prefix for payloads.
@@ -733,7 +733,7 @@ static inline void record_packet(
 //!     SpiNNaker multicast messages to be sent at once.
 //! \param[in] eieio_msg_ptr: the message to handle
 //! \param[in] length: the length of the message
-//! \return True if the packet was successfully handled.
+//! \return Whether the packet was successfully handled.
 static inline bool eieio_data_parse_packet(
         const eieio_msg_t eieio_msg_ptr, uint32_t length) {
     log_debug("eieio_data_process_data_packet");
@@ -901,7 +901,7 @@ static inline void eieio_command_parse_sequenced_data(
 //! \brief Handle a command message.
 //! \param[in] eieio_msg_ptr: The command message
 //! \param[in] length: The length of the message
-//! \return True if the message was handled
+//! \return Whether the message was handled
 static inline bool eieio_commmand_parse_packet(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -935,7 +935,7 @@ static inline bool eieio_commmand_parse_packet(
 //!     description message.
 //! \param[in] eieio_msg_ptr: The message
 //! \param[in] length: The length of the message
-//! \return True if the message was handled.
+//! \return Whether the message was handled.
 static inline bool packet_handler_selector(
         const eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
@@ -989,7 +989,7 @@ static void fetch_and_process_packet(void) {
                         src_ptr, len);
                 rt_error(RTE_SWERR);
             }
-            uint32_t final_space = (end_of_buffer_region - read_pointer);
+            uint32_t final_space = end_of_buffer_region - read_pointer;
 
             log_debug("packet with length %d, from address: %08x", len,
                     read_pointer);
@@ -1058,7 +1058,7 @@ static void send_buffer_request_pkt(void) {
 
 //! \brief Read our configuration region.
 //! \param[in] config: The address of the configuration region.
-//! \return True (always) if the data validates.
+//! \return Whether the data validates.
 static bool read_parameters(struct config *config) {
     // Get the configuration data
     apply_prefix = config->apply_prefix;
@@ -1099,6 +1099,10 @@ static bool read_parameters(struct config *config) {
     // allocate a buffer size of the maximum SDP payload size
     msg_from_sdram = spin1_malloc(MAX_PACKET_SIZE);
     recorded_packet = spin1_malloc(sizeof(recorded_packet_t));
+    if (!msg_from_sdram || !recorded_packet) {
+        // should be unreachable in practice
+        return false;
+    }
 
     sdp_host_req.length = 8 + sizeof(req_packet_sdp_t);
     sdp_host_req.flags = 0x7;
@@ -1129,7 +1133,7 @@ static bool read_parameters(struct config *config) {
 
 //! \brief Initialise the buffer region.
 //! \param[in] region_address: The location of the region.
-//! \return True if we succeed.
+//! \return Whether we succeeded.
 static bool setup_buffer_region(uint8_t *region_address) {
     buffer_region = region_address;
     read_pointer = buffer_region;
@@ -1144,7 +1148,7 @@ static bool setup_buffer_region(uint8_t *region_address) {
 }
 
 //! \brief Initialise the recording parts of the model
-//! \return True if recording initialisation is successful, false otherwise
+//! \return Whether recording initialisation is successful
 static bool initialise_recording(void) {
     data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();
@@ -1172,7 +1176,7 @@ static void provenance_callback(address_t address) {
 
 //! \brief Initialise the application
 //! \param[out] timer_period: What to configure the timer with.
-//! \return True if initialisation succeeded.
+//! \return Whether initialisation succeeded.
 static bool initialise(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =

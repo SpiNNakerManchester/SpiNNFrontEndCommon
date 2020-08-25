@@ -182,7 +182,7 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
 //! \brief Read the configuration of the application out of the configuration
 //!     region.
 //! \param[in] sample_params: Pointer to the configuration region.
-//! \return True if the read was successful. (Does not currently fail.)
+//! \return Whether the read was successful. (Does not currently fail.)
 static bool read_parameters(struct sample_params *sample_params) {
     sample_count_limit = sample_params->count_limit;
     sample_frequency = sample_params->frequency;
@@ -192,7 +192,7 @@ static bool read_parameters(struct sample_params *sample_params) {
 }
 
 //! \brief Initialise the program.
-//! \return True if initialisation succeeded, false if it failed.
+//! \return Whether initialisation succeeded.
 static bool initialize(void) {
     data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();

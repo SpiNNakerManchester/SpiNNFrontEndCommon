@@ -72,7 +72,7 @@ static void routing_tables_utils_free_all(multi_table_t *restrict tables) {
 //! Will *not* free the space any previous tables held
 //! \param[in] tables: the collection of tables to prepare
 //! \param[in] max_entries: maximum number of entries table should hold
-//! \return True if and only if all table(s) could be malloced
+//! \return Whether all tables could be allocated
 static inline bool routing_tables_utils_malloc(
         multi_table_t *restrict tables, uint32_t max_entries) {
     tables->n_sub_tables = ((max_entries - 1) >> TABLE_SHIFT) + 1;

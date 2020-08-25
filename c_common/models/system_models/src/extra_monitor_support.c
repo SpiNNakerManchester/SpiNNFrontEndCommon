@@ -802,7 +802,6 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
             ((packet_type == PKT_TYPE_PP) && reinject_pp) ||
             ((packet_type == PKT_TYPE_NN) && reinject_nn) ||
             ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
-
         // check for overflow from router
         if (rtr_dstat & RTR_DOVRFLW_MASK) {
             reinject_n_missed_dropped_packets++;
@@ -887,15 +886,13 @@ static void reinjection_read_packet_types(const reinject_config_t *config) {
         reinject_nn = true;
     }
 
-    io_printf(
-        IO_BUF,
-        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
-        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
-        reinject_mc, reinject_pp, reinject_fr, reinject_nn);
+    io_printf(IO_BUF,
+            "Setting reinject mc to %d\nSetting reinject pp to %d\n"
+            "Setting reinject fr to %d\nSetting reinject nn to %d\n",
+            reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set the reinjection mc api
     initialise_reinjection_mc_api(config->reinjection_base_mc_key);
-
 }
 
 //! \brief Set the wait1 router timeout.
@@ -958,11 +955,10 @@ static inline int reinjection_set_packet_types(sdp_msg_t *msg) {
     reinject_fr = msg->arg3;
     reinject_nn = msg->data[0];
 
-    io_printf(
-        IO_BUF,
-        "Setting reinject mc to %d\n Setting reinject pp to %d\n"
-        "Setting reinject fr to %d\n Setting reinject nn to %d\n",
-        reinject_mc, reinject_pp, reinject_fr, reinject_nn);
+    io_printf(IO_BUF,
+            "Setting reinject mc to %d\nSetting reinject pp to %d\n"
+            "Setting reinject fr to %d\nSetting reinject nn to %d\n",
+            reinject_mc, reinject_pp, reinject_fr, reinject_nn);
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
@@ -1336,7 +1332,8 @@ static void data_in_speed_up_load_in_application_routes(void) {
     io_printf(IO_BUF, "Loading application routes\n");
 #endif
     data_in_load_router(
-            data_in_saved_application_router_table, data_in_application_table_n_valid_entries);
+            data_in_saved_application_router_table,
+            data_in_application_table_n_valid_entries);
 }
 
 //! \brief The handler for all control messages coming in for data in speed up

@@ -173,7 +173,7 @@ void send_prepare_message(int processor_id) {
 }
 
 //! \brief Set up the search bitfields.
-//! \return True if the setup succeeded
+//! \return Whether the setup succeeded
 static inline bool set_up_tested_mid_points(void) {
     log_info("set_up_tested_mid_point n bf addresses is %d",
             sorted_bit_fields->n_bit_fields);
@@ -199,10 +199,9 @@ static inline bool set_up_tested_mid_points(void) {
 //! \param[in] mid_point: The point in the bitfields to work from.
 //! \param[in] table_size: Number of entries that the uncompressed routing
 //!    tables need to hold.
-//! \return True if stored
+//! \return Whether the addresses were stored
 static inline bool pass_instructions_to_compressor(
-    uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
-
+        uint32_t processor_id, uint32_t mid_point, uint32_t table_size) {
     bool success = routing_tables_utils_malloc(
             comms_sdram[processor_id].routing_tables, table_size);
     if (!success) {
@@ -459,7 +458,7 @@ static inline void handle_best_cleanup(void) {
 //! \brief Prepare a processor for the first time.
 //! \details This includes mallocing the comp_instruction_t user
 //! \param[in] processor_id: The ID of the processor to prepare
-//! \return True if the preparation succeeded.
+//! \return Whether the preparation succeeded.
 bool prepare_processor_first_time(int processor_id) {
     comms_sdram[processor_id].sorter_instruction = PREPARE;
 
@@ -593,7 +592,7 @@ bool all_compressor_processors_busy(void) {
 }
 
 //! \brief Check to see if all compressor processor are done and not ready
-//! \return true if all processors are done and not set ready
+//! \return Whether all processors are done and not set ready
 bool all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (comms_sdram[processor_id].sorter_instruction >= PREPARE) {
@@ -605,7 +604,8 @@ bool all_compressor_processors_done(void) {
 
 //! \brief Check if all processors are done; if yes, run best and exit
 //! \return False if at least one compressors is not done.
-//!     True if termination fails (which shouldn't happen...)
+//!     True if termination fails (which shouldn't happen, as the application
+//!     should terminate on success...)
 bool exit_carry_on_if_all_compressor_processors_done(void) {
     for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
         if (comms_sdram[processor_id].sorter_instruction >= PREPARE) {

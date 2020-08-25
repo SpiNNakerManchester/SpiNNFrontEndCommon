@@ -458,7 +458,7 @@ static void read_parameters(struct lpg_config *sdram_config) {
 //! \brief Initialise the application.
 //! \param[out] timer_period: Value for programming the timer ticks.
 //!     _A pointer to this variable is retained by the simulation framework._
-//! \result True if initialisation succeeds.
+//! \result Whether initialisation succeeds.
 static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     data_specification_metadata_t *ds_regions =
@@ -492,7 +492,7 @@ static bool initialize(uint32_t *timer_period) {
 }
 
 //! \brief Set up the AER EIEIO data message.
-//! \return bool where True was successful init and  false otherwise.
+//! \return Whether the data message was successfully initialised.
 static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg");
 

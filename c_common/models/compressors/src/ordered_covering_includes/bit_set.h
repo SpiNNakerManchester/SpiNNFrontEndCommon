@@ -47,7 +47,7 @@ typedef struct _bit_set_t {
 
 //! \brief Empty a bitset entirely
 //! \param[in] b: the bit set to clear bits
-//! \return bool saying successfully cleared bit field
+//! \return Whether the bitset was successfully cleared
 bool bit_set_clear(bit_set_t *b) {
     // Clear the data
     for (unsigned int i = 0; i < b->n_words; i++) {
