@@ -306,12 +306,10 @@ def find_executable_start_type(machine_vertex):
     :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
     :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType
     """
-    if not isinstance(machine_vertex, AbstractHasAssociatedBinary):
+    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
+        return machine_vertex.get_binary_start_type()
+    else:
         return None
-    app_vertex = machine_vertex.app_vertex
-    if isinstance(app_vertex, AbstractHasAssociatedBinary):
-        return app_vertex.get_binary_start_type()
-    return machine_vertex.get_binary_start_type()
 
 
 def _emergency_state_check(txrx, app_id):
