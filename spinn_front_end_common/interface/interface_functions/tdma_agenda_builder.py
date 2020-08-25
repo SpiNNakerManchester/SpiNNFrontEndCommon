@@ -37,7 +37,7 @@ class TDMAAgendaBuilder(object):
     :param int machine_time_step: the timer tick in microseconds
     :param int time_scale_factor:
         the multiplicative factor on the machine time step.
-    :param float safety_factor: the end user safely factor
+    :param float safety_factor: the end user safety factor
     :return:
         the agenda for each vertex on its time window and its offset
         between spike transmissions

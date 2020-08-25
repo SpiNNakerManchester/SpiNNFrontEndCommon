@@ -28,15 +28,13 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+    AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities import globals_variables
 
 
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints,
         ProvidesKeyToAtomMappingImpl):
     """ A model which will allow events to be injected into a SpiNNaker\
@@ -233,14 +231,6 @@ class ReverseIpTagMultiCastSource(
     def get_outgoing_partition_constraints(self, partition):
         return partition.pre_vertex.get_outgoing_partition_constraints(
             partition)
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
-        return 'reverse_iptag_multicast_source.aplx'
-
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
-        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
