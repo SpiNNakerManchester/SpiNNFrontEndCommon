@@ -49,7 +49,6 @@ class GraphBinaryGatherer(object):
         for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)
             self.__get_binary(placement, vertex)
-            self.__get_binary(placement, vertex.app_vertex)
 
         return self._exe_targets
 
