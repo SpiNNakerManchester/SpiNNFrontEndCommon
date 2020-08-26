@@ -20,7 +20,11 @@ PRAGMA main.synchronous = OFF;
 -- A table assigning ids to sourcex names
 CREATE TABLE IF NOT EXISTS source(
     source_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source_name STRING UNIQUE NOT NULL);
+    source_name STRING UNIQUE NOT NULL,
+    source_short_name STRING NOT NULL,
+    x INTEGER,
+    y INTEGER,
+    p INTEGER);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table assigning ids to description names
@@ -39,43 +43,45 @@ CREATE TABLE IF NOT EXISTS provenance(
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Glue the bits together to show the information that people think is here
 CREATE VIEW IF NOT EXISTS provenance_view AS
-    SELECT source_id, description_id, provenance_id, source_name, description_name, the_value
+    SELECT source_id, description_id, provenance_id,
+    	source_short_name AS source_name, source_name AS source_full_name,
+    	x, y, p, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely core level provenance, as most used
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT source_name, description_name, the_value FROM source
-    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
-    LIKE '%vertex%';
+    SELECT source_name, x, y, p, description_name, the_value
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
+    WHERE source_short_name LIKE '%vertex%';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely edge level provenance, as most used
 CREATE VIEW IF NOT EXISTS edge_provenance_view AS
-    SELECT source_name, description_name, the_value FROM source
-    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
-    LIKE '%connector%';
+    SELECT source_name, description_name, the_value
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
+    WHERE source_short_name LIKE '%connector%';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely pacman level provenance, as most used
 CREATE VIEW IF NOT EXISTS pacman_provenance_view AS
-    SELECT source_name, description_name, the_value FROM source
-    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
-    LIKE 'pacman';
+    SELECT source_name, description_name, the_value
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
+    WHERE source_short_name LIKE 'pacman';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely version level provenance, as most used
 CREATE VIEW IF NOT EXISTS version_provenance_view AS
-    SELECT source_name, description_name, the_value FROM source
-    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
-    LIKE 'version_data';
+    SELECT source_name, description_name, the_value
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
+    WHERE source_short_name LIKE 'version_data';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely router level provenance, as most used
 CREATE VIEW IF NOT EXISTS router_provenance_view AS
-    SELECT source_name, description_name, the_value FROM source
-    NATURAL JOIN description NATURAL JOIN provenance WHERE source_name
-    LIKE 'router_provenance';
+    SELECT source_name, x, y, description_name, the_value
+    FROM source NATURAL JOIN description NATURAL JOIN provenance
+    WHERE source_short_name LIKE 'router_provenance';
 
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
