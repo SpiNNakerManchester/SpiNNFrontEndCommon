@@ -2064,9 +2064,9 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>UNUSED</name>
+      <name>UNUSED_CORE</name>
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
-      <anchor>ac124d280cf92fb450e1e72a58b88253faa09b651ef326a9d8efcee5cc5b720ab4</anchor>
+      <anchor>ac124d280cf92fb450e1e72a58b88253fa488d46012070df0693507cde3473cb37</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
