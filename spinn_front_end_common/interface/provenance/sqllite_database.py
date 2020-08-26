@@ -26,7 +26,7 @@ if sys.version_info < (3,):
     memoryview = buffer  # noqa
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
-_RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))")
+_RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
 class SqlLiteDatabase(object):
