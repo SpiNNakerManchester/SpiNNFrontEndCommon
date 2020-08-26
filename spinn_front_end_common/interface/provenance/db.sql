@@ -67,21 +67,21 @@ CREATE VIEW IF NOT EXISTS edge_provenance_view AS
 CREATE VIEW IF NOT EXISTS pacman_provenance_view AS
     SELECT source_name, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE 'pacman';
+    WHERE source_short_name = 'pacman';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely version level provenance, as most used
 CREATE VIEW IF NOT EXISTS version_provenance_view AS
     SELECT source_name, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE 'version_data';
+    WHERE source_short_name = 'version_data';
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- Show purely router level provenance, as most used
 CREATE VIEW IF NOT EXISTS router_provenance_view AS
     SELECT source_name, x, y, description_name, the_value
     FROM source NATURAL JOIN description NATURAL JOIN provenance
-    WHERE source_short_name LIKE 'router_provenance';
+    WHERE source_short_name = 'router_provenance';
 
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

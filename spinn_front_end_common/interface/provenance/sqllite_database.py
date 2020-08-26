@@ -135,21 +135,20 @@ class SqlLiteDatabase(object):
         if isinstance(index, int):
             return (cls.__coordify(name) for name in OrderedSet(
                 item.names[index] for item in items))
-        return (cls.__coordify(name) for name in OrderedSet(
+        return (cls.__coordify(name, joiner) for name in OrderedSet(
             joiner.join(item.names[index]) for item in items))
 
     @staticmethod
     def __coordify(name, joiner=None):
-        """
-        :param str name:
+        """ Creates the tuple of values for insertion into the source table.
+
+        :param str name: The extracted, possibly compound name
         :rtype: tuple(str, str, int or None, int or None, int or None)
         """
         x = None
         y = None
         p = None
-        short_name = name
-        if joiner:
-            short_name = name.partition(joiner)[0]
+        short_name = name.split(joiner, 1)[0]
         match = _RE.search(name)
         if match:
             x = int(match.group(1))
