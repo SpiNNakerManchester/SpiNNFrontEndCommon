@@ -165,7 +165,7 @@ class SqlLiteDatabase(object):
         if match:
             x = int(match.group(1))
             y = int(match.group(3))
-            if match.group(3):
+            if match.group(4):
                 p = int(match.group(4))
         return (name, short_name, x, y, p)
 
