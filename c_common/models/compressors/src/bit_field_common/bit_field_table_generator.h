@@ -142,8 +142,7 @@ static inline uint32_t bit_field_table_generator_max_size(
 }
 
 //! \brief Take a midpoint and read the sorted bitfields up to that point,
-//!     generating bitfield routing tables and loading them into SDRAM for
-//!     transfer to a compressor processor
+//!     generating bitfield routing tables and loading them into SDRAM
 //! \param[in] mid_point: where in the sorted bitfields to go to
 //! \param[in] uncompressed_table: the uncompressed router table
 //! \param[in] sorted_bit_fields: the pointer to the sorted bit field struct.
