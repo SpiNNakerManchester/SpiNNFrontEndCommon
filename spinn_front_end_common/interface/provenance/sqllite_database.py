@@ -103,7 +103,7 @@ class SqlLiteDatabase(object):
                 INSERT OR IGNORE INTO source(
                     source_name, source_short_name, x, y, p)
                 VALUES(?, ?, ?, ?, ?)
-                """, self.__unique_names(items, slice(None, -1)))
+                """, self.__unique_sources(items, slice(None, -1), "/"))
             self._db.executemany(
                 """
                 INSERT OR IGNORE INTO description(description_name)
@@ -122,7 +122,19 @@ class SqlLiteDatabase(object):
                 """, map(self.__condition_row, items))
 
     @classmethod
-    def __unique_names(cls, items, index, joiner="/"):
+    def __unique_names(cls, items, index):
+        """ Produces an iterable of 1-tuples of the *unique* names in at \
+            particular index into the provenance items' names.
+
+        :param iterable(ProvenanceDataItem) items: The prov items
+        :param int index: The index into the names
+        :rtype: iterable(tuple(str))
+        """
+        return ((name,) for name in OrderedSet(
+            item.names[index] for item in items))
+
+    @classmethod
+    def __unique_sources(cls, items, index, joiner):
         """ Produces an iterable of 1-tuples of the *unique* names in at \
             particular index into the provenance items' names.
 
