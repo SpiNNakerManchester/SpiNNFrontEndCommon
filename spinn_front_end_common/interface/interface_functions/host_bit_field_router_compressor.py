@@ -552,9 +552,6 @@ class HostBasedBitFieldRouterCompressor(object):
         if isinstance(
                 machine_vertex, AbstractSupportsBitFieldRoutingCompression):
             return machine_vertex
-        app_vertex = machine_vertex.app_vertex
-        if isinstance(app_vertex, AbstractSupportsBitFieldRoutingCompression):
-            return app_vertex
         return None
 
     def _order_bit_fields(
