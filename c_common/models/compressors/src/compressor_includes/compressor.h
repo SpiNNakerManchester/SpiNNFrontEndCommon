@@ -63,7 +63,7 @@ bool run_compressor(int compress_as_much_as_possible, bool *failed_by_malloc,
     // Perform the minimisation
     log_debug("minimise");
     if (minimise_run(target_length, failed_by_malloc, stop_compressing)) {
-        return routing_table_get_n_entries() <= rtr_alloc_max();
+        return routing_table_get_n_entries() <= (int) rtr_alloc_max();
     } else {
         return false;
     }

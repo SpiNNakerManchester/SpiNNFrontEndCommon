@@ -318,8 +318,8 @@ SKIP_FUNCTION_MACROS   = YES
 # Configuration options related to external references
 #---------------------------------------------------------------------------
 
-TAGFILES               =
-GENERATE_TAGFILE       =
+TAGFILES               = sllt.tag=http://spinnakermanchester.github.io/spinnaker_tools/ common.tag=http://spinnakermanchester.github.io/spinn_common/ 
+GENERATE_TAGFILE       = doc/html/fec.tag
 ALLEXTERNALS           = NO
 EXTERNAL_GROUPS        = YES
 EXTERNAL_PAGES         = YES
