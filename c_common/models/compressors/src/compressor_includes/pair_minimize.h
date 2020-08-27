@@ -17,7 +17,6 @@
 
 /**
  * \file
- *
  * \brief SpiNNaker routing table minimisation.
  *
  * Minimises a routing table loaded into SDRAM and load the minimised table into
@@ -144,50 +143,21 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
     return 0;
 }
 
-//! \brief Implementation of quicksort for routes based on route information
+//! \brief Implementation of sort for routes based on route information
 //! \param[in] low: the first index into the array of the section to sort;
 //!                 inclusive lowest index
 //! \param[in] high: the second index into the array of the section to sort;
 //!                  exclusive highest index
-static void quicksort_table(int low, int high) {
-    if (low < high - 1) {
-        // pick low entry for the pivot
-        uint32_t pivot = routing_table_get_entry(low)->route;
-        // Location of entry currently being checked.
-        // At the end check will point to either
-        //     the right most entry with a value greater than the pivot
-        //     or high indicating there are no entries greater than the pivot
-        //Start at low + 1 as entry low is the pivot
-        int check = low + 1;
-        // Location to write any smaller values to
-        // Will always point to most left entry with pivot value
-        // If we find any less than swap with the first pivot
-        int l_write = low;
-        // Location to write any greater values to
-        // Until the algorithm ends this will point to an unsorted value
-        // if we find any higher swap with last entry in the sort section
-        int h_write = high - 1;
-
-        while (check <= h_write) {
-            uint32_t check_route =
-                    routing_table_get_entry(check)->route;
-            int compare = compare_routes(check_route, pivot);
-            if (compare < 0) {
-                // swap the check to the left, and then
-                // move the check on as known to be pivot value
-                swap_entries(l_write++, check++);
-            } else if (compare > 0) {
-                // swap the check to the right
-                // Do not move the check as it has an unknown value
-                swap_entries(h_write--, check);
-            } else {
-                // Move check as it has the pivot value
-                check++;
+static void sort_table(int table_size) {
+    for (int i = 0; i < table_size -1; i++) {
+        uint32_t route_i = routing_table_get_entry(i)->route;
+        for (int j = i + 1; j < table_size; j++) {
+            uint32_t route_j = routing_table_get_entry(j)->route;
+            if (compare_routes(route_i, route_j) < 0) {
+                swap_entries(i, j);
+                route_i = route_j;
             }
         }
-        // Now sort the ones less than or more than the pivot
-        quicksort_table(low, l_write);
-        quicksort_table(check, high);
     }
 }
 
@@ -204,59 +174,26 @@ static inline void swap_routes(int index_a, int index_b) {
     routes[index_b] = temp;
 }
 
-//! \brief Implementation of quicksort for routes based on frequency.
+//! \brief Implementation of sort for routes based on frequency.
 //! \details The routes must be non-overlapping pre-minimisation routes.
-//! \param[in] low: the first index into the array of the section to sort;
-//!                 inclusive low point of range
-//! \param[in] high: the second index into the array of the section to sort;
-//!                  exclusive high point of range
-static void quicksort_route(int low, int high) {
-    if (low < high - 1) {
-        // pick low entry for the pivot
-        uint pivot = routes_frequency[low];
-        // Location of entry currently being checked.
-        // At the end check will point to either
-        //     the right most entry with a value greater than the pivot
-        //     or high indicating there are no entries greater than the pivot
-        //Start at low + 1 as entry low is the pivot
-        int check = low + 1;
-        // Location to write any smaller values to
-        // Will always point to most left entry with pivot value
-        // If we find any less than swap with the first pivot
-        int l_write = low;
-        // Location to write any greater values to
-        // Until the algorithm ends this will point to an unsorted value
-        // if we find any higher swap with last entry in the sort section
-        int h_write = high -1;
-
-        while (check <= h_write) {
-            if (routes_frequency[check] < pivot) {
-                // swap the check to the left, and then
-                // move the check on as known to be pivot value
-                swap_routes(l_write++, check++);
-            } else if (routes_frequency[check] > pivot) {
-                // swap the check to the right
-                swap_routes(h_write--, check);
-                // Do not move the check as it has an unknown value
-            } else {
-                // Move check as it has the pivot value
-                check++;
+static void sort_routes(void) {
+    for (int i = 0; i < routes_count -1; i++) {
+        for (int j = i + 1; j < routes_count; j++) {
+            if (routes_frequency[i] > routes_frequency[j]) {
+                swap_routes(i, j);
             }
         }
-        // Now sort the ones less than or more than the pivot
-        quicksort_route(low, l_write);
-        quicksort_route(check, high);
     }
 }
 
 //! \brief Compute the route histogram
 //! \param[in] index: The index of the cell to update
-static inline void update_frequency(int index) {
+static inline bool update_frequency(int index) {
     uint32_t route = routing_table_get_entry(index)->route;
     for (uint i = 0; i < routes_count; i++) {
         if (routes[i] == route) {
             routes_frequency[i]++;
-            return;
+            return true;
         }
     }
     routes[routes_count] = route;
@@ -265,25 +202,32 @@ static inline void update_frequency(int index) {
     if (routes_count >= MAX_NUM_ROUTES) {
         log_error("Best compression was %d compared to max legal of %d",
                 routes_count, MAX_NUM_ROUTES);
-        // set the failed flag and exit
-        malloc_extras_terminate(EXITED_CLEANLY);
+        return false;
     }
+    return true;
 }
 
+//! \brief Implementation of minimise()
+//! \param[in] target_length: ignored
+//! \param[out] failed_by_malloc: Never changed but required by api
+//! \param[in] stop_compressing: Variable saying if the compressor should stop
+//!    and return false; _set by interrupt_ DURING the run of this method!
 bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
         log_error("MAX_NUM_ROUTES %d != rtr_alloc_max() %d",
                 MAX_NUM_ROUTES, rtr_alloc_max());
-            malloc_extras_terminate(EXIT_FAIL);
+        return false;
     }
     int table_size = routing_table_get_n_entries();
 
     routes_count = 0;
 
     for (int index = 0; index < table_size; index++) {
-        update_frequency(index);
+        if (!update_frequency(index)) {
+            return false;
+        }
     }
 
     log_debug("before sort %u", routes_count);
@@ -291,7 +235,7 @@ bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
         log_debug("%u", routes[i]);
     }
 
-    quicksort_route(0, routes_count);
+    sort_routes();
     if (*stop_compressing) {
         log_info("Stopping as asked to stop");
         return false;
@@ -303,7 +247,7 @@ bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
     }
 
     log_debug("do quicksort_table by route %u", table_size);
-    quicksort_table(0, table_size);
+    sort_table(table_size);
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
         return false;
@@ -318,8 +262,7 @@ bool minimise_run(UNUSED int target_length, UNUSED bool *failed_by_malloc,
         uint32_t left_route = routing_table_get_entry(left)->route;
         log_debug("A %u %u %u %u", left, max_index, right, left_route);
         while ((right < table_size - 1) &&
-                routing_table_get_entry(right+1)->route ==
-                        left_route) {
+                routing_table_get_entry(right+1)->route == left_route) {
             right++;
         }
         remaining_index = right + 1;

@@ -856,7 +856,7 @@ void process_compressor_response(
 
     case FORCED_BY_COMPRESSOR_CONTROL:
         // compressor stopped at the request of the sorter.
-        log_info("ack from forced from processor %d doing mid point %d",
+        log_debug("ack from forced from processor %d doing mid point %d",
                 processor_id, mid_point);
         routing_tables_utils_free_all(comms_sdram[processor_id].routing_tables);
         break;
