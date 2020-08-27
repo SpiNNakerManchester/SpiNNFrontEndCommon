@@ -2696,10 +2696,10 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>quicksort_table</name>
+      <name>sort_table</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>a0b9b6ee1b46db58dd38e4cdb8a41f2cf</anchor>
-      <arglist>(int low, int high)</arglist>
+      <anchor>ac940b4ae90122ef0e7ec01cd4efcbc95</anchor>
+      <arglist>(int table_size)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
@@ -2710,16 +2710,16 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
-      <name>quicksort_route</name>
+      <name>sort_routes</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>a8640361640d6b7911abaf12b412953c7</anchor>
-      <arglist>(int low, int high)</arglist>
+      <anchor>a1467c8283b98116cf5271e60cc3539f7</anchor>
+      <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
-      <type>static void</type>
+      <type>static bool</type>
       <name>update_frequency</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>a359b9647590b3fa82bf0999b986cc077</anchor>
+      <anchor>aa98cf61463f71e930f269e6dd6c5b5b3</anchor>
       <arglist>(int index)</arglist>
     </member>
     <member kind="function">
