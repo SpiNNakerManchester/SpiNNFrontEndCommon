@@ -31,3 +31,4 @@ lastfailed
 *.class
 *modified_src/
 *.dict
+.dbeaver/
