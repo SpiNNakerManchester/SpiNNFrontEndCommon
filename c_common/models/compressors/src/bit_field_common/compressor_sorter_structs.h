@@ -30,7 +30,7 @@
 //! \brief the acceptable finish states
 typedef enum compressor_states {
    //! Flag to say this core has never been used or prepared
-   UNUSED = 30,
+   UNUSED_CORE = 30,
    //! Flag to say compressor is ready to run.  This clears previous results
    PREPARED = 31,
    //! Flag to say compressor is acticvely compressing
